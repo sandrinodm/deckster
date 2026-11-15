@@ -1,4 +1,4 @@
-import type { Plugin, ViteDevServer } from 'vite-plus';
+import type { Plugin, ViteDevServer } from 'vite';
 
 import { NodeServices } from '@effect/platform-node';
 import { Effect, Layer, ManagedRuntime } from 'effect';

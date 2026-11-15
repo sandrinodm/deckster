@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
@@ -37,7 +38,9 @@ export const chartLayoutContract = defineLayoutContract({
   description:
     'A title that states the takeaway, then one chart, big number or table filling the space ' +
     'under it: <BarChart>, <LineChart>, <Slope>, <Waterfall>, <BigNumber>, <Table> and the ' +
-    'rest (`pnpm deck charts`). Fill <Aside> with the "so what" (a key number or a sentence) to ' +
+    'rest (`' +
+    deckCommand() +
+    ' charts`). Fill <Aside> with the "so what" (a key number or a sentence) to ' +
     "set it in a column beside the chart; put the source in <Footnote> or the chart's `source`. " +
     'Datasets may sit in the `data:` frontmatter. Use split when a chart needs a paragraph ' +
     'beside it, and stats for two to four plain numbers.',

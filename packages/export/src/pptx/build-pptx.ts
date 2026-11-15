@@ -1,5 +1,6 @@
 import type { PptxPlaceholderKind } from '@deckster/engine/layout';
 
+import { deckCommand } from '@deckster/engine/command';
 import { Effect } from 'effect';
 
 import type { OpcPackage } from '#ooxml/opc-package.ts';
@@ -190,7 +191,7 @@ export const buildPptx = Effect.fn('buildPptx')(function* (
     return yield* exportError(
       'write the PPTX',
       `brand ${input.brand.name} has no surfaces`,
-      'Check the brand with `pnpm deck brand check <name>`.',
+      'Check the brand with `' + deckCommand() + ' brand check <name>`.',
     );
   }
 

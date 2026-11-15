@@ -313,6 +313,6 @@ describe('Codex invocation', () => {
       '/work/.deck/agent/hello/work/3-0123456789ab/public',
     ]);
     expect(args.join(' ')).not.toContain('/work/decks/');
-    expect(args).toContain('project_root_markers=["pnpm-workspace.yaml"]');
+    expect(args).toContain('project_root_markers=["pnpm-workspace.yaml","decks"]');
   });
 });

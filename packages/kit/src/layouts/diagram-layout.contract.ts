@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
@@ -16,7 +17,9 @@ export const diagramLayoutContract = defineLayoutContract({
   description:
     'A title that states what the diagram shows ("Every checkout crosses four hops"), then one ' +
     'diagram filling the space under it: <Flow> (nodes, edges, packets, journeys), ' +
-    '<SequenceDiagram>, <Timeline>, <Layers>, <Cycle>, <Tree> or an <Svg> (`pnpm deck diagrams` ' +
+    '<SequenceDiagram>, <Timeline>, <Layers>, <Cycle>, <Tree> or an <Svg> (`' +
+    deckCommand() +
+    ' diagrams` ' +
     'lists them). Fill <Aside> with what to notice, in a sentence or a few bullets, to set it in ' +
     'a column beside the diagram. Use split when the diagram needs a paragraph beside it.',
   schema: Schema.Struct({ eyebrow: EyebrowField, chrome: chromeField(true) }),

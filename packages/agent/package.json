@@ -48,7 +48,7 @@
     "@modelcontextprotocol/server": "catalog:",
     "effect": "catalog:",
     "react": "catalog:",
-    "vite-plus": "catalog:",
+    "vite": "catalog:",
     "ws": "catalog:"
   },
   "devDependencies": {
@@ -60,6 +60,7 @@
     "@types/ws": "catalog:",
     "happy-dom": "catalog:",
     "react-dom": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

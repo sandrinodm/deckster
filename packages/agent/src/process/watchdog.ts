@@ -1,3 +1,4 @@
+import { nodeHookArguments } from '@deckster/brand/node';
 import { type Cause, Effect, Option, Queue, Scope, Stream } from 'effect';
 import { ChildProcess, ChildProcessSpawner } from 'effect/process';
 import { fileURLToPath } from 'node:url';
@@ -32,7 +33,7 @@ export const startWatchdog = Effect.fn('startWatchdog')(function* (): Effect.fn.
   const encoder = new TextEncoder();
   const spawned = yield* spawner
     .spawn(
-      ChildProcess.make(process.execPath, [WATCHDOG_SCRIPT], {
+      ChildProcess.make(process.execPath, [...nodeHookArguments(process.env), WATCHDOG_SCRIPT], {
         detached: true,
         shell: false,
         stdin: { stream: Stream.fromQueue(lines), endOnDone: true },

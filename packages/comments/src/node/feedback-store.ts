@@ -1,4 +1,5 @@
 import { fileExists, guardedWrite } from '@deckster/brand/node';
+import { deckCommand } from '@deckster/engine/command';
 import { KEBAB_CASE_PATTERN } from '@deckster/engine/names';
 import { Effect, FileSystem, Result, Schema } from 'effect';
 import path from 'node:path';
@@ -185,7 +186,7 @@ export const findComment = Effect.fn('findComment')(function* (
 
   return yield* feedbackError(
     'missing',
-    `No comment has the id "${id}". Run \`pnpm deck comments <deck> --all\` to list the ids.`,
+    `No comment has the id "${id}". Run \`${deckCommand()} comments <deck> --all\` to list the ids.`,
   );
 });
 

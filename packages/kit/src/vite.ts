@@ -1,4 +1,4 @@
-import type { PluginOption } from 'vite-plus';
+import type { PluginOption } from 'vite';
 
 import { fileURLToPath } from 'node:url';
 import Icons from 'unplugin-icons/vite';

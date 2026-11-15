@@ -1,3 +1,4 @@
+import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
 import { Effect, FileSystem } from 'effect';
 import { createRequire } from 'node:module';
 
@@ -14,8 +15,10 @@ type Woff2Decoder = (bytes: Uint8Array) => Promise<Uint8Array>;
  * The fix printed when a brand font cannot be read.
  */
 const FONT_FIX =
-  'Run `pnpm install` so the brand fonts are installed, or pass --no-embed-fonts to export ' +
-  'without embedding.';
+  (FRAMEWORK_INSTALLED
+    ? 'Install the font package in the workspace folder (`npm install <package>`)'
+    : 'Run `pnpm install` so the brand fonts are installed') +
+  ', or pass --no-embed-fonts to export without embedding.';
 
 /**
  * Reads a font file the brand loads and returns it as an sfnt (TrueType or OpenType) font: WOFF 2.0

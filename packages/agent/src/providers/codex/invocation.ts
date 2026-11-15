@@ -43,7 +43,7 @@ export function codexOverrides(mcpUrl: string, web: boolean): readonly string[] 
   return [
     'approval_policy="never"',
     'project_doc_max_bytes=131072',
-    'project_root_markers=["pnpm-workspace.yaml"]',
+    'project_root_markers=["pnpm-workspace.yaml","decks"]',
     web ? 'web_search="live"' : 'web_search="disabled"',
     'sandbox_workspace_write.exclude_slash_tmp=true',
     'sandbox_workspace_write.exclude_tmpdir_env_var=true',

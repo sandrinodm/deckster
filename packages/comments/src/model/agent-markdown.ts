@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import type { AgentComment } from '#model/agent-comment.ts';
 
 /**
@@ -59,7 +61,7 @@ export function commentMarkdown(deck: string, comment: AgentComment): string {
     '',
     ...excerptBlock(comment),
     ...resolutionLines(comment),
-    `When it is done: \`pnpm deck comments resolve ${deck} ${comment.id} --note "<what changed>"\``,
+    `When it is done: \`${deckCommand()} comments resolve ${deck} ${comment.id} --note "<what changed>"\``,
   ];
   return lines.join('\n');
 }
@@ -74,7 +76,9 @@ export function commentsMarkdown(deck: string, comments: readonly AgentComment[]
   const heading = `# ${comments.length} open comment${comments.length === 1 ? '' : 's'} on ${deck}`;
   const intro =
     'Each comment names the file and line to edit. Make the change, then resolve it with the ' +
-    'command under it. `pnpm deck comments ' +
+    'command under it. `' +
+    deckCommand() +
+    ' comments ' +
     `${deck} --json\` lists the same comments as JSON.`;
   return [heading, '', intro, ...comments.map((comment) => `\n${commentMarkdown(deck, comment)}`)]
     .join('\n')

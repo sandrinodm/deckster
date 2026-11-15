@@ -1,5 +1,6 @@
 import type { Page } from 'playwright';
 
+import { deckCommand } from '@deckster/engine/command';
 import { Effect } from 'effect';
 
 import type { FetchedFile, TooLargeFile } from '#capture/page-scripts.ts';
@@ -60,7 +61,9 @@ const EXTENSIONS: Readonly<Record<string, string>> = {
  * The fix printed when a capture step fails.
  */
 const CAPTURE_FIX =
-  'Run the export again; if it keeps failing, run `pnpm deck shot <deck> <slide>` to see the ' +
+  'Run the export again; if it keeps failing, run `' +
+  deckCommand() +
+  ' shot <deck> <slide>` to see the ' +
   'slide.';
 
 /**

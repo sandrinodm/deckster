@@ -34,7 +34,7 @@
     "effect": "catalog:",
     "playwright": "catalog:",
     "react": "catalog:",
-    "vite-plus": "catalog:"
+    "vite": "catalog:"
   },
   "devDependencies": {
     "@effect/vitest": "catalog:",
@@ -43,6 +43,7 @@
     "@types/react-dom": "catalog:",
     "happy-dom": "catalog:",
     "react-dom": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

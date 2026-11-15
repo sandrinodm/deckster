@@ -50,7 +50,8 @@
     "react": "catalog:",
     "shiki": "catalog:",
     "unplugin-icons": "catalog:",
-    "uqr": "catalog:"
+    "uqr": "catalog:",
+    "vite": "catalog:"
   },
   "devDependencies": {
     "@e2e-dev/web": "catalog:",

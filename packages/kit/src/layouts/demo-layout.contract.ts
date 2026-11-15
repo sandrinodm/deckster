@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
@@ -26,7 +27,9 @@ export const demoLayoutContract = defineLayoutContract({
     body: {
       description:
         'One <AppFrame app="name" poster="..." /> or <Live component={...} />, nothing else. It ' +
-        'fills the region. The app must exist under decks/<deck>/apps/ (`pnpm deck new app`), or ' +
+        'fills the region. The app must exist under decks/<deck>/apps/ (`' +
+        deckCommand() +
+        ' new app`), or ' +
         'the build fails. Set what the audience should watch for in `title:` (one line).',
       required: true,
       accepts: ['component'],
@@ -55,7 +58,9 @@ export const demoLayoutContract = defineLayoutContract({
     body: [
       '<Live label="Where the live demo goes">',
       '',
-      '**The demo goes here.** Create a mini app with `pnpm deck new app <deck> <name>`, then ' +
+      '**The demo goes here.** Create a mini app with `' +
+        deckCommand() +
+        ' new app <deck> <name>`, then ' +
         'replace this placeholder with `<AppFrame app="<name>" poster=... chrome="window" />`.',
       '',
       '</Live>',

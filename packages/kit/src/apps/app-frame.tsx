@@ -1,4 +1,5 @@
 import { useReadyHold, useSlide, useStatic, useStep } from '@deckster/engine';
+import { deckCommand } from '@deckster/engine/command';
 import { registerShortcut } from '@deckster/presenter';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
@@ -229,7 +230,7 @@ function MissingApp({ name }: { name: string }): ReactNode {
     <AppFallback
       title={`There is no app "${name}"`}
       message={
-        `The deck has no apps/${name}/index.html. Create it with \`pnpm deck new app <deck> ` +
+        `The deck has no apps/${name}/index.html. Create it with \`${deckCommand()} new app <deck> ` +
         `${name}\`, or fix the name in <AppFrame app>.`
       }
     />

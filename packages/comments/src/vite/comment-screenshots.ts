@@ -1,4 +1,4 @@
-import { guardedWrite } from '@deckster/brand/node';
+import { guardedWrite, playwrightInstallCommand } from '@deckster/brand/node';
 import { Context, Effect, FileSystem, Layer, Scope, Semaphore } from 'effect';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
@@ -204,7 +204,7 @@ function launchBrowser(): Effect.Effect<Browser, FeedbackError> {
       feedbackError(
         'io',
         `Could not start Chromium for the comment screenshot: ${firstLine(cause)}\n` +
-          'Install it with `pnpm exec playwright install chromium`.',
+          `Install it with \`${playwrightInstallCommand()}\`.`,
       ),
   });
 }

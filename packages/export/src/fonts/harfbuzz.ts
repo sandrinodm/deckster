@@ -1,3 +1,4 @@
+import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
 import { Effect, FileSystem } from 'effect';
 import { createRequire } from 'node:module';
 
@@ -164,7 +165,11 @@ export const loadHarfBuzz = Effect.fn('loadHarfBuzz')(function* (): Effect.fn.Re
     return loaded;
   }
 
-  const fix = 'Run `pnpm install` so harfbuzzjs is installed, or pass --no-embed-fonts.';
+  const fix = `${
+    FRAMEWORK_INSTALLED
+      ? 'Reinstall @deckster/cli so harfbuzzjs is installed'
+      : 'Run `pnpm install` so harfbuzzjs is installed'
+  }, or pass --no-embed-fonts.`;
   const file = yield* Effect.try({
     try: () => createRequire(import.meta.url).resolve('harfbuzzjs/dist/harfbuzz-subset.wasm'),
     catch: (cause) => exportError('find the HarfBuzz subsetter', cause, fix),

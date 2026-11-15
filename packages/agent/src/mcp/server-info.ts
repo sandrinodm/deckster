@@ -1,5 +1,6 @@
 import type { Scope } from 'effect';
 
+import { deckCommand } from '@deckster/engine/command';
 import { Effect, FileSystem, Schema } from 'effect';
 import { randomBytes } from 'node:crypto';
 import path from 'node:path';
@@ -81,7 +82,7 @@ export const readServerInfo = Effect.fn('readServerInfo')(function* (
 ): Effect.fn.Return<ServerInfo, AgentError, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
   const file = serverInfoFile(workspaceRoot, deck);
-  const start = `Start one with \`pnpm deck dev ${deck} --mcp\`, then run this again.`;
+  const start = `Start one with \`${deckCommand()} dev ${deck} --mcp\`, then run this again.`;
   const text = yield* fs
     .readFileString(file)
     .pipe(

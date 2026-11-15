@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import type {
   EdgeFlowProps,
   EdgeProps,
@@ -440,7 +442,9 @@ function nodeKind(props: NodeProps): NodeKind {
   if (kind === undefined) {
     throw new Error(
       `<Node id="${props.id}" kind="${props.kind}"> is not a node kind. ` +
-        'Run `pnpm deck diagrams` for the kinds, or use kind="node" with an icon.',
+        'Run `' +
+        deckCommand() +
+        ' diagrams` for the kinds, or use kind="node" with an icon.',
     );
   }
 

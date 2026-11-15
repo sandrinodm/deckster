@@ -1,4 +1,5 @@
 import { fileExists } from '@deckster/brand/node';
+import { deckCommand } from '@deckster/engine/command';
 import { Effect, FileSystem } from 'effect';
 import path from 'node:path';
 
@@ -82,7 +83,7 @@ export function missingAppReason(deck: string, name: string, apps: readonly stri
   return (
     `<AppFrame app="${name}"> names an app that does not exist: there is no ` +
     `decks/${deck}/${APPS_DIR}/${name}/${APP_ENTRY}. ${known} Create it with ` +
-    `\`pnpm deck new app ${deck} ${name}\`, or fix the name.`
+    `\`${deckCommand()} new app ${deck} ${name}\`, or fix the name.`
   );
 }
 

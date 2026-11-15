@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Effect, Schema } from 'effect';
 
@@ -35,7 +36,9 @@ export const tableLayoutContract = defineLayoutContract({
   name: 'table',
   description:
     'A title that states the takeaway over one table of exact values, written as a Markdown ' +
-    'table or the kit <Table> (`pnpm deck charts --json` lists its props; both are set alike): ' +
+    'table or the kit <Table> (`' +
+    deckCommand() +
+    ' charts --json` lists its props; both are set alike): ' +
     'a lookup, a schedule, a feature or price grid. Columns of numbers ' +
     "are aligned right with tabular figures, the header is set in the brand's label style, and " +
     '`highlight: { row: Eastgate }` (or a column) marks what the point rests on the way the ' +

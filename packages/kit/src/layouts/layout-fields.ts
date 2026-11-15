@@ -1,5 +1,6 @@
 import type { FieldProblem } from '@deckster/engine/layout';
 
+import { deckCommand } from '@deckster/engine/command';
 import { Effect, Schema } from 'effect';
 
 import { isSafeHref } from '#links/link-target.ts';
@@ -67,7 +68,9 @@ export const TreatmentField = Schema.optionalKey(
  */
 export const TREATMENT_HINT =
   "Name one of the brand's image treatments, for example `treatment: plain` to show a map or " +
-  'chart in its own colors; `pnpm deck brand --json` lists them under imagery.treatments.';
+  'chart in its own colors; `' +
+  deckCommand() +
+  ' brand --json` lists them under imagery.treatments.';
 
 /**
  * The `treatment` prop of a photo's frame: the treatment the slide names, or no prop at all when it
