@@ -1,0 +1,262 @@
+import { defineBrand } from '@deckster/brand';
+
+/**
+ * Kinetic: loud, fast and engineered, for product launches, developer talks and demo days. Chalk
+ * white and ink black with an electric blue and an acid lime, Space Grotesk set tight and heavy for
+ * headings over Inter Tight, mono labels, square corners, hard offset shadows instead of soft ones,
+ * and a quick push between slides. Its title slides glow blue and pink under a line grid; the
+ * `grid` surface puts a dot grid under content, and section slides carry a giant chevron.
+ */
+export default defineBrand({
+  name: 'kinetic',
+  label: 'Kinetic',
+  color: {
+    palette: {
+      chalk: {
+        0: '#ffffff',
+        50: '#f5f5f0',
+        100: '#ebebe4',
+        200: '#d8d8cf',
+        300: '#b9b9ae',
+        400: '#8f8f85',
+        500: '#6b6b63',
+        600: '#4d4d47',
+        700: '#33332f',
+        800: '#1f1f1c',
+        900: '#121211',
+        950: '#0a0a09',
+      },
+      volt: { 200: '#efffb0', 300: '#e2ff6b', 400: '#d4ff3a', 500: '#bff000', 700: '#5f7a00' },
+      ultra: {
+        100: '#e3e6ff',
+        200: '#c4caff',
+        300: '#9aa3ff',
+        400: '#6b77ff',
+        500: '#3d4bff',
+        600: '#2a35e6',
+        700: '#1f27b8',
+        800: '#181e8a',
+        900: '#11155c',
+      },
+      hot: { 300: '#ff9ccf', 400: '#ff5fb0', 600: '#d6247f', 700: '#a8165f', 800: '#6e0f3f' },
+      flare: { 400: '#ff8a3d', 600: '#c75a10' },
+      aqua: { 300: '#7ff0e0', 600: '#0f8576', 800: '#06463e' },
+    },
+    roles: {
+      bg: 'chalk.50',
+      surface: 'chalk.0',
+      fg: 'chalk.950',
+      muted: 'chalk.600',
+      accent: 'ultra.500',
+      'accent-fg': 'chalk.0',
+      border: 'chalk.950',
+      positive: 'aqua.800',
+      negative: 'hot.600',
+    },
+    surfaces: {
+      default: {},
+      inverse: {
+        bg: 'chalk.950',
+        surface: 'chalk.800',
+        fg: 'chalk.50',
+        heading: 'chalk.0',
+        muted: 'chalk.300',
+        accent: 'volt.400',
+        'accent-fg': 'chalk.950',
+        border: 'chalk.600',
+        positive: 'aqua.300',
+        negative: 'hot.400',
+        logo: 'reversed',
+        shadow: {
+          sm: [{ x: 4, y: 4, blur: 0, color: 'volt.400' }],
+          md: [{ x: 8, y: 8, blur: 0, color: 'volt.400' }],
+          lg: [{ x: 14, y: 14, blur: 0, color: 'volt.400' }],
+        },
+      },
+      accent: {
+        bg: 'volt.400',
+        surface: 'volt.300',
+        fg: 'chalk.950',
+        muted: 'chalk.700',
+        accent: 'chalk.950',
+        'accent-fg': 'volt.400',
+        border: 'chalk.950',
+        positive: 'ultra.800',
+        negative: 'hot.600',
+        background: [
+          {
+            type: 'placed',
+            file: 'backgrounds/chevrons.svg',
+            aspect: 1,
+            anchor: 'right',
+            width: 980,
+            offset: { x: 260, y: 0 },
+            opacity: 0.08,
+          },
+        ],
+      },
+      gradient: {
+        gradient: 'pulse',
+        bg: 'chalk.950',
+        surface: 'chalk.0/10',
+        fg: 'chalk.0',
+        muted: 'ultra.100',
+        accent: 'volt.400',
+        'accent-fg': 'chalk.950',
+        border: 'chalk.0/24',
+        positive: 'aqua.300',
+        negative: 'hot.400',
+        logo: 'reversed',
+        background: [
+          { type: 'pattern', file: 'backgrounds/grid.svg', aspect: 1, tile: 64, opacity: 0.07 },
+        ],
+      },
+      grid: {
+        bg: 'chalk.50',
+        background: [
+          { type: 'pattern', file: 'backgrounds/dots.svg', aspect: 1, tile: 32, opacity: 0.22 },
+        ],
+      },
+    },
+    data: {
+      categorical: ['ultra.500', 'hot.600', 'volt.700', 'chalk.700', 'flare.600', 'aqua.600'],
+      sequential: [
+        'ultra.100',
+        'ultra.200',
+        'ultra.300',
+        'ultra.400',
+        'ultra.500',
+        'ultra.700',
+        'ultra.900',
+      ],
+      diverging: [
+        'hot.700',
+        'hot.400',
+        'hot.300',
+        'chalk.100',
+        'ultra.200',
+        'ultra.400',
+        'ultra.700',
+      ],
+      context: 'chalk.300',
+    },
+  },
+  gradients: {
+    pulse: {
+      type: 'mesh',
+      base: 'chalk.950',
+      points: [
+        { color: 'ultra.700', x: 88, y: 10, size: 70 },
+        { color: 'hot.800', x: 6, y: 100, size: 60 },
+        { color: 'ultra.900', x: 40, y: 60, size: 50 },
+      ],
+      grain: 0.06,
+    },
+    beam: {
+      type: 'linear',
+      angle: 120,
+      stops: ['ultra.500', 'ultra.800'],
+    },
+  },
+  typography: {
+    families: {
+      display: {
+        family: 'Space Grotesk',
+        fallback: ['Arial', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        substitute: { family: 'Arial' },
+        source: { kind: 'fontsource', package: '@fontsource/space-grotesk', weights: [500, 700] },
+      },
+      body: {
+        family: 'Inter Tight',
+        fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+        substitute: { family: 'Arial' },
+        source: {
+          kind: 'fontsource',
+          package: '@fontsource-variable/inter-tight',
+          styles: ['normal', 'italic'],
+        },
+      },
+      mono: {
+        family: 'JetBrains Mono',
+        fallback: ['ui-monospace', 'monospace'],
+        substitute: { family: 'Courier New' },
+        source: { kind: 'fontsource', package: '@fontsource-variable/jetbrains-mono' },
+      },
+    },
+    scale: {
+      display: { family: 'display', size: 120, lineHeight: 0.96, tracking: -0.03, weight: 700 },
+      headline: { family: 'display', size: 88, lineHeight: 0.98, tracking: -0.03, weight: 700 },
+      title: { family: 'display', size: 52, lineHeight: 1.06, tracking: -0.02, weight: 700 },
+      lead: { family: 'body', size: 40, lineHeight: 1.34, tracking: -0.012, weight: 420 },
+      body: { family: 'body', size: 34, lineHeight: 1.42, tracking: -0.006, weight: 400 },
+      small: { family: 'body', size: 26, lineHeight: 1.45, tracking: 0, weight: 400 },
+      caption: { family: 'body', size: 24, lineHeight: 1.4, tracking: 0, weight: 500 },
+      label: {
+        family: 'mono',
+        size: 22,
+        lineHeight: 1.2,
+        tracking: 0.04,
+        weight: 600,
+        case: 'upper',
+      },
+      stat: {
+        family: 'display',
+        size: 196,
+        lineHeight: 0.88,
+        tracking: -0.045,
+        weight: 700,
+        features: ['tnum'],
+      },
+      quote: { family: 'display', size: 76, lineHeight: 1.06, tracking: -0.025, weight: 500 },
+      code: { family: 'mono', size: 26, lineHeight: 1.55, tracking: 0, weight: 400 },
+    },
+  },
+  shape: {
+    radius: { sm: 0, md: 0, lg: 0, xl: 0 },
+    stroke: { hairline: 1.5, regular: 2, bold: 4 },
+    shadow: {
+      sm: [{ x: 4, y: 4, blur: 0, color: 'chalk.950' }],
+      md: [{ x: 8, y: 8, blur: 0, color: 'chalk.950' }],
+      lg: [{ x: 14, y: 14, blur: 0, color: 'chalk.950' }],
+    },
+  },
+  spacing: {
+    scale: { '2xs': 4, xs: 8, sm: 16, md: 24, lg: 40, xl: 64, '2xl': 96, '3xl': 144 },
+    margin: { x: 120, y: 104 },
+    grid: { columns: 12, gutter: 32 },
+  },
+  logo: {
+    variants: {
+      primary: { file: 'logos/kinetic.svg', aspect: 4.38 },
+      reversed: { file: 'logos/kinetic-reversed.svg', aspect: 4.38 },
+    },
+    default: 'primary',
+    clearSpace: 0.5,
+    placement: { corner: 'top-right', height: 30 },
+  },
+  icons: { set: 'tabler', strokeWidth: 2 },
+  imagery: {
+    treatments: {
+      raw: { type: 'none' },
+      mono: { type: 'grayscale' },
+      volt: { type: 'duotone', shadow: 'ultra.900', highlight: 'volt.300' },
+    },
+    default: 'raw',
+  },
+  chrome: {
+    pageNumber: { show: true, format: '{n}/{total}', corner: 'bottom-right' },
+    footer: { show: true, text: 'Kinetic', corner: 'bottom-left' },
+    progress: { show: true, edge: 'bottom', thickness: 6 },
+    logo: { show: true },
+    skipFirst: true,
+  },
+  motion: {
+    easings: {
+      standard: [0.2, 0, 0, 1],
+      emphasized: [0.05, 0.7, 0.1, 1],
+      exit: [0.3, 0, 0.8, 0.15],
+    },
+    durations: { fast: 120, base: 240, slow: 420 },
+    transition: { kind: 'push', duration: 'base', easing: 'emphasized' },
+  },
+});

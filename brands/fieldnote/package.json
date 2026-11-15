@@ -1,0 +1,19 @@
+{
+  "name": "@deckster/brand-fieldnote",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deckster/brand": "workspace:*",
+    "@fontsource/playfair-display": "catalog:",
+    "@fontsource/source-code-pro": "catalog:",
+    "@fontsource/source-sans-3": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

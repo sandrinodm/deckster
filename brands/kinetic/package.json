@@ -1,0 +1,19 @@
+{
+  "name": "@deckster/brand-kinetic",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deckster/brand": "workspace:*",
+    "@fontsource-variable/inter-tight": "catalog:",
+    "@fontsource-variable/jetbrains-mono": "catalog:",
+    "@fontsource/space-grotesk": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
