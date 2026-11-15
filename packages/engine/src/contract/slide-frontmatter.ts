@@ -1,5 +1,6 @@
 import { Effect, Schema } from 'effect';
 
+import { deckCommand } from '#contract/deck-command.ts';
 import { KebabName } from '#contract/kebab-name.ts';
 import { BUDGET_PATTERN, DEFAULT_LAYOUT } from '#contract/slide-defaults.ts';
 
@@ -98,7 +99,10 @@ export const SLIDE_FRONTMATTER_HINTS = {
   /**
    * Fix for a layout name that is not kebab-case.
    */
-  layout: 'Name a layout from `pnpm deck layouts` in kebab-case, for example `layout: default`.',
+  layout:
+    'Name a layout from `' +
+    deckCommand() +
+    ' layouts` in kebab-case, for example `layout: default`.',
 
   /**
    * Fix for a title that is empty or not text.

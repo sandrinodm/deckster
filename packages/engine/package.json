@@ -25,7 +25,8 @@
     "./catalog": "./src/layouts/catalog.ts",
     "./slots": "./src/contract/slots.ts",
     "./names": "./src/contract/kebab-name.ts",
-    "./mdx": "./src/contract/mdx-extension.ts"
+    "./mdx": "./src/contract/mdx-extension.ts",
+    "./command": "./src/contract/deck-command.ts"
   },
   "scripts": {
     "test": "vp test",
