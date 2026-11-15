@@ -1,0 +1,60 @@
+{
+  "name": "@deckster/vite-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "homepage": "https://github.com/sandrinodm/deckster/tree/main/packages/vite-plugin#readme",
+  "bugs": "https://github.com/sandrinodm/deckster/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandrinodm/deckster.git",
+    "directory": "packages/vite-plugin"
+  },
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./css-guard": "./src/deck-css-guard.ts",
+    "./errors": "./src/errors.ts"
+  },
+  "scripts": {
+    "test": "vp test",
+    "typecheck": "tsc --noEmit",
+    "e2e": "e2e run"
+  },
+  "dependencies": {
+    "@deckster/brand": "workspace:*",
+    "@deckster/comments": "workspace:*",
+    "@deckster/engine": "workspace:*",
+    "@deckster/kit": "workspace:*",
+    "@deckster/presenter": "workspace:*",
+    "@effect/platform-node": "catalog:",
+    "@mdx-js/mdx": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "decode-named-character-reference": "catalog:",
+    "effect": "catalog:",
+    "remark-gfm": "catalog:",
+    "tailwindcss": "catalog:",
+    "vite-plus": "catalog:",
+    "yaml": "catalog:"
+  },
+  "devDependencies": {
+    "@deckster/agent": "workspace:*",
+    "@deckster/app-bridge": "workspace:*",
+    "@deckster/shell": "workspace:*",
+    "@e2e-dev/web": "catalog:",
+    "@effect/vitest": "catalog:",
+    "@modelcontextprotocol/client": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "e2e": "catalog:",
+    "playwright": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:"
+  }
+}

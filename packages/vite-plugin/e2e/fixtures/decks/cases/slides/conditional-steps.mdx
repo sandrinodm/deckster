@@ -1,0 +1,24 @@
+---
+title: Conditional steps
+---
+
+import { useEffect, useState } from 'react';
+import { Step, useReadyHold } from '@deckster/engine';
+
+export function Rows() {
+  const [rows, setRows] = useState();
+  useReadyHold(rows === undefined);
+  useEffect(() => {
+    const timer = setTimeout(() => setRows(['North', 'South']), 300);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <ul>
+      {(rows ?? []).map((row, index) => <Step key={row} at={index * 2 + 1}><li>{row}</li></Step>)}
+    </ul>
+  );
+}
+
+## One step per row of data, at 1 and 3
+
+<Rows />

@@ -1,0 +1,14 @@
+---
+layout: demo
+title: A host that does not answer
+---
+
+<AppFrame
+  src="http://127.0.0.1:5449/"
+  poster={() => <p>Unreachable poster</p>}
+  fallback="../assets/fallback.webm"
+  alt="A recording"
+  chrome="browser"
+/>
+
+<Notes>Nothing listens on port 5449, so the probe fails and the recording plays.</Notes>

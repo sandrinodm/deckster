@@ -1,0 +1,13 @@
+---
+layout: demo
+title: An outside page with no bridge
+---
+
+<AppFrame
+  src="http://localhost:5441/plain.html"
+  poster={() => <p>Plain poster</p>}
+  alt="A page with a text field"
+  chrome="browser"
+/>
+
+<Notes>The page is on another origin and has no bridge, so Escape cannot hand the keys back.</Notes>

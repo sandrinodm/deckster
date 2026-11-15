@@ -1,0 +1,25 @@
+---
+title: Late steps
+---
+
+import { useEffect, useState } from 'react';
+import { Step, useReadyHold } from '@deckster/engine';
+
+export function LateSteps() {
+  const [loaded, setLoaded] = useState(false);
+  useReadyHold(!loaded);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoaded(true), 600);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <ul>
+      <Step at={1}><li>Registered at once</li></Step>
+      {loaded ? [2, 3, 4].map((at) => <Step key={at} at={at}><li>Registered after 600 ms</li></Step>) : null}
+    </ul>
+  );
+}
+
+## Steps that register late
+
+<LateSteps />
