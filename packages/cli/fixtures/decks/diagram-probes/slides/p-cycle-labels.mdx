@@ -1,0 +1,19 @@
+---
+layout: diagram
+title: The build loop has five stages and labels on its arcs
+eyebrow: Cycle probe
+---
+
+<Cycle title="Plan, build, test, release and observe, with what passes between them" steps>
+  <Node id="plan" kind="document" title="Plan" />
+  <Node id="build" kind="service" title="Build" />
+  <Node id="test" kind="function" title="Test" />
+  <Node id="release" kind="cloud" title="Release" />
+  <Node id="observe" kind="user" title="Observe" />
+  <Edge from="plan" to="build" label="tickets" />
+  <Edge from="observe" to="plan" label="incidents" dashed />
+</Cycle>
+
+<Notes>
+An odd number of stages: every arc must run through the stage centres and stop just before the next stage, and two arcs carry labels.
+</Notes>

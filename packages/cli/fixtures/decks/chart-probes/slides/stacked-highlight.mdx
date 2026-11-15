@@ -1,0 +1,20 @@
+---
+layout: chart
+title: Mobile is now the largest source of signups in every region
+---
+
+<BarChart
+  data={[
+    { region: 'North America', Mobile: 420, Web: 360, Partner: 120, Referral: 60, Events: 25, Other: 15 },
+    { region: 'Europe', Mobile: 370, Web: 290, Partner: 140, Referral: 55, Events: 24, Other: 15 },
+    { region: 'Asia Pacific', Mobile: 480, Web: 120, Partner: 60, Referral: 30, Events: 10, Other: 7 },
+    { region: 'Latin America', Mobile: 190, Web: 90, Partner: 30, Referral: 12, Events: 6, Other: 5 },
+    { region: 'Middle East and Africa', Mobile: 90, Web: 60, Partner: 25, Referral: 12, Events: 5, Other: 4 },
+  ]}
+  x="region"
+  stacked
+  highlight="Mobile"
+  caption="Signups by source, thousands, 2026"
+/>
+
+<Notes>The highlighted segments carry their values; the legend names Mobile and everything else, not six grey swatches.</Notes>

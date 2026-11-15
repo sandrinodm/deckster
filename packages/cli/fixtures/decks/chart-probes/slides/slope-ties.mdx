@@ -1,0 +1,27 @@
+---
+layout: chart
+title: Three teams fell behind while the rest held still
+---
+
+<Slope
+  data={[
+    { team: 'Identity and access management', before: 52, after: 20 },
+    { team: 'Search', before: 51, after: 50 },
+    { team: 'Billing', before: 51, after: 19 },
+    { team: 'Platform infrastructure', before: 50, after: 50 },
+    { team: 'Payments', before: 50, after: 51 },
+    { team: 'Data', before: 50, after: 18 },
+    { team: 'Docs', before: 50, after: 49 },
+    { team: 'Security', before: 50, after: 52 },
+    { team: 'Growth', before: 49, after: 50 },
+    { team: 'Support tooling', before: 49, after: 48 },
+  ]}
+  x="team"
+  from="before"
+  to="after"
+  highlight={['Identity and access management', 'Billing', 'Data']}
+  annotations={[{ type: 'callout', x: 'Data', label: 'Lost its two leads in May' }]}
+  caption="Engagement score, 2025 and 2026"
+/>
+
+<Notes>Tied values stack their labels, each joined to its point by a leader.</Notes>

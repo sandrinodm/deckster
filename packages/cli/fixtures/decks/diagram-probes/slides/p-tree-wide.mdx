@@ -1,0 +1,28 @@
+---
+layout: diagram
+title: The repository is deep on one side and shallow on the other
+eyebrow: Tree probe
+---
+
+<Tree title="The monorepo's folders">
+  <Node id="repo" kind="document" title="monorepo">
+    <Node id="apps" title="apps">
+      <Node id="web" title="web">
+        <Node id="routes" title="routes">
+          <Node id="page" kind="document" title="page.tsx" />
+        </Node>
+      </Node>
+    </Node>
+    <Node id="packages" title="packages" at={1}>
+      <Node id="ui" title="ui" at={1} />
+      <Node id="db" title="db" at={1} />
+      <Node id="auth" title="auth" at={1} />
+      <Node id="config" title="config" at={1} />
+    </Node>
+    <Node id="docs" title="docs" />
+  </Node>
+</Tree>
+
+<Notes>
+Every parent's children hang off one bus line, and every arrow lands in the middle of its child.
+</Notes>

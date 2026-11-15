@@ -1,0 +1,22 @@
+---
+layout: chart
+title: A progress beside an aside
+---
+
+<Progress
+  items={[
+    { label: 'Questions solved by self-serve', value: 31, unit: '%', target: 40, highlight: true },
+    { label: 'Billing articles written', value: 12, max: 40, unit: 'articles', target: 40 },
+    { label: 'Hours of chat coverage a day', value: 18, max: 24, unit: 'h', target: 24 },
+  ]}
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: progress beside an aside.</Notes>

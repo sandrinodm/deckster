@@ -1,0 +1,16 @@
+---
+layout: chart
+title: Four numbers sum up the quarter
+---
+
+<StatRow
+  format="currency"
+  stats={[
+    { value: 1.2, unit: 'M', label: 'net new annual recurring revenue', from: 0.95, spark: [0.6, 0.7, 0.8, 0.95, 1.2] },
+    { value: 12.5, unit: '%', label: 'churn', from: 9, better: 'down' },
+    { value: 91, unit: '%', label: 'renewal rate', from: 84, highlight: true },
+    { value: 6.1, label: 'cost per ticket', from: 6.15, better: 'down' },
+  ]}
+/>
+
+<Notes>A stat's own unit resets the row's currency; a change in percent reads in points; currency writes cents, never one decimal.</Notes>

@@ -1,0 +1,20 @@
+---
+layout: chart
+surface: photo
+title: Sessions grew every quarter
+eyebrow: Chart on a photo
+---
+
+<BarChart
+  data={[
+    { quarter: 'Q1', sessions: 120 },
+    { quarter: 'Q2', sessions: 160 },
+    { quarter: 'Q3', sessions: 210 },
+    { quarter: 'Q4', sessions: 260 },
+  ]}
+  x="quarter"
+  y="sessions"
+  caption="Sessions per quarter, thousands"
+/>
+
+<Notes>Probe: the chart draws its plate over the photo.</Notes>

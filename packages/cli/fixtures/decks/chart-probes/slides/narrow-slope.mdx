@@ -1,0 +1,28 @@
+---
+layout: split
+ratio: 7:5
+title: A slope in a five-column media column
+---
+
+The media column of a 7:5 split is five of twelve columns wide.
+
+<Media>
+<Slope
+  data={[
+    { team: 'Billing', '2025': 18, '2026': 22 },
+    { team: 'Access', '2025': 12, '2026': 7 },
+    { team: 'Integrations', '2025': 14, '2026': 11 },
+    { team: 'Performance', '2025': 10, '2026': 8 },
+  ]}
+  x="team"
+  from="2025"
+  to="2026"
+  better="down"
+  tone
+  highlight="Billing"
+  unit="h"
+  caption="Median hours to resolve a ticket"
+/>
+</Media>
+
+<Notes>Probe: slope at five twelfths of the width.</Notes>

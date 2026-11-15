@@ -1,0 +1,27 @@
+---
+layout: diagram
+title: A tall automatic layout turns sideways rather than stacking nodes
+eyebrow: Auto layout probe
+---
+
+<Flow title="An edge and a core group laid out downwards, with six ranks" direction="down">
+  <Group label="Edge">
+    <Node id="cdn" kind="cloud" title="CDN" />
+    <Node id="waf" kind="gateway" title="WAF" />
+  </Group>
+  <Group label="Core">
+    <Node id="api" kind="service" title="API" />
+    <Node id="worker" kind="function" title="Worker" />
+    <Node id="db" kind="database" title="DB" />
+  </Group>
+  <Node id="user" kind="user" title="User" />
+  <Edge from="cdn" to="waf" />
+  <Edge from="waf" to="api" />
+  <Edge from="api" to="worker" async />
+  <Edge from="worker" to="db" />
+  <Edge from="db" to="user" />
+</Flow>
+
+<Notes>
+Six ranks downwards do not fit under a title; the layout must fall back to running right instead of drawing nodes on top of each other.
+</Notes>

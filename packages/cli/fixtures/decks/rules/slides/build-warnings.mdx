@@ -1,0 +1,17 @@
+---
+title: Build warnings
+surface: inverse
+---
+
+## Build warnings
+
+<Image src="./missing-photo.png" alt="A photo whose file does not exist" ratio={2} />
+
+```nosuchlang {1|9}
+two lines
+of text
+```
+
+<Notes>
+Fail: an image path that does not exist (media-missing), a fence in a language Shiki does not know (code-unknown-language) and a highlight step past the last line (code-step-range). The build only prints them; lint reports them.
+</Notes>

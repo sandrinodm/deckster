@@ -1,0 +1,25 @@
+---
+layout: chart
+title: Q3 was the only quarter that lost money
+---
+
+<BarChart
+  data={[
+    { quarter: 'Q1', profit: 1.2 },
+    { quarter: 'Q2', profit: 0.4 },
+    { quarter: 'Q3', profit: -2.1 },
+    { quarter: 'Q4', profit: 0.9 },
+  ]}
+  x="quarter"
+  y="profit"
+  format="currency"
+  unit="M"
+  highlight="Q3"
+  annotations={[
+    { type: 'reference', value: 1, label: 'Plan' },
+    { type: 'bracket', from: 'Q2', to: 'Q3', better: 'up' },
+  ]}
+  caption="Operating profit by quarter, 2026, $M"
+/>
+
+<Notes>A negative column's label goes under its tip, above the category names; the bracket across the sign change reads in dollars, not as a percentage, and clears the reference line.</Notes>

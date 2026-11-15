@@ -1,0 +1,24 @@
+---
+layout: split
+ratio: 7:5
+title: A area-chart in a five-column media column
+---
+
+The media column of a 7:5 split is five of twelve columns wide.
+
+<Media>
+<AreaChart
+  data={[
+    { week: 'W21', hours: 9.5 }, { week: 'W22', hours: 9.1 }, { week: 'W23', hours: 8.8 },
+    { week: 'W24', hours: 7.2 }, { week: 'W25', hours: 5.8 }, { week: 'W26', hours: 4.2 },
+    { week: 'W27', hours: 3.6 }, { week: 'W28', hours: 3.1 }, { week: 'W29', hours: 2.5 },
+  ]}
+  x="week"
+  y="hours"
+  unit="h"
+  annotations={[{ type: 'reference', value: 4, label: 'Target' }]}
+  caption="Median time to first reply, hours"
+/>
+</Media>
+
+<Notes>Probe: area-chart at five twelfths of the width.</Notes>

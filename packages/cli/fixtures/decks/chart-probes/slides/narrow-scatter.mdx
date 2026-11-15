@@ -1,0 +1,31 @@
+---
+layout: split
+ratio: 7:5
+title: A scatter in a five-column media column
+---
+
+The media column of a 7:5 split is five of twelve columns wide.
+
+<Media>
+<Scatter
+  data={[
+    { squad: 'Export', hours: 5, csat: 95 },
+    { squad: 'Access', hours: 7, csat: 93 },
+    { squad: 'Onboarding', hours: 9, csat: 92 },
+    { squad: 'Integrations', hours: 11, csat: 90 },
+    { squad: 'Payroll', hours: 15, csat: 86 },
+    { squad: 'Billing', hours: 22, csat: 81 },
+  ]}
+  x="hours"
+  y="csat"
+  label="squad"
+  trend
+  highlight={['Billing']}
+  xUnit="h"
+  xLabel="Median hours to resolve"
+  yLabel="Rated good, %"
+  unit="%"
+/>
+</Media>
+
+<Notes>Probe: scatter at five twelfths of the width.</Notes>

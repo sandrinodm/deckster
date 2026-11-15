@@ -1,0 +1,27 @@
+---
+layout: chart
+title: A area-chart beside an aside
+---
+
+<AreaChart
+  data={[
+    { week: 'W21', hours: 9.5 }, { week: 'W22', hours: 9.1 }, { week: 'W23', hours: 8.8 },
+    { week: 'W24', hours: 7.2 }, { week: 'W25', hours: 5.8 }, { week: 'W26', hours: 4.2 },
+    { week: 'W27', hours: 3.6 }, { week: 'W28', hours: 3.1 }, { week: 'W29', hours: 2.5 },
+  ]}
+  x="week"
+  y="hours"
+  unit="h"
+  annotations={[{ type: 'reference', value: 4, label: 'Target' }]}
+  caption="Median time to first reply, hours"
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: area-chart beside an aside.</Notes>

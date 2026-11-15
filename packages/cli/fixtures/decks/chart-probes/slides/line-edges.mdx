@@ -1,0 +1,25 @@
+---
+layout: chart
+title: Net cash flow turned positive in May
+---
+
+<LineChart
+  data={[
+    { month: 'Jan', cash: -420000 },
+    { month: 'Feb', cash: -310000 },
+    { month: 'Mar', cash: -150000 },
+    { month: 'Apr', cash: -20000 },
+    { month: 'May', cash: 90000 },
+    { month: 'Jun', cash: 210000 },
+  ]}
+  x="month"
+  y="cash"
+  format="currency"
+  annotations={[
+    { type: 'callout', x: 'Jan', label: 'Launch costs' },
+    { type: 'callout', x: 'Jun', label: 'Best month' },
+  ]}
+  caption="Net cash flow by month, 2026"
+/>
+
+<Notes>Callouts on the first and last month sit on their points; currency ticks read −$400K, not −$400.0K.</Notes>

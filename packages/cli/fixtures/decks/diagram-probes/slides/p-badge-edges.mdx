@@ -1,0 +1,23 @@
+---
+layout: diagram
+title: A badge keeps clear of the edges that arrive at its node
+eyebrow: Badge probe
+---
+
+<Flow title="Payments carries a badge while edges meet it on its top and its right">
+  <Node id="web" kind="client" title="Web" col={1} row={1} />
+  <Node id="api" kind="service" title="Orders API" col={2} row={1} />
+  <Node id="queue" kind="queue" title="Retry queue" col={3} row={1} />
+  <Node id="pay" kind="service" title="Payments" col={2} row={2} badge="503" />
+  <Node id="ledger" kind="database" title="Ledger" col={3} row={2} />
+  <Edge from="api" to="pay" label="charge" />
+  <Edge from="pay" to="api" label="receipt" />
+  <Edge from="queue" to="pay" />
+  <Edge from="ledger" to="pay" />
+  <Edge from="web" to="pay" />
+  <State node="pay" at={1} is="error" badge="Timeout" />
+</Flow>
+
+<Notes>
+The badge must not sit on an incoming edge or its arrowhead; it moves to a free corner.
+</Notes>

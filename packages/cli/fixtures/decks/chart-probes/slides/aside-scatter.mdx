@@ -1,0 +1,34 @@
+---
+layout: chart
+title: A scatter beside an aside
+---
+
+<Scatter
+  data={[
+    { squad: 'Export', hours: 5, csat: 95 },
+    { squad: 'Access', hours: 7, csat: 93 },
+    { squad: 'Onboarding', hours: 9, csat: 92 },
+    { squad: 'Integrations', hours: 11, csat: 90 },
+    { squad: 'Payroll', hours: 15, csat: 86 },
+    { squad: 'Billing', hours: 22, csat: 81 },
+  ]}
+  x="hours"
+  y="csat"
+  label="squad"
+  trend
+  highlight={['Billing']}
+  xUnit="h"
+  xLabel="Median hours to resolve"
+  yLabel="Rated good, %"
+  unit="%"
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: scatter beside an aside.</Notes>

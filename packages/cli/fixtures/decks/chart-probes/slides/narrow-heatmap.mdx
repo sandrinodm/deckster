@@ -1,0 +1,24 @@
+---
+layout: split
+ratio: 7:5
+title: A heatmap in a five-column media column
+---
+
+The media column of a 7:5 split is five of twelve columns wide.
+
+<Media>
+<Heatmap
+  data={[
+    { day: 'Mon', time: '6–9', tickets: 310 }, { day: 'Mon', time: '9–12', tickets: 560 }, { day: 'Mon', time: '12–15', tickets: 420 }, { day: 'Mon', time: '15–18', tickets: 350 },
+    { day: 'Tue', time: '6–9', tickets: 220 }, { day: 'Tue', time: '9–12', tickets: 390 }, { day: 'Tue', time: '12–15', tickets: 340 }, { day: 'Tue', time: '15–18', tickets: 300 },
+    { day: 'Wed', time: '6–9', tickets: 200 }, { day: 'Wed', time: '9–12', tickets: 360 }, { day: 'Wed', time: '12–15', tickets: 330 }, { day: 'Wed', time: '15–18', tickets: 290 },
+  ]}
+  x="time"
+  y="day"
+  value="tickets"
+  highlight={[{ x: '9–12', y: 'Mon' }]}
+  caption="Average tickets per block, local time"
+/>
+</Media>
+
+<Notes>Probe: heatmap at five twelfths of the width.</Notes>

@@ -1,0 +1,19 @@
+---
+title: Decoration bleeds on purpose
+surface: default
+---
+
+## Decoration bleeds on purpose
+
+<div aria-hidden="true" className="absolute top-[120px] -right-[240px] size-[600px] rounded-xl bg-accent" />
+
+<div className="relative h-[200px] w-[640px] overflow-hidden rounded-lg bg-surface p-md">
+  <div className="absolute -right-xl -bottom-xl size-[240px] rounded-xl bg-accent" />
+  <p>Card text that fits.</p>
+</div>
+
+<div className="type-stat">42%</div>
+
+<Notes>
+Pass case for canvas-overflow and container-overflow: decoration that bleeds or is clipped, and a stat with leading under 1.
+</Notes>

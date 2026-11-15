@@ -1,0 +1,17 @@
+---
+layout: chart
+title: Billing is the only queue still growing
+---
+
+<LineChart
+  data={[
+    { w: 'W1', a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9 },
+    { w: 'W2', a: 2, b: 3, c: 2, d: 5, e: 4, f: 7, g: 6, h: 7, i: 8 },
+    { w: 'W3', a: 4, b: 1, c: 2, d: 3, e: 3, f: 5, g: 6, h: 7, i: 8 },
+  ]}
+  x="w"
+  highlight="a"
+  caption="Open tickets per queue"
+/>
+
+<Notes>Nine series with one highlighted: neither the series nor the highlight rule fires.</Notes>

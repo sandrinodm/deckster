@@ -1,0 +1,14 @@
+---
+layout: chart
+title: Billing doubled while every other queue shrank
+---
+
+<BarChart
+  data={[{ q: 'Billing', n: 120 }, { q: 'Access', n: 60 }, { q: 'Export', n: 45 }]}
+  highlight="Billing"
+  unit="tickets"
+  min={40}
+  truncate
+/>
+
+<Notes>Nothing fires here.</Notes>

@@ -1,0 +1,27 @@
+---
+layout: diagram
+title: Crossings, pairs and a loner must all stay readable
+eyebrow: Routing probe
+---
+
+<Flow title="Four corners joined across a middle node, with a pair, a doubled edge and a loner">
+  <Node id="a" kind="service" title="A" col={1} row={1} />
+  <Node id="b" kind="service" title="B" col={3} row={1} />
+  <Node id="middle" kind="queue" title="Middle" col={2} row={2} />
+  <Node id="archive" kind="storage" title="Archive" subtitle="No edges" col={4} row={2} />
+  <Node id="c" kind="service" title="C" col={1} row={3} />
+  <Node id="d" kind="service" title="D" col={3} row={3} />
+  <Edge from="a" to="b" label="request" />
+  <Edge from="b" to="a" label="response" dashed />
+  <Edge from="a" to="d" label="a to d" at={1} />
+  <Edge from="b" to="c" label="b to c" at={1} />
+  <Edge from="a" to="c" />
+  <Edge id="again" from="a" to="c" label="again" />
+  <Edge from="c" to="d" label="sync" bidirectional />
+  <Packet from="a" to="d" at={1} role="negative" label="crossing" />
+  <Packet from="b" to="c" at={1} />
+</Flow>
+
+<Notes>
+The two diagonals share no node, so they must take separate corridors, and their labels must not sit on each other's lines.
+</Notes>

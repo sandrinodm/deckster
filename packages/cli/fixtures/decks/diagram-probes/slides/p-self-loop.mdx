@@ -1,0 +1,20 @@
+---
+layout: diagram
+title: A worker retries its own job in a small loop
+eyebrow: Self edge probe
+---
+
+<Flow title="A queue feeding a worker that retries failed jobs on itself">
+  <Node id="queue" kind="queue" title="Jobs" col={1} row={1} />
+  <Node id="worker" kind="function" title="Worker" subtitle="Up to 3 tries" col={2} row={1} />
+  <Node id="store" kind="database" title="Results" col={3} row={1} />
+  <Edge from="queue" to="worker" label="pull" />
+  <Edge from="worker" to="worker" label="retry" dashed />
+  <Edge from="worker" to="store" label="write" />
+  <Packet from="worker" to="worker" at={1} label="try 2" />
+  <Packet path="queue worker store" at={2} />
+</Flow>
+
+<Notes>
+The retry is an edge from the worker to itself: a small loop on its corner, with its label and a packet that goes round it.
+</Notes>

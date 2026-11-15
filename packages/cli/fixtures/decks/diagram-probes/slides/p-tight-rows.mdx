@@ -1,0 +1,23 @@
+---
+layout: diagram
+title: Facing nodes a few pixels apart join with a short straight edge
+eyebrow: Routing probe
+---
+
+<Flow title="An agent between a model above and tools beside it, rows packed tight">
+  <Node id="model" kind="llm" title="Language model" subtitle="Plans the next call" col={2} row={1} />
+  <Node id="agent" kind="agent" title="Support agent" subtitle="Plans each turn" col={2} row={2} />
+  <Node id="customer" kind="user" title="Customer" subtitle="Where is my parcel?" col={1} row={2} />
+  <Node id="tools" kind="tool" title="Track parcel" subtitle="Carrier API" col={3} row={2} />
+  <Node id="kb" kind="document" title="Help articles" subtitle="Returns, delays, claims" col={2} row={3} />
+  <Node id="log" kind="storage" title="Audit log" subtitle="Every call" col={3} row={3} />
+  <Edge from="agent" to="model" bidirectional />
+  <Edge from="customer" to="agent" bidirectional />
+  <Edge from="agent" to="tools" />
+  <Edge from="agent" to="kb" />
+  <Packet from="agent" to="model" at={1} label="Plan" reply="Call: track" />
+</Flow>
+
+<Notes>
+Three rows of three-line nodes leave little room between rows; the edge between the agent and the model must be a short straight line with no spur, and the packet must ride it.
+</Notes>

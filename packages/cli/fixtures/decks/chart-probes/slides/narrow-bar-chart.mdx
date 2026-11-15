@@ -1,0 +1,27 @@
+---
+layout: split
+ratio: 7:5
+title: A bar-chart in a five-column media column
+---
+
+The media column of a 7:5 split is five of twelve columns wide.
+
+<Media>
+<BarChart
+  data={[
+    { reason: 'Billing and invoices', share: 33 },
+    { reason: 'Login and access', share: 17 },
+    { reason: 'Integrations', share: 13 },
+    { reason: 'Data export', share: 9 },
+    { reason: 'Other', share: 20 },
+  ]}
+  x="reason"
+  y="share"
+  unit="%"
+  sort
+  highlight="Billing and invoices"
+  caption="Share of tickets by first-contact reason, 2026"
+/>
+</Media>
+
+<Notes>Probe: bar-chart at five twelfths of the width.</Notes>

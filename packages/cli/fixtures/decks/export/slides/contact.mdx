@@ -1,0 +1,20 @@
+---
+layout: default
+title: Links keep their color and the QR plate its corners
+surface: gradient
+---
+
+<div style={{ display: 'flex', gap: 96, alignItems: 'center' }}>
+  <svg width="240" height="240" viewBox="0 0 12 12" style={{ display: 'block', borderRadius: 24 }} role="img" aria-label="A code on a rounded plate">
+    <rect width="12" height="12" fill="#ffffff" />
+    <path d="M3 3h2v2h-2zM7 3h2v2h-2zM3 7h2v2h-2zM6 6h1v1h-1zM8 8h1v1h-1z" fill="#2d4ae0" />
+  </svg>
+  <p style={{ margin: 0, fontSize: 32, lineHeight: 1.5 }}>
+    Write to <span className="kit-qr-caption"><a href="mailto:canopy@example.org">canopy@example.org</a></span><br />
+    or read <a href="https://example.org/canopy">example.org/canopy</a>
+  </p>
+</div>
+
+<Notes>
+The gradient surface's three-stop background, an SVG clipped by its own border radius, and two links: one styled as a QR caption (no underline), one as a prose link (underlined).
+</Notes>

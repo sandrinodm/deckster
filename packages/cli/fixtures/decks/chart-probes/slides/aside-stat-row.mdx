@@ -1,0 +1,22 @@
+---
+layout: chart
+title: A stat-row beside an aside
+---
+
+<StatRow
+  stats={[
+    { value: 38, unit: '%', label: 'fewer tickets a month, June to October', highlight: true },
+    { value: 2.5, unit: 'h', label: 'median first reply in October', from: 14, better: 'down' },
+    { value: 91, unit: '%', label: 'of rated conversations marked good', from: 84 },
+  ]}
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: stat-row beside an aside.</Notes>

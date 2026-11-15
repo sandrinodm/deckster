@@ -1,0 +1,23 @@
+---
+layout: chart
+title: eu-central is the only region under the 99% uptime promise
+---
+
+<BarChart
+  data={[
+    { region: 'us-east', uptime: 99.2 },
+    { region: 'us-west', uptime: 99.7 },
+    { region: 'eu-central', uptime: 98.4 },
+    { region: 'ap-south', uptime: 99.9 },
+  ]}
+  x="region"
+  y="uptime"
+  unit="%"
+  min={98}
+  truncate
+  highlight="eu-central"
+  annotations={[{ type: 'reference', value: 99, label: 'Promise' }]}
+  caption="Monthly uptime, October 2026"
+/>
+
+<Notes>A truncated axis keeps its ticks and says where it starts, as a zoomed line does.</Notes>

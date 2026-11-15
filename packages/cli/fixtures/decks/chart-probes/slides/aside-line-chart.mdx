@@ -1,0 +1,29 @@
+---
+layout: chart
+title: A line-chart beside an aside
+---
+
+<LineChart
+  data={[
+    { week: 'W31', Billing: 410, Access: 520, Export: 260 },
+    { week: 'W32', Billing: 430, Access: 480, Export: 250 },
+    { week: 'W33', Billing: 455, Access: 450, Export: 240 },
+    { week: 'W34', Billing: 470, Access: 420, Export: 228 },
+    { week: 'W35', Billing: 500, Access: 390, Export: 220 },
+    { week: 'W36', Billing: 520, Access: 360, Export: 205 },
+  ]}
+  x="week"
+  highlight="Billing"
+  zero
+  caption="Open tickets at the end of each week"
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: line-chart beside an aside.</Notes>

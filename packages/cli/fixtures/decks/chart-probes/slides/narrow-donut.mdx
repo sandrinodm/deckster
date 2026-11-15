@@ -1,0 +1,24 @@
+---
+layout: split
+ratio: 7:5
+title: A donut in a five-column media column
+---
+
+The media column of a 7:5 split is five of twelve columns wide.
+
+<Media>
+<Donut
+  data={[
+    { channel: 'Chat', conversations: 9360 },
+    { channel: 'Email', conversations: 4860 },
+    { channel: 'Phone', conversations: 2340 },
+    { channel: 'Community', conversations: 1440 },
+  ]}
+  x="channel"
+  highlight="Chat"
+  centerLabel="of conversations on chat"
+  caption="Conversations by channel, October 2026"
+/>
+</Media>
+
+<Notes>Probe: donut at five twelfths of the width.</Notes>

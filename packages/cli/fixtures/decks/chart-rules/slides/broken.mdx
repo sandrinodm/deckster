@@ -1,0 +1,16 @@
+---
+layout: chart
+title: Tickets by queue
+---
+
+<BarChart
+  data={[
+    { q: 'A', n: 52 }, { q: 'B', n: 61 }, { q: 'C', n: 58 }, { q: 'D', n: 70 }, { q: 'E', n: 66 },
+    { q: 'F', n: 55 }, { q: 'G', n: 63 }, { q: 'H', n: 59 }, { q: 'I', n: 71 }, { q: 'J', n: 64 },
+    { q: 'K', n: 57 }, { q: 'L', n: 62 }, { q: 'M', n: 68 },
+  ]}
+  min={50}
+  legend
+/>
+
+<Notes>Every chart rule but the series and slice limits fires here.</Notes>

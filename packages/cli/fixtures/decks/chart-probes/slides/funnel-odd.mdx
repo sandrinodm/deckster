@@ -1,0 +1,17 @@
+---
+layout: chart
+title: Most trial users stall before inviting a teammate
+---
+
+<Funnel
+  data={[
+    { stage: 'Signed up', people: 1000 },
+    { stage: 'Created a project', people: 620 },
+    { stage: 'Invited a teammate', people: null },
+    { stage: 'Upgraded', people: 90 },
+  ]}
+  x="stage"
+  y="people"
+/>
+
+<Notes>A stage with no count shows an outlined slot marked no data.</Notes>

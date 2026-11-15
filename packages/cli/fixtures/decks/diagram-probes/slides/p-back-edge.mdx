@@ -1,0 +1,29 @@
+---
+layout: diagram
+title: A back edge keeps the source first and clear of group labels
+eyebrow: Auto layout probe
+---
+
+<Flow title="A user request through two groups with a dashed edge back to the user">
+  <Node id="user" kind="user" title="User" />
+  <Group label="Edge">
+    <Node id="cdn" kind="cloud" title="CDN" />
+    <Node id="waf" kind="gateway" title="WAF" />
+  </Group>
+  <Group label="Core">
+    <Node id="api" kind="service" title="API" />
+    <Node id="worker" kind="function" title="Worker" />
+    <Node id="db" kind="database" title="DB" />
+  </Group>
+  <Edge from="user" to="cdn" />
+  <Edge from="cdn" to="waf" />
+  <Edge from="waf" to="api" />
+  <Edge from="api" to="worker" async />
+  <Edge from="worker" to="db" />
+  <Edge from="api" to="db" />
+  <Edge from="db" to="user" label="back edge" dashed />
+</Flow>
+
+<Notes>
+User is declared first, so it is drawn first; the edge from the database back to the user is the back edge and must not strike through the group labels.
+</Notes>

@@ -1,0 +1,19 @@
+---
+layout: chart
+title: Web signups dropped out of the data in March
+---
+
+<AreaChart
+  data={[
+    { month: 'Jan', Mobile: 40, Web: 30, Partner: 10 },
+    { month: 'Feb', Mobile: 42, Web: 31, Partner: 11 },
+    { month: 'Mar', Mobile: 45, Web: null, Partner: 12 },
+    { month: 'Apr', Mobile: 47, Web: 29, Partner: 12 },
+    { month: 'May', Mobile: 50, Web: 28, Partner: 13 },
+  ]}
+  x="month"
+  stacked
+  caption="Signups by source, thousands"
+/>
+
+<Notes>The stack breaks where Web has no value; nothing is drawn as zero.</Notes>

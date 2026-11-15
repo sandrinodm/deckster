@@ -1,0 +1,21 @@
+---
+layout: chart
+title: The Team plan costs least per resolved ticket
+---
+
+<Table
+  data={[
+    { plan: 'Starter', cost: 310000, perTicket: 8.25, selfServe: 12 },
+    { plan: 'Team', cost: 420000, perTicket: 3.4, selfServe: 31 },
+    { plan: 'Enterprise', cost: 690000, perTicket: 4.8, selfServe: 34.5 },
+  ]}
+  columns={[
+    { key: 'plan', label: 'Plan' },
+    { key: 'cost', label: 'Cost a year', format: 'currency' },
+    { key: 'perTicket', label: 'Per resolved ticket', bar: true },
+    { key: 'selfServe', label: 'Self-serve rate', unit: '%' },
+  ]}
+  highlight={{ row: 'Team' }}
+/>
+
+<Notes>A table writes 8.25 as 8.25 and aligns the rates as numbers.</Notes>

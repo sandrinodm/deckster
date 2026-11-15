@@ -1,0 +1,23 @@
+---
+layout: chart
+title: Germany overtook France in monthly active users in August
+---
+
+<LineChart
+  data={[
+    { month: 'Jan', Germany: 1200000, France: 1900000, Spain: 800000, Italy: 700000, Poland: 400000, Netherlands: 410000, Sweden: 300000 },
+    { month: 'Feb', Germany: 1300000, France: 1920000, Spain: 820000, Italy: 690000, Poland: 420000, Netherlands: 400000, Sweden: 310000 },
+    { month: 'Mar', Germany: 1450000, France: 1930000, Spain: null, Italy: 700000, Poland: 450000, Netherlands: 400000, Sweden: 305000 },
+    { month: 'Apr', Germany: 1600000, France: 1950000, Spain: null, Italy: 710000, Poland: 470000, Netherlands: 425000, Sweden: 300000 },
+    { month: 'May', Germany: 1700000, France: 1960000, Spain: 900000, Italy: 705000, Poland: 480000, Netherlands: 430000, Sweden: 320000 },
+    { month: 'Jun', Germany: 1800000, France: 1970000, Spain: 910000, Italy: 700000, Poland: 500000, Netherlands: 440000, Sweden: null },
+    { month: 'Jul', Germany: 1900000, France: 1975000, Spain: 930000, Italy: 720000, Poland: 510000, Netherlands: 450000, Sweden: 330000 },
+    { month: 'Aug', Germany: 2050000, France: 1980000, Spain: 940000, Italy: 715000, Poland: 512000, Netherlands: 460000, Sweden: 335000 },
+  ]}
+  x="month"
+  highlight="Germany"
+  annotations={[{ type: 'callout', x: 'Aug', label: 'Germany passes France for the first time since launch' }]}
+  caption="Monthly active users, 2026"
+/>
+
+<Notes>The callout on the last month sits on Germany's point; ticks read 0, 500K, 1M, not 0.0 and 500.0K.</Notes>

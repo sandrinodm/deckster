@@ -1,0 +1,28 @@
+---
+layout: split
+ratio: 7:5
+title: A waterfall in a five-column media column
+---
+
+The media column of a 7:5 split is five of twelve columns wide.
+
+<Media>
+<Waterfall
+  data={[
+    { step: '2025 cost', cost: 4100000 },
+    { step: 'New tooling', cost: 450000 },
+    { step: 'Help centre content', cost: 250000 },
+    { step: 'Automation', cost: -900000 },
+    { step: 'Fewer contractors', cost: -700000 },
+    { step: '2026 cost', cost: null },
+  ]}
+  x="step"
+  y="cost"
+  totals={['2025 cost', '2026 cost']}
+  better="down"
+  format="currency"
+  caption="Annual support cost"
+/>
+</Media>
+
+<Notes>Probe: waterfall at five twelfths of the width.</Notes>

@@ -1,0 +1,22 @@
+---
+layout: diagram
+title: Long names are the normal case in enterprise architecture
+eyebrow: Grid probe
+---
+
+<Flow title="Order events from the identity service to the payment provider">
+  <Node id="idp" kind="service" title="Customer identity and access management" subtitle="Keycloak cluster in eu-central-1" col={1} row={1} />
+  <Node id="topic" kind="queue" title="order-fulfilment-events-v2" subtitle="Kafka, 48 partitions, 7 day retention" col={2} row={1} />
+  <Node id="i18n" kind="database" title="Internationalization" subtitle="Übersetzungsdatenbank" col={3} row={1} />
+  <Node id="fn" kind="function" title="Supercalifragilisticexpialidocious" col={4} row={1} />
+  <Node id="stripe" kind="external" title="Stripe" badge="PCI DSS level 1 certified" col={2} row={2} colSpan={2} />
+  <Edge from="idp" to="topic" label="OrderCancelledAfterShipmentEvent published" />
+  <Edge from="topic" to="i18n" label="CDC" />
+  <Edge from="i18n" to="fn" label="a really very long label that must wrap" />
+  <Edge from="topic" to="stripe" label="charge" />
+  <Edge from="fn" to="stripe" label="refund" />
+</Flow>
+
+<Notes>
+Titles of forty characters, a subtitle of three lines, a sixty-character label and a word longer than a node. Nothing may clip, nodes keep their width and the diagram uses the region.
+</Notes>

@@ -1,0 +1,30 @@
+---
+layout: chart
+title: Enterprise onboarding loses the most money per account
+---
+
+<BarChart
+  data={[
+    { segment: 'Mid-market self-serve subscriptions (annual)', margin: 3400000 },
+    { segment: 'Legacy on-premise licences', margin: 2980000 },
+    { segment: 'Marketplace and third-party integrations revenue share', margin: 1870000 },
+    { segment: 'APAC channel partners', margin: 900000 },
+    { segment: 'Support add-ons', margin: 640000 },
+    { segment: 'Professional services', margin: 220000 },
+    { segment: 'Education and non-profit discounted plans', margin: 10000 },
+    { segment: 'Training', margin: -90000 },
+    { segment: 'Hardware resale', margin: -480000 },
+    { segment: 'Enterprise onboarding and implementation services', margin: -1240000 },
+    { segment: 'Public sector', margin: null },
+    { segment: 'Other', margin: 150000 },
+  ]}
+  x="segment"
+  y="margin"
+  format="currency"
+  orientation="horizontal"
+  highlight="Enterprise onboarding and implementation services"
+  labels="all"
+  caption="Contribution margin by segment, FY2026"
+/>
+
+<Notes>Negative bars with long labels: each value label sits past its bar's tip, clear of the category column; long labels cut to one line in tight rows.</Notes>

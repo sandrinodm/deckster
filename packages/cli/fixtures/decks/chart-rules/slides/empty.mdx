@@ -1,0 +1,13 @@
+---
+layout: chart
+title: Billing doubled while every other queue shrank
+---
+
+<BarChart
+  data={[{ q: 'Billing', n: 'n/a' }, { q: 'Access', n: 'n/a' }, { q: 'Export', n: 'n/a' }]}
+  x="q"
+  y="n"
+  unit="tickets"
+/>
+
+<Notes>Every value is missing, so the chart draws no marks: chart-empty fires.</Notes>

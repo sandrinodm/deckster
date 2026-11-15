@@ -1,0 +1,23 @@
+---
+layout: diagram
+title: Five participants and a self call stay legible
+eyebrow: Sequence probe
+---
+
+<SequenceDiagram title="A checkout across five participants with a retry inside the payments API">
+  <Actor id="shopper" kind="user" title="Shopper" />
+  <Actor id="web" kind="client" title="Web app" />
+  <Actor id="api" kind="service" title="Payments API" />
+  <Actor id="psp" kind="external" title="Card network" />
+  <Actor id="ledger" kind="database" title="Ledger" />
+  <Message from="shopper" to="web" label="Pay" at={1} />
+  <Message from="web" to="api" label="POST /charges" at={2} />
+  <Message from="api" to="psp" label="Authorize" at={3} state="error" />
+  <Message from="api" to="api" label="Back off, retry" at={4} />
+  <Message from="api" to="ledger" label="Record charge" at={5} />
+  <Message from="api" to="web" label="201 Created" reply at={6} />
+</SequenceDiagram>
+
+<Notes>
+Actor heads stay compact with centred names, lifelines are visible on dark surfaces, and the self call reads as a loop.
+</Notes>

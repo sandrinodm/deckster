@@ -1,0 +1,27 @@
+---
+layout: chart
+title: A donut beside an aside
+---
+
+<Donut
+  data={[
+    { channel: 'Chat', conversations: 9360 },
+    { channel: 'Email', conversations: 4860 },
+    { channel: 'Phone', conversations: 2340 },
+    { channel: 'Community', conversations: 1440 },
+  ]}
+  x="channel"
+  highlight="Chat"
+  centerLabel="of conversations on chat"
+  caption="Conversations by channel, October 2026"
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: donut beside an aside.</Notes>

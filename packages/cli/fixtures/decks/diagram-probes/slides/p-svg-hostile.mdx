@@ -1,0 +1,11 @@
+---
+layout: diagram
+title: A hostile drawing renders as a drawing and never as a script
+eyebrow: Imported SVG probe
+---
+
+<Svg src="../assets/hostile.svg" title="Three warehouse zones from a file with scripts, handlers and external references" steps={{ inbound: 1, sorting: 2, outbound: 3 }} recolor={{ "#e4572e": "accent", "rgb(154, 161, 174)": "edge", "#ffffff": "bg", "#f4f5f8": "group", "#161920": "fg", "tomato": "negative" }} draw />
+
+<Notes>
+The file carries a script, an onload and an inline mouse handler, a javascript link, a foreignObject, an external image and use, and a style @import. The build warns about each and the slide draws only the shapes. Colors come in as style rules, style attributes, rgb(), a named color and a gradient stop, and every one takes its brand role.
+</Notes>

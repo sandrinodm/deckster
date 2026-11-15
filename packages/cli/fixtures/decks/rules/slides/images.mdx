@@ -1,0 +1,16 @@
+---
+title: Images
+surface: default
+---
+
+## Images
+
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" alt="A one-pixel image stretched" width={320} height={180} />
+
+<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%232d4ae0'/%3E%3C/svg%3E" alt="A vector drawn large" width={320} height={180} />
+
+<img src="/missing-photo.png" alt="A photo whose file does not exist" width={320} height={180} />
+
+<Notes>
+Fail: a 1x1 PNG drawn at 320x180 (low-res-image), and a path to a file that does not exist (broken-image). Pass: an SVG drawn at the same size, which loads.
+</Notes>

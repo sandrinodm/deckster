@@ -1,0 +1,30 @@
+---
+layout: chart
+title: Price explains little of the rating once you drop the outlier
+---
+
+<Scatter
+  data={[
+    { product: 'Alpha', price: 20, rating: 4.1 },
+    { product: 'Alpha Pro', price: 105, rating: 4.35 },
+    { product: 'Alpha Pro Max', price: 98, rating: 4.42 },
+    { product: 'Beta', price: 112, rating: 4.3 },
+    { product: 'Gamma', price: -5, rating: 3.9 },
+    { product: 'Delta', price: 250, rating: 4.7 },
+    { product: 'Epsilon', price: 1200, rating: 2.1 },
+  ]}
+  x="price"
+  y="rating"
+  label="product"
+  xFormat="currency"
+  trend
+  highlight={['Alpha', 'Alpha Pro', 'Alpha Pro Max', 'Beta', 'Epsilon']}
+  annotations={[
+    { type: 'callout', x: 'Epsilon', label: 'One outlier pulls the trend down' },
+    { type: 'reference', value: 4, label: 'Good' },
+  ]}
+  xLabel="List price"
+  yLabel="Average rating, 1 to 5"
+/>
+
+<Notes>Labels keep clear of the trend line and each other, with leaders when they move; the outlier sits inside the plot; the trend stays inside the frame.</Notes>

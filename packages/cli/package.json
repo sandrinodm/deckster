@@ -1,0 +1,50 @@
+{
+  "name": "@deckster/cli",
+  "version": "0.0.0",
+  "private": true,
+  "homepage": "https://github.com/sandrinodm/deckster/tree/main/packages/cli#readme",
+  "bugs": "https://github.com/sandrinodm/deckster/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandrinodm/deckster.git",
+    "directory": "packages/cli"
+  },
+  "bin": {
+    "deck": "./src/bin.ts"
+  },
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vp test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deckster/agent": "workspace:*",
+    "@deckster/brand": "workspace:*",
+    "@deckster/comments": "workspace:*",
+    "@deckster/engine": "workspace:*",
+    "@deckster/export": "workspace:*",
+    "@deckster/kit": "workspace:*",
+    "@deckster/shell": "workspace:*",
+    "@deckster/vite-plugin": "workspace:*",
+    "@effect/platform-node": "catalog:",
+    "effect": "catalog:",
+    "playwright": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "fflate": "catalog:",
+    "pdf-lib": "catalog:",
+    "react": "catalog:",
+    "typescript": "catalog:"
+  }
+}

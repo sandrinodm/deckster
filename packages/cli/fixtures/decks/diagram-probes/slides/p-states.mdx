@@ -1,0 +1,24 @@
+---
+layout: diagram
+title: Muted nodes fade but stay legible, and badges sit clear
+eyebrow: State probe
+---
+
+<Flow title="A focus that mutes two of five services, with badges on narrow and wide nodes">
+  <Node id="web" kind="client" title="Web" col={1} row={1} />
+  <Node id="api" kind="service" title="Orders API" col={2} row={1} badge="p99 40 ms" />
+  <Node id="pay" kind="service" title="Payments" col={3} row={1} />
+  <Node id="cache" kind="cache" title="Cache" col={2} row={2} />
+  <Node id="mail" kind="function" title="Mailer" col={3} row={2} />
+  <Edge from="web" to="api" label="HTTPS" />
+  <Edge from="api" to="pay" label="charge" />
+  <Edge from="api" to="cache" />
+  <Edge from="pay" to="mail" async />
+  <State node="pay" at={1} is="error" badge="Timeout" />
+  <State node="mail" at={1} is="success" badge="Sent" />
+  <Focus at={2} nodes="web api pay" />
+</Flow>
+
+<Notes>
+Step two dims the cache and the mailer; they must stay readable and their badges must not count as low-contrast text.
+</Notes>

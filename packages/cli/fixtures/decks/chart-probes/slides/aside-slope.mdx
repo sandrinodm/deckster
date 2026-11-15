@@ -1,0 +1,31 @@
+---
+layout: chart
+title: A slope beside an aside
+---
+
+<Slope
+  data={[
+    { team: 'Billing', '2025': 18, '2026': 22 },
+    { team: 'Access', '2025': 12, '2026': 7 },
+    { team: 'Integrations', '2025': 14, '2026': 11 },
+    { team: 'Performance', '2025': 10, '2026': 8 },
+  ]}
+  x="team"
+  from="2025"
+  to="2026"
+  better="down"
+  tone
+  highlight="Billing"
+  unit="h"
+  caption="Median hours to resolve a ticket"
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: slope beside an aside.</Notes>

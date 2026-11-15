@@ -1,0 +1,19 @@
+---
+layout: chart
+title: Most visitors never open an article
+---
+
+<Funnel
+  data={[
+    { stage: 'Visited', people: 1000 },
+    { stage: 'Searched', people: 400 },
+    { stage: 'Opened an article', people: 520 },
+    { stage: 'Solved', people: 100 },
+  ]}
+  x="stage"
+  y="people"
+  unit="people"
+  highlight="Searched"
+/>
+
+<Notes>A stage holds more than the one before it: chart-funnel-grows fires.</Notes>

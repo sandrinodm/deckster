@@ -1,0 +1,27 @@
+---
+layout: chart
+title: A funnel beside an aside
+---
+
+<Funnel
+  data={[
+    { stage: 'Visited the help centre', people: 48000 },
+    { stage: 'Searched', people: 31200 },
+    { stage: 'Opened an article', people: 9400 },
+    { stage: 'Marked it helpful', people: 5600 },
+  ]}
+  x="stage"
+  y="people"
+  highlight="Opened an article"
+  caption="Help centre visitors, October 2026"
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: funnel beside an aside.</Notes>

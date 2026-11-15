@@ -1,0 +1,19 @@
+---
+title: Overlap
+surface: inverse
+---
+
+## Overlap
+
+<div className="relative h-[160px]">
+  <p className="absolute top-0 left-0">First label sits here</p>
+  <p className="absolute top-[4px] left-[40px] mt-0">Second label lands on it</p>
+</div>
+
+<p>Two paragraphs that sit apart do not overlap.</p>
+
+<p>This one sits below the first.</p>
+
+<Notes>
+Fail: two absolutely positioned labels on top of each other. Pass: stacked paragraphs.
+</Notes>

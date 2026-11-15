@@ -1,0 +1,30 @@
+---
+layout: chart
+title: A table beside an aside
+---
+
+<Table
+  data={[
+    { plan: 'Starter', seats: 40, cost: 310000, perTicket: 6.1 },
+    { plan: 'Team', seats: 55, cost: 420000, perTicket: 3.4 },
+    { plan: 'Enterprise', seats: 55, cost: 690000, perTicket: 4.8 },
+  ]}
+  columns={[
+    { key: 'plan', label: 'Plan' },
+    { key: 'seats', label: 'Agent seats' },
+    { key: 'cost', label: 'Cost a year', format: 'currency' },
+    { key: 'perTicket', label: 'Cost per resolved ticket', format: { style: 'currency', digits: 2 }, bar: true },
+  ]}
+  highlight={{ row: 'Team' }}
+  caption="Helpdesk plans for 2027"
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: table beside an aside.</Notes>

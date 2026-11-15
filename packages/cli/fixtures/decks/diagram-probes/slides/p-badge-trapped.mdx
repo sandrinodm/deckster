@@ -1,0 +1,19 @@
+---
+layout: diagram
+title: A badge with an edge at every corner is reported, not hidden
+eyebrow: Badge probe
+---
+
+<Flow title="Hub has two edges on each of its top and bottom sides, so every corner of its badge has a line under it">
+  <Node id="up" kind="service" title="Scheduler" col={2} row={1} />
+  <Node id="hub" kind="service" title="Hub" col={2} row={2} badge="Degraded" />
+  <Node id="down" kind="database" title="Store" col={2} row={3} />
+  <Edge from="up" to="hub" label="jobs" />
+  <Edge from="hub" to="up" label="acks" />
+  <Edge from="down" to="hub" label="rows" />
+  <Edge from="hub" to="down" label="writes" />
+</Flow>
+
+<Notes>
+Probe: no corner of the badge is free, so it stays at the top right and `diagram-badge-overlap` warns.
+</Notes>

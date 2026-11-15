@@ -1,0 +1,30 @@
+---
+layout: chart
+title: A bar-chart beside an aside
+---
+
+<BarChart
+  data={[
+    { reason: 'Billing and invoices', share: 33 },
+    { reason: 'Login and access', share: 17 },
+    { reason: 'Integrations', share: 13 },
+    { reason: 'Data export', share: 9 },
+    { reason: 'Other', share: 20 },
+  ]}
+  x="reason"
+  y="share"
+  unit="%"
+  sort
+  highlight="Billing and invoices"
+  caption="Share of tickets by first-contact reason, 2026"
+/>
+
+<Aside>
+
+### So what
+
+The aside takes a column beside the chart, so the chart gets less width.
+
+</Aside>
+
+<Notes>Probe: bar-chart beside an aside.</Notes>
