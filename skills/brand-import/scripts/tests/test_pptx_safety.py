@@ -2,6 +2,7 @@
 whatever their encoding, and archives are read within limits."""
 from __future__ import annotations
 
+import gzip
 import importlib
 import io
 import json
@@ -148,9 +149,10 @@ class OfflineRenderCopyTest(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.dir, ignore_errors=True)
 
     def fixture_count(self) -> int:
-        """What the fixture deck alone neutralises: its two embedded chart workbooks."""
+        """What the fixture deck alone neutralises: its two embedded chart workbooks and its printer
+        settings blob, none of which the renderer needs to draw the slides."""
         count = extract_pptx.offline_copy(FIXTURE, self.dir / "fixture-copy.pptx")
-        self.assertEqual(count, 2)
+        self.assertEqual(count, 3)
         return count
 
     def rels(self, *targets: tuple[str, str]) -> str:
@@ -195,25 +197,36 @@ class OfflineRenderCopyTest(unittest.TestCase):
             base=None,
         )
         svg = '<svg xmlns="http://www.w3.org/2000/svg"><image href="https://attacker.example/svg.png"/><rect width="1" height="1"/></svg>'
+        ole_rels = (
+            f'<Relationships xmlns="{self.REL}"><Relationship Id="rId1" '
+            'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject" '
+            'Target="../media/payload%20one.png"/></Relationships>'
+        )
         deck = self.package(
             self.dir / "embedded.pptx",
             {
                 "ppt/embeddings/Workbook1.xlsx": inner.read_bytes(),
                 "ppt/media/hidden-zip.png": inner.read_bytes(),
                 "ppt/media/legacy.bin": extract_pptx.CFB_MAGIC + b"\x00" * 504,
+                "ppt/media/logo.svgz": gzip.compress(svg.encode("utf-8")),
+                "ppt/media/payload one.png": H.PNG,
+                "ppt/slides/_rels/ole.xml.rels": ole_rels,
                 "ppt/media/logo.svg": svg,
                 "ppt/media/logo-in-disguise.png": svg,
+                "ppt/media/late-root.xml": '<?xml version="1.0"?><!-- padding --><x:svg xmlns:x="http://www.w3.org/2000/svg"><x:image href="https://attacker.example/late.png"/></x:svg>',
+                "ppt/media/keep.png": H.PNG,
             },
         )
         copy = self.dir / "copy.pptx"
-        self.assertEqual(extract_pptx.offline_copy(deck, copy), self.fixture_count() + 3)
+        self.assertEqual(extract_pptx.offline_copy(deck, copy), self.fixture_count() + 8)
         with zipfile.ZipFile(copy) as out:
-            for name in ("ppt/embeddings/Workbook1.xlsx", "ppt/media/hidden-zip.png", "ppt/media/legacy.bin"):
+            for name in ("ppt/embeddings/Workbook1.xlsx", "ppt/media/hidden-zip.png", "ppt/media/legacy.bin",
+                         "ppt/media/logo.svgz", "ppt/media/payload one.png"):
                 self.assertEqual(out.read(name), b"", name)
-            for name in ("ppt/media/logo.svg", "ppt/media/logo-in-disguise.png"):
-                cleaned = out.read(name)
-                self.assertNotIn(b"attacker.example", cleaned, name)
-                self.assertIn(b"<rect", cleaned, name)
+            for name in ("ppt/media/logo.svg", "ppt/media/logo-in-disguise.png", "ppt/media/late-root.xml"):
+                self.assertNotIn(b"attacker.example", out.read(name), name)
+            self.assertIn(b"<rect", out.read("ppt/media/logo.svg"))
+            self.assertEqual(out.read("ppt/media/keep.png"), H.PNG)
 
     def test_relationship_parts_must_be_plain_opc_lists(self):
         foreign_root = '<Relationships xmlns="urn:other"><Relationship Id="rId1" Target="https://attacker.example/x" TargetMode="External"/></Relationships>'

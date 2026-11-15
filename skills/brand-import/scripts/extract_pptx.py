@@ -33,6 +33,7 @@ import sys
 import zipfile
 from collections import Counter, defaultdict
 from pathlib import Path
+from urllib.parse import unquote
 from xml.etree import ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -48,6 +49,12 @@ REMOTE_TARGET = re.compile(r"\s*(?:[A-Za-z][A-Za-z0-9+.-]*:|[\\/]{2})")
 
 # The first bytes of an OLE compound file, the container of legacy embedded objects.
 CFB_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+
+# Relationship types (the last segment of the Type URI) whose target is an embedded object.
+EMBEDDING_RELATIONSHIPS = {"oleobject", "package", "control", "activexcontrol", "activexcontrolbinary", "attachedtemplate"}
+
+# An SVG root anywhere in a part, which a renderer may draw as SVG whatever the part is called.
+SVG_TAG = re.compile(rb"<\s*(?:[A-Za-z_][\w.-]*:)?svg[\s>/]", re.I)
 
 # What an SVG part that can't be cleaned is replaced with in the render copy.
 EMPTY_SVG = b'<svg xmlns="http://www.w3.org/2000/svg"/>'
@@ -332,43 +339,53 @@ def offline_copy(pptx: Path, target: Path) -> int:
     """Writes a copy of the deck that a renderer can open without making a network request on its
     behalf, and returns how many references and parts were neutralised.
 
-    The copy fails closed rather than trying to understand every format a deck can carry:
+    The copy works from an allowlist instead of trying to recognise every hostile format:
     - Every relationship that is external, or whose target is an absolute URI or a UNC path (which
       would reach an SMB share), points to `about:blank`; ids stay, so the deck still opens.
-    - Every embedded object (anything under `ppt/embeddings/`, any part that opens as a zip or is an
-      OLE compound file, or is declared as an OLE object) is emptied, so nothing nested
-      is ever unpacked; the slide shows the object's preview picture instead.
-    - Every part that is SVG by its content or by its declared content type is reduced to static
-      drawing.
+    - Every part an OLE object, package, ActiveX control or attached template relationship points
+      at, and anything under `ppt/embeddings/`, is emptied; the slide shows its preview picture.
+    - A part that is XML is kept as it is, unless an `<svg` element appears anywhere in it, in which
+      case it is reduced to static drawing.
+    - Any other part is kept only when its first bytes are a raster or metafile format (PNG, JPEG,
+      GIF, BMP, TIFF, WebP, EMF, WMF) or it is declared as a font; everything else, including zips,
+      OLE compound files and compressed data such as SVGZ, is emptied.
     Refuses a deck whose part names differ only in case, since readers disagree on which one wins,
     and a relationships part that isn't a plain OPC relationships list.
+
+    This removes the deck's own ways of reaching the network. For a deck from someone you don't
+    trust, also render with networking off (`--soffice` with `docker run --network none`).
     """
     source = F.BoundedZip(pptx)
     infos = source.zip.infolist()
     if len({info.filename.lower() for info in infos}) != len(infos):
         raise F.Refused("two parts have names that differ only in case")
     content_types = _declared_content_types(source)
+    embedded = _embedded_object_parts(source, infos)
     neutralised = 0
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as out:
         for info in infos:
             data = source.read(info.filename)
             lower = info.filename.lower()
-            declared = content_types(info.filename)
             if lower.endswith(".rels"):
                 data, count = _offline_relationships(data, info.filename)
                 neutralised += count
-            elif _is_embedded_object(lower, data, declared):
+            elif lower in embedded or lower.startswith("ppt/embeddings/"):
                 data = b""
                 neutralised += 1
-            elif F.looks_like_svg(data) or "svg" in declared:
-                data = _static_svg(data)
+            elif _looks_like_xml(data):
+                if SVG_TAG.search(data):
+                    data = _static_svg(data)
+                    neutralised += 1
+            elif not (_is_inert_binary(data) or "font" in content_types(info.filename)):
+                data = b""
+                neutralised += 1
             out.writestr(info, data)
     return neutralised
 
 
 def _declared_content_types(source: "F.BoundedZip"):
     """A lookup from part name to the content type `[Content_Types].xml` declares for it, lower-cased,
-    or an empty string when there is none."""
+    or an empty string when there is none. Part names are percent-decoded before comparing."""
     defaults: dict[str, str] = {}
     overrides: dict[str, str] = {}
     if "[Content_Types].xml" in source.names:
@@ -378,7 +395,8 @@ def _declared_content_types(source: "F.BoundedZip"):
             if local == "Default":
                 defaults[(el.get("Extension") or "").lower()] = (el.get("ContentType") or "").lower()
             elif local == "Override":
-                overrides[(el.get("PartName") or "").lstrip("/").lower()] = (el.get("ContentType") or "").lower()
+                part = unquote(el.get("PartName") or "").lstrip("/").lower()
+                overrides[part] = (el.get("ContentType") or "").lower()
 
     def lookup(name: str) -> str:
         lower = name.lower()
@@ -387,12 +405,39 @@ def _declared_content_types(source: "F.BoundedZip"):
     return lookup
 
 
-def _is_embedded_object(lower_name: str, data: bytes, declared: str) -> bool:
-    if lower_name.startswith("ppt/embeddings/") or data[:8] == CFB_MAGIC:
+def _embedded_object_parts(source: "F.BoundedZip", infos) -> set[str]:
+    """The lower-cased names of every part an embedding-type relationship points at, resolved
+    against the relationships part's source folder and percent-decoded."""
+    parts: set[str] = set()
+    for info in infos:
+        name = info.filename
+        if not name.lower().endswith(".rels"):
+            continue
+        root = F.parse_xml(source.read(name), name)
+        folder = posixpath.dirname(posixpath.dirname(name))
+        for rel in root:
+            kind = (rel.get("Type") or "").rsplit("/", 1)[-1].lower()
+            target = unquote(rel.get("Target") or "")
+            if kind not in EMBEDDING_RELATIONSHIPS or REMOTE_TARGET.match(target):
+                continue
+            resolved = target.lstrip("/") if target.startswith("/") else posixpath.join(folder, target)
+            parts.add(posixpath.normpath(resolved).lower())
+    return parts
+
+
+def _looks_like_xml(data: bytes) -> bool:
+    return data[:64].lstrip(b"\xef\xbb\xbf \t\r\n").startswith(b"<")
+
+
+def _is_inert_binary(data: bytes) -> bool:
+    """True when the first bytes are a raster or metafile format a renderer draws without fetching."""
+    if data[:8] == b"\x89PNG\r\n\x1a\n" or data[:3] == b"\xff\xd8\xff" or data[:6] in (b"GIF87a", b"GIF89a"):
         return True
-    if "oleobject" in declared:
+    if data[:2] == b"BM" or data[:4] in (b"II*\x00", b"MM\x00*") or (data[:4] == b"RIFF" and data[8:12] == b"WEBP"):
         return True
-    return zipfile.is_zipfile(io.BytesIO(data))
+    if data[:4] == b"\x01\x00\x00\x00" and data[40:44] == b" EMF":
+        return True
+    return data[:4] == b"\xd7\xcd\xc6\x9a" or data[:6] in (b"\x01\x00\x09\x00\x00\x03", b"\x02\x00\x09\x00\x00\x03")
 
 
 def _offline_relationships(data: bytes, name: str) -> tuple[bytes, int]:

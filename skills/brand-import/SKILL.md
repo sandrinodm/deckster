@@ -80,7 +80,8 @@ Create `WORK` with `mktemp -d` outside the workspace. Keep extractions, page ren
 ```bash
 # PPTX (LibreOffice renders the slides)
 uv run $SKILL_DIR/scripts/extract_pptx.py deck.pptx --out $WORK/pptx
-# no LibreOffice but Docker: add  --soffice "docker run --rm --entrypoint soffice -v {dir}:/work <image-with-libreoffice>"
+# no LibreOffice but Docker: add  --soffice "docker run --rm --network none --entrypoint soffice -v {dir}:/work <image-with-libreoffice>"
+# a deck from someone you don't trust: render it in that container (networking off) or pass --pdf
 #   (`docker images | grep -i office` finds one)
 uv run $SKILL_DIR/scripts/extract_pptx.py deck.pptx --pdf deck.pdf --out $WORK/pptx   # with a PDF export as the page images
 
