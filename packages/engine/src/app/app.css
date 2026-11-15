@@ -1,0 +1,15 @@
+/*
+ * The full-window page the deck app renders into. A deck embedded elsewhere (a SlideView in a
+ * docs page) does not get these.
+ */
+html,
+body,
+#deck-root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #0b0b0c;
+  overflow: hidden;
+}

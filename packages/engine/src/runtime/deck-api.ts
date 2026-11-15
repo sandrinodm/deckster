@@ -1,0 +1,127 @@
+import { useEffect, useEffectEvent, type RefObject } from 'react';
+import { flushSync } from 'react-dom';
+
+import type { DeckControls } from '#deck/deck-context.ts';
+import type { SlideSummary } from '#deck/slide-summary.ts';
+import type { Position } from '#navigation/navigation.ts';
+import type { ReadinessRegistry } from '#readiness/readiness-registry.ts';
+
+import { waitUntilReady } from '#runtime/ready.ts';
+
+/**
+ * The deck's automation API on `window.__deck`, used by Playwright, export, lint and screenshots.
+ * Moves apply synchronously: once `goto` returns, the new slide is rendered; await `ready()` before
+ * capturing it.
+ */
+export type DeckApi = {
+  /**
+   * The slides in order. Step counts are known for every slide that has mounted.
+   */
+  readonly slides: readonly SlideSummary[];
+
+  /**
+   * The slide and step on screen.
+   */
+  readonly position: Position;
+
+  /**
+   * Whether the deck runs in `?static` mode.
+   */
+  readonly isStatic: boolean;
+
+  /**
+   * Shows a slide, by zero-based index or id, at a step (default 0). Steps beyond the slide's last
+   * step clamp to it. A step the slide has not registered yet because part of it is still loading
+   * (a lazy chunk, a Suspense boundary, a `useReadyHold`) is kept and applied, clamped to the final
+   * count, once the slide settles; `ready()` waits for that.
+   *
+   * @throws RangeError when the slide does not exist.
+   */
+  goto: (slide: number | string, step?: number) => void;
+
+  /**
+   * Shows the next step, or the next slide after the last step; does nothing at the end.
+   */
+  next: () => void;
+
+  /**
+   * Shows the previous step, or the previous slide at its last step; does nothing at the start.
+   */
+  prev: () => void;
+
+  /**
+   * Resolves once the slide on screen (every slide in static mode) is ready to capture: no
+   * component holds it with `useReadyHold`, so steps that register late are counted, and fonts,
+   * images and CSS background images have loaded. Step counts in `slides` are final for those
+   * slides when it resolves, and a step `goto` asked for before they were has been applied.
+   *
+   * @throws Error (as a rejection) when a slide is still held after 30 seconds.
+   */
+  ready: () => Promise<void>;
+};
+
+declare global {
+  /**
+   * The browser window, with the deck's automation API while a deck is mounted.
+   */
+  // Augmenting the global Window needs interface declaration merging.
+  // oxlint-disable-next-line typescript/consistent-type-definitions
+  interface Window {
+    /**
+     * The deck's automation API, set while a deck is mounted and removed when it unmounts.
+     */
+    __deck?: DeckApi;
+  }
+}
+
+/**
+ * Publishes the deck's controls as `window.__deck` while the deck is mounted.
+ *
+ * @param controls - The deck's current controls; the API always reads the latest ones.
+ * @param rootRef - The deck's root element, searched for images by `ready()`.
+ * @param readiness - The holds `ready()` waits for.
+ * @param stepPending - Whether a requested step waits for its slide to settle, which `ready()`
+ *   waits for too.
+ */
+export function useDeckApi(
+  controls: DeckControls,
+  rootRef: RefObject<HTMLElement | null>,
+  readiness: ReadinessRegistry,
+  stepPending: boolean,
+): void {
+  const read = useEffectEvent(() => controls);
+  const isPending = useEffectEvent(() => stepPending);
+
+  useEffect(() => {
+    const api: DeckApi = {
+      get slides() {
+        return read().slides;
+      },
+      get position() {
+        return read().position;
+      },
+      get isStatic() {
+        return read().isStatic;
+      },
+      goto: (slide, step) => flushSync(() => read().goto(slide, step)),
+      next: () => flushSync(() => read().next()),
+      prev: () => flushSync(() => read().prev()),
+      ready: () => {
+        const root = rootRef.current;
+        if (root === null) {
+          return Promise.resolve();
+        }
+
+        const { isStatic, slides, position } = read();
+        const targets = isStatic ? slides.map((slide) => slide.index) : [position.slide];
+        return waitUntilReady({ root, slides: targets, readiness, isPending });
+      },
+    };
+    window.__deck = api;
+    return () => {
+      if (window.__deck === api) {
+        delete window.__deck;
+      }
+    };
+  }, [rootRef, readiness]);
+}

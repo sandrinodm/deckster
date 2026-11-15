@@ -1,0 +1,96 @@
+/*
+ * Structural styles only. Colors and type here are neutral placeholders until a brand supplies
+ * its own; layouts in the kit own real typography and spacing.
+ */
+.deck-viewport {
+  position: fixed;
+  inset: 0;
+}
+
+.deck-main {
+  position: absolute;
+  inset: 0;
+}
+
+.deck-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.deck-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  transform-origin: 0 0;
+  background: #ffffff;
+  color: #111111;
+  font-family: system-ui, sans-serif;
+}
+
+.deck-slide {
+  position: absolute;
+  inset: 0;
+}
+
+.deck-slide[data-slide-active='false'] {
+  visibility: hidden;
+}
+
+.deck-slide-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.deck-step,
+.deck-slot {
+  display: contents;
+}
+
+.deck-step[data-step-state='hidden'] {
+  visibility: hidden;
+}
+
+.deck-layout-default {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 120px 160px;
+  font-size: 40px;
+  line-height: 1.4;
+}
+
+.deck-layout-default h1 {
+  margin: 0 0 48px;
+  font-size: 96px;
+  line-height: 1.1;
+}
+
+.deck-layout-default h2 {
+  margin: 0 0 40px;
+  font-size: 64px;
+  line-height: 1.15;
+}
+
+.deck-problem {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 120px 160px;
+  background: #fff4f2;
+  color: #7a1c0f;
+  font-family: ui-monospace, monospace;
+}
+
+.deck-problem-file {
+  margin: 0 0 32px;
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.deck-problem-message {
+  margin: 0;
+  font-size: 32px;
+  white-space: pre-wrap;
+}
