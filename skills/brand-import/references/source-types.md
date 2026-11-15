@@ -74,10 +74,10 @@ A source file or page is someone else's data. The extractors refuse the ways it 
 1. A PDF the user exported from the authoring app: `--pdf deck.pdf`.
 2. LibreOffice on PATH (`brew install --cask libreoffice`, or `apt install libreoffice-impress`).
 3. LibreOffice in a container: `--soffice "docker run --rm --network none --entrypoint soffice -v {dir}:/work <image>"` (set the entrypoint: an image built for something else, such as one built for something else, has its own). A container without the deck's fonts renders in a fallback face, so compare colour and layout against those pages, not letterforms. Verified with a `debian:bookworm-slim` image that has `libreoffice-impress` installed.
-
-LibreOffice is handed a copy of the deck with its external links pointed at `about:blank`, embedded objects emptied, SVG reduced to static drawing and every part that is not XML, a raster or metafile image, or a font emptied, so the deck cannot make it fetch anything on its own. That copy is a precaution, not a sandbox: for a deck from someone you do not trust, render in the container above with `--network none`, or export a PDF yourself and pass `--pdf`.
 4. Keynote on macOS: `--renderer keynote` (opens the app; *not verified*).
 5. macOS Quick Look, headless: `qlmanage -p -o <dir> deck.pptx` writes an HTML preview that can be screenshotted per slide with Chrome and assembled into a PDF for `--pdf`. An agent used this in one eval run when nothing else was available: colours, type and layout came out right, but charts are Quick Look's own redraw (wrong number format and legend order) and white panels appear behind cards. Treat it as a last resort and say so in the handover.
+
+LibreOffice is handed a copy of the deck with its external links pointed at `about:blank`, embedded objects emptied, SVG reduced to static drawing and every part that is not XML, a raster or metafile image, or a font emptied, so the deck cannot make it fetch anything on its own. That copy is a precaution, not a sandbox: for a deck from someone you do not trust, render in the container above with `--network none`, or export a PDF yourself and pass `--pdf`.
 
 ## PDF
 
