@@ -14,7 +14,7 @@ live in its `decks/` folder.
 
 ## Quick start
 
-With Node 24.8 or later, from the repository root:
+With Node 26 or later, from the repository root:
 
 ```sh
 pnpm install
@@ -186,7 +186,7 @@ Brands and decks:
 
 | For                                 | You need                                                                                                                                           |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Everything                          | Node 24.8 or later; pnpm 12.16.1 (fetched by pnpm itself from `devEngines`)                                                                        |
+| Everything                          | Node 26 or later; pnpm 12.16.1 (fetched by pnpm itself from `devEngines`)                                                                          |
 | `shot`, `lint`, `diff`, `export`    | Playwright's Chromium: `pnpm --filter @deckster/cli exec playwright install chromium`                                                              |
 | `present`                           | Electron's binary, downloaded once: `pnpm --filter @deckster/shell exec install-electron`. `--browser` opens Chrome or the default browser instead |
 | `export --verify`                   | Docker for the LibreOffice and Open XML SDK checks; the `quicklook` and `keynote` renderers are macOS only                                         |

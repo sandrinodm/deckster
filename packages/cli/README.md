@@ -19,7 +19,7 @@ decks/hello/slides/closing.mdx
 hello: 0 errors, 1 warning in 4 slides (8 steps checked).
 ```
 
-`pnpm deck` runs the workspace's `deck` bin (`src/bin.ts`, TypeScript run by Node 24.8+), so
+`pnpm deck` runs the workspace's `deck` bin (`src/bin.ts`, TypeScript run by Node 26+), so
 `pnpm deck <command> --json | jq .` gets clean JSON. `pnpm deck --help` lists the commands and
 `pnpm deck <command> --help` prints the full options of one.
 

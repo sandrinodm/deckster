@@ -4,6 +4,7 @@ packages:
   - decks/*
 
 catalogMode: prefer
+engineStrict: true
 
 catalog:
   '@e2e-dev/web': 0.15.5
