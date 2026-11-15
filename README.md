@@ -1,6 +1,10 @@
 # deckster
 
 [![CI](https://github.com/sandrinodm/deckster/actions/workflows/ci.yml/badge.svg)](https://github.com/sandrinodm/deckster/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@deckster/cli.svg)](https://www.npmjs.com/package/@deckster/cli)
+[![Node.js >= 26](https://img.shields.io/badge/node-%3E%3D26-brightgreen.svg)](package.json)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ![A black card box printed "deckster" with a vermilion square, a stack of blank cards, and eight slide-shaped cards in two rows: a title rule, a bar chart with one vermilion bar, three boxes joined by arrows, a large "3×", a vermilion quotation mark, a line chart with one vermilion point, a grid of six squares with one vermilion, and a nearly empty card numbered 8](assets/brand/hero.png)
 
@@ -9,21 +13,30 @@ a React engine on Vite, and a `deck` CLI that serves, lints, screenshots, export
 decks. It is built for slides written largely by AI agents and checked by `deck lint`, with a
 person reviewing the result.
 
-Nothing is published to npm. You use deckster from a clone of this repository, and your decks
-live in its `decks/` folder.
-
 ## Quick start
 
-With Node 26 or later, from the repository root:
+With **Node.js 26 or later**, install [`@deckster/cli`](packages/cli/README.md) globally and create
+a workspace:
 
 ```sh
+npm install --global @deckster/cli
+mkdir talks && cd talks
+deck new launch-review --title "Launch review" --duration 20m
+deck dev launch-review                    # hot reload; q or Ctrl+C stops it
+```
+
+Or run directly from a clone of this repository:
+
+```sh
+git clone https://github.com/sandrinodm/deckster.git
+cd deckster
 pnpm install
 pnpm dev hello              # the 4-slide starter deck, with hot reload
 pnpm deck dev showcase      # a 45-slide tour of everything a deck can hold
 ```
 
-The dev server prints its URL (the first free port from 5173). pnpm 12.16.1 is pinned in
-`devEngines` and downloaded on demand.
+The dev server prints its URL (the first free port from 5173). When working in this repository,
+pnpm 12.16.1 is pinned in `devEngines` and downloaded on demand.
 
 The other commands work on the same deck name:
 
@@ -146,17 +159,18 @@ behind these choices are in [docs/design.md](docs/design.md).
 
 ## Working with agents
 
-Two Claude Code skills in [.claude/skills](.claude/skills) carry the workflow:
+Two agent skills in [`.agents/skills`](.agents/skills) (and [`.claude/skills`](.claude/skills))
+carry the workflow:
 
-- [create-presentation](.claude/skills/create-presentation/SKILL.md) plans a talk from audience
+- [create-presentation](.agents/skills/create-presentation/SKILL.md) plans a talk from audience
   and outcome to a storyline, then writes the slides, notes and charts and critiques them.
-- [brand-import](.claude/skills/brand-import/SKILL.md) turns a PPTX, PDF, website or guidelines
+- [brand-import](.agents/skills/brand-import/SKILL.md) turns a PPTX, PDF, website or guidelines
   into a draft `brands/<name>` and renders the sample decks in it for comparison.
 
 ## Packages
 
-All packages are private workspace packages that export TypeScript source; nothing is built for
-them.
+[`@deckster/cli`](packages/cli/README.md) is published to npm and bundles the framework. The other
+workspace packages are private and export TypeScript source directly:
 
 | Package                                                   | What it is                                                                                                    |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -224,6 +238,12 @@ package's README covers its internals and the rules for changing it.
 | [docs/agent-design.md](docs/agent-design.md) | How an agent turn runs and what it is allowed to change |
 | [docs/present.md](docs/present.md)           | `deck present`, displays and troubleshooting            |
 | [docs/deploy.md](docs/deploy.md)             | Hosting built decks                                     |
+
+## Contributing & Security
+
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, test commands, and pull request guidelines.
+- Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+- To report a security vulnerability privately, see [SECURITY.md](SECURITY.md).
 
 ## License
 

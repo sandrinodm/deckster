@@ -6,6 +6,7 @@
   "homepage": "https://github.com/sandrinodm/deckster#readme",
   "bugs": "https://github.com/sandrinodm/deckster/issues",
   "license": "MIT",
+  "author": "Sandrino Di Mattia",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sandrinodm/deckster.git"
