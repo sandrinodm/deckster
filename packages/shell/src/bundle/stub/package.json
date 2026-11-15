@@ -1,0 +1,7 @@
+{
+  "name": "@deckster/shell-app",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "main.mjs",
+  "productName": "Deckster"
+}
