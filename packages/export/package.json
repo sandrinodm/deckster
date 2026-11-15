@@ -1,0 +1,44 @@
+{
+  "name": "@deckster/export",
+  "version": "0.0.0",
+  "private": true,
+  "homepage": "https://github.com/sandrinodm/deckster/tree/main/packages/export#readme",
+  "bugs": "https://github.com/sandrinodm/deckster/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandrinodm/deckster.git",
+    "directory": "packages/export"
+  },
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vp test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deckster/brand": "workspace:*",
+    "@deckster/engine": "workspace:*",
+    "@deckster/kit": "workspace:*",
+    "@effect/platform-node": "catalog:",
+    "effect": "catalog:",
+    "fflate": "catalog:",
+    "fontkit": "catalog:",
+    "harfbuzzjs": "catalog:",
+    "pdf-lib": "catalog:",
+    "playwright": "catalog:",
+    "wawoff2": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:",
+    "@types/fontkit": "catalog:",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}
