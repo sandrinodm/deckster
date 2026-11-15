@@ -1,0 +1,62 @@
+/*
+ * The chart layout: under the header, one grid row that takes the height down to the footnote. The
+ * chart region spans all twelve columns, or eight beside a four-column aside whose accent rule and
+ * first line sit level with the top of the chart.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-chart-layout {
+    flex: 1 1 0;
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .kit-chart-main {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+
+  .kit-frame[data-layout='chart'][data-aside='true'] .kit-chart-main {
+    grid-column: 1 / span 8;
+  }
+
+  .kit-chart-fill {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .kit-chart-aside {
+    grid-column: 9 / span 4;
+    align-self: start;
+    padding-left: var(--brand-space-md);
+    border-left: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  }
+
+  .kit-chart-aside > .deck-slot > :first-child,
+  .kit-chart-aside > :first-child {
+    margin-top: 0;
+  }
+
+  .kit-chart-aside h3 {
+    color: var(--brand-color-heading);
+  }
+}
+
+/*
+ * A figure that takes its own height (a table, a sparkline) and has no aside to line up with sits a
+ * little above the middle of the region, as sparse text does, instead of hanging under the title.
+ */
+@layer components {
+  .kit-frame[data-aside='false'] .kit-chart-fill:has(.kit-chart[data-sizing='content'])::before,
+  .kit-frame[data-aside='false'] .kit-chart-fill:has(.kit-chart[data-sizing='content'])::after {
+    content: '';
+    flex: 2 1 0;
+  }
+
+  .kit-frame[data-aside='false'] .kit-chart-fill:has(.kit-chart[data-sizing='content'])::after {
+    flex-grow: 3;
+  }
+}

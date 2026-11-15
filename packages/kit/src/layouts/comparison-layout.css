@@ -1,0 +1,150 @@
+/*
+ * The comparison layout: one grid of a label column and an equal column per option, sharing the
+ * twelve columns. The rows are table rows (`display: contents`) whose cells the grid places by row
+ * and column, so the rows line up across the options whatever wraps; hairline rules run over each
+ * row across the grid. The recommended option sits on a raised panel behind its column, with an
+ * accent rule over its head; every head reserves the badge row, so the names stand level.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(calc(var(--kit-option-count) + 1), minmax(0, 1fr));
+    grid-template-rows: auto repeat(var(--kit-row-count), auto);
+    column-gap: var(--kit-gutter);
+  }
+
+  .kit-comparison-row {
+    display: contents;
+  }
+
+  .kit-comparison-head {
+    display: flex;
+    flex-direction: column;
+    grid-row: 1;
+    gap: var(--brand-space-xs);
+    min-width: 0;
+    padding: var(--brand-space-sm) 0 var(--brand-space-xs);
+    border-top: var(--brand-stroke-regular) solid var(--brand-color-muted);
+  }
+
+  .kit-comparison-name {
+    --kit-scale: 0.84;
+
+    margin: 0;
+  }
+
+  .kit-comparison-summary {
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  /* The badge row: every head keeps it when one option is recommended, empty in the others. */
+  .kit-comparison-badge {
+    min-height: calc(var(--brand-type-label-size) * var(--brand-type-label-line-height));
+    color: var(--brand-color-heading);
+  }
+
+  .kit-comparison-label,
+  .kit-comparison-value {
+    --kit-scale: 0.84;
+
+    display: flex;
+    grid-column: 1;
+    align-items: center;
+    min-width: 0;
+    padding-block: var(--brand-space-sm);
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-frame[data-layout='comparison'][data-rows='5']
+    :is(.kit-comparison-label, .kit-comparison-value) {
+    padding-block: var(--brand-space-xs);
+  }
+
+  .kit-comparison-label {
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  .kit-comparison-value {
+    color: var(--brand-color-fg);
+    text-wrap: balance;
+  }
+
+  /* Checks and dashes decide the row: a ringed check in the positive text color, a firm dash. */
+  .kit-comparison-mark {
+    flex: none;
+    width: 1.35em;
+    height: 1.35em;
+    fill: none;
+    stroke-width: calc(var(--brand-icon-stroke) * 1.6);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .kit-comparison-mark[data-mark='yes'] {
+    stroke: var(--brand-color-positive-text);
+  }
+
+  .kit-comparison-mark[data-mark='yes'] circle {
+    stroke-width: calc(var(--brand-icon-stroke) * 1.1);
+  }
+
+  .kit-comparison-mark[data-mark='no'] {
+    stroke: var(--brand-color-muted);
+  }
+
+  /*
+   * The cell that wins its row: bold in the positive text color, with a diamond hung in the gutter
+   * before it (out of the flow, so it takes no width from the text).
+   */
+  .kit-comparison-value {
+    position: relative;
+  }
+
+  .kit-comparison-value[data-winner='true'] {
+    color: var(--brand-color-positive-text);
+    font-weight: 650;
+  }
+
+  .kit-comparison-winner {
+    --kit-winner-size: 0.45em;
+
+    position: absolute;
+    inset-block: 0;
+    left: calc(var(--kit-gutter) / -2 - var(--kit-winner-size) / 2);
+    width: var(--kit-winner-size);
+    height: var(--kit-winner-size);
+    margin-block: auto;
+    fill: var(--brand-color-positive-text);
+  }
+
+  /* In the recommended column the diamond sits centered in the panel's inset instead. */
+  .kit-comparison-value[data-recommended='true'] .kit-comparison-winner {
+    left: calc(var(--brand-space-sm) / 2 - var(--kit-winner-size) / 2);
+  }
+
+  /*
+   * The recommended option: a raised panel behind its column, its cells inset from the panel's
+   * edges, and an accent rule over its head.
+   */
+  .kit-comparison-panel {
+    grid-row: 1 / -1;
+    border-radius: var(--brand-radius-md);
+    background: var(--brand-color-surface);
+  }
+
+  .kit-comparison-head[data-recommended='true'] {
+    border-top: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  }
+
+  :is(.kit-comparison-head, .kit-comparison-value)[data-recommended='true'] {
+    padding-inline: var(--brand-space-sm);
+  }
+
+  .kit-comparison-value[data-last='true'][data-recommended='true'] {
+    padding-bottom: var(--brand-space-md);
+  }
+}

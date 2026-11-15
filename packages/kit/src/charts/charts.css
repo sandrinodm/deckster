@@ -1,0 +1,210 @@
+/*
+ * The kit's charts: a figure that fills its region, the surface's chart plate behind it where the
+ * plate shows, and the motion of marks. Colors of marks and text are set on the SVG from the brand's
+ * tokens for the surface; this sheet sets the frame, the type around the plot and the builds. Marks
+ * build only when the slide arrives going forward (`data-entrance="play"`) or their step is just
+ * revealed (`data-reveal="play"`); static mode never moves.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-chart {
+    --kit-chart-stagger: calc(var(--brand-duration-fast) * 0.25);
+
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--brand-space-sm);
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+  }
+
+  .kit-chart[data-sizing='content'] {
+    flex: none;
+    height: auto;
+  }
+
+  .kit-chart[data-plate='visible'] {
+    padding: var(--brand-space-md) var(--brand-space-lg);
+    border-radius: var(--brand-radius-lg);
+    background: var(--brand-data-plate);
+  }
+
+  .kit-chart-caption,
+  .kit-chart-source {
+    flex: none;
+    margin: 0;
+    color: var(--brand-chart-label);
+    text-wrap: balance;
+  }
+
+  .kit-chart-plot {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-chart[data-sizing='content'] .kit-chart-plot {
+    flex: none;
+  }
+
+  .kit-chart-plot > svg {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: visible;
+  }
+
+  .kit-chart[data-sizing='content'] .kit-chart-plot > svg {
+    position: static;
+  }
+
+  .kit-chart-summary {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .kit-chart-tabular {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* Steps: hidden content keeps its place and leaves the accessibility tree. */
+  .kit-chart[data-reveal='hidden'],
+  .kit-chart-step[data-reveal='hidden'] {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .kit-chart[data-motion='on'],
+  .kit-chart[data-motion='on'] .kit-chart-step {
+    transition:
+      opacity var(--brand-duration-base) var(--brand-ease-standard),
+      visibility var(--brand-duration-base);
+  }
+
+  /* A highlight that arrives at a step recolors the marks in place. */
+  .kit-chart[data-motion='on'] .kit-chart-mark {
+    transition:
+      fill var(--brand-duration-slow) var(--brand-ease-standard),
+      stroke var(--brand-duration-slow) var(--brand-ease-standard),
+      opacity var(--brand-duration-slow) var(--brand-ease-standard);
+  }
+
+  /*
+   * Builds. Each mark names its build in `data-anim` and its place in the stagger in
+   * `--kit-chart-order`; labels wait for the marks with `--kit-chart-lag`.
+   */
+  @keyframes kit-chart-grow-y {
+    from {
+      scale: 1 0;
+    }
+  }
+
+  @keyframes kit-chart-grow-x {
+    from {
+      scale: 0 1;
+    }
+  }
+
+  @keyframes kit-chart-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+
+  @keyframes kit-chart-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes kit-chart-pop {
+    from {
+      opacity: 0;
+      scale: 0.2;
+    }
+  }
+
+  .kit-chart [data-anim] {
+    transform-box: fill-box;
+  }
+
+  .kit-chart [data-anim='rise'] {
+    --kit-chart-anim: kit-chart-grow-y;
+
+    transform-origin: 50% 100%;
+  }
+
+  .kit-chart [data-anim='drop'] {
+    --kit-chart-anim: kit-chart-grow-y;
+
+    transform-origin: 50% 0;
+  }
+
+  .kit-chart [data-anim='grow-right'] {
+    --kit-chart-anim: kit-chart-grow-x;
+
+    transform-origin: 0 50%;
+  }
+
+  .kit-chart [data-anim='grow-left'] {
+    --kit-chart-anim: kit-chart-grow-x;
+
+    transform-origin: 100% 50%;
+  }
+
+  .kit-chart [data-anim='draw'] {
+    --kit-chart-anim: kit-chart-draw;
+  }
+
+  .kit-chart [data-anim='fade'] {
+    --kit-chart-anim: kit-chart-fade;
+  }
+
+  .kit-chart [data-anim='pop'] {
+    --kit-chart-anim: kit-chart-pop;
+
+    transform-origin: 50% 50%;
+  }
+
+  .kit-chart[data-entrance='play'] [data-anim] {
+    animation: var(--kit-chart-anim) var(--brand-duration-slow) var(--brand-ease-emphasized) both;
+    animation-delay: calc(
+      var(--brand-transition-duration) * 0.5 + var(--kit-chart-order, 0) *
+        var(--kit-chart-stagger) + var(--kit-chart-lag, 0ms)
+    );
+  }
+
+  .kit-chart .kit-chart-step[data-reveal='play'] [data-anim],
+  .kit-chart[data-reveal='play'] [data-anim] {
+    animation: var(--kit-chart-anim) var(--brand-duration-slow) var(--brand-ease-emphasized) both;
+    animation-delay: calc(
+      var(--kit-chart-order, 0) * var(--kit-chart-stagger) + var(--kit-chart-lag, 0ms)
+    );
+  }
+
+  .kit-chart .kit-chart-step[data-reveal='hidden'] [data-anim],
+  .kit-chart[data-motion='off'] [data-anim] {
+    animation: none;
+  }
+
+  .kit-chart [data-lag='marks'] {
+    --kit-chart-lag: var(--brand-duration-base);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kit-chart [data-anim] {
+      animation: none !important;
+    }
+  }
+}

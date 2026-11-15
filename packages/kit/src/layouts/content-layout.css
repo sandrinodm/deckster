@@ -1,0 +1,39 @@
+/*
+ * The content layout: body and aside share one grid row, aligned on the first baseline, so the
+ * aside's heading and the body's first line read as one line across the slide.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-content {
+    align-items: first baseline;
+  }
+
+  .kit-content-main {
+    grid-column: 1 / span 8;
+    min-width: 0;
+  }
+
+  .kit-frame[data-layout='content'][data-width='full'] .kit-content-main {
+    grid-column: 1 / -1;
+  }
+
+  .kit-frame[data-layout='content'][data-aside='true'] .kit-content-main {
+    grid-column: 1 / span 7;
+  }
+
+  .kit-frame[data-layout='content'][data-aside='true'][data-width='full'] .kit-content-main {
+    grid-column: 1 / span 8;
+  }
+
+  /* The key fact: set in the body's color, not muted, behind an accent rule that runs its height. */
+  .kit-content-aside {
+    grid-column: 9 / span 4;
+    padding-left: var(--brand-space-md);
+    border-left: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  }
+
+  .kit-content-aside h3 {
+    color: var(--brand-color-heading);
+  }
+}

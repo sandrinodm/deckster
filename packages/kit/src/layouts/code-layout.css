@@ -1,0 +1,41 @@
+/*
+ * The `code` layout, on the foundation in `foundation/kit.css`: the shared header, a code area
+ * in eight columns beside notes in four, or across all twelve.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-code-row {
+    align-items: start;
+  }
+
+  .kit-code-main {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .kit-frame[data-aside='true'] .kit-code-main {
+    grid-column: 1 / span 8;
+  }
+
+  .kit-code-aside {
+    --kit-flow-gap: var(--brand-space-sm);
+
+    grid-column: 9 / span 4;
+    padding-top: var(--brand-space-md);
+    border-top: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  }
+
+  .kit-code-aside p,
+  .kit-code-aside li {
+    font-family: var(--brand-type-body-family);
+    font-size: var(--brand-type-body-size);
+    line-height: var(--brand-type-body-line-height);
+    letter-spacing: var(--brand-type-body-tracking);
+    font-weight: var(--brand-type-body-weight);
+  }
+
+  .kit-code-aside code {
+    font-size: 0.82em;
+  }
+}

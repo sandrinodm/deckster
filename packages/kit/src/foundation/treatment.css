@@ -1,0 +1,31 @@
+/*
+ * Brand image treatments on a layout's media frame: the frame takes the treatment's corner radius
+ * and clips to it, and the photos and videos placed directly in it take its filter and tint.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-treated {
+    position: relative;
+    border-radius: var(--kit-media-radius, 0);
+  }
+
+  .kit-treated > .deck-slot > :is(img, video) {
+    filter: var(--kit-media-filter, none);
+  }
+
+  .kit-treated[data-tint='true']:has(> .deck-slot > :is(img, video))::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--kit-media-tint);
+    opacity: var(--kit-media-tint-opacity);
+    pointer-events: none;
+  }
+
+  .kit-treatment-filter {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+}

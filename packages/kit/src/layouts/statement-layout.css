@@ -1,0 +1,72 @@
+/*
+ * The statement layout: one sentence composed a little above the middle of the space under the
+ * eyebrow. Quote marks hang outside the measure, whether the quote is a paragraph (MDX) or bare
+ * text (TSX).
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-statement-region {
+    margin-top: var(--kit-eyebrow-gap);
+  }
+
+  .kit-statement {
+    margin: 0;
+    max-width: calc(11 * var(--kit-column) + 10 * var(--kit-gutter));
+  }
+
+  .kit-frame[data-quote='true'] .kit-statement,
+  .kit-statement:has(> .kit-statement-text[data-kit-step='headline']) {
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+  }
+
+  .kit-statement-text {
+    position: relative;
+    margin: 0;
+    padding-bottom: 0.04em;
+  }
+
+  .kit-statement-text p {
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .kit-statement-text p + p {
+    margin-top: 0.4em;
+  }
+
+  .kit-frame[data-quote='true'] .kit-statement-text p:first-of-type::before,
+  .kit-frame[data-quote='true'] .kit-statement-text:not(:has(p))::before {
+    content: '\201C';
+    position: absolute;
+    translate: -0.62em 0;
+    color: var(--brand-color-accent);
+  }
+
+  .kit-frame[data-quote='true'] .kit-statement-text p:last-of-type::after,
+  .kit-frame[data-quote='true'] .kit-statement-text:not(:has(p))::after {
+    content: '\201D';
+  }
+
+  .kit-statement-attribution {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    margin-top: var(--brand-space-xl);
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  .kit-statement-attribution::before {
+    content: '';
+    flex: none;
+    align-self: center;
+    width: 2.4em;
+    height: var(--brand-stroke-regular);
+    background: var(--brand-color-accent);
+  }
+
+  .kit-statement-attribution p {
+    margin: 0;
+  }
+}

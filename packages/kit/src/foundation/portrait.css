@@ -1,0 +1,59 @@
+/*
+ * A person's portrait: a photo cropped to the frame the layout sizes, in the brand's treatment, or
+ * a tile with their initials in the display face. The frame is a size container, so the initials
+ * scale with it.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-portrait {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: var(--brand-color-surface);
+    container-type: size;
+  }
+
+  /* A tile without a photo is tinted with the accent and edged, so it reads on any surface. */
+  .kit-portrait:not(:has(> .kit-portrait-photo)) {
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    background:
+      linear-gradient(
+        rgb(from var(--brand-color-accent) r g b / 0.16),
+        rgb(from var(--brand-color-accent) r g b / 0.16)
+      ),
+      var(--brand-color-surface);
+  }
+
+  .kit-portrait-photo {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: var(--kit-media-filter, none);
+  }
+
+  .kit-portrait[data-tint='true']:has(> .kit-portrait-photo)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--kit-media-tint);
+    opacity: var(--kit-media-tint-opacity);
+    pointer-events: none;
+  }
+
+  .kit-portrait-initials {
+    grid-area: 1 / 1;
+    color: var(--brand-color-accent-text);
+    font-family: var(--brand-type-display-family);
+    font-size: 34cqmin;
+    font-weight: var(--brand-type-display-weight);
+    font-style: var(--brand-type-display-style);
+    font-variation-settings: var(--brand-type-display-axes);
+    line-height: 1;
+    letter-spacing: var(--brand-type-display-tracking);
+    user-select: none;
+  }
+}

@@ -1,0 +1,129 @@
+/*
+ * Running text inside a slot. Slot and step wrappers have `display: contents`, so every paragraph,
+ * list and list item takes part in one flex column with one gap, whether or not it is revealed in
+ * steps. The container's `data-text` names the type step its paragraphs and list items share (body,
+ * lead or title, which a layout picks by measuring how full the slot is); nested list items set one
+ * step smaller and muted, and `###` headings take the title step.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-prose {
+    --kit-flow-gap: var(--brand-space-sm);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--kit-flow-gap);
+    color: var(--brand-color-fg);
+  }
+
+  .kit-prose[data-text='lead'] {
+    --kit-flow-gap: var(--brand-space-md);
+  }
+
+  .kit-prose[data-text='title'] {
+    --kit-flow-gap: var(--brand-space-lg);
+  }
+
+  .kit-prose :is(p, h3, blockquote) {
+    margin: 0;
+  }
+
+  .kit-prose p {
+    text-wrap: pretty;
+  }
+
+  .kit-prose h3 {
+    color: var(--brand-color-heading);
+    text-wrap: balance;
+  }
+
+  .kit-prose :is(ul, ol) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kit-flow-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* A list item's lines are balanced, so a two-line point never ends on a word or two. */
+  .kit-prose li {
+    position: relative;
+    margin-left: 1.1em;
+    text-wrap: balance;
+  }
+
+  /* A list item keeps its marker when a TSX slide wraps it in a step. */
+  .kit-prose ul > li::before,
+  .kit-prose ul > .deck-step > li::before {
+    content: '';
+    position: absolute;
+    top: calc(0.5lh - 0.17em);
+    left: -1.04em;
+    width: 0.34em;
+    height: 0.34em;
+    border-radius: min(var(--brand-radius-sm), 0.17em);
+    background: var(--brand-color-accent);
+  }
+
+  .kit-prose ol {
+    counter-reset: kit-item;
+  }
+
+  .kit-prose ol > li,
+  .kit-prose ol > .deck-step > li {
+    margin-left: 1.7em;
+    counter-increment: kit-item;
+  }
+
+  .kit-prose ol > li::before,
+  .kit-prose ol > .deck-step > li::before {
+    content: counter(kit-item, decimal-leading-zero);
+    position: absolute;
+    top: 0;
+    left: -1.7em;
+    color: var(--brand-color-accent-text);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .kit-prose li li {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-prose li > :is(ul, ol) {
+    margin-top: var(--brand-space-xs);
+    gap: var(--brand-space-xs);
+  }
+
+  .kit-prose strong {
+    color: var(--brand-color-heading);
+    font-weight: 650;
+  }
+
+  .kit-prose a {
+    color: var(--brand-color-accent-text);
+    text-decoration: underline;
+    text-decoration-thickness: max(1px, 0.06em);
+    text-underline-offset: 0.18em;
+  }
+
+  .kit-prose code {
+    font-family: var(--brand-font-mono);
+    font-size: 0.82em;
+    padding: 0.06em 0.3em;
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-surface);
+  }
+
+  .kit-prose img {
+    display: block;
+    max-width: 100%;
+  }
+
+  .kit-prose blockquote {
+    padding-left: var(--brand-space-md);
+    border-left: var(--brand-stroke-bold) solid var(--brand-color-accent);
+    color: var(--brand-color-heading);
+  }
+}

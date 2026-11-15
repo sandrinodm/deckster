@@ -1,0 +1,33 @@
+/*
+ * The background a kit layout paints behind its content: the surface's image, pattern and gradient
+ * layers, then the slide's own image. It is positioned with no z-index, first in the frame, so it
+ * paints above the slide's color and gradient and below everything after it, in live and static
+ * mode alike.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .kit-backdrop-image,
+  .kit-backdrop-fill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .kit-backdrop-image {
+    max-width: none;
+  }
+
+  .kit-backdrop-placed {
+    position: absolute;
+    max-width: none;
+  }
+}

@@ -1,0 +1,37 @@
+/*
+ * The section layout: the part number on the top line; eyebrow, title and the summary's two
+ * reserved lines standing on the bottom line.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-section-number {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-section-main {
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+  }
+
+  .kit-section-main > .kit-eyebrow {
+    margin-bottom: var(--brand-space-md);
+  }
+
+  .kit-section-title {
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+    padding-bottom: 0.04em;
+  }
+
+  .kit-section-summary {
+    min-height: calc(2 * var(--brand-type-lead-size) * var(--brand-type-lead-line-height));
+    margin-top: var(--brand-space-lg);
+    max-width: calc(8 * var(--kit-column) + 7 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  .kit-section-summary p {
+    color: inherit;
+  }
+}

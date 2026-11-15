@@ -1,0 +1,90 @@
+/*
+ * A base style for tables anywhere on a kit slide, written in markdown (GitHub-flavored pipes) or
+ * as JSX: body type with tabular numerals, header cells in the brand's label style, and hairline
+ * rules between rows in the surface's border color.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .kit-frame :is(th, td) {
+    padding: var(--brand-space-xs) var(--brand-space-md) var(--brand-space-xs) 0;
+    text-align: left;
+    vertical-align: baseline;
+  }
+
+  .kit-frame :is(th, td):last-child {
+    padding-right: 0;
+  }
+
+  .kit-frame th {
+    padding-bottom: var(--brand-space-sm);
+    border-bottom: var(--brand-stroke-regular) solid var(--brand-color-accent);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-frame td {
+    border-bottom: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-frame :is(th, td)[align='right'],
+  .kit-frame :is(th, td)[style*='right'] {
+    text-align: right;
+  }
+}
+
+/*
+ * Emphasis, for tables that mark the rows, column or cells their point rests on (the kit's
+ * `<Table highlight>`, or any table whose `tr`, `th` or `td` carries `data-highlight="true"`). The
+ * brand's `charts.table.emphasis` chooses how, set on the table as `data-emphasis`: an accent-tinted
+ * fill, accent text, or an accent bar at the row's leading edge. Body cells take the brand's table
+ * body step through a `kit-type-*` class on the table.
+ */
+@layer components {
+  .kit-frame table[data-emphasis] td {
+    color: var(--brand-chart-value);
+  }
+
+  .kit-frame table[data-emphasis] :is(tr[data-highlight='true'] > td, td[data-highlight='true']) {
+    font-weight: 650;
+  }
+
+  .kit-frame
+    table[data-emphasis='fill']
+    :is(tr[data-highlight='true'] > td, td[data-highlight='true']) {
+    background: var(--brand-chart-emphasis);
+    color: var(--brand-chart-emphasis-fg);
+  }
+
+  /* A filled row needs air at its ends, so every row of such a table gets the same inset. */
+  .kit-frame table[data-emphasis='fill'] :is(th, td):first-child {
+    padding-left: var(--brand-space-sm);
+  }
+
+  .kit-frame table[data-emphasis='fill'] :is(th, td):last-child {
+    padding-right: var(--brand-space-sm);
+  }
+
+  .kit-frame
+    table[data-emphasis='text']
+    :is(tr[data-highlight='true'] > td, td[data-highlight='true']) {
+    color: var(--brand-chart-emphasis);
+  }
+
+  .kit-frame table[data-emphasis='bar'] :is(th, td):first-child {
+    padding-left: var(--brand-space-sm);
+  }
+
+  .kit-frame table[data-emphasis='bar'] tr[data-highlight='true'] > td:first-child {
+    box-shadow: inset var(--brand-stroke-bold) 0 0 var(--brand-chart-emphasis);
+  }
+
+  .kit-frame table[data-emphasis] th[data-highlight='true'] {
+    color: var(--brand-color-heading);
+  }
+}

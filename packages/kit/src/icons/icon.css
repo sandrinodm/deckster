@@ -1,0 +1,96 @@
+/*
+ * Icons: sized by the type scale, colored by a role of the surface, drawn with the brand's stroke
+ * width where the set is drawn with strokes.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-icon {
+    display: inline-block;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    font-size: var(--brand-type-body-size);
+    vertical-align: -0.14em;
+  }
+
+  .kit-icon [stroke-width],
+  .kit-icon[stroke-width] {
+    stroke-width: var(--brand-icon-stroke);
+  }
+
+  .kit-icon[data-size='caption'] {
+    font-size: var(--brand-type-caption-size);
+  }
+
+  .kit-icon[data-size='small'] {
+    font-size: var(--brand-type-small-size);
+  }
+
+  .kit-icon[data-size='lead'] {
+    font-size: var(--brand-type-lead-size);
+  }
+
+  .kit-icon[data-size='title'] {
+    font-size: var(--brand-type-title-size);
+  }
+
+  .kit-icon[data-size='headline'] {
+    font-size: var(--brand-type-headline-size);
+  }
+
+  .kit-icon[data-role='fg'] {
+    color: var(--brand-color-fg);
+  }
+
+  .kit-icon[data-role='heading'] {
+    color: var(--brand-color-heading);
+  }
+
+  .kit-icon[data-role='muted'] {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-icon[data-role='accent'] {
+    color: var(--brand-color-accent);
+  }
+
+  .kit-icon[data-role='positive'] {
+    color: var(--brand-color-positive);
+  }
+
+  .kit-icon[data-role='negative'] {
+    color: var(--brand-color-negative);
+  }
+
+  /*
+   * A list item that starts with an icon uses it as its marker: the icon sits on the column's edge
+   * at the item's own size, a small gap from the text, and its strokes are not thinner than the
+   * text's at that size (a set drawn very fine, like Nocturne's, reads as lighter than the words
+   * beside it otherwise).
+   */
+  .kit-prose li:has(> .kit-icon:first-child) {
+    --kit-icon-hang: calc(1.1em + var(--brand-space-sm));
+
+    margin-left: var(--kit-icon-hang);
+  }
+
+  .kit-prose ul > li:has(> .kit-icon:first-child)::before {
+    content: none;
+  }
+
+  .kit-prose li > .kit-icon:first-child {
+    position: absolute;
+    top: calc(0.5lh - 0.55em);
+    left: calc(-1 * var(--kit-icon-hang));
+    width: 1.1em;
+    height: 1.1em;
+    font-size: inherit;
+    vertical-align: baseline;
+  }
+
+  .kit-prose li > .kit-icon:first-child [stroke-width],
+  .kit-prose li > .kit-icon:first-child[stroke-width] {
+    stroke-width: max(var(--brand-icon-stroke), 1.6);
+  }
+}

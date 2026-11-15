@@ -1,0 +1,51 @@
+/*
+ * The default layout: an accent rule and one column of content, centred in the safe area.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='default'] > .kit-safe {
+    justify-content: center;
+  }
+
+  .kit-default-body {
+    --kit-flow-gap: var(--brand-space-md);
+
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+  }
+
+  .kit-default-rule {
+    flex: none;
+    width: 112px;
+    height: 6px;
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-accent);
+  }
+
+  .kit-default-body :is(h1, h2) {
+    margin: 0;
+    color: var(--brand-color-heading);
+    text-wrap: balance;
+  }
+
+  .kit-default-body h1 {
+    max-width: 13ch;
+    padding-bottom: 0.08em;
+  }
+
+  .kit-default-body h2 {
+    max-width: 18ch;
+  }
+
+  .kit-default-body :is(p, li) {
+    max-width: 46ch;
+  }
+
+  .kit-default-body h1 + p {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-default-body img {
+    border-radius: var(--brand-radius-lg);
+  }
+}

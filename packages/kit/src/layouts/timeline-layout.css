@@ -1,0 +1,85 @@
+/*
+ * The timeline layout: the kit's timeline across the twelve columns, filling the region under the
+ * header, its text a step larger than inside a diagram slide.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-timeline-context {
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  .kit-timeline-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-timeline-fill {
+    flex: 1 1 0;
+    min-height: 0;
+    container-type: size;
+  }
+
+  /*
+   * The timeline is as tall as its milestones and stands in the middle of the region: the date over
+   * each dot, the text under it taking what it needs. A timeline taller than the region overflows
+   * it, which `deck lint` reports.
+   */
+  .kit-frame[data-layout='timeline'] .kit-timeline {
+    --kit-timeline-dot: var(--brand-space-lg);
+
+    height: fit-content;
+  }
+
+  .kit-frame[data-layout='timeline'] .kit-timeline-item {
+    grid-template-rows: auto auto auto;
+    align-content: start;
+  }
+
+  .kit-frame[data-layout='timeline'] .kit-timeline-dot {
+    width: var(--kit-timeline-dot);
+    height: var(--kit-timeline-dot);
+  }
+
+  .kit-frame[data-layout='timeline'] .kit-timeline-axis {
+    top: calc(
+      var(--brand-type-label-size) * var(--brand-type-label-line-height) + var(--brand-space-md) +
+        var(--kit-timeline-dot) / 2
+    );
+    translate: 0 -50%;
+  }
+
+  /*
+   * The timeline is the slide, so its text is a step or two larger than inside a diagram slide:
+   * three or four milestones set the title at the lead size and larger dots, three the detail at
+   * the body size; four the detail and five both at the small size.
+   */
+  .kit-frame[data-layout='timeline'] .kit-timeline-title {
+    --kit-step-size: var(--brand-type-small-size);
+  }
+
+  .kit-frame[data-layout='timeline'] .kit-timeline-detail {
+    --kit-step-size: var(--brand-type-small-size);
+  }
+
+  .kit-frame[data-layout='timeline']:is([data-count='3'], [data-count='4']) .kit-timeline-title {
+    --kit-step-size: var(--brand-type-lead-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-count='3'] .kit-timeline-detail {
+    --kit-step-size: var(--brand-type-body-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-count='3'] .kit-timeline {
+    --kit-timeline-dot: calc(0.9 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='timeline'][data-count='4'] .kit-timeline {
+    --kit-timeline-dot: calc(0.7 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='timeline'] .kit-timeline-text {
+    gap: var(--brand-space-sm);
+    padding-top: var(--brand-space-lg);
+  }
+}

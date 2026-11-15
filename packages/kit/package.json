@@ -1,0 +1,65 @@
+{
+  "name": "@deckster/kit",
+  "version": "0.0.0",
+  "private": true,
+  "homepage": "https://github.com/sandrinodm/deckster/tree/main/packages/kit#readme",
+  "bugs": "https://github.com/sandrinodm/deckster/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandrinodm/deckster.git",
+    "directory": "packages/kit"
+  },
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./runtime": "./src/runtime.ts",
+    "./catalog": "./src/catalog.ts",
+    "./diagram-catalog": "./src/diagrams/diagram-catalog.ts",
+    "./diagrams": "./src/diagrams.ts",
+    "./diagram-description": "./src/diagrams/diagram-description.ts",
+    "./chart-catalog": "./src/charts/chart-catalog.ts",
+    "./chart-spec": "./src/charts/chart-spec.ts",
+    "./component-catalog": "./src/components/component-catalog.ts",
+    "./limit-cases": "./src/layouts/limit-cases.ts",
+    "./icon-sets": "./src/icons/icon-sets.ts",
+    "./mdx": "./src/mdx.ts",
+    "./vite": "./src/vite.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vp test",
+    "e2e": "e2e run"
+  },
+  "dependencies": {
+    "@deckster/app-bridge": "workspace:*",
+    "@deckster/brand": "workspace:*",
+    "@deckster/engine": "workspace:*",
+    "@deckster/presenter": "workspace:*",
+    "@effect/platform-node": "catalog:",
+    "@iconify-json/lucide": "catalog:",
+    "@iconify-json/tabler": "catalog:",
+    "@shikijs/magic-move": "catalog:",
+    "effect": "catalog:",
+    "elkjs": "catalog:",
+    "lottie-web": "catalog:",
+    "parse5": "catalog:",
+    "react": "catalog:",
+    "shiki": "catalog:",
+    "unplugin-icons": "catalog:",
+    "uqr": "catalog:"
+  },
+  "devDependencies": {
+    "@e2e-dev/web": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "e2e": "catalog:",
+    "happy-dom": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

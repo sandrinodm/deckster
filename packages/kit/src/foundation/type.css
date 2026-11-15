@@ -1,0 +1,224 @@
+/*
+ * The kit's one type mechanism. Each brand type step is a bundle of custom properties, set by the
+ * `kit-type-<step>` class and by the few selectors that cannot carry a class (markdown inside
+ * running text, table headers, text a fit steps to another size); one rule then applies whichever
+ * bundle an element has: family, size, leading, tracking, weight, style, case, features and axes.
+ * Sizes multiply by `--kit-fit` (the fit step) and `--kit-scale` (a layout's size for a variant),
+ * neither of which inherits, so nested text keeps the size it inherits.
+ */
+@layer theme, base, components, utilities;
+
+@property --kit-fit {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@property --kit-scale {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@layer components {
+  .kit-type-display,
+  .kit-fitted[data-kit-step='display'],
+  .kit-default-body h1 {
+    --kit-step-family: var(--brand-type-display-family);
+    --kit-step-size: var(--brand-type-display-size);
+    --kit-step-line-height: var(--brand-type-display-line-height);
+    --kit-step-tracking: var(--brand-type-display-tracking);
+    --kit-step-weight: var(--brand-type-display-weight);
+    --kit-step-style: var(--brand-type-display-style);
+    --kit-step-case: var(--brand-type-display-case);
+    --kit-step-features: var(--brand-type-display-features);
+    --kit-step-axes: var(--brand-type-display-axes);
+  }
+
+  .kit-type-headline,
+  .kit-fitted[data-kit-step='headline'],
+  .kit-default-body h2 {
+    --kit-step-family: var(--brand-type-headline-family);
+    --kit-step-size: var(--brand-type-headline-size);
+    --kit-step-line-height: var(--brand-type-headline-line-height);
+    --kit-step-tracking: var(--brand-type-headline-tracking);
+    --kit-step-weight: var(--brand-type-headline-weight);
+    --kit-step-style: var(--brand-type-headline-style);
+    --kit-step-case: var(--brand-type-headline-case);
+    --kit-step-features: var(--brand-type-headline-features);
+    --kit-step-axes: var(--brand-type-headline-axes);
+  }
+
+  .kit-type-title,
+  .kit-fitted[data-kit-step='title'],
+  .kit-prose h3 {
+    --kit-step-family: var(--brand-type-title-family);
+    --kit-step-size: var(--brand-type-title-size);
+    --kit-step-line-height: var(--brand-type-title-line-height);
+    --kit-step-tracking: var(--brand-type-title-tracking);
+    --kit-step-weight: var(--brand-type-title-weight);
+    --kit-step-style: var(--brand-type-title-style);
+    --kit-step-case: var(--brand-type-title-case);
+    --kit-step-features: var(--brand-type-title-features);
+    --kit-step-axes: var(--brand-type-title-axes);
+  }
+
+  .kit-type-lead,
+  .kit-prose[data-text='lead'],
+  .kit-prose[data-text='title'] li li,
+  .kit-default-body h1 + p {
+    --kit-step-family: var(--brand-type-lead-family);
+    --kit-step-size: var(--brand-type-lead-size);
+    --kit-step-line-height: var(--brand-type-lead-line-height);
+    --kit-step-tracking: var(--brand-type-lead-tracking);
+    --kit-step-weight: var(--brand-type-lead-weight);
+    --kit-step-style: var(--brand-type-lead-style);
+    --kit-step-case: var(--brand-type-lead-case);
+    --kit-step-features: var(--brand-type-lead-features);
+    --kit-step-axes: var(--brand-type-lead-axes);
+  }
+
+  .kit-type-body,
+  .kit-frame,
+  .kit-prose[data-text='body'],
+  .kit-prose[data-text='lead'] li li {
+    --kit-step-family: var(--brand-type-body-family);
+    --kit-step-size: var(--brand-type-body-size);
+    --kit-step-line-height: var(--brand-type-body-line-height);
+    --kit-step-tracking: var(--brand-type-body-tracking);
+    --kit-step-weight: var(--brand-type-body-weight);
+    --kit-step-style: var(--brand-type-body-style);
+    --kit-step-case: var(--brand-type-body-case);
+    --kit-step-features: var(--brand-type-body-features);
+    --kit-step-axes: var(--brand-type-body-axes);
+  }
+
+  .kit-type-small,
+  .kit-prose[data-text='body'] li li {
+    --kit-step-family: var(--brand-type-small-family);
+    --kit-step-size: var(--brand-type-small-size);
+    --kit-step-line-height: var(--brand-type-small-line-height);
+    --kit-step-tracking: var(--brand-type-small-tracking);
+    --kit-step-weight: var(--brand-type-small-weight);
+    --kit-step-style: var(--brand-type-small-style);
+    --kit-step-case: var(--brand-type-small-case);
+    --kit-step-features: var(--brand-type-small-features);
+    --kit-step-axes: var(--brand-type-small-axes);
+  }
+
+  .kit-type-caption {
+    --kit-step-family: var(--brand-type-caption-family);
+    --kit-step-size: var(--brand-type-caption-size);
+    --kit-step-line-height: var(--brand-type-caption-line-height);
+    --kit-step-tracking: var(--brand-type-caption-tracking);
+    --kit-step-weight: var(--brand-type-caption-weight);
+    --kit-step-style: var(--brand-type-caption-style);
+    --kit-step-case: var(--brand-type-caption-case);
+    --kit-step-features: var(--brand-type-caption-features);
+    --kit-step-axes: var(--brand-type-caption-axes);
+  }
+
+  .kit-type-label,
+  .kit-frame th {
+    --kit-step-family: var(--brand-type-label-family);
+    --kit-step-size: var(--brand-type-label-size);
+    --kit-step-line-height: var(--brand-type-label-line-height);
+    --kit-step-tracking: var(--brand-type-label-tracking);
+    --kit-step-weight: var(--brand-type-label-weight);
+    --kit-step-style: var(--brand-type-label-style);
+    --kit-step-case: var(--brand-type-label-case);
+    --kit-step-features: var(--brand-type-label-features);
+    --kit-step-axes: var(--brand-type-label-axes);
+  }
+
+  .kit-type-stat {
+    --kit-step-family: var(--brand-type-stat-family);
+    --kit-step-size: var(--brand-type-stat-size);
+    --kit-step-line-height: var(--brand-type-stat-line-height);
+    --kit-step-tracking: var(--brand-type-stat-tracking);
+    --kit-step-weight: var(--brand-type-stat-weight);
+    --kit-step-style: var(--brand-type-stat-style);
+    --kit-step-case: var(--brand-type-stat-case);
+    --kit-step-features: var(--brand-type-stat-features);
+    --kit-step-axes: var(--brand-type-stat-axes);
+  }
+
+  .kit-type-quote,
+  .kit-fitted[data-kit-step='quote'] {
+    --kit-step-family: var(--brand-type-quote-family);
+    --kit-step-size: var(--brand-type-quote-size);
+    --kit-step-line-height: var(--brand-type-quote-line-height);
+    --kit-step-tracking: var(--brand-type-quote-tracking);
+    --kit-step-weight: var(--brand-type-quote-weight);
+    --kit-step-style: var(--brand-type-quote-style);
+    --kit-step-case: var(--brand-type-quote-case);
+    --kit-step-features: var(--brand-type-quote-features);
+    --kit-step-axes: var(--brand-type-quote-axes);
+  }
+
+  /* Sparse running text: the lead step's voice at the title step's size. */
+  .kit-prose[data-text='title'] {
+    --kit-step-family: var(--brand-type-lead-family);
+    --kit-step-size: var(--brand-type-title-size);
+    --kit-step-line-height: var(--brand-type-lead-line-height);
+    --kit-step-tracking: var(--brand-type-lead-tracking);
+    --kit-step-weight: var(--brand-type-lead-weight);
+    --kit-step-style: var(--brand-type-lead-style);
+    --kit-step-case: var(--brand-type-lead-case);
+    --kit-step-features: var(--brand-type-lead-features);
+    --kit-step-axes: var(--brand-type-lead-axes);
+  }
+
+  /* Type classes reset the margins of the elements they set; layouts add their own. */
+  :where(
+    .kit-type-display,
+    .kit-type-headline,
+    .kit-type-title,
+    .kit-type-lead,
+    .kit-type-body,
+    .kit-type-small,
+    .kit-type-caption,
+    .kit-type-label,
+    .kit-type-stat,
+    .kit-type-quote
+  ) {
+    margin: 0;
+  }
+
+  .kit-type-display,
+  .kit-fitted[data-kit-step='display'],
+  .kit-default-body h1,
+  .kit-type-headline,
+  .kit-fitted[data-kit-step='headline'],
+  .kit-default-body h2,
+  .kit-type-title,
+  .kit-fitted[data-kit-step='title'],
+  .kit-prose h3,
+  .kit-type-lead,
+  .kit-prose[data-text='lead'],
+  .kit-prose[data-text='title'] li li,
+  .kit-default-body h1 + p,
+  .kit-type-body,
+  .kit-frame,
+  .kit-prose[data-text='body'],
+  .kit-prose[data-text='lead'] li li,
+  .kit-type-small,
+  .kit-prose[data-text='body'] li li,
+  .kit-type-caption,
+  .kit-type-label,
+  .kit-frame th,
+  .kit-type-stat,
+  .kit-type-quote,
+  .kit-fitted[data-kit-step='quote'],
+  .kit-prose[data-text='title'] {
+    font-family: var(--kit-step-family);
+    font-size: calc(var(--kit-step-size) * var(--kit-fit) * var(--kit-scale));
+    line-height: var(--kit-step-line-height);
+    letter-spacing: var(--kit-step-tracking);
+    font-weight: var(--kit-step-weight);
+    font-style: var(--kit-step-style);
+    text-transform: var(--kit-step-case);
+    font-feature-settings: var(--kit-step-features);
+    font-variation-settings: var(--kit-step-axes);
+  }
+}

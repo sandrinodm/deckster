@@ -1,0 +1,95 @@
+/*
+ * The logos layout: a grid of equal cells, each a size container, with one mark centred in it, the
+ * rows closed by a rule above and below. A mark's width is the square root of its aspect ratio
+ * times a base, corrected for its ink, so every mark carries about the same weight; it never runs
+ * wider than most of its cell or taller than about half of it. Row heights follow the brand's
+ * title size, so walls of eight or fewer stand larger.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-logos-context {
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  .kit-logos-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-frame[data-layout='logos'] {
+    --kit-logo-row-height: calc(4.5 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='logos']:is([data-count='6'], [data-count='7'], [data-count='8']) {
+    --kit-logo-row-height: calc(5.4 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='logos']:is([data-count='3'], [data-count='4'], [data-count='5']) {
+    --kit-logo-row-height: calc(6.4 * var(--brand-type-title-size));
+  }
+
+  .kit-logos-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-logo-columns), minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+    height: min(100cqh, calc(var(--kit-logo-rows) * var(--kit-logo-row-height)));
+    margin: 0;
+    padding: 0;
+    border-bottom: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    list-style: none;
+  }
+
+  .kit-logo-cell {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 0;
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    container-type: size;
+  }
+
+  .kit-logo-mark {
+    display: block;
+    width: min(
+      82cqw,
+      calc(62cqh * var(--kit-logo-aspect)),
+      calc(58cqh * sqrt(var(--kit-logo-aspect)) * var(--kit-logo-ink, 1) * var(--kit-logo-scale))
+    );
+    height: auto;
+    aspect-ratio: var(--kit-logo-aspect);
+    object-fit: contain;
+    filter: var(--kit-logo-filter, none);
+  }
+
+  .kit-frame[data-tone='color'] .kit-logo-mark {
+    filter: var(--kit-media-filter, none);
+  }
+
+  /* On a dark surface a colour mark sits on a chip of the brand's light paper. */
+  .kit-frame[data-chips='true'] .kit-logo-cell {
+    padding: var(--brand-space-lg) var(--brand-space-md);
+  }
+
+  .kit-frame[data-chips='true'] .kit-logo-mark {
+    box-sizing: content-box;
+    padding: var(--brand-space-sm) var(--brand-space-md);
+    border-radius: var(--brand-radius-md);
+    background: var(--kit-logo-chip);
+  }
+
+  /* Mono marks take the surface's text color, a little softened, strong enough to read. */
+  .kit-logo-flood {
+    flood-color: var(--brand-color-fg);
+    flood-opacity: 0.86;
+  }
+
+  .kit-logo-name {
+    --kit-scale: 0.72;
+
+    max-width: 80cqw;
+    color: var(--brand-color-fg);
+    text-align: center;
+    text-wrap: balance;
+  }
+}

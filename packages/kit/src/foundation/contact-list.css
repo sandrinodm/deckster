@@ -1,0 +1,52 @@
+/*
+ * A list of contacts: label over address, in a row that wraps. Links keep the text color with a
+ * hairline underline in the accent, so a row of addresses reads as text first.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-contacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--brand-space-md) var(--brand-space-xl);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-contact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-2xs);
+    min-width: 0;
+  }
+
+  .kit-contact-label {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-contact-text {
+    min-width: 0;
+    color: var(--brand-color-fg);
+    overflow-wrap: anywhere;
+  }
+
+  /* Stacked: one contact under the other, each label over its address. */
+  .kit-contacts-stacked {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: var(--brand-space-sm);
+  }
+
+  .kit-contacts-stacked .kit-contact {
+    gap: 0;
+  }
+
+  .kit-contact-text a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--brand-color-accent);
+    text-decoration-thickness: max(1px, 0.06em);
+    text-underline-offset: 0.22em;
+  }
+}

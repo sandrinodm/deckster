@@ -1,0 +1,98 @@
+/*
+ * The table layout: the table across the twelve columns, or eight beside a four-column aside whose
+ * accent rule and first line sit level with the top of the table. The table column carries the
+ * size the layout picked (a `kit-type-*` step and `--kit-fit`), and a Markdown table and a kit
+ * `<Table>` both take it from there, so they look the same: cells in that step, the header in the
+ * brand's label style at the same fit, columns of numbers aligned right and kept apart from the
+ * text beside them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-table-layout {
+    align-items: start;
+  }
+
+  .kit-table-main {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .kit-frame[data-layout='table'][data-aside='true'] .kit-table-main {
+    grid-column: 1 / span 8;
+  }
+
+  .kit-table-aside {
+    grid-column: 9 / span 4;
+    padding-left: var(--brand-space-md);
+    border-left: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  }
+
+  .kit-table-aside h3 {
+    color: var(--brand-color-heading);
+  }
+
+  /* Both tables take the column's size; the header keeps the label style at the same fit. */
+  .kit-frame[data-layout='table'] .kit-table-main table {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+  }
+
+  .kit-frame[data-layout='table'] .kit-table-main th {
+    --kit-fit: var(--kit-table-fit, 1);
+  }
+
+  /* A kit <Table> is as tall as its rows here, as a Markdown table is, not a chart filling a box. */
+  .kit-frame[data-layout='table'] .kit-table-main .kit-chart {
+    height: auto;
+  }
+
+  .kit-frame[data-layout='table'] .kit-table-main .kit-chart-plot {
+    flex: none;
+  }
+
+  .kit-frame[data-layout='table'] .kit-table-main .kit-chart-plot::before,
+  .kit-frame[data-layout='table'] .kit-table-main .kit-chart-plot::after {
+    content: none;
+  }
+
+  .kit-frame[data-layout='table'] .kit-table-main .kit-chart-table {
+    height: auto;
+    max-height: none;
+  }
+
+  /* Rows keep their air in proportion when the table steps down in size. */
+  .kit-frame[data-layout='table'] .kit-table-main :is(th, td) {
+    padding-block: 0.45em;
+    vertical-align: baseline;
+  }
+
+  /*
+   * Columns stand apart: a gap of a gutter between every two, so a column of numbers aligned right
+   * never reads as one cell with the text column after it.
+   */
+  .kit-frame[data-layout='table'] .kit-table-main :is(th, td):not(:last-child) {
+    padding-right: var(--kit-gutter);
+  }
+
+  .kit-frame[data-layout='table']
+    .kit-table-main
+    :is(th, td):is([data-numeric='true'], [align='right']) {
+    text-align: right;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .kit-frame[data-layout='table']
+    .kit-table-main
+    :is(th, td)[data-numeric='true']
+    + :is(th, td):not([data-numeric='true'], [align='right']) {
+    padding-left: var(--kit-gutter);
+  }
+
+  .kit-frame[data-layout='table'] .kit-table-main td:first-child {
+    color: var(--brand-color-heading);
+  }
+}

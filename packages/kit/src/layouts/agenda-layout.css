@@ -1,0 +1,115 @@
+/*
+ * The agenda layout: rows that share the height left under the header, each under a rule, with the
+ * number, title and time on one first baseline across the twelve columns and the detail under the
+ * title. Five to seven rows set the detail beside the title, in the small step, so each row keeps
+ * to one line. The current part's rule and number take the accent; the parts before it fade to
+ * the muted color.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /*
+   * Rows are as tall as their content, and share the height left over equally: a title that wraps
+   * makes its own row taller, never every row.
+   */
+  .kit-agenda {
+    display: grid;
+    flex: 1 1 auto;
+    grid-auto-rows: auto;
+    align-content: stretch;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-agenda-item {
+    align-content: start;
+    align-items: first baseline;
+    padding-block: var(--brand-space-sm) var(--brand-space-xs);
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-agenda-number {
+    grid-column: 1 / span 1;
+    color: var(--brand-color-muted);
+  }
+
+  .kit-agenda-text {
+    display: flex;
+    grid-column: 2 / span 9;
+    flex-direction: column;
+    gap: var(--brand-space-2xs);
+    min-width: 0;
+  }
+
+  .kit-agenda-title {
+    color: var(--brand-color-heading);
+    text-wrap: balance;
+  }
+
+  .kit-agenda-detail {
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  .kit-agenda-time {
+    grid-column: 11 / span 2;
+    justify-self: end;
+    color: var(--brand-color-muted);
+    white-space: nowrap;
+  }
+
+  /* Five to seven rows: the detail moves beside the title, so every row keeps to one line. */
+  .kit-frame[data-layout='agenda']:is([data-count='5'], [data-count='6'], [data-count='7'])
+    .kit-agenda-text {
+    display: contents;
+  }
+
+  .kit-frame[data-layout='agenda']:is([data-count='5'], [data-count='6'], [data-count='7'])
+    .kit-agenda-title {
+    grid-column: 2 / span 6;
+  }
+
+  .kit-frame[data-layout='agenda']:is([data-count='5'], [data-count='6'], [data-count='7'])
+    .kit-agenda-detail {
+    grid-column: 8 / span 4;
+    white-space: nowrap;
+  }
+
+  .kit-frame[data-layout='agenda']:is([data-count='5'], [data-count='6'], [data-count='7'])
+    .kit-agenda-time {
+    grid-column: 12 / span 1;
+  }
+
+  .kit-frame[data-layout='agenda']:is([data-count='5'], [data-count='6'], [data-count='7'])
+    .kit-agenda-item {
+    padding-block: var(--brand-space-xs);
+  }
+
+  .kit-frame[data-layout='agenda']:is([data-count='5'], [data-count='6'], [data-count='7'])
+    :is(.kit-agenda-title, .kit-agenda-number) {
+    --kit-scale: 0.8;
+  }
+
+  .kit-agenda-item[data-state='past'] .kit-agenda-title {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-agenda-item[data-state='next'] .kit-agenda-title {
+    color: var(--brand-color-fg);
+  }
+
+  /* The part that starts now: an accent rule, as a highlighted stat has, drawn over the hairline. */
+  .kit-agenda-item[data-state='current'] {
+    border-top-color: transparent;
+    box-shadow: inset 0 var(--brand-stroke-bold) 0 var(--brand-color-accent);
+  }
+
+  .kit-agenda-item[data-state='current'] .kit-agenda-number {
+    color: var(--brand-color-accent-text);
+  }
+
+  .kit-agenda-item[data-state='current'] :is(.kit-agenda-detail, .kit-agenda-time) {
+    color: var(--brand-color-fg);
+  }
+}

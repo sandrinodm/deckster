@@ -1,0 +1,60 @@
+/*
+ * The bio layout: a portrait in the first five columns from the top line to the bottom line, and
+ * the text from the seventh column: the name on the title line, the role, the facts, and the
+ * contacts on the bottom line.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='bio'] > .kit-safe {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    column-gap: var(--kit-gutter);
+  }
+
+  .kit-bio-portrait-cell {
+    grid-column: 1 / span 5;
+    grid-row: 1;
+    display: flex;
+    min-height: 0;
+  }
+
+  .kit-bio-portrait {
+    flex: 1;
+    border-radius: var(--kit-media-radius, 0);
+  }
+
+  .kit-bio-text {
+    grid-column: 7 / -1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-bio-name {
+    padding-bottom: 0.04em;
+  }
+
+  .kit-bio-body {
+    margin-top: var(--brand-space-md);
+  }
+
+  .kit-bio-role {
+    margin-top: var(--brand-space-xs);
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  .kit-bio-contacts {
+    margin-top: auto;
+    padding-top: var(--brand-space-md);
+  }
+
+  .kit-bio-contacts .kit-contacts {
+    padding-top: var(--brand-space-md);
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+}

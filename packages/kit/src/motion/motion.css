@@ -1,0 +1,168 @@
+/*
+ * The kit's motion vocabulary: slide transitions, the slide entrance and step reveals. Durations
+ * and easings come from the brand's motion tokens. Nothing moves in static mode (`?static`), where
+ * the engine marks the viewport `data-static="true"` and the kit's components leave out their
+ * motion attributes, or for viewers who ask for reduced motion.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /*
+   * Slide transitions. The kit's chrome names the brand's transition in `data-transition`. The
+   * incoming slide comes in on top; the outgoing one stays exactly in place (opaque, not moved or
+   * scaled) until the incoming one has finished, so no strip of the canvas shows at an edge and
+   * nothing shows through between two dark slides. It takes its resting place off screen only
+   * then.
+   */
+  .deck-viewport[data-static='false'] .deck-canvas > .deck-slide[data-slide-state] {
+    z-index: 0;
+    transition:
+      opacity 0s linear var(--brand-transition-duration),
+      translate 0s linear var(--brand-transition-duration),
+      scale 0s linear var(--brand-transition-duration),
+      visibility 0s linear var(--brand-transition-duration);
+  }
+
+  .deck-viewport[data-static='false'] .deck-canvas > .deck-slide[data-slide-state='current'] {
+    z-index: 1;
+    transition:
+      opacity var(--brand-transition-duration) var(--brand-transition-easing),
+      translate var(--brand-transition-duration) var(--brand-transition-easing),
+      scale var(--brand-transition-duration) var(--brand-transition-easing),
+      visibility 0s;
+  }
+
+  .deck-canvas:has(
+      > .kit-chrome:is(
+        [data-transition='fade'],
+        [data-transition='slide'],
+        [data-transition='zoom']
+      )
+    )
+    > .deck-slide:not([data-slide-state='current']) {
+    opacity: 0;
+  }
+
+  .deck-canvas:has(> .kit-chrome[data-transition='slide'])
+    > .deck-slide[data-slide-state='future'] {
+    translate: var(--kit-slide-shift) 0;
+  }
+
+  .deck-canvas:has(> .kit-chrome[data-transition='slide']) > .deck-slide[data-slide-state='past'] {
+    translate: calc(-1 * var(--kit-slide-shift)) 0;
+  }
+
+  /* A push moves the outgoing slide off with the incoming one: they stay edge to edge. */
+  .deck-viewport[data-static='false']
+    .deck-canvas:has(> .kit-chrome[data-transition='push'])
+    > .deck-slide[data-slide-state]:not([data-slide-state='current']) {
+    transition:
+      translate var(--brand-transition-duration) var(--brand-transition-easing),
+      visibility 0s linear var(--brand-transition-duration);
+  }
+
+  .deck-canvas:has(> .kit-chrome[data-transition='push']) > .deck-slide[data-slide-state='future'] {
+    translate: 100% 0;
+  }
+
+  .deck-canvas:has(> .kit-chrome[data-transition='push']) > .deck-slide[data-slide-state='past'] {
+    translate: -100% 0;
+  }
+
+  .deck-canvas:has(> .kit-chrome[data-transition='zoom']) > .deck-slide[data-slide-state='future'] {
+    scale: 0.96;
+  }
+
+  .deck-canvas:has(> .kit-chrome[data-transition='zoom']) > .deck-slide[data-slide-state='past'] {
+    scale: 1.04;
+  }
+
+  .deck-canvas:has(> .kit-chrome[data-transition='none']) > .deck-slide[data-slide-state] {
+    transition: none;
+  }
+
+  .deck-canvas {
+    --kit-slide-shift: 3%;
+  }
+
+  /*
+   * The slide entrance: when the deck moves forward onto a slide, the elements a layout marks with
+   * `data-kit-enter` fade and rise into place in order, starting partway into the slide transition.
+   */
+  @keyframes kit-enter {
+    from {
+      opacity: 0;
+      translate: 0 var(--brand-space-md);
+    }
+  }
+
+  .deck-viewport[data-static='false']
+    .deck-slide[data-slide-state='current'][data-direction='forward']
+    [data-kit-enter] {
+    animation: kit-enter var(--brand-duration-slow) var(--brand-ease-emphasized) both;
+    animation-delay: calc(
+      var(--brand-transition-duration) * 0.35 + var(--kit-enter-order, 0) *
+        var(--brand-duration-fast) * 0.5
+    );
+  }
+
+  [data-kit-enter='1'] {
+    --kit-enter-order: 1;
+  }
+
+  [data-kit-enter='2'] {
+    --kit-enter-order: 2;
+  }
+
+  [data-kit-enter='3'] {
+    --kit-enter-order: 3;
+  }
+
+  [data-kit-enter='4'] {
+    --kit-enter-order: 4;
+  }
+
+  [data-kit-enter='5'] {
+    --kit-enter-order: 5;
+  }
+
+  [data-kit-enter='6'] {
+    --kit-enter-order: 6;
+  }
+
+  /*
+   * Step reveals: each element in a step fades and rises into place; stepping back fades it out.
+   * Visibility switches with the fade, so hidden content is never read or clicked.
+   */
+  .kit-step[data-motion='on'] > * {
+    transition:
+      opacity var(--brand-duration-base) var(--brand-ease-standard),
+      translate var(--brand-duration-base) var(--brand-ease-emphasized),
+      visibility var(--brand-duration-base);
+  }
+
+  .kit-step > * {
+    visibility: visible;
+  }
+
+  .kit-step[data-step-state='hidden'] > * {
+    visibility: hidden;
+    opacity: 0;
+    translate: 0 calc(var(--brand-space-sm) * 1.5);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deck-viewport[data-static='false'] .deck-canvas > .deck-slide[data-slide-state] {
+      translate: none;
+      scale: none;
+    }
+
+    [data-kit-enter] {
+      animation: none !important;
+    }
+
+    .kit-step[data-step-state='hidden'] > * {
+      translate: none;
+    }
+  }
+}

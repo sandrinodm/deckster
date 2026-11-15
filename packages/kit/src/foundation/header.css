@@ -1,0 +1,68 @@
+/*
+ * The parts content slides share: the eyebrow on the top line, the title on the title line, the
+ * body below it and the footnote on the bottom line.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /*
+   * The eyebrow (kicker) row: reserved on content slides even when empty. An eyebrow too long for a
+   * narrow column (a split's text side) takes a second, balanced line rather than spilling out; the
+   * title moves down by that line only on such a slide.
+   */
+  .kit-eyebrow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6em;
+    min-height: var(--kit-eyebrow-row);
+    color: var(--brand-color-accent-text);
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  .kit-eyebrow::before {
+    content: '';
+    flex: none;
+    width: 1.4em;
+    height: var(--brand-stroke-bold);
+    margin-top: calc(0.5lh - var(--brand-stroke-bold) / 2);
+    background: currentColor;
+  }
+
+  .kit-eyebrow:empty::before {
+    content: none;
+  }
+
+  .kit-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(var(--kit-eyebrow-row), auto) auto;
+    row-gap: var(--kit-eyebrow-gap);
+  }
+
+  .kit-header > .kit-title {
+    max-width: calc(11 * var(--kit-column) + 10 * var(--kit-gutter));
+  }
+
+  .kit-body {
+    margin-top: var(--kit-title-gap);
+  }
+
+  /* A footnote balances its lines, so a two-line source never leaves one word on its own. */
+  /* A footnote takes one line when one fits across the slide; past that it wraps balanced. */
+  .kit-footnote {
+    margin-top: auto;
+    padding-top: var(--brand-space-md);
+    max-width: 100%;
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  .kit-footnote p {
+    margin: 0;
+  }
+
+  .kit-footnote a {
+    color: inherit;
+  }
+}

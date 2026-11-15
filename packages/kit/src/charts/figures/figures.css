@@ -1,0 +1,335 @@
+/*
+ * The number-first figures: a big number, a row of stats, a comparison, progress bars and the
+ * in-cell bars of a table. Figures sit in the chart frame's plot, which takes the region's height;
+ * they place themselves in it optically (a little above the middle), like the kit's sparse text.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-chart-plot:has(
+    > :is(.kit-big-number, .kit-stat-row, .kit-compare, .kit-progress, .kit-chart-table)
+  ) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .kit-chart-plot:has(
+      > :is(.kit-big-number, .kit-stat-row, .kit-compare, .kit-progress, .kit-chart-table)
+    )::before,
+  .kit-chart-plot:has(
+      > :is(.kit-big-number, .kit-stat-row, .kit-compare, .kit-progress, .kit-chart-table)
+    )::after {
+    content: '';
+    flex: 2 1 0;
+  }
+
+  .kit-chart-plot:has(
+      > :is(.kit-big-number, .kit-stat-row, .kit-compare, .kit-progress, .kit-chart-table)
+    )::after {
+    flex-grow: 3;
+  }
+
+  /* A table fills its region: its rows grow up to about two and a half lines each, and the rest of
+     the room goes above and below it. */
+  .kit-chart-table {
+    flex: none;
+    height: calc(var(--kit-table-rows, 6) * 2.4lh);
+    max-height: 100%;
+  }
+
+  .kit-chart .kit-chart-table td {
+    vertical-align: middle;
+  }
+
+  .kit-chart .kit-chart-table th {
+    vertical-align: bottom;
+  }
+
+  /* A big number: the figure as large as the region allows, its label and context under it. */
+  .kit-big-number {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-sm);
+  }
+
+  .kit-big-number-value .kit-stat-value {
+    --kit-scale: var(--kit-big-scale, 1);
+
+    margin: 0;
+    white-space: nowrap;
+    color: var(--brand-chart-stat);
+    line-height: 0.92;
+  }
+
+  /* The trend stands on the figure's baseline, beside its last digit. */
+  .kit-big-number-figure {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--brand-space-lg);
+  }
+
+  .kit-big-number-figure > .kit-trend {
+    margin-bottom: var(--brand-space-sm);
+  }
+
+  .kit-big-number-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--brand-space-lg);
+  }
+
+  .kit-big-number-label {
+    max-width: 22em;
+    margin: 0;
+    color: var(--brand-color-heading);
+    text-wrap: balance;
+  }
+
+  .kit-big-number-context {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--brand-space-xs) var(--brand-space-md);
+  }
+
+  .kit-big-number-context > p {
+    margin: 0;
+  }
+
+  .kit-trend {
+    display: block;
+    flex: none;
+    overflow: visible;
+  }
+
+  /* A row of stats, as the stats layout sets them, with a sparkline row under the deltas. */
+  .kit-stat-row {
+    --kit-stat-columns: 3;
+
+    display: grid;
+    grid-template-columns: repeat(var(--kit-stat-columns), minmax(0, 1fr));
+    grid-template-rows: auto auto auto auto;
+    column-gap: var(--brand-grid-gutter);
+    row-gap: 0;
+  }
+
+  .kit-stat-row[data-count='2'] {
+    --kit-stat-columns: 2;
+  }
+
+  .kit-stat-row[data-count='4'] {
+    --kit-stat-columns: 4;
+  }
+
+  .kit-stat-row > .kit-stat {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+  }
+
+  .kit-stat-row[data-count='4'] .kit-stat-value {
+    --kit-scale: 0.82;
+  }
+
+  .kit-stat-row .kit-stat-value {
+    white-space: nowrap;
+    color: var(--brand-color-heading);
+  }
+
+  .kit-stat-row .kit-stat[data-highlight='true'] .kit-stat-value {
+    color: var(--brand-color-accent);
+  }
+
+  .kit-stat-spark {
+    min-height: 0;
+    margin-top: var(--brand-space-sm);
+  }
+
+  @container (max-width: 1100px) {
+    .kit-stat-row[data-count='4'] {
+      --kit-stat-columns: 2;
+
+      row-gap: var(--brand-space-lg);
+    }
+  }
+
+  /* In a narrow column (five of twelve columns, an aside) three stats stack, each figure beside
+     its label, so a long word in a label keeps a whole line instead of spilling out of a third of
+     the width, and the stack stays as short as a row of figures. */
+  @container (max-width: 760px) {
+    .kit-stat-row[data-count='3'] {
+      --kit-stat-columns: 1;
+
+      grid-template-rows: none;
+      row-gap: var(--brand-space-lg);
+    }
+
+    .kit-stat-row[data-count='3'] > .kit-stat {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-rows: none;
+      grid-row: auto;
+      column-gap: var(--brand-space-md);
+      align-content: start;
+    }
+
+    .kit-stat-row[data-count='3'] > .kit-stat > .kit-stat-value {
+      grid-row: span 3;
+      align-self: start;
+    }
+
+    .kit-stat-row[data-count='3'] > .kit-stat > :not(.kit-stat-value) {
+      grid-column: 2;
+    }
+  }
+
+  /* A comparison: two figures, the change between them, a bar to scale under each. */
+  .kit-compare {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: end;
+    column-gap: var(--brand-space-xl);
+  }
+
+  .kit-compare-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-sm);
+    min-width: 0;
+  }
+
+  .kit-compare-label {
+    margin: 0;
+    color: var(--brand-chart-label);
+  }
+
+  .kit-compare-side .kit-stat-value {
+    margin: 0;
+    white-space: nowrap;
+    color: var(--brand-chart-label);
+  }
+
+  .kit-compare-side[data-side='to'] .kit-stat-value {
+    color: var(--brand-color-accent);
+  }
+
+  .kit-compare-side[data-side='to'] .kit-compare-label {
+    color: var(--brand-color-heading);
+  }
+
+  .kit-compare-track {
+    height: var(--brand-space-md);
+    margin-top: var(--brand-space-sm);
+  }
+
+  .kit-compare-bar {
+    height: 100%;
+    border-radius: var(--brand-radius-sm);
+  }
+
+  .kit-compare-change {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--brand-space-xs);
+    margin-bottom: calc(var(--brand-space-md) * 2 + var(--brand-space-sm));
+  }
+
+  .kit-compare-arrow {
+    width: var(--brand-space-xl);
+    height: auto;
+  }
+
+  .kit-compare-delta {
+    margin: 0;
+    white-space: nowrap;
+    font-variant-numeric: lining-nums;
+  }
+
+  /* Progress: thick tracks with a fill and a goal marker. */
+  .kit-progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-lg);
+  }
+
+  .kit-progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-sm);
+  }
+
+  .kit-progress-item .kit-stat-value {
+    margin: 0;
+    color: var(--brand-color-accent-text);
+  }
+
+  .kit-progress-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--brand-space-md);
+  }
+
+  .kit-progress-label {
+    margin: 0;
+  }
+
+  .kit-progress-item[data-highlight='false'] .kit-progress-label {
+    color: var(--brand-chart-label);
+  }
+
+  .kit-progress-track {
+    position: relative;
+    height: var(--brand-space-lg);
+    border-radius: var(--brand-radius-md);
+  }
+
+  .kit-progress[data-single='false'] .kit-progress-track {
+    height: var(--brand-space-md);
+  }
+
+  .kit-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  .kit-progress-target {
+    position: absolute;
+    top: calc(var(--brand-space-xs) * -1);
+    bottom: calc(var(--brand-space-xs) * -1);
+    width: var(--brand-stroke-bold);
+  }
+
+  .kit-progress-figure {
+    display: flex;
+    flex: none;
+    align-items: baseline;
+    gap: var(--brand-space-sm);
+    margin: 0;
+  }
+
+  .kit-progress-goal {
+    white-space: nowrap;
+    color: var(--brand-chart-label);
+  }
+
+  /* Tables: in-cell bars before the numbers of a bar column, to scale from the cell's start. */
+  .kit-table-bar-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--brand-space-sm);
+    width: 100%;
+  }
+
+  .kit-table-bar {
+    flex: 1 1 auto;
+    order: -1;
+    min-width: 4em;
+    height: var(--brand-space-sm);
+  }
+
+  .kit-table-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: var(--brand-radius-sm);
+  }
+}

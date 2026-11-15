@@ -1,0 +1,147 @@
+/*
+ * The team layout. A row of three or four: equal columns, each portrait as tall as the region
+ * leaves above the name and role, but never taller than 4:5. A grid of five or six: three columns
+ * of cards in two rows, a square portrait beside the name. A roster of seven or eight: two columns
+ * of four rows, a smaller square beside one line of name and one of role.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='team'] {
+    --kit-member-span: 4;
+    --kit-team-text-gap: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='team'][data-count='4'] {
+    --kit-member-span: 3;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='roster'] {
+    --kit-member-span: 6;
+  }
+
+  .kit-team-context {
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  .kit-team-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-team {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+    gap: var(--brand-space-lg) var(--kit-gutter);
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-team-member {
+    grid-column: span var(--kit-member-span);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='row'] .kit-team {
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    row-gap: 0;
+  }
+
+  /*
+   * In a row the portrait, the name and the role each take a track the members share, so a name
+   * that wraps keeps every portrait the same height and every role level.
+   */
+  .kit-frame[data-layout='team'][data-arrangement='row'] .kit-team-member {
+    display: grid;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='row'] .kit-team-text {
+    display: contents;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='row'] .kit-team-name {
+    padding-top: var(--kit-team-text-gap);
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='row'] .kit-team-role {
+    padding-top: var(--brand-space-2xs);
+  }
+
+  .kit-team-portrait {
+    width: 100%;
+    max-height: 100%;
+    min-height: 0;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--kit-media-radius, 0);
+  }
+
+  .kit-team-text {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: var(--brand-space-2xs);
+    padding-top: var(--kit-team-text-gap);
+    min-width: 0;
+  }
+
+  .kit-team-name {
+    text-wrap: balance;
+  }
+
+  .kit-team-role {
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  /* Cards and roster rows: a square portrait beside the name, centred on it. */
+  .kit-frame[data-layout='team']:not([data-arrangement='row']) .kit-team-member {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='team']:not([data-arrangement='row']) .kit-team-portrait {
+    flex: none;
+    width: auto;
+    height: min(100%, var(--kit-portrait-max));
+    aspect-ratio: 1;
+  }
+
+  .kit-frame[data-layout='team']:not([data-arrangement='row']) .kit-team-text {
+    flex: 1 1 0;
+    padding-top: 0;
+  }
+
+  .kit-frame[data-layout='team']:not([data-arrangement='row']) .kit-team-name {
+    --kit-scale: 0.68;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='grid'] .kit-team {
+    row-gap: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='grid'] {
+    --kit-portrait-max: calc(3.6 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='roster'] {
+    --kit-portrait-max: calc(2.2 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='roster'] .kit-team {
+    row-gap: var(--brand-space-xs);
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='roster'] .kit-team-name {
+    --kit-scale: 0.6;
+  }
+}

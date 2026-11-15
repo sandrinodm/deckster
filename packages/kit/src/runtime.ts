@@ -1,0 +1,116 @@
+import { definePlugin } from '@deckster/engine';
+
+import { AppFrame } from '#apps/app-frame.tsx';
+import { Live } from '#apps/live.tsx';
+import { CHART_COMPONENTS } from '#charts/chart-components.ts';
+import { Chrome } from '#chrome/chrome.tsx';
+import { CodeMove } from '#code/code-move.tsx';
+import { CodeStep } from '#code/code-step.tsx';
+import { Code } from '#code/code.tsx';
+import { Cmd, Out, Terminal } from '#code/terminal.tsx';
+import { DIAGRAM_COMPONENTS } from '#diagrams/diagram-components.ts';
+import { MarkdownTable } from '#foundation/markdown-table.tsx';
+import { Icon } from '#icons/icon.tsx';
+import { agendaLayout } from '#layouts/agenda-layout.tsx';
+import { bioLayout } from '#layouts/bio-layout.tsx';
+import { cardsLayout } from '#layouts/cards-layout.tsx';
+import { chartLayout } from '#layouts/chart-layout.tsx';
+import { closingLayout } from '#layouts/closing-layout.tsx';
+import { codeLayout } from '#layouts/code-layout.tsx';
+import { comparisonLayout } from '#layouts/comparison-layout.tsx';
+import { contentLayout } from '#layouts/content-layout.tsx';
+import { defaultLayout } from '#layouts/default-layout.tsx';
+import { demoLayout } from '#layouts/demo-layout.tsx';
+import { diagramLayout } from '#layouts/diagram-layout.tsx';
+import { imageLayout } from '#layouts/image-layout.tsx';
+import { logosLayout } from '#layouts/logos-layout.tsx';
+import { quoteLayout } from '#layouts/quote-layout.tsx';
+import { sectionLayout } from '#layouts/section-layout.tsx';
+import { splitLayout } from '#layouts/split-layout.tsx';
+import { statementLayout } from '#layouts/statement-layout.tsx';
+import { statsLayout } from '#layouts/stats-layout.tsx';
+import { stepsLayout } from '#layouts/steps-layout.tsx';
+import { tableLayout } from '#layouts/table-layout.tsx';
+import { teamLayout } from '#layouts/team-layout.tsx';
+import { timelineLayout } from '#layouts/timeline-layout.tsx';
+import { titleLayout } from '#layouts/title-layout.tsx';
+import { Button } from '#links/button.tsx';
+import { Download } from '#links/download.tsx';
+import { LinkCard } from '#links/link-card.tsx';
+import { Link } from '#links/link.tsx';
+import { QR } from '#links/qr.tsx';
+import { Image } from '#media/image.tsx';
+import { Lottie } from '#media/lottie.tsx';
+import { Video } from '#media/video.tsx';
+import { Step } from '#motion/step.tsx';
+import '#apps/apps.css';
+import '#code/code.css';
+import '#icons/icon.css';
+import '#layouts/code-layout.css';
+import '#media/media.css';
+import '#links/links.css';
+import '#chrome/chrome.css';
+import '#motion/motion.css';
+
+/**
+ * The kit's runtime plugin, loaded into every deck by `@deckster/vite-plugin`. It registers the
+ * brand-aware layouts (the `default` layout over the engine's unstyled one), the animated `Step`
+ * that MDX and TSX slides reveal content with, markdown links (`a`, which open outside sites in a
+ * new tab) and tables (`table`, which the table layout treats from the slide's frontmatter), the
+ * link components (`Button`, `Download`, `LinkCard`, `QR`), the code components (`Code`,
+ * `CodeMove`, `CodeStep`, `Terminal`, `Cmd`, `Out`), the media components (`Image`, `Video`,
+ * `Lottie`), `Icon` and the page chrome the brand describes. Each layout's contract is in
+ * `catalog.ts`, which the build loads in Node.
+ */
+export default definePlugin({
+  name: '@deckster/kit',
+  layouts: [
+    defaultLayout,
+    titleLayout,
+    sectionLayout,
+    statementLayout,
+    contentLayout,
+    splitLayout,
+    statsLayout,
+    chartLayout,
+    diagramLayout,
+    codeLayout,
+    demoLayout,
+    agendaLayout,
+    quoteLayout,
+    imageLayout,
+    cardsLayout,
+    stepsLayout,
+    comparisonLayout,
+    timelineLayout,
+    tableLayout,
+    logosLayout,
+    teamLayout,
+    bioLayout,
+    closingLayout,
+  ],
+  components: {
+    a: Link,
+    table: MarkdownTable,
+    Step,
+    Button,
+    Download,
+    LinkCard,
+    QR,
+    Code,
+    CodeMove,
+    CodeStep,
+    Terminal,
+    Cmd,
+    Out,
+    Image,
+    Video,
+    Lottie,
+    Icon,
+    Live,
+    AppFrame,
+    ...CHART_COMPONENTS,
+    ...DIAGRAM_COMPONENTS,
+  },
+  chrome: Chrome,
+});

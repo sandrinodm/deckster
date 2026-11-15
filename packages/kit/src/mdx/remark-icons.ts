@@ -1,0 +1,215 @@
+import { createRequire } from 'node:module';
+
+import { failBuild, type KitFile } from '#mdx/kit-file.ts';
+import {
+  attributeValue,
+  defaultImport,
+  findAttribute,
+  identifierAttribute,
+  walk,
+  type MdastNode,
+} from '#mdx/mdast.ts';
+import { nearestNames } from '#mdx/nearest-names.ts';
+
+/**
+ * The parts of a vfile the plugin uses.
+ */
+export type IconFile = Pick<KitFile, 'fail'>;
+
+/**
+ * Options of {@link remarkKitIcons}.
+ */
+export type IconOptions = {
+  /**
+   * The Iconify set the brand uses, such as `lucide`; the set a bare icon name comes from.
+   */
+  set: string;
+};
+
+/**
+ * The names a set's `icons.json` defines.
+ */
+type IconSet = {
+  /**
+   * The icon ids.
+   */
+  icons: Record<string, unknown>;
+
+  /**
+   * Alternative ids for icons.
+   */
+  aliases?: Record<string, unknown>;
+};
+
+/**
+ * The most suggestions an unknown icon name gets.
+ */
+const MAX_SUGGESTIONS = 6;
+
+/**
+ * Icon sets read so far, by set id.
+ */
+const sets = new Map<string, IconSet>();
+
+/**
+ * The kit's own `require`, so icon sets resolve from the kit's dependencies.
+ */
+const require = createRequire(import.meta.url);
+
+/**
+ * A remark plugin that resolves `<Icon name="rocket" />` at build time. The name is looked up in
+ * the brand's icon set (or in `set:name` form, another installed set), checked, and replaced by an
+ * import of `~icons/<set>/<name>`, which `unplugin-icons` serves as a React component. Only the
+ * icons the slides name end up in the bundle. An unknown name fails the build with the set's
+ * closest names as the fix.
+ *
+ * @param options - The brand's icon set.
+ */
+export function remarkKitIcons(options: IconOptions): (tree: MdastNode, file: IconFile) => void {
+  return (tree, file) => {
+    const imports: MdastNode[] = [];
+    const locals = new Map<string, string>();
+    walk(tree, (node) => {
+      const name = node.name === 'Icon' ? attributeValue(node, 'name') : undefined;
+      if (typeof name !== 'string' || findAttribute(node, 'icon') !== undefined) {
+        return false;
+      }
+
+      const { set, icon } = splitName(name, options.set);
+      checkIcon(set, icon, name, node, file);
+      const id = `${set}/${icon}`;
+      let local = locals.get(id);
+      if (local === undefined) {
+        local = `kitIcon${locals.size}`;
+        locals.set(id, local);
+        imports.push(defaultImport(local, `~icons/${id}`));
+      }
+
+      node.attributes?.push(identifierAttribute('icon', local));
+      return false;
+    });
+    tree.children = [...imports, ...(tree.children ?? [])];
+  };
+}
+
+/**
+ * Splits `set:name` into its parts; a bare name uses the brand's set.
+ *
+ * @param name - The name as written.
+ * @param fallback - The brand's set.
+ */
+export function splitName(name: string, fallback: string): { set: string; icon: string } {
+  const [first, second] = name.split(':');
+  return second === undefined
+    ? { set: fallback, icon: name }
+    : { set: first ?? fallback, icon: second };
+}
+
+/**
+ * Fails the build when the set is not installed or does not have the icon, with the closest names
+ * the set has as the fix.
+ *
+ * @param set - The set id.
+ * @param icon - The icon id.
+ * @param written - The name as written, for the message.
+ * @param node - The element, for the place.
+ * @param file - The vfile.
+ */
+export function checkIcon(
+  set: string,
+  icon: string,
+  written: string,
+  node: MdastNode,
+  file: IconFile,
+): void {
+  if (!hasIcon(set, icon)) {
+    failBuild(
+      file,
+      {
+        rule: 'icon-unknown',
+        problem: `<Icon name="${written}"> ${unknownIconReason(set)}`,
+        fix: unknownIconFix(set, icon),
+      },
+      node,
+    );
+  }
+}
+
+/**
+ * Why an icon name was not found, to follow the name in a message: the set is not installed, or
+ * does not have it.
+ *
+ * @param set - The set id.
+ */
+export function unknownIconReason(set: string): string {
+  return readSet(set) === undefined
+    ? `needs the "${set}" icon set, which is not installed.`
+    : `is not an icon of the ${set} set.`;
+}
+
+/**
+ * The fix for an icon name a set does not have: the set, the closest names it has and where to
+ * browse it; or, for a set that is not installed, how to add it.
+ *
+ * @param set - The set id.
+ * @param icon - The icon id as written.
+ */
+export function unknownIconFix(set: string, icon: string): string {
+  const data = readSet(set);
+  if (data === undefined) {
+    return (
+      `Add \`@iconify-json/${set}\` to @deckster/kit, or use a name from the brand's set without the ` +
+      '`set:` prefix.'
+    );
+  }
+
+  const near = nearestNames(
+    icon,
+    [...Object.keys(data.icons), ...Object.keys(data.aliases ?? {})],
+    MAX_SUGGESTIONS,
+  );
+  const choice =
+    near.length === 0
+      ? `No name in the ${set} set is close to "${icon}".`
+      : `Closest names in the ${set} set: ${near.join(', ')}.`;
+  return (
+    `${choice} Browse the set at https://icon-sets.iconify.design/${set}/. A deck that renders ` +
+    "in several brands needs a name that every brand's set has."
+  );
+}
+
+/**
+ * Whether an installed Iconify set has an icon, by name or alias.
+ *
+ * @param set - The set id.
+ * @param icon - The icon id.
+ * @returns `false` when the set is not installed or lacks the icon.
+ */
+export function hasIcon(set: string, icon: string): boolean {
+  const data = readSet(set);
+  return (
+    data !== undefined &&
+    (icon in data.icons || (data.aliases !== undefined && icon in data.aliases))
+  );
+}
+
+/**
+ * Reads an installed Iconify set, once.
+ *
+ * @param set - The set id.
+ * @returns The set; `undefined` when its package is not installed.
+ */
+function readSet(set: string): IconSet | undefined {
+  const known = sets.get(set);
+  if (known !== undefined) {
+    return known;
+  }
+
+  try {
+    const data = require(`@iconify-json/${set}/icons.json`) as IconSet;
+    sets.set(set, data);
+    return data;
+  } catch {
+    return undefined;
+  }
+}

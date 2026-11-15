@@ -1,0 +1,141 @@
+/*
+ * The slide frame every kit layout builds on. Every value comes from the brand's custom properties,
+ * so the same rules give each brand its own margins, grid and rhythm. The rules sit in the
+ * `components` layer, below Tailwind's utilities, so a slide can still adjust its own content.
+ *
+ * Anchor lines, shared by every layout:
+ * - The top line is the brand's top margin. Content slides reserve an eyebrow row there, so the
+ *   title starts at the same height whether or not the slide has an eyebrow.
+ * - The title line is the top line plus the eyebrow row and a small gap.
+ * - The bottom line is the brand's bottom margin. Footnotes sit on it; title and section slides
+ *   stand their main text on it.
+ * - Chrome sits in the margins, centred on half the margin.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame {
+    --kit-eyebrow-row: calc(var(--brand-type-label-size) * var(--brand-type-label-line-height));
+    --kit-eyebrow-gap: var(--brand-space-sm);
+    --kit-title-gap: var(--brand-space-lg);
+    --kit-columns: var(--brand-grid-columns);
+    --kit-gutter: var(--brand-grid-gutter);
+    --kit-canvas-width: 1920px;
+    --kit-canvas-height: 1080px;
+    --kit-content-width: calc(var(--kit-canvas-width) - 2 * var(--brand-margin-x));
+    --kit-column: calc(
+      (var(--kit-content-width) - (var(--kit-columns) - 1) * var(--kit-gutter)) / var(--kit-columns)
+    );
+
+    position: absolute;
+    inset: 0;
+    color: var(--brand-color-fg);
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* The safe area: exactly inside the brand's margins. */
+  .kit-safe {
+    position: absolute;
+    inset: var(--brand-margin-y) var(--brand-margin-x);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .kit-frame *,
+  .kit-frame *::before,
+  .kit-frame *::after {
+    box-sizing: border-box;
+  }
+
+  .kit-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    column-gap: var(--kit-gutter);
+  }
+
+  /*
+   * A region takes the height left in its column and gives it to what it holds: a chart, diagram,
+   * table, code or demo can size itself with `100cqh` and `100cqw`, or fill it with `height: 100%`.
+   */
+  .kit-region {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    container-type: size;
+  }
+
+  /*
+   * Optical placement inside a region: the free height is shared 2:3 above and below the content,
+   * so sparse content sits a little above the middle of the space between the title and the
+   * bottom line, where the eye expects it. Content that fills the region starts at its top.
+   */
+  .kit-region[data-place='optical']::before,
+  .kit-region[data-place='optical']::after {
+    content: '';
+    flex: 2 1 0;
+  }
+
+  .kit-region[data-place='optical']::after {
+    flex-grow: 3;
+  }
+
+  .kit-region[data-place='optical'] > * {
+    flex: none;
+  }
+
+  /* A word longer than the heading's column (a fit step down could not save it) breaks rather than
+     running out of the column. */
+  .kit-heading {
+    color: var(--brand-color-heading);
+    text-wrap: balance;
+    hyphens: manual;
+    overflow-wrap: break-word;
+  }
+
+  .kit-numeric {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .kit-muted {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-logo {
+    display: block;
+    flex: none;
+    object-fit: contain;
+    object-position: left center;
+  }
+}
+
+/*
+ * Text in the narrow columns of a row of items (cards, steps, milestones, options, people, logos,
+ * agenda items) breaks a word longer than its column (`Internationalization` in a sixth of the
+ * row) rather than run out of it; other words are never broken or hyphenated.
+ */
+@layer components {
+  .kit-frame
+    :is(
+      .kit-logo-name,
+      .kit-card-title,
+      .kit-card-body,
+      .kit-process-title,
+      .kit-process-text,
+      .kit-timeline-title,
+      .kit-timeline-detail,
+      .kit-comparison-name,
+      .kit-comparison-summary,
+      .kit-comparison-label,
+      .kit-comparison-value,
+      .kit-team-name,
+      .kit-team-role,
+      .kit-agenda-title,
+      .kit-agenda-detail,
+      .kit-stat-label
+    ) {
+    overflow-wrap: break-word;
+  }
+}

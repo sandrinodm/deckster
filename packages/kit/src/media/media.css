@@ -1,0 +1,151 @@
+/*
+ * Images, video and Lottie animations. Treatments come from the brand's imagery tokens, radii from
+ * its shape tokens; nothing here has a color of its own.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-image,
+  .kit-video,
+  .kit-lottie {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-sm);
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+  }
+
+  .kit-image-frame,
+  .kit-video-frame,
+  .kit-lottie-frame {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .kit-image-frame > img,
+  .kit-video-media {
+    display: block;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-image-frame > img[hidden] {
+    display: none;
+  }
+
+  .kit-image-frame[data-tint='true']::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--kit-image-tint);
+    opacity: var(--kit-image-tint-opacity);
+    pointer-events: none;
+  }
+
+  .kit-image-filter {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  .kit-image-missing {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    padding: var(--brand-space-md);
+    border: var(--brand-stroke-regular) dashed var(--brand-color-border);
+    border-radius: inherit;
+    background: var(--brand-color-surface);
+    color: var(--brand-color-muted);
+    text-align: center;
+  }
+
+  .kit-image-caption,
+  .kit-video-caption {
+    color: var(--brand-color-muted);
+    text-wrap: pretty;
+  }
+
+  /* A video without controls lets clicks through, so the stage still advances on a click. */
+  .kit-video[data-controls='false'] .kit-video-media {
+    pointer-events: none;
+  }
+
+  .kit-lottie[data-size='sm'] {
+    width: var(--brand-space-2xl);
+    height: auto;
+  }
+
+  .kit-lottie[data-size='md'] {
+    width: var(--brand-space-3xl);
+    height: auto;
+  }
+
+  .kit-lottie[data-size='lg'] {
+    width: calc(2 * var(--brand-space-3xl));
+    height: auto;
+  }
+
+  .kit-lottie-frame {
+    align-items: center;
+    justify-content: center;
+  }
+
+  /*
+   * Lottie paints stroke-only shapes with a transparent fill and leaves the color to the default
+   * black. No fill on the root is what those shapes inherit; shapes with a fill of their own keep it.
+   */
+  .kit-lottie-frame > svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+  }
+
+  /* A color role redraws every stroke and fill of the animation. */
+  .kit-lottie[data-role] .kit-lottie-frame [stroke]:not([stroke='none']) {
+    stroke: var(--kit-lottie-color);
+  }
+
+  .kit-lottie[data-role] .kit-lottie-frame [fill]:not([fill='none']) {
+    fill: var(--kit-lottie-color);
+  }
+
+  .kit-lottie[data-role='fg'] {
+    --kit-lottie-color: var(--brand-color-fg);
+  }
+
+  .kit-lottie[data-role='heading'] {
+    --kit-lottie-color: var(--brand-color-heading);
+  }
+
+  .kit-lottie[data-role='muted'] {
+    --kit-lottie-color: var(--brand-color-muted);
+  }
+
+  .kit-lottie[data-role='accent'] {
+    --kit-lottie-color: var(--brand-color-accent);
+  }
+
+  .kit-lottie[data-role='positive'] {
+    --kit-lottie-color: var(--brand-color-positive);
+  }
+
+  .kit-lottie[data-role='negative'] {
+    --kit-lottie-color: var(--brand-color-negative);
+  }
+
+  /* Media placed above a list in running text lines up with the list's text, not its markers. */
+  .kit-prose :is(.kit-lottie, .kit-image, .kit-video):has(~ :is(ul, ol)) {
+    margin-inline-start: 1.1em;
+  }
+}

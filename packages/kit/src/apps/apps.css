@@ -1,0 +1,366 @@
+/*
+ * Mini apps: the `demo` layout, inline `<Live>` widgets and `<AppFrame>` iframes. Every color,
+ * radius, stroke, shadow and type step comes from the brand's custom properties, so a frame, its
+ * chrome, its fallback and its hint follow the brand and the slide's surface.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-demo {
+    flex: 1 1 0;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .kit-demo-app {
+    display: flex;
+    grid-column: 1 / -1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-frame[data-aside='true'] .kit-demo-app {
+    grid-column: 1 / span 9;
+  }
+
+  .kit-demo-aside {
+    --kit-flow-gap: var(--brand-space-sm);
+
+    grid-column: 10 / span 3;
+    align-self: start;
+    padding-top: var(--brand-space-md);
+    border-top: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  }
+
+  .kit-demo-aside p,
+  .kit-demo-aside li {
+    font-family: var(--brand-type-body-family);
+    font-size: var(--brand-type-body-size);
+    line-height: var(--brand-type-body-line-height);
+    letter-spacing: var(--brand-type-body-tracking);
+    font-weight: var(--brand-type-body-weight);
+  }
+
+  .kit-live,
+  .kit-app {
+    position: relative;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    outline: none;
+  }
+
+  .kit-live {
+    border-radius: var(--brand-radius-md);
+    transition: box-shadow var(--brand-duration-fast) var(--brand-ease-standard);
+  }
+
+  /*
+   * A `<Live>` that holds only text is a placeholder for a demo still to come (the demo layout's
+   * example): a dashed region with the text in its middle.
+   */
+  .kit-live:not(:has(> :not(p, .kit-app-hint))) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-md);
+    align-items: center;
+    justify-content: center;
+    padding: var(--brand-space-xl);
+    border: var(--brand-stroke-regular) dashed var(--brand-color-border);
+    color: var(--brand-color-muted);
+    text-align: center;
+  }
+
+  .kit-live:not(:has(> :not(p, .kit-app-hint))) > p {
+    max-width: 32em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .kit-live[data-interacting='true'] {
+    box-shadow: 0 0 0 var(--brand-stroke-regular) var(--brand-color-accent);
+  }
+
+  .kit-app {
+    display: flex;
+  }
+
+  .kit-app-window {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: var(--brand-stroke-regular) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-lg);
+    background: var(--brand-color-bg);
+    box-shadow: var(--brand-shadow-md);
+    transition: box-shadow var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  .kit-app[data-chrome='none'] .kit-app-window {
+    border-radius: var(--brand-radius-md);
+    box-shadow: none;
+  }
+
+  .kit-app-bar {
+    display: flex;
+    flex: none;
+    gap: var(--brand-space-md);
+    align-items: center;
+    justify-content: space-between;
+    height: calc(var(--brand-space-xl) + var(--brand-space-xs));
+    padding: 0 var(--brand-space-md);
+    border-bottom: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    background: var(--brand-color-surface);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-app-bar-dressing {
+    display: flex;
+    flex: 1;
+    gap: var(--brand-space-md);
+    align-items: center;
+    min-width: 0;
+  }
+
+  .kit-app-dots,
+  .kit-app-controls {
+    display: flex;
+    flex: none;
+    gap: var(--brand-space-xs);
+    align-items: center;
+  }
+
+  .kit-app-dots > i {
+    width: var(--brand-space-sm);
+    height: var(--brand-space-sm);
+    border-radius: 50%;
+    background: var(--brand-color-border);
+  }
+
+  .kit-app-dots > i:first-child {
+    background: var(--brand-color-accent);
+  }
+
+  .kit-app-address {
+    display: flex;
+    flex: 0 1 auto;
+    gap: var(--brand-space-xs);
+    align-items: center;
+    min-width: 0;
+    max-width: 60%;
+    margin-inline: auto;
+    padding: var(--brand-space-2xs) var(--brand-space-md);
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-xl);
+    background: var(--brand-color-bg);
+  }
+
+  .kit-app-address-text,
+  .kit-app-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kit-app-lock {
+    flex: none;
+    width: 1em;
+    height: 1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.2;
+  }
+
+  .kit-app-mark {
+    flex: none;
+    width: var(--brand-space-sm);
+    height: var(--brand-space-sm);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-accent);
+  }
+
+  .kit-app-title {
+    flex: 1;
+    color: var(--brand-color-fg);
+  }
+
+  .kit-app-controls {
+    gap: var(--brand-space-sm);
+  }
+
+  .kit-app-controls > svg {
+    width: calc(var(--brand-space-sm) + var(--brand-space-2xs));
+    height: calc(var(--brand-space-sm) + var(--brand-space-2xs));
+    fill: none;
+    stroke: var(--brand-color-muted);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+  }
+
+  .kit-app-tools {
+    display: flex;
+    flex: none;
+    gap: var(--brand-space-xs);
+    align-items: center;
+  }
+
+  .kit-app-tools[data-floating] {
+    position: absolute;
+    top: var(--brand-space-sm);
+    right: var(--brand-space-sm);
+    z-index: 3;
+  }
+
+  .kit-app-tool {
+    display: inline-flex;
+    gap: var(--brand-space-xs);
+    align-items: center;
+    padding: var(--brand-space-2xs) var(--brand-space-sm);
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-xl);
+    background: var(--brand-color-bg);
+    color: var(--brand-color-fg);
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .kit-app-tool:hover {
+    border-color: var(--brand-color-accent);
+  }
+
+  .kit-app-tool:focus-visible {
+    outline: var(--brand-stroke-regular) solid var(--brand-color-accent);
+    outline-offset: var(--brand-stroke-regular);
+  }
+
+  .kit-app-release {
+    border-color: var(--brand-color-fg);
+    background: var(--brand-color-fg);
+    color: var(--brand-color-bg);
+  }
+
+  .kit-app-tool-dot {
+    width: var(--brand-space-xs);
+    height: var(--brand-space-xs);
+    border-radius: 50%;
+    background: var(--brand-color-positive);
+  }
+
+  .kit-app-tool-dot[data-on='true'] {
+    background: var(--brand-color-negative);
+  }
+
+  .kit-app-screen {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .kit-app-poster {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .kit-app-poster-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .kit-app-poster-missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--brand-stroke-regular) dashed var(--brand-color-negative);
+    color: var(--brand-color-negative-text);
+  }
+
+  .kit-app-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color-scheme: normal;
+  }
+
+  .kit-app-fallback-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .kit-app-fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-sm);
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--brand-space-xl);
+    border-left: var(--brand-stroke-bold) solid var(--brand-color-negative);
+    background: var(--brand-color-surface);
+    color: var(--brand-color-fg);
+  }
+
+  .kit-app-fallback-title {
+    color: var(--brand-color-heading);
+  }
+
+  .kit-app-fallback-message {
+    display: -webkit-box;
+    max-width: 40em;
+    overflow: hidden;
+    color: var(--brand-color-muted);
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
+  }
+
+  .kit-app-hint {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + var(--brand-space-2xs));
+    z-index: 3;
+    display: flex;
+    gap: var(--brand-space-xs);
+    align-items: center;
+    padding: var(--brand-space-2xs) var(--brand-space-sm);
+    border-radius: var(--brand-radius-xl);
+    background: var(--brand-color-fg);
+    color: var(--brand-color-bg);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(var(--brand-space-xs));
+    transition:
+      opacity var(--brand-duration-base) var(--brand-ease-standard),
+      transform var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  .kit-app-hint[data-visible='true'] {
+    opacity: 0.86;
+    transform: none;
+  }
+
+  .kit-app-hint-key {
+    padding: 0 var(--brand-space-xs);
+    border: var(--brand-stroke-hairline) solid currentColor;
+    border-radius: var(--brand-radius-sm);
+    font-family: var(--brand-font-mono);
+  }
+}

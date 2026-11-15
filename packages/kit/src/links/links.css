@@ -1,0 +1,144 @@
+/*
+ * Links for slides: button, link card and QR code. Every value is a brand token. The rules are
+ * outside the `components` layer on purpose: the default layout styles every `a` in a slide with
+ * utilities, and a link component has to keep its own look.
+ */
+a.kit-link-button {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--brand-space-sm);
+  padding: var(--brand-space-sm) var(--brand-space-lg);
+  border: var(--brand-stroke-regular) solid var(--brand-color-accent);
+  border-radius: var(--brand-radius-md);
+  background: var(--brand-color-accent);
+  color: var(--brand-color-accent-fg);
+  text-decoration: none;
+  transition:
+    transform var(--brand-duration-fast) var(--brand-ease-standard),
+    background var(--brand-duration-fast) var(--brand-ease-standard);
+}
+
+a.kit-link-button[data-variant='outline'] {
+  background: transparent;
+  color: var(--brand-color-accent-text);
+}
+
+a.kit-link-button:hover {
+  transform: translateY(-2px);
+}
+
+a.kit-link-button:focus-visible,
+a.kit-link-card:focus-visible,
+.kit-qr-caption a:focus-visible {
+  outline: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  outline-offset: 4px;
+}
+
+a.kit-link-card {
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--brand-space-lg);
+  max-width: 100%;
+  padding: var(--brand-space-lg);
+  border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  border-radius: var(--brand-radius-lg);
+  background: var(--brand-color-surface);
+  color: var(--brand-color-fg);
+  text-decoration: none;
+  transition: border-color var(--brand-duration-fast) var(--brand-ease-standard);
+}
+
+a.kit-link-card:hover {
+  border-color: var(--brand-color-accent);
+}
+
+.kit-link-card-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--brand-type-title-size) * 1.8);
+  height: calc(var(--brand-type-title-size) * 1.8);
+  border-radius: var(--brand-radius-md);
+  background: var(--brand-color-accent);
+  color: var(--brand-color-accent-fg);
+  font-size: var(--brand-type-title-size);
+}
+
+.kit-link-card-icon > * {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.kit-link-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--brand-space-xs);
+  min-width: 0;
+}
+
+.kit-link-card-title {
+  color: var(--brand-color-heading);
+}
+
+.kit-link-card-description {
+  color: var(--brand-color-muted);
+}
+
+.kit-link-card-url {
+  color: var(--brand-color-accent-text);
+  font-family: var(--brand-font-mono);
+  overflow-wrap: anywhere;
+}
+
+.kit-qr {
+  display: inline-flex;
+  align-self: flex-start;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--brand-space-sm);
+  margin: 0;
+}
+
+.kit-qr-code {
+  display: block;
+  border-radius: var(--brand-radius-md);
+}
+
+.kit-qr-caption {
+  color: var(--brand-color-muted);
+  font-family: var(--brand-font-mono);
+  text-align: center;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-wrap: balance;
+}
+
+.kit-qr-caption a {
+  color: var(--brand-color-accent-text);
+  text-decoration: none;
+}
+
+.deck-viewport[data-static='true'] .kit-link-button,
+.deck-viewport[data-static='true'] .kit-link-card {
+  transition: none;
+}
+
+.deck-viewport[data-static='true'] a.kit-link-button:hover {
+  transform: none;
+}
+
+/*
+ * A markdown link: the brand's link treatment wherever it sits, below the layouts' own rules (a
+ * footnote's links take its color).
+ */
+@layer components {
+  :where(a.kit-link) {
+    color: var(--brand-color-accent-text);
+    text-decoration: underline;
+    text-decoration-thickness: max(1px, 0.06em);
+    text-underline-offset: 0.18em;
+  }
+}

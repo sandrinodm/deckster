@@ -1,0 +1,910 @@
+/*
+ * Diagrams: every color is a brand diagram token or a role of the slide's surface, every size a
+ * brand step, so a diagram follows its brand and surface with no slide edits. One accent marks what
+ * matters (a highlighted node, the path a packet travels); everything else stays in the quiet node,
+ * edge and label colors. Motion runs on brand durations and easings, and only outside static mode.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-diagram {
+    --kit-diagram-dim: 0.4;
+    --kit-diagram-muted: 0.45;
+
+    position: relative;
+    flex: none;
+    width: 100cqw;
+    height: 100cqh;
+    margin: 0;
+  }
+
+  .kit-diagram[data-fixed-height='true'] {
+    width: 100%;
+  }
+
+  .kit-diagram[data-ready='false'] {
+    visibility: hidden;
+  }
+
+  /* Text for screen readers only: the summary and the live note of what a step changed. */
+  .kit-diagram-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .kit-flow-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+  }
+
+  /* Containers paint nothing themselves, so no default black fill reaches the canvas. */
+  .kit-flow-svg :is(g, line) {
+    fill: none;
+  }
+
+  .kit-flow-html {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .kit-flow-html[data-measuring='true'] {
+    visibility: hidden;
+  }
+
+  /* Revealing by step: hidden parts keep their place and fade in. */
+  .kit-diagram [data-visible='false'] {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  /* Groups: a faint tint and a hairline, the label in the label step. */
+  .kit-flow-group {
+    fill: var(--brand-diagram-group);
+    stroke: var(--brand-diagram-node-border);
+    stroke-width: var(--brand-stroke-hairline);
+  }
+
+  .kit-flow-group-label {
+    position: absolute;
+    color: var(--brand-diagram-label);
+    white-space: nowrap;
+  }
+
+  /* Edges. */
+  .kit-flow-edge-line {
+    fill: none;
+    stroke: var(--brand-diagram-edge);
+    stroke-width: var(--brand-stroke-regular);
+    stroke-linejoin: round;
+  }
+
+  .kit-flow-arrow {
+    fill: var(--brand-diagram-edge);
+  }
+
+  .kit-flow-edge[data-dashed='true'] .kit-flow-edge-line,
+  .kit-flow-edge[data-tone='error'] .kit-flow-edge-line {
+    stroke-dasharray: calc(var(--brand-stroke-regular) * 3.5) calc(var(--brand-stroke-regular) * 3);
+  }
+
+  .kit-flow-edge:is([data-tone='active'], [data-tone='highlighted'], [data-tone='trail']) {
+    --kit-edge-color: var(--brand-diagram-highlight);
+  }
+
+  .kit-flow-edge[data-tone='error'] {
+    --kit-edge-color: var(--brand-color-negative);
+  }
+
+  .kit-flow-edge[data-tone='success'] {
+    --kit-edge-color: var(--brand-color-positive);
+  }
+
+  .kit-flow-edge[data-tone]:not([data-tone='default'], [data-tone='muted']) .kit-flow-edge-line {
+    stroke: var(--kit-edge-color);
+  }
+
+  .kit-flow-edge[data-tone]:not([data-tone='default'], [data-tone='muted']) .kit-flow-arrow {
+    fill: var(--kit-edge-color);
+  }
+
+  .kit-flow-edge[data-tone='trail'] {
+    opacity: 0.55;
+  }
+
+  .kit-flow-edge[data-tone='muted'],
+  .kit-flow-edge[data-dimmed='true'],
+  .kit-flow-label[data-dimmed='true'] {
+    opacity: var(--kit-diagram-dim);
+  }
+
+  /*
+   * Edge labels sit beside or on the line; their background knocks the line out behind them. A long
+   * label is set on two lines at most, broken between words and cut with an ellipsis after that
+   * (`labelLines`), so nothing is clipped.
+   */
+  .kit-flow-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0 var(--brand-space-xs);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-bg);
+    color: var(--brand-diagram-label);
+    white-space: nowrap;
+  }
+
+  .kit-flow-label:not(.kit-sequence-label) {
+    text-align: center;
+  }
+
+  .kit-flow-label-line {
+    display: block;
+  }
+
+  /* Nodes: the shape in the SVG, the text in the HTML layer over it. */
+  .kit-flow-outline,
+  .kit-flow-under {
+    fill: var(--brand-diagram-node);
+    stroke: var(--brand-diagram-node-border);
+    stroke-width: var(--brand-stroke-regular);
+    stroke-linejoin: round;
+  }
+
+  /*
+   * On a light surface the group tint sits close to the node fill, so a node inside a group takes
+   * the slide's background instead and stands off the tint.
+   */
+  .kit-flow-shape[data-grouped='true'] :is(.kit-flow-outline, .kit-flow-under) {
+    fill: light-dark(var(--brand-color-bg), var(--brand-diagram-node));
+  }
+
+  .kit-flow-details {
+    fill: none;
+    stroke: var(--brand-diagram-node-border);
+    stroke-width: var(--brand-stroke-regular);
+  }
+
+  .kit-flow-halo {
+    fill: none;
+    stroke: var(--kit-node-color, transparent);
+    stroke-width: calc(var(--brand-stroke-bold) * 3);
+    opacity: 0;
+  }
+
+  .kit-flow-pulse {
+    fill: none;
+    stroke: var(--brand-diagram-highlight);
+    opacity: 0;
+  }
+
+  .kit-flow-shape[data-dashed='true'] .kit-flow-outline {
+    stroke-dasharray: calc(var(--brand-stroke-regular) * 3.5) calc(var(--brand-stroke-regular) * 3);
+  }
+
+  .kit-flow-shape[data-state='highlighted'],
+  .kit-flow-node[data-state='highlighted'] {
+    --kit-node-color: var(--brand-diagram-highlight);
+  }
+
+  .kit-flow-shape[data-state='error'],
+  .kit-flow-node[data-state='error'] {
+    --kit-node-color: var(--brand-color-negative);
+  }
+
+  .kit-flow-shape[data-state='success'],
+  .kit-flow-node[data-state='success'] {
+    --kit-node-color: var(--brand-color-positive);
+  }
+
+  .kit-flow-shape:is([data-state='highlighted'], [data-state='error'], [data-state='success'])
+    .kit-flow-outline {
+    stroke: var(--kit-node-color);
+    stroke-width: calc(var(--brand-stroke-regular) * 1.5);
+  }
+
+  .kit-flow-shape:is([data-state='highlighted'], [data-state='error'], [data-state='success'])
+    .kit-flow-halo {
+    opacity: 0.16;
+  }
+
+  .kit-flow-shape:is([data-state='muted'], [data-dimmed='true']) {
+    opacity: var(--kit-diagram-dim);
+  }
+
+  .kit-flow-node {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    container-type: inline-size;
+  }
+
+  .kit-flow-node:is([data-state='muted'], [data-dimmed='true']) {
+    opacity: var(--kit-diagram-dim);
+  }
+
+  .kit-flow-node-body {
+    display: flex;
+    flex: 1 1 auto;
+    gap: var(--brand-space-sm);
+    align-items: center;
+    min-width: 0;
+    padding: var(--brand-space-sm);
+  }
+
+  .kit-flow-node[data-shape='diamond'] .kit-flow-node-body,
+  .kit-flow-node[data-shape='pill'][data-kind='cloud'] .kit-flow-node-body {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .kit-flow-node-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2em;
+    height: 2em;
+    border: var(--brand-stroke-regular) solid var(--brand-diagram-node-border);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-bg);
+    color: var(--brand-diagram-node-text);
+    font-size: var(--brand-type-caption-size);
+  }
+
+  .kit-flow-node[data-shape='pill'] .kit-flow-node-icon {
+    border-radius: 50%;
+  }
+
+  .kit-flow-node-icon svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  .kit-flow-node-icon [stroke-width],
+  .kit-flow-node-icon svg[stroke-width] {
+    stroke-width: var(--brand-icon-stroke);
+  }
+
+  .kit-flow-node:is([data-state='highlighted'], [data-state='error'], [data-state='success'])
+    .kit-flow-node-icon {
+    border-color: var(--kit-node-color);
+  }
+
+  .kit-flow-node[data-state='highlighted'] .kit-flow-node-icon {
+    background: var(--brand-diagram-highlight);
+    color: var(--brand-diagram-highlight-text);
+  }
+
+  .kit-flow-node:is([data-state='error'], [data-state='success']) .kit-flow-node-icon {
+    color: var(--kit-node-color);
+  }
+
+  /*
+   * Titles break between words; only a word wider than the node breaks inside, so a word is never
+   * split where a space would do. The renderer marks where a word may break (camelCase and
+   * separator boundaries, soft hyphens in long words), so a word that must break does so there.
+   */
+  .kit-flow-node-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .kit-flow-node-text > * {
+    max-width: 100%;
+  }
+
+  /* A narrow node stacks its icon over its text, centred, so the text gets the full width. */
+  @container (width < 300px) {
+    .kit-flow-node-body {
+      flex-direction: column;
+      gap: var(--brand-space-xs);
+      justify-content: center;
+      padding: var(--brand-space-xs);
+      text-align: center;
+    }
+
+    .kit-flow-node-icon {
+      width: 1.4em;
+      height: 1.4em;
+    }
+
+    .kit-flow-node-text {
+      align-items: center;
+    }
+  }
+
+  .kit-flow-node .kit-flow-node-title {
+    --kit-step-family: var(--brand-type-title-family);
+    --kit-step-weight: var(--brand-type-title-weight);
+    --kit-step-tracking: var(--brand-type-title-tracking);
+    --kit-step-axes: var(--brand-type-title-axes);
+    --kit-step-line-height: 1.2;
+
+    color: var(--brand-diagram-node-text);
+    text-wrap: balance;
+  }
+
+  .kit-flow-node-subtitle {
+    color: var(--brand-diagram-label);
+    text-wrap: balance;
+  }
+
+  /* A status pill on the node's corner, its dot in the state's color. */
+  .kit-flow-badge {
+    position: absolute;
+    display: inline-flex;
+    gap: var(--brand-space-xs);
+    align-items: center;
+    padding: 0 var(--brand-space-xs);
+    border: var(--brand-stroke-regular) solid
+      var(--kit-node-color, var(--brand-diagram-node-border));
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-bg);
+    color: var(--brand-color-fg);
+    white-space: nowrap;
+    translate: calc(-100% - var(--brand-space-sm)) -55%;
+  }
+
+  .kit-flow-badge[data-corner='top-left'] {
+    translate: var(--brand-space-sm) -55%;
+  }
+
+  .kit-flow-badge[data-corner='bottom-right'] {
+    translate: calc(-100% - var(--brand-space-sm)) -45%;
+  }
+
+  .kit-flow-badge[data-corner='bottom-left'] {
+    translate: var(--brand-space-sm) -45%;
+  }
+
+  /* A narrow node's badge stands off its corner, above a top corner and below a bottom one. */
+  .kit-flow-badge[data-lifted='true'][data-corner='top-right'] {
+    translate: calc(-100% - var(--brand-space-xs)) calc(-100% - var(--brand-space-xs));
+  }
+
+  .kit-flow-badge[data-lifted='true'][data-corner='top-left'] {
+    translate: var(--brand-space-xs) calc(-100% - var(--brand-space-xs));
+  }
+
+  .kit-flow-badge[data-lifted='true'][data-corner='bottom-right'] {
+    translate: calc(-100% - var(--brand-space-xs)) var(--brand-space-xs);
+  }
+
+  .kit-flow-badge[data-lifted='true'][data-corner='bottom-left'] {
+    translate: var(--brand-space-xs) var(--brand-space-xs);
+  }
+
+  .kit-flow-badge[data-state='highlighted'] {
+    --kit-node-color: var(--brand-diagram-highlight);
+  }
+
+  .kit-flow-badge[data-state='error'] {
+    --kit-node-color: var(--brand-color-negative);
+  }
+
+  .kit-flow-badge[data-state='success'] {
+    --kit-node-color: var(--brand-color-positive);
+  }
+
+  .kit-flow-badge:is([data-dimmed='true'], [data-state='muted']) {
+    opacity: var(--kit-diagram-dim);
+  }
+
+  .kit-flow-badge::before {
+    content: '';
+    width: 0.45em;
+    height: 0.45em;
+    border-radius: 50%;
+    background: var(--kit-node-color, var(--brand-diagram-edge));
+  }
+
+  /*
+   * Packets: a dot with a soft halo, replies as rings, tails of fading ghosts. A packet's tag rides
+   * under it, so it never meets an edge label, which sits above the line.
+   */
+  .kit-packet {
+    --kit-packet-color: var(--brand-diagram-packet);
+  }
+
+  .kit-packet[data-role='positive'],
+  .kit-packet-tag[data-role='positive'] {
+    --kit-packet-color: var(--brand-color-positive);
+  }
+
+  .kit-packet[data-role='negative'],
+  .kit-packet-tag[data-role='negative'] {
+    --kit-packet-color: var(--brand-color-negative);
+  }
+
+  .kit-packet[data-role='fg'],
+  .kit-packet-tag[data-role='fg'] {
+    --kit-packet-color: var(--brand-color-fg);
+  }
+
+  .kit-packet-dot,
+  .kit-packet-halo {
+    fill: var(--kit-packet-color);
+  }
+
+  .kit-packet-halo {
+    opacity: 0.16;
+  }
+
+  .kit-packet[data-reply='true'] .kit-packet-dot {
+    fill: var(--brand-color-bg);
+    stroke: var(--kit-packet-color);
+    stroke-width: calc(var(--brand-stroke-regular) * 1.25);
+  }
+
+  .kit-packet[data-ghost='1'] {
+    opacity: 0.4;
+  }
+
+  .kit-packet[data-ghost='2'] {
+    opacity: 0.24;
+  }
+
+  .kit-packet[data-ghost='3'] {
+    opacity: 0.12;
+  }
+
+  .kit-packet-tag {
+    --kit-packet-color: var(--brand-diagram-packet);
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0 var(--brand-space-xs);
+    border: var(--brand-stroke-regular) solid var(--kit-packet-color);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-bg);
+    color: var(--brand-color-fg);
+    white-space: nowrap;
+    translate: -50% var(--brand-space-sm);
+  }
+
+  .kit-packet-tag[data-side='above'] {
+    translate: -50% calc(-100% - var(--brand-space-sm));
+  }
+
+  .kit-packet-tag[data-side='right'] {
+    translate: var(--brand-space-sm) -50%;
+  }
+
+  .kit-packet-tag[data-side='left'] {
+    translate: calc(-100% - var(--brand-space-sm)) -50%;
+  }
+
+  /*
+   * Sequence diagrams: dashed lifelines in the edge color, so they hold up on dark surfaces, actor
+   * heads with their name centred, labels above their arrows.
+   */
+  .kit-sequence-lifeline {
+    stroke: var(--brand-diagram-edge);
+    stroke-width: var(--brand-stroke-regular);
+    stroke-dasharray: calc(var(--brand-stroke-regular) * 4) calc(var(--brand-stroke-regular) * 3);
+    opacity: 0.7;
+  }
+
+  .kit-diagram-sequence .kit-flow-node-body {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .kit-diagram-sequence .kit-flow-node-text {
+    align-items: center;
+  }
+
+  .kit-sequence-label {
+    translate: -50% calc(-100% - var(--brand-space-xs));
+  }
+
+  .kit-sequence-label[data-self='true'] {
+    translate: 0 -50%;
+  }
+
+  /*
+   * Timelines: milestones evenly spaced along one line that fills in up to now. The line sits in the
+   * middle of the region with room for a date above and a few lines of text below, not stretched
+   * over the whole height.
+   */
+  .kit-timeline {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    height: min(100%, calc(var(--brand-type-caption-size) * 18));
+    margin-block: auto;
+    grid-template-columns: repeat(var(--kit-timeline-count), minmax(0, 1fr));
+    align-items: center;
+  }
+
+  /* The line runs from the first milestone to the last one shown, never ahead of them. */
+  .kit-timeline-axis {
+    position: absolute;
+    top: 50%;
+    right: calc(100% - (var(--kit-timeline-last) + 0.5) * 100% / var(--kit-timeline-count));
+    left: calc(50% / var(--kit-timeline-count));
+    height: var(--brand-stroke-regular);
+    background: var(--brand-diagram-edge);
+  }
+
+  .kit-timeline-progress {
+    width: calc(var(--kit-timeline-share) * 100%);
+    height: 100%;
+    background: var(--brand-diagram-highlight);
+  }
+
+  .kit-timeline-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 1fr auto 1fr;
+    justify-items: center;
+    align-self: stretch;
+    min-width: 0;
+    padding-inline: var(--brand-space-sm);
+    text-align: center;
+  }
+
+  .kit-timeline-date {
+    align-self: end;
+    padding-bottom: var(--brand-space-md);
+    color: var(--brand-diagram-label);
+  }
+
+  .kit-timeline-dot {
+    display: grid;
+    place-items: center;
+    width: var(--brand-space-lg);
+    height: var(--brand-space-lg);
+    border: var(--brand-stroke-bold) solid var(--brand-diagram-edge);
+    border-radius: 50%;
+    background: var(--brand-color-bg);
+    color: var(--brand-diagram-node-text);
+  }
+
+  .kit-timeline-dot svg {
+    width: 60%;
+    height: 60%;
+  }
+
+  .kit-timeline-item:is([data-state='past'], [data-state='success']) .kit-timeline-dot {
+    border-color: var(--brand-diagram-highlight);
+  }
+
+  .kit-timeline-item[data-state='current'] .kit-timeline-dot {
+    border-color: var(--brand-diagram-highlight);
+    background: var(--brand-diagram-highlight);
+    color: var(--brand-diagram-highlight-text);
+    box-shadow: 0 0 0 var(--brand-space-xs) var(--kit-timeline-ring, transparent);
+  }
+
+  .kit-timeline-item[data-state='error'] .kit-timeline-dot {
+    border-color: var(--brand-color-negative);
+  }
+
+  .kit-timeline-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-xs);
+    align-items: center;
+    align-self: start;
+    padding-top: var(--brand-space-md);
+  }
+
+  .kit-timeline .kit-timeline-title {
+    --kit-step-family: var(--brand-type-title-family);
+    --kit-step-weight: var(--brand-type-title-weight);
+    --kit-step-tracking: var(--brand-type-title-tracking);
+    --kit-step-axes: var(--brand-type-title-axes);
+    --kit-step-line-height: 1.2;
+
+    color: var(--brand-diagram-node-text);
+    text-wrap: balance;
+  }
+
+  .kit-timeline-detail {
+    color: var(--brand-diagram-label);
+    text-wrap: balance;
+  }
+
+  .kit-timeline-item[data-state='future'] .kit-timeline-title {
+    color: var(--brand-diagram-label);
+  }
+
+  /* Layers: bands top to bottom, the name on the left, the building blocks as chips. */
+  .kit-layers {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-xs);
+    justify-content: center;
+  }
+
+  .kit-layer {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: var(--brand-space-lg);
+    align-items: center;
+    padding: var(--brand-space-xs) var(--brand-space-md);
+    border: var(--brand-stroke-hairline) solid var(--brand-diagram-node-border);
+    border-left: var(--brand-stroke-bold) solid var(--brand-diagram-node-border);
+    border-radius: var(--brand-radius-md);
+    background: var(--brand-diagram-group);
+  }
+
+  .kit-layer[data-state='highlighted'] {
+    border-left-color: var(--brand-diagram-highlight);
+  }
+
+  .kit-layer[data-state='muted'] {
+    opacity: var(--kit-diagram-muted);
+  }
+
+  .kit-layer-head {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .kit-layers .kit-layer-title {
+    --kit-step-family: var(--brand-type-title-family);
+    --kit-step-weight: var(--brand-type-title-weight);
+    --kit-step-tracking: var(--brand-type-title-tracking);
+    --kit-step-axes: var(--brand-type-title-axes);
+
+    color: var(--brand-diagram-node-text);
+  }
+
+  .kit-layer-subtitle {
+    color: var(--brand-diagram-label);
+  }
+
+  .kit-layer-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--brand-space-xs) var(--brand-space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-layer-item {
+    display: inline-flex;
+    gap: var(--brand-space-xs);
+    align-items: center;
+    padding: var(--brand-space-xs) var(--brand-space-sm) var(--brand-space-xs) var(--brand-space-xs);
+    border: var(--brand-stroke-regular) solid var(--brand-diagram-node-border);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-diagram-node);
+    color: var(--brand-diagram-node-text);
+  }
+
+  .kit-layer-item .kit-flow-node-icon {
+    width: 1.6em;
+    height: 1.6em;
+    border: none;
+  }
+
+  .kit-layer[data-state='highlighted'] .kit-layer-item {
+    border-color: var(--brand-diagram-highlight);
+  }
+
+  /* Imported SVG: fills its box keeping its proportions; shapes can take the surface's roles. */
+  .kit-svg {
+    position: absolute;
+    inset: 0;
+  }
+
+  .kit-svg > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .kit-svg [data-fill='fg'] {
+    fill: var(--brand-color-fg);
+  }
+  .kit-svg [data-fill='heading'] {
+    fill: var(--brand-color-heading);
+  }
+  .kit-svg [data-fill='muted'] {
+    fill: var(--brand-color-muted);
+  }
+  .kit-svg [data-fill='accent'] {
+    fill: var(--brand-color-accent);
+  }
+  .kit-svg [data-fill='positive'] {
+    fill: var(--brand-color-positive);
+  }
+  .kit-svg [data-fill='negative'] {
+    fill: var(--brand-color-negative);
+  }
+  .kit-svg [data-fill='bg'] {
+    fill: var(--brand-color-bg);
+  }
+  .kit-svg [data-fill='surface'] {
+    fill: var(--brand-color-surface);
+  }
+  .kit-svg [data-fill='border'] {
+    fill: var(--brand-color-border);
+  }
+  .kit-svg [data-fill='node'] {
+    fill: var(--brand-diagram-node);
+  }
+  .kit-svg [data-fill='node-border'] {
+    fill: var(--brand-diagram-node-border);
+  }
+  .kit-svg [data-fill='node-text'] {
+    fill: var(--brand-diagram-node-text);
+  }
+  .kit-svg [data-fill='group'] {
+    fill: var(--brand-diagram-group);
+  }
+  .kit-svg [data-fill='edge'] {
+    fill: var(--brand-diagram-edge);
+  }
+  .kit-svg [data-fill='label'] {
+    fill: var(--brand-diagram-label);
+  }
+  .kit-svg [data-fill='highlight'] {
+    fill: var(--brand-diagram-highlight);
+  }
+  .kit-svg [data-fill='packet'] {
+    fill: var(--brand-diagram-packet);
+  }
+  .kit-svg [data-stroke='fg'] {
+    stroke: var(--brand-color-fg);
+  }
+  .kit-svg [data-stroke='heading'] {
+    stroke: var(--brand-color-heading);
+  }
+  .kit-svg [data-stroke='muted'] {
+    stroke: var(--brand-color-muted);
+  }
+  .kit-svg [data-stroke='accent'] {
+    stroke: var(--brand-color-accent);
+  }
+  .kit-svg [data-stroke='positive'] {
+    stroke: var(--brand-color-positive);
+  }
+  .kit-svg [data-stroke='negative'] {
+    stroke: var(--brand-color-negative);
+  }
+  .kit-svg [data-stroke='bg'] {
+    stroke: var(--brand-color-bg);
+  }
+  .kit-svg [data-stroke='surface'] {
+    stroke: var(--brand-color-surface);
+  }
+  .kit-svg [data-stroke='border'] {
+    stroke: var(--brand-color-border);
+  }
+  .kit-svg [data-stroke='node'] {
+    stroke: var(--brand-diagram-node);
+  }
+  .kit-svg [data-stroke='node-border'] {
+    stroke: var(--brand-diagram-node-border);
+  }
+  .kit-svg [data-stroke='node-text'] {
+    stroke: var(--brand-diagram-node-text);
+  }
+  .kit-svg [data-stroke='group'] {
+    stroke: var(--brand-diagram-group);
+  }
+  .kit-svg [data-stroke='edge'] {
+    stroke: var(--brand-diagram-edge);
+  }
+  .kit-svg [data-stroke='label'] {
+    stroke: var(--brand-diagram-label);
+  }
+  .kit-svg [data-stroke='highlight'] {
+    stroke: var(--brand-diagram-highlight);
+  }
+  .kit-svg [data-stroke='packet'] {
+    stroke: var(--brand-diagram-packet);
+  }
+  .kit-svg [data-stop='fg'] {
+    stop-color: var(--brand-color-fg);
+  }
+  .kit-svg [data-stop='heading'] {
+    stop-color: var(--brand-color-heading);
+  }
+  .kit-svg [data-stop='muted'] {
+    stop-color: var(--brand-color-muted);
+  }
+  .kit-svg [data-stop='accent'] {
+    stop-color: var(--brand-color-accent);
+  }
+  .kit-svg [data-stop='positive'] {
+    stop-color: var(--brand-color-positive);
+  }
+  .kit-svg [data-stop='negative'] {
+    stop-color: var(--brand-color-negative);
+  }
+  .kit-svg [data-stop='bg'] {
+    stop-color: var(--brand-color-bg);
+  }
+  .kit-svg [data-stop='surface'] {
+    stop-color: var(--brand-color-surface);
+  }
+  .kit-svg [data-stop='border'] {
+    stop-color: var(--brand-color-border);
+  }
+  .kit-svg [data-stop='node'] {
+    stop-color: var(--brand-diagram-node);
+  }
+  .kit-svg [data-stop='node-border'] {
+    stop-color: var(--brand-diagram-node-border);
+  }
+  .kit-svg [data-stop='node-text'] {
+    stop-color: var(--brand-diagram-node-text);
+  }
+  .kit-svg [data-stop='group'] {
+    stop-color: var(--brand-diagram-group);
+  }
+  .kit-svg [data-stop='edge'] {
+    stop-color: var(--brand-diagram-edge);
+  }
+  .kit-svg [data-stop='label'] {
+    stop-color: var(--brand-diagram-label);
+  }
+  .kit-svg [data-stop='highlight'] {
+    stop-color: var(--brand-diagram-highlight);
+  }
+  .kit-svg [data-stop='packet'] {
+    stop-color: var(--brand-diagram-packet);
+  }
+
+  .deck-viewport[data-static='false'] .kit-timeline-progress {
+    transition: width var(--brand-duration-slow) var(--brand-ease-emphasized);
+  }
+
+  .deck-viewport[data-static='false'] :is(.kit-timeline-dot, .kit-layer, .kit-layer-item) {
+    transition:
+      border-color var(--brand-duration-base) var(--brand-ease-standard),
+      background-color var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  /* Motion, outside static mode: reveals fade in and states change in step with the packets. */
+  .deck-viewport[data-static='false'] .kit-diagram [data-visible] {
+    transition:
+      opacity var(--brand-duration-base) var(--brand-ease-standard),
+      visibility var(--brand-duration-base);
+  }
+
+  .deck-viewport[data-static='false'] :is(.kit-flow-outline, .kit-flow-halo, .kit-flow-node-icon) {
+    transition:
+      stroke var(--brand-duration-base) var(--brand-ease-standard),
+      stroke-width var(--brand-duration-base) var(--brand-ease-standard),
+      opacity var(--brand-duration-base) var(--brand-ease-standard),
+      background-color var(--brand-duration-base) var(--brand-ease-standard),
+      border-color var(--brand-duration-base) var(--brand-ease-standard),
+      color var(--brand-duration-base) var(--brand-ease-standard);
+    transition-delay: var(--kit-arrival-delay, 0ms);
+  }
+
+  .deck-viewport[data-static='false'] .kit-flow-edge :is(.kit-flow-edge-line, .kit-flow-arrow) {
+    transition:
+      stroke var(--brand-duration-base) var(--brand-ease-standard),
+      fill var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kit-diagram *,
+    .kit-diagram {
+      transition: none !important;
+    }
+  }
+}

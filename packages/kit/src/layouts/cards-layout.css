@@ -1,0 +1,115 @@
+/*
+ * The cards layout: a row of equal panels under the header, as tall as their content and placed a
+ * little above the middle of the region. Each panel stacks an icon on an accent tile, the title
+ * and the text on rows the panels share, so they line up across the row.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-cards-context {
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  .kit-cards-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-cards {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-card-count, 3), minmax(0, 1fr));
+    grid-template-rows: auto auto auto;
+    column-gap: var(--kit-gutter);
+  }
+
+  .kit-frame[data-layout='cards'][data-count='2'] {
+    --kit-card-count: 2;
+  }
+
+  .kit-frame[data-layout='cards'][data-count='4'] {
+    --kit-card-count: 4;
+  }
+
+  /* A card is the row's grid item, revealed or not: a step wrapper has `display: contents`. */
+  .kit-card {
+    display: grid;
+    grid-row: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: subgrid;
+    align-content: start;
+    min-width: 0;
+    padding: var(--brand-space-lg);
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-lg);
+    background: var(--brand-color-surface);
+  }
+
+  .kit-frame[data-layout='cards'][data-count='4'] .kit-card {
+    padding: var(--brand-space-md) var(--brand-space-md) var(--brand-space-lg);
+  }
+
+  /* The icon carries weight: a tile in the accent, about one and a half lines of the title. */
+  .kit-card-icon-tile {
+    display: grid;
+    grid-row: 1;
+    place-items: center;
+    width: calc(1.75 * var(--brand-type-title-size));
+    height: calc(1.75 * var(--brand-type-title-size));
+    margin-bottom: var(--brand-space-md);
+    border-radius: var(--brand-radius-md);
+    background: var(--brand-color-accent);
+  }
+
+  .kit-card-icon {
+    width: 56%;
+    height: 56%;
+    color: var(--brand-color-accent-fg);
+  }
+
+  .kit-card-icon [stroke-width],
+  .kit-card-icon[stroke-width] {
+    stroke-width: var(--brand-icon-stroke);
+  }
+
+  .kit-card-text {
+    display: contents;
+  }
+
+  .kit-card-title {
+    grid-row: 2;
+    margin: 0;
+  }
+
+  .kit-frame[data-layout='cards'][data-count='4'] .kit-card-title {
+    --kit-scale: 0.88;
+  }
+
+  .kit-card-body {
+    grid-row: 3;
+    margin: var(--brand-space-sm) 0 0;
+    color: var(--brand-color-muted);
+    text-wrap: pretty;
+  }
+}
+
+/* Compact cards, for a row that does not fit at the small size: less padding, a smaller tile and
+   title. */
+@layer components {
+  .kit-frame[data-layout='cards'][data-compact='true'] .kit-card {
+    padding: var(--brand-space-md) var(--brand-space-md) var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='cards'][data-compact='true'] .kit-card-icon-tile {
+    width: calc(1.1 * var(--brand-type-title-size));
+    height: calc(1.1 * var(--brand-type-title-size));
+    margin-bottom: var(--brand-space-xs);
+  }
+
+  .kit-frame[data-layout='cards'][data-compact='true'] .kit-card-title {
+    --kit-scale: 0.76;
+  }
+
+  .kit-frame[data-layout='cards'][data-compact='true'] .kit-card-body {
+    margin-top: var(--brand-space-xs);
+  }
+}

@@ -1,0 +1,108 @@
+/*
+ * The closing layout, the cover's counterpart: the logo on the top line; the message standing
+ * above a hairline rule with the QR code beside it; the contacts under the rule on the bottom
+ * line.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-closing-logo {
+    display: flex;
+    flex: none;
+    align-items: flex-start;
+  }
+
+  .kit-closing-main {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    column-gap: var(--kit-gutter);
+    align-items: end;
+    margin-top: auto;
+    padding-bottom: var(--brand-space-xl);
+  }
+
+  .kit-closing-message {
+    grid-column: 1 / span 10;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .kit-frame[data-layout='closing'][data-qr='true'] .kit-closing-message {
+    grid-column: 1 / span 8;
+  }
+
+  .kit-closing-message > .kit-eyebrow {
+    margin-bottom: var(--brand-space-md);
+  }
+
+  .kit-closing-title {
+    padding-bottom: 0.04em;
+  }
+
+  .kit-closing-subtitle {
+    margin-top: var(--brand-space-lg);
+    max-width: calc(7 * var(--kit-column) + 6 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  .kit-closing-subtitle p {
+    color: inherit;
+  }
+
+  .kit-closing-qr {
+    grid-column: 10 / -1;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .kit-closing-qr .kit-qr {
+    align-self: auto;
+  }
+
+  .kit-closing-qr .kit-qr {
+    align-items: flex-end;
+  }
+
+  /*
+   * The address under the code breaks only at its slashes and dots (the QR component marks them);
+   * a long one is set a step smaller. One that still does not fit overflows, which `deck lint`
+   * reports.
+   */
+  .kit-closing-qr .kit-qr-caption {
+    width: max-content;
+    max-width: calc(3 * var(--kit-column) + 2 * var(--kit-gutter));
+    text-align: right;
+  }
+
+  .kit-frame[data-layout='closing'][data-qr-long='true'] .kit-qr-caption {
+    --kit-step-size: var(--brand-type-caption-size);
+  }
+
+  .kit-closing-contacts {
+    padding-top: var(--brand-space-md);
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  /*
+   * The contacts share the row in equal parts, each address on one line (three are set at the
+   * caption size); an address too long for its part overflows, which `deck lint` reports.
+   */
+  .kit-closing-contacts .kit-contacts {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-contact-columns, 3), minmax(0, 1fr));
+    column-gap: var(--kit-gutter);
+  }
+
+  .kit-frame[data-layout='closing'][data-contacts='1'] {
+    --kit-contact-columns: 2;
+  }
+
+  .kit-frame[data-layout='closing'][data-contacts='2'] {
+    --kit-contact-columns: 2;
+  }
+
+  .kit-closing-contacts .kit-contact-text {
+    white-space: nowrap;
+  }
+}

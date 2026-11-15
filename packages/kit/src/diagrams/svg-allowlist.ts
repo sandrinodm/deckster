@@ -1,0 +1,322 @@
+/**
+ * The SVG elements an inline drawing may keep, by their canonical (case-adjusted) name: shapes,
+ * text, structure, paint servers, clipping, masking, markers and filter primitives. Anything else
+ * is removed with its content: `script`, `style`, `foreignObject`, `iframe`, every animation
+ * element (`animate`, `set`, `animateMotion`, `animateTransform`, which can retarget `href`),
+ * `feImage`, `cursor`, `view` and every HTML element.
+ */
+export const SVG_ELEMENTS: readonly string[] = [
+  'svg',
+  'g',
+  'defs',
+  'symbol',
+  'use',
+  'switch',
+  'a',
+  'title',
+  'desc',
+  'path',
+  'rect',
+  'circle',
+  'ellipse',
+  'line',
+  'polyline',
+  'polygon',
+  'text',
+  'tspan',
+  'textPath',
+  'image',
+  'linearGradient',
+  'radialGradient',
+  'stop',
+  'pattern',
+  'clipPath',
+  'mask',
+  'marker',
+  'filter',
+  'feBlend',
+  'feColorMatrix',
+  'feComponentTransfer',
+  'feComposite',
+  'feConvolveMatrix',
+  'feDiffuseLighting',
+  'feDisplacementMap',
+  'feDistantLight',
+  'feDropShadow',
+  'feFlood',
+  'feFuncA',
+  'feFuncB',
+  'feFuncG',
+  'feFuncR',
+  'feGaussianBlur',
+  'feMerge',
+  'feMergeNode',
+  'feMorphology',
+  'feOffset',
+  'fePointLight',
+  'feSpecularLighting',
+  'feSpotLight',
+  'feTile',
+  'feTurbulence',
+];
+
+/**
+ * Elements removed without a warning: editor metadata that never draws anything.
+ */
+export const SILENT_ELEMENTS: readonly string[] = ['metadata'];
+
+/**
+ * Namespace prefixes of editor data (Inkscape, Sodipodi, Sketch, RDF), whose elements and
+ * attributes are removed without a warning.
+ */
+export const EDITOR_PREFIXES: readonly string[] = [
+  'inkscape',
+  'sodipodi',
+  'sketch',
+  'serif',
+  'figma',
+  'rdf',
+  'cc',
+  'dc',
+];
+
+/**
+ * Presentation attributes: their values are CSS, so they are checked as CSS values (no escapes,
+ * only known functions, `url()` only to a `#fragment`). The same names are the properties a `style`
+ * attribute may set.
+ */
+export const SVG_PRESENTATION_ATTRIBUTES: readonly string[] = [
+  'alignment-baseline',
+  'baseline-shift',
+  'clip',
+  'clip-path',
+  'clip-rule',
+  'color',
+  'color-interpolation',
+  'color-interpolation-filters',
+  'direction',
+  'display',
+  'dominant-baseline',
+  'enable-background',
+  'fill',
+  'fill-opacity',
+  'fill-rule',
+  'filter',
+  'flood-color',
+  'flood-opacity',
+  'font-family',
+  'font-size',
+  'font-size-adjust',
+  'font-stretch',
+  'font-style',
+  'font-variant',
+  'font-weight',
+  'image-rendering',
+  'isolation',
+  'letter-spacing',
+  'lighting-color',
+  'marker-end',
+  'marker-mid',
+  'marker-start',
+  'mask',
+  'mix-blend-mode',
+  'opacity',
+  'overflow',
+  'paint-order',
+  'shape-rendering',
+  'stop-color',
+  'stop-opacity',
+  'stroke',
+  'stroke-dasharray',
+  'stroke-dashoffset',
+  'stroke-linecap',
+  'stroke-linejoin',
+  'stroke-miterlimit',
+  'stroke-opacity',
+  'stroke-width',
+  'text-anchor',
+  'text-decoration',
+  'text-rendering',
+  'transform',
+  'transform-origin',
+  'unicode-bidi',
+  'vector-effect',
+  'visibility',
+  'word-spacing',
+  'writing-mode',
+];
+
+/**
+ * Properties a `style` attribute may set besides the presentation attributes.
+ */
+export const SVG_EXTRA_STYLE_PROPERTIES: readonly string[] = [
+  'font',
+  'font-feature-settings',
+  'font-kerning',
+  'font-variant-numeric',
+  'transform-box',
+  'white-space',
+];
+
+/**
+ * Geometry, structure, text and filter attributes, by canonical (case-adjusted) name. Their values
+ * are kept as written; none of them takes a URL.
+ */
+export const SVG_PLAIN_ATTRIBUTES: readonly string[] = [
+  'id',
+  'class',
+  'role',
+  'lang',
+  'xml:lang',
+  'xml:space',
+  'version',
+  'baseProfile',
+  'viewBox',
+  'preserveAspectRatio',
+  'x',
+  'y',
+  'x1',
+  'y1',
+  'x2',
+  'y2',
+  'cx',
+  'cy',
+  'r',
+  'rx',
+  'ry',
+  'fx',
+  'fy',
+  'fr',
+  'width',
+  'height',
+  'd',
+  'points',
+  'pathLength',
+  'dx',
+  'dy',
+  'rotate',
+  'textLength',
+  'lengthAdjust',
+  'startOffset',
+  'method',
+  'spacing',
+  'side',
+  'offset',
+  'gradientUnits',
+  'gradientTransform',
+  'spreadMethod',
+  'patternUnits',
+  'patternContentUnits',
+  'patternTransform',
+  'clipPathUnits',
+  'maskUnits',
+  'maskContentUnits',
+  'markerUnits',
+  'markerWidth',
+  'markerHeight',
+  'refX',
+  'refY',
+  'orient',
+  'systemLanguage',
+  'filterUnits',
+  'primitiveUnits',
+  'in',
+  'in2',
+  'result',
+  'stdDeviation',
+  'mode',
+  'type',
+  'values',
+  'operator',
+  'k1',
+  'k2',
+  'k3',
+  'k4',
+  'scale',
+  'xChannelSelector',
+  'yChannelSelector',
+  'baseFrequency',
+  'numOctaves',
+  'seed',
+  'stitchTiles',
+  'radius',
+  'tableValues',
+  'slope',
+  'intercept',
+  'amplitude',
+  'exponent',
+  'kernelMatrix',
+  'kernelUnitLength',
+  'order',
+  'divisor',
+  'bias',
+  'targetX',
+  'targetY',
+  'edgeMode',
+  'preserveAlpha',
+  'surfaceScale',
+  'specularConstant',
+  'specularExponent',
+  'diffuseConstant',
+  'azimuth',
+  'elevation',
+  'pointsAtX',
+  'pointsAtY',
+  'pointsAtZ',
+  'limitingConeAngle',
+  'z',
+];
+
+/**
+ * Attributes that hold a URL: kept only for a same-document `#id`, or (on `<image>`) a raster
+ * `data:` image.
+ */
+export const SVG_URL_ATTRIBUTES: readonly string[] = ['href', 'xlink:href'];
+
+/**
+ * Data attributes (`data-fill`, `data-stroke`, which `recolor` reads) and ARIA attributes, kept as
+ * written.
+ */
+export const SVG_DATA_ATTRIBUTE = /^(?:data|aria)-[a-z0-9][a-z0-9_.-]*$/;
+
+/**
+ * The CSS functions a presentation attribute or `style` value may call: colors, custom properties,
+ * math, transforms and `url()` (which must name a `#fragment`). `expression()`, `image-set()`,
+ * `element()` and every other function are refused.
+ */
+export const SVG_CSS_FUNCTIONS: readonly string[] = [
+  'rgb',
+  'rgba',
+  'hsl',
+  'hsla',
+  'hwb',
+  'lab',
+  'lch',
+  'oklab',
+  'oklch',
+  'color',
+  'color-mix',
+  'var',
+  'calc',
+  'min',
+  'max',
+  'clamp',
+  'url',
+  'translate',
+  'translatex',
+  'translatey',
+  'scale',
+  'scalex',
+  'scaley',
+  'rotate',
+  'skew',
+  'skewx',
+  'skewy',
+  'matrix',
+];
+
+/**
+ * The `data:` URLs an `<image>` may show: base64 raster images, which cannot run code.
+ */
+export const SVG_RASTER_DATA_URL =
+  /^data:image\/(?:png|jpe?g|gif|webp|avif);base64,[a-z0-9+/=\s]*$/i;

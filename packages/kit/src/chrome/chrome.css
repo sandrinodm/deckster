@@ -1,0 +1,110 @@
+/*
+ * Page chrome: logo, footer text and page number centred in the brand's margins, and a progress
+ * bar on one edge. Each chrome layer names the surface of its slide, so its colors and logo
+ * variant follow the slide; when the look changes, the new layer fades in over the old one with
+ * the brand's slide transition, which fades out.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-chrome {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .kit-chrome > * {
+    transition: opacity var(--brand-duration-fast) var(--brand-ease-standard);
+  }
+
+  .kit-chrome[data-visible='false'] > * {
+    opacity: 0;
+  }
+
+  .kit-chrome-layer {
+    position: absolute;
+    inset: 0;
+  }
+
+  @keyframes kit-chrome-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes kit-chrome-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  .deck-viewport[data-static='false'] .kit-chrome-layer[data-entering='true'] {
+    animation: kit-chrome-in var(--brand-transition-duration) var(--brand-transition-easing) both;
+  }
+
+  .deck-viewport[data-static='false'] .kit-chrome-layer[data-leaving='true'] {
+    animation: kit-chrome-out var(--brand-transition-duration) var(--brand-transition-easing) both;
+  }
+
+  .kit-chrome-corner {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: var(--brand-space-lg);
+    height: var(--brand-margin-y);
+  }
+
+  .kit-chrome-corner[data-corner^='top'] {
+    top: 0;
+  }
+
+  .kit-chrome-corner[data-corner^='bottom'] {
+    bottom: 0;
+  }
+
+  .kit-chrome-corner[data-corner$='left'] {
+    left: var(--brand-margin-x);
+  }
+
+  .kit-chrome-corner[data-corner$='right'] {
+    right: var(--brand-margin-x);
+    flex-direction: row-reverse;
+  }
+
+  .kit-chrome-text {
+    color: var(--brand-color-muted);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .kit-chrome-logo {
+    display: block;
+    flex: none;
+  }
+
+  .kit-chrome-progress {
+    position: absolute;
+    left: 0;
+    background: var(--brand-color-accent);
+    transition: width var(--brand-duration-slow) var(--brand-ease-emphasized);
+  }
+
+  .kit-chrome-progress[data-edge='top'] {
+    top: 0;
+  }
+
+  .kit-chrome-progress[data-edge='bottom'] {
+    bottom: 0;
+  }
+
+  .deck-viewport[data-static='true'] .kit-chrome * {
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kit-chrome-layer {
+      animation: none !important;
+    }
+  }
+}
