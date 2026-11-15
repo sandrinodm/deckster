@@ -22,6 +22,7 @@ Writes:
 from __future__ import annotations
 
 import argparse
+import io
 import colorsys
 import posixpath
 import re
@@ -40,6 +41,19 @@ import _filesafe as F  # noqa: E402
 
 # Where external relationships point in the copy a renderer opens: a URL no renderer fetches.
 OFFLINE_TARGET = "about:blank"
+
+# A relationship target that leaves the package whatever its TargetMode: a URI with a scheme
+# (https:, file:, smb:) or a UNC path (\\host\share, //host/share).
+REMOTE_TARGET = re.compile(r"\s*(?:[A-Za-z][A-Za-z0-9+.-]*:|[\\/]{2})")
+
+# The first bytes of a zip archive, which marks an embedded OOXML package.
+ZIP_MAGIC = b"PK\x03\x04"
+
+# How deep embedded packages may nest before the deck is refused.
+MAX_EMBEDDING_DEPTH = 3
+
+# What an SVG part that can't be cleaned is replaced with in the render copy.
+EMPTY_SVG = b'<svg xmlns="http://www.w3.org/2000/svg"/>'
 
 NS = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
@@ -318,25 +332,62 @@ def keynote_command(pptx: Path, target: Path) -> list[str]:
 
 
 def offline_copy(pptx: Path, target: Path) -> int:
-    """Writes a copy of the deck whose external relationships (linked pictures, OLE links, hyperlinks)
-    point nowhere, so a renderer opening an untrusted deck makes no network request on its behalf.
-    Returns how many targets were neutralised. Relationship ids stay, so the parts still reference
-    valid ids and the deck still opens."""
+    """Writes a copy of the deck that a renderer can open without making a network request on its
+    behalf, and returns how many references were neutralised.
+
+    Every relationship that is external, or whose target is an absolute URI or a UNC path (which
+    would reach an SMB share), points to `about:blank` instead; relationship ids stay, so the parts
+    still reference valid ids and the deck still opens. Embedded packages (an OLE-embedded workbook
+    or deck is itself a zip) get the same treatment, and SVG media is reduced to static drawing.
+    Refuses a deck whose part names differ only in case, since readers disagree on which one wins.
+    """
+    data, neutralised = _offline_package(F.BoundedZip(pptx), depth=0)
+    target.write_bytes(data)
+    return neutralised
+
+
+def _offline_package(source: "F.BoundedZip", depth: int) -> tuple[bytes, int]:
+    names = [info.filename for info in source.zip.infolist()]
+    if len({name.lower() for name in names}) != len(names):
+        raise F.Refused("two parts have names that differ only in case")
     neutralised = 0
-    source = F.BoundedZip(pptx)
-    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as out:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as out:
         for info in source.zip.infolist():
             data = source.read(info.filename)
-            if info.filename.endswith(".rels"):
-                root = F.parse_xml(data, info.filename)
-                for rel in root.iter(f"{{{NS['rel']}}}Relationship"):
-                    if rel.get("TargetMode") == "External":
-                        rel.set("Target", OFFLINE_TARGET)
-                        neutralised += 1
-                ET.register_namespace("", NS["rel"])
-                data = ET.tostring(root, encoding="UTF-8", xml_declaration=True)
+            lower = info.filename.lower()
+            if lower.endswith(".rels"):
+                data, count = _offline_relationships(data, info.filename)
+                neutralised += count
+            elif lower.endswith(".svg"):
+                data = _static_svg(data)
+            elif data[:4] == ZIP_MAGIC:
+                if depth >= MAX_EMBEDDING_DEPTH:
+                    raise F.Refused(f"{info.filename[:80]!r} nests packages more than {MAX_EMBEDDING_DEPTH} deep")
+                data, count = _offline_package(F.BoundedZip(io.BytesIO(data)), depth + 1)
+                neutralised += count
             out.writestr(info, data)
-    return neutralised
+    return buffer.getvalue(), neutralised
+
+
+def _offline_relationships(data: bytes, name: str) -> tuple[bytes, int]:
+    root = F.parse_xml(data, name)
+    count = 0
+    for rel in root.iter(f"{{{NS['rel']}}}Relationship"):
+        external = (rel.get("TargetMode") or "").strip().lower() == "external"
+        if external or REMOTE_TARGET.match(rel.get("Target") or ""):
+            rel.set("Target", OFFLINE_TARGET)
+            count += 1
+    ET.register_namespace("", NS["rel"])
+    return ET.tostring(root, encoding="UTF-8", xml_declaration=True), count
+
+
+def _static_svg(data: bytes) -> bytes:
+    """An SVG part reduced to static drawing, or an empty drawing when it can't be cleaned."""
+    try:
+        return F.sanitize_svg(data)[0]
+    except (F.Refused, ValueError, ET.ParseError):
+        return EMPTY_SVG
 
 
 def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: Path | None, width: int, warnings: list[str]) -> list[Path]:
@@ -356,13 +407,14 @@ def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: P
             work = out / "_render"
             work.mkdir(exist_ok=True)
             src = work / "deck.pptx"
-            if offline_copy(pptx, src):
-                warnings.append("External links in the deck were disabled for rendering; linked pictures render blank.")
             run = [*cmd, "--headless", "--convert-to", "pdf", "--outdir", str(work), str(src)]
             if soffice_cmd and "{dir}" in soffice_cmd:
                 # Container wrappers: '{dir}' is replaced by the host work directory, and soffice runs on /work inside.
                 run = shlex.split(soffice_cmd.replace("{dir}", str(work.resolve()))) + ["--headless", "--convert-to", "pdf", "--outdir", "/work", "/work/deck.pptx"]
             try:
+                # A deck refused here (case-twin parts, packages nested too deep) is never handed to the renderer.
+                if offline_copy(pptx, src):
+                    warnings.append("External links in the deck were disabled for rendering; linked pictures render blank.")
                 subprocess.run(run, check=True, capture_output=True, timeout=300)
                 if (work / "deck.pdf").exists():
                     made_pdf = out / "source.pdf"

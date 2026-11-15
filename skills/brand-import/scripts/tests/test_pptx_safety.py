@@ -140,34 +140,73 @@ class PackageTest(unittest.TestCase):
 
 
 class OfflineRenderCopyTest(unittest.TestCase):
+    REL = "http://schemas.openxmlformats.org/package/2006/relationships"
+    IMAGE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+
     def setUp(self):
         self.dir = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.dir, ignore_errors=True)
 
-    def test_external_relationships_point_nowhere_in_the_copy_a_renderer_opens(self):
-        linked = self.dir / "linked.pptx"
-        rels = (
-            '<?xml version="1.0" encoding="UTF-8"?>'
-            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
-            'Target="https://attacker.example/track.png" TargetMode="External"/>'
-            '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
-            'Target="../media/image1.png"/>'
-            "</Relationships>"
+    def rels(self, *targets: tuple[str, str]) -> str:
+        items = "".join(
+            f'<Relationship Id="rId{i}" Type="{self.IMAGE}" Target="{target}"{mode}/>'
+            for i, (target, mode) in enumerate(targets, start=1)
         )
-        with zipfile.ZipFile(FIXTURE) as src, zipfile.ZipFile(linked, "w") as dst:
-            for info in src.infolist():
-                dst.writestr(info, src.read(info.filename))
-            dst.writestr("ppt/slides/_rels/linked.xml.rels", rels)
+        return f'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="{self.REL}">{items}</Relationships>'
+
+    def package(self, path: Path, extra: dict[str, bytes | str], base: Path | None = FIXTURE) -> Path:
+        with zipfile.ZipFile(path, "w") as dst:
+            if base is not None:
+                with zipfile.ZipFile(base) as src:
+                    for info in src.infolist():
+                        dst.writestr(info, src.read(info.filename))
+            for name, data in extra.items():
+                dst.writestr(name, data)
+        return path
+
+    def test_every_reference_that_leaves_the_package_points_nowhere(self):
+        rels = self.rels(
+            ("https://attacker.example/external.png", ' TargetMode="External"'),
+            ("https://attacker.example/odd-mode.png", ' TargetMode=" external "'),
+            ("https://attacker.example/internal-mode.png", ""),
+            ("\\\\attacker.example\\share\\unc.png", ""),
+            ("../media/image1.png", ""),
+        )
+        linked = self.package(self.dir / "linked.pptx", {"ppt/slides/_rels/linked.xml.RELS": rels})
         copy = self.dir / "copy.pptx"
-        self.assertEqual(extract_pptx.offline_copy(linked, copy), 1)
+        self.assertEqual(extract_pptx.offline_copy(linked, copy), 4)
         with zipfile.ZipFile(copy) as out:
-            written = out.read("ppt/slides/_rels/linked.xml.rels").decode("utf-8")
+            written = out.read("ppt/slides/_rels/linked.xml.RELS").decode("utf-8")
             self.assertEqual(len(out.namelist()), len(zipfile.ZipFile(linked).namelist()))
         self.assertNotIn("attacker.example", written)
-        self.assertIn(f'Target="{extract_pptx.OFFLINE_TARGET}"', written)
+        self.assertEqual(written.count(f'Target="{extract_pptx.OFFLINE_TARGET}"'), 4)
         self.assertIn('Target="../media/image1.png"', written)
-        self.assertIn('Id="rId1"', written)
+
+    def test_embedded_packages_and_svg_media_are_cleaned_too(self):
+        inner = self.package(
+            self.dir / "inner.xlsx",
+            {"xl/_rels/workbook.xml.rels": self.rels(("https://attacker.example/inner.png", ' TargetMode="External"'))},
+            base=None,
+        )
+        svg = '<svg xmlns="http://www.w3.org/2000/svg"><image href="https://attacker.example/svg.png"/><rect width="1" height="1"/></svg>'
+        deck = self.package(
+            self.dir / "embedded.pptx",
+            {"ppt/embeddings/Workbook1.xlsx": inner.read_bytes(), "ppt/media/logo.svg": svg},
+        )
+        copy = self.dir / "copy.pptx"
+        self.assertEqual(extract_pptx.offline_copy(deck, copy), 1)
+        with zipfile.ZipFile(copy) as out:
+            embedded = zipfile.ZipFile(io.BytesIO(out.read("ppt/embeddings/Workbook1.xlsx")))
+            self.assertNotIn(b"attacker.example", embedded.read("xl/_rels/workbook.xml.rels"))
+            cleaned = out.read("ppt/media/logo.svg")
+        self.assertNotIn(b"attacker.example", cleaned)
+        self.assertIn(b"<rect", cleaned)
+
+    def test_part_names_that_differ_only_in_case_are_refused(self):
+        rels = self.rels(("https://attacker.example/x.png", ' TargetMode="External"'))
+        deck = self.package(self.dir / "twins.pptx", {"ppt/slides/_rels/a.xml.rels": rels, "ppt/slides/_rels/A.xml.rels": rels})
+        with self.assertRaises(F.Refused):
+            extract_pptx.offline_copy(deck, self.dir / "copy.pptx")
 
 
 class RenderCapTest(unittest.TestCase):
