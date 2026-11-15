@@ -1,0 +1,58 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`parseClaudeLine > marks an edit outside the deck as denied, and the write inside as a file change 1`] = `
+[
+  "session 00000000-0000-4000-8000-000000000186",
+  "tool running Write: Write decks/hello/scratch-note.txt [decks/hello/scratch-note.txt]",
+  "tool done Write: Write decks/hello/scratch-note.txt [decks/hello/scratch-note.txt]",
+  "file-change add decks/hello/scratch-note.txt",
+  "tool running Read: Read brands/default/brand.ts [brands/default/brand.ts]",
+  "tool done Read: Read brands/default/brand.ts [brands/default/brand.ts]",
+  "tool running Edit: Edit brands/default/brand.ts [brands/default/brand.ts]",
+  "tool denied Edit: Edit brands/default/brand.ts [brands/default/brand.ts] (Permission to use Edit has been denied because Claude Code i)",
+  "text-delta x21",
+  "text "Created \`decks/hello/scratch-note.txt\` containing \`hi\`. The brand edit was denie"",
+  "usage in=82984 cached=59224 out=686 cost=0.215621",
+]
+`;
+
+exports[`parseClaudeLine > normalises the edit turn: tools with paths, the edit, lint, the answer, usage 1`] = `
+[
+  "session 00000000-0000-4000-8000-000000000218",
+  "tool running Read: Read decks/hello/deck.config.ts [decks/hello/deck.config.ts]",
+  "tool done Read: Read decks/hello/deck.config.ts [decks/hello/deck.config.ts]",
+  "tool running Glob: Glob decks/hello/slides/title.*",
+  "tool done Glob: Glob decks/hello/slides/title.*",
+  "tool running Read: Read decks/hello/slides/title.mdx [decks/hello/slides/title.mdx]",
+  "tool done Read: Read decks/hello/slides/title.mdx [decks/hello/slides/title.mdx]",
+  "tool running Edit: Edit decks/hello/slides/title.mdx [decks/hello/slides/title.mdx]",
+  "tool done Edit: Edit decks/hello/slides/title.mdx [decks/hello/slides/title.mdx]",
+  "file-change update decks/hello/slides/title.mdx",
+  "tool running deck_lint: deck_lint",
+  "tool done deck_lint: deck_lint",
+  "tool running deck_lint: deck_lint",
+  "tool done deck_lint: deck_lint",
+  "text-delta x10",
+  "text "Updated the title and heading to \\"Hello, deck\\" in \`decks/hello/slides/title.mdx\`"",
+  "usage in=164409 cached=136263 out=898 cost=0.270333",
+]
+`;
+
+exports[`parseClaudeLine > reads a cancel by SIGINT as cancelled 1`] = `
+[
+  "session 00000000-0000-4000-8000-000000000001",
+  "tool running Glob: Glob decks/hello/**/*",
+  "tool done Glob: Glob decks/hello/**/*",
+  "tool running Read: Read decks/hello/deck.config.ts [decks/hello/deck.config.ts]",
+  "tool done Read: Read decks/hello/deck.config.ts [decks/hello/deck.config.ts]",
+  "tool running Read: Read decks/hello/package.json [decks/hello/package.json]",
+  "tool done Read: Read decks/hello/package.json [decks/hello/package.json]",
+  "usage in=80617 cached=53470 out=333 cost=0.234506",
+]
+`;
+
+exports[`parseClaudeLine > reads not signed in from the assistant error 1`] = `
+[
+  "session 00000000-0000-4000-8000-0000000000e8",
+]
+`;

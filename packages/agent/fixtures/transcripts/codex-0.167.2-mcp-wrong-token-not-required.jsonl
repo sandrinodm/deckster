@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"00000000-0000-4000-8000-0000000002f1"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I will check whether the deck server exposes `current_slide`.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Tool discovery returned an empty list. The current-slide tool is unavailable and no diagnostic was supplied."}}
+{"type":"turn.completed","usage":{"input_tokens":51951,"cached_input_tokens":34304,"cache_write_input_tokens":0,"output_tokens":100,"reasoning_output_tokens":19}}

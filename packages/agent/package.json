@@ -1,0 +1,65 @@
+{
+  "name": "@deckster/agent",
+  "version": "0.0.0",
+  "private": true,
+  "homepage": "https://github.com/sandrinodm/deckster/tree/main/packages/agent#readme",
+  "bugs": "https://github.com/sandrinodm/deckster/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandrinodm/deckster.git",
+    "directory": "packages/agent"
+  },
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    "./errors": "./src/errors.ts",
+    "./page-link": "./src/mcp/page-link.ts",
+    "./page-link-events": "./src/protocol/page-link-events.ts",
+    "./server-info": "./src/mcp/server-info.ts",
+    "./vite": "./src/vite/mcp-plugin.ts",
+    "./mcp": "./src/mcp/deck-tools.ts",
+    "./protocol": "./src/protocol/index.ts",
+    "./runtime": "./src/runtime/page-link.ts",
+    "./protocol/events": "./src/protocol/agent-events.ts",
+    "./providers": "./src/providers/index.ts",
+    "./sessions": "./src/session/agent-sessions.ts",
+    "./agent-vite": "./src/vite/agent-plugin.ts",
+    "./agent-runtime": "./src/runtime/agent-plugin.tsx",
+    "./agent-connection": "./src/runtime/agent-connection.ts",
+    "./watchdog": "./src/process/watchdog.ts",
+    "./cleanup": "./src/process/cleanup-registry.ts"
+  },
+  "scripts": {
+    "test": "vp test",
+    "typecheck": "tsc --noEmit",
+    "verify:claude": "node scripts/verify-claude.ts",
+    "verify:codex": "node scripts/verify-codex.ts"
+  },
+  "dependencies": {
+    "@deckster/brand": "workspace:*",
+    "@deckster/comments": "workspace:*",
+    "@deckster/engine": "workspace:*",
+    "@deckster/presenter": "workspace:*",
+    "@effect/platform-node": "catalog:",
+    "@modelcontextprotocol/node": "catalog:",
+    "@modelcontextprotocol/server": "catalog:",
+    "effect": "catalog:",
+    "react": "catalog:",
+    "vite-plus": "catalog:",
+    "ws": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:",
+    "@modelcontextprotocol/client": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/ws": "catalog:",
+    "happy-dom": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:"
+  }
+}

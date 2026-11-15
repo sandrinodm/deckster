@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"00000000-0000-4000-8000-0000000002f0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The orange slide contains the word \"PELICAN\"."}}
+{"type":"turn.completed","usage":{"input_tokens":26123,"cached_input_tokens":8448,"cache_write_input_tokens":0,"output_tokens":17,"reasoning_output_tokens":0}}

@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`parseCodexLine > normalises the edit turn: shell reads, the patch, the MCP lint, the answer, usage 1`] = `
+[
+  "session 00000000-0000-4000-8000-0000000002f6",
+  "text "I will update the opening title and check the deck for lint errors."",
+  "tool running shell: pwd; rg --files -g 'deck.config.*' -g '*.mdx' -g 'AGENTS.md'",
+  "tool done shell: pwd; rg --files -g 'deck.config.*' -g '*.mdx' -g 'AGENTS.md'",
+  "tool running shell: cat deck.config.ts slides/title.mdx",
+  "tool done shell: cat deck.config.ts slides/title.mdx",
+  "tool running apply_patch: Edit decks/hello/slides/title.mdx [decks/hello/slides/title.mdx]",
+  "tool done apply_patch: Edit decks/hello/slides/title.mdx [decks/hello/slides/title.mdx]",
+  "file-change update decks/hello/slides/title.mdx",
+  "tool running deck_lint: deck_lint",
+  "tool done deck_lint: deck_lint",
+  "text "The opening title is now \\"Hello, deck\\". The deck lint check reports no problems."",
+  "usage in=105699 cached=87168 out=324 cost=null",
+]
+`;
+
+exports[`parseCodexLine > stops after the first items when cancelled 1`] = `
+[
+  "session 00000000-0000-4000-8000-0000000002ee",
+  "text "I will inspect the deck files one at a time, then prepare a brief summary."",
+  "tool running shell: rg --files --hidden -g '"'!.git/**'"'",
+  "tool done shell: rg --files --hidden -g '"'!.git/**'"'",
+  "tool running shell: cat assets/mark.svg",
+  "tool done shell: cat assets/mark.svg",
+]
+`;
+
+exports[`parseCodexLine > turns reconnect errors into retry notices and the final 401 into not signed in 1`] = `
+[
+  "session 00000000-0000-4000-8000-0000000002f2",
+  "notice retry Reconnecting... 2/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+  "notice retry Reconnecting... 3/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+  "notice retry Reconnecting... 4/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+  "notice retry Reconnecting... 5/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+  "notice info Falling back from WebSockets to HTTPS transport. unexpected status 401 Unauthori",
+  "notice retry Reconnecting... 1/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+  "notice retry Reconnecting... 2/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+  "notice retry Reconnecting... 3/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+  "notice retry Reconnecting... 4/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+  "notice retry Reconnecting... 5/5 (unexpected status 401 Unauthorized: Missing bearer or basic",
+]
+`;
