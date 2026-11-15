@@ -17,6 +17,7 @@ import {
 } from '#node/brand-paths.ts';
 import { gatedLoad, isCodeHeld, rememberLoaded } from '#node/code-gate.ts';
 import { resolveFontFiles } from '#node/font-files.ts';
+import { FRAMEWORK_ROOT } from '#node/framework-root.ts';
 import { BRAND_CALLEE } from '#node/static-module.ts';
 import { recoverTurnsForBrand } from '#node/turn-guard.ts';
 import { resolveBrand } from '#resolve/resolve-brand.ts';
@@ -35,12 +36,6 @@ const SHAPE_FIX =
  * The summary of every failure to import a brand file.
  */
 const UNREADABLE_SUMMARY = 'Could not read the brand';
-
-/**
- * The framework's own workspace, whose `brands/default` is used by workspaces that have no
- * `brands/default` of their own, such as a fresh project or a test workspace.
- */
-const FRAMEWORK_ROOT = path.resolve(import.meta.dirname, '../../../..');
 
 /**
  * A brand that passed every check, compiled and ready to serve.

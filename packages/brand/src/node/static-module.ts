@@ -1,4 +1,4 @@
-import type { parseAst as ParseAst } from 'vite-plus';
+import type { parseAst as ParseAst } from 'vite';
 
 import { createRequire } from 'node:module';
 
@@ -14,12 +14,12 @@ type Parser = typeof ParseAst;
 let parser: Parser | undefined;
 
 /**
- * Loads `parseAst` on first use. A static import would pull `vite-plus` (about 100 ms) into every
+ * Loads `parseAst` on first use. A static import would pull `vite` (about 100 ms) into every
  * command that imports this package, such as the start of `deck present --agent`, which parses no
  * module until the dev server starts.
  */
 function loadParser(): Parser {
-  parser ??= (createRequire(import.meta.url)('vite-plus') as { parseAst: Parser }).parseAst;
+  parser ??= (createRequire(import.meta.url)('vite') as { parseAst: Parser }).parseAst;
   return parser;
 }
 

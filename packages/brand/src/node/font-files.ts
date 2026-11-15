@@ -9,6 +9,7 @@ import type { BrandProblem } from '#validate/brand-error.ts';
 import { isUnicodeRange } from '#compile/css-syntax.ts';
 import { assetProblem, FONT_EXTENSIONS } from '#node/asset-files.ts';
 import { BRANDS_DIR, type BrandLocation } from '#node/brand-paths.ts';
+import { FRAMEWORK_ANCHOR, FRAMEWORK_INSTALLED } from '#node/framework-root.ts';
 import { ownValue } from '#resolve/own-value.ts';
 import { FAMILY_ROLES, TYPE_STEPS, type FamilyRole } from '#schema/typography-schema.ts';
 import { pickFrom } from '#validate/suggest.ts';
@@ -293,9 +294,11 @@ const fontsourceFaces = Effect.fn('fontsourceFaces')(function* (
         {
           path: `${field}.package`,
           message: `${source.package} is not installed for ${path.dirname(brand.displayPath)}.`,
-          fix:
-            `Add "${source.package}" to the dependencies in ` +
-            `${path.dirname(brand.displayPath)}/package.json and run pnpm install.`,
+          fix: FRAMEWORK_INSTALLED
+            ? `Install it in the workspace folder, where the brand's fonts resolve from: ` +
+              `npm install ${source.package}.`
+            : `Add "${source.package}" to the dependencies in ` +
+              `${path.dirname(brand.displayPath)}/package.json and run pnpm install.`,
         },
       ],
     };
@@ -310,7 +313,9 @@ const fontsourceFaces = Effect.fn('fontsourceFaces')(function* (
       {
         path: `${field}.package`,
         message,
-        fix: `Reinstall ${source.package} (pnpm install --force), or pick another font.`,
+        fix: FRAMEWORK_INSTALLED
+          ? `Reinstall ${source.package} (npm install ${source.package} --force), or pick another font.`
+          : `Reinstall ${source.package} (pnpm install --force), or pick another font.`,
       },
     ],
   });
@@ -526,16 +531,30 @@ function unknownValues(
 }
 
 /**
- * The package's folder, resolved the way Node would from the brand folder.
+ * The package's folder, resolved the way Node would from the brand folder. In a published copy, a
+ * package the brand does not install itself falls back to the framework's own dependencies, so the
+ * built-in brand's fonts load without the user installing anything.
  *
  * @param name - The package name.
  * @param brandDir - The absolute brand folder.
  * @returns The folder, or `undefined` when the package is not installed for the brand.
  */
 function locatePackage(name: string, brandDir: string): string | undefined {
-  const require = createRequire(path.join(brandDir, 'package.json'));
+  return (
+    resolvePackageFolder(name, path.join(brandDir, 'package.json')) ??
+    (FRAMEWORK_INSTALLED ? resolvePackageFolder(name, FRAMEWORK_ANCHOR) : undefined)
+  );
+}
+
+/**
+ * The folder of a package as Node resolves it from a file.
+ *
+ * @param name - The package name.
+ * @param from - The absolute path of the file that imports it.
+ */
+function resolvePackageFolder(name: string, from: string): string | undefined {
   try {
-    return path.dirname(require.resolve(`${name}/package.json`));
+    return path.dirname(createRequire(from).resolve(`${name}/package.json`));
   } catch {
     return undefined;
   }

@@ -7,6 +7,29 @@ export {
   listBrands,
   type BrandLocation,
 } from '#node/brand-paths.ts';
+export {
+  FRAMEWORK_MANIFEST,
+  frameworkDependencyRoots,
+  frameworkEntryPoints,
+  frameworkModulesDir,
+  isInstalledFramework,
+  readFrameworkManifest,
+  readFrameworkPackages,
+  resolveFrameworkSpecifier,
+  type FrameworkManifest,
+  type FrameworkPackage,
+  type FrameworkPackages,
+} from '#node/framework-packages.ts';
+export {
+  FRAMEWORK_ANCHOR,
+  FRAMEWORK_FS_ROOTS,
+  FRAMEWORK_INSTALLED,
+  FRAMEWORK_PACKAGES,
+  FRAMEWORK_ROOT,
+  HOOKS_ENV,
+  nodeHookArguments,
+  playwrightInstallCommand,
+} from '#node/framework-root.ts';
 export { resolveFontFiles, type ResolvedFonts } from '#node/font-files.ts';
 export { loadBrand, type LoadedBrand } from '#node/load-brand.ts';
 export {
