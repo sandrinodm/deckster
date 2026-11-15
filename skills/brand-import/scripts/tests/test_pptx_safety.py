@@ -139,6 +139,37 @@ class PackageTest(unittest.TestCase):
         self.assertEqual(sorted(p.name for p in self.dir.iterdir()), ["hostile.pptx", "out"])
 
 
+class OfflineRenderCopyTest(unittest.TestCase):
+    def setUp(self):
+        self.dir = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.dir, ignore_errors=True)
+
+    def test_external_relationships_point_nowhere_in_the_copy_a_renderer_opens(self):
+        linked = self.dir / "linked.pptx"
+        rels = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
+            'Target="https://attacker.example/track.png" TargetMode="External"/>'
+            '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
+            'Target="../media/image1.png"/>'
+            "</Relationships>"
+        )
+        with zipfile.ZipFile(FIXTURE) as src, zipfile.ZipFile(linked, "w") as dst:
+            for info in src.infolist():
+                dst.writestr(info, src.read(info.filename))
+            dst.writestr("ppt/slides/_rels/linked.xml.rels", rels)
+        copy = self.dir / "copy.pptx"
+        self.assertEqual(extract_pptx.offline_copy(linked, copy), 1)
+        with zipfile.ZipFile(copy) as out:
+            written = out.read("ppt/slides/_rels/linked.xml.rels").decode("utf-8")
+            self.assertEqual(len(out.namelist()), len(zipfile.ZipFile(linked).namelist()))
+        self.assertNotIn("attacker.example", written)
+        self.assertIn(f'Target="{extract_pptx.OFFLINE_TARGET}"', written)
+        self.assertIn('Target="../media/image1.png"', written)
+        self.assertIn('Id="rId1"', written)
+
+
 class RenderCapTest(unittest.TestCase):
     def test_a_page_of_extreme_shape_is_rendered_within_the_pixel_limit(self):
         zoom, lowered = F.capped_zoom(960, 540, 1920)

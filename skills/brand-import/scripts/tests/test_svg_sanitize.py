@@ -34,6 +34,9 @@ HOSTILE = """<?xml version="1.0" encoding="UTF-8"?>
   <path id="p" class="a" d="M0 0h100v20H0z" fill="url(#g)" onclick="alert(1)" style="fill:url(https://attacker.example/p.png)" filter="url(#f)"/>
   <rect width="10" height="10" fill="url( 'https://attacker.example/x' )" stroke="#000"/>
   <circle r="3" style="fill: red; stroke: url(#g)"/>
+  <rect width="2" height="2" style="fill: image-set('https://attacker.example/i.png' 1x)"/>
+  <rect width="2" height="2" style="fill: -webkit-image-set(&quot;https://attacker.example/w.png&quot; 1x)"/>
+  <style>.d{background: cross-fade(src("https://attacker.example/s.png"), red 50%)}</style>
   <animate attributeName="href" values="javascript:alert(1)"/>
   <set attributeName="onload" to="alert(1)"/>
   <text x="0" y="10" font-family="Inter">Acme<tspan dx="2">Co</tspan></text>

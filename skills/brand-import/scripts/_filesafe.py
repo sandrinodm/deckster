@@ -172,7 +172,10 @@ _SVG_ATTRIBUTES = {
 _HREF_ELEMENTS = {"use", "linearGradient", "radialGradient", "pattern"}
 _LOCAL_REF = re.compile(r"#[A-Za-z_][\w.:-]*\Z")
 _LOCAL_URL = re.compile(r"url\(\s*(['\"]?)#[A-Za-z_][\w.:-]*\1\s*\)", re.I)
-_BAD_VALUE = re.compile(r"javascript\s*:|vbscript\s*:|data\s*:|expression\s*\(|@import|@font-face|@namespace|-moz-binding|behavior\s*:|[\\<\x00-\x08\x0b\x0c\x0e-\x1f\x7f]|/\*", re.I)
+# CSS functions other than url() that take a quoted URL and fetch it (image-set("https://...")),
+# so a stylesheet could still load remote content or track whoever opens the logo.
+_FETCHING_FUNCTIONS = r"(?:-webkit-)?image-set\s*\(|\bsrc\s*\(|cross-fade\s*\(|\belement\s*\(|\bimage\s*\("
+_BAD_VALUE = re.compile(r"javascript\s*:|vbscript\s*:|data\s*:|expression\s*\(|@import|@font-face|@namespace|-moz-binding|behavior\s*:|[\\<\x00-\x08\x0b\x0c\x0e-\x1f\x7f]|/\*|" + _FETCHING_FUNCTIONS, re.I)
 
 
 def _value_ok(value: str) -> bool:

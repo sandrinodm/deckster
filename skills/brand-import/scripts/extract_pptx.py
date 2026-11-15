@@ -29,6 +29,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import zipfile
 from collections import Counter, defaultdict
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -36,6 +37,9 @@ from xml.etree import ElementTree as ET
 sys.path.insert(0, str(Path(__file__).parent))
 import _common as C  # noqa: E402
 import _filesafe as F  # noqa: E402
+
+# Where external relationships point in the copy a renderer opens: a URL no renderer fetches.
+OFFLINE_TARGET = "about:blank"
 
 NS = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
@@ -313,6 +317,28 @@ def keynote_command(pptx: Path, target: Path) -> list[str]:
     return ["osascript", "-e", KEYNOTE_SCRIPT, str(pptx.resolve()), str(target.resolve())]
 
 
+def offline_copy(pptx: Path, target: Path) -> int:
+    """Writes a copy of the deck whose external relationships (linked pictures, OLE links, hyperlinks)
+    point nowhere, so a renderer opening an untrusted deck makes no network request on its behalf.
+    Returns how many targets were neutralised. Relationship ids stay, so the parts still reference
+    valid ids and the deck still opens."""
+    neutralised = 0
+    source = F.BoundedZip(pptx)
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as out:
+        for info in source.zip.infolist():
+            data = source.read(info.filename)
+            if info.filename.endswith(".rels"):
+                root = F.parse_xml(data, info.filename)
+                for rel in root.iter(f"{{{NS['rel']}}}Relationship"):
+                    if rel.get("TargetMode") == "External":
+                        rel.set("Target", OFFLINE_TARGET)
+                        neutralised += 1
+                ET.register_namespace("", NS["rel"])
+                data = ET.tostring(root, encoding="UTF-8", xml_declaration=True)
+            out.writestr(info, data)
+    return neutralised
+
+
 def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: Path | None, width: int, warnings: list[str]) -> list[Path]:
     pages_dir = out / "pages"
     pages_dir.mkdir(parents=True, exist_ok=True)
@@ -330,7 +356,8 @@ def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: P
             work = out / "_render"
             work.mkdir(exist_ok=True)
             src = work / "deck.pptx"
-            shutil.copy(pptx, src)
+            if offline_copy(pptx, src):
+                warnings.append("External links in the deck were disabled for rendering; linked pictures render blank.")
             run = [*cmd, "--headless", "--convert-to", "pdf", "--outdir", str(work), str(src)]
             if soffice_cmd and "{dir}" in soffice_cmd:
                 # Container wrappers: '{dir}' is replaced by the host work directory, and soffice runs on /work inside.
