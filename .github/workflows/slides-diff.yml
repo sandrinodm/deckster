@@ -1,0 +1,129 @@
+name: Slides diff
+
+# Shows which slides of which decks a pull request changes: renders each affected deck at the base
+# branch and at the pull request, and compares them picture by picture (`deck diff`).
+#
+# The report folder is uploaded as an artifact (open index.html for the side-by-side pictures) and
+# one pull request comment, updated on every push, carries the table from summary.md. Pictures
+# cannot be embedded in a comment without an external image host, which this repository does not
+# use, so the comment links the artifact instead and lists the pictures by their path inside it.
+#
+# It has no secrets and no `pull_request_target`: the code under test runs with a read-only token
+# plus `pull-requests: write` for the comment, so pull requests from forks get the artifact only.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: slides-diff-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BASE_REF: origin/${{ github.base_ref }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # Full history, so the base branch can be extracted with `git archive`.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # A change to a brand, a package or the dependencies can restyle every deck; otherwise only the
+      # decks whose own folder changed are rendered.
+      - name: Find the decks this pull request affects
+        id: decks
+        run: |
+          changed="$(git diff --name-only "$BASE_REF" HEAD)"
+          if echo "$changed" | grep -qE '^(brands/|packages/|pnpm-lock.yaml$|pnpm-workspace.yaml$|package.json$)'; then
+            decks="$(for config in decks/*/deck.config.ts; do basename "$(dirname "$config")"; done)"
+          else
+            decks="$(echo "$changed" | sed -nE 's#^decks/([^/]+)/.*#\1#p' | sort -u)"
+          fi
+          # A deck that was deleted has no folder to render.
+          decks="$(for deck in $decks; do [ -f "decks/$deck/deck.config.ts" ] && echo "$deck"; done)"
+          echo "Affected decks: ${decks:-none}"
+          {
+            echo 'list<<EOF'
+            echo "$decks"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        if: steps.decks.outputs.list != ''
+        run: pnpm install --frozen-lockfile
+
+      - name: Install the browser
+        if: steps.decks.outputs.list != ''
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Diff the decks
+        if: steps.decks.outputs.list != ''
+        env:
+          DECKS: ${{ steps.decks.outputs.list }}
+        run: |
+          for deck in $DECKS; do
+            echo "::group::deck diff $deck"
+            pnpm deck diff "$deck" --base "$BASE_REF"
+            echo "::endgroup::"
+          done
+
+      - name: Upload the diff reports
+        id: upload
+        if: steps.decks.outputs.list != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: slides-diff
+          path: .deck/diff
+          retention-days: 14
+
+      # Image links in summary.md are relative to the artifact, so they are shown as paths here.
+      - name: Write the comment
+        env:
+          DECKS: ${{ steps.decks.outputs.list }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo '<!-- slides-diff -->'
+            if [ -z "$DECKS" ]; then
+              echo '### Slide changes'
+              echo
+              echo 'This pull request changes no deck, brand or package, so no slides were compared.'
+            else
+              for deck in $DECKS; do
+                sed -E 's/!\[[^]]*\]\(([^)]*)\)/`\1`/g' ".deck/diff/$deck/summary.md" | sed "s#\`\(before\|after\|compare\)/#\`$deck/\1/#g"
+                echo
+              done
+              echo "Side-by-side pictures: [download the \`slides-diff\` artifact]($ARTIFACT_URL) and open \`<deck>/index.html\` (also listed on [the run]($RUN_URL))."
+            fi
+          } > comment.md
+          # A comment may hold 65536 characters.
+          head -c 60000 comment.md > comment-trimmed.md
+
+      - name: Post or update the comment
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          existing="$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq '[.[] | select(.body | contains("<!-- slides-diff -->"))][0].id // empty')"
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/$REPO/issues/comments/$existing" --field body=@comment-trimmed.md
+          else
+            gh api --method POST "repos/$REPO/issues/$PR/comments" --field body=@comment-trimmed.md
+          fi

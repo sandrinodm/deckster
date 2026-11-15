@@ -1,0 +1,100 @@
+name: Deploy
+
+# Publishes every deck, with a gallery page at the root, to GitHub Pages. The site is public: it
+# has no access control (docs/deploy.md). Actions are pinned to commit SHAs so a moved tag cannot
+# change what runs here.
+#
+# Disabled by default: it only runs when started by hand from the Actions tab. To publish every
+# commit on main once CI passes, enable Pages for the repository (Settings, Pages, Source: GitHub
+# Actions) and uncomment the `workflow_run` trigger below. Either way only a commit on main with a
+# successful CI run on push is published.
+on:
+  workflow_dispatch:
+    inputs:
+      with_exports:
+        description: 'Also export each deck to PDF and PPTX and link them from the gallery (slower)'
+        type: boolean
+        default: false
+  # workflow_run:
+  #   workflows: [CI]
+  #   types: [completed]
+  #   branches: [main]
+
+permissions:
+  contents: read
+
+# One deployment at a time; a newer run waits instead of cancelling a deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # A CI run triggered by a pull request whose branch happens to be named main is not a push to
+    # main, so it never deploys.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      # Full history, so the check below can tell whether the commit is on main. After CI, the
+      # commit CI tested, not whatever main points at by now.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Only a commit on main whose push passed CI is published, whichever ref the run was started on.
+      - name: Require a successful CI run for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git merge-base --is-ancestor HEAD origin/main \
+            || { echo 'Only commits on main are deployed.'; exit 1; }
+          count="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch main \
+            --commit "$(git rev-parse HEAD)" --event push --status success --limit 100 \
+            --json databaseId --jq 'length')"
+          test "$count" -gt 0 || { echo 'This commit needs a successful CI run on main.'; exit 1; }
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The gallery thumbnails (and the exports) need Chromium.
+      - name: Install the browser
+        run: pnpm exec playwright install chromium --with-deps
+
+      # Decks use relative asset paths, so the site works under the project URL (/<repository>/).
+      - name: Build the site
+        env:
+          WITH_EXPORTS: ${{ inputs.with_exports && '--with-exports' || '' }}
+        run: pnpm deck build --all --out site $WITH_EXPORTS
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

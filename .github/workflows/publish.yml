@@ -1,0 +1,93 @@
+name: Publish to npm
+
+# Publishes @deckster/cli to npm when a GitHub release is published (or when started by hand on a
+# release tag). Only a stable version whose tag is `v<version>` from packages/cli/package.json, on
+# a commit in main with a successful CI run on push, is published. CI already ran the full suite on
+# that exact commit, so this job only builds, packs, smoke-tests and publishes the tarball.
+#
+# Publishing uses npm trusted publishing (OIDC), so there is no npm token secret. Before the first
+# release: create the `npm` environment (Settings, Environments), and on npmjs.com add this
+# repository and `publish.yml` as a trusted publisher for @deckster/cli.
+#
+# The job refuses to publish while packages/cli/package.json is `private`: the CLI must first be
+# bundled into a self-contained package that works outside this repository.
+#
+# Actions are pinned to commit SHAs so a moved tag cannot change what runs here.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never cancel a publish halfway; a second release waits for the first.
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: npm
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Verify the package, release tag and successful CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const pkg = JSON.parse(readFileSync('packages/cli/package.json', 'utf8'));
+          assert.ok(!pkg.private, `${pkg.name} is private: bundle it into a publishable package first`);
+          assert.match(pkg.version, /^\d+\.\d+\.\d+$/, 'Only stable versions can be published');
+          assert.equal(process.env.GITHUB_REF, `refs/tags/v${pkg.version}`, 'Select the tag matching packages/cli/package.json');
+          NODE
+          git merge-base --is-ancestor HEAD origin/main
+          count=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch main \
+            --commit "$(git rev-parse HEAD)" --event push --status success --limit 100 --json databaseId --jq 'length')
+          test "$count" -gt 0 || { echo 'This commit needs a successful CI run on main.'; exit 1; }
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      # Trusted publishing needs a newer npm than the one Node ships with.
+      - name: Install npm with trusted publishing support
+        working-directory: ${{ runner.temp }}
+        run: npm install --global npm@12.2.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # pnpm pack runs the package's prepack build and rewrites catalog: and workspace: ranges.
+      - name: Build and pack the CLI
+        run: pnpm --filter @deckster/cli pack --out "$RUNNER_TEMP/deckster-cli.tgz"
+
+      # Installs the exact tarball into an empty folder outside the checkout, so a missing file or
+      # an undeclared dependency fails here instead of on a user's machine.
+      - name: Test the exact package to publish
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir consumer
+          npm install --no-audit --no-fund --prefix consumer "$RUNNER_TEMP/deckster-cli.tgz"
+          ./consumer/node_modules/.bin/deck --help
+
+      - name: Publish with npm trusted publishing
+        working-directory: ${{ runner.temp }}
+        run: npm publish "$RUNNER_TEMP/deckster-cli.tgz" --access public --provenance --ignore-scripts
