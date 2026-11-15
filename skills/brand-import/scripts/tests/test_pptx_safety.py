@@ -264,6 +264,44 @@ class OfflineRenderCopyTest(unittest.TestCase):
             self.assertNotEqual(out.read("ppt/media/declared.dat"), b'<?xml version="1.0"?><root/>')
             self.assertEqual(out.read("ppt/fonts/font1.fntdata"), b"\x13" * 64)
 
+    def test_odd_svg_prefixes_and_misplaced_fonts_are_neutralised(self):
+        svg_ns = "http://www.w3.org/2000/svg"
+        image = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
+        types = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            '<Default Extension="fntdata" ContentType="application/x-fontdata"/>'
+            "</Types>"
+        )
+        rels = (
+            f'<Relationships xmlns="{self.REL}"><Relationship Id="rId1" Type="{image}" '
+            'Target="../fonts/used-as-image.fntdata"/></Relationships>'
+        )
+        deck = self.package(
+            self.dir / "odd.pptx",
+            {
+                "[Content_Types].xml": types,
+                "ppt/slides/_rels/s.xml.rels": rels,
+                "ppt/media/unicode-prefix.xml": f'<é:svg xmlns:é="{svg_ns}"><é:image href="https://attacker.example/u.png"/></é:svg>',
+                "ppt/media/nested.xml": f'<root><g xmlns="{svg_ns}"><image href="https://attacker.example/n.png"/></g></root>',
+                "ppt/media/malformed.xml": "<svg><unclosed>",
+                "ppt/media/outside.fntdata": b"\x13" * 64,
+                "ppt/fonts/used-as-image.fntdata": b"\x13" * 64,
+                "ppt/fonts/gzip.fntdata": b"\x1f\x8b" + b"\x00" * 62,
+                "ppt/fonts/ok.fntdata": b"\x13" * 64,
+            },
+            base=None,
+        )
+        copy = self.dir / "copy.pptx"
+        extract_pptx.offline_copy(deck, copy)
+        with zipfile.ZipFile(copy) as out:
+            for name in ("ppt/media/unicode-prefix.xml", "ppt/media/nested.xml"):
+                self.assertNotIn(b"attacker.example", out.read(name), name)
+            for name in ("ppt/media/malformed.xml", "ppt/media/outside.fntdata", "ppt/fonts/used-as-image.fntdata",
+                         "ppt/fonts/gzip.fntdata"):
+                self.assertEqual(out.read(name), b"", name)
+            self.assertEqual(out.read("ppt/fonts/ok.fntdata"), b"\x13" * 64)
+
     def test_relationship_parts_must_be_plain_opc_lists(self):
         foreign_root = '<Relationships xmlns="urn:other"><Relationship Id="rId1" Target="https://attacker.example/x" TargetMode="External"/></Relationships>'
         foreign_child = (

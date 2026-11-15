@@ -53,8 +53,11 @@ CFB_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 # Relationship types (the last segment of the Type URI) whose target is an embedded object.
 EMBEDDING_RELATIONSHIPS = {"oleobject", "package", "control", "activexcontrol", "activexcontrolbinary", "attachedtemplate"}
 
-# An SVG root anywhere in a part, which a renderer may draw as SVG whatever the part is called.
-SVG_TAG = re.compile(r"<\s*(?:[A-Za-z_][\w.-]*:)?svg[\s>/]", re.I)
+# The SVG namespace; any element in it makes a part SVG to a renderer, whatever the part is called.
+SVG_NAMESPACE = "http://www.w3.org/2000/svg"
+
+# The first bytes of gzip data (SVGZ, among others).
+GZIP_MAGIC = b"\x1f\x8b"
 
 # The DIB header sizes a real BMP has after its 14-byte file header (BITMAPCOREHEADER to V5).
 BMP_HEADER_SIZES = {12, 40, 52, 56, 64, 108, 124}
@@ -352,12 +355,13 @@ def offline_copy(pptx: Path, target: Path) -> int:
       at, and anything under `ppt/embeddings/`, is emptied; the slide shows its preview picture.
     - Anything that carries other files (a zip, even one appended to an image, or an OLE compound
       file) is emptied whatever it is called or declared as.
-    - A part that is XML must be UTF-8 without a DTD, or it is emptied; it is kept as it is unless an
-      `<svg` element appears anywhere in it or it is declared as SVG, in which case it is reduced to
-      static drawing.
+    - A part that is XML must be UTF-8, well formed and without a DTD, or it is emptied; it is kept
+      as it is unless any element is in the SVG namespace or called `svg`, or it is declared as SVG,
+      in which case it is reduced to static drawing.
     - Any other part is kept only when its header is a raster or metafile format (PNG, JPEG, GIF,
-      BMP, TIFF, WebP, EMF, WMF) or a font (font magic bytes, or one of the exact embedded-font
-      content types); everything else, including compressed data such as SVGZ, is emptied.
+      BMP, TIFF, WebP, EMF, WMF) or a font: font magic bytes, or an embedded font declared with an
+      exact embedded-font content type under `ppt/fonts/` and reached only through font
+      relationships. Everything else, including compressed data such as SVGZ, is emptied.
     Refuses a deck whose part names differ only in case, since readers disagree on which one wins,
     and a relationships part that isn't a plain OPC relationships list.
 
@@ -369,7 +373,7 @@ def offline_copy(pptx: Path, target: Path) -> int:
     if len({info.filename.lower() for info in infos}) != len(infos):
         raise F.Refused("two parts have names that differ only in case")
     content_types = _declared_content_types(source)
-    embedded = _embedded_object_parts(source, infos)
+    targets = _relationship_targets(source, infos)
     neutralised = 0
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as out:
         for info in infos:
@@ -378,18 +382,18 @@ def offline_copy(pptx: Path, target: Path) -> int:
             if lower.endswith(".rels"):
                 data, count = _offline_relationships(data, info.filename)
                 neutralised += count
-            elif lower in embedded or lower.startswith("ppt/embeddings/") or _is_container(data):
+            elif targets.get(lower, set()) & EMBEDDING_RELATIONSHIPS or lower.startswith("ppt/embeddings/") or _is_container(data):
                 data = b""
                 neutralised += 1
             elif _looks_like_xml(data):
-                text = _xml_text(data, info.filename)
-                if text is None:
+                root = _xml_root(data, info.filename)
+                if root is None:
                     data = b""
                     neutralised += 1
-                elif SVG_TAG.search(text) or "svg" in content_types(info.filename):
+                elif _has_svg(root) or "svg" in content_types(info.filename):
                     data = _static_svg(data)
                     neutralised += 1
-            elif not (_is_inert_binary(data) or _is_font(data, content_types(info.filename))):
+            elif not (_is_inert_binary(data) or _is_font(lower, data, content_types(info.filename), targets.get(lower, set()))):
                 data = b""
                 neutralised += 1
             out.writestr(info, data)
@@ -418,10 +422,11 @@ def _declared_content_types(source: "F.BoundedZip"):
     return lookup
 
 
-def _embedded_object_parts(source: "F.BoundedZip", infos) -> set[str]:
-    """The lower-cased names of every part an embedding-type relationship points at, resolved
-    against the relationships part's source folder and percent-decoded."""
-    parts: set[str] = set()
+def _relationship_targets(source: "F.BoundedZip", infos) -> dict[str, set[str]]:
+    """Every part a relationship points at (lower-cased, resolved against the relationships part's
+    source folder and percent-decoded), with the relationship types (the last segment of the Type
+    URI, lower-cased) that point at it."""
+    targets: dict[str, set[str]] = defaultdict(set)
     for info in infos:
         name = info.filename
         if not name.lower().endswith(".rels"):
@@ -429,13 +434,13 @@ def _embedded_object_parts(source: "F.BoundedZip", infos) -> set[str]:
         root = F.parse_xml(source.read(name), name)
         folder = posixpath.dirname(posixpath.dirname(name))
         for rel in root:
-            kind = (rel.get("Type") or "").rsplit("/", 1)[-1].lower()
             target = unquote(rel.get("Target") or "")
-            if kind not in EMBEDDING_RELATIONSHIPS or REMOTE_TARGET.match(target):
+            if REMOTE_TARGET.match(target):
                 continue
             resolved = target.lstrip("/") if target.startswith("/") else posixpath.join(folder, target)
-            parts.add(posixpath.normpath(resolved).lower())
-    return parts
+            kind = (rel.get("Type") or "").rsplit("/", 1)[-1].lower()
+            targets[posixpath.normpath(resolved).lower()].add(kind)
+    return targets
 
 
 def _is_container(data: bytes) -> bool:
@@ -444,19 +449,38 @@ def _is_container(data: bytes) -> bool:
     return CFB_MAGIC in data or zipfile.is_zipfile(io.BytesIO(data))
 
 
-def _xml_text(data: bytes, name: str) -> str | None:
-    """The part as text when it is UTF-8 XML without a DTD, else None, so an encoding trick can't
-    hide an SVG root from the check that looks for one."""
+def _xml_root(data: bytes, name: str) -> ET.Element | None:
+    """The part parsed as XML when it is UTF-8, has no DTD and is well formed, else None, so an
+    encoding trick or a malformed part can't hide an SVG element from the check that looks for one."""
     try:
-        return F.decode_xml(data, name)
+        return F.parse_xml(data, name)
     except F.Refused:
         return None
 
 
-def _is_font(data: bytes, declared: str) -> bool:
-    """True for a real font file, or a part declared with one of the exact font types PowerPoint uses
-    for embedded (obfuscated) fonts, which have no magic bytes of their own."""
-    return F.sniff(data) in ("ttf", "otf", "woff", "woff2") or declared in EMBEDDED_FONT_TYPES
+def _has_svg(root: ET.Element) -> bool:
+    """True when any element is in the SVG namespace or is called `svg`, whatever its prefix."""
+    for el in root.iter():
+        tag = el.tag if isinstance(el.tag, str) else ""
+        namespace, _, local = tag.rpartition("}")
+        if namespace.lstrip("{") == SVG_NAMESPACE or local.lower() == "svg":
+            return True
+    return False
+
+
+def _is_font(lower_name: str, data: bytes, declared: str, kinds: set[str]) -> bool:
+    """True for a real font file, or an embedded (obfuscated) font, which has no magic bytes of its
+    own: one declared with an exact embedded-font content type, kept under `ppt/fonts/`, reached
+    only through font relationships, and not compressed or SVG in disguise."""
+    if F.sniff(data) in ("ttf", "otf", "woff", "woff2"):
+        return True
+    return (
+        declared in EMBEDDED_FONT_TYPES
+        and lower_name.startswith("ppt/fonts/")
+        and kinds <= {"font"}
+        and data[:2] != GZIP_MAGIC
+        and F.sniff(data) != "svg"
+    )
 
 
 def _looks_like_xml(data: bytes) -> bool:
