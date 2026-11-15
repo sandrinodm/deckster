@@ -52,10 +52,14 @@ export function standingRules(deck: string, web: boolean): string {
     '- Before you write a slide, read the parts you need: the `catalog` deck ' +
       'tool lists the layouts, charts, diagrams and components with their props ' +
       'and limits, and ' +
-      '.claude/skills/create-presentation/references/framework.md describes the ' +
-      "deck's files and tools. .claude/skills/create-presentation/SKILL.md has " +
-      "guidance on writing slides; read it when a request is about a slide's " +
-      'content or story.',
+      'the `create-presentation` skill has guidance on writing slides: ' +
+      "references/framework.md describes the deck's files and tools, and " +
+      "SKILL.md covers a slide's content and story, so read it when a request " +
+      'is about either. It is a folder of plain files, not a skill to invoke. ' +
+      'Look for `create-presentation/` in the workspace under `.claude/skills/`, ' +
+      '`.agents/skills/` or `skills/`, or in the global skills folder of your ' +
+      'agent (`~/.claude/skills/`, `~/.agents/skills/`); if you cannot find it, ' +
+      'work from the catalog alone.',
     '- Edit only the slide file named in the context unless the user asks for ' +
       'more slides or files.',
     "- Stay within the layout's published limits (title length, item counts, " +

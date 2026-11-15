@@ -1,0 +1,195 @@
+{
+  "skill_name": "brand-import",
+  "notes": "Cases and expectations inherited from earlier runs of the repository-bound skill, so some use the deckster repository (pnpm deck, decks/showcase, brands/nocturne). Historical statuses describe earlier runs. Run evaluations in isolated temporary copies; keep outputs outside the working tree. Fixture paths are relative to this skill directory.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "pptx-with-native-charts",
+      "prompt": "Our partner meeting deck is at evals/files/verdant-partner-meeting.pptx. I want decks from this repo's framework to look like Verdant's. Turn it into a brand: colours and what each is for, the different slide backgrounds, fonts and where we get them, logo, how their charts and big numbers are styled including data colours we can use for new charts, and which kinds of slides they use. Show me something rendered so I can judge it, and tell me what you need from me.",
+      "expected_output": "A brand definition with exact Verdant colours and roles, default/inverse/gradient surfaces, Playfair Display + Source Sans 3 with sourcing, the master logo, chart style and validated data palettes, layout archetypes, a rendered specimen, and a short human-review list.",
+      "files": [
+        "evals/files/verdant-partner-meeting.pptx"
+      ],
+      "expectations": [
+        "Exact background #F3EFE4 and text #14261C appear as bg and fg",
+        "The green #2E7D4F is identified as the accent/primary and #1E4D36 as a heading or dark brand colour",
+        "An inverse (dark) surface with #14261C is defined",
+        "The title gradient #1E4D36 to #2E7D4F is captured",
+        "Playfair Display and Source Sans 3 are the display and body families",
+        "Arial is not adopted as a brand font (it is stray pasted content)",
+        "The off-theme highlight #F2C14E is noticed (captured or flagged)",
+        "Chart series colours #2E7D4F, #D9A441, #3C6E91 are recorded",
+        "Chart gridline colour #D8D2C2 is recorded",
+        "Categorical, sequential and diverging data palettes and a context colour are provided",
+        "Colour-vision (colour-blind) safety of the data palette is checked or discussed",
+        "Font licence or sourcing status is stated for each family",
+        "A rendered specimen image exists in the outputs",
+        "The specimen includes a chart slide and a stats slide",
+        "A human-review list is given and is short (12 items or fewer)",
+        "No font binaries are redistributed without their licence: fonts are referenced (Fontsource) or copied together with the licence text",
+        "Sequential and diverging palettes are validated (lightness order, colour-vision distance of the ends), not only proposed",
+        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "pdf-subset-fonts-gradients",
+      "prompt": "All I have from Halcyon is this PDF export of their Q4 deck: evals/files/halcyon-deck.pdf (no PowerPoint, I asked). Import their brand into our deck framework: palette and roles, surfaces, the gradient, type scale and fonts, logo, chart look and data palettes, layouts. Render a specimen I can compare against the PDF and list what needs my decision.",
+      "expected_output": "Exact Halcyon colours, the 135deg coral-to-violet gradient, Space Grotesk / Inter / JetBrains Mono identified from subset fonts and sourced openly, canvas-pixel type scale, vector logo recovered, chart highlight/context convention, validated data palettes, specimen compared with the PDF, review list including contrast failures.",
+      "files": [
+        "evals/files/halcyon-deck.pdf"
+      ],
+      "expectations": [
+        "Exact colours #F7F4EE, #0F1B2D, #FF5A36, #7A2CF5, #12B5A5 and #5B6472 appear",
+        "The gradient is linear at 135 degrees from #FF5A36 to #7A2CF5",
+        "Display family is named Space Grotesk (not 'Space Grotesk Light' or a PostScript name), body Inter, mono JetBrains Mono",
+        "States that the PDF's embedded fonts are subsets and cannot be reused, and sources the fonts elsewhere",
+        "Type scale is in canvas pixels and includes 120, 72 and 32",
+        "An inverse surface with #0F1B2D and a gradient surface are defined",
+        "The chart context colour #C9C3B6 and gridline colour #D9D4C7 are recorded",
+        "The highlight-one-series convention of the bar chart is described",
+        "Categorical, sequential and diverging data palettes and a context colour are provided",
+        "Colour-vision safety of the data palette is checked or discussed",
+        "At least one of the real contrast failures is flagged with a ratio (coral on paper 2.8:1, white on coral 3.1:1, teal on paper 2.3:1)",
+        "A logo asset (SVG or PNG) is extracted into the outputs",
+        "A rendered specimen image exists in the outputs",
+        "Specimen slides were compared against source pages (comparison images or an explicit page-by-page comparison)",
+        "A human-review list is given and is short (12 items or fewer)",
+        "No font binaries are redistributed without their licence: fonts are referenced (Fontsource) or copied together with the licence text",
+        "Sequential and diverging palettes are validated (lightness order, colour-vision distance of the ends), not only proposed",
+        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "website-to-deck-brand",
+      "prompt": "We don't have any Halcyon slides, only their website. A local copy is at evals/files/halcyon-site/index.html (treat it like the live URL). Make a brand for our deck framework from it: colours, surfaces, gradient, fonts and licensing, logo, shape, motion feel, chart style and data palettes. Remember this is for 1920x1080 slides, not a web page. Give me a specimen and a list of what to check.",
+      "expected_output": "Brand from CSS custom properties and computed styles, type sizes re-scaled for slides, fonts with licence status, inline SVG logo saved, radius/shadow/motion captured, chart style from the SVG chart, data palettes, specimen, review list.",
+      "files": [
+        "evals/files/halcyon-site/index.html"
+      ],
+      "expectations": [
+        "Exact colours #F7F4EE, #0F1B2D, #FF5A36, #7A2CF5, #12B5A5 and #5B6472 appear",
+        "The gradient 135deg #FF5A36 to #7A2CF5 is captured",
+        "Space Grotesk, Inter and JetBrains Mono are identified with licence or sourcing status",
+        "Body text size is set for slides (28 px or more), not copied from the site's 16-18 px",
+        "Corner radius 24 and pill buttons are captured",
+        "The site's easing cubic-bezier(0.2, 0.8, 0.2, 1) or its 180 ms duration informs the motion tokens",
+        "An inverse surface with #0F1B2D is defined",
+        "The logo SVG is saved into the outputs",
+        "The chart's highlight (#FF5A36) against context (#C9C3B6) convention is recorded",
+        "Categorical, sequential and diverging data palettes and a context colour are provided",
+        "Colour-vision safety of the data palette is checked or discussed",
+        "The white-on-coral button contrast (3.1:1) or coral-on-paper (2.8:1) failure is flagged",
+        "A rendered specimen image exists in the outputs",
+        "A human-review list is given and is short (12 items or fewer)",
+        "No font binaries are redistributed without their licence: fonts are referenced (Fontsource) or copied together with the licence text",
+        "Sequential and diverging palettes are validated (lightness order, colour-vision distance of the ends), not only proposed",
+        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists",
+        "The emitted and resolved shadow preserves the source colour opacity (8% within rounding tolerance), not only its offsets and blur",
+        "Every logo variant is verified on its assigned surfaces without unintended background-coloured patches; unavailable variants are reported rather than invented"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "screenshots-only",
+      "prompt": "Someone sent me four screenshots of Halcyon's slides (evals/files/halcyon-screenshots/). That's everything I've got. Can you get a usable brand out of them for our deck framework, and be straight with me about what's a guess?",
+      "expected_output": "Exact flat colours and the gradient estimate from pixels, typefaces offered as low-confidence visual guesses, an explicit statement of what images cannot provide, and a request for better sources.",
+      "files": [
+        "evals/files/halcyon-screenshots/"
+      ],
+      "expectations": [
+        "Colours #F7F4EE, #0F1B2D and #FF5A36 (or the nearest compiling shade of the coral, with the source value recorded) appear",
+        "Gradient ramp pixels (pinks and purples between the stops) are not listed as brand colours",
+        "Typeface names are presented as guesses with low confidence, not as facts",
+        "The handover says what could not be determined from images and asks for a better source",
+        "Data palettes are provided and marked as derived",
+        "No font binaries are redistributed without their licence",
+        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "google-slides-link",
+      "prompt": "Here's the template our events team uses: https://docs.google.com/presentation/d/1EAYk18WDjIG-zp_0vLm3CsfQh_i8eXc67Jo2O9C6Vuc/edit?usp=sharing. Import it as a brand called 'album'.",
+      "expected_output": "Both PPTX and PDF exports are downloaded, the PDF is used for page images, the unused default theme is recognised, the image-based backgrounds are carried over as assets rather than tokens, and Verdana is handled as a system font needing an open substitute.",
+      "files": [],
+      "expectations": [
+        "Downloads the PPTX and PDF exports rather than screenshotting the viewer",
+        "Recognises that the theme accents are unused and builds the palette from observed usage",
+        "Treats Verdana as a system font and proposes or uses an open alternative",
+        "Carries the illustrated backgrounds over as image assets, or says clearly that they are not captured by tokens",
+        "States that the 4:3 source was adapted to the 16:9 canvas",
+        "No font binaries are redistributed without their licence",
+        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "guidelines-pdf-commercial-fonts",
+      "prompt": "This is Northlight's brand guidelines PDF (colour page with hex values, typography page naming Tiempos Headline and Graphik, a logo misuse page). Build the brand from it. There are no slides.",
+      "expected_output": "Stated hex values are used verbatim and outrank observed ones, misuse-page colours are excluded, both commercial fonts land on the review list as blockers with open stand-ins, and slide layouts are not derived from the print document.",
+      "files": [],
+      "expectations": [
+        "Uses the hex values stated in the text",
+        "Does not take colours or logo variants from the misuse page",
+        "Marks Tiempos Headline and Graphik as commercial, requests licensed files, and names open stand-ins",
+        "Does not copy the guidelines' page layout as slide layouts",
+        "Derives data palettes and marks them as derived"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "roundtrip-pptx-known-brand",
+      "prompt": "Here's a deck from the Larkfield city team: <path to a PPTX made with `pnpm deck export showcase --brand nocturne --pptx`>. I want our decks to look like theirs. Turn it into a brand called <name>. I'm away today, so don't wait for me.",
+      "expected_output": "brands/<name> that passes pnpm deck brand check and matches brands/nocturne when compared with evals/compare_tokens.py.",
+      "files": [],
+      "expectations": [
+        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "All ten roles of the default surface are within dE 6 of the truth, and at least 7 of 10 on each other surface",
+        "The three font families match and each has a substitute of the right kind",
+        "All eleven type sizes are within 15% of the truth",
+        "The gradient surface exists with a mesh or linear gradient close to the source picture",
+        "Both logo variants are extracted and placed top-right",
+        "`pnpm deck lint showcase --brand <name>` has no errors",
+        "The handover lists generated values (data ramps, status colours, motion, icons) as guesses"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "roundtrip-pdf-known-brand",
+      "prompt": "All I have from the Larkfield forestry team is this PDF of their deck: <path to a PDF made with `pnpm deck export showcase --pdf`> (no PowerPoint, I asked). Import their look as a brand called <name>. I'm away today, so don't wait for me.",
+      "expected_output": "brands/<name> that passes pnpm deck brand check and matches brands/default when compared with evals/compare_tokens.py.",
+      "files": [],
+      "expectations": [
+        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "All ten roles of the default surface are within dE 6 of the truth, and at least 7 of 10 on the inverse and accent surfaces",
+        "Bricolage Grotesque and Inter are identified and sourced from Fontsource, with substitutes of the right kind",
+        "All eleven type sizes are within 15% of the truth",
+        "The linear gradient's stops and angle match",
+        "The logo is rebuilt as SVG in two variants",
+        "`pnpm deck lint showcase --brand <name>` has no errors"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "website-public-identity",
+      "prompt": "I like how https://stripe.com looks. Make a brand for our deck framework from that site, called <name>, so I can see what our decks would look like in that style. I'm away today, so don't wait for me.",
+      "expected_output": "A valid brand that reads as the site in the rendered sample decks, with no third-party logo copied and the commercial typeface flagged.",
+      "files": [],
+      "expectations": [
+        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "The site's commercial typeface is identified, not copied, and an open stand-in is used and named in the handover",
+        "No third-party logo or imagery is copied into the brand",
+        "The sample decks rendered in the brand read as the site: its ink and accent colours, a dark surface, the gradient treatment",
+        "Every sample deck that was shot also lints without errors in the brand",
+        "Nothing about the user or the project is sent in the requests"
+      ]
+    }
+  ]
+}

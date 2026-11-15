@@ -1,0 +1,206 @@
+{
+  "skill_name": "create-presentation",
+  "notes": "Cases and expectations inherited from earlier runs of the repository-bound skill, so some use the deckster repository (pnpm deck, decks/showcase, brands/nocturne). Historical statuses describe earlier runs. Run evaluations in isolated temporary copies; keep outputs outside the working tree. Fixture paths are relative to this skill directory.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "intake-vague-request",
+      "prompt": "hey can you put together a deck on Beacon, our new observability product? need it for thursday",
+      "expected_output": "A first reply that does not build anything yet: at most four targeted questions (audience and desired outcome among them), each with a proposed default, and no invented product facts.",
+      "files": [],
+      "expectations": [
+        "The reply asks who the audience is",
+        "The reply asks what the audience should do, decide or believe afterwards (the desired outcome)",
+        "The reply asks no more than four questions in total",
+        "At least one question comes with a proposed default or assumption the user can simply confirm",
+        "The reply does not contain a slide-by-slide outline or slide files (it waits for answers on audience and outcome)",
+        "The reply does not state invented facts about Beacon (features, metrics, customers) as if known"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "intake-rich-exec-briefing",
+      "prompt": "I'm head of platform engineering at a 400-person fintech. Next Tuesday I have 20 minutes with the exec team (CEO, CFO, CTO, COO) to get approval to migrate from our self-managed Kubernetes clusters to a managed service. Facts: current setup costs $1.9M/yr all-in, and our 6 SREs spend about 40% of their time on cluster operations. We had 4 Sev1 incidents in the last 12 months tied to cluster upgrades, 7h20m total downtime. The managed option is quoted at $1.4M/yr. Migration takes two quarters, needs $350k one-off, and pauses two roadmap items (multi-region failover and the internal developer portal). Main risk people raise is vendor lock-in, and the CFO is skeptical because a data-warehouse migration last year ran 3 months over. The ask: approve the $350k and the two-quarter plan. Default brand, in person. Give me the plan for the deck. I want to see the outline before you build anything.",
+      "expected_output": "No unnecessary questions. A brief plus an answer-first outline with assertion titles, options, risks, the CFO objection handled, an appendix, a time budget that leaves room for discussion, and no slides built.",
+      "files": [],
+      "expectations": [
+        "The reply asks at most three questions and none about information already given (audience, duration, ask, brand, delivery mode)",
+        "The recommendation and the ask ($350k and the two-quarter plan) appear in the first two slides of the outline",
+        "At least 80% of the content-slide titles in the outline are full-sentence assertions rather than topic labels",
+        "The outline compares options including doing nothing / staying self-managed",
+        "The outline explicitly addresses the CFO's skepticism about the overrun of last year's migration (not only generic risk)",
+        "The outline addresses vendor lock-in",
+        "The outline includes appendix or backup slides for likely questions",
+        "Planned presenting time is clearly less than the 20 minutes, leaving explicit time for discussion",
+        "Every number is either supplied in the prompt or correctly derived from it (e.g. $0.5M/yr saving, payback of about 8 to 9 months), and missing evidence is flagged as needed rather than invented",
+        "A desired outcome is stated as an observable decision by the exec team",
+        "No slide files were written; the reply stops and asks for review of the outline"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "training-full-build",
+      "prompt": "Build a 45-minute training for our 12 new tier-1 support agents on handling refund requests. Policy: refunds within 30 days of purchase are auto-approved up to $200; $200 to $1000 needs team-lead approval via the #refund-approvals channel; over $1000 or outside 30 days goes to Finance with form RF-2; subscriptions are prorated; never promise a refund timeline shorter than 5 to 7 business days. Top mistakes we see from new agents: they promise instant refunds, forget to check the purchase date, and escalate everything over $100. It will be run remotely over Zoom by one of our team leads. I'm unavailable today so go ahead and build the whole thing without checking back.",
+      "expected_output": "Brief, outline and MDX slides with notes. Observable objectives, practice and retrieval built in, assertion titles, content within budgets, facilitator notes, policy stated accurately.",
+      "files": [],
+      "expectations": [
+        "Learning objectives are stated as observable performances (what the agent will do), not 'understand' or 'know'",
+        "There are at least two practice activities where learners work a refund scenario themselves, each with a stated duration",
+        "Practice and learner activity account for roughly a third or more of the 45 minutes",
+        "There is at least one retrieval or check question where learners answer before the answer is revealed",
+        "The three named common mistakes are each explicitly addressed",
+        "The policy is stated accurately everywhere (30 days, $200, $200-$1000 via #refund-approvals, over $1000 or outside 30 days to Finance with RF-2, proration, 5 to 7 business days) with no invented policy rules",
+        "At least 80% of content-slide titles are full-sentence assertions (script-checked)",
+        "Every content slide has speaker notes (script-checked)",
+        "Notes work as a facilitator guide: they include questions to ask and model answers for the exercises",
+        "Slide time budgets are present and total 45 minutes or less (script-checked)",
+        "No slide exceeds the fallback text budgets by a wide margin: no more than 2 slides flagged for body words or bullet count (script-checked)",
+        "The design accounts for remote delivery (chat, polls, breakout rooms or similar interaction)",
+        "A brief and an outline exist alongside the slides, with assumptions stated",
+        "The handoff says the deck was not visually verified / the framework CLI was unavailable, rather than claiming a check"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "mixed-audience-conference-outline",
+      "prompt": "I'm giving a 30-minute talk at our annual customer conference, about 300 people in the room. Roughly half are platform engineers who use our feature-flag product every day, the other half are engineering directors and VPs who hold the budget. Topic: how we rebuilt our flag evaluation engine to run at the edge. Facts: p99 evaluation latency went from 45 ms to 3 ms; we moved from central Postgres lookups to rules compiled to WASM and pushed to 200+ edge PoPs; there was one bad incident during rollout (stale flags served for 38 minutes in the EU on March 3), which led us to add versioned rollouts with automatic rollback; 62% of customer traffic is on the new engine today. What I want out of it: engineers migrate to the v2 SDK (it's required for the edge engine) and the directors renew and expand because they trust our reliability. Don't build slides yet, just give me the brief and the outline.",
+      "expected_output": "A brief that names a primary audience and gives each group its payoff, and an outline with a hook opening, assertion titles, the incident told honestly, layered depth, per-audience asks and a realistic time budget.",
+      "files": [],
+      "expectations": [
+        "The brief names a primary audience (or explicitly prioritizes between the two groups) and gives the reasoning",
+        "The outline marks, for each slide or section, which audience it primarily serves, and both groups have slides that are specifically theirs",
+        "The opening (first two slides) is a hook, complication or concrete story, not a speaker bio, agenda or company overview",
+        "The March 3 incident is included candidly with what changed afterwards, not omitted or minimized",
+        "The close contains a specific ask for engineers (migrate to the v2 SDK) and a distinct reason-to-trust or ask for directors",
+        "At least 80% of content-slide titles are full-sentence assertions",
+        "Per-slide or per-section time budgets are given and total less than 30 minutes with slack or Q&A accounted for",
+        "Technical depth is layered (deeper slides marked, an appendix, or linked material) rather than averaged",
+        "Engineer-facing results are translated into meaning for directors at least once (e.g. what 3 ms or automatic rollback means for the business)",
+        "No facts are invented (customer names, extra metrics, SDK details); gaps are flagged as needed",
+        "No slide files were written; the reply stops for review"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "sales-enablement-kit",
+      "prompt": "We sell Ledgerly, AP automation for mid-market manufacturers. Build the first-meeting deck our 14 AEs will present to CFOs and controllers, plus what the AEs need to deliver it well. What we know: a typical customer processes 3,000 to 8,000 invoices a month, mostly by manual entry from emailed PDFs. Our OCR plus 3-way match processes 81% of invoices touchless (measured across current customers in Q3). One referenceable customer: Halvorsen Castings cut invoice cycle time from 11 days to 3. We integrate with NetSuite, Sage Intacct and Epicor (not SAP yet). Common objections: 'our ERP already has an AP module', 'we tried OCR in 2019 and it was garbage', 'no budget until next fiscal year'. Main competitor is BILL, strong in small business, weaker on PO matching. Pricing is per invoice but I have no details to share yet. Build it. I'm out today so don't wait for me.",
+      "expected_output": "A short customer-facing deck that starts from the buyer's problem, with talk tracks in notes, discovery questions, objection handling for all three objections, honest competitive and SAP positioning, and no invented proof.",
+      "files": [],
+      "expectations": [
+        "The customer-facing deck opens with the buyer's situation or problem, not with a Ledgerly company or product overview",
+        "The core customer-facing deck is short: planned presenting time of about 12 minutes or less, or 10 or fewer core slides, with extra material in an appendix or backup",
+        "Speaker notes contain a talk track in spoken language for the customer-facing slides",
+        "Notes or slides include questions for the AE to ask the buyer (discovery or check-in questions)",
+        "All three stated objections are handled, each with a response that acknowledges before answering",
+        "The only customer named is Halvorsen Castings and the only performance figures are the supplied ones (81% touchless, 11 to 3 days, 3,000-8,000 invoices) or correct derivations; no invented ROI, savings, logos, quotes or statistics",
+        "Missing proof or details (pricing, ROI, more references, a quote) are marked with explicit placeholders or a needs list",
+        "The SAP gap is handled honestly (the kit tells AEs what to say or to disqualify), not hidden",
+        "Competitive positioning against BILL is included and does not invent weaknesses beyond what was supplied",
+        "The deck ends with a specific next step for the buyer",
+        "The kit includes something for AEs to practice with (role-play scenario, certification check or similar)",
+        "At least 80% of content-slide titles are full-sentence assertions (script-checked)",
+        "Every content slide has speaker notes (script-checked)"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "data-single-big-number",
+      "prompt": "Adding one slide to my board deck (in-person board meeting, default brand). The data: median time for a new customer to go live was 14 days in H1 (n=212) and 3 days in H2, after we launched guided setup (n=187). I just need the slide for this, plus speaker notes.",
+      "expected_output": "One slide whose title states the takeaway, showing the number (big number or before/after comparison) rather than a chart, with period, sample sizes and 'median' present, and notes.",
+      "files": [],
+      "expectations": [
+        "The slide presents the result as a big number or a before/after number comparison, not as a bar, line or other chart",
+        "The slide title is a full sentence stating the takeaway and includes the 3-day and/or 14-day figure",
+        "The slide or its notes state that the figure is a median, the periods (H1, H2) and the sample sizes (212, 187)",
+        "The slide attributes or links the change to the guided-setup launch without overclaiming beyond the data given",
+        "No numbers are invented; any derived figure (e.g. about 79% shorter, 11 days saved, roughly 4.7x) is arithmetically correct",
+        "Exactly one slide is delivered (an optional alternative is acceptable, a multi-slide sequence is not)",
+        "Speaker notes are present and add to the slide rather than repeating it",
+        "Visible text on the slide is minimal: 30 words or fewer outside the title"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "data-table-to-chart-slides",
+      "prompt": "For Thursday's QBR with the exec team I need the data slides for the regional section. Raw numbers, ARR in $M, Q3 last year to Q3 this year, and net revenue retention: North America 41.2 to 46.1, NRR 108%. EMEA 18.4 to 27.9, NRR 121%. APAC 9.1 to 10.3, NRR 97%. LATAM 3.3 to 5.0, NRR 112%. Also churned ARR this quarter by reason, in $M: price 0.4, missing integration 1.9, acquired or closed 0.6, competitor 0.5, other 0.3. The points I want to land: EMEA is where the growth is coming from, APAC is the one to worry about, and missing integrations are the main reason we lose customers. Slides plus notes please.",
+      "expected_output": "About three data slides, one per point, each with a takeaway title, a form chosen for the message, one highlight, correct derived numbers, units and period, and notes.",
+      "files": [],
+      "expectations": [
+        "There is one data slide per point (three points), each making a single claim, rather than one slide or table carrying everything",
+        "Each data slide's title is a full sentence stating the takeaway with a specific number",
+        "The churn-reason slide uses sorted bars (or a big number plus bars), not a pie or donut with five slices",
+        "Each chart specifies a highlight (EMEA, APAC, missing integration respectively) with the other data de-emphasized",
+        "The EMEA point is framed on absolute growth contribution (about $9.5M of the $17.3M added, roughly 55%) and does not claim EMEA has the highest percentage growth rate without noting LATAM grew at essentially the same rate (about 52%)",
+        "The APAC slide rests on NRR below 100% (97%, the only region contracting from existing customers), not merely on APAC being small",
+        "All derived numbers are arithmetically correct (e.g. EMEA +9.5, total +17.3, missing integration 1.9 of 3.7 = about 51%)",
+        "Units ($M, %) and the period (Q3 vs Q3 last year / this quarter) appear on each data slide",
+        "No dual-axis chart is used to combine ARR and NRR",
+        "Every data slide has speaker notes that say where to look and what it means",
+        "No numbers beyond the supplied data and correct derivations are introduced"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "render-sales-first-meeting",
+      "prompt": "We sell Ledgerly, AP automation for mid-market manufacturers. Build the first-meeting deck our 14 AEs will present to CFOs and controllers (about 10 minutes of presenting inside a 30-minute first meeting), plus what the AEs need to deliver it well. What we know: a typical customer processes 3,000 to 8,000 invoices a month, mostly by manual entry from emailed PDFs. Our OCR plus 3-way match processes 81% of invoices touchless (measured across current customers in Q3). One referenceable customer: Halvorsen Castings cut invoice cycle time from 11 days to 3. We integrate with NetSuite, Sage Intacct and Epicor (not SAP yet). Common objections: 'our ERP already has an AP module', 'we tried OCR in 2019 and it was garbage', 'no budget until next fiscal year'. Main competitor is BILL, strong in small business, weaker on PO matching. Pricing is per invoice but I have no details to share yet. Build it. I'm out today so don't wait for me.",
+      "expected_output": "A deck in decks/<name> that lints clean, was visually checked, and passes the rubric; plus a handoff.",
+      "files": [],
+      "expectations": [
+        "pnpm deck lint <deck> reports no errors and no warnings in the deck's brand",
+        "Every layout and component used exists in the catalogs; nothing is hand-drawn in SVG or styled with raw colours, fonts or sizes",
+        "Every content slide's title is a claim (read_through.py reports no label-style title) and the titles read in order tell the argument",
+        "Every slide has speaker notes; deck.config.ts sets duration and the budgets fit it",
+        "No invented facts: every number is the user's or shown arithmetic on the user's numbers; proposals of the agent's own are labelled; gaps are [NEEDS] items listed in the handoff",
+        "In the screenshots no slide is clipped, cramped, or a small island of content in a mostly empty slide; neighbouring slides differ",
+        "The handoff states the lint result and that the screenshots were looked at, and lists what the user must supply",
+        "The deck is buyer-first (their situation and a question before the product) and fits about 10 minutes",
+        "The seller kit (talk track per slide, discovery questions, the three objections, BILL positioning) exists outside the customer-facing slides",
+        "Pricing, SAP and BILL are not claimed beyond what the prompt gives"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "render-training-with-diagram",
+      "prompt": "Build a 45-minute training for our 12 new tier-1 support agents on handling refund requests. Policy: refunds within 30 days of purchase are auto-approved up to $200; $200 to $1000 needs team-lead approval via the #refund-approvals channel; over $1000 or outside 30 days goes to Finance with form RF-2; subscriptions are prorated; never promise a refund timeline shorter than 5 to 7 business days. Top mistakes we see from new agents: they promise instant refunds, forget to check the purchase date, and escalate everything over $100. I'd like the routing rules shown as a diagram the trainer can walk through step by step. It will be run remotely over Zoom by one of our team leads. I'm unavailable today so go ahead and build the whole thing without checking back.",
+      "expected_output": "A deck in decks/<name> that lints clean, was visually checked, and passes the rubric; plus a handoff.",
+      "files": [],
+      "expectations": [
+        "pnpm deck lint <deck> reports no errors and no warnings in the deck's brand",
+        "Every layout and component used exists in the catalogs; nothing is hand-drawn in SVG or styled with raw colours, fonts or sizes",
+        "Every content slide's title is a claim (read_through.py reports no label-style title) and the titles read in order tell the argument",
+        "Every slide has speaker notes; deck.config.ts sets duration and the budgets fit it",
+        "No invented facts: every number is the user's or shown arithmetic on the user's numbers; proposals of the agent's own are labelled; gaps are [NEEDS] items listed in the handoff",
+        "In the screenshots no slide is clipped, cramped, or a small island of content in a mostly empty slide; neighbouring slides differ",
+        "The handoff states the lint result and that the screenshots were looked at, and lists what the user must supply",
+        "The routing rules are one diagram staged with steps, and its last step reads on its own",
+        "There is practice with feedback and a retrieval check, with answers revealed on a step",
+        "Notes are a facilitator guide with timings for a remote session",
+        "The proration calculation is not invented as policy"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "render-exec-briefing-numbers",
+      "prompt": "I'm head of platform engineering at a 400-person fintech. Next Tuesday I have 20 minutes with the exec team (CEO, CFO, CTO, COO) to get approval to migrate from our self-managed Kubernetes clusters to a managed service. Facts: current setup costs $1.9M/yr all-in, and our 6 SREs spend about 40% of their time on cluster operations. We had 4 Sev1 incidents in the last 12 months tied to cluster upgrades, 7h20m total downtime. The managed option is quoted at $1.4M/yr. Migration takes two quarters, needs $350k one-off, and pauses two roadmap items (multi-region failover and the internal developer portal). Main risk people raise is vendor lock-in, and the CFO is skeptical because a data-warehouse migration last year ran 3 months over. The ask: approve the $350k and the two-quarter plan. Default brand, in person. The numbers should carry it. I'm in meetings all day, so build the deck without waiting for me.",
+      "expected_output": "A deck in decks/<name> that lints clean, was visually checked, and passes the rubric; plus a handoff.",
+      "files": [],
+      "expectations": [
+        "pnpm deck lint <deck> reports no errors and no warnings in the deck's brand",
+        "Every layout and component used exists in the catalogs; nothing is hand-drawn in SVG or styled with raw colours, fonts or sizes",
+        "Every content slide's title is a claim (read_through.py reports no label-style title) and the titles read in order tell the argument",
+        "Every slide has speaker notes; deck.config.ts sets duration and the budgets fit it",
+        "No invented facts: every number is the user's or shown arithmetic on the user's numbers; proposals of the agent's own are labelled; gaps are [NEEDS] items listed in the handoff",
+        "In the screenshots no slide is clipped, cramped, or a small island of content in a mostly empty slide; neighbouring slides differ",
+        "The handoff states the lint result and that the screenshots were looked at, and lists what the user must supply",
+        "The ask is on the first content slide and repeated at the close",
+        "Each data slide uses the form its message calls for (a number or comparison for two values, a table for scenarios), with units and a caption",
+        "The CFO's overrun objection and vendor lock-in are addressed on slides",
+        "Derived figures (saving, payback) show their arithmetic in notes or a backup slide"
+      ]
+    }
+  ],
+  "changelog": [
+    "After iteration 1: eval 2 question limit changed from two to three. Both configurations failed 'at most two'; the with-skill run's four questions were all substantive review questions, so two was an arbitrary bar. Three matches the skill's revised guidance. Iteration-1 gradings keep the original wording.",
+    "After iteration 1: eval 7 assertion arithmetic corrected ($17.3M total growth and 55%, not $16.5M and 58%). The iteration-1 grader had already graded against the recomputed figures."
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create a presentation"
+  short_description: "Build narrative-led decks, slides and speaker notes"
+  default_prompt: "Use $create-presentation to build a deck for my audience and desired outcome."

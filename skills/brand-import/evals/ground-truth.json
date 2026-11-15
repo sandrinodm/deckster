@@ -1,0 +1,29 @@
+{
+  "note": "Known values of the generated fixtures (evals/fixtures/make_fixtures.py). Used by check_extraction.py and grade.py. Never show this file to an agent under test.",
+  "halcyon": {
+    "colors": {"bg": "#F7F4EE", "fg": "#0F1B2D", "accent": "#FF5A36", "violet": "#7A2CF5", "teal": "#12B5A5", "muted": "#5B6472", "border": "#D9D4C7", "card": "#FFFFFF", "muted_on_dark": "#A9B2C0", "chart_context": "#C9C3B6"},
+    "gradient": {"type": "linear", "css_angle_deg": 135, "stops": ["#FF5A36", "#7A2CF5"]},
+    "fonts": {"display": "Space Grotesk", "body": "Inter", "mono": "JetBrains Mono"},
+    "type_canvas_px": {"display": 120, "h1": 72, "quote": 64, "h2": 48, "body": 32, "small": 28, "code": 26, "eyebrow": 22, "chart_label": 20},
+    "radius_px": {"card": 24, "bar": 8, "pill": true},
+    "deck_pages": 10,
+    "charts": {"pages": [8, 9], "bar": {"highlight": "#FF5A36", "context": "#C9C3B6", "gridline": "#D9D4C7"}, "line_series": ["#FF5A36", "#7A2CF5", "#12B5A5"]},
+    "big_numbers": ["62%", "4.1 min", "11k"],
+    "contrast_traps": {"accent_on_bg": 2.83, "white_on_accent": 3.1, "teal_on_bg": 2.34},
+    "web": {"easing": "cubic-bezier(0.2, 0.8, 0.2, 1)", "duration_ms": 180, "radius": "24px", "shadow": "0 8px 24px rgba(15, 27, 45, 0.08)"}
+  },
+  "verdant": {
+    "theme_colors": {"dk1": "#14261C", "lt1": "#FFFFFF", "dk2": "#1E4D36", "lt2": "#F3EFE4", "accent1": "#2E7D4F", "accent2": "#D9A441", "accent3": "#B5472F", "accent4": "#3C6E91", "accent5": "#7C6A9C", "accent6": "#8A8D7A"},
+    "roles": {"bg": "#F3EFE4", "fg": "#14261C", "heading": "#1E4D36", "accent": "#2E7D4F", "inverse_bg": "#14261C"},
+    "unused_theme": ["accent5"],
+    "off_theme_highlight": "#F2C14E",
+    "gradient": {"type": "linear", "css_angle_deg": 45, "stops": ["#1E4D36", "#2E7D4F"]},
+    "fonts": {"display": "Playfair Display", "body": "Source Sans 3", "stray": "Arial"},
+    "slides": 12,
+    "layouts_used": {"Title Only": 5, "Title and Content": 2, "Section Header": 2, "Title Slide": 1, "Two Content": 1, "Blank": 1},
+    "charts": {"bar_series": ["#2E7D4F", "#D9A441", "#3C6E91"], "line_series": ["#2E7D4F", "#8A8D7A"], "gridline": "#D8D2C2", "data_label_format": "0.0\"x\"", "legend_bar": "t", "legend_line": null},
+    "table": {"header_fill": "#1E4D36", "header_text": "#FFFFFF", "body_fill": "#FFFFFF"},
+    "big_numbers": ["412m", "11", "2.3x", "1.8Mt", "64%", "9"],
+    "logo": {"on": "master", "placement": "bottom-left"}
+  }
+}

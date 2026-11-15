@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Halcyon — calm software for loud systems</title>
+<meta name="theme-color" content="#FF5A36"><meta property="og:image" content="og.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg"><style>
+@font-face { font-family: "Space Grotesk"; font-weight: 700; src: url("fonts/space-grotesk-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Space Grotesk"; font-weight: 500; src: url("fonts/space-grotesk-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 400; src: url("fonts/inter-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 600; src: url("fonts/inter-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2"); }
+:root {
+  --hl-ink: #0F1B2D;
+  --hl-paper: #F7F4EE;
+  --hl-white: #FFFFFF;
+  --hl-coral: #FF5A36;
+  --hl-violet: #7A2CF5;
+  --hl-teal: #12B5A5;
+  --hl-muted: #5B6472;
+  --hl-line: #D9D4C7;
+  --hl-gradient: linear-gradient(135deg, #FF5A36 0%, #7A2CF5 100%);
+  --hl-radius: 24px;
+  --hl-font-display: "Space Grotesk", sans-serif;
+  --hl-font-body: "Inter", sans-serif;
+  --hl-font-mono: "JetBrains Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body { font-family: var(--hl-font-body); color: var(--hl-ink); background: var(--hl-paper); font-size: 18px; line-height: 1.6; }
+header { display: flex; align-items: center; justify-content: space-between; padding: 24px 64px; border-bottom: 1px solid var(--hl-line); }
+nav a { margin-left: 32px; color: var(--hl-ink); text-decoration: none; font-weight: 600; font-size: 16px; }
+.hero { padding: 120px 64px 96px; max-width: 1100px; }
+.kicker { font: 400 14px var(--hl-font-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--hl-coral); }
+h1 { font: 700 76px/1.02 var(--hl-font-display); letter-spacing: -0.03em; margin: 20px 0 24px; }
+h2 { font: 700 40px/1.1 var(--hl-font-display); letter-spacing: -0.02em; }
+h3 { font: 500 24px/1.2 var(--hl-font-display); margin-bottom: 8px; }
+.lede { font-size: 22px; color: var(--hl-muted); max-width: 720px; }
+.btn { display: inline-block; margin-top: 36px; padding: 16px 32px; border-radius: 999px; font-weight: 600; text-decoration: none;
+  background: var(--hl-coral); color: #fff; transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.btn.ghost { background: transparent; color: var(--hl-ink); border: 2px solid var(--hl-ink); margin-left: 12px; }
+.band { background: var(--hl-gradient); color: #fff; padding: 96px 64px; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 96px 64px; }
+.card { background: var(--hl-white); border: 1px solid var(--hl-line); border-radius: var(--hl-radius); padding: 32px; box-shadow: 0 8px 24px rgba(15, 27, 45, 0.08); }
+.card p { color: var(--hl-muted); font-size: 16px; }
+code { font-family: var(--hl-font-mono); font-size: 15px; background: var(--hl-ink); color: var(--hl-paper); padding: 2px 8px; border-radius: 6px; }
+footer { background: var(--hl-ink); color: var(--hl-paper); padding: 64px; }
+footer a { color: var(--hl-teal); }
+</style></head><body>
+<header><a class="brand" href="/" aria-label="Halcyon home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" width="220" height="48" role="img" aria-label="Halcyon">
+<circle cx="24" cy="24" r="20" fill="#FF5A36"/><circle cx="24" cy="24" r="9" fill="#F7F4EE"/>
+<text x="56" y="33" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="28" fill="#0F1B2D">halcyon</text></svg></a><nav><a href="#">Product</a><a href="#">Pricing</a><a href="#">Docs</a></nav></header>
+<section class="hero"><div class="kicker">Alert routing</div><h1>Calm software for loud systems</h1>
+<p class="lede">Halcyon turns eleven thousand noisy services into one quiet on-call rotation.</p>
+<a class="btn" href="#">Start free</a><a class="btn ghost" href="#">Book a demo</a></section>
+<section class="band"><h2>62% fewer pages per engineer</h2><p>Measured across forty teams over two quarters.</p></section>
+<section class="chartwrap" style="padding:96px 64px 0"><h2>Pages per engineer, per week</h2><div style="max-width:1100px;margin-top:32px"><svg xmlns="http://www.w3.org/2000/svg" class="chart" data-chart="bar" width="1100" height="420" viewBox="0 0 1100 420"><line x1="120" y1="340.0" x2="1060" y2="340.0" stroke="#D9D4C7" stroke-width="2"/><text x="100" y="347.0" text-anchor="end" font-family="JetBrains Mono" font-size="20" fill="#5B6472">0</text><line x1="120" y1="240.0" x2="1060" y2="240.0" stroke="#D9D4C7" stroke-width="2" stroke-dasharray="6 8"/><text x="100" y="247.0" text-anchor="end" font-family="JetBrains Mono" font-size="20" fill="#5B6472">50</text><line x1="120" y1="140.0" x2="1060" y2="140.0" stroke="#D9D4C7" stroke-width="2" stroke-dasharray="6 8"/><text x="100" y="147.0" text-anchor="end" font-family="JetBrains Mono" font-size="20" fill="#5B6472">100</text><line x1="120" y1="40.0" x2="1060" y2="40.0" stroke="#D9D4C7" stroke-width="2" stroke-dasharray="6 8"/><text x="100" y="47.0" text-anchor="end" font-family="JetBrains Mono" font-size="20" fill="#5B6472">150</text><rect x="200" y="44.0" width="220" height="296.0" rx="8" fill="#C9C3B6"/><text x="310.0" y="28.0" text-anchor="middle" font-family="Inter" font-weight="600" font-size="28" fill="#0F1B2D">148</text><text x="310.0" y="380" text-anchor="middle" font-family="JetBrains Mono" font-size="20" fill="#5B6472">Q1</text><rect x="560" y="78.0" width="220" height="262.0" rx="8" fill="#C9C3B6"/><text x="670.0" y="62.0" text-anchor="middle" font-family="Inter" font-weight="600" font-size="28" fill="#0F1B2D">131</text><text x="670.0" y="380" text-anchor="middle" font-family="JetBrains Mono" font-size="20" fill="#5B6472">Q2</text><rect x="920" y="148.0" width="220" height="192.0" rx="8" fill="#C9C3B6"/><text x="1030.0" y="132.0" text-anchor="middle" font-family="Inter" font-weight="600" font-size="28" fill="#0F1B2D">96</text><text x="1030.0" y="380" text-anchor="middle" font-family="JetBrains Mono" font-size="20" fill="#5B6472">Q3</text><rect x="1280" y="228.0" width="220" height="112.0" rx="8" fill="#FF5A36"/><text x="1390.0" y="212.0" text-anchor="middle" font-family="Inter" font-weight="600" font-size="28" fill="#0F1B2D">56</text><text x="1390.0" y="380" text-anchor="middle" font-family="JetBrains Mono" font-size="20" fill="#5B6472">Q4</text></svg></div></section>
+<section class="cards"><div class="card"><h3>One owner per alert</h3><p>Every signal resolves to a single team.</p></div>
+<div class="card"><h3>Quiet windows</h3><p>Deploys silence what they are about to break. Set it with <code>quiet = "deploy-window"</code>.</p></div>
+<div class="card"><h3>Honest severity</h3><p>Pages are for people. Everything else is a ticket.</p></div></section>
+<footer><p>Halcyon Labs, Rotterdam. <a href="#">Status</a></p></footer></body></html>

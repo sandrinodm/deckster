@@ -1,0 +1,4 @@
+interface:
+  display_name: "Import a presentation brand"
+  short_description: "Extract and validate a deck brand from source material"
+  default_prompt: "Use $brand-import to recreate the supplied source as a validated deck brand."

@@ -167,5 +167,5 @@ pnpm exec vp test run src/resolve/resolve-brand.test.ts # one file
 ## See also
 
 - [docs/design.md](../../docs/design.md#brands) on why a brand is data.
-- The [`brand-import`](../../.claude/skills/brand-import/SKILL.md) skill, which builds a brand from
+- The [`brand-import`](../../skills/brand-import/SKILL.md) skill, which builds a brand from
   an existing deck, PDF, website or guidelines.

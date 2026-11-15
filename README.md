@@ -159,13 +159,60 @@ behind these choices are in [docs/design.md](docs/design.md).
 
 ## Working with agents
 
-Two agent skills in [`.agents/skills`](.agents/skills) (and [`.claude/skills`](.claude/skills))
-carry the workflow:
+Two agent skills teach a coding agent (Claude Code, Codex, Cursor and others) to use the `deck` CLI
+well. They live in [`skills/`](skills) and are written for the published CLI: they expect `deck` on
+your PATH (`npm install --global @deckster/cli`, Node 26 or newer) and a folder with `decks/` and
+`brands/`, not a clone of this repository.
 
-- [create-presentation](.agents/skills/create-presentation/SKILL.md) plans a talk from audience
-  and outcome to a storyline, then writes the slides, notes and charts and critiques them.
-- [brand-import](.agents/skills/brand-import/SKILL.md) turns a PPTX, PDF, website or guidelines
-  into a draft `brands/<name>` and renders the sample decks in it for comparison.
+- [create-presentation](skills/create-presentation/SKILL.md) plans a talk from audience and outcome
+  to a storyline and an outline with one claim per slide, then writes the slides, speaker notes and
+  charts with `deck new`, `deck lint` and `deck shot`, looks at every screenshot, and critiques the
+  result against a rubric.
+- [brand-import](skills/brand-import/SKILL.md) turns a PPTX, PDF, Google Slides link, website,
+  guidelines document or screenshots into a draft `brands/<name>/brand.ts`: palette, surfaces,
+  typography with font licence status, logos, data palettes. It checks the brand with
+  `deck brand check`, builds a specimen deck in it and renders side-by-side comparisons with the
+  source.
+
+Install them with [skills.sh](https://skills.sh):
+
+```sh
+npx skills add sandrinodm/deckster                              # both skills; asks which agents
+npx skills add sandrinodm/deckster --skill create-presentation  # one skill
+npx skills add sandrinodm/deckster -a claude-code codex         # choose the agents
+npx skills add sandrinodm/deckster -g                           # for every project, not just this one
+npx skills add sandrinodm/deckster --list                       # see what is there without installing
+```
+
+Without `-g` the skills go into the current project: `.agents/skills/` (read by Codex and several
+other agents) with a symlink for each other agent you pick, such as `.claude/skills/` for Claude
+Code; `--copy` copies the files instead. With `-g` they go into the agents' user-level folders.
+`npx skills ls`, `update` and `remove` manage them afterwards, and `-y` skips the prompts.
+
+Then ask for what you want in the folder that holds your decks:
+
+```console
+$ mkdir talks && cd talks
+$ claude
+> Make a 10-minute deck about our Q3 reliability numbers for the leadership team. We want them to
+  approve the on-call staffing change. Use the default brand.
+```
+
+The agent asks only what it cannot infer, writes a short brief and outline for you to react to,
+then builds `decks/q3-reliability/` and checks it. For a brand, hand it a source:
+
+```console
+> Import our brand from ~/Downloads/company-template.pptx and the site https://example.com.
+```
+
+The skills run the CLI for you; for editor type checking in the same folder run `deck types` once.
+The skills need Chromium for `deck lint` and `deck shot` (downloaded once, see
+[the CLI README](packages/cli/README.md#what-it-needs)), and brand-import also uses
+[`uv`](https://docs.astral.sh/uv/) for its Python extractors.
+
+In this repository `.claude/skills` and `.agents/skills` link to `skills/`, so agents working on
+deckster itself load the same files. The chat panel's agent (`deck dev --agent`) reads
+`create-presentation` from the workspace when it finds it, under either folder.
 
 ## Packages
 

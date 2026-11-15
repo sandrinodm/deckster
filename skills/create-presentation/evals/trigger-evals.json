@@ -1,0 +1,90 @@
+[
+  {
+    "query": "i have to present our q3 platform reliability numbers to the leadership team on friday, 15 min slot. incidents went from 11 to 4 and p99 is down a lot. can you help me get something together in this repo",
+    "should_trigger": true
+  },
+  {
+    "query": "Build a 45 minute onboarding training for new support agents on our refund policy. Remote over Zoom, 12 people, policy doc is in docs/refunds.md",
+    "should_trigger": true
+  },
+  {
+    "query": "we're raising a seed round and i need a pitch deck. b2b saas for dental practices, $18k MRR, 3 founders. where do i even start",
+    "should_trigger": true
+  },
+  {
+    "query": "can you turn docs/rfc-0042-edge-cache.md into slides for the architecture review next week? audience is the infra guild, about 30 min",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm speaking at a meetup in two weeks about how we migrated off Heroku, 20 min + questions. I have a rough list of points but no story yet, help me shape it before I make any slides",
+    "should_trigger": true
+  },
+  {
+    "query": "our AEs need a first-call deck for the new analytics add-on plus talk tracks and objection handling. product one-pager is at marketing/analytics-addon.md",
+    "should_trigger": true
+  },
+  {
+    "query": "take decks/q4-launch (it's the 40 min customer webinar version) and make a 10 minute version for the board",
+    "should_trigger": true
+  },
+  {
+    "query": "need speaker notes for every slide in decks/all-hands-nov, some of them just have bullets and I don't know what I'd actually say",
+    "should_trigger": true
+  },
+  {
+    "query": "I've got this table of churn by reason (price 0.4, missing integration 1.9, competitor 0.5, other 0.3, all $M) and need one slide for the QBR that makes the point that integrations are the problem",
+    "should_trigger": true
+  },
+  {
+    "query": "all-hands is thursday and I need to announce the reorg of the platform org. ~200 people, mixed eng and non-eng. help me structure what I show",
+    "should_trigger": true
+  },
+  {
+    "query": "make a lightning talk (5 min) out of my blog post at content/posts/feature-flags-at-the-edge.md for the internal demo day",
+    "should_trigger": true
+  },
+  {
+    "query": "import our brand from the attached acme-brand-guidelines.pdf so decks use our colors and fonts",
+    "should_trigger": false
+  },
+  {
+    "query": "the presenter window timer keeps resetting when I change slides, can you look at packages/engine/src/presenter and fix it",
+    "should_trigger": false
+  },
+  {
+    "query": "add a new 'pricing' layout to packages/kit with three columns and a highlighted middle tier, plus its schema and content budget",
+    "should_trigger": false
+  },
+  {
+    "query": "write a two-page memo for the exec team recommending we move to managed Kubernetes, they want a doc not slides",
+    "should_trigger": false
+  },
+  {
+    "query": "draw me an svg diagram of our auth flow (browser, gateway, auth service, token store) for the README",
+    "should_trigger": false
+  },
+  {
+    "query": "deck lint is reporting a contrast failure on the inverse surface for the acme brand, which token do I change in brands/acme/brand.ts?",
+    "should_trigger": false
+  },
+  {
+    "query": "export decks/q4-launch to pdf and pptx and tell me where the files end up",
+    "should_trigger": false
+  },
+  {
+    "query": "build a grafana-style dashboard page in our next app that charts p99 latency and error rate from the metrics api",
+    "should_trigger": false
+  },
+  {
+    "query": "can you convert this old powerpoint file (~/Downloads/2023-sales-kickoff.pptx) to pdf and pull the text out into a markdown file",
+    "should_trigger": false
+  },
+  {
+    "query": "fix the typo on slide 4 of decks/q4-launch, it says 'recieve'",
+    "should_trigger": false
+  },
+  {
+    "query": "write the README for packages/cli documenting the shot, lint and layouts commands",
+    "should_trigger": false
+  }
+]

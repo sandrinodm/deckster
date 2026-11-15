@@ -87,4 +87,4 @@ pnpm deck shot hello --brand acme
 
 `deck brand check` names every problem with its field and fix, contrast on every surface included.
 To build a brand from an existing deck, PDF, website or guidelines, use the
-[`brand-import`](../../.claude/skills/brand-import/SKILL.md) skill.
+[`brand-import`](../../skills/brand-import/SKILL.md) skill.

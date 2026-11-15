@@ -1,0 +1,29 @@
+# Evaluations
+
+`evals.json` carries the task prompts and expectations inherited from earlier runs. They are test inputs, not evidence of a successful run.
+
+These are development material for maintaining the skill, not part of what a user needs. Several cases use fixtures and commands from the deckster repository (`pnpm deck`, its `showcase` deck, its `nocturne` and `default` brands); run them from a checkout of that repository, where `skills/` is the skill folder, and read `pnpm deck` as `deck`. They were written against an earlier repository-bound version of the skill and still assume it.
+
+Run each selected case with two fresh agents: one given this skill's absolute path, and a baseline without access to the skills folder (`skills/`, or the `.claude/skills` and `.agents/skills` links to it). Give both the same prompt, source fixtures, tools and framework snapshot. Keep graders and expected answers out of executor context.
+
+Use independent temporary repository copies for builds. Preserve current source changes when creating the copies; do not evaluate against a stale Git checkout. Install dependencies separately or share them read-only, and never let parallel runs mutate a shared lockfile or dependency tree. Resolve `files` entries relative to this skill directory before passing them to an agent.
+
+Save each run's output, command logs, screenshots, and measured timing under an external directory such as `<temporary-directory>/<skill>/iteration-1/eval-<id>-<name>/{with_skill,without_skill}/outputs`. Keep results, briefs and grading notes outside the repository. Do not manufacture token counts or treat missing renders as successful checks.
+
+Grade every expectation from the actual artifacts, with `text`, `passed` and `evidence` in `grading.json`. For render cases, verify lint output and inspect the images. Compare with the baseline and identify failures that both configurations share. A single run per case is a smoke comparison, not a reliable estimate of variance or overall skill quality. Use the skill-creator benchmark aggregator and review viewer when available.
+
+Cases 1–4 have local fixtures. Case 5 needs public-network access; case 6 needs a guidelines fixture; cases 7–8 need real framework exports and concrete brand names; case 9 needs network access and a concrete brand name. Do not report unprepared cases as passing.
+
+Run helper regression tests, including browser tests:
+
+```sh
+uv run --no-project --with playwright --with pillow --with numpy python -I -m unittest discover -s skills/brand-import/scripts/tests
+```
+
+Run extraction accuracy against the known fixture values:
+
+```sh
+uv run skills/brand-import/evals/check_extraction.py --work /tmp/brand-extraction-eval --out /tmp/brand-extraction-results.json
+```
+
+Use a fresh work path for each run. Read the result JSON, not just the process exit code: the inherited accuracy runner reports failed checks without returning a failing exit status. PPTX image checks are skipped when LibreOffice is unavailable. These tests verify extractor behavior; they do not replace an agent's synthesis, brand validation and visual-comparison eval.

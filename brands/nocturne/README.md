@@ -75,5 +75,5 @@ cp -R brands/nocturne brands/acme
 
 The [default brand's README](../default/README.md#starting-a-new-brand-from-it) has the same steps
 with the icon set and logo details, and the
-[`brand-import`](../../.claude/skills/brand-import/SKILL.md) skill builds a brand from an existing
+[`brand-import`](../../skills/brand-import/SKILL.md) skill builds a brand from an existing
 deck, PDF, website or guidelines.

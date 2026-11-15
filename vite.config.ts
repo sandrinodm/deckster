@@ -8,6 +8,7 @@ import { defineConfig } from 'vite-plus';
  */
 const ignoredPatterns = [
   '.brand-import/**',
+  'skills/**',
   '**/.agents/**',
   '**/.claude/**',
   '**/.deck/**',

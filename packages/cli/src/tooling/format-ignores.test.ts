@@ -27,6 +27,8 @@ describe('the formatter and linter ignore list', () => {
     };
     for (const patterns of [config.fmt.ignorePatterns, config.lint.ignorePatterns]) {
       for (const file of [
+        'skills/brand-import/SKILL.md',
+        'skills/create-presentation/scripts/read_through.py',
         '.agents/skills/brand-import/SKILL.md',
         '.claude/skills/brand-import/SKILL.md',
         'decks/zz-eval-exec/BRIEF.md',

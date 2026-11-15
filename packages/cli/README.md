@@ -56,6 +56,13 @@ a `node_modules` in the workspace. Settings you already have in `tsconfig.json` 
 name this install's folders: run `deck types` again after upgrading, and do not commit the result
 for others to use.
 
+### Agent skills
+
+Two agent skills, `create-presentation` and `brand-import`, drive these commands for you: they plan
+a talk and build, lint and screenshot its slides, or turn a PPTX, PDF or website into a brand.
+Install them with `npx skills add sandrinodm/deckster`; see
+[Working with agents](https://github.com/sandrinodm/deckster#working-with-agents).
+
 ### Upgrading and the repository
 
 Upgrade with `npm install --global @deckster/cli@latest`. To work on the framework itself, clone
