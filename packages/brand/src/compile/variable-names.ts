@@ -1,0 +1,189 @@
+import type { FamilyRole, TypeStep } from '#schema/typography-schema.ts';
+
+/**
+ * The CSS custom property names the compiler emits. Every name starts with `--brand-`; Tailwind's
+ * theme maps its own names onto these, so layouts use classes and components that need a raw value
+ * read the variable or `useBrand()`.
+ */
+export const brandVariables = {
+  /**
+   * A role on the current surface: `--brand-color-fg`.
+   */
+  role: (role: string): string => `--brand-color-${role}`,
+
+  /**
+   * The color small text in a role is set in on the current surface, held to 4.5:1:
+   * `--brand-color-accent-text`.
+   */
+  text: (tone: string): string => `--brand-color-${tone}-text`,
+
+  /**
+   * A palette step: `--brand-palette-ink-900`.
+   */
+  palette: (scale: string, step: string): string => `--brand-palette-${scale}-${step}`,
+
+  /**
+   * A gradient as a `background-image`: `--brand-gradient-aurora`.
+   */
+  gradient: (name: string): string => `--brand-gradient-${name}`,
+
+  /**
+   * The current surface's paint, gradient or solid: `--brand-background`.
+   */
+  background: '--brand-background',
+
+  /**
+   * A family's full `font-family` stack: `--brand-font-display`.
+   */
+  font: (role: FamilyRole): string => `--brand-font-${role}`,
+
+  /**
+   * One property of a type step: `--brand-type-title-size`.
+   */
+  type: (step: TypeStep, property: TypeProperty): string => `--brand-type-${step}-${property}`,
+
+  /**
+   * A corner radius: `--brand-radius-md`.
+   */
+  radius: (name: string): string => `--brand-radius-${name}`,
+
+  /**
+   * A line width: `--brand-stroke-regular`.
+   */
+  stroke: (name: string): string => `--brand-stroke-${name}`,
+
+  /**
+   * A box shadow: `--brand-shadow-md`.
+   */
+  shadow: (name: string): string => `--brand-shadow-${name}`,
+
+  /**
+   * A spacing step: `--brand-space-md`.
+   */
+  space: (name: string): string => `--brand-space-${name}`,
+
+  /**
+   * The slide's horizontal margin.
+   */
+  marginX: '--brand-margin-x',
+
+  /**
+   * The slide's vertical margin.
+   */
+  marginY: '--brand-margin-y',
+
+  /**
+   * The number of layout columns, unitless.
+   */
+  gridColumns: '--brand-grid-columns',
+
+  /**
+   * The gap between layout columns.
+   */
+  gridGutter: '--brand-grid-gutter',
+
+  /**
+   * An easing curve as `cubic-bezier()`: `--brand-ease-standard`.
+   */
+  ease: (name: string): string => `--brand-ease-${name}`,
+
+  /**
+   * A duration in milliseconds: `--brand-duration-base`.
+   */
+  duration: (name: string): string => `--brand-duration-${name}`,
+
+  /**
+   * The default slide transition's duration.
+   */
+  transitionDuration: '--brand-transition-duration',
+
+  /**
+   * The default slide transition's easing curve.
+   */
+  transitionEasing: '--brand-transition-easing',
+
+  /**
+   * The icon stroke width, unitless as SVG `stroke-width` takes it.
+   */
+  iconStroke: '--brand-icon-stroke',
+
+  /**
+   * The logo's height.
+   */
+  logoHeight: '--brand-logo-height',
+
+  /**
+   * A categorical data color, numbered from 1: `--brand-data-1`.
+   */
+  categorical: (index: number): string => `--brand-data-${index + 1}`,
+
+  /**
+   * A sequential data color, numbered from 1: `--brand-data-sequential-1`.
+   */
+  sequential: (index: number): string => `--brand-data-sequential-${index + 1}`,
+
+  /**
+   * A diverging data color, numbered from 1: `--brand-data-diverging-1`.
+   */
+  diverging: (index: number): string => `--brand-data-diverging-${index + 1}`,
+
+  /**
+   * The muted color for data that is not highlighted.
+   */
+  context: '--brand-data-context',
+
+  /**
+   * The opaque panel charts draw behind themselves on the current surface.
+   */
+  plate: '--brand-data-plate',
+
+  /**
+   * A chart color on the current surface: `--brand-chart-grid`.
+   */
+  chart: (token: string): string => `--brand-chart-${token}`,
+
+  /**
+   * A chart line width: `--brand-chart-grid-width`, `--brand-chart-axis-width` or
+   * `--brand-chart-rule-width` (between table rows).
+   */
+  chartWidth: (line: 'grid' | 'axis' | 'rule'): string => `--brand-chart-${line}-width`,
+
+  /**
+   * A code theme color on the current surface: `--brand-code-keyword`.
+   */
+  code: (token: string): string => `--brand-code-${token}`,
+
+  /**
+   * A diagram theme color on the current surface: `--brand-diagram-node`.
+   */
+  diagram: (token: string): string => `--brand-diagram-${token}`,
+} as const;
+
+/**
+ * The properties each type step sets.
+ */
+export const TYPE_PROPERTIES = [
+  'family',
+  'size',
+  'line-height',
+  'tracking',
+  'weight',
+  'case',
+  'style',
+  'features',
+  'axes',
+] as const;
+
+/**
+ * A type step property.
+ */
+export type TypeProperty = (typeof TYPE_PROPERTIES)[number];
+
+/**
+ * A `var()` reference.
+ *
+ * @param name - A custom property name, such as `--brand-color-fg`.
+ */
+export function cssVar(name: string): string {
+  return `var(${name})`;
+}
