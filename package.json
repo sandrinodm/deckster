@@ -1,0 +1,48 @@
+{
+  "name": "@deckster/workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "deckster: a code-first slide framework with typed brands, MDX slides and a deck CLI.",
+  "homepage": "https://github.com/sandrinodm/deckster#readme",
+  "bugs": "https://github.com/sandrinodm/deckster/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandrinodm/deckster.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "deck dev",
+    "build": "deck build",
+    "preview": "deck preview",
+    "check": "node scripts/tailwind-tooling.ts --check && vp check && jsdoc-lint",
+    "format": "vp check --fix",
+    "typecheck": "tsc --noEmit && vp run -r typecheck",
+    "test": "vp run -r test",
+    "test:e2e": "vp run --no-cache --concurrency-limit 1 -r e2e",
+    "prepare": "vp config",
+    "tooling:tailwind": "node scripts/tailwind-tooling.ts",
+    "ready": "pnpm check && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm build"
+  },
+  "devDependencies": {
+    "@deckster/cli": "workspace:*",
+    "@stylistic/eslint-plugin": "catalog:",
+    "@types/node": "catalog:",
+    "eslint-plugin-better-tailwindcss": "catalog:",
+    "jsdoc-lint": "catalog:",
+    "playwright": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.16.1",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "node": ">=24.8.0"
+  }
+}

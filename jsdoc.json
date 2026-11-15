@@ -1,0 +1,12 @@
+{
+  "roots": ["packages"],
+  "excludePaths": ["node_modules", "dist", "coverage", ".tmp-workspaces", "fixtures"],
+  "excludeFiles": [
+    "\\.d\\.[cm]?ts$",
+    "\\.test\\.[^.]+$",
+    "\\.spec\\.[^.]+$",
+    "\\.fixture\\.[^.]+$",
+    "vite\\.config\\.ts$"
+  ],
+  "includeExtensions": [".ts", ".tsx", ".mts", ".cts"]
+}

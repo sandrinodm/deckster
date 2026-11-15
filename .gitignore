@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+/site/
+*.tsbuildinfo
+
+# Deck tooling output: shots, exports, e2e runs, brand imports
+.deck/
+.e2e/
+.brand-import/
+**/.tmp-workspaces/
+
+# Tests
+coverage/
+
+# Python (brand-import skill scripts)
+__pycache__/
+*.py[cod]
+
+# Logs and Node trace dumps
+*.log
+
+# Local environment
+.env
+.env.*
+
+# Claude Code: personal settings and worktrees (shared skills stay committed)
+.claude/settings.local.json
+.claude/worktrees/
+
+# OS
+.DS_Store
