@@ -228,6 +228,42 @@ class OfflineRenderCopyTest(unittest.TestCase):
             self.assertIn(b"<rect", out.read("ppt/media/logo.svg"))
             self.assertEqual(out.read("ppt/media/keep.png"), H.PNG)
 
+    def test_containers_encodings_and_declared_types_cannot_slip_past(self):
+        inner = self.package(self.dir / "inner.zip", {"payload.txt": "x"}, base=None).read_bytes()
+        svg = '<svg xmlns="http://www.w3.org/2000/svg"><image href="https://attacker.example/svg.png"/></svg>'
+        types = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            '<Default Extension="xml" ContentType="application/xml"/>'
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            '<Override PartName="/ppt/media/fake-font.fntdata" ContentType="application/x-font-evil"/>'
+            '<Override PartName="/ppt/media/declared.dat" ContentType="image/svg+xml"/>'
+            '<Override PartName="/ppt/fonts/font1.fntdata" ContentType="application/x-fontdata"/>'
+            "</Types>"
+        )
+        deck = self.package(
+            self.dir / "tricks.pptx",
+            {
+                "[Content_Types].xml": types,
+                "ppt/media/bmp-with-zip.bmp": b"BM" + b"\x00" * 12 + (40).to_bytes(4, "little") + b"\x00" * 40 + inner,
+                "ppt/media/fake.bmp": b"BM" + b"\x00" * 60,
+                "ppt/media/utf16.xml": svg.encode("utf-16"),
+                "ppt/media/latin1.xml": ('<?xml version="1.0" encoding="ISO-8859-1"?>' + svg).encode("latin-1"),
+                "ppt/media/declared.dat": '<?xml version="1.0"?><root/>',
+                "ppt/media/fake-font.fntdata": b"\x00" * 64,
+                "ppt/fonts/font1.fntdata": b"\x13" * 64,
+            },
+            base=None,
+        )
+        copy = self.dir / "copy.pptx"
+        extract_pptx.offline_copy(deck, copy)
+        with zipfile.ZipFile(copy) as out:
+            for name in ("ppt/media/bmp-with-zip.bmp", "ppt/media/fake.bmp", "ppt/media/utf16.xml",
+                         "ppt/media/latin1.xml", "ppt/media/fake-font.fntdata"):
+                self.assertEqual(out.read(name), b"", name)
+            self.assertNotEqual(out.read("ppt/media/declared.dat"), b'<?xml version="1.0"?><root/>')
+            self.assertEqual(out.read("ppt/fonts/font1.fntdata"), b"\x13" * 64)
+
     def test_relationship_parts_must_be_plain_opc_lists(self):
         foreign_root = '<Relationships xmlns="urn:other"><Relationship Id="rId1" Target="https://attacker.example/x" TargetMode="External"/></Relationships>'
         foreign_child = (

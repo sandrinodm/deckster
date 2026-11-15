@@ -54,7 +54,13 @@ CFB_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 EMBEDDING_RELATIONSHIPS = {"oleobject", "package", "control", "activexcontrol", "activexcontrolbinary", "attachedtemplate"}
 
 # An SVG root anywhere in a part, which a renderer may draw as SVG whatever the part is called.
-SVG_TAG = re.compile(rb"<\s*(?:[A-Za-z_][\w.-]*:)?svg[\s>/]", re.I)
+SVG_TAG = re.compile(r"<\s*(?:[A-Za-z_][\w.-]*:)?svg[\s>/]", re.I)
+
+# The DIB header sizes a real BMP has after its 14-byte file header (BITMAPCOREHEADER to V5).
+BMP_HEADER_SIZES = {12, 40, 52, 56, 64, 108, 124}
+
+# The content types PowerPoint declares for embedded fonts, matched exactly.
+EMBEDDED_FONT_TYPES = {"application/x-fontdata", "application/vnd.openxmlformats-officedocument.obfuscatedfont"}
 
 # What an SVG part that can't be cleaned is replaced with in the render copy.
 EMPTY_SVG = b'<svg xmlns="http://www.w3.org/2000/svg"/>'
@@ -344,11 +350,14 @@ def offline_copy(pptx: Path, target: Path) -> int:
       would reach an SMB share), points to `about:blank`; ids stay, so the deck still opens.
     - Every part an OLE object, package, ActiveX control or attached template relationship points
       at, and anything under `ppt/embeddings/`, is emptied; the slide shows its preview picture.
-    - A part that is XML is kept as it is, unless an `<svg` element appears anywhere in it, in which
-      case it is reduced to static drawing.
-    - Any other part is kept only when its first bytes are a raster or metafile format (PNG, JPEG,
-      GIF, BMP, TIFF, WebP, EMF, WMF) or it is declared as a font; everything else, including zips,
-      OLE compound files and compressed data such as SVGZ, is emptied.
+    - Anything that carries other files (a zip, even one appended to an image, or an OLE compound
+      file) is emptied whatever it is called or declared as.
+    - A part that is XML must be UTF-8 without a DTD, or it is emptied; it is kept as it is unless an
+      `<svg` element appears anywhere in it or it is declared as SVG, in which case it is reduced to
+      static drawing.
+    - Any other part is kept only when its header is a raster or metafile format (PNG, JPEG, GIF,
+      BMP, TIFF, WebP, EMF, WMF) or a font (font magic bytes, or one of the exact embedded-font
+      content types); everything else, including compressed data such as SVGZ, is emptied.
     Refuses a deck whose part names differ only in case, since readers disagree on which one wins,
     and a relationships part that isn't a plain OPC relationships list.
 
@@ -369,14 +378,18 @@ def offline_copy(pptx: Path, target: Path) -> int:
             if lower.endswith(".rels"):
                 data, count = _offline_relationships(data, info.filename)
                 neutralised += count
-            elif lower in embedded or lower.startswith("ppt/embeddings/"):
+            elif lower in embedded or lower.startswith("ppt/embeddings/") or _is_container(data):
                 data = b""
                 neutralised += 1
             elif _looks_like_xml(data):
-                if SVG_TAG.search(data):
+                text = _xml_text(data, info.filename)
+                if text is None:
+                    data = b""
+                    neutralised += 1
+                elif SVG_TAG.search(text) or "svg" in content_types(info.filename):
                     data = _static_svg(data)
                     neutralised += 1
-            elif not (_is_inert_binary(data) or "font" in content_types(info.filename)):
+            elif not (_is_inert_binary(data) or _is_font(data, content_types(info.filename))):
                 data = b""
                 neutralised += 1
             out.writestr(info, data)
@@ -425,6 +438,27 @@ def _embedded_object_parts(source: "F.BoundedZip", infos) -> set[str]:
     return parts
 
 
+def _is_container(data: bytes) -> bool:
+    """True for anything that carries other files: a zip (even one appended to an image, which
+    `is_zipfile` finds from the end) or an OLE compound file anywhere in the bytes."""
+    return CFB_MAGIC in data or zipfile.is_zipfile(io.BytesIO(data))
+
+
+def _xml_text(data: bytes, name: str) -> str | None:
+    """The part as text when it is UTF-8 XML without a DTD, else None, so an encoding trick can't
+    hide an SVG root from the check that looks for one."""
+    try:
+        return F.decode_xml(data, name)
+    except F.Refused:
+        return None
+
+
+def _is_font(data: bytes, declared: str) -> bool:
+    """True for a real font file, or a part declared with one of the exact font types PowerPoint uses
+    for embedded (obfuscated) fonts, which have no magic bytes of their own."""
+    return F.sniff(data) in ("ttf", "otf", "woff", "woff2") or declared in EMBEDDED_FONT_TYPES
+
+
 def _looks_like_xml(data: bytes) -> bool:
     return data[:64].lstrip(b"\xef\xbb\xbf \t\r\n").startswith(b"<")
 
@@ -433,7 +467,9 @@ def _is_inert_binary(data: bytes) -> bool:
     """True when the first bytes are a raster or metafile format a renderer draws without fetching."""
     if data[:8] == b"\x89PNG\r\n\x1a\n" or data[:3] == b"\xff\xd8\xff" or data[:6] in (b"GIF87a", b"GIF89a"):
         return True
-    if data[:2] == b"BM" or data[:4] in (b"II*\x00", b"MM\x00*") or (data[:4] == b"RIFF" and data[8:12] == b"WEBP"):
+    if data[:2] == b"BM" and int.from_bytes(data[14:18], "little") in BMP_HEADER_SIZES:
+        return True
+    if data[:4] in (b"II*\x00", b"MM\x00*") or (data[:4] == b"RIFF" and data[8:12] == b"WEBP"):
         return True
     if data[:4] == b"\x01\x00\x00\x00" and data[40:44] == b" EMF":
         return True
