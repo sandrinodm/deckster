@@ -1,0 +1,225 @@
+/*
+ * Tool chrome, not slide content: the presenter tools carry their own small palette so they look
+ * the same over any brand. It is light only, whatever the system's setting: paper, like the mark.
+ * Every value here is private to `.dp-ui`; nothing reads a brand token, and nothing here is
+ * visible to slides.
+ *
+ * The palette is the deckster mark's: warm paper, near-black ink and one vermilion. Ink is the
+ * primary colour (buttons, the strongest text); vermilion marks the one thing that matters on a
+ * surface (the current slide, a pressed tool, an open comment). `--dp-accent` is vermilion dark
+ * enough for small text (4.5:1 on every background), `--dp-mark` the brighter one for rings, dots
+ * and focus outlines (3:1). Danger is crimson, not red, so it never reads as the accent.
+ *
+ * Type is Inter with its optical sizes, under a private family name so a brand that also uses Inter
+ * never picks these faces up. The scale is six steps; nothing in the chrome is smaller than 11px,
+ * and 11px is for numeric badges only. Weights are 400 (reading), 500 (controls, labels) and 600
+ * (titles); headings tighten their tracking as they grow.
+ *
+ * The laser is a fixed red with a white ring and a dark edge, so it reads on any slide surface,
+ * the brand's accent included.
+ */
+@font-face {
+  font-family: 'Deck UI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Deck UI';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-ext-opsz-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Deck UI';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-opsz-italic.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+.dp-ui {
+  --dp-bg: #f4f1eb;
+  --dp-panel: #fffefb;
+  --dp-raised: #ece8e0;
+  --dp-border: #dcd6cb;
+  --dp-text: #161514;
+  --dp-muted: #625c54;
+  --dp-faint: #9c958a;
+  --dp-primary: #161514;
+  --dp-on-primary: #fffefb;
+  --dp-accent: #c2361a;
+  --dp-accent-soft: #fbe6df;
+  --dp-on-accent: #ffffff;
+  --dp-mark: #e2411b;
+  --dp-ok: #22714a;
+  --dp-ok-soft: #e1f0e4;
+  --dp-warn: #8a5a00;
+  --dp-warn-soft: #f8ecd3;
+  --dp-danger: #a3173f;
+  --dp-danger-soft: #fbe4ea;
+  --dp-scrim: rgb(22 21 20 / 0.42);
+  --dp-radius: 10px;
+  --dp-radius-sm: 6px;
+  --dp-shadow: 0 1px 2px rgb(38 32 24 / 0.08), 0 8px 28px rgb(38 32 24 / 0.14);
+  --dp-font: 'Deck UI', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --dp-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --dp-text-2xs: 11px;
+  --dp-text-xs: 12px;
+  --dp-text-sm: 13px;
+  --dp-text-md: 14px;
+  --dp-text-lg: 16px;
+  --dp-text-xl: 20px;
+  --dp-laser: #ff1f1f;
+  --dp-laser-ring:
+    0 0 0 2.5px #fff, 0 0 0 3.5px rgb(0 0 0 / 0.45), 0 0 18px 5px rgb(255 31 31 / 0.55);
+
+  box-sizing: border-box;
+  color: var(--dp-text);
+  color-scheme: light;
+  font: 400 var(--dp-text-sm) / 1.5 var(--dp-font);
+  font-kerning: normal;
+  font-optical-sizing: auto;
+  font-synthesis: none;
+  letter-spacing: 0;
+  text-transform: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.dp-ui *,
+.dp-ui *::before,
+.dp-ui *::after {
+  box-sizing: border-box;
+}
+
+.dp-ui button {
+  font: inherit;
+  color: inherit;
+}
+
+.dp-ui kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border: 1px solid var(--dp-border);
+  border-bottom-width: 2px;
+  border-radius: var(--dp-radius-sm);
+  background: var(--dp-panel);
+  color: var(--dp-text);
+  /*
+   * The UI sans, not the mono face, with Inter's tailed l and serifed I so O, I and l cannot pass
+   * for 0 and 1; capitals sit at the height of the key's centre.
+   */
+  font: 500 var(--dp-text-xs) / 1 var(--dp-font);
+  font-feature-settings: 'cv05', 'cv08', 'case';
+  letter-spacing: 0.01em;
+}
+
+.dp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--dp-border);
+  border-radius: var(--dp-radius-sm);
+  background: var(--dp-panel);
+  cursor: pointer;
+  font-weight: 500;
+  transition:
+    background 120ms,
+    border-color 120ms;
+}
+
+.dp-button:hover {
+  background: var(--dp-raised);
+}
+
+.dp-button:focus-visible,
+.dp-row:focus-visible,
+.dp-cell:focus-visible {
+  outline: 2px solid var(--dp-mark);
+  outline-offset: 2px;
+}
+
+.dp-button[data-variant='primary'] {
+  border-color: transparent;
+  background: var(--dp-primary);
+  color: var(--dp-on-primary);
+}
+
+.dp-button[data-variant='primary']:hover {
+  background: color-mix(in srgb, var(--dp-primary) 86%, var(--dp-bg));
+}
+
+.dp-button[data-variant='icon'] {
+  width: 30px;
+  padding: 0;
+}
+
+.dp-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--dp-raised);
+  color: var(--dp-muted);
+  font-size: var(--dp-text-2xs);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dp-chip[data-tone='accent'] {
+  background: var(--dp-accent-soft);
+  color: var(--dp-accent);
+}
+
+.dp-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--dp-radius-sm);
+  background: var(--dp-raised);
+  box-shadow: 0 0 0 1px var(--dp-border);
+}
+
+.dp-thumb > .deck-slide-view {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-ui,
+  .dp-ui *,
+  .dp-ui *::before,
+  .dp-ui *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}
