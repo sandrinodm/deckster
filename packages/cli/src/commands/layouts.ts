@@ -9,7 +9,7 @@ const HELP = `Usage: deck layouts [deck] [--summary] [--json]
 Lists the layouts a slide can name in its \`layout:\` frontmatter.
 
 Arguments:
-  deck          Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}".
+  deck          Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}", else the only deck.
 
 Options:
   --summary     One compact entry per layout, for a first look: name, the first sentence of its

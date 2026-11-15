@@ -11,7 +11,7 @@ export const HELP = `Usage: deck dev [deck] [--port <n>] [--host] [--brand <name
 Serves a deck with hot reload and prints the URL. It runs until you press q or Ctrl+C.
 
 Arguments:
-  deck            Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}".
+  deck            Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}", else the only deck.
 
 Options:
   --port <n>      Use this port and fail if it is taken. Default: the first free port from 5173.

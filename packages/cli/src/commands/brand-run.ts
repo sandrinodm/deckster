@@ -7,6 +7,7 @@ import {
   type SurfaceTokens,
 } from '@deckster/brand';
 import { brandTokensJson, loadBrand } from '@deckster/brand/node';
+import { deckCommand } from '@deckster/engine/command';
 import { Console, Effect } from 'effect';
 
 import { usageError } from '#cli-error.ts';
@@ -60,7 +61,7 @@ const runBrand = Effect.fn('deck.brand')(function* (argv: readonly string[]) {
   if (first === CHECK) {
     if (second === undefined) {
       return yield* usageError(
-        'Which brand? Name one, for example `pnpm deck brand check default`.',
+        'Which brand? Name one, for example `' + deckCommand() + ' brand check default`.',
         'brand',
       );
     }
@@ -181,11 +182,11 @@ function summarize(tokens: BrandTokens, file: string, warnings: readonly BrandPr
   ];
   if (warnings.length > 0) {
     lines.push(
-      `${count(warnings.length, 'warning')}; run \`pnpm deck brand check ${tokens.name}\`.`,
+      `${count(warnings.length, 'warning')}; run \`${deckCommand()} brand check ${tokens.name}\`.`,
     );
   }
 
-  lines.push(`Run \`pnpm deck brand ${tokens.name} --json\` for every token.`);
+  lines.push(`Run \`${deckCommand()} brand ${tokens.name} --json\` for every token.`);
   return lines.join('\n');
 }
 

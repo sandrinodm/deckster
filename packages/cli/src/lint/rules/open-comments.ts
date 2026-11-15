@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import type { DeckRule } from '#lint/types.ts';
 
 import { count } from '#lint/format-report.ts';
@@ -45,9 +47,9 @@ export const openCommentsRule: DeckRule = {
           slide: slide.id,
           message: `${count(open, 'open review comment')} on this slide.`,
           fix:
-            `Run \`pnpm deck comments ${deck.id} --slide ${slide.id}\`, ` +
+            `Run \`${deckCommand()} comments ${deck.id} --slide ${slide.id}\`, ` +
             'make the changes they ask for, ' +
-            `then \`pnpm deck comments resolve ${deck.id} <id>\`.`,
+            `then \`${deckCommand()} comments resolve ${deck.id} <id>\`.`,
           selector: null,
           key: `open-comments:${slide.id}`,
         },

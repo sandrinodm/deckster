@@ -1,5 +1,6 @@
 import type { ContentBudget } from '@deckster/engine/layout';
 
+import { deckCommand } from '@deckster/engine/command';
 import { matchingVariants, slideBudget } from '@deckster/engine/layout';
 
 import type { SlideRule, SlotSnapshot } from '#lint/types.ts';
@@ -81,7 +82,9 @@ export const contentBudgetRule: SlideRule = {
               `its layout allows ${max}${where}.`,
             fix:
               'Cut it to the essentials, split the slide, move detail into speaker notes, or ' +
-              'pick a layout made for more content (`pnpm deck layouts`).',
+              'pick a layout made for more content (`' +
+              deckCommand() +
+              ' layouts`).',
             selector: `[data-slot="${slot.name}"] (${limit})`,
           },
         ];

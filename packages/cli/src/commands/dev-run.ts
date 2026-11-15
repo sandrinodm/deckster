@@ -3,7 +3,7 @@ import { findDeck, loadDeck } from '@deckster/vite-plugin';
 import { Effect } from 'effect';
 
 import { AGENT_ARG_OPTIONS, readAgentFlags } from '#agent/agent-flag-options.ts';
-import { chooseDeck } from '#choose-deck.ts';
+import { chooseDeck, defaultDeck } from '#choose-deck.ts';
 import { EXIT_OK, type Command } from '#command.ts';
 import { parseCommandArgs, readBrandName, readPort } from '#parse-command-args.ts';
 import { startDevServer } from '#server/dev-server.ts';
@@ -27,7 +27,8 @@ export const run: Command['run'] = Effect.fn('deck.dev')(function* (argv) {
   const port = yield* readPort('dev', values.port);
   const brand = yield* readBrandName('dev', values.brand);
   const agent = yield* readAgentFlags('dev', values);
-  const deck = (yield* chooseDeck(positionals[0], DEFAULT_DECK)) ?? DEFAULT_DECK;
+  const deck =
+    (yield* chooseDeck(positionals[0], yield* defaultDeck(workspaceRoot))) ?? DEFAULT_DECK;
   yield* loadDeck(workspaceRoot, yield* findDeck(workspaceRoot, deck));
   if (brand !== undefined) {
     // A mistyped --brand fails here with the brands that exist, not later in the browser.

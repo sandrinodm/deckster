@@ -1,10 +1,20 @@
 {
   "name": "@deckster/cli",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "deck: the command line for deckster, a code-first slide framework (dev server, lint, screenshots, build, PDF and PPTX export, presenter).",
+  "keywords": [
+    "cli",
+    "deck",
+    "mdx",
+    "pdf",
+    "pptx",
+    "presentation",
+    "slides"
+  ],
   "homepage": "https://github.com/sandrinodm/deckster/tree/main/packages/cli#readme",
   "bugs": "https://github.com/sandrinodm/deckster/issues",
   "license": "MIT",
+  "author": "Sandrino Di Mattia",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sandrinodm/deckster.git",
@@ -13,6 +23,11 @@
   "bin": {
     "deck": "./src/bin.ts"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
   "imports": {
     "#*": "./src/*"
@@ -20,11 +35,60 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "publishConfig": {
+    "bin": {
+      "deck": "./dist/deck.js"
+    },
+    "exports": {
+      "./package.json": "./package.json"
+    },
+    "access": "public"
+  },
   "scripts": {
     "test": "vp test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepack": "vp pack && node scripts/stage-framework.ts"
   },
   "dependencies": {
+    "@effect/platform-node": "catalog:",
+    "@fontsource-variable/bricolage-grotesque": "catalog:",
+    "@fontsource-variable/inter": "catalog:",
+    "@fontsource-variable/jetbrains-mono": "catalog:",
+    "@iconify-json/lucide": "catalog:",
+    "@iconify-json/tabler": "catalog:",
+    "@mdx-js/mdx": "catalog:",
+    "@modelcontextprotocol/node": "catalog:",
+    "@modelcontextprotocol/server": "catalog:",
+    "@shikijs/magic-move": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@types/mdx": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "decode-named-character-reference": "catalog:",
+    "effect": "catalog:",
+    "elkjs": "catalog:",
+    "fflate": "catalog:",
+    "fontkit": "catalog:",
+    "harfbuzzjs": "catalog:",
+    "lottie-web": "catalog:",
+    "parse5": "catalog:",
+    "pdf-lib": "catalog:",
+    "playwright": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "remark-gfm": "catalog:",
+    "shiki": "catalog:",
+    "tailwindcss": "catalog:",
+    "unplugin-icons": "catalog:",
+    "uqr": "catalog:",
+    "vite": "catalog:",
+    "wawoff2": "catalog:",
+    "ws": "catalog:",
+    "yaml": "catalog:"
+  },
+  "devDependencies": {
     "@deckster/agent": "workspace:*",
     "@deckster/brand": "workspace:*",
     "@deckster/comments": "workspace:*",
@@ -33,18 +97,14 @@
     "@deckster/kit": "workspace:*",
     "@deckster/shell": "workspace:*",
     "@deckster/vite-plugin": "workspace:*",
-    "@effect/platform-node": "catalog:",
-    "effect": "catalog:",
-    "playwright": "catalog:",
+    "@effect/vitest": "catalog:",
+    "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
-  "devDependencies": {
-    "@effect/vitest": "catalog:",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "fflate": "catalog:",
-    "pdf-lib": "catalog:",
-    "react": "catalog:",
-    "typescript": "catalog:"
+  "optionalDependencies": {
+    "electron": "catalog:"
+  },
+  "engines": {
+    "node": ">=26.0.0"
   }
 }

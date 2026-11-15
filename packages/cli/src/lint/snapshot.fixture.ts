@@ -1,7 +1,7 @@
 import type { BrandTokens } from '@deckster/brand';
 import type { AnyLayoutContract } from '@deckster/engine/layout';
 
-import { loadBrand } from '@deckster/brand/node';
+import { FRAMEWORK_ROOT, loadBrand } from '@deckster/brand/node';
 import { Effect, type FileSystem } from 'effect';
 
 import type { CollectedPage } from '#browser/collect-snapshot.ts';
@@ -14,7 +14,6 @@ import type {
 } from '#lint/types.ts';
 
 import { brandContext } from '#lint/brand-context.ts';
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 /**
  * A measured element with neutral defaults: a 100x100 box at the top-left, black 40px Inter text on
@@ -130,7 +129,7 @@ export function slideContext(overrides: Partial<SlideContext> = {}): SlideContex
 export const testBrandTokens = Effect.fn('testBrandTokens')(function* (
   name: string,
 ): Effect.fn.Return<BrandTokens, never, FileSystem.FileSystem> {
-  const brand = yield* Effect.orDie(loadBrand(WORKSPACE_ROOT, name));
+  const brand = yield* Effect.orDie(loadBrand(FRAMEWORK_ROOT, name));
   return brand.tokens;
 });
 

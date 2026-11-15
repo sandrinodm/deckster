@@ -1,3 +1,4 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { NodeServices } from '@effect/platform-node';
 import { describe, expect, layer } from '@effect/vitest';
 import { Effect, FileSystem } from 'effect';
@@ -6,7 +7,6 @@ import path from 'node:path';
 
 import { fakeToolSpawner, writeFakeElectron } from '#present/fake-electron.fixture.ts';
 import { INSTALL_ELECTRON_COMMAND, resolveShellBinary } from '#present/shell-binary.ts';
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 describe('resolveShellBinary', () => {
   layer(NodeServices.layer)((it) => {
@@ -88,7 +88,7 @@ describe('resolveShellBinary', () => {
 
     it.effect('finds the real package of @deckster/shell by default', () =>
       Effect.gen(function* () {
-        const result = yield* Effect.result(resolveShellBinary(WORKSPACE_ROOT));
+        const result = yield* Effect.result(resolveShellBinary(FRAMEWORK_ROOT));
         if (result._tag === 'Failure') {
           expect(result.failure.message).toContain(INSTALL_ELECTRON_COMMAND);
         } else {

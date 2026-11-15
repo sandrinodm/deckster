@@ -1,3 +1,4 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
 import { cpSync, existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
@@ -5,7 +6,6 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 /**
  * The CLI fixture.
@@ -133,13 +133,13 @@ describe('deck dev --agent shutdown', () => {
     'on %s leaves no agent process and no server.json behind',
     async (signal, index) => {
       const root = scratchWorkspace('deck-shutdown-');
-      cpSync(path.join(WORKSPACE_ROOT, 'decks/hello'), path.join(root, 'decks/hello'), {
+      cpSync(path.join(FRAMEWORK_ROOT, 'decks/hello'), path.join(root, 'decks/hello'), {
         recursive: true,
         filter: (source) => !/[/\\](?:node_modules|dist)$/.test(source),
       });
       const port = FIRST_PORT + index;
       const cli = spawn(process.execPath, [FIXTURE, root, String(port)], {
-        cwd: path.join(WORKSPACE_ROOT, 'packages/cli'),
+        cwd: path.join(FRAMEWORK_ROOT, 'packages/cli'),
         stdio: ['ignore', 'pipe', 'inherit'],
         env: { ...process.env, DECK_TEST_FAKE_AGENT: '1', DECK_FAKE_DELAY_MS: '200' },
       });
@@ -165,12 +165,12 @@ describe('deck dev --agent shutdown', () => {
 
   it('prints the agent check after the server is listening, without holding the server up', async () => {
     const root = scratchWorkspace('deck-doctor-');
-    cpSync(path.join(WORKSPACE_ROOT, 'decks/hello'), path.join(root, 'decks/hello'), {
+    cpSync(path.join(FRAMEWORK_ROOT, 'decks/hello'), path.join(root, 'decks/hello'), {
       recursive: true,
       filter: (source) => !/[/\\](?:node_modules|dist)$/.test(source),
     });
     const cli = spawn(process.execPath, [FIXTURE, root, String(DOCTOR_PORT)], {
-      cwd: path.join(WORKSPACE_ROOT, 'packages/cli'),
+      cwd: path.join(FRAMEWORK_ROOT, 'packages/cli'),
       stdio: ['ignore', 'pipe', 'inherit'],
       env: { ...process.env, DECK_TEST_FAKE_AGENT: '1' },
     });

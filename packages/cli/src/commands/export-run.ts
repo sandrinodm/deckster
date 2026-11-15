@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import {
   EXPORT_MODES,
   formatDryRun,
@@ -107,7 +108,7 @@ const readOptions = Effect.fn('readOptions')(function* (
   const [deck] = positionals;
   if (deck === undefined) {
     return yield* usageError(
-      'Which deck? Name one, for example `pnpm deck export hello --pdf`.',
+      'Which deck? Name one, for example `' + deckCommand() + ' export hello --pdf`.',
       'export',
     );
   }

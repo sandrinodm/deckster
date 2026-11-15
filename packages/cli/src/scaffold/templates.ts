@@ -1,5 +1,7 @@
 import type { LayoutExample } from '@deckster/engine/layout';
 
+import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
+
 import { exampleMdx } from '#layouts/list-layouts.ts';
 import { titleFromName } from '#scaffold/names.ts';
 
@@ -69,11 +71,17 @@ export type DeckTemplate = {
 /**
  * The files of a new deck, by path relative to the deck folder. They follow the workspace's
  * conventions: dependencies from the catalog, Vite+ client types, and sources the formatter leaves
- * as they are.
+ * as they are. A published CLI's workspace is a plain folder without a package manager of its own,
+ * so a deck there is just its config and slides; `deck types` writes the one `tsconfig.json` an
+ * editor needs.
  *
  * @param template - The deck's name, title, brand, duration and cover example.
+ * @param installed - Whether the CLI is a published copy; defaults to the running one.
  */
-export function deckFiles(template: DeckTemplate): Record<string, string> {
+export function deckFiles(
+  template: DeckTemplate,
+  installed: boolean = FRAMEWORK_INSTALLED,
+): Record<string, string> {
   const packageJson = {
     name: `@deckster/deck-${template.id}`,
     version: '0.0.0',
@@ -89,8 +97,12 @@ export function deckFiles(template: DeckTemplate): Record<string, string> {
     },
   };
   return {
-    'package.json': `${JSON.stringify(packageJson, null, JSON_INDENT_SPACES)}\n`,
-    'tsconfig.json': DECK_TSCONFIG,
+    ...(installed
+      ? {}
+      : {
+          'package.json': `${JSON.stringify(packageJson, null, JSON_INDENT_SPACES)}\n`,
+          'tsconfig.json': DECK_TSCONFIG,
+        }),
     'deck.config.ts': deckConfig({
       title: template.title,
       brand: template.brand,

@@ -1,3 +1,4 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { deckViteConfig, findDeck, loadDeck } from '@deckster/vite-plugin';
 import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it, layer } from '@effect/vitest';
@@ -10,7 +11,7 @@ import { runCaptured } from '#cli.fixture.ts';
 import { cliLayer } from '#cli.ts';
 import { lintDeck } from '#lint/run-lint.ts';
 import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
-import { Workspace, WORKSPACE_ROOT } from '#workspace.ts';
+import { Workspace } from '#workspace.ts';
 
 const BUILD_TIMEOUT_MS = 120_000;
 
@@ -31,7 +32,7 @@ class Scratch extends Context.Service<Scratch, { readonly root: string }>()('tes
       yield* fs.makeDirectory(SCRATCH_ROOT, { recursive: true });
       const root = yield* fs.makeTempDirectoryScoped({ directory: SCRATCH_ROOT, prefix: 'new-' });
       yield* fs.copyFile(
-        path.join(WORKSPACE_ROOT, 'tsconfig.base.json'),
+        path.join(FRAMEWORK_ROOT, 'tsconfig.base.json'),
         path.join(root, 'tsconfig.base.json'),
       );
       return Scratch.of({ root });

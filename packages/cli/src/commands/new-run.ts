@@ -1,3 +1,5 @@
+import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
+import { deckCommand } from '@deckster/engine/command';
 import { Console, Effect } from 'effect';
 import path from 'node:path';
 
@@ -24,7 +26,7 @@ export const run: Command['run'] = Effect.fn('deck.new')(function* (argv) {
   if (first === 'slide') {
     if (second === undefined || third === undefined) {
       return yield* usageError(
-        'Which deck and slide id? For example `pnpm deck new slide hello intro`.',
+        'Which deck and slide id? For example `' + deckCommand() + ' new slide hello intro`.',
         'new',
       );
     }
@@ -42,7 +44,7 @@ export const run: Command['run'] = Effect.fn('deck.new')(function* (argv) {
   if (first === 'app') {
     if (second === undefined || third === undefined) {
       return yield* usageError(
-        'Which deck and app name? For example `pnpm deck new app hello agent-demo`.',
+        'Which deck and app name? For example `' + deckCommand() + ' new app hello agent-demo`.',
         'new',
       );
     }
@@ -59,7 +61,7 @@ export const run: Command['run'] = Effect.fn('deck.new')(function* (argv) {
   }
 
   if (first === undefined) {
-    return yield* usageError('Which deck? For example `pnpm deck new my-talk`.', 'new');
+    return yield* usageError('Which deck? For example `' + deckCommand() + ' new my-talk`.', 'new');
   }
 
   const created = yield* createDeck(workspaceRoot, first, values.title, {
@@ -68,7 +70,10 @@ export const run: Command['run'] = Effect.fn('deck.new')(function* (argv) {
   });
   yield* printFiles(workspaceRoot, created.files);
   yield* Console.log(
-    `Next: run \`pnpm install\` to link decks/${first}, then \`pnpm deck dev ${first}\`.`,
+    FRAMEWORK_INSTALLED
+      ? `Next: run \`deck dev ${first}\`. For editor type checking, run \`deck types\` once ` +
+          '(again after upgrading @deckster/cli).'
+      : `Next: run \`pnpm install\` to link decks/${first}, then \`${deckCommand()} dev ${first}\`.`,
   );
   return EXIT_OK;
 });

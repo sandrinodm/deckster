@@ -1,4 +1,5 @@
 import { fileExists, listBrands } from '@deckster/brand/node';
+import { deckCommand } from '@deckster/engine/command';
 import { DECK_CONFIG_HINTS, DeckConfig } from '@deckster/engine/config';
 import { DECKS_DIR, loadLayoutCatalog, type DeckBuildError } from '@deckster/vite-plugin';
 import { Effect, Result, Schema, type FileSystem } from 'effect';
@@ -67,7 +68,7 @@ export const createDeck = Effect.fn('createDeck')(function* (
   if (yield* fileExists(dir)) {
     return yield* cliError(
       `decks/${id} already exists.\n` +
-        `Pick another name, or add a slide to it with \`pnpm deck new slide ${id} <slide-id>\`.`,
+        `Pick another name, or add a slide to it with \`${deckCommand()} new slide ${id} <slide-id>\`.`,
     );
   }
 

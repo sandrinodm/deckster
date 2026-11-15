@@ -1,7 +1,7 @@
 import { deckViteConfig, type DeckLocation } from '@deckster/vite-plugin';
 import { Effect } from 'effect';
 import path from 'node:path';
-import { build } from 'vite-plus';
+import { build } from 'vite';
 
 import type { CommandError, CommandServices } from '#command.ts';
 

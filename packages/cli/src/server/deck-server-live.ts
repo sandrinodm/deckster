@@ -1,13 +1,13 @@
+import { FRAMEWORK_FS_ROOTS, FRAMEWORK_INSTALLED, FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { deckViteConfig, type DeckPluginApi } from '@deckster/vite-plugin';
 import { Effect, type Scope } from 'effect';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { createServer, mergeConfig, type ViteDevServer } from 'vite-plus';
+import { createServer, mergeConfig, type ViteDevServer } from 'vite';
 
 import type { DeckServerOptions, RunningDeckServer } from '#server/deck-server.ts';
 
 import { ViteError } from '#cli-error.ts';
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 /**
  * The name of `@deckster/vite-plugin`'s deck plugin, whose `api` reports each slide's build
@@ -68,7 +68,7 @@ export const startViteServer = Effect.fn('startViteServer')(function* (
       hmr: false,
       // The page's console belongs to the lint and shot reports, not the terminal.
       forwardConsole: false,
-      fs: { allow: [WORKSPACE_ROOT] },
+      fs: { allow: [...FRAMEWORK_FS_ROOTS] },
     },
   });
   const vite = yield* Effect.acquireRelease(
@@ -118,7 +118,8 @@ export function deckCompiler(vite: ViteDevServer): RunningDeckServer['compile'] 
 const viteConfigFactory = Effect.fn('viteConfigFactory')(function* (
   workspaceRoot: string,
 ): Effect.fn.Return<typeof deckViteConfig> {
-  if (workspaceRoot === WORKSPACE_ROOT) {
+  // A published CLI has one framework; a user's folder has no packages of its own.
+  if (FRAMEWORK_INSTALLED || workspaceRoot === FRAMEWORK_ROOT) {
     return deckViteConfig;
   }
 

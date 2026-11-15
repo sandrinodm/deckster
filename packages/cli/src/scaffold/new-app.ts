@@ -98,8 +98,13 @@ export const createApp = Effect.fn('createApp')(function* (
 
   const packageFile = path.join(deck.dir, 'package.json');
   const tsconfigFile = path.join(deck.dir, 'tsconfig.json');
-  const packageUpdate = withAppDependencies(yield* readText(packageFile));
-  const tsconfigUpdate = withAppsIncluded(yield* readText(tsconfigFile));
+  // A deck in a published CLI's workspace has neither file; there is nothing to prepare then.
+  const packageUpdate = (yield* fileExists(packageFile))
+    ? withAppDependencies(yield* readText(packageFile))
+    : undefined;
+  const tsconfigUpdate = (yield* fileExists(tsconfigFile))
+    ? withAppsIncluded(yield* readText(tsconfigFile))
+    : undefined;
   const sources = Object.entries(appFiles(name)).map(
     ([relative, content]) => [path.join(appDir, relative), content] as const,
   );

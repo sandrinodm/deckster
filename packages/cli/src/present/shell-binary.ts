@@ -1,5 +1,6 @@
 import type { ChildProcessSpawner } from 'effect/process';
 
+import { FRAMEWORK_INSTALLED, HOOKS_ENV } from '@deckster/brand/node';
 import { fileExists } from '@deckster/brand/node/file-exists';
 import { Console, Effect, FileSystem } from 'effect';
 import { createRequire } from 'node:module';
@@ -12,6 +13,20 @@ import { brandedAppWarning, ensureBrandedApp } from '#present/branded-app.ts';
  * The command that downloads Electron's binary, named in every error about it.
  */
 export const INSTALL_ELECTRON_COMMAND = 'pnpm --filter @deckster/shell exec install-electron';
+
+/**
+ * The command that downloads Electron's binary. A published CLI has no workspace to run `pnpm
+ * --filter` in, and a package manager that skips install scripts (pnpm by default) leaves the
+ * binary out, so it runs the package's own downloader, which works the same under every package
+ * manager.
+ *
+ * @param electronDir - The `electron` package folder, when it is known.
+ */
+export function installElectronCommand(electronDir?: string): string {
+  return FRAMEWORK_INSTALLED && electronDir !== undefined
+    ? `node ${JSON.stringify(path.join(electronDir, 'install.js'))}`
+    : INSTALL_ELECTRON_COMMAND;
+}
 
 /**
  * Where the Electron binary and the shell's entry file are.
@@ -52,8 +67,10 @@ export const findElectronPackage = Effect.fn('findElectronPackage')(function* ()
     catch: () =>
       shellError(
         'The electron package is not installed, so `deck present` cannot open a window.\n' +
-          'Run `pnpm install`, then ' +
-          `\`${INSTALL_ELECTRON_COMMAND}\` to download the binary, ` +
+          (FRAMEWORK_INSTALLED
+            ? 'Electron is an optional dependency that the install skipped or could not fetch: ' +
+              'reinstall @deckster/cli, '
+            : `Run \`pnpm install\`, then \`${INSTALL_ELECTRON_COMMAND}\` to download the binary, `) +
           'or pass --browser to present in Chrome.',
       ),
   });
@@ -85,7 +102,7 @@ export const resolveShellBinary = Effect.fn('resolveShellBinary')(function* (
   const missing = shellError(
     `Electron's binary is not downloaded (${path.join(directory, 'dist')}), ` +
       'so `deck present` cannot open a window.\n' +
-      `Run \`${INSTALL_ELECTRON_COMMAND}\` (about 120 MB), or pass --browser to present in Chrome.`,
+      `Run \`${installElectronCommand(directory)}\` (about 120 MB), or pass --browser to present in Chrome.`,
   );
   const relative = yield* fs
     .readFileString(path.join(directory, 'path.txt'))
@@ -96,8 +113,13 @@ export const resolveShellBinary = Effect.fn('resolveShellBinary')(function* (
   }
 
   const entry = yield* Effect.try({
-    try: () => createRequire(import.meta.url).resolve('@deckster/shell/main'),
-    catch: () => shellError('The @deckster/shell package is not installed. Run `pnpm install`.'),
+    try: () => shellEntry(),
+    catch: () =>
+      shellError(
+        FRAMEWORK_INSTALLED
+          ? 'The @deckster/shell package is missing from this install. Reinstall @deckster/cli.'
+          : 'The @deckster/shell package is not installed. Run `pnpm install`.',
+      ),
   });
   // The real path: macOS refuses to launch an app bundle through a pnpm symlink in some sandboxes.
   const real = yield* fs.realPath(executable).pipe(Effect.orElseSucceed(() => executable));
@@ -112,3 +134,14 @@ export const resolveShellBinary = Effect.fn('resolveShellBinary')(function* (
 
   return { executable: real, entry, branded: false };
 });
+
+/**
+ * The file Electron starts as its app. A published CLI starts `shell-main.js`, which registers the
+ * hooks before it loads the shell's TypeScript; the checkout starts the shell's entry directly.
+ */
+function shellEntry(): string {
+  const hooks = process.env[HOOKS_ENV];
+  return hooks === undefined || hooks === ''
+    ? createRequire(import.meta.url).resolve('@deckster/shell/main')
+    : path.join(path.dirname(hooks), 'shell-main.js');
+}

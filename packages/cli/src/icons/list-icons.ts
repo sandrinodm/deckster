@@ -1,4 +1,4 @@
-import { isSafeName, type BrandError } from '@deckster/brand';
+import { DEFAULT_BRAND, isSafeName, type BrandError } from '@deckster/brand';
 import { listBrands, loadBrand } from '@deckster/brand/node';
 import { iconSetNames } from '@deckster/kit/icon-sets';
 import { Effect, type FileSystem } from 'effect';
@@ -47,15 +47,16 @@ export type IconListing = {
  *
  * @param requested - The brand folder names; every brand in `brands/` when empty.
  * @param search - A substring the names must contain, case-insensitive; every name when omitted.
- * @throws CliError in the error channel when a brand does not exist or fails to load, there are no
- *   brands, or a set's package is not installed.
+ * @throws CliError in the error channel when a brand does not exist or fails to load, or a set's
+ *   package is not installed.
  */
 export const listIcons = Effect.fn('listIcons')(function* (
   requested: readonly string[],
   search: string | undefined,
 ): Effect.fn.Return<IconListing, CliError | BrandError, FileSystem.FileSystem | Workspace> {
   const { root } = yield* Workspace;
-  const available = yield* listBrands(root);
+  // The built-in default brand is available in a workspace that has no brands/default of its own.
+  const available = [...new Set([DEFAULT_BRAND, ...(yield* listBrands(root))])].toSorted();
   const names = requested.length === 0 ? available : [...new Set(requested)];
   if (names.length === 0) {
     return yield* cliError('There are no brands under brands/. Add one with a brand.ts file.');

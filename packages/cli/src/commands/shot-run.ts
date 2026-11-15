@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import { Console, Effect } from 'effect';
 import path from 'node:path';
 
@@ -31,7 +32,10 @@ const runShot = Effect.fn('deck.shot')(function* (argv: readonly string[]) {
   });
   const [deck, slide] = positionals;
   if (deck === undefined) {
-    return yield* usageError('Which deck? Name one, for example `pnpm deck shot hello`.', 'shot');
+    return yield* usageError(
+      'Which deck? Name one, for example `' + deckCommand() + ' shot hello`.',
+      'shot',
+    );
   }
 
   const brand = yield* readBrandName('shot', values.brand);
@@ -94,7 +98,7 @@ const printResult = Effect.fn('printResult')(function* (result: ShotResult) {
   }
 
   if (result.pageErrors.length > 0 || result.files.some((file) => file.error !== null)) {
-    yield* Console.error('Run `pnpm deck lint <deck>` for every problem with its fix.');
+    yield* Console.error('Run `' + deckCommand() + ' lint <deck>` for every problem with its fix.');
   }
 });
 

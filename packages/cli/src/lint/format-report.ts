@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import type { LintReport } from '#lint/run-lint.ts';
 import type { LintFinding } from '#lint/types.ts';
 
@@ -38,7 +40,7 @@ export function formatReport(report: LintReport): string {
  */
 function brandHeading(file: string): string {
   const name = brandName(file);
-  const note = `for every slide; \`pnpm deck brand check ${name}\` lists these alone`;
+  const note = `for every slide; \`${deckCommand()} brand check ${name}\` lists these alone`;
   return `${file} (the brand "${name}", ${note})`;
 }
 

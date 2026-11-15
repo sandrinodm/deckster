@@ -1,13 +1,12 @@
 import type { BrandError } from '@deckster/brand';
 
-import { loadBrand } from '@deckster/brand/node';
+import { FRAMEWORK_ROOT, loadBrand } from '@deckster/brand/node';
 import * as NodeRuntime from '@effect/platform-node/NodeRuntime';
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { Console, Effect, FileSystem } from 'effect';
 import path from 'node:path';
 
 import { cliError, fileSystemError, type CliError, type FileSystemError } from '#cli-error.ts';
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 /**
  * The stylesheet the formatter sorts Tailwind classes against and the linter checks them against,
@@ -59,8 +58,8 @@ export const writeToolingStylesheet = Effect.fn('writeToolingStylesheet')(functi
   check: boolean,
 ): Effect.fn.Return<void, BrandError | CliError | FileSystemError, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
-  const file = path.join(WORKSPACE_ROOT, TOOLING_STYLESHEET);
-  const expected = yield* toolingStylesheet(WORKSPACE_ROOT);
+  const file = path.join(FRAMEWORK_ROOT, TOOLING_STYLESHEET);
+  const expected = yield* toolingStylesheet(FRAMEWORK_ROOT);
   if (!check) {
     yield* fs
       .writeFileString(file, expected)

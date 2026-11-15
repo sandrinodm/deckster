@@ -1,50 +1,72 @@
 # @deckster/cli
 
 `@deckster/cli` is `deck`, deckster's command line. It serves, builds, screenshots, lints, diffs,
-exports and presents the decks in this workspace, and prints the catalogs (layouts, charts,
-diagrams, components, icons, brands) that agents read before they write a slide.
+exports and presents the decks in your folder, and prints the catalogs (layouts, charts, diagrams,
+components, icons, brands) that agents read before they write a slide.
 
-It is a workspace package, not an npm package. You run it from a clone, at the repository root:
+## Install
 
 ```sh
-pnpm install
-pnpm deck lint hello
+npm install --global @deckster/cli
+```
+
+It needs Node 26 or newer. The package carries the whole framework, so `dev`, `build` and `new`
+need nothing else. `lint`, `shot`, `diff` and `export` drive Chromium, which you download once, and
+`present` opens Electron; see [What it needs](#what-it-needs). `pnpm add --global @deckster/cli` works too.
+
+`deck` works in a folder that holds `decks/<name>/` and, optionally, `brands/<name>/`. It uses the
+nearest folder at or above the current one that has a `decks/` folder, or the one named by
+`DECK_ROOT`. In an empty folder, `deck new` starts a workspace. It never picks your home folder or
+the filesystem root on its own, because the dev server serves the workspace's decks and brands:
+make a project folder first (`mkdir talks && cd talks`), or set `DECK_ROOT` to a folder you mean.
+When the workspace is not the current folder, `deck` says which one it uses on standard error.
+`deck --version` prints the installed version.
+
+```sh
+mkdir talks && cd talks
+deck new launch-review --title "Launch review" --duration 20m
+deck new slide launch-review results --layout stats
+deck dev launch-review                    # hot reload; q or Ctrl+C stops it
+deck lint launch-review
+deck shot launch-review results           # .deck/shots/launch-review/02-results.png
+deck export launch-review                 # .deck/exports/launch-review/*.pdf and *.pptx
+deck types                                # once, for editor type checking
 ```
 
 ```console
-decks/hello/slides/closing.mdx
-  warning missing-notes (closing): The slide has no speaker notes.
+decks/launch-review/slides/title.mdx
+  warning missing-notes (title): The slide has no speaker notes.
           Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
 
-hello: 0 errors, 1 warning in 4 slides (8 steps checked).
+launch-review: 0 errors, 1 warning in 1 slide (1 step checked).
 ```
 
-`pnpm deck` runs the workspace's `deck` bin (`src/bin.ts`, TypeScript run by Node 26+), so
-`pnpm deck <command> --json | jq .` gets clean JSON. `pnpm deck --help` lists the commands and
-`pnpm deck <command> --help` prints the full options of one.
+`deck new` writes `deck.config.ts` and `slides/title.mdx` into the new deck folder and lists them.
+A new deck is a plain folder: no `package.json` and no `node_modules`. The built-in `default` brand
+is always there; add your own as `brands/<name>/brand.ts` and name it in `deck.config.ts`.
 
-## A first session
+`deck <command> --json | jq .` gets clean JSON, `deck --help` lists the commands and
+`deck <command> --help` prints the full options of one.
 
-```sh
-pnpm deck new launch-review --title "Launch review" --duration 20m
-pnpm install                                   # links the new deck; every command needs it
-pnpm deck new slide launch-review results --layout stats
-pnpm deck dev launch-review                    # hot reload; q or Ctrl+C stops it
-pnpm deck lint launch-review
-pnpm deck shot launch-review results           # .deck/shots/launch-review/02-results.png
-pnpm deck export launch-review                 # .deck/exports/launch-review/*.pdf and *.pptx
-```
+### Editor types
 
-`deck new` writes `deck.config.ts`, `package.json`, `tsconfig.json` and `slides/title.mdx` into
-the new deck folder, lists them, and tells you to run `pnpm install`. The deck is a workspace
-package: until it is linked, every command on it fails with "Cannot find package
-'@deckster/engine'". `deck new slide` appends the slide's id to `slides` in `deck.config.ts`.
+`deck types` writes `tsconfig.json` and `.deck/env.d.ts` at the workspace root, so an editor or
+`tsc` resolves `@deckster/*`, `effect` and `react` imports from the files of your install without
+a `node_modules` in the workspace. Settings you already have in `tsconfig.json` are kept. The paths
+name this install's folders: run `deck types` again after upgrading, and do not commit the result
+for others to use.
+
+### Upgrading and the repository
+
+Upgrade with `npm install --global @deckster/cli@latest`. To work on the framework itself, clone
+the repository and use `pnpm deck <command>` from its root: the commands are the same, and the
+repository's decks (`decks/hello` and the test decks) are ordinary decks.
 
 ## Conventions shared by every command
 
 - **The deck argument** is a folder name under `decks/`, in kebab-case. A path is refused. When a
-  command's deck is optional, it falls back to `$DECK`, then to `hello` (`build` falls back to
-  every deck).
+  command's deck is optional, it falls back to `$DECK`, then to `hello`, then to the only deck
+  the workspace has (`build` falls back to every deck).
 - **`--brand <name>`** on `dev`, `present`, `shot`, `lint`, `diff` and `export` renders the deck in
   `brands/<name>` instead of the brand its config names. Shots, exports and diffs then go to a
   folder with an `@<name>` suffix.
@@ -52,7 +74,7 @@ package: until it is linked, every command on it fails with "Cannot find package
   and exits 1:
 
   ```console
-  $ pnpm deck lint nope --json
+  $ deck lint nope --json
   {
     "ok": false,
     "error": {
@@ -67,18 +89,16 @@ package: until it is linked, every command on it fails with "Cannot find package
 - **Exit codes**: 0 on success; 1 when the command fails, `lint` or `brand check` finds errors,
   `shot` captures a slide that threw, `agent doctor` finds a problem, or `diff --fail-on-change`
   finds a change; 129 after SIGHUP.
-- **Test decks.** `decks/` also holds six decks the test suites drive (layouts, data-stories,
-  diagrams-demo, components, apps-demo, exemplars). They are ordinary decks: `pnpm deck lint layouts`.
 
 ## What it needs
 
-| For                                                                                | You need                                                                                                                                          |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `shot`, `lint`, `diff`, `export`, `build --out` thumbnails, `build --with-exports` | Playwright's Chromium: `pnpm --filter @deckster/cli exec playwright install chromium`                                                             |
-| `present`                                                                          | Electron's binary, downloaded once: `pnpm --filter @deckster/shell exec install-electron`. `--browser` uses Chrome or the default browser instead |
-| `diff` against a git ref                                                           | A git repository. Without one, compare with a folder made by `--save-baseline`                                                                    |
-| `export --verify`                                                                  | Docker for the LibreOffice and Open XML SDK renderers; the `quicklook` and `keynote` renderers are macOS only                                     |
-| `--agent claude` or `--agent codex`                                                | That CLI installed and signed in; `pnpm deck agent doctor` checks both                                                                            |
+| For                                                                                | You need                                                                                                                                                                                                     |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `shot`, `lint`, `diff`, `export`, `build --out` thumbnails, `build --with-exports` | Playwright's Chromium, downloaded once: `npx playwright@1.65.0 install chromium` (the error names the exact command)                                                                                         |
+| `present`                                                                          | Electron's binary, downloaded once. The error prints the command; it runs the `install.js` of the `electron` package, which works under npm and pnpm. `--browser` uses Chrome or the default browser instead |
+| `diff` against a git ref                                                           | A git repository. Without one, compare with a folder made by `--save-baseline`                                                                                                                               |
+| `export --verify`                                                                  | Docker for the LibreOffice and Open XML SDK renderers; the `quicklook` and `keynote` renderers are macOS only                                                                                                |
+| `--agent claude` or `--agent codex`                                                | That CLI installed and signed in; `deck agent doctor` checks both                                                                                                                                            |
 
 A local GIF becomes a looping video only when `ffmpeg` is on `PATH`; without it the build keeps the
 GIF and `lint` warns `media-gif`.
@@ -102,6 +122,7 @@ GIF and `lint` warns `media-gif`.
 | [`components`](#charts-diagrams-components) | List the code, media, link and demo components with their props          |
 | [`brand`](#brand)                           | Print a brand's resolved tokens, or check a brand                        |
 | [`new`](#new)                               | Create a deck, or add a slide or a mini app to one                       |
+| [`types`](#types)                           | Write tsconfig.json so editors and tsc resolve @deckster imports         |
 | [`comments`](#comments)                     | List, resolve, reopen, add and prune review comments                     |
 | [`mcp`](#mcp)                               | Print Claude Code and Codex configuration for a running `deck dev --mcp` |
 | [`agent`](#agent)                           | Check the agent CLIs (Claude Code, Codex): installed, version, signed in |
@@ -130,7 +151,7 @@ browser, `c` toggles comment mode and `a` the agent panel (with `--agent`).
 
 The agent edits only the deck's content (slide files in `slides/`, media and data in `assets/` and
 `public/`) through a working copy, and changes the slide list only through the deck tools. What
-it writes anywhere else is put back. [docs/agent.md](../../docs/agent.md) covers the panel and its
+it writes anywhere else is put back. [docs/agent.md](https://github.com/sandrinodm/deckster/blob/main/docs/agent.md) covers the panel and its
 trust model.
 
 ### present
@@ -146,7 +167,7 @@ deck present --list-displays [--json]
 Opens a deck in its own Electron window and serves it with hot reload. Closing the window stops
 the server, and so does Ctrl+C. The terminal shows a short status. Download the binary first (see
 [What it needs](#what-it-needs)); the window, displays and shortcuts are in
-[docs/present.md](../../docs/present.md).
+[docs/present.md](https://github.com/sandrinodm/deckster/blob/main/docs/present.md).
 
 | Flag                                                       | Meaning                                                                                                                                        |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -177,7 +198,7 @@ deck it builds every deck.
 | `--include-scratch` | With `--out`, also put `zz-` decks (scratch decks such as trial runs) in the site. A named deck is always included                                                                                                               |
 | `--with-exports`    | Also write `<deck>.pdf` and `<deck>.pptx` beside `index.html`, for the kit's `<Download file>` and the gallery                                                                                                                   |
 
-Hosting the result is in [docs/deploy.md](../../docs/deploy.md).
+Hosting the result is in [docs/deploy.md](https://github.com/sandrinodm/deckster/blob/main/docs/deploy.md).
 
 ### preview
 
@@ -235,9 +256,9 @@ The report folder holds `index.html`, `summary.md` (a table for a pull request c
 `report.json` and `before/`, `after/` and `compare/` pictures of what differs. Without git:
 
 ```console
-$ pnpm deck diff hello --save-baseline
+$ deck diff hello --save-baseline
 Saved 4 pictures of "hello" to .../.deck/baseline/hello
-$ pnpm deck diff hello
+$ deck diff hello
 hello (default) against .../.deck/baseline/hello: 4 unchanged
 Nothing changed. Report: .../.deck/diff/hello/index.html
 ```
@@ -281,7 +302,7 @@ a format flag it writes the PDF and the PPTX.
 | `--json`             | Print the result as JSON                                                                                                                                                                   |
 
 ```console
-$ pnpm deck export hello --dry-run
+$ deck export hello --dry-run
 PPTX dry run (hybrid mode): native / picture / simplified / dropped
 01 title [default]: 2 / 0 / 0 / 0
 02 steps [default]: 6 / 0 / 0 / 0
@@ -307,7 +328,7 @@ Checks a deck in three passes and exits 1 when it finds errors:
 3. **Deck**: rules over the whole deck, such as layout repetition and the time budget against the
    config's `duration`.
 
-`pnpm deck lint --help` lists every rule with its severity. With `--json` it prints
+`deck lint --help` lists every rule with its severity. With `--json` it prints
 `{ deck, brand, ok, summary: { errors, warnings, slides, steps, budgetSeconds }, findings }`, each
 finding with `slide`, `file`, `step`, `rule`, `severity`, `message`, `fix` and `selector`. Mark
 decoration with `aria-hidden="true"` or `data-decorative` to keep it out of the overflow and text
@@ -325,7 +346,7 @@ budget, item counts); `--json` gives the full catalog: each layout's frontmatter
 slots, budget, variants with their limits, and an example.
 
 ```console
-$ pnpm deck layouts --summary
+$ deck layouts --summary
 default     surface default   title any
             One column of content under an accent rule, centred on the slide: a heading with a lead paragraph, or a heading with a short list.
             slots: body* heading/text/bullets/image/component 80 words 6 bullets
@@ -344,7 +365,7 @@ Lists the icon names every given brand's icon set has (default: every brand in `
 120 names.
 
 ```console
-$ pnpm deck icons --search arrow-right
+$ deck icons --search arrow-right
 5 icon names matching "arrow-right" in every one of: default (lucide), nocturne (tabler)
 Sets: lucide, tabler
 
@@ -378,7 +399,7 @@ spacing and each surface's colour roles. `--json` prints every resolved token. `
 <name>` validates a brand without a deck and exits 1 on errors.
 
 ```console
-$ pnpm deck brand check nocturne
+$ deck brand check nocturne
 brands/nocturne/brand.ts
 nocturne: is valid (0 errors, 0 warnings).
 ```
@@ -391,15 +412,29 @@ deck new slide <deck> <id> [--layout <name>]
 deck new app <deck> <name>
 ```
 
-| Form                         | Creates                                                                                                                                   |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `deck new <deck>`            | `decks/<deck>/` with `deck.config.ts`, `package.json`, `tsconfig.json` and a title slide that passes `deck lint`. Run `pnpm install` next |
-| `deck new slide <deck> <id>` | `slides/<id>.mdx` from the layout's example, appended to the slide list                                                                   |
-| `deck new app <deck> <name>` | `apps/<name>/`, a React mini app wired to `@deckster/app-bridge`, shown with `<AppFrame app="<name>" poster="..." />`                     |
+| Form                         | Creates                                                                                                                                                              |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deck new <deck>`            | `decks/<deck>/` with `deck.config.ts` and a title slide that passes `deck lint` (in the repository also `package.json` and `tsconfig.json`; run `pnpm install` next) |
+| `deck new slide <deck> <id>` | `slides/<id>.mdx` from the layout's example, appended to the slide list                                                                                              |
+| `deck new app <deck> <name>` | `apps/<name>/`, a React mini app wired to `@deckster/app-bridge`, shown with `<AppFrame app="<name>" poster="..." />`                                                |
 
 `--title` defaults to the name as a sentence and is held to the title layout's limit. `--brand`
 defaults to `default`. `--duration` takes `20m`, `90s` or `1m30s`. `--layout` defaults to
 `default`. Names are kebab-case.
+
+### types
+
+```
+deck types
+```
+
+Writes `tsconfig.json` and `.deck/env.d.ts` at the workspace root for editors and `tsc`: `@deckster/*`
+imports map to the framework's source in this install, `effect`, `react` and `react-dom` to the
+framework's own copies, and the `*.mdx`, Node, Vite client and icon declarations are included. Only the
+entries it manages (`@deckster/*`, `effect`, `react`, `react-dom` and `*`) of an existing
+`compilerOptions.paths` are replaced; a `tsconfig.json` that extends another keeps its own compiler
+options, and one with comments or a symbolic link is left alone. In the framework's repository it does nothing, because the workspace links
+the packages.
 
 ### comments
 
@@ -436,9 +471,9 @@ reads the port and token from `.deck/agent/<deck>/server.json`. Without a runnin
 how to start one:
 
 ```console
-$ pnpm deck mcp hello
+$ deck mcp hello
 No dev server with the MCP endpoint is running for "hello".
-Start one with `pnpm deck dev hello --mcp`, then run this again.
+Start one with `deck dev hello --mcp`, then run this again.
 ```
 
 ### agent
@@ -468,6 +503,8 @@ problem.
 
 ## Using it from code
 
+In the repository only: the published package exports nothing but its `package.json`.
+
 The package's one export (`.` → `src/index.ts`) is used by the root scripts
 (`scripts/tailwind-tooling.ts`). `main(argv, workspace?)` runs a command line as the process's main
 program; `Workspace.at(root)` points it at another workspace, such as a scratch folder:
@@ -484,6 +521,8 @@ It also exports `runCli` and `cliProgram` (the Effect program behind `main`), `c
 tooling:tailwind` runs).
 
 ## Working on the CLI
+
+This section is for contributors, in a clone of the repository.
 
 | Folder in `src/`                               | Holds                                                                                                                                   |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -526,4 +565,4 @@ Rules a change here has to keep:
 
 ## License
 
-MIT, see [LICENSE](../../LICENSE).
+MIT, see [LICENSE](./LICENSE).

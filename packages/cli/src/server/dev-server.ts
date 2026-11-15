@@ -1,10 +1,11 @@
 import type { AgentSessionsApi } from '@deckster/agent/sessions';
 
 import { devSessionOf } from '@deckster/comments/dev-session';
+import { deckCommand } from '@deckster/engine/command';
 import { DEV_RUNTIME_PLUGINS, deckViteConfig } from '@deckster/vite-plugin';
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { Cause, Console, Deferred, Effect, type FileSystem, type Scope } from 'effect';
-import { createServer, mergeConfig, type ViteDevServer } from 'vite-plus';
+import { createServer, mergeConfig, type ViteDevServer } from 'vite';
 
 import type { DeckBrowser } from '#browser/deck-browser.ts';
 import type { Workspace } from '#workspace.ts';
@@ -339,7 +340,7 @@ export const startDevServer = Effect.fn('startDevServer')(function* (
     yield* published.pipe(Effect.mapError((error) => cliError(error.message)));
     yield* Console.log(`  MCP:     ${origin}${host.MCP_PATH}`);
     yield* Console.log(
-      `  Run \`pnpm deck mcp ${deck}\` for the configuration of Claude Code and Codex.`,
+      `  Run \`${deckCommand()} mcp ${deck}\` for the configuration of Claude Code and Codex.`,
     );
   }
 

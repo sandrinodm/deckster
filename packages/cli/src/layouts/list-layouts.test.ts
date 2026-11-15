@@ -1,14 +1,14 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { NodeFileSystem } from '@effect/platform-node';
 import { describe, expect, it, layer } from '@effect/vitest';
 import { Effect } from 'effect';
 
 import { exampleMdx, listLayouts } from '#layouts/list-layouts.ts';
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 layer(NodeFileSystem.layer)('listLayouts', (it) => {
   it.effect('prints the full contract of every layout the hello deck can use', () =>
     Effect.gen(function* () {
-      const catalog = yield* listLayouts(WORKSPACE_ROOT, 'hello');
+      const catalog = yield* listLayouts(FRAMEWORK_ROOT, 'hello');
       expect(catalog.slideFrontmatter).toMatchObject({
         type: 'object',
         additionalProperties: false,
@@ -39,7 +39,7 @@ layer(NodeFileSystem.layer)('listLayouts', (it) => {
     'prints each field with its default and choices, the title limit and the variants',
     () =>
       Effect.gen(function* () {
-        const catalog = yield* listLayouts(WORKSPACE_ROOT, 'hello');
+        const catalog = yield* listLayouts(FRAMEWORK_ROOT, 'hello');
         const split = catalog.layouts.find((entry) => entry.name === 'split');
         expect(split?.fields['ratio']).toEqual({
           required: false,
@@ -64,7 +64,7 @@ layer(NodeFileSystem.layer)('listLayouts', (it) => {
 
   it.effect('names the deck that does not exist', () =>
     Effect.gen(function* () {
-      const error = yield* Effect.flip(listLayouts(WORKSPACE_ROOT, 'nope'));
+      const error = yield* Effect.flip(listLayouts(FRAMEWORK_ROOT, 'nope'));
       expect(error.message).toContain('There is no decks/nope/deck.config.ts.');
     }),
   );

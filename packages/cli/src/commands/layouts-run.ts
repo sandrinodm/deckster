@@ -1,6 +1,6 @@
 import { Console, Effect } from 'effect';
 
-import { chooseDeck } from '#choose-deck.ts';
+import { chooseDeck, defaultDeck } from '#choose-deck.ts';
 import { EXIT_OK, type Command } from '#command.ts';
 import { listLayouts, type LayoutInfo } from '#layouts/list-layouts.ts';
 import { formatSummaries, summarizeLayout } from '#layouts/summarize-layouts.ts';
@@ -16,7 +16,8 @@ export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
     json: { type: 'boolean', default: false },
     summary: { type: 'boolean', default: false },
   });
-  const deck = (yield* chooseDeck(positionals[0], DEFAULT_DECK)) ?? DEFAULT_DECK;
+  const deck =
+    (yield* chooseDeck(positionals[0], yield* defaultDeck(workspaceRoot))) ?? DEFAULT_DECK;
   const catalog = yield* listLayouts(workspaceRoot, deck);
   if (values.summary) {
     const summaries = catalog.layouts.map(summarizeLayout);

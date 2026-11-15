@@ -1,3 +1,4 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
@@ -5,7 +6,6 @@ import { describe, expect, it } from 'vite-plus/test';
 import { appFiles } from '#scaffold/app-templates.ts';
 import { withAppDependencies, withAppsIncluded } from '#scaffold/new-app.ts';
 import { deckFiles } from '#scaffold/templates.ts';
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 /**
  * Formatting each file in a fresh process takes a moment.
@@ -71,9 +71,9 @@ describe('a scaffolded app', () => {
    */
   function formatted(file: string, text: string): string {
     const result = spawnSync(
-      path.join(WORKSPACE_ROOT, 'node_modules', '.bin', 'vp'),
+      path.join(FRAMEWORK_ROOT, 'node_modules', '.bin', 'vp'),
       ['fmt', `--stdin-filepath=${file}`],
-      { cwd: WORKSPACE_ROOT, input: text, encoding: 'utf8' },
+      { cwd: FRAMEWORK_ROOT, input: text, encoding: 'utf8' },
     );
     if (result.status !== 0) {
       throw new Error(`vp fmt failed on ${file}: ${result.stderr}`);

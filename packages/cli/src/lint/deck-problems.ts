@@ -1,4 +1,5 @@
 import { describeProblem, type BrandError, type BrandProblem } from '@deckster/brand';
+import { deckCommand } from '@deckster/engine/command';
 import { DeckBuildError, type DeckLocation } from '@deckster/vite-plugin';
 import { Schema } from 'effect';
 import path from 'node:path';
@@ -257,6 +258,6 @@ function formatProblems(findings: readonly LintFinding[], deckId: string): strin
     lines.push(`  ${finding.file}: ${finding.message}`, `    Fix: ${finding.fix}`);
   }
 
-  lines.push(`Fix these, then run \`pnpm deck lint ${deckId}\` to check the deck.`);
+  lines.push(`Fix these, then run \`${deckCommand()} lint ${deckId}\` to check the deck.`);
   return lines.join('\n');
 }

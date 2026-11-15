@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import type { DeckRule, SlideContext } from '#lint/types.ts';
 
 import { REPEATED_LAYOUT_RUN } from '#lint/limits.ts';
@@ -43,7 +45,9 @@ export const layoutRepetitionRule: DeckRule = {
             `${run.length} slides in a row use the ${first?.layout ?? ''} layout on the ` +
             `${first?.surface ?? ''} surface: ${run.map((slide) => slide.id).join(', ')}.`,
           fix:
-            'Vary the rhythm: give one of them another layout (`pnpm deck layouts`), another ' +
+            'Vary the rhythm: give one of them another layout (`' +
+            deckCommand() +
+            ' layouts`), another ' +
             'surface, or merge slides that make the same point.',
           selector: null,
         };

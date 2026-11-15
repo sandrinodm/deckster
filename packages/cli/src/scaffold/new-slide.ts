@@ -1,6 +1,7 @@
 import type { AnyLayoutContract } from '@deckster/engine/layout';
 
 import { assertSlidePath, guardedWrite, writeDeckManifest } from '@deckster/brand/node';
+import { deckCommand } from '@deckster/engine/command';
 import { DEFAULT_LAYOUT } from '@deckster/engine/frontmatter';
 import {
   appendSlideId,
@@ -162,7 +163,7 @@ const chooseLayout = Effect.fn('chooseLayout')(function* (
   if (layout === undefined) {
     return yield* cliError(
       `There is no layout "${name}". Layouts: ${[...catalog.keys()].join(', ')}.\n` +
-        `Run \`pnpm deck layouts ${deck}\` to see what each one is for.`,
+        `Run \`${deckCommand()} layouts ${deck}\` to see what each one is for.`,
     );
   }
 

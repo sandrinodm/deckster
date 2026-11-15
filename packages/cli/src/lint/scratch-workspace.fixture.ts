@@ -1,9 +1,9 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 import { writeFixtureBrandSync } from '#lint/fixture-brands.fixture.ts';
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 /**
  * What a scratch workspace links from the framework's own: the brands, the TypeScript base config
@@ -27,10 +27,10 @@ const LINKS = [
 export function scratchWorkspace(prefix: string, fixtureBrands: readonly string[] = []): string {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), prefix)));
   for (const [target, link] of LINKS) {
-    fs.symlinkSync(path.join(WORKSPACE_ROOT, target), path.join(root, link));
+    fs.symlinkSync(path.join(FRAMEWORK_ROOT, target), path.join(root, link));
   }
 
-  const brands = path.join(WORKSPACE_ROOT, 'brands');
+  const brands = path.join(FRAMEWORK_ROOT, 'brands');
   if (fixtureBrands.length === 0) {
     fs.symlinkSync(brands, path.join(root, 'brands'));
   } else {

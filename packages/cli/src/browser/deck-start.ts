@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import path from 'node:path';
 
 /**
@@ -248,8 +249,12 @@ function startFix(problem: StartProblem, workspaceRoot: string | undefined): str
   const place = file === '' ? 'the file named above' : file;
   return (
     `Fix the error in ${place}; it stopped the page before the deck mounted. ` +
-    '`pnpm deck lint <deck>` lists the files that do not compile, and ' +
-    '`pnpm deck dev <deck>` shows the error in the browser.'
+    '`' +
+    deckCommand() +
+    ' lint <deck>` lists the files that do not compile, and ' +
+    '`' +
+    deckCommand() +
+    ' dev <deck>` shows the error in the browser.'
   );
 }
 

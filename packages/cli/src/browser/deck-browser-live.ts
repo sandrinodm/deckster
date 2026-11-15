@@ -1,3 +1,4 @@
+import { playwrightInstallCommand } from '@deckster/brand/node';
 import { Effect, type Scope } from 'effect';
 import { chromium, type Browser } from 'playwright';
 
@@ -23,7 +24,7 @@ export function launchBrowser(): Effect.Effect<Browser, CliError> {
       const detail = firstLine(error instanceof Error ? error.message : String(error));
       return cliError(
         `Could not start Chromium: ${detail}\n` +
-          'Install the browser with `pnpm exec playwright install chromium`.',
+          `Install the browser with \`${playwrightInstallCommand()}\`.`,
       );
     },
   });

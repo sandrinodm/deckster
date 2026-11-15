@@ -1,5 +1,15 @@
+import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
+
 import { AGENT_HELP } from '#agent/agent-flags.ts';
 import { DEFAULT_DECK } from '#workspace.ts';
+
+/**
+ * How the Electron binary is downloaded: one command in the repository; in a published install the
+ * error that appears when the binary is missing prints the exact command.
+ */
+const ELECTRON_DOWNLOAD = FRAMEWORK_INSTALLED
+  ? "Electron's binary is downloaded once; `deck present` prints the command when it is missing"
+  : "Electron's binary is downloaded once with `pnpm --filter @deckster/shell exec install-electron`";
 
 /**
  * The text `deck present --help` prints.
@@ -15,7 +25,7 @@ once. Closing the window stops the server; so does Ctrl+C. The terminal shows a 
 URL, the window, the agent and its turns); --verbose adds the dev server's log.
 
 Arguments:
-  deck            Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}".
+  deck            Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}", else the only deck.
 
 Options:
   --brand <name>  Render with brands/<name> instead of the deck config's brand.
@@ -41,5 +51,4 @@ ${AGENT_HELP}
                   the agent panel and comments need.
   -h, --help      Show this help.
 
-Electron's binary is downloaded once with \`pnpm --filter @deckster/shell exec install-electron\`
-(about 120 MB). See docs/present.md.`;
+${ELECTRON_DOWNLOAD} (about 120 MB). See docs/present.md.`;

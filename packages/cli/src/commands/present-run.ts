@@ -10,7 +10,7 @@ import path from 'node:path';
 import type { AgentFlags } from '#server/dev-server.ts';
 
 import { AGENT_ARG_OPTIONS, readAgentFlags } from '#agent/agent-flag-options.ts';
-import { chooseDeck } from '#choose-deck.ts';
+import { chooseDeck, defaultDeck } from '#choose-deck.ts';
 import { cliError, usageError, type CliError } from '#cli-error.ts';
 import { EXIT_OK, type Command, type CommandError, type CommandServices } from '#command.ts';
 import { printJson, withJsonErrors } from '#json-output.ts';
@@ -305,7 +305,8 @@ const runPresent = Effect.fn('deck.present')(function* (
     );
   }
 
-  const deckName = (yield* chooseDeck(positionals[0], DEFAULT_DECK)) ?? DEFAULT_DECK;
+  const deckName =
+    (yield* chooseDeck(positionals[0], yield* defaultDeck(workspaceRoot))) ?? DEFAULT_DECK;
   if (agent !== undefined) {
     // A bad --agent value is a usage error, reported before Electron starts.
     const { resolveAgentSetup } = yield* Effect.tryPromise({

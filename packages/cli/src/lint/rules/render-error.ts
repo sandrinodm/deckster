@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import type { DeckRule, SlideRule } from '#lint/types.ts';
 
 import { firstLine } from '#cli-error.ts';
@@ -55,7 +57,9 @@ export const renderErrorRule: SlideRule = {
               firstLine(snapshot.renderError.message),
             fix:
               `Fix the error in ${slide.file}; ` +
-              '`pnpm deck dev` shows it with its stack in the browser.',
+              '`' +
+              deckCommand() +
+              ' dev` shows it with its stack in the browser.',
             selector: '[data-slide-error]',
           },
         ]),
@@ -102,7 +106,9 @@ export const loadErrorRule: DeckRule = {
       slide: null,
       message: `The page threw while the deck loaded: ${firstLine(error)}`,
       fix:
-        'Run `pnpm deck dev` and open the browser console ' +
+        'Run `' +
+        deckCommand() +
+        ' dev` and open the browser console ' +
         'to find the slide or plugin that throws.',
       selector: null,
     })),

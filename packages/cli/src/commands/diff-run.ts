@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { Console, Effect } from 'effect';
 import path from 'node:path';
@@ -48,7 +49,10 @@ const runDiffCommand = Effect.fn('deck.diff')(function* (argv: readonly string[]
   });
   const [deck, baselineDir, ...extra] = positionals;
   if (deck === undefined) {
-    return yield* usageError('Which deck? Name one, for example `pnpm deck diff hello`.', 'diff');
+    return yield* usageError(
+      'Which deck? Name one, for example `' + deckCommand() + ' diff hello`.',
+      'diff',
+    );
   }
 
   if (extra.length > 0 || (baselineDir !== undefined && !values['save-baseline'])) {

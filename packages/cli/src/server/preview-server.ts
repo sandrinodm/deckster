@@ -2,7 +2,7 @@ import type { Scope } from 'effect';
 
 import { deckViteConfig } from '@deckster/vite-plugin';
 import { Effect } from 'effect';
-import { mergeConfig, preview, type PreviewServer } from 'vite-plus';
+import { mergeConfig, preview, type PreviewServer } from 'vite';
 
 import { ViteError } from '#cli-error.ts';
 import { withoutViteExitHandlers } from '#server/shutdown.ts';

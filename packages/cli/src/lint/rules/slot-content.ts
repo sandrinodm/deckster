@@ -1,5 +1,7 @@
 import type { SlotContentKind } from '@deckster/engine/layout';
 
+import { deckCommand } from '@deckster/engine/command';
+
 import type { RuleViolation, SlideRule, SlotSnapshot } from '#lint/types.ts';
 
 /**
@@ -135,7 +137,9 @@ function listViolations(
         `layout sets it as ${accepts.join(' or ')}.`,
       fix:
         'Write it as a sentence, or move the points to a layout made for a list (content or ' +
-        'split; `pnpm deck layouts`).',
+        'split; `' +
+        deckCommand() +
+        ' layouts`).',
       selector,
     },
   ];

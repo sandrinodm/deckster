@@ -1,9 +1,11 @@
 import { isSafeName, SAFE_NAME_RULE } from '@deckster/brand';
-import { Config, Effect, Option } from 'effect';
+import { Config, Effect, FileSystem, Option } from 'effect';
+import path from 'node:path';
 
 import type { CliError } from '#cli-error.ts';
 
 import { cliError } from '#cli-error.ts';
+import { DEFAULT_DECK } from '#workspace.ts';
 
 /**
  * The `DECK` environment variable, read through Effect's configuration. An empty value counts as
@@ -43,4 +45,34 @@ export const chooseDeck = Effect.fn('chooseDeck')(function* (
   }
 
   return deck;
+});
+
+/**
+ * The deck a command uses when none is named: `hello` when the workspace has it, else the only deck
+ * the workspace has (a user's folder usually holds one talk), else `hello` again so the error names
+ * a deck the reader knows. A deck is a folder of `decks/` with a `deck.config.ts`.
+ *
+ * @param workspaceRoot - The absolute workspace root.
+ */
+export const defaultDeck = Effect.fn('defaultDeck')(function* (
+  workspaceRoot: string,
+): Effect.fn.Return<string, never, FileSystem.FileSystem> {
+  const fs = yield* FileSystem.FileSystem;
+  const folders = yield* fs
+    .readDirectory(path.join(workspaceRoot, 'decks'))
+    .pipe(Effect.orElseSucceed((): string[] => []));
+  const decks: string[] = [];
+  for (const name of folders.sort()) {
+    const config = path.join(workspaceRoot, 'decks', name, 'deck.config.ts');
+    if (yield* Effect.orElseSucceed(fs.exists(config), () => false)) {
+      decks.push(name);
+    }
+  }
+
+  const [only, ...others] = decks;
+  if (decks.includes(DEFAULT_DECK)) {
+    return DEFAULT_DECK;
+  }
+
+  return only !== undefined && others.length === 0 ? only : DEFAULT_DECK;
 });

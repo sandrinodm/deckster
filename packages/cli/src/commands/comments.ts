@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import { lazyRun, type Command } from '#command.ts';
 
 /**
@@ -9,7 +11,7 @@ const HELP = `Usage: deck comments <deck> [--open | --resolved | --all] [--slide
        deck comments add <deck> <slide> --text <text> [--line <n>] [--step <n>] [--type <type>]
        deck comments prune <deck> [--json]
 
-Review comments on a deck: left in the browser in comment mode (press c in \`pnpm deck dev\`) or
+Review comments on a deck: left in the browser in comment mode (press c in \`${deckCommand()} dev\`) or
 by agents, stored in decks/<deck>/.feedback/<slide-id>.json and committed with the deck. Each
 comment names the file, line and column to edit, so it can be fixed without the browser.
 

@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import type {
   BrandContext,
   ElementSnapshot,
@@ -302,7 +304,9 @@ function fixFor(kind: OffBrandKind, brand: BrandContext): string {
     case 'color':
       return (
         'Use a role class such as `text-fg`, `text-muted`, `bg-surface` or `border-accent`, a ' +
-        'palette step or a chart color instead of a hard-coded color. `pnpm deck brand --json` ' +
+        'palette step or a chart color instead of a hard-coded color. `' +
+        deckCommand() +
+        ' brand --json` ' +
         'lists every color.'
       );
     case 'family':

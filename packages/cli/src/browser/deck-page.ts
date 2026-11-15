@@ -1,5 +1,6 @@
 import type { Page } from 'playwright';
 
+import { deckCommand } from '@deckster/engine/command';
 import { Effect } from 'effect';
 
 import type { RenderErrorSnapshot } from '#lint/types.ts';
@@ -310,8 +311,12 @@ function waitForDeck(
       return Effect.fail(
         cliError(
           `The deck did not start within ${DECK_READY_TIMEOUT_MS / MS_PER_SECOND}s.\n${detail}\n` +
-            'Run `pnpm deck lint <deck>` to check the slide files, ' +
-            'or `pnpm deck dev <deck>` to see the error in the browser.',
+            'Run `' +
+            deckCommand() +
+            ' lint <deck>` to check the slide files, ' +
+            'or `' +
+            deckCommand() +
+            ' dev <deck>` to see the error in the browser.',
         ),
       );
     }),

@@ -1,7 +1,6 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
-
-import { WORKSPACE_ROOT } from '#workspace.ts';
 
 /**
  * The parts of the root Vite+ config this test reads.
@@ -23,11 +22,12 @@ function ignored(patterns: readonly string[], file: string): boolean {
 
 describe('the formatter and linter ignore list', () => {
   it('leaves the content agents write alone and keeps brand files formatted', async () => {
-    const { default: config } = (await import(path.join(WORKSPACE_ROOT, 'vite.config.ts'))) as {
+    const { default: config } = (await import(path.join(FRAMEWORK_ROOT, 'vite.config.ts'))) as {
       default: RootConfig;
     };
     for (const patterns of [config.fmt.ignorePatterns, config.lint.ignorePatterns]) {
       for (const file of [
+        '.agents/skills/brand-import/SKILL.md',
         '.claude/skills/brand-import/SKILL.md',
         'decks/zz-eval-exec/BRIEF.md',
         'decks/hello/notes/outline.md',

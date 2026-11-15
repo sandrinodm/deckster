@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import type { SlideRule } from '#lint/types.ts';
 
 /**
@@ -52,7 +54,7 @@ export const appMissingRule: SlideRule = {
         return {
           message: `<AppFrame app="${name}"> names an app that is not in decks/${deck.id}/apps/.`,
           fix:
-            `Create it with \`pnpm deck new app ${deck.id} ${name}\`, or fix the name in ` +
+            `Create it with \`${deckCommand()} new app ${deck.id} ${name}\`, or fix the name in ` +
             `${slide.file}.`,
           selector: element.selector,
           key: name,

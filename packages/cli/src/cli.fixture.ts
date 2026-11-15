@@ -1,3 +1,4 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { Console, Effect, Layer } from 'effect';
 
 import type { DeckBrowser } from '#browser/deck-browser.ts';
@@ -8,7 +9,7 @@ import type { DeckShell } from '#present/deck-shell.ts';
 import type { DeckServer } from '#server/deck-server.ts';
 
 import { cliLayer, runCli } from '#cli.ts';
-import { Workspace, WORKSPACE_ROOT } from '#workspace.ts';
+import { Workspace } from '#workspace.ts';
 
 /**
  * Imports every command body, the live service modules and the shell modules once, when a test file
@@ -109,7 +110,7 @@ export function runCaptured(
       errors.push(args.map(String).join(' '));
     },
   };
-  const services = cliLayer(Workspace.at(options.root ?? WORKSPACE_ROOT));
+  const services = cliLayer(Workspace.at(options.root ?? FRAMEWORK_ROOT));
   const withDeck = options.deck === undefined ? services : Layer.merge(services, options.deck);
   const layer = options.shell === undefined ? withDeck : Layer.merge(withDeck, options.shell);
   return runCli(argv).pipe(

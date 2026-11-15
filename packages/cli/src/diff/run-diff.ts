@@ -1,6 +1,7 @@
 import type { Scope } from 'effect';
 import type { ChildProcessSpawner } from 'effect/process';
 
+import { deckCommand } from '@deckster/engine/command';
 import { findDeck } from '@deckster/vite-plugin';
 import { Effect, FileSystem } from 'effect';
 import os from 'node:os';
@@ -388,6 +389,6 @@ const assertRenders = Effect.fn('assertRenders')(function* (
   return yield* cliError(
     `Deck "${deck}" does not render cleanly ${when}, so a comparison or baseline would hide it:\n` +
       `${lines.map((line) => `  ${line}`).join('\n')}\n` +
-      `Run \`pnpm deck lint ${deck}\`, fix the problems and run the command again.`,
+      `Run \`${deckCommand()} lint ${deck}\`, fix the problems and run the command again.`,
   );
 });

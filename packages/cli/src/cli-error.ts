@@ -1,5 +1,6 @@
 import type { PlatformError } from 'effect';
 
+import { playwrightInstallCommand } from '@deckster/brand/node';
 import { Predicate, Schema } from 'effect';
 
 /**
@@ -205,7 +206,7 @@ export function browserError(action: string, cause: unknown): BrowserError {
     message:
       `Chromium failed to ${action}: ${firstLine(detail)}\n` +
       'Run the command again; if it keeps failing, reinstall the browser with ' +
-      '`pnpm exec playwright install chromium`.',
+      `\`${playwrightInstallCommand()}\`.`,
   });
 }
 

@@ -17,6 +17,7 @@ import {
   type FeedbackDeck,
   type FeedbackError,
 } from '@deckster/comments/node';
+import { deckCommand } from '@deckster/engine/command';
 import { Effect } from 'effect';
 import path from 'node:path';
 
@@ -133,7 +134,7 @@ export const listComments = Effect.fn('listComments')(function* (
   deckName: string | undefined,
   args: CommentsArgs,
 ): Effect.fn.Return<CommentsOutput, CommentsError, CommentsServices> {
-  const deck = yield* loadDeckArg(deckName, 'pnpm deck comments hello');
+  const deck = yield* loadDeckArg(deckName, '' + deckCommand() + ' comments hello');
   const status = yield* readStatus(args.values);
   const { root } = yield* Workspace;
   const slide = args.values.slide;
@@ -191,7 +192,9 @@ export const addComment = Effect.fn('addComment')(function* (
   if (deckName === undefined || slideId === undefined || text === '') {
     return yield* usageError(
       'Which deck, slide and text? For example ' +
-        '`pnpm deck comments add hello title --text "Shorter title" --line 7`.',
+        '`' +
+        deckCommand() +
+        ' comments add hello title --text "Shorter title" --line 7`.',
       COMMAND,
     );
   }
@@ -236,7 +239,10 @@ export const addComment = Effect.fn('addComment')(function* (
 export const pruneDeckComments = Effect.fn('pruneDeckComments')(function* (
   args: CommentsArgs,
 ): Effect.fn.Return<CommentsOutput, CommentsError, CommentsServices> {
-  const deck = yield* loadDeckArg(args.positionals[0], 'pnpm deck comments prune hello');
+  const deck = yield* loadDeckArg(
+    args.positionals[0],
+    '' + deckCommand() + ' comments prune hello',
+  );
   const removed = yield* pruneComments(deck).pipe(readable);
   const lines = removed.map(({ slide, comments }) => `Removed ${comments} from ${slide}`);
   return {
@@ -349,8 +355,10 @@ const readDeckAndId = Effect.fn('readCommentDeckAndId')(function* (
   const [deckName, id] = args.positionals;
   if (deckName === undefined || id === undefined) {
     return yield* usageError(
-      `Which deck and comment? For example \`pnpm deck comments ${form} hello k3x9a2qp\`; ` +
-        '`pnpm deck comments hello` lists the ids.',
+      `Which deck and comment? For example \`${deckCommand()} comments ${form} hello k3x9a2qp\`; ` +
+        '`' +
+        deckCommand() +
+        ' comments hello` lists the ids.',
       COMMAND,
     );
   }

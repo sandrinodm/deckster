@@ -1,3 +1,4 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { findBrandedApp } from '@deckster/shell/bundle';
 import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it } from '@effect/vitest';
@@ -12,7 +13,7 @@ import path from 'node:path';
 import { ensureBrandedApp } from '#present/branded-app.ts';
 import { DeckShell, shellConfig, type ShellOptions } from '#present/deck-shell.ts';
 import { resolveShellBinary } from '#present/shell-binary.ts';
-import { Workspace, WORKSPACE_ROOT } from '#workspace.ts';
+import { Workspace } from '#workspace.ts';
 
 /**
  * The ports the tests' static pages use.
@@ -112,7 +113,7 @@ const PAGE = `<!doctype html><title>Tiny deck</title><body style="background:#12
  * passes on a machine that never ran `install-electron`.
  */
 const binary = await Effect.runPromise(
-  resolveShellBinary(WORKSPACE_ROOT).pipe(Effect.provide(NodeServices.layer), Effect.option),
+  resolveShellBinary(FRAMEWORK_ROOT).pipe(Effect.provide(NodeServices.layer), Effect.option),
 );
 const available = binary._tag === 'Some';
 
@@ -252,7 +253,7 @@ describe.skipIf(!available)('the real Electron shell, hidden', { timeout: 60_000
         electronPackage(),
       ).pipe(Effect.provide(NodeServices.layer));
       expect(again).toMatchObject({ _tag: 'Branded', built: false, executable });
-      expect(findBrandedApp(WORKSPACE_ROOT, electronPackage())).toBe(executable);
+      expect(findBrandedApp(FRAMEWORK_ROOT, electronPackage())).toBe(executable);
 
       const stop = yield* Effect.promise(() => servePage(PAGE_PORTS.names));
       yield* Effect.addFinalizer(() => Effect.promise(stop));

@@ -1,3 +1,4 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it, layer } from '@effect/vitest';
 import { Effect, Layer } from 'effect';
@@ -9,7 +10,7 @@ import { cliLayer } from '#cli.ts';
 import { FIXTURE_WORKSPACE } from '#lint/lint.fixtures.ts';
 import { lintDeck } from '#lint/run-lint.ts';
 import { collectedPage, textElement } from '#lint/snapshot.fixture.ts';
-import { Workspace, WORKSPACE_ROOT } from '#workspace.ts';
+import { Workspace } from '#workspace.ts';
 
 const BROWSER_TEST_TIMEOUT_MS = 120_000;
 
@@ -138,7 +139,7 @@ layer(cliLayer(Workspace.layer))('lintDeck in Chromium', (it) => {
   it.effect('finds the hello deck in the real workspace', () =>
     Effect.gen(function* () {
       const { root } = yield* Workspace;
-      expect(root).toBe(WORKSPACE_ROOT);
+      expect(root).toBe(FRAMEWORK_ROOT);
     }),
   );
 });

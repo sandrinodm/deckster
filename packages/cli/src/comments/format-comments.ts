@@ -1,5 +1,7 @@
 import type { AgentComment, CommentReport } from '@deckster/comments/node';
 
+import { deckCommand } from '@deckster/engine/command';
+
 /**
  * The indentation of a comment's detail lines under its heading.
  */
@@ -33,8 +35,8 @@ export function formatCommentReport(report: CommentReport, filterLabel: string):
 
   lines.push(
     '',
-    `After a fix: pnpm deck comments resolve ${report.deck} <id> --note "what changed"`,
-    `As JSON: pnpm deck comments ${report.deck} --json`,
+    `After a fix: ${deckCommand()} comments resolve ${report.deck} <id> --note "what changed"`,
+    `As JSON: ${deckCommand()} comments ${report.deck} --json`,
   );
   return lines.join('\n');
 }

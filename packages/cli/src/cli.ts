@@ -1,5 +1,6 @@
 import type { FileSystem } from 'effect';
 
+import { deckCommand } from '@deckster/engine/command';
 import { refuseStylesheetCode } from '@deckster/vite-plugin/css-guard';
 import * as NodeRuntime from '@effect/platform-node/NodeRuntime';
 import * as NodeServices from '@effect/platform-node/NodeServices';
@@ -26,12 +27,14 @@ import { newCommand } from '#commands/new.ts';
 import { presentCommand } from '#commands/present.ts';
 import { previewCommand } from '#commands/preview.ts';
 import { shotCommand } from '#commands/shot.ts';
+import { typesCommand } from '#commands/types.ts';
 import { SlideComparer } from '#diff/slide-comparer.ts';
 import { BrowserOpener } from '#present/browser-fallback.ts';
 import { DeckShell } from '#present/deck-shell.ts';
 import { reportError } from '#report-error.ts';
 import { DeckServer } from '#server/deck-server.ts';
 import { awaitSignal } from '#server/shutdown.ts';
+import { cliVersion } from '#version.ts';
 import { Workspace } from '#workspace.ts';
 
 /**
@@ -53,6 +56,7 @@ export const COMMANDS: readonly Command[] = [
   componentsCommand,
   brandCommand,
   newCommand,
+  typesCommand,
   commentsCommand,
   mcpCommand,
   agentCommand,
@@ -62,6 +66,11 @@ export const COMMANDS: readonly Command[] = [
  * The flags that print help, anywhere after `deck` or a command name.
  */
 const HELP_FLAGS = new Set(['-h', '--help']);
+
+/**
+ * The flags that print the version, as the first argument.
+ */
+const VERSION_FLAGS = new Set(['-v', '--version']);
 
 /**
  * The exit code after SIGHUP (128 + 1).
@@ -90,7 +99,9 @@ export type CliServices =
  *
  * @param workspace - The workspace layer; {@link Workspace.layer} for the real one.
  */
-export function cliLayer(workspace: Layer.Layer<Workspace>): Layer.Layer<CliServices, CliError> {
+export function cliLayer(
+  workspace: Layer.Layer<Workspace, CliError>,
+): Layer.Layer<CliServices, CliError> {
   return Layer.mergeAll(
     DeckServer.layer,
     DeckBrowser.layer,
@@ -112,6 +123,11 @@ export const runCli = Effect.fn('runCli')(function* (
   argv: readonly string[],
 ): Effect.fn.Return<number, CommandError, CliServices> {
   const [name, ...rest] = argv;
+  if (name !== undefined && VERSION_FLAGS.has(name)) {
+    yield* Console.log(yield* cliVersion());
+    return EXIT_OK;
+  }
+
   if (name === undefined || HELP_FLAGS.has(name)) {
     yield* Console.log(rootHelp());
     return EXIT_OK;
@@ -151,7 +167,7 @@ export const runCli = Effect.fn('runCli')(function* (
  */
 export function cliProgram(
   argv: readonly string[],
-  workspace: Layer.Layer<Workspace> = Workspace.layer,
+  workspace: Layer.Layer<Workspace, CliError> = Workspace.layer,
 ): Effect.Effect<void> {
   const hangUp = awaitSignal('SIGHUP').pipe(Effect.as(EXIT_SIGHUP));
   return Effect.raceFirst(runCli(argv), hangUp).pipe(
@@ -163,7 +179,7 @@ export function cliProgram(
         }
       }),
     ),
-    Effect.provide(cliLayer(workspace)),
+    Effect.provide(cliLayer(needsWorkspace(argv) ? workspace : Workspace.at(process.cwd()))),
     Effect.catchCause((cause) => reportError(Cause.squash(cause))),
   );
 }
@@ -179,10 +195,27 @@ export function cliProgram(
  */
 export function main(
   argv: readonly string[],
-  workspace: Layer.Layer<Workspace> = Workspace.layer,
+  workspace: Layer.Layer<Workspace, CliError> = Workspace.layer,
 ): void {
   refuseStylesheetCode();
   NodeRuntime.runMain(cliProgram(argv, workspace));
+}
+
+/**
+ * Whether a command line needs a workspace. Help and the version print without one, so they work in
+ * a folder that is not a workspace, such as a home folder.
+ *
+ * @param argv - The arguments after `deck`.
+ */
+function needsWorkspace(argv: readonly string[]): boolean {
+  const [name] = argv;
+  const isInfo =
+    name === undefined ||
+    name === 'help' ||
+    HELP_FLAGS.has(name) ||
+    VERSION_FLAGS.has(name) ||
+    argv.some((arg) => HELP_FLAGS.has(arg));
+  return !isInfo;
 }
 
 /**
@@ -192,11 +225,13 @@ function rootHelp(): string {
   const width = Math.max(...COMMANDS.map((command) => command.name.length));
   const lines = COMMANDS.map((command) => `  ${command.name.padEnd(width)}  ${command.summary}`);
   return [
-    'Usage: pnpm deck <command> [options]',
+    'Usage: ' + deckCommand() + ' <command> [options]',
     '',
     'Commands:',
     ...lines,
     '',
-    'Run `pnpm deck <command> --help` for the options of one command.',
+    'Run `' +
+      deckCommand() +
+      ' <command> --help` for the options of one command; `--version` prints the version.',
   ].join('\n');
 }

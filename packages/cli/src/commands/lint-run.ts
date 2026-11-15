@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import { Console, Effect } from 'effect';
 
 import { usageError } from '#cli-error.ts';
@@ -25,7 +26,10 @@ const runLint = Effect.fn('deck.lint')(function* (argv: readonly string[]) {
   });
   const deck = positionals[0];
   if (deck === undefined) {
-    return yield* usageError('Which deck? Name one, for example `pnpm deck lint hello`.', 'lint');
+    return yield* usageError(
+      'Which deck? Name one, for example `' + deckCommand() + ' lint hello`.',
+      'lint',
+    );
   }
 
   const brand = yield* readBrandName('lint', values.brand);
