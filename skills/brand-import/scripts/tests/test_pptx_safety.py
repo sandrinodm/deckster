@@ -147,6 +147,12 @@ class OfflineRenderCopyTest(unittest.TestCase):
         self.dir = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.dir, ignore_errors=True)
 
+    def fixture_count(self) -> int:
+        """What the fixture deck alone neutralises: its two embedded chart workbooks."""
+        count = extract_pptx.offline_copy(FIXTURE, self.dir / "fixture-copy.pptx")
+        self.assertEqual(count, 2)
+        return count
+
     def rels(self, *targets: tuple[str, str]) -> str:
         items = "".join(
             f'<Relationship Id="rId{i}" Type="{self.IMAGE}" Target="{target}"{mode}/>'
@@ -174,7 +180,7 @@ class OfflineRenderCopyTest(unittest.TestCase):
         )
         linked = self.package(self.dir / "linked.pptx", {"ppt/slides/_rels/linked.xml.RELS": rels})
         copy = self.dir / "copy.pptx"
-        self.assertEqual(extract_pptx.offline_copy(linked, copy), 4)
+        self.assertEqual(extract_pptx.offline_copy(linked, copy), self.fixture_count() + 4)
         with zipfile.ZipFile(copy) as out:
             written = out.read("ppt/slides/_rels/linked.xml.RELS").decode("utf-8")
             self.assertEqual(len(out.namelist()), len(zipfile.ZipFile(linked).namelist()))
@@ -182,7 +188,7 @@ class OfflineRenderCopyTest(unittest.TestCase):
         self.assertEqual(written.count(f'Target="{extract_pptx.OFFLINE_TARGET}"'), 4)
         self.assertIn('Target="../media/image1.png"', written)
 
-    def test_embedded_packages_and_svg_media_are_cleaned_too(self):
+    def test_embedded_objects_are_emptied_and_svg_is_cleaned_whatever_its_name(self):
         inner = self.package(
             self.dir / "inner.xlsx",
             {"xl/_rels/workbook.xml.rels": self.rels(("https://attacker.example/inner.png", ' TargetMode="External"'))},
@@ -191,16 +197,34 @@ class OfflineRenderCopyTest(unittest.TestCase):
         svg = '<svg xmlns="http://www.w3.org/2000/svg"><image href="https://attacker.example/svg.png"/><rect width="1" height="1"/></svg>'
         deck = self.package(
             self.dir / "embedded.pptx",
-            {"ppt/embeddings/Workbook1.xlsx": inner.read_bytes(), "ppt/media/logo.svg": svg},
+            {
+                "ppt/embeddings/Workbook1.xlsx": inner.read_bytes(),
+                "ppt/media/hidden-zip.png": inner.read_bytes(),
+                "ppt/media/legacy.bin": extract_pptx.CFB_MAGIC + b"\x00" * 504,
+                "ppt/media/logo.svg": svg,
+                "ppt/media/logo-in-disguise.png": svg,
+            },
         )
         copy = self.dir / "copy.pptx"
-        self.assertEqual(extract_pptx.offline_copy(deck, copy), 1)
+        self.assertEqual(extract_pptx.offline_copy(deck, copy), self.fixture_count() + 3)
         with zipfile.ZipFile(copy) as out:
-            embedded = zipfile.ZipFile(io.BytesIO(out.read("ppt/embeddings/Workbook1.xlsx")))
-            self.assertNotIn(b"attacker.example", embedded.read("xl/_rels/workbook.xml.rels"))
-            cleaned = out.read("ppt/media/logo.svg")
-        self.assertNotIn(b"attacker.example", cleaned)
-        self.assertIn(b"<rect", cleaned)
+            for name in ("ppt/embeddings/Workbook1.xlsx", "ppt/media/hidden-zip.png", "ppt/media/legacy.bin"):
+                self.assertEqual(out.read(name), b"", name)
+            for name in ("ppt/media/logo.svg", "ppt/media/logo-in-disguise.png"):
+                cleaned = out.read(name)
+                self.assertNotIn(b"attacker.example", cleaned, name)
+                self.assertIn(b"<rect", cleaned, name)
+
+    def test_relationship_parts_must_be_plain_opc_lists(self):
+        foreign_root = '<Relationships xmlns="urn:other"><Relationship Id="rId1" Target="https://attacker.example/x" TargetMode="External"/></Relationships>'
+        foreign_child = (
+            f'<Relationships xmlns="{self.REL}"><x:Relationship xmlns:x="urn:other" Id="rId1" '
+            'Target="https://attacker.example/x" TargetMode="External"/></Relationships>'
+        )
+        for index, rels in enumerate((foreign_root, foreign_child)):
+            deck = self.package(self.dir / f"foreign-{index}.pptx", {"ppt/slides/_rels/odd.xml.rels": rels})
+            with self.assertRaises(F.Refused):
+                extract_pptx.offline_copy(deck, self.dir / f"copy-{index}.pptx")
 
     def test_part_names_that_differ_only_in_case_are_refused(self):
         rels = self.rels(("https://attacker.example/x.png", ' TargetMode="External"'))

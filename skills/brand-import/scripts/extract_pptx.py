@@ -46,11 +46,8 @@ OFFLINE_TARGET = "about:blank"
 # (https:, file:, smb:) or a UNC path (\\host\share, //host/share).
 REMOTE_TARGET = re.compile(r"\s*(?:[A-Za-z][A-Za-z0-9+.-]*:|[\\/]{2})")
 
-# The first bytes of a zip archive, which marks an embedded OOXML package.
-ZIP_MAGIC = b"PK\x03\x04"
-
-# How deep embedded packages may nest before the deck is refused.
-MAX_EMBEDDING_DEPTH = 3
+# The first bytes of an OLE compound file, the container of legacy embedded objects.
+CFB_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 
 # What an SVG part that can't be cleaned is replaced with in the render copy.
 EMPTY_SVG = b'<svg xmlns="http://www.w3.org/2000/svg"/>'
@@ -333,47 +330,81 @@ def keynote_command(pptx: Path, target: Path) -> list[str]:
 
 def offline_copy(pptx: Path, target: Path) -> int:
     """Writes a copy of the deck that a renderer can open without making a network request on its
-    behalf, and returns how many references were neutralised.
+    behalf, and returns how many references and parts were neutralised.
 
-    Every relationship that is external, or whose target is an absolute URI or a UNC path (which
-    would reach an SMB share), points to `about:blank` instead; relationship ids stay, so the parts
-    still reference valid ids and the deck still opens. Embedded packages (an OLE-embedded workbook
-    or deck is itself a zip) get the same treatment, and SVG media is reduced to static drawing.
-    Refuses a deck whose part names differ only in case, since readers disagree on which one wins.
+    The copy fails closed rather than trying to understand every format a deck can carry:
+    - Every relationship that is external, or whose target is an absolute URI or a UNC path (which
+      would reach an SMB share), points to `about:blank`; ids stay, so the deck still opens.
+    - Every embedded object (anything under `ppt/embeddings/`, any part that opens as a zip or is an
+      OLE compound file, or is declared as an OLE object) is emptied, so nothing nested
+      is ever unpacked; the slide shows the object's preview picture instead.
+    - Every part that is SVG by its content or by its declared content type is reduced to static
+      drawing.
+    Refuses a deck whose part names differ only in case, since readers disagree on which one wins,
+    and a relationships part that isn't a plain OPC relationships list.
     """
-    data, neutralised = _offline_package(F.BoundedZip(pptx), depth=0)
-    target.write_bytes(data)
-    return neutralised
-
-
-def _offline_package(source: "F.BoundedZip", depth: int) -> tuple[bytes, int]:
-    names = [info.filename for info in source.zip.infolist()]
-    if len({name.lower() for name in names}) != len(names):
+    source = F.BoundedZip(pptx)
+    infos = source.zip.infolist()
+    if len({info.filename.lower() for info in infos}) != len(infos):
         raise F.Refused("two parts have names that differ only in case")
+    content_types = _declared_content_types(source)
     neutralised = 0
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as out:
-        for info in source.zip.infolist():
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as out:
+        for info in infos:
             data = source.read(info.filename)
             lower = info.filename.lower()
+            declared = content_types(info.filename)
             if lower.endswith(".rels"):
                 data, count = _offline_relationships(data, info.filename)
                 neutralised += count
-            elif lower.endswith(".svg"):
+            elif _is_embedded_object(lower, data, declared):
+                data = b""
+                neutralised += 1
+            elif F.looks_like_svg(data) or "svg" in declared:
                 data = _static_svg(data)
-            elif data[:4] == ZIP_MAGIC:
-                if depth >= MAX_EMBEDDING_DEPTH:
-                    raise F.Refused(f"{info.filename[:80]!r} nests packages more than {MAX_EMBEDDING_DEPTH} deep")
-                data, count = _offline_package(F.BoundedZip(io.BytesIO(data)), depth + 1)
-                neutralised += count
             out.writestr(info, data)
-    return buffer.getvalue(), neutralised
+    return neutralised
+
+
+def _declared_content_types(source: "F.BoundedZip"):
+    """A lookup from part name to the content type `[Content_Types].xml` declares for it, lower-cased,
+    or an empty string when there is none."""
+    defaults: dict[str, str] = {}
+    overrides: dict[str, str] = {}
+    if "[Content_Types].xml" in source.names:
+        root = F.parse_xml(source.read("[Content_Types].xml"), "[Content_Types].xml")
+        for el in root:
+            local = el.tag.rsplit("}", 1)[-1]
+            if local == "Default":
+                defaults[(el.get("Extension") or "").lower()] = (el.get("ContentType") or "").lower()
+            elif local == "Override":
+                overrides[(el.get("PartName") or "").lstrip("/").lower()] = (el.get("ContentType") or "").lower()
+
+    def lookup(name: str) -> str:
+        lower = name.lower()
+        return overrides.get(lower) or defaults.get(posixpath.splitext(lower)[1].lstrip("."), "")
+
+    return lookup
+
+
+def _is_embedded_object(lower_name: str, data: bytes, declared: str) -> bool:
+    if lower_name.startswith("ppt/embeddings/") or data[:8] == CFB_MAGIC:
+        return True
+    if "oleobject" in declared:
+        return True
+    return zipfile.is_zipfile(io.BytesIO(data))
 
 
 def _offline_relationships(data: bytes, name: str) -> tuple[bytes, int]:
     root = F.parse_xml(data, name)
+    if root.tag != f"{{{NS['rel']}}}Relationships":
+        raise F.Refused(f"{name[:80]!r} is not an OPC relationships part")
     count = 0
-    for rel in root.iter(f"{{{NS['rel']}}}Relationship"):
+    for rel in root.iter():
+        if rel is root:
+            continue
+        if rel.tag != f"{{{NS['rel']}}}Relationship":
+            raise F.Refused(f"{name[:80]!r} holds an element other than a relationship")
         external = (rel.get("TargetMode") or "").strip().lower() == "external"
         if external or REMOTE_TARGET.match(rel.get("Target") or ""):
             rel.set("Target", OFFLINE_TARGET)
@@ -414,7 +445,7 @@ def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: P
             try:
                 # A deck refused here (case-twin parts, packages nested too deep) is never handed to the renderer.
                 if offline_copy(pptx, src):
-                    warnings.append("External links in the deck were disabled for rendering; linked pictures render blank.")
+                    warnings.append("External links and embedded objects were disabled for rendering; linked pictures render blank.")
                 subprocess.run(run, check=True, capture_output=True, timeout=300)
                 if (work / "deck.pdf").exists():
                     made_pdf = out / "source.pdf"
