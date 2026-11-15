@@ -41,6 +41,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Prepare export verification images
+        run: pnpm --filter @deckster/export prepare:verify
+
       # The deck CLI drives Playwright's Chromium; the browser suites drive the e2e package's.
       # Some unit tests render in Chromium too, so the browsers come before them.
       - name: Install browsers
@@ -113,6 +116,9 @@ jobs:
 
       - name: Install the browser
         run: pnpm exec playwright install chromium --with-deps
+
+      - name: Prepare export verification images
+        run: pnpm --filter @deckster/export prepare:verify
 
       - name: Test
         run: pnpm test

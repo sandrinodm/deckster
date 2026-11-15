@@ -18,6 +18,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "prepare:verify": "node src/verify/prepare-images.ts",
     "test": "vp test",
     "typecheck": "tsc --noEmit"
   },

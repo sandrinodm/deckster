@@ -476,6 +476,8 @@ export function libreOfficeRunArgs(
   return [
     'run',
     '--rm',
+    // Rendering uses local files. Avoid creating host interfaces that interrupt Chromium requests.
+    '--network=none',
     '--mount',
     bindMount(work.deckDir, '/deck', true),
     '--mount',

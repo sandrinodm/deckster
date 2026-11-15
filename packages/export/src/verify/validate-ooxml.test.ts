@@ -57,12 +57,13 @@ describe('validatorRunArgs', () => {
     expect(validatorRunArgs('/Users/a:b/out/deck.pptx', 'img:1')).toEqual([
       'run',
       '--rm',
+      '--network=none',
       '--mount',
       'type=bind,source=/Users/a:b/out,target=/work,readonly',
       'img:1',
       '/work/deck.pptx',
     ]);
-    expect(validatorRunArgs('/o/a,b/deck.pptx', 'img:1')[3]).toBe(
+    expect(validatorRunArgs('/o/a,b/deck.pptx', 'img:1')[4]).toBe(
       'type=bind,"source=/o/a,b",target=/work,readonly',
     );
   });

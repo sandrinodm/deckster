@@ -74,6 +74,7 @@ describe('libreOfficeRunArgs', () => {
       },
       'img:1',
     );
+    expect(args).toContain('--network=none');
     expect(args).not.toContain('-v');
     expect(args.filter((arg) => arg.startsWith('type=bind'))).toHaveLength(3);
     expect(args.slice(-4)).toEqual(['img:1', '/deck/x.pptx', '/work/pages', '144']);

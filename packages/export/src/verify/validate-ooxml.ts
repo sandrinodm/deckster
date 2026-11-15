@@ -97,6 +97,8 @@ export function validatorRunArgs(file: string, image: string): string[] {
   return [
     'run',
     '--rm',
+    // Validation uses local files. Avoid creating host interfaces that interrupt Chromium requests.
+    '--network=none',
     '--mount',
     bindMount(path.dirname(file), '/work', true),
     image,
