@@ -372,6 +372,9 @@ def offline_copy(pptx: Path, target: Path) -> int:
     infos = source.zip.infolist()
     if len({info.filename.lower() for info in infos}) != len(infos):
         raise F.Refused("two parts have names that differ only in case")
+    for info in infos:
+        if not _is_normal_part_name(info.filename):
+            raise F.Refused(f"{info.filename[:80]!r} is not a plain part name")
     content_types = _declared_content_types(source)
     targets = _relationship_targets(source, infos)
     neutralised = 0
@@ -390,7 +393,7 @@ def offline_copy(pptx: Path, target: Path) -> int:
                 if root is None:
                     data = b""
                     neutralised += 1
-                elif _has_svg(root) or "svg" in content_types(info.filename):
+                elif _has_svg(root) or b"<svg" in data.lower() or "svg" in content_types(info.filename):
                     data = _static_svg(data)
                     neutralised += 1
             elif not (_is_inert_binary(data) or _is_font(lower, data, content_types(info.filename), targets.get(lower, set()))):
@@ -458,12 +461,21 @@ def _xml_root(data: bytes, name: str) -> ET.Element | None:
         return None
 
 
+def _is_normal_part_name(name: str) -> bool:
+    """True when a zip entry name is already in the form relationship targets resolve to: no leading
+    slash, no backslash, no empty, `.` or `..` segment. A folder entry's trailing slash is allowed."""
+    if name.startswith("/") or "\\" in name:
+        return False
+    segments = name[:-1].split("/") if name.endswith("/") else name.split("/")
+    return all(segment not in ("", ".", "..") for segment in segments)
+
+
 def _has_svg(root: ET.Element) -> bool:
     """True when any element is in the SVG namespace or is called `svg`, whatever its prefix."""
     for el in root.iter():
         tag = el.tag if isinstance(el.tag, str) else ""
         namespace, _, local = tag.rpartition("}")
-        if namespace.lstrip("{") == SVG_NAMESPACE or local.lower() == "svg":
+        if namespace.lstrip("{").lower() == SVG_NAMESPACE or local.lower() == "svg":
             return True
     return False
 

@@ -302,6 +302,24 @@ class OfflineRenderCopyTest(unittest.TestCase):
                 self.assertEqual(out.read(name), b"", name)
             self.assertEqual(out.read("ppt/fonts/ok.fntdata"), b"\x13" * 64)
 
+    def test_part_names_that_are_not_plain_are_refused(self):
+        for index, name in enumerate(("ppt/media/../fonts/x.fntdata", "ppt//fonts/x.fntdata", "ppt/./fonts/x.fntdata", "ppt\\fonts\\x.fntdata")):
+            deck = self.package(self.dir / f"odd-name-{index}.pptx", {name: b"\x13" * 64}, base=None)
+            with self.assertRaises(F.Refused, msg=name):
+                extract_pptx.offline_copy(deck, self.dir / f"copy-{index}.pptx")
+
+    def test_an_svg_the_parser_misses_is_still_cleaned(self):
+        deck = self.package(
+            self.dir / "upper-ns.pptx",
+            {"ppt/media/upper.xml": '<root xmlns:v="HTTP://WWW.W3.ORG/2000/SVG"><v:Svg/><svg-ish/></root>',
+             "ppt/media/plain.xml": "<root><child/></root>"},
+            base=None,
+        )
+        copy = self.dir / "copy.pptx"
+        self.assertEqual(extract_pptx.offline_copy(deck, copy), 1)
+        with zipfile.ZipFile(copy) as out:
+            self.assertEqual(out.read("ppt/media/plain.xml"), b"<root><child/></root>")
+
     def test_relationship_parts_must_be_plain_opc_lists(self):
         foreign_root = '<Relationships xmlns="urn:other"><Relationship Id="rId1" Target="https://attacker.example/x" TargetMode="External"/></Relationships>'
         foreign_child = (
