@@ -1,5 +1,5 @@
 import { SLIDE_META_EXPORT } from '@deckster/engine/manifest';
-import { parseAst } from 'vite-plus';
+import { parseAst } from 'vite';
 
 import type { SlotCandidate } from '#slides/slot-usage.ts';
 

@@ -1,5 +1,5 @@
 import { budgetSeconds } from '@deckster/engine/frontmatter';
-import { normalizePath } from 'vite-plus';
+import { normalizePath } from 'vite';
 
 import type { LoadedDeck } from '#decks/load-deck.ts';
 

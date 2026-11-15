@@ -1,5 +1,5 @@
 import type { PlatformError } from 'effect';
-import type { ConfigEnv, Plugin } from 'vite-plus';
+import type { ConfigEnv, Plugin } from 'vite';
 
 import { Config, Effect, FileSystem, Option, Predicate } from 'effect';
 import path from 'node:path';

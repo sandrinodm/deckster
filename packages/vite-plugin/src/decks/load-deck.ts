@@ -1,5 +1,6 @@
 import {
   DECK_CONFIG_CALLEE,
+  FRAMEWORK_INSTALLED,
   gatedLoad,
   isCodeHeld,
   recoverTurnGuard,
@@ -29,10 +30,12 @@ const CONFIG_SHAPE_FIX = 'Export the config as `export default defineDeck({ titl
  * The fix for a config that imports a package Node cannot find, usually because a new deck has not
  * been linked into the workspace yet.
  */
-const MISSING_PACKAGE_FIX =
-  "Run `pnpm install` at the workspace root so the deck's dependencies are linked (a deck made " +
-  'with `deck new` needs this once), then run the command again. If the package is not in the ' +
-  "deck's package.json, add it there first.";
+const MISSING_PACKAGE_FIX = FRAMEWORK_INSTALLED
+  ? "Install the package in the workspace folder (`npm install <package>`), where the deck's " +
+    'files can find it, then run the command again.'
+  : "Run `pnpm install` at the workspace root so the deck's dependencies are linked (a deck made " +
+    'with `deck new` needs this once), then run the command again. If the package is not in the ' +
+    "deck's package.json, add it there first.";
 
 /**
  * The code Node gives an import of a package it cannot find.

@@ -1,4 +1,4 @@
-import type { Rollup, ViteDevServer } from 'vite-plus';
+import type { Rollup, ViteDevServer } from 'vite';
 
 import { DEFAULT_BRAND, describeProblem } from '@deckster/brand';
 import { BRANDS_DIR, onCodeReleased, type LoadedBrand } from '@deckster/brand/node';

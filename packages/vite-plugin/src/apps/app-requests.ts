@@ -1,3 +1,5 @@
+import { deckCommand } from '@deckster/engine/command';
+
 import { APPS_DIR } from '#apps/discover-apps.ts';
 
 /**
@@ -65,6 +67,6 @@ export function missingAppMessage(deck: string, name: string, apps: readonly str
   const known = apps.length === 0 ? 'The deck has no apps yet.' : `Apps: ${apps.join(', ')}.`;
   return (
     `There is no mini app "${name}" in decks/${deck}/${APPS_DIR}/. ${known} ` +
-    `Create it with \`pnpm deck new app ${deck} ${name}\`, or fix the name in <AppFrame app>.\n`
+    `Create it with \`${deckCommand()} new app ${deck} ${name}\`, or fix the name in <AppFrame app>.\n`
   );
 }

@@ -1,4 +1,4 @@
-import type { Plugin, Rollup, ViteDevServer } from 'vite-plus';
+import type { Plugin, Rollup, ViteDevServer } from 'vite';
 
 import { onCodeReleased } from '@deckster/brand/node';
 import { devSessionOf, issueDevSession } from '@deckster/comments/dev-session';

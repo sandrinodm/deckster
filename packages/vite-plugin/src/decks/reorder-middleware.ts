@@ -1,5 +1,5 @@
 import type { ServerResponse } from 'node:http';
-import type { Connect } from 'vite-plus';
+import type { Connect } from 'vite';
 
 import type { DeckLocation } from '#decks/deck-paths.ts';
 import type { RunEffect } from '#run-effect.ts';

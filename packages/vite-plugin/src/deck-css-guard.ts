@@ -1,4 +1,4 @@
-import type { Plugin } from 'vite-plus';
+import type { Plugin } from 'vite';
 
 /**
  * The hook `@tailwindcss/node` calls before it imports a JavaScript module for a stylesheet

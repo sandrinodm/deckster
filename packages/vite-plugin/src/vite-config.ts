@@ -1,6 +1,8 @@
-import type { InlineConfig } from 'vite-plus';
+import type { InlineConfig } from 'vite';
 
+import { FRAMEWORK_FS_ROOTS } from '@deckster/brand/node';
 import { commentsVitePlugin } from '@deckster/comments/vite';
+import { deckCommand } from '@deckster/engine/command';
 import { KIT_SCAN_ENTRY, kitVitePlugins } from '@deckster/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
@@ -12,13 +14,14 @@ import { deckCacheDirPlugin } from '#deck-cache-dir.ts';
 import { deckCssGuardPlugin, refuseStylesheetCode } from '#deck-css-guard.ts';
 import { deckStateGuardPlugin } from '#deck-state-guard.ts';
 import { deckLocation } from '#decks/deck-paths.ts';
+import {
+  frameworkAliases,
+  frameworkDedupe,
+  frameworkPlugins,
+  frameworkScanEntries,
+  frameworkSpecifiers,
+} from '#framework-resolve.ts';
 import { deckPlugin, type DeckPluginOptions } from '#plugin.ts';
-
-/**
- * The framework's own checkout: the folder that contains `packages/`. Its packages, brand fonts and
- * dependencies stay readable when the workspace is another folder, such as `e2e/fixtures/`.
- */
-const FRAMEWORK_ROOT = path.resolve(import.meta.dirname, '../../..');
 
 /**
  * The engine's app shell (`index.html` and `main.tsx`), served as the Vite root.
@@ -45,6 +48,39 @@ const PREBUNDLED_DEPENDENCIES = [
  * Vite's own default `server.fs.deny`, which setting the option replaces.
  */
 const VITE_FS_DENY = ['.env', '.env.*', '*.{crt,pem}', '**/.git/**'];
+
+/**
+ * Credentials and keys a dev server must never serve, whichever folder is served. They guard the
+ * case where a workspace sits in a home folder, in addition to the allow list.
+ */
+export const SECRET_FS_DENY = [
+  '**/.ssh/**',
+  '**/.aws/**',
+  '**/.gnupg/**',
+  '**/.npmrc',
+  '**/.netrc',
+  '**/id_rsa*',
+  '**/id_ed25519*',
+  '**/id_ecdsa*',
+];
+
+/**
+ * The folders of a workspace a deck legitimately serves: its decks (slides, assets, apps and what
+ * they import), its brands (logos, backgrounds, fonts) and the `node_modules` that holds fonts the
+ * user installed. The workspace root itself stays closed, so its other files (and a home folder's)
+ * are never served.
+ *
+ * @param workspaceRoot - The absolute workspace root.
+ * @returns The workspace's folders plus the framework's own roots.
+ */
+export function deckFsAllow(workspaceRoot: string): string[] {
+  return [
+    path.join(workspaceRoot, 'decks'),
+    path.join(workspaceRoot, 'brands'),
+    path.join(workspaceRoot, 'node_modules'),
+    ...FRAMEWORK_FS_ROOTS,
+  ];
+}
 
 /**
  * The files the dev server transforms at start when asked to warm up, relative to the engine's app
@@ -95,19 +131,26 @@ export function deckViteConfig(
     configFile: false,
     root: ENGINE_APP_DIR,
     base: './',
+    // The browser has no environment, so the command messages name is defined into its code.
+    define: { __DECK_COMMAND__: JSON.stringify(deckCommand()) },
     publicDir: path.join(deck.dir, 'public'),
-    resolve: { dedupe: ['react', 'react-dom'] },
-    optimizeDeps: { include: PREBUNDLED_DEPENDENCIES, entries: ['index.html', KIT_SCAN_ENTRY] },
+    resolve: { dedupe: frameworkDedupe(), alias: frameworkAliases() },
+    optimizeDeps: {
+      include: PREBUNDLED_DEPENDENCIES,
+      entries: ['index.html', KIT_SCAN_ENTRY, ...frameworkScanEntries()],
+      exclude: frameworkSpecifiers(),
+    },
     server: {
       fs: {
-        allow: [options.workspaceRoot, FRAMEWORK_ROOT],
-        deny: [...VITE_FS_DENY, '**/.deck/**'],
+        allow: deckFsAllow(options.workspaceRoot),
+        deny: [...VITE_FS_DENY, ...SECRET_FS_DENY, '**/.deck/**'],
       },
       cors: false,
       ...(serving.warmup === true ? { warmup: { clientFiles: WARMUP_FILES } } : {}),
     },
     build: { outDir: path.join(deck.dir, 'dist'), emptyOutDir: true },
     plugins: [
+      ...frameworkPlugins(),
       deckStateGuardPlugin(options.workspaceRoot),
       deckCacheDirPlugin(options),
       deckVitePlugin,

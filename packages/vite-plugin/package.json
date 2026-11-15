@@ -38,7 +38,7 @@
     "effect": "catalog:",
     "remark-gfm": "catalog:",
     "tailwindcss": "catalog:",
-    "vite-plus": "catalog:",
+    "vite": "catalog:",
     "yaml": "catalog:"
   },
   "devDependencies": {
@@ -55,6 +55,7 @@
     "playwright": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

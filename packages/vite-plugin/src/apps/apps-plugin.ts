@@ -1,18 +1,19 @@
 import type { PlatformError } from 'effect';
 import type { ServerResponse } from 'node:http';
-import type { Plugin, ResolvedConfig } from 'vite-plus';
+import type { Plugin, ResolvedConfig } from 'vite';
 
 import { isSafeName } from '@deckster/brand';
 import { fileExists } from '@deckster/brand/node';
 import react from '@vitejs/plugin-react';
 import { Effect, FileSystem } from 'effect';
 import path from 'node:path';
-import { build, normalizePath } from 'vite-plus';
+import { build, normalizePath } from 'vite';
 
 import { pointAtAppFolder, restoreTitle } from '#apps/app-html.ts';
 import { appRequest, missingAppMessage } from '#apps/app-requests.ts';
 import { APPS_DIR, discoverApps, type AppLocation } from '#apps/discover-apps.ts';
 import { deckLocation } from '#decks/deck-paths.ts';
+import { frameworkAliases, frameworkDedupe, frameworkPlugins } from '#framework-resolve.ts';
 import { guarded } from '#guarded-middleware.ts';
 import { makeRunEffect } from '#run-effect.ts';
 
@@ -163,11 +164,11 @@ export function deckAppsPlugin(options: DeckAppsOptions): Plugin {
           base: './',
           logLevel: 'warn',
           cacheDir: path.join(config.cacheDir, `app-${app.name}`),
-          resolve: { dedupe: ['react', 'react-dom'] },
+          resolve: { dedupe: frameworkDedupe(), alias: frameworkAliases() },
           // An inline PostCSS config, so the build never loads a postcss.config.js from the app's
           // folder, which an agent may edit, into Node.
           css: { postcss: {} },
-          plugins: [react({ include: APP_REACT_FILES })],
+          plugins: [...frameworkPlugins(), react({ include: APP_REACT_FILES })],
           build: {
             outDir: path.join(config.build.outDir, APPS_DIR, app.name),
             emptyOutDir: true,

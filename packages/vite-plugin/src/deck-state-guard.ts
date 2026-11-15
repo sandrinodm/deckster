@@ -1,4 +1,4 @@
-import type { Plugin } from 'vite-plus';
+import type { Plugin } from 'vite';
 
 import { realpathSync } from 'node:fs';
 import path from 'node:path';

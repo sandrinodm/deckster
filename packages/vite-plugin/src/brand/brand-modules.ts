@@ -2,7 +2,7 @@ import type { LoadedBrand } from '@deckster/brand/node';
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { normalizePath } from 'vite-plus';
+import { normalizePath } from 'vite';
 
 /**
  * The active brand's tokens (default export) and logo URLs (`logoUrls`), for `useBrand()`.

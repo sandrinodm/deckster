@@ -1,5 +1,6 @@
 import type { SlideMeta } from '@deckster/engine/manifest';
 
+import { deckCommand } from '@deckster/engine/command';
 import {
   DEFAULT_LAYOUT,
   SLIDE_FRONTMATTER_HINTS,
@@ -201,7 +202,9 @@ function checkFieldLimits(
       `${breach.path}: The ${contract.name} layout sets at most ${breach.maxChars} characters ` +
       `here (${variants.join('; ')}), got ${breach.length}.`,
     fix:
-      'Shorten it to the essentials; `pnpm deck layouts --json` lists the limits of each ' +
+      'Shorten it to the essentials; `' +
+      deckCommand() +
+      ' layouts --json` lists the limits of each ' +
       'variant.',
   }));
 }
@@ -274,7 +277,7 @@ function unknownLayoutProblem(name: string, catalog: LayoutCatalogIndex): Proble
   const list = closest === undefined ? `Use one of: ${names.join(', ')}.` : `Use "${closest}".`;
   return {
     message: `layout: There is no "${name}" layout.`,
-    fix: `${list} Run \`pnpm deck layouts\` to see what each layout is for.`,
+    fix: `${list} Run \`${deckCommand()} layouts\` to see what each layout is for.`,
   };
 }
 
