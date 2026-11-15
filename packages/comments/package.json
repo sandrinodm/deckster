@@ -1,0 +1,48 @@
+{
+  "name": "@deckster/comments",
+  "version": "0.0.0",
+  "private": true,
+  "homepage": "https://github.com/sandrinodm/deckster/tree/main/packages/comments#readme",
+  "bugs": "https://github.com/sandrinodm/deckster/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandrinodm/deckster.git",
+    "directory": "packages/comments"
+  },
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    "./runtime": "./src/runtime.ts",
+    "./picker": "./src/picker.ts",
+    "./jsx-dev-runtime": "./src/stamp/jsx-dev-runtime.ts",
+    "./node": "./src/node/index.ts",
+    "./dev-session": "./src/vite/dev-session.ts",
+    "./vite": "./src/vite/comments-vite-plugin.ts"
+  },
+  "scripts": {
+    "test": "vp test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deckster/brand": "workspace:*",
+    "@deckster/engine": "workspace:*",
+    "@deckster/presenter": "workspace:*",
+    "@effect/platform-node": "catalog:",
+    "effect": "catalog:",
+    "playwright": "catalog:",
+    "react": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "happy-dom": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:"
+  }
+}
