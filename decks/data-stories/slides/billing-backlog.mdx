@@ -1,0 +1,34 @@
+---
+layout: chart
+title: Billing is the only queue whose backlog is still growing
+eyebrow: Open tickets by queue
+surface: inverse
+budget: 1m
+---
+
+<LineChart
+  data={[
+    { week: 'W31', Billing: 410, Access: 520, Integrations: 380, Export: 260, Performance: 210 },
+    { week: 'W32', Billing: 430, Access: 480, Integrations: 360, Export: 250, Performance: 205 },
+    { week: 'W33', Billing: 455, Access: 450, Integrations: 340, Export: 240, Performance: 190 },
+    { week: 'W34', Billing: 470, Access: 420, Integrations: 325, Export: 228, Performance: 182 },
+    { week: 'W35', Billing: 500, Access: 390, Integrations: 300, Export: 220, Performance: 176 },
+    { week: 'W36', Billing: 520, Access: 360, Integrations: 290, Export: 205, Performance: 168 },
+    { week: 'W37', Billing: 545, Access: 335, Integrations: 270, Export: 196, Performance: 160 },
+    { week: 'W38', Billing: 560, Access: 310, Integrations: 255, Export: 185, Performance: 150 },
+    { week: 'W39', Billing: 590, Access: 300, Integrations: 240, Export: 178, Performance: 146 },
+    { week: 'W40', Billing: 612, Access: 285, Integrations: 228, Export: 170, Performance: 138 },
+  ]}
+  x="week"
+  highlight="Billing"
+  zero
+  caption="Open tickets at the end of each week, weeks 31 to 40 of 2026"
+/>
+
+<Footnote>Source: Lumen helpdesk queue snapshots, Fridays at 18:00.</Footnote>
+
+<Notes>
+Every other queue fell by a third or more since the redesign. Billing rose 49%.
+
+The help centre has no billing articles yet: that is the ask on the last slide.
+</Notes>

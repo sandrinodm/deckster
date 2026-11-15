@@ -1,0 +1,30 @@
+---
+layout: diagram
+title: Nine services, five layers deep, and not one call goes back up
+eyebrow: Automatic layout
+budget: 1m
+---
+
+<Flow title="The Parcelwise service map, laid out automatically" direction="right">
+  <Node id="web" kind="mobile" title="Courier app" />
+  <Node id="gateway" kind="gateway" title="Gateway" />
+  <Node id="orders" kind="service" title="Orders" />
+  <Node id="routing" kind="service" title="Routing" />
+  <Node id="pricing" kind="function" title="Pricing" />
+  <Node id="tracking" kind="service" title="Tracking" />
+  <Node id="ordersdb" kind="database" title="Orders DB" />
+  <Node id="geo" kind="database" title="Geo index" />
+  <Node id="maps" kind="external" title="Maps API" />
+  <Edge from="web" to="gateway" />
+  <Edge from="gateway" to="orders" />
+  <Edge from="gateway" to="tracking" />
+  <Edge from="orders" to="pricing" />
+  <Edge from="orders" to="ordersdb" />
+  <Edge from="tracking" to="routing" />
+  <Edge from="routing" to="geo" />
+  <Edge from="routing" to="maps" />
+</Flow>
+
+<Notes>
+Nobody placed these boxes: the layout engine sorted them into tiers from the edges alone. Read it left to right: clients, the gateway, services, then the stores and outside APIs they lean on.
+</Notes>

@@ -1,0 +1,18 @@
+---
+layout: diagram
+title: Every incident goes round the same four stages
+eyebrow: Cycle
+surface: inverse
+budget: 1m
+---
+
+<Cycle title="The incident loop: detect, respond, recover, learn" steps>
+  <Node id="detect" kind="service" title="Detect" subtitle="Alerts and SLOs" />
+  <Node id="respond" kind="user" title="Respond" subtitle="On-call engineer" />
+  <Node id="recover" kind="function" title="Recover" subtitle="Roll back or fail over" />
+  <Node id="learn" kind="document" title="Learn" subtitle="Blameless review" />
+</Cycle>
+
+<Notes>
+Walk the loop once. The last arrow, from learn back to detect, is the one teams skip: the review has to change an alert or a runbook, or the loop does not close.
+</Notes>

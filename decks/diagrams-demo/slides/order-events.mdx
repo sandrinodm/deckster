@@ -1,0 +1,34 @@
+---
+layout: diagram
+title: One order event fans out to three teams without a single direct call
+eyebrow: Event-driven
+budget: 1m30s
+---
+
+<Flow title="Order events fanning out from the orders service to three consumers">
+  <Node id="orders" kind="service" title="Orders service" col={1} row={2} />
+  <Node id="bus" kind="queue" title="order.placed" subtitle="Kafka topic, 12 partitions" col={2} row={2} />
+  <Node id="billing" kind="function" title="Billing" subtitle="Invoices" col={3} row={1} />
+  <Node id="shipping" kind="service" title="Shipping" subtitle="Labels and pickup" col={3} row={2} />
+  <Node id="notify" kind="function" title="Notifications" subtitle="Email and SMS" col={3} row={3} />
+  <Edge from="orders" to="bus" label="publish" flow={{ count: 3 }} />
+  <Edge from="bus" to="billing" async at={1} />
+  <Edge from="bus" to="shipping" async at={1} />
+  <Edge from="bus" to="notify" async at={1} />
+  <Packet path="bus billing" at={2} until={4} count={2} />
+  <Packet path="bus shipping" at={2} until={4} count={2} />
+  <Packet path="bus notify" at={2} until={4} count={2} />
+  <State node="notify" at={3} is="success" badge="Sent" />
+</Flow>
+
+<Aside>
+### No coupling
+
+Orders publishes once and moves on. Each consumer reads at its own pace and can be down without blocking checkout.
+</Aside>
+
+<Notes>
+Start with the steady stream into the topic: that is every order, all day. Click once to show the three subscribers, again to send the event to all three at the same time.
+
+The point is the arrows that are missing: orders never calls billing, shipping or notifications directly.
+</Notes>

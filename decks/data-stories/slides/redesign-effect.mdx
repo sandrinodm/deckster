@@ -1,0 +1,44 @@
+---
+layout: chart
+title: Tickets fell 38% in the four months after the June redesign
+eyebrow: The headline
+budget: 2m
+---
+
+<LineChart
+  data={[
+    { month: 'Jan', '2025': 5800, '2026': 7000 },
+    { month: 'Feb', '2025': 5600, '2026': 6900 },
+    { month: 'Mar', '2025': 6000, '2026': 7200 },
+    { month: 'Apr', '2025': 6100, '2026': 7300 },
+    { month: 'May', '2025': 6300, '2026': 7400 },
+    { month: 'Jun', '2025': 6400, '2026': 7100 },
+    { month: 'Jul', '2025': 6600, '2026': 5900 },
+    { month: 'Aug', '2025': 6500, '2026': 5100 },
+    { month: 'Sep', '2025': 6700, '2026': 4600 },
+    { month: 'Oct', '2025': 6800, '2026': 4400 },
+    { month: 'Nov', '2025': 6900 },
+    { month: 'Dec', '2025': 7100 },
+  ]}
+  x="month"
+  y={['2025', { field: '2026', at: 1 }]}
+  highlight="2026"
+  zero
+  annotations={[
+    { type: 'callout', x: 'Jun', label: 'Redesign ships, 12 June', at: 2 },
+    { type: 'bracket', from: 'Jun', to: 'Oct', better: 'down', at: 3 },
+  ]}
+  caption="Support tickets per month"
+/>
+
+<Footnote>Source: Lumen helpdesk export. All channels, spam removed.</Footnote>
+
+<Notes>
+On screen first: last year, for context. It climbs every month, as it has for three years.
+
+Step one: this year. Same climb until June.
+
+Step two: the redesign ships. Step three: the four months after it, June to October, 7,100 to 4,400 a month.
+
+If asked: customer count grew 9% over the same months, so per customer the fall is larger.
+</Notes>

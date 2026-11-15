@@ -1,0 +1,31 @@
+---
+layout: diagram
+title: Every checkout crosses five hops before the first byte comes back
+eyebrow: The request path
+budget: 2m
+---
+
+<Flow title="A checkout request's path through the Parcelwise web stack">
+  <Node id="browser" kind="client" title="Browser" subtitle="React app" col={1} row={1} />
+  <Node id="cdn" kind="cloud" title="Edge CDN" subtitle="120 PoPs" col={2} row={1} />
+  <Group label="Production VPC">
+    <Node id="gateway" kind="gateway" title="API gateway" subtitle="Auth" col={3} row={1} />
+    <Node id="orders" kind="service" title="Orders service" subtitle="6 pods" col={4} row={1} />
+    <Node id="cache" kind="cache" title="Session cache" subtitle="Redis" col={3} row={2} />
+    <Node id="db" kind="database" title="Orders DB" subtitle="Postgres 16" col={5} row={1} />
+    <Node id="queue" kind="queue" title="Order events" subtitle="Kafka" col={5} row={2} />
+  </Group>
+  <Edge from="browser" to="cdn" label="HTTPS" />
+  <Edge from="cdn" to="gateway" />
+  <Edge from="gateway" to="orders" label="gRPC" />
+  <Edge from="orders" to="cache" label="Session" />
+  <Edge from="orders" to="db" label="SQL" />
+  <Edge from="orders" to="queue" label="Events" async />
+  <Journey at={1} path="browser cdn gateway orders db" back focus />
+</Flow>
+
+<Notes>
+Walk the request one hop per click. The browser hits the CDN, which forwards the API call to the gateway; the gateway authenticates and hands it to the orders service, which reads the order from Postgres. Then the response comes back the same way.
+
+The cache and the event stream dim while the request travels: they are not on this path.
+</Notes>

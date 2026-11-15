@@ -1,0 +1,31 @@
+---
+layout: code
+title: Auth runs before every route
+eyebrow: Request flow
+budget: 1m30s
+---
+
+```ts title="server.ts" {3-5|4|7} lineNumbers /authenticate/
+const app = createApp();
+
+app.use(cors());
+app.use(authenticate());
+app.use(rateLimit({ perMinute: 60 }));
+
+app.get('/orders', listOrders);
+app.listen(3000);
+```
+
+<Aside>
+- Middleware runs in the order it is registered
+- `authenticate` answers 401 before any route code
+- Rate limits count signed-in users, not IPs
+</Aside>
+
+<Notes>
+Press next three times: first the three `use` calls, then `authenticate` on its own, then the route that depends on it.
+
+The point for the room: order is the contract. Move `authenticate` below the route and the route is public.
+
+If asked about the limit of 60: it is per user per minute, and the dashboard lets support raise it per account.
+</Notes>

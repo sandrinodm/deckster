@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" fill="none">
+  <rect x="20" y="20" width="1560" height="560" rx="18" stroke="#9aa1ae" stroke-width="3" fill="#f4f5f8"/>
+  <g id="inbound">
+    <rect x="60" y="60" width="420" height="480" rx="12" fill="#ffffff" stroke="#9aa1ae" stroke-width="3"/>
+    <path d="M100 140h340M100 220h340M100 300h340M100 380h340M100 460h340" stroke="#9aa1ae" stroke-width="3" stroke-dasharray="14 10"/>
+    <text x="270" y="110" text-anchor="middle" font-size="30" font-weight="600" fill="#161920">Inbound docks</text>
+    <text x="270" y="520" text-anchor="middle" font-size="26" fill="#555c6a">6 doors, 40 trucks a day</text>
+  </g>
+  <g id="sorting">
+    <rect x="560" y="60" width="480" height="480" rx="12" fill="#ffffff" stroke="#9aa1ae" stroke-width="3"/>
+    <path d="M610 300c80-140 300-140 380 0s-300 140-380 0z" stroke="#e4572e" stroke-width="5"/>
+    <path d="M800 160v280" stroke="#e4572e" stroke-width="5"/>
+    <text x="800" y="110" text-anchor="middle" font-size="30" font-weight="600" fill="#161920">Sorter loop</text>
+    <text x="800" y="520" text-anchor="middle" font-size="26" fill="#555c6a">18,000 parcels an hour</text>
+  </g>
+  <g id="outbound">
+    <rect x="1120" y="60" width="420" height="480" rx="12" fill="#ffffff" stroke="#9aa1ae" stroke-width="3"/>
+    <path d="M1160 160h340M1160 250h340M1160 340h340M1160 430h340" stroke="#9aa1ae" stroke-width="3"/>
+    <circle cx="1330" cy="205" r="12" fill="#e4572e"/>
+    <circle cx="1250" cy="295" r="12" fill="#e4572e"/>
+    <circle cx="1420" cy="385" r="12" fill="#e4572e"/>
+    <text x="1330" y="110" text-anchor="middle" font-size="30" font-weight="600" fill="#161920">Outbound lanes</text>
+    <text x="1330" y="520" text-anchor="middle" font-size="26" fill="#555c6a">One lane per route</text>
+  </g>
+  <g id="flow-arrows">
+    <path d="M490 300h56M1050 300h56" stroke="#e4572e" stroke-width="5"/>
+    <path d="M536 286l14 14-14 14M1096 286l14 14-14 14" stroke="#e4572e" stroke-width="5"/>
+  </g>
+</svg>

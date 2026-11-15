@@ -1,0 +1,26 @@
+---
+layout: chart
+title: Grouped bars make you hunt for the two teams that got slower
+eyebrow: The wrong chart
+budget: 45s
+---
+
+import teams from '../data/teams.csv';
+
+<BarChart
+  data={teams}
+  x="team"
+  y={['2025', '2026']}
+  orientation="vertical"
+  highlight={{ category: ['Billing', 'Payroll'] }}
+  unit="h"
+  caption="Median hours to resolve a ticket, by team"
+/>
+
+<Footnote>Same data as the next slide. Fourteen bars to compare in pairs, and the change is never drawn.</Footnote>
+
+<Notes>
+Ask the room which teams got slower. Count how long it takes.
+
+The change between the years is the message, and grouped bars make the audience compute it.
+</Notes>

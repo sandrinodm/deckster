@@ -1,0 +1,29 @@
+---
+layout: code
+title: Ship it from one terminal
+eyebrow: Release
+surface: accent
+budget: 1m
+---
+
+<Terminal title="~/larkfield-api" at={1}>
+  <Cmd>pnpm test</Cmd>
+  <Out tone="muted">64 tests passed in 3.1 s</Out>
+  <Cmd>pnpm build</Cmd>
+  <Out tone="muted">built 212 kB, 0 warnings</Out>
+  <Cmd>pnpm deploy --env production</Cmd>
+  <Out tone="success">live at https://api.larkfield.example/v1?ready=1 in 41 s</Out>
+</Terminal>
+
+<Aside>
+<Lottie src="../assets/check.json" alt="A check mark drawing itself inside a ring" size="md" role="fg" />
+
+- Tests gate the build, the build gates the deploy
+- Rollback is the same command with the last tag
+</Aside>
+
+<Notes>
+Each press types the next command. Say what it does as it types, not after.
+
+The deploy output is the only line in colour on purpose: that is the one the room should remember.
+</Notes>

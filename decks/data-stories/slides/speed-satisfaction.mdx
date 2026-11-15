@@ -1,0 +1,40 @@
+---
+layout: chart
+title: Teams that resolve faster are rated higher, and Billing is slowest
+eyebrow: Speed and satisfaction
+surface: inverse
+budget: 1m
+---
+
+<Scatter
+  data={[
+    { squad: 'Export', hours: 5, csat: 95 },
+    { squad: 'Mobile', hours: 6, csat: 94 },
+    { squad: 'Access', hours: 7, csat: 93 },
+    { squad: 'Performance', hours: 8, csat: 92 },
+    { squad: 'Onboarding', hours: 9, csat: 92 },
+    { squad: 'Integrations', hours: 11, csat: 90 },
+    { squad: 'Reporting', hours: 10, csat: 89 },
+    { squad: 'API', hours: 13, csat: 88 },
+    { squad: 'Payroll', hours: 15, csat: 86 },
+    { squad: 'Billing', hours: 22, csat: 81 },
+  ]}
+  x="hours"
+  y="csat"
+  label="squad"
+  trend
+  highlight={['Billing', 'Payroll']}
+  format={{ digits: 0 }}
+  xUnit="h"
+  xLabel="Median hours to resolve"
+  yLabel="Rated good, %"
+  unit="%"
+/>
+
+<Footnote>Ten support squads, October 2026. Ratings from 6,210 conversations; squads with fewer than 200 ratings left out.</Footnote>
+
+<Notes>
+Each dot is a squad. Every hour to resolve costs about a point of satisfaction.
+
+Billing is the outlier on both axes, which is why the ask is about billing.
+</Notes>

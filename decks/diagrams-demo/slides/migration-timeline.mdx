@@ -1,0 +1,18 @@
+---
+layout: diagram
+title: The monolith is gone in four quarters, and we are in the third
+eyebrow: Timeline
+surface: gradient
+budget: 1m
+---
+
+<Timeline title="The migration from the monolith to cells, by quarter">
+  <Milestone date="Q1 2026" title="Split checkout" at={1} state="success">Orders service live</Milestone>
+  <Milestone date="Q2 2026" title="Move payments" at={2} state="success">Ledger on Postgres</Milestone>
+  <Milestone date="Q3 2026" title="Region cells" at={3} current>EU and US apart</Milestone>
+  <Milestone date="Q4 2026" title="Retire the monolith" at={4}>Read-only in October</Milestone>
+</Timeline>
+
+<Notes>
+Each click is a quarter. We are on the third: the cells are being cut now, which is why you will hear about region pinning in your first weeks.
+</Notes>

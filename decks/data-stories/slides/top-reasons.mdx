@@ -1,0 +1,31 @@
+---
+layout: chart
+title: Billing questions are a third of everything customers ask us
+eyebrow: Why customers write in
+surface: inverse
+budget: 1m
+data:
+  reasons:
+    - { reason: Billing and invoices, share: 33 }
+    - { reason: Login and access, share: 17 }
+    - { reason: Integrations, share: 13 }
+    - { reason: Data export, share: 9 }
+    - { reason: Performance, share: 8 }
+    - { reason: Other, share: 20 }
+---
+
+<BarChart
+  data="reasons"
+  x="reason"
+  y="share"
+  unit="%"
+  sort
+  highlight="Billing and invoices"
+  caption="Share of tickets by first-contact reason, January to October 2026"
+/>
+
+<Footnote>Source: Lumen helpdesk export, 55,500 tickets. Reasons as tagged by agents.</Footnote>
+
+<Notes>
+Point at billing first: a third of all tickets, 18,420 of 55,500. It is bigger than the next two reasons together.
+</Notes>

@@ -1,0 +1,37 @@
+---
+layout: diagram
+title: Five layers, and each one has exactly one owning team
+eyebrow: Layers
+budget: 1m
+---
+
+<Layers title="The Parcelwise platform, from customer to infrastructure">
+  <Layer title="Experience" subtitle="Web and Apps team" at={1}>
+    <Item kind="client" title="Web" />
+    <Item kind="mobile" title="Courier app" />
+    <Item kind="mobile" title="Shopper app" />
+  </Layer>
+  <Layer title="Edge" subtitle="Platform team" at={2}>
+    <Item kind="cloud" title="CDN" />
+    <Item kind="gateway" title="API gateway" />
+  </Layer>
+  <Layer title="Services" subtitle="Domain teams" at={3}>
+    <Item kind="service" title="Orders" />
+    <Item kind="service" title="Payments" />
+    <Item kind="service" title="Routing" />
+    <Item kind="function" title="Pricing" />
+  </Layer>
+  <Layer title="Data" subtitle="Data team" at={4}>
+    <Item kind="database" title="Postgres" />
+    <Item kind="queue" title="Kafka" />
+    <Item kind="cache" title="Redis" />
+  </Layer>
+  <Layer title="Infrastructure" subtitle="SRE" at={5}>
+    <Item kind="cloud" title="Kubernetes" />
+    <Item kind="storage" title="Object storage" />
+  </Layer>
+</Layers>
+
+<Notes>
+Build the stack from the top. The rule is in the title: if you cannot name the owning team of a box, it does not belong on this picture.
+</Notes>

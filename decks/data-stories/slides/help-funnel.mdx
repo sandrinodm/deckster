@@ -1,0 +1,26 @@
+---
+layout: chart
+title: Seven in ten people who search the help centre never open an article
+eyebrow: Where self-serve leaks
+budget: 1m
+---
+
+<Funnel
+  data={[
+    { stage: 'Visited the help centre', people: 48000 },
+    { stage: 'Searched', people: 31200 },
+    { stage: 'Opened an article', people: 9400 },
+    { stage: 'Marked it helpful', people: 5600 },
+    { stage: 'No ticket in 7 days', people: 4900 },
+  ]}
+  x="stage"
+  y="people"
+  highlight="Opened an article"
+  caption="Help centre visitors, October 2026"
+/>
+
+<Notes>
+The leak is between search and article: 30% carry on. Search results are the fix, not more articles.
+
+Once people open an article, most of them are done: 88% of the helpful ones never write in.
+</Notes>

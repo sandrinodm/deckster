@@ -1,0 +1,26 @@
+---
+layout: code
+title: A missing user is now a 401, not a crash
+eyebrow: The fix
+surface: gradient
+budget: 1m
+---
+
+```ts title="orders.ts" diff lineNumbers /requireUser/
+export async function listOrders(req: Request) {
+-  const user = req.user;
++  const user = requireUser(req);
+  return db.orders.where({ userId: user.id });
+}
+```
+
+<Aside>
+- `requireUser` throws `Unauthorized`, which the error handler turns into a 401
+- One line per route, no new branches
+</Aside>
+
+<Notes>
+Read the two changed lines aloud. Before, `req.user` was undefined for expired sessions and `user.id` threw a TypeError, which surfaced as a 500.
+
+The marked word is the whole change.
+</Notes>

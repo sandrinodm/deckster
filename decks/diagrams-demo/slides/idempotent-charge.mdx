@@ -1,0 +1,23 @@
+---
+layout: diagram
+title: An idempotency key makes a double click charge once
+eyebrow: Sequence
+budget: 1m30s
+---
+
+<SequenceDiagram title="A double-clicked payment, charged once thanks to its idempotency key">
+  <Actor id="shopper" kind="user" title="Shopper" />
+  <Actor id="web" kind="client" title="Web app" />
+  <Actor id="payments" kind="service" title="Payments API" />
+  <Actor id="ledger" kind="database" title="Ledger" />
+  <Message from="shopper" to="web" label="Clicks Pay twice" at={1} />
+  <Message from="web" to="payments" label="POST /charges, key k-71" at={2} />
+  <Message from="payments" to="ledger" label="Insert k-71" at={3} />
+  <Message from="web" to="payments" label="Same key again" at={4} />
+  <Message from="payments" to="payments" label="k-71 seen: reuse result" at={5} />
+  <Message from="payments" to="web" label="201, one charge" reply at={6} />
+</SequenceDiagram>
+
+<Notes>
+The second POST carries the same key, so the API finds the first result and returns it instead of charging again. Pause on step five: that self-call is the whole trick.
+</Notes>

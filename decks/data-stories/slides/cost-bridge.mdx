@@ -1,0 +1,31 @@
+---
+layout: chart
+title: Automation saved twice what the new tooling cost
+eyebrow: Cost
+budget: 1m
+---
+
+<Waterfall
+  data={[
+    { step: '2025 cost', cost: 4100000 },
+    { step: 'New tooling', cost: 450000 },
+    { step: 'Help centre content', cost: 250000 },
+    { step: 'Automation', cost: -900000 },
+    { step: 'Fewer contractors', cost: -700000 },
+    { step: '2026 cost', cost: null },
+  ]}
+  x="step"
+  y="cost"
+  totals={['2025 cost', '2026 cost']}
+  better="down"
+  format="currency"
+  caption="Annual support cost, 2025 to 2026 run rate"
+/>
+
+<Footnote>2026 is the run rate from July to October. Tooling includes the chat platform and the help centre search.</Footnote>
+
+<Notes>
+Start at 4.1 million. Tooling and content add 700 thousand. Automation takes out 900 thousand on its own, twice the tooling.
+
+We end at 3.2 million, 22% lower, with 9% more customers.
+</Notes>

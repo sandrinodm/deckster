@@ -1,0 +1,27 @@
+---
+layout: chart
+title: Monday mornings bring one ticket in eight
+eyebrow: When customers write in
+budget: 45s
+---
+
+<Heatmap
+  data={[
+    { day: 'Mon', time: '6–9', tickets: 310 }, { day: 'Mon', time: '9–12', tickets: 560 }, { day: 'Mon', time: '12–15', tickets: 420 }, { day: 'Mon', time: '15–18', tickets: 350 }, { day: 'Mon', time: '18–21', tickets: 160 },
+    { day: 'Tue', time: '6–9', tickets: 220 }, { day: 'Tue', time: '9–12', tickets: 390 }, { day: 'Tue', time: '12–15', tickets: 340 }, { day: 'Tue', time: '15–18', tickets: 300 }, { day: 'Tue', time: '18–21', tickets: 130 },
+    { day: 'Wed', time: '6–9', tickets: 200 }, { day: 'Wed', time: '9–12', tickets: 360 }, { day: 'Wed', time: '12–15', tickets: 330 }, { day: 'Wed', time: '15–18', tickets: 290 }, { day: 'Wed', time: '18–21', tickets: 120 },
+    { day: 'Thu', time: '6–9', tickets: 190 }, { day: 'Thu', time: '9–12', tickets: 350 }, { day: 'Thu', time: '12–15', tickets: 320 }, { day: 'Thu', time: '15–18', tickets: 280 }, { day: 'Thu', time: '18–21', tickets: 110 },
+    { day: 'Fri', time: '6–9', tickets: 170 }, { day: 'Fri', time: '9–12', tickets: 300 }, { day: 'Fri', time: '12–15', tickets: 250 }, { day: 'Fri', time: '15–18', tickets: 190 }, { day: 'Fri', time: '18–21', tickets: 80 },
+  ]}
+  x="time"
+  y="day"
+  value="tickets"
+  highlight={[{ x: '6–9', y: 'Mon' }, { x: '9–12', y: 'Mon' }]}
+  caption="Average tickets per block of the working week, local time, September and October 2026"
+/>
+
+<Notes>
+Monday from six to noon carries 870 of the 6,720 tickets in a working week: one in eight, in two blocks out of twenty-five.
+
+The rota change on the last slide moves four people to Monday mornings.
+</Notes>

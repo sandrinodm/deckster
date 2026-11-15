@@ -1,0 +1,28 @@
+---
+layout: chart
+title: Two teams got slower while five got faster
+eyebrow: The right chart
+budget: 1m
+---
+
+import teams from '../data/teams.csv';
+
+<Slope
+  data={teams}
+  x="team"
+  from="2025"
+  to="2026"
+  better="down"
+  tone
+  highlight={['Billing', 'Payroll']}
+  unit="h"
+  caption="Median hours to resolve a ticket, 2025 and 2026"
+/>
+
+<Footnote>Source: Lumen helpdesk, tickets closed January to October of each year.</Footnote>
+
+<Notes>
+Same numbers as the last slide. Now the slope is the change, and the two lines going up are the two teams that got slower.
+
+Billing and Payroll both depend on the finance system migration, which slipped to January.
+</Notes>

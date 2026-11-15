@@ -1,0 +1,7 @@
+external-poster.png, external-fallback.webm
+  Original fictional dashboard drawn with rectangles by scripts/generate-fixture-media.py.
+  MIT, as in the repository's LICENSE. No external images, fonts or page recordings.
+  Regenerate from the repository root with Python 3 and ffmpeg on PATH:
+    python3 scripts/generate-fixture-media.py --only apps
+  Poster: 2472x1236 pixels. Video: 1648x824, 12 fps, four seconds, VP9, no sound.
+  The moving progress indicator provides a visible playback check.

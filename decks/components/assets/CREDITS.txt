@@ -1,0 +1,14 @@
+street.jpg
+  "Tree-lined street in Westgate" by Onthehilltop, Wikimedia Commons, CC0 1.0.
+  https://commons.wikimedia.org/wiki/File:Tree-lined_street_in_Westgate.jpg
+  Resized to 1280 px and recompressed.
+
+aurora.webm, aurora-poster.jpg
+  Made for this deck with ffmpeg's gradients source: ffmpeg -f lavfi -i
+  "gradients=s=1600x900:d=9:r=30:c0=0x0c0e13:c1=0x2d4ae0:c2=0x34c3b0:c3=0xf5b53d:nb_colors=4:speed=0.012"
+  -c:v libvpx-vp9 -crf 38 -b:v 0 aurora.webm. The poster is the frame at 4 s; aurora-part-1,
+  -2 and -3.jpg are the frames at the end of each cued part (2.95 s, 5.95 s and 8.95 s).
+  Nine seconds, 1600x900, no sound. No restrictions.
+
+check.json
+  Drawn for this deck by hand: a ring and a check mark drawn with trim paths. No restrictions.

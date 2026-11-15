@@ -1,0 +1,27 @@
+---
+layout: demo
+title: An outside page, with a safety net
+eyebrow: External
+surface: inverse
+budget: 1m
+---
+
+<AppFrame
+  src="https://example.com/"
+  chrome="browser"
+  mount="active"
+  keepAlive
+  poster="../assets/external-poster.png"
+  fallback="../assets/external-fallback.webm"
+  alt="A browser showing a documentation page"
+/>
+
+<Aside>
+- It loads from another site
+- It gets no bridge unless it opts in
+- A recording plays when Wi-Fi fails
+</Aside>
+
+<Notes>
+This frame points at a page on another site. If the venue network fails, the recorded video plays in its place, and exports show the poster.
+</Notes>

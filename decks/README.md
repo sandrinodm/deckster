@@ -1,0 +1,50 @@
+# Decks
+
+Every folder here is a deck and a workspace package (`@deckster/deck-<name>`), so a new one needs
+`pnpm install` before any command works on it. Every `deck` command takes the folder name:
+
+```console
+$ pnpm deck lint apps-demo
+apps-demo: no problems in 4 slides (7 steps checked).
+```
+
+Output goes to `.deck/` at the repository root, so `pnpm deck shot apps-demo` writes
+`.deck/shots/apps-demo/`.
+
+## Examples
+
+Two decks are meant to be read and copied:
+
+| Deck                           | What it is                                             |
+| ------------------------------ | ------------------------------------------------------ |
+| [hello](hello/README.md)       | The 4-slide starter and the default deck of `deck dev` |
+| [showcase](showcase/README.md) | A 45-slide talk about deckster that uses every layout  |
+
+## Test fixtures
+
+The other six decks are test fixtures. Each one exercises one area of the kit in full (every layout
+variant, every chart, every diagram form, the code and media components, mini apps) and the test
+suites render it in a browser. They are also the best place to see a component used for real.
+Their organisations, people and numbers are fictional; photo sources are in each deck's
+`assets/CREDITS.txt` where it has one (`exemplars`, `layouts` and `components`).
+
+| Deck                                     | Slides | Covers                                                                                                                                                                                                     | Driven by                                                                                                                                                                                                                   |
+| ---------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [exemplars](exemplars/README.md)         | 16     | The first six layouts (`title`, `section`, `statement`, `content`, `split`, `stats`) in each variant, on every surface, with the hard cases: a long title, a full list, four stats, a dense split          | The kit's browser suite (`packages/kit/e2e`, both brands, served through `deck dev`); PDF and PPTX export tests in `packages/cli/src/export/run-export.test.ts`                                                             |
+| [layouts](layouts/README.md)             | 43     | Every later layout (`agenda`, `team`, `quote`, `bio`, `cards`, `steps`, `comparison`, `timeline`, `table`, `logos`, `image`, `closing`) in each variant, one part per layout                               | No suite; CI's lint step only                                                                                                                                                                                               |
+| [data-stories](data-stories/README.md)   | 18     | Every chart and number component, each answering one message with one highlight                                                                                                                            | `charts.e2e.ts` in `packages/vite-plugin` (both brands); `chart-equivalence.test.ts` in `packages/cli`, which exports native PPTX charts and compares LibreOffice's rendering with the web (needs Docker)                   |
+| [diagrams-demo](diagrams-demo/README.md) | 13     | Every diagram form: stepped flows, packets, an automatic layout, a sequence diagram, a timeline, layers, a cycle, a tree, an imported SVG and a flow written in TSX                                        | `diagrams.e2e.ts` in `packages/vite-plugin` (both brands); the PPTX diagram export test in `run-export.test.ts`; `svg-sanitize.test.ts` and `svg-sanitize-dom.test.ts` in `packages/kit`, which read `assets/warehouse.svg` |
+| [components](components/README.md)       | 7      | Code and media components: highlight steps, diffs, word focus, `<CodeMove>`, `<Terminal>`, `<Image>`, a cued `<Video>`, `<Lottie>`, icons, and a TSX slide                                                 | `components.e2e.ts` in `packages/vite-plugin`                                                                                                                                                                               |
+| [apps-demo](apps-demo/README.md)         | 4      | Mini apps: an inline `<Live>` widget, a scripted agent run in an `<AppFrame>` (`apps/agent-demo`) driven by the slide's steps, an external page with a poster and a recorded fallback; no model or API key | `apps.e2e.ts` in `packages/vite-plugin` (both brands and the production build)                                                                                                                                              |
+
+CI (`.github/workflows/ci.yml`) lints every deck in this folder with `pnpm deck lint`, and
+`pnpm build` builds all of them.
+
+Before changing a slide in a fixture deck, search the suites in the table for its id: they open
+slides by id or by position and assert on what they render, so reordering slides can break them too.
+
+Smaller decks that break one lint rule or reproduce one hard case live beside the tests that use
+them: `packages/cli/fixtures/decks` (the `rules` deck, the chart, diagram and layout probes, and
+decks with one deliberate fault each) and `packages/vite-plugin/e2e/fixtures/decks` (`comments`,
+`apps-cases`, `cases`, `bad-layout`). For a deck meant to be read rather than tested, see
+[`showcase`](showcase/README.md).

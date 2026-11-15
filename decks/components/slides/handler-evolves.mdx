@@ -1,0 +1,45 @@
+---
+layout: code
+title: The handler grew up in three steps
+eyebrow: Refactor
+surface: inverse
+budget: 1m30s
+---
+
+<CodeMove file="orders.ts">
+
+```ts
+export function listOrders(req, res) {
+  db.orders.where({ userId: req.user.id }, (err, rows) => {
+    res.json(rows);
+  });
+}
+```
+
+```ts
+export async function listOrders(req, res) {
+  const rows = await db.orders.where({ userId: req.user.id });
+  res.json(rows);
+}
+```
+
+```ts
+export async function listOrders(req: Request) {
+  const user = requireUser(req);
+  return db.orders.where({ userId: user.id });
+}
+```
+
+</CodeMove>
+
+<Aside>
+- Step 1: callbacks, errors dropped on the floor
+- Step 2: `await`, one place to catch
+- Step 3: typed request, a result instead of `res`
+</Aside>
+
+<Notes>
+Three presses, three states. The code moves; it is not redrawn, so the room can follow which line became which.
+
+Land on the last state and stay there for the questions.
+</Notes>

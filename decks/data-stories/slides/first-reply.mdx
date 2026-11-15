@@ -1,0 +1,28 @@
+---
+layout: chart
+title: The first reply now comes in 2.5 hours, down from 14
+eyebrow: Before and after
+surface: inverse
+budget: 45s
+---
+
+<Comparison
+  from={{ value: 14, label: 'Median first reply, 2025' }}
+  to={{ value: 2.5, label: 'October 2026' }}
+  unit="h"
+  better="down"
+/>
+
+<Aside>
+
+### Weekly median since June
+
+<Sparkline values={[9.0, 7.2, 5.8, 4.9, 4.2, 3.9, 3.6, 3.5, 3.1, 2.9, 3.4, 3.8, 3.2, 2.8, 2.7, 2.6, 2.5]} unit="h" />
+
+Every week since week 29 is under the 4-hour target.
+
+</Aside>
+
+<Notes>
+82% faster. Customers notice this one first: it is the number in their inbox.
+</Notes>

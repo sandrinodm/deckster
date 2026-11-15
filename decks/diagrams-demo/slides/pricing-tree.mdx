@@ -1,0 +1,26 @@
+---
+layout: diagram
+title: A delivery price is decided top-down by three rules
+eyebrow: Tree
+budget: 1m
+---
+
+<Tree title="How a delivery price is decided">
+  <Node id="price" kind="decision" title="Price?">
+    <Node id="zone" kind="node" icon="map" title="Zone" subtitle="Base rate">
+      <Node id="urban" title="Urban" subtitle="€3.90" at={1} />
+      <Node id="rural" title="Rural" subtitle="€5.40" at={1} />
+    </Node>
+    <Node id="weight" kind="node" icon="package" title="Weight" subtitle="Surcharge" at={2}>
+      <Node id="light" title="Under 2 kg" subtitle="+€0" at={2} />
+      <Node id="heavy" title="Over 2 kg" subtitle="+€1.50" at={2} />
+    </Node>
+    <Node id="speed" kind="node" icon="clock" title="Speed" subtitle="Option" at={3}>
+      <Node id="sameday" title="Same day" subtitle="×1.8" at={3} state="highlighted" />
+    </Node>
+  </Node>
+</Tree>
+
+<Notes>
+Zone sets the base, weight adds a surcharge, speed multiplies. Same day is highlighted because it is where most pricing bugs have come from.
+</Notes>

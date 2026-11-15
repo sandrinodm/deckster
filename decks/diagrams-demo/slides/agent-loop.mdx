@@ -1,0 +1,36 @@
+---
+layout: diagram
+title: The support agent answers in one loop of think, call, observe
+eyebrow: AI agent
+surface: inverse
+budget: 2m
+---
+
+<Flow title="The support agent's loop between the customer, the model and three tools">
+  <Node id="customer" kind="user" title="Customer" subtitle="Where is my parcel?" col={1} row={2} />
+  <Node id="agent" kind="agent" title="Support agent" subtitle="Plans each turn" col={2} row={2} />
+  <Node id="model" kind="llm" title="Language model" col={2} row={1} />
+  <Group label="Tools">
+    <Node id="tracking" kind="tool" title="Track parcel" col={3} row={1} />
+    <Node id="orders" kind="tool" title="Look up order" col={3} row={2} />
+    <Node id="kb" kind="document" title="Help articles" col={3} row={3} />
+  </Group>
+  <Edge from="customer" to="agent" bidirectional />
+  <Edge from="agent" to="model" bidirectional />
+  <Edge from="agent" to="tracking" />
+  <Edge from="agent" to="orders" />
+  <Edge from="agent" to="kb" />
+  <Journey at={1}>
+    <Hop from="customer" to="agent" label="Question" />
+    <Hop from="agent" to="model" label="Plan" reply="Call: lookup" />
+    <Hop from="agent" to="orders" label="PW-48213" reply="Shipped" />
+    <Hop from="agent" to="tracking" label="Tracking" reply="Out for delivery" />
+    <Hop from="agent" to="customer" label="Answer" returning />
+  </Journey>
+</Flow>
+
+<Notes>
+Five clicks, five moves. The question arrives; the agent asks the model what to do; the model says look up the order; the agent calls the order tool, then the tracking tool, each answer coming back as a ring; then it answers the customer.
+
+Every call goes through the agent: the model never touches a tool directly. That is the property that lets us log and limit every action.
+</Notes>

@@ -1,0 +1,35 @@
+---
+layout: diagram
+title: A slow card network no longer takes checkout down
+eyebrow: Failure and retry
+surface: accent
+budget: 2m
+---
+
+<Flow title="A card payment that times out, is queued and retried, then succeeds">
+  <Node id="checkout" kind="service" title="Checkout" col={1} row={1} />
+  <Node id="payments" kind="service" title="Payments" subtitle="Circuit breaker" col={2} row={1} />
+  <Node id="network" kind="external" title="Card network" col={3} row={1} />
+  <Node id="retries" kind="queue" title="Retry queue" subtitle="Backoff 2, 4, 8 s" col={2} row={2} />
+  <Edge from="checkout" to="payments" label="Charge" />
+  <Edge from="payments" to="network" label="Authorize" />
+  <Edge from="payments" to="retries" label="Park" at={2} async />
+  <Packet path="checkout payments network" at={1} label="€42.10" />
+  <State node="network" at={2} until={4} is="error" badge="Timeout" />
+  <State edge="payments->network" at={2} until={4} is="error" />
+  <Packet path="payments retries" at={2} />
+  <State node="checkout" at={2} until={4} is="success" badge="Order held" />
+  <Packet path="retries payments network" at={3} label="Retry 2" play="once" />
+  <State node="network" at={4} is="success" badge="Approved" />
+  <Packet from="payments" to="network" at={4} reply="Approved" />
+</Flow>
+
+<Aside>
+### Before
+
+A timeout here used to fail the whole checkout. Now the order is held and the charge retried in the background.
+</Aside>
+
+<Notes>
+Step one is the happy path. Step two is the bad afternoon: the card network times out, the circuit breaker parks the charge, and checkout tells the customer the order is held. Step three is the retry with backoff; step four the approval.
+</Notes>
