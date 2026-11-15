@@ -36,6 +36,11 @@ export type TextStyle = {
    * The line height as a multiple of the size.
    */
   lineHeight: number;
+
+  /**
+   * Whether numbers use tabular lining figures, as the SVG axis labels do.
+   */
+  tabular?: boolean;
 };
 
 /**
@@ -64,6 +69,11 @@ const WHITESPACE = /\s+/u;
 const ELLIPSIS = '…';
 
 /**
+ * Namespace for the SVG text used to measure OpenType tabular figures.
+ */
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+/**
  * The CSS `font` shorthand for a style, as a canvas context and `document.fonts.load` read it.
  *
  * @param style - The text style.
@@ -77,7 +87,8 @@ export function fontShorthand(style: TextStyle): string {
  * added per character. Negative tracking is added between characters only: the browser pulls the
  * line's end in after the last one too, but that glyph's ink still reaches its full advance, so
  * counting it would measure tightly tracked text (a large stat) narrower than it draws. Results are
- * cached per font and text.
+ * cached per font, numeric variant and text. Tabular figures are measured in SVG because canvas
+ * does not expose `font-variant-numeric`, and a proportional zero can have a different advance.
  *
  * @returns The measurer; one that estimates from the font size when no canvas is available (in
  *   tests or on the server).
@@ -89,7 +100,7 @@ export function canvasMeasure(): Measure {
   return (text, style) => {
     const shown = style.upper ? text.toUpperCase() : text;
     const font = fontShorthand(style);
-    const key = `${font}|${style.tracking}|${shown}`;
+    const key = `${font}|${style.tracking}|${style.tabular === true}|${shown}`;
     const cached = cache.get(key);
     if (cached !== undefined) {
       return cached;
@@ -98,13 +109,38 @@ export function canvasMeasure(): Measure {
     let width = estimateWidth(shown, style);
     if (context !== null) {
       context.font = font;
-      width =
-        context.measureText(shown).width + style.tracking * style.size * trackedGaps(shown, style);
+      const advance =
+        style.tabular === true ? tabularAdvance(shown, style) : context.measureText(shown).width;
+      width = advance + style.tracking * style.size * trackedGaps(shown, style);
     }
 
     cache.set(key, width);
     return width;
   };
+}
+
+/**
+ * Measures tabular lining figures with the same shaping engine as the chart's SVG labels. The
+ * hidden node is attached only for this measurement and removed even if measurement fails.
+ *
+ * @param text - The text with its case already applied.
+ * @param style - The font; tracking is added by the caller.
+ */
+function tabularAdvance(text: string, style: TextStyle): number {
+  const svg = document.createElementNS(SVG_NAMESPACE, 'svg');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.style.cssText = 'position:fixed;width:0;height:0;visibility:hidden;';
+  const label = document.createElementNS(SVG_NAMESPACE, 'text');
+  label.style.font = fontShorthand(style);
+  label.style.fontVariantNumeric = 'tabular-nums lining-nums';
+  label.textContent = text;
+  svg.append(label);
+  document.body.append(svg);
+  try {
+    return label.getComputedTextLength();
+  } finally {
+    svg.remove();
+  }
 }
 
 /**

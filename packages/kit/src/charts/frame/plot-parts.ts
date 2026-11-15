@@ -81,18 +81,9 @@ export function tickLabelWidth(
   measure: Measure,
 ): number {
   return maxOf(
-    tickLabels(axis, format).map((text) => measure(tabularText(text), theme.text.axis)),
+    tickLabels(axis, format).map((text) => measure(text, { ...theme.text.axis, tabular: true })),
     0,
   );
-}
-
-/**
- * A label with every digit as wide as a zero, as the tabular figures tick labels are set in.
- *
- * @param text - The label.
- */
-function tabularText(text: string): string {
-  return text.replaceAll(/\d/gu, '0');
 }
 
 /**
@@ -173,7 +164,7 @@ export function axisItems(input: AxisInput): SceneItem[] {
       ? new Set(
           thinLabels(
             axis.ticks.map((tick) => at(tick)),
-            labels.map((text) => measure(tabularText(text), style)),
+            labels.map((text) => measure(text, { ...style, tabular: true })),
             theme.space.md,
           ),
         )

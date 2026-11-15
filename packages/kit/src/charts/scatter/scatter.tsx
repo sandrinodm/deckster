@@ -257,7 +257,9 @@ function drawScatter(props: ScatterProps, input: DrawInput): ChartDrawing {
    * Half a tick label's width and a little air: how far it reaches past the edge it is centred on.
    */
   const half = (text: string | undefined): number =>
-    text === undefined ? 0 : measure(text, theme.text.axis) / 2 + theme.space.xs;
+    text === undefined
+      ? 0
+      : measure(text, { ...theme.text.axis, tabular: true }) / 2 + theme.space.xs;
   // The first and last x tick labels are centred on the plot's edges: keep room for their halves,
   // beside the y tick labels on the left.
   const draft = tickLabels(xAxisFor(size.width), xFormat);
