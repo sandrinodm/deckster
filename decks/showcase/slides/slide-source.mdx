@@ -1,0 +1,40 @@
+---
+layout: code
+title: A slide is frontmatter plus content
+eyebrow: The source
+budget: 1m30s
+---
+
+```mdx title="slides/review-rounds.mdx" {1-5|9-11|7}
+---
+layout: chart
+title: Review rounds fell from five to two
+budget: 1m
+---
+
+<LineChart data="rounds" x="month" highlight="2026" />
+
+<Notes>
+Say the claim, then point at June.
+</Notes>
+```
+
+<Aside>
+
+- Frontmatter picks a layout and states the claim
+- The body is the evidence, one component
+- Notes hold what the speaker says
+
+</Aside>
+
+<Notes>
+This is a whole slide. [click] The frontmatter: which layout, the title as a sentence, and how long I plan to talk.
+
+[click] The notes, which you are hearing now.
+
+[click] And the body: one chart. No size, no position, no colour.
+
+You will see this exact slide rendered in part two.
+
+Transition: where does that chart land on the screen? On a canvas every layout shares.
+</Notes>

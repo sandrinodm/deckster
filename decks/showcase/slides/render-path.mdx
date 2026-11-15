@@ -1,0 +1,33 @@
+---
+layout: diagram
+title: A slide passes two checkpoints between the file and the screen
+eyebrow: How a slide renders
+budget: 1m30s
+---
+
+<Flow title="A slide file validated by the build, placed by its layout and drawn on the canvas">
+  <Node id="file" kind="document" title="Slide file" subtitle="MDX or TSX" col={1} row={1} />
+  <Node id="build" kind="function" title="Build" subtitle="Validates the file" col={2} row={1} />
+  <Node id="layout" kind="service" title="Layout" subtitle="Fills its slots" col={3} row={1} />
+  <Node id="canvas" kind="client" title="Canvas" subtitle="1920 × 1080" col={4} row={1} />
+  <Node id="catalog" kind="database" title="Layout catalog" subtitle="Fields and budgets" col={2} row={2} />
+  <Node id="brand" kind="document" title="brand.ts" subtitle="Tokens and type" col={3} row={2} />
+  <Edge from="file" to="build" label="content" />
+  <Edge from="catalog" to="build" label="contract" />
+  <Edge from="build" to="layout" label="props" />
+  <Edge from="brand" to="layout" label="tokens" />
+  <Edge from="layout" to="canvas" label="DOM" />
+  <Journey at={1} path="file build layout canvas" trail />
+</Flow>
+
+<Notes>
+Follow the dot. [click] The file goes to the build, which checks it against the layout's contract: unknown field, wrong slot, title too long, and you get an error with the fix.
+
+[click] The layout takes the validated content and fills its slots, reading every value from the brand.
+
+[click] And the result lands on the canvas, scaled to whatever screen you have.
+
+Two inputs the author never touches: the catalog and the brand.
+
+Transition: those boxes are packages, and they stack.
+</Notes>

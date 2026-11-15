@@ -1,0 +1,16 @@
+---
+layout: diagram
+title: Every layout draws on one canvas with margins, a title line and a region
+eyebrow: The canvas
+budget: 1m
+---
+
+<Svg src="../assets/canvas.svg" title="The 1920 by 1080 slide canvas: brand margins, the shared title line, the content region and the chrome" steps={{ margins: 1, titleline: 2, region: 3, chrome: 4 }} recolor={{ "#e4572e": "accent", "#9aa1ae": "edge", "#ffffff": "bg", "#f4f5f8": "group", "#161920": "fg", "#555c6a": "label" }} draw />
+
+<Notes>
+The canvas is always 1920 by 1080. [click] The brand sets the margins. [click] Every title sits on the same line, so slides do not jump when you advance. [click] Under it is the region: the room a chart, a diagram or a table sizes itself to. [click] And the chrome, page number and logo, lives in the margins.
+
+This picture is an SVG file, by the way: recoloured to the brand and revealed by element id.
+
+Transition: a layout is how a slide claims part of that canvas.
+</Notes>

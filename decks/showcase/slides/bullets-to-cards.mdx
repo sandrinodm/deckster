@@ -1,0 +1,48 @@
+---
+layout: code
+title: A bullet list becomes cards in one edit
+eyebrow: Changing form
+budget: 1m
+---
+
+<CodeMove file="slides/lint-checks.mdx">
+
+```mdx
+---
+layout: content
+title: Lint checks twice
+---
+
+- Schema
+- Rendered
+```
+
+```mdx
+---
+layout: cards
+title: Lint checks twice
+cards:
+  - icon: braces
+    title: Schema
+  - icon: ruler
+    title: Rendered
+---
+```
+
+</CodeMove>
+
+<Aside>
+
+- The claim stays, the form changes
+- Icons come from the brand's set
+- An unknown icon fails the build
+
+</Aside>
+
+<Notes>
+Here is a list that wants to be something better. [click] Same title, same two ideas, now as cards with icons. The tokens you just watched glide are the ones that survived the edit.
+
+Nobody chose a grid, a gap or an icon size.
+
+Transition: which raises the question of what a slide file is not allowed to say.
+</Notes>

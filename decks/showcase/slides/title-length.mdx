@@ -1,0 +1,40 @@
+---
+layout: chart
+title: Longer titles overflow more often, which is why every layout caps them
+eyebrow: Why budgets exist
+budget: 1m
+---
+
+<Scatter
+  data={[
+    { layout: 'section', chars: 22, rate: 2 },
+    { layout: 'closing', chars: 27, rate: 4 },
+    { layout: 'code', chars: 35, rate: 6 },
+    { layout: 'split', chars: 38, rate: 9 },
+    { layout: 'cards', chars: 47, rate: 10 },
+    { layout: 'steps', chars: 52, rate: 13 },
+    { layout: 'table', chars: 60, rate: 15 },
+    { layout: 'chart', chars: 66, rate: 19 },
+    { layout: 'content', chars: 72, rate: 20 },
+    { layout: 'diagram', chars: 78, rate: 24 },
+  ]}
+  x="chars"
+  y="rate"
+  label="layout"
+  trend
+  highlight={['diagram', 'content']}
+  format={{ digits: 0 }}
+  xLabel="Average title length, characters"
+  yLabel="Drafts with an overflow, %"
+  unit="%"
+/>
+
+<Footnote>Illustrative data: ten layouts in Halden's first drafts, before the title limits were enforced.</Footnote>
+
+<Notes>
+Each dot is a layout. Left to right: how long its titles ran on average. Bottom to top: how often a first draft overflowed.
+
+The relation is about as clean as it gets. So every layout publishes a title limit, and the build refuses a longer one before anything renders.
+
+Transition: put the brand, the budgets and the linter together and you get a loop.
+</Notes>

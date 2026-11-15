@@ -1,0 +1,40 @@
+---
+layout: chart
+title: Too much content and overflow are most of what a first draft gets wrong
+eyebrow: What lint finds
+budget: 1m
+---
+
+<BarChart
+  data={[
+    { rule: 'Too much content', share: 34 },
+    { rule: 'Overflow', share: 22 },
+    { rule: 'Chart without a highlight', share: 14 },
+    { rule: 'Missing notes', share: 11 },
+    { rule: 'Low contrast', share: 7 },
+    { rule: 'Other rules', share: 12 },
+  ]}
+  x="rule"
+  y="share"
+  unit="%"
+  highlight={['Too much content', 'Overflow']}
+  caption="Share of lint findings in first drafts, by rule, April to October 2026"
+/>
+
+<Aside>
+
+### Nine in ten
+
+were fixed by following the fix line exactly as the linter wrote it.
+
+</Aside>
+
+<Footnote>Illustrative data: Halden is a fictional studio.</Footnote>
+
+<Notes>
+At Halden, more than half of all first-draft findings are the same two: too many words for the layout, and content spilling out of its box. Exactly the things a person stops seeing after an hour with their own slide.
+
+And the number on the right: nine in ten were fixed by doing what the fix line said.
+
+Transition: one of those has a cause you can see.
+</Notes>

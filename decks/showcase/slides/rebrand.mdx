@@ -1,0 +1,33 @@
+---
+layout: code
+title: Rebranding a deck is a one-line diff
+eyebrow: Brands
+surface: gradient
+budget: 1m
+---
+
+```ts title="decks/showcase/deck.config.ts" diff
+export default defineDeck({
+  title: 'Slides an agent can write',
+-  brand: 'default',
++  brand: 'nocturne',
+  duration: '45m',
+  slides: ['cover', 'speaker', 'the-claim'],
+});
+```
+
+<Aside>
+
+- Surfaces, type, icons and charts all follow
+- `--brand nocturne` previews it with no edit
+- Budgets count words, so the text still fits
+
+</Aside>
+
+<Notes>
+This is the config of the deck you are watching. One line changes and every slide is in another brand: other fonts, other colours, another icon set, other chart palettes.
+
+You do not even need the edit. Lint, shot and dev take a brand flag, so you can check a deck in a brand it was not written for. This deck passes in both.
+
+Transition: at Halden that is not a party trick, it is the business.
+</Notes>

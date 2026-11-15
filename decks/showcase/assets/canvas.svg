@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620" fill="none">
+  <rect x="10" y="10" width="1580" height="600" rx="18" fill="#f4f5f8" stroke="#9aa1ae" stroke-width="3"/>
+  <text x="40" y="60" font-size="30" font-weight="600" fill="#161920">1920 × 1080</text>
+  <g id="margins">
+    <rect x="120" y="90" width="1360" height="440" rx="6" stroke="#9aa1ae" stroke-width="3" stroke-dasharray="14 10"/>
+    <text x="1480" y="64" text-anchor="end" font-size="30" fill="#555c6a">Brand margins</text>
+  </g>
+  <g id="titleline">
+    <rect x="140" y="112" width="640" height="50" rx="8" fill="#161920"/>
+    <path d="M140 186h1320" stroke="#e4572e" stroke-width="5"/>
+    <text x="1460" y="148" text-anchor="end" font-size="30" fill="#555c6a">Title line, the same on every slide</text>
+  </g>
+  <g id="region">
+    <rect x="140" y="212" width="1320" height="298" rx="12" fill="#ffffff" stroke="#e4572e" stroke-width="5"/>
+    <text x="800" y="352" text-anchor="middle" font-size="38" font-weight="600" fill="#161920">Region</text>
+    <text x="800" y="402" text-anchor="middle" font-size="30" fill="#555c6a">A chart, diagram, table or demo sizes itself to this box</text>
+  </g>
+  <g id="chrome">
+    <rect x="120" y="556" width="110" height="28" rx="6" fill="#9aa1ae"/>
+    <path d="M270 570h560" stroke="#9aa1ae" stroke-width="3"/>
+    <text x="1420" y="580" text-anchor="end" font-size="30" fill="#555c6a">Chrome: logo, progress, page number</text>
+    <circle cx="1460" cy="570" r="16" fill="#9aa1ae"/>
+  </g>
+</svg>

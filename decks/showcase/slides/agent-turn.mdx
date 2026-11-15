@@ -1,0 +1,31 @@
+---
+layout: diagram
+title: An agent turn edits a working copy, and only content reaches the deck
+eyebrow: The chat agent
+surface: inverse
+budget: 1m30s
+---
+
+<SequenceDiagram title="One turn of the chat agent, from the prompt to the synced slide">
+  <Actor id="panel" kind="client" title="Chat panel" />
+  <Actor id="host" kind="service" title="Agent host" />
+  <Actor id="agent" kind="agent" title="Agent" />
+  <Actor id="copy" kind="storage" title="Working copy" />
+  <Actor id="deck" kind="document" title="Deck" />
+  <Message from="panel" to="host" label="Prompt and slide" at={1} />
+  <Message from="host" to="copy" label="Clone the content" at={2} />
+  <Message from="host" to="agent" label="Run one turn" at={3} />
+  <Message from="agent" to="copy" label="Edit the slide" at={4} />
+  <Message from="copy" to="deck" label="Sync content only" at={5} />
+  <Message from="host" to="panel" label="Lint and changes" reply at={6} />
+</SequenceDiagram>
+
+<Notes>
+Here is how little the agent may do. [click] You type in the panel; the host gets the prompt and which slide you are on. [click] It clones the deck's content, slides and assets only, into a working copy. [click] It runs one turn of the agent, [click] which edits the working copy and nothing else.
+
+[click] A sync brings changes into the deck, and it takes content files only. A config, a stylesheet, a brand file: ignored and reported. [click] Then the host lints and tells you what changed.
+
+Every turn has an undo.
+
+Transition: this is what it looks like from the chair.
+</Notes>

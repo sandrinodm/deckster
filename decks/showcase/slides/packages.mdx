@@ -1,0 +1,45 @@
+---
+layout: diagram
+title: Five layers, and an author only ever edits the top one
+eyebrow: Architecture
+surface: inverse
+budget: 1m
+---
+
+<Layers title="The framework in five layers, from a deck's content down to the tooling">
+  <Layer title="Your deck" subtitle="Content" at={1}>
+    <Item kind="document" title="Slides" />
+    <Item kind="document" title="Config" />
+    <Item kind="storage" title="Assets" />
+  </Layer>
+  <Layer title="Kit" subtitle="Layouts and components" at={2}>
+    <Item kind="service" title="Layouts" />
+    <Item kind="service" title="Charts" />
+    <Item kind="service" title="Diagrams" />
+    <Item kind="service" title="Media" />
+  </Layer>
+  <Layer title="Engine" subtitle="Renders a deck" at={3}>
+    <Item kind="client" title="Canvas" />
+    <Item kind="function" title="Steps" />
+    <Item kind="gateway" title="Navigation" />
+  </Layer>
+  <Layer title="Brand" subtitle="Owns the look" at={4}>
+    <Item kind="document" title="Tokens" />
+    <Item kind="document" title="Type scale" />
+    <Item kind="storage" title="Icon set" />
+  </Layer>
+  <Layer title="Tooling" subtitle="CLI and Vite plugin" at={5}>
+    <Item kind="function" title="dev" />
+    <Item kind="function" title="lint" />
+    <Item kind="function" title="shot" />
+    <Item kind="function" title="export" />
+  </Layer>
+</Layers>
+
+<Notes>
+Top to bottom. [click] Your deck: slides, a config, assets. That is all an author or an agent edits. [click] The kit: layouts and components. [click] The engine renders and navigates. [click] The brand owns the look. [click] And the tooling checks and ships it.
+
+A designer works in layer four. Everyone else stays in layer one.
+
+Transition: evidence is not only drawings. Some of it moves.
+</Notes>

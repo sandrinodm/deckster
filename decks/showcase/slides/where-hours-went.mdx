@@ -1,0 +1,33 @@
+---
+layout: chart
+title: The seven saved hours were boxes, brand fixes and export rework
+eyebrow: Where the time went
+budget: 1m
+---
+
+<Waterfall
+  data={[
+    { step: '2025 process', hours: 11 },
+    { step: 'Placing boxes', hours: -3.5 },
+    { step: 'Brand fixes', hours: -2.5 },
+    { step: 'Export rework', hours: -1.5 },
+    { step: 'Lint passes', hours: 0.5 },
+    { step: 'In code', hours: null },
+  ]}
+  x="step"
+  y="hours"
+  totals={['2025 process', 'In code']}
+  better="down"
+  unit="h"
+  caption="Hours of deck work per talk, 2025 process to decks in code"
+/>
+
+<Footnote>Illustrative data: Halden is a fictional studio.</Footnote>
+
+<Notes>
+Read it left to right. Eleven hours. Three and a half of them were placing and nudging boxes. Two and a half were fixing brand mistakes after review. One and a half were redoing the export.
+
+The one bar that goes up is honest: running the linter and looking at screenshots costs half an hour that was not there before.
+
+Transition: so how much of the old eleven hours was the actual talk?
+</Notes>

@@ -1,0 +1,42 @@
+---
+layout: code
+title: Lint names the file, the rule and the fix
+eyebrow: Real output, this deck
+surface: inverse
+budget: 1m15s
+---
+
+<Terminal title="~/deckster" at={1}>
+  <Cmd>pnpm deck lint showcase</Cmd>
+  <Out tone="error">error  content-budget (bullets-to-cards)</Out>
+  <Out>The body slot holds 13 lines; its layout allows 11.</Out>
+  <Out tone="muted">Fix: Cut it to the essentials, split the slide, …</Out>
+  <Out tone="error">showcase: 1 error, 0 warnings in 12 slides</Out>
+  <Cmd>pnpm deck lint showcase</Cmd>
+  <Out tone="success">showcase: no problems in 12 slides</Out>
+  <Cmd>pnpm deck lint showcase --brand nocturne</Cmd>
+  <Out tone="success">showcase: no problems in 22 slides</Out>
+</Terminal>
+
+<Aside>
+
+<Lottie src="../assets/check.json" alt="A check mark drawing itself inside a ring" size="md" role="fg" />
+
+- A finding from this deck's first draft
+- Exit code 1 until it is fixed
+
+</Aside>
+
+<Notes>
+This is copied from my terminal while I wrote this deck. [click] First run, twelve slides in: the code slide you saw earlier had thirteen lines in a layout that allows eleven. Rule, slide, and what to do about it.
+
+[click] I cut a card. Clean.
+
+[click] Ten slides later, the same deck in the other brand. Also clean.
+
+Notice what is not on screen: no stack trace, no selector soup. A sentence about the slide, and a sentence about what to do.
+
+If asked: the output is shortened to fit; the full fix line lists four options.
+
+Transition: what do first drafts usually get wrong?
+</Notes>

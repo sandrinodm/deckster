@@ -1,0 +1,35 @@
+---
+layout: table
+title: Limits are published per layout, and a split takes half the title of a content slide
+eyebrow: Budgets
+surface: inverse
+budget: 45s
+---
+
+<Table
+  data={[
+    { layout: 'content', title: 90, words: 72, bullets: 6 },
+    { layout: 'split', title: 44, words: 48, bullets: 4 },
+    { layout: 'image', title: 44, words: 24 },
+    { layout: 'section', title: 40, words: 16 },
+    { layout: 'title', title: 36, words: 14 },
+  ]}
+  columns={[
+    { key: 'layout', label: 'Layout' },
+    { key: 'title', label: 'Title, characters', bar: true },
+    { key: 'words', label: 'Body, words' },
+    { key: 'bullets', label: 'Bullets' },
+  ]}
+  highlight={{ row: 'split' }}
+  caption="Largest title and body each layout accepts"
+/>
+
+<Footnote>Read from the layout catalog in this repository; a layout's variants tighten these further.</Footnote>
+
+<Notes>
+These are real limits, straight from the catalog an agent reads before it writes. A content slide takes a ninety-character title. A split, where the title shares the width with a picture, takes forty-four.
+
+An author who knows the limit before writing does not write a title that needs shrinking. An agent that knows it does not either.
+
+Transition: and when the content outgrows a form, you change the form.
+</Notes>

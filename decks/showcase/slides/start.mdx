@@ -1,0 +1,29 @@
+---
+layout: steps
+title: Your first deck is four commands away
+eyebrow: Start
+surface: inverse
+reveal: true
+steps:
+  - title: Scaffold
+    text: pnpm deck new my-talk, then pnpm install
+  - title: Add a slide
+    text: pnpm deck new slide my-talk intro
+  - title: Watch it
+    text: pnpm deck dev my-talk, with hot reload
+  - title: Check it
+    text: pnpm deck lint my-talk, then deck shot
+budget: 45s
+---
+
+<Footnote>A new deck starts on the title layout and already passes lint.</Footnote>
+
+<Notes>
+Four commands. [click] Scaffold: you get a cover that already passes lint. [click] Add a slide from any layout's example. [click] Watch it with hot reload. [click] And check it.
+
+Or hand the first one to an agent with the catalogs, and review what comes back.
+
+Six commands cover a deck's life: dev, lint, shot, diff for pull requests, export, and present. Each takes a json flag, which is how agents use them.
+
+Transition: everything I skipped is linked from the next slide.
+</Notes>

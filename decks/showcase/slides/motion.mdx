@@ -1,0 +1,32 @@
+---
+layout: split
+title: Video plays in beats, exports get stills
+eyebrow: Media
+ratio: 5:7
+budget: 1m
+---
+
+- <Icon name="play" role="accent" /> Each press plays one cue
+- <Icon name="presentation" role="accent" /> It pauses when the deck moves on
+- <Icon name="printer" role="accent" /> The PDF gets a poster per part
+
+<Media>
+  <Video
+    src="../assets/aurora.webm"
+    poster="../assets/aurora-poster.jpg"
+    posters={['../assets/aurora-part-1.jpg', '../assets/aurora-part-2.jpg', '../assets/aurora-part-3.jpg']}
+    alt="A slow wash of colour moving across the screen from left to right"
+    cues={[0, 3, 6]}
+    loop
+  />
+</Media>
+
+<Caption>Nine seconds of generated gradients, cut into three parts by steps.</Caption>
+
+<Notes>
+A video is a component like any other. [click] First part. [click] Second. [click] Third. Each press plays one cue and then waits for me.
+
+In the PDF and the PowerPoint file this slide shows a still per part, because the component has a poster for each. The linter warns when one is missing.
+
+Transition: and a still picture gets the same care.
+</Notes>

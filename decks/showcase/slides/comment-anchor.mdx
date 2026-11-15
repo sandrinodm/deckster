@@ -1,0 +1,35 @@
+---
+layout: diagram
+title: A review comment resolves to a file and a line, or says that it cannot
+eyebrow: Review comments
+budget: 1m15s
+---
+
+<Tree title="How a review comment finds its line again after the slide was edited">
+  <Node id="reviewer" kind="user" title="Reviewer" subtitle="Clicks an element">
+    <Node id="comment" kind="document" title="Comment" subtitle="A file in .feedback/">
+      <Node id="ok" title="ok" subtitle="The line is unchanged" at={1} state="success" />
+      <Node id="moved" title="moved" subtitle="Found on another line" at={2} />
+      <Node id="guessed" title="guessed" subtitle="The closest similar line" at={3} />
+      <Node id="lost" title="lost" subtitle="Only the file is known" at={4} state="error" />
+    </Node>
+  </Node>
+</Tree>
+
+<Aside>
+
+- Press `c` in the browser to comment
+- Comments are committed with the deck
+- Lint warns while one is open
+
+</Aside>
+
+<Notes>
+Tomás presses c, clicks the thing he means, and types. The comment is saved as a file next to the deck, with the source line of the element he clicked.
+
+Then I edit the slide, so the line moves. The comment has four honest answers. [click] ok: still there. [click] moved: found elsewhere. [click] guessed: reworded, here is the closest match, please check. [click] lost: I only know the file.
+
+An agent reads the same list as JSON, with a screenshot per comment.
+
+Transition: and the agent can also sit next to the slide.
+</Notes>
