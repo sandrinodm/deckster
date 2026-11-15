@@ -9,8 +9,8 @@ name: Publish to npm
 # release: create the `npm` environment (Settings, Environments), and on npmjs.com add this
 # repository and `publish.yml` as a trusted publisher for @deckster/cli.
 #
-# The job refuses to publish while packages/cli/package.json is `private`: the CLI must first be
-# bundled into a self-contained package that works outside this repository.
+# The job refuses to publish while packages/cli/package.json is `private`. The package ships the
+# framework's TypeScript source in dist/framework, which `pnpm pack` stages in its prepack step.
 #
 # Actions are pinned to commit SHAs so a moved tag cannot change what runs here.
 on:
@@ -56,7 +56,7 @@ jobs:
           import assert from 'node:assert/strict';
           import { readFileSync } from 'node:fs';
           const pkg = JSON.parse(readFileSync('packages/cli/package.json', 'utf8'));
-          assert.ok(!pkg.private, `${pkg.name} is private: bundle it into a publishable package first`);
+          assert.ok(!pkg.private, `${pkg.name} is private: remove "private" from its package.json first`);
           assert.match(pkg.version, /^\d+\.\d+\.\d+$/, 'Only stable versions can be published');
           assert.equal(process.env.GITHUB_REF, `refs/tags/v${pkg.version}`, 'Select the tag matching packages/cli/package.json');
           NODE
@@ -83,10 +83,16 @@ jobs:
       # an undeclared dependency fails here instead of on a user's machine.
       - name: Test the exact package to publish
         working-directory: ${{ runner.temp }}
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
         run: |
           mkdir consumer
           npm install --no-audit --no-fund --prefix consumer "$RUNNER_TEMP/deckster-cli.tgz"
           ./consumer/node_modules/.bin/deck --help
+          mkdir workspace
+          cd workspace
+          ../consumer/node_modules/.bin/deck new smoke
+          ../consumer/node_modules/.bin/deck build smoke
 
       - name: Publish with npm trusted publishing
         working-directory: ${{ runner.temp }}

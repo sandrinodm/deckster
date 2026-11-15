@@ -1,7 +1,8 @@
 name: CI
 
 # Format, lint, types, unit and browser tests, a build of every deck and a lint of every deck, then
-# a check that none of it left files behind; unit tests again on the oldest supported Node.
+# a check that none of it left files behind; unit tests again on the oldest supported Node; and a
+# smoke test of the packed CLI installed outside the repository.
 # Actions are pinned to commit SHAs so a moved tag cannot change what runs here.
 on:
   push:
@@ -125,3 +126,50 @@ jobs:
 
       - name: Build hello
         run: pnpm deck build hello
+
+  # The CLI as users get it: packed, installed globally into an empty prefix and run in a folder
+  # that is not a checkout. It catches a file missing from the tarball and a dependency the package
+  # forgot to declare, which the repository's own run never notices.
+  package-smoke:
+    name: package smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pack the CLI
+        run: pnpm --filter @deckster/cli pack --out "$RUNNER_TEMP/deckster-cli.tgz"
+
+      - name: Install the package globally
+        working-directory: ${{ runner.temp }}
+        run: npm install --global --no-audit --no-fund --prefix "$RUNNER_TEMP/prefix" "$RUNNER_TEMP/deckster-cli.tgz"
+
+      - name: Install the browser the installed package uses
+        run: |
+          "$RUNNER_TEMP/prefix/lib/node_modules/@deckster/cli/node_modules/.bin/playwright" install chromium --with-deps
+
+      - name: Create, check, build, shoot and export a deck
+        working-directory: ${{ runner.temp }}
+        run: |
+          export PATH="$RUNNER_TEMP/prefix/bin:$PATH"
+          mkdir workspace
+          cd workspace
+          deck --help
+          deck new smoke
+          deck lint smoke
+          deck build smoke
+          deck shot smoke
+          deck export smoke --pdf
+          deck types
