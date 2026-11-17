@@ -1,6 +1,6 @@
 import type { Rollup, ViteDevServer } from 'vite';
 
-import { DEFAULT_BRAND, describeProblem } from '@deckster/brand';
+import { describeProblem } from '@deckster/brand';
 import { BRANDS_DIR, onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
 import { Effect } from 'effect';
 import path from 'node:path';
@@ -9,6 +9,7 @@ import type { DeckLocation } from '#decks/deck-paths.ts';
 import type { RunEffect } from '#run-effect.ts';
 
 import { brandCssCode, brandModuleCode, RESOLVED_BRAND_ID } from '#brand/brand-modules.ts';
+import { deckBrandName } from '#brand/deck-brand-name.ts';
 import { loadDeckBrand } from '#brand/load-deck-brand.ts';
 import { loadDeck } from '#decks/load-deck.ts';
 
@@ -75,7 +76,7 @@ export function createActiveBrand(options: ActiveBrandOptions): ActiveBrand {
     return options.run(
       Effect.gen(function* () {
         const deck = yield* loadDeck(options.workspaceRoot, location);
-        name = options.override ?? deck.config.brand ?? DEFAULT_BRAND;
+        name = deckBrandName(deck.config, options.override);
         return yield* loadDeckBrand(options.workspaceRoot, name);
       }),
     );

@@ -1,3 +1,4 @@
+import type { BrandTokens } from '@deckster/brand';
 import type { MdxContext, MdxExtension, MdxPlugins } from '@deckster/engine/mdx';
 
 import { Effect, Predicate } from 'effect';
@@ -35,6 +36,31 @@ export const loadMdxExtensions = Effect.fn('loadMdxExtensions')(function* (
     rehypePlugins: created.flatMap((plugins) => plugins.rehypePlugins ?? []),
   };
 });
+
+/**
+ * The context the MDX extensions of one deck are created with: the workspace, the deck folder and
+ * the parts of the brand that build-time transforms read.
+ *
+ * @param workspaceRoot - The absolute workspace root.
+ * @param deckDir - The absolute deck folder.
+ * @param tokens - The resolved tokens of the brand the deck renders with.
+ * @returns The context for `loadMdxExtensions`.
+ */
+export function mdxContextOf(
+  workspaceRoot: string,
+  deckDir: string,
+  tokens: BrandTokens,
+): MdxContext {
+  return {
+    workspaceRoot,
+    deckDir,
+    brand: {
+      name: tokens.name,
+      icons: tokens.icons,
+      treatments: Object.keys(tokens.imagery.treatments),
+    },
+  };
+}
 
 /**
  * Imports an extension module and checks its default export.

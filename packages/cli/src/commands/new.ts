@@ -1,36 +1,41 @@
-import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
 
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * The files `deck new <deck>` writes besides the config and the first slide: a workspace package in
- * the repository, nothing in a published CLI's workspace.
+ * The files `deck new <deck>` writes in the repository besides the config and the first slide: a
+ * workspace package. In a published CLI's workspace it writes none.
  */
-const DECK_FILES = FRAMEWORK_INSTALLED ? '' : 'package.json, tsconfig.json ';
+const WORKSPACE_DECK_FILES = 'package.json, tsconfig.json ';
 
 /**
- * What to do after `deck new <deck>`.
+ * What to do after `deck new <deck>` in the repository. In a published CLI's workspace there is
+ * nothing to do.
  */
-const AFTER_NEW = FRAMEWORK_INSTALLED
-  ? ''
-  : ` Then run \`pnpm install\`: the deck is a
+const WORKSPACE_AFTER_NEW = ` Then run \`pnpm install\`: the deck is a
                               workspace package, and until it is linked every command on it
                               fails with "Cannot find package '@deckster/engine'".`;
 
 /**
  * The text `deck new --help` prints.
+ *
+ * @param installed - Whether the CLI is a published copy, whose new decks are plain folders rather
+ *   than workspace packages.
+ * @returns The help text.
  */
-const HELP = `Usage: deck new <deck> [--title <text>] [--brand <name>] [--duration <length>]
+function newHelp(installed: boolean): string {
+  const deckFiles = installed ? '' : WORKSPACE_DECK_FILES;
+  const afterNew = installed ? '' : WORKSPACE_AFTER_NEW;
+  return `Usage: deck new <deck> [--title <text>] [--brand <name>] [--duration <length>]
        deck new slide <deck> <id> [--layout <name>]
        deck new app <deck> <name>
 
 Scaffolds a deck, adds a slide to one, or adds a mini app to one.
 
   deck new <deck>             Creates decks/<deck>/ with deck.config.ts (title, brand,
-                              optional duration), ${DECK_FILES}and a first slide
+                              optional duration), ${deckFiles}and a first slide
                               that uses the title layout, from that layout's example. It passes
-                              \`deck lint\` as created.${AFTER_NEW}
+                              \`deck lint\` as created.${afterNew}
   deck new slide <deck> <id>  Creates slides/<id>.mdx from the layout's example (see
                               \`${deckCommand()} layouts --json\`) with the slide's own title, and
                               appends <id> to the slide list in deck.config.ts.
@@ -52,6 +57,7 @@ Options:
   --layout <name>   The layout for the new slide, from the layout catalog. Run
                     \`${deckCommand()} layouts\` to list them. Default: default.
   -h, --help        Show this help.`;
+}
 
 /**
  * `deck new`: scaffold a deck or append a slide.
@@ -70,7 +76,7 @@ export const newCommand: Command = {
   /**
    * The text `deck new --help` prints.
    */
-  help: HELP,
+  help: (installed) => Promise.resolve(newHelp(installed)),
 
   /**
    * Loads the command's body on first use and runs it.

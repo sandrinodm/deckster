@@ -26,7 +26,11 @@ import {
 } from '#layouts/load-layout-catalog.ts';
 import { OPEN_IN_EDITOR_ENDPOINT, refuseOpenInEditor } from '#open-in-editor-guard.ts';
 import { makeRunEffect } from '#run-effect.ts';
-import { DEFAULT_MDX_EXTENSIONS, loadMdxExtensions } from '#slides/load-mdx-extensions.ts';
+import {
+  DEFAULT_MDX_EXTENSIONS,
+  loadMdxExtensions,
+  mdxContextOf,
+} from '#slides/load-mdx-extensions.ts';
 import {
   transformMdxPartial,
   transformMdxSlide,
@@ -311,15 +315,10 @@ export function deckPlugin(
       const deck = await activeDeck();
       const { tokens } = await brand.load();
       const mdx = await run(
-        loadMdxExtensions(options.mdxExtensions ?? DEFAULT_MDX_EXTENSIONS, {
-          workspaceRoot,
-          deckDir: deck.location.dir,
-          brand: {
-            name: tokens.name,
-            icons: tokens.icons,
-            treatments: Object.keys(tokens.imagery.treatments),
-          },
-        }),
+        loadMdxExtensions(
+          options.mdxExtensions ?? DEFAULT_MDX_EXTENSIONS,
+          mdxContextOf(workspaceRoot, deck.location.dir, tokens),
+        ),
       );
       const reported: MdxWarning[] = [];
       warnings.set(file.file, reported);

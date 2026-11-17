@@ -11,7 +11,7 @@
     "presentation",
     "slides"
   ],
-  "homepage": "https://github.com/sandrinodm/deckster/tree/main/packages/cli#readme",
+  "homepage": "https://sandrinodm.github.io/deckster/",
   "bugs": "https://github.com/sandrinodm/deckster/issues",
   "license": "MIT",
   "author": "Sandrino Di Mattia",
@@ -33,7 +33,9 @@
     "#*": "./src/*"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./docs-brands": "./src/docs-data/docs-brands.ts",
+    "./docs-data": "./src/docs-data/docs-data.ts"
   },
   "publishConfig": {
     "bin": {

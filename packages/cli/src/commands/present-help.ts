@@ -1,20 +1,29 @@
-import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
-
 import { AGENT_HELP } from '#agent/agent-flags.ts';
 import { DEFAULT_DECK } from '#workspace.ts';
 
 /**
- * How the Electron binary is downloaded: one command in the repository; in a published install the
- * error that appears when the binary is missing prints the exact command.
+ * How the Electron binary is downloaded in a published install: the error that appears when the
+ * binary is missing prints the exact command.
  */
-const ELECTRON_DOWNLOAD = FRAMEWORK_INSTALLED
-  ? "Electron's binary is downloaded once; `deck present` prints the command when it is missing"
-  : "Electron's binary is downloaded once with `pnpm --filter @deckster/shell exec install-electron`";
+const INSTALLED_ELECTRON_DOWNLOAD =
+  "Electron's binary is downloaded once; `deck present` prints the command when it is missing";
+
+/**
+ * How the Electron binary is downloaded in the repository: one workspace command.
+ */
+const WORKSPACE_ELECTRON_DOWNLOAD =
+  "Electron's binary is downloaded once with `pnpm --filter @deckster/shell exec install-electron`";
 
 /**
  * The text `deck present --help` prints.
+ *
+ * @param installed - Whether the CLI is a published copy, which words the Electron download line
+ *   for an npm install instead of the repository.
+ * @returns The help text.
  */
-export const HELP = `Usage: deck present [deck] [--brand <name>] [--port <n>] [--built] [--fullscreen]
+export function presentHelp(installed: boolean): string {
+  const electronDownload = installed ? INSTALLED_ELECTRON_DOWNLOAD : WORKSPACE_ELECTRON_DOWNLOAD;
+  return `Usage: deck present [deck] [--brand <name>] [--port <n>] [--built] [--fullscreen]
                     [--display <n>] [--presenter [display]] [--kiosk] [--browser] [--verbose]
                     [--agent claude|codex] [--agent-panel right|bottom] [--agent-model <m>]
                     [--agent-web]
@@ -51,4 +60,5 @@ ${AGENT_HELP}
                   the agent panel and comments need.
   -h, --help      Show this help.
 
-${ELECTRON_DOWNLOAD} (about 120 MB). See docs/present.md.`;
+${electronDownload} (about 120 MB). See docs/present.md.`;
+}

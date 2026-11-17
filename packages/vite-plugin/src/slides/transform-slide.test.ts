@@ -4,7 +4,12 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import { DeckBuildError } from '#errors.ts';
 import { TEST_CATALOG } from '#layouts/test-catalog.fixture.ts';
-import { transformMdxSlide, transformTsxSlide, type SlideSource } from '#slides/transform-slide.ts';
+import {
+  readSlideTitle,
+  transformMdxSlide,
+  transformTsxSlide,
+  type SlideSource,
+} from '#slides/transform-slide.ts';
 
 const SLIDE_META_PATTERN = /export const slideMeta = (.*);\n$/;
 
@@ -374,5 +379,29 @@ describe('GitHub-flavored markdown in MDX slides', () => {
     expect(code).toContain('_components.table');
     expect(code).toContain('_components.td');
     expect(code).not.toContain('| District |');
+  });
+});
+
+describe('readSlideTitle', () => {
+  it('gives each slide the title its transform writes into slideMeta', async () => {
+    const cases = [
+      { id: 'framed', kind: 'mdx', code: '---\ntitle: From the frontmatter\n---\n# Not this' },
+      {
+        id: 'headed',
+        kind: 'mdx',
+        code: '<Notes>\n# Not a notes heading\n</Notes>\n\n## Why *now*',
+      },
+      { id: 'bare', kind: 'mdx', code: 'Only text' },
+      { id: 'live', kind: 'tsx', code: 'export default () => <h1>A TSX heading</h1>;' },
+      { id: 'blank', kind: 'tsx', code: 'export default () => <p>no heading</p>;' },
+    ] as const;
+    for (const { id, kind, code } of cases) {
+      const source = slide(id, kind, code);
+      const transformed = await Effect.runPromise(
+        kind === 'mdx' ? transformMdxSlide(source, false) : transformTsxSlide(source),
+      );
+      const title = await Effect.runPromise(readSlideTitle({ ...source, kind }));
+      expect(title, id).toBe((metaOf(transformed) as { title: string }).title);
+    }
   });
 });
