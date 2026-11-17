@@ -1,5 +1,7 @@
 # The agent panel
 
+The user guide is also on the documentation site: [The agent panel](https://sandrinodm.github.io/deckster/ai-agents/agent-panel/).
+
 `deck dev <deck> --agent claude` (or `--agent codex`) adds a chat panel beside the slide. You ask
 for a change to the slide on screen; the agent edits a working copy of the deck's slides, media and
 data, the editor brings those edits into the deck (the slide hot-reloads then), and every turn can

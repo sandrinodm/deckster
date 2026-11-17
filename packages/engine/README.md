@@ -32,6 +32,15 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
   element, not the deck.
 - The URL hash is `#/<slide>/<step>`, with a 1-based slide number. A hash you type or link to
   may also name the slide by id (`#/steps/2`).
+- Embed mode, for showing one slide of a built deck in an iframe on another page: add `?embed`
+  (on and off like `?static`), as in `<iframe src="/decks/layouts/?embed#/team-grid">`. Plugins
+  keep only their layouts, components and chrome, so the presenter tools, comments and agent panel
+  are not mounted. A small control at the bottom offers previous and next, "Slide n of N" and an
+  "Open full deck" link to the same position in a new tab; it scales with the frame, shows only
+  icons and "n/N" in a narrow one, and fades out after 2 seconds without input until the pointer
+  moves, a key is pressed or keyboard focus enters it. The deck never takes focus by itself,
+  so keys reach it only after the reader clicks into the frame, and moves replace the history entry
+  instead of adding one. The slide still scales to the frame and the hash still addresses it.
 - `window.__deck` is the automation API `deck shot`, `deck lint`, export and the browser tests use:
   `slides`, `position`, `isStatic`, `goto`, `next`, `prev` and `ready()`.
 - `useReadyHold(pending)` makes `ready()` wait for content that loads late. `ready()` also waits

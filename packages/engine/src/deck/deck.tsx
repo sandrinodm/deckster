@@ -21,6 +21,8 @@ import { stageTransition } from '#deck/stage-transitions.ts';
 import { useHashSync } from '#deck/use-hash-sync.ts';
 import { useKeyboardNavigation } from '#deck/use-keyboard-navigation.ts';
 import { usePointerNavigation } from '#deck/use-pointer-navigation.ts';
+import { EmbedControls } from '#embed/embed-controls.tsx';
+import { embedPlugins } from '#embed/embed-plugins.ts';
 import { useMorphMoves } from '#morph/use-morph-moves.ts';
 import { parseHash } from '#navigation/hash.ts';
 import {
@@ -68,6 +70,13 @@ export type DeckProps = {
    * Static mode: every slide mounts and motion primitives render their end state.
    */
   isStatic?: boolean;
+
+  /**
+   * Embed mode, for a deck in an iframe: plugins keep only their slide parts (no stage wrappers,
+   * overlays, or key and click handlers, so no presenter tools), and a small previous/next control
+   * with a link to the whole deck is shown instead.
+   */
+  isEmbed?: boolean;
 };
 
 /**
@@ -79,11 +88,19 @@ export type DeckProps = {
  * show a slide anywhere else (a thumbnail, the presenter's next slide), render a `SlideView` inside
  * it.
  */
-export function Deck({ manifest, plugins = NO_PLUGINS, isStatic = false }: DeckProps): ReactNode {
+export function Deck({
+  manifest,
+  plugins = NO_PLUGINS,
+  isStatic = false,
+  isEmbed = false,
+}: DeckProps): ReactNode {
   const slideIds = useMemo(() => manifest.slides.map((slide) => slide.id), [manifest]);
   const [state, dispatch] = useReducer(navigate, slideIds, initialState);
   const position = useMemo(() => currentPosition(state), [state]);
-  const runtime = useMemo(() => composePlugins(plugins), [plugins]);
+  const runtime = useMemo(
+    () => composePlugins(isEmbed ? embedPlugins(plugins) : plugins),
+    [plugins, isEmbed],
+  );
   const [readiness] = useState(createReadinessRegistry);
   const reportStepCount = useCallback(
     (slide: number, count: number, final: boolean) =>
@@ -125,6 +142,7 @@ export function Deck({ manifest, plugins = NO_PLUGINS, isStatic = false }: DeckP
             className="deck-viewport"
             data-brand={manifest.brand}
             data-static={isStatic}
+            data-embed={isEmbed}
             data-slide={position.slide}
             data-step={controls.position.step}>
             <div ref={stageRef} className="deck-main">
@@ -141,6 +159,7 @@ export function Deck({ manifest, plugins = NO_PLUGINS, isStatic = false }: DeckP
             {runtime.overlays.map((Overlay, index) => (
               <Overlay key={index} />
             ))}
+            {isEmbed ? <EmbedControls /> : null}
           </div>
         </DeckContext>
       </DeckRuntimeContext>

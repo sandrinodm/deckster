@@ -1,0 +1,157 @@
+/*
+ * The embed control floats over the bottom edge of the frame, stays slightly dimmed until the
+ * reader points at it or tabs into it, and fades out when the frame has had no input for a while
+ * (data-idle='true', set by EmbedControls), so it does not compete with the slide. Its colours
+ * are fixed rather than taken from the brand, so it reads the same over light and dark slides.
+ *
+ * The control sits in its own layer that fills the frame. The layer, not the viewport, is the
+ * container, so slide content keeps resolving its own container queries as before. cqi is 1% of
+ * the frame's width: every size below is in em, and the font size follows the frame between a
+ * floor and a ceiling, and buttons never shrink below 24px, the WCAG minimum target size. In a
+ * narrow frame the count shortens and the link shows only its icon.
+ */
+.deck-embed-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  container: deck-embed / inline-size;
+  pointer-events: none;
+}
+
+.deck-embed-controls {
+  position: absolute;
+  bottom: clamp(4px, 1.2cqi, 8px);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 0.15em;
+  padding: 0.15em;
+  border-radius: 999px;
+  background: rgb(17 17 19 / 72%);
+  color: #f4f4f5;
+  font:
+    500 clamp(10px, 1.7cqi, 12px) / 1 system-ui,
+    sans-serif;
+  opacity: 0.85;
+  pointer-events: auto;
+  transform: translateX(-50%);
+  transition: opacity 150ms ease;
+  backdrop-filter: blur(6px);
+}
+
+.deck-embed-controls[data-idle='true'] {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: 400ms;
+}
+
+/*
+ * Keyboard focus keeps the control up; focus left on a button by a mouse click does not, or a
+ * single click would pin it on screen.
+ */
+.deck-embed-controls:has(:focus-visible) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/*
+ * Only where the pointer can hover: on touch screens :hover sticks after a tap, which would keep
+ * the control from ever fading.
+ */
+@media (hover: hover) {
+  .deck-embed-controls:hover {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.deck-embed-controls svg {
+  flex: none;
+  width: 1.35em;
+  height: 1.35em;
+}
+
+.deck-embed-button,
+.deck-embed-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: max(2.35em, 24px);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.deck-embed-button {
+  width: max(2.35em, 24px);
+  padding: 0;
+}
+
+.deck-embed-button[aria-disabled='true'] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.deck-embed-open {
+  gap: 0.4em;
+  padding: 0 0.85em 0 0.7em;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .deck-embed-button:not([aria-disabled='true']):hover,
+  .deck-embed-open:hover {
+    background: rgb(255 255 255 / 14%);
+  }
+}
+
+.deck-embed-button:focus-visible,
+.deck-embed-open:focus-visible {
+  outline: 2px solid #f4f4f5;
+  outline-offset: -2px;
+}
+
+.deck-embed-count {
+  padding: 0 0.5em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.deck-embed-short {
+  display: none;
+}
+
+@container deck-embed (width < 560px) {
+  .deck-embed-count {
+    padding: 0 0.25em;
+  }
+
+  .deck-embed-short {
+    display: inline;
+  }
+
+  /* Visually hidden but still read out, so the count and the link keep their full names. */
+  .deck-embed-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .deck-embed-open {
+    width: max(2.35em, 24px);
+    padding: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-embed-controls,
+  .deck-embed-controls[data-idle='true'] {
+    transition: none;
+  }
+}

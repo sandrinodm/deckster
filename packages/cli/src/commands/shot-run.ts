@@ -2,6 +2,7 @@ import { deckCommand } from '@deckster/engine/command';
 import { Console, Effect } from 'effect';
 import path from 'node:path';
 
+import { checkDeckName } from '#choose-deck.ts';
 import { usageError, type CliError } from '#cli-error.ts';
 import { EXIT_FAILED, EXIT_OK, type Command } from '#command.ts';
 import { BRAND_FOLDER_SEPARATOR, MAX_SCALE, MIN_SCALE } from '#commands/shot.ts';
@@ -38,6 +39,7 @@ const runShot = Effect.fn('deck.shot')(function* (argv: readonly string[]) {
     );
   }
 
+  yield* checkDeckName(deck);
   const brand = yield* readBrandName('shot', values.brand);
   const outDir = path.resolve(workspaceRoot, values.out ?? defaultOutDir(deck, brand));
   const scale = yield* readScale(values.scale);

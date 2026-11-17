@@ -51,6 +51,7 @@ export default defineConfig({
     // jsdoc-lint checks a file named on the command line even when jsdoc.json excludes it, so this
     // glob leaves out tests, declarations and generated files itself.
     'packages/*/src/**/!(*.test|*.spec|*.fixture|*.d|*.gen).{ts,tsx,mts,cts}': 'jsdoc-lint',
+    'scripts/docs/**/!(*.test|*.fixture|vite.config).ts': 'jsdoc-lint',
   },
   fmt: {
     printWidth: 100,

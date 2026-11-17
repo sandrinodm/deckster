@@ -1,8 +1,10 @@
 name: Deploy
 
-# Publishes every deck, with a gallery page at the root, to GitHub Pages. The site is public: it
-# has no access control (docs/deploy.md). Actions are pinned to commit SHAs so a moved tag cannot
-# change what runs here.
+# Publishes the documentation site, with the example decks under /decks/, to GitHub Pages. The site
+# and its reference data (src/data, committed there for the release the pages document) come from
+# the docs-site branch of this repository; the slide stills and the decks come from the main commit
+# being deployed. The site is public: it has no access control (docs/deploy.md). Actions are
+# pinned to commit SHAs so a moved tag cannot change what runs here.
 #
 # Disabled by default: it only runs when started by hand from the Actions tab. To publish every
 # commit on main once CI passes, enable Pages for the repository (Settings, Pages, Source: GitHub
@@ -12,9 +14,9 @@ on:
   workflow_dispatch:
     inputs:
       with_exports:
-        description: 'Also export each deck to PDF and PPTX and link them from the gallery (slower)'
+        description: 'Also export each published deck to PDF and PPTX, next to its index.html (slower)'
         type: boolean
-        default: false
+        default: true
   # workflow_run:
   #   workflows: [CI]
   #   types: [completed]
@@ -36,10 +38,14 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # A cold build of the LibreOffice image for the export-verify shot takes several minutes.
+    timeout-minutes: 60
     permissions:
       contents: read
       actions: read
+    env:
+      # The docs scripts (scripts/docs/) run from this checkout of main.
+      DECKSTER_REPO: ${{ github.workspace }}
     steps:
       # Full history, so the check below can tell whether the commit is on main. After CI, the
       # commit CI tested, not whatever main points at by now.
@@ -61,8 +67,21 @@ jobs:
             --json databaseId --jq 'length')"
           test "$count" -gt 0 || { echo 'This commit needs a successful CI run on main.'; exit 1; }
 
+      # The site's source, at the tip of its branch. Full history: the pages' "Last updated" dates
+      # and the sitemap come from it. pnpm-workspace.yaml does not list this folder, so the
+      # workspace ignores it.
+      - name: Check out the docs site
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: docs-site
+          path: docs-site
+          fetch-depth: 0
+          persist-credentials: false
+
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
+      # Node 26 for everything: the workspace requires it, the sync runs the docs scripts with the
+      # Node that runs it, and the site builds with it too.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 26
@@ -71,19 +90,81 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The gallery thumbnails (and the exports) need Chromium.
+      # deck build, deck shot, the UI shots and the exports drive Chromium.
       - name: Install the browser
         run: pnpm exec playwright install chromium --with-deps
 
-      # Decks use relative asset paths, so the site works under the project URL (/<repository>/).
-      - name: Build the site
+      # The present-audience and present-presenter shots run the desktop shell: Electron's binary
+      # (not part of pnpm install), the GTK and audio libraries it links, and Xvfb, because Electron
+      # needs a display even for hidden windows. Playwright starts it without the Chromium sandbox.
+      - name: Install Electron and a virtual display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0t64 libnss3 libgbm1 libasound2t64
+          pnpm --filter @deckster/shell exec install-electron
+
+      # The export-verify shot runs deck export --verify, which renders the PPTX with LibreOffice in
+      # Docker (ubuntu-latest has it). Building the image here keeps its time and errors out of the
+      # sync step.
+      - name: Prepare export verification images
+        run: pnpm --filter @deckster/export prepare:verify
+
+      - name: Install the site's dependencies
+        working-directory: docs-site
+        run: npm ci
+
+      # A page that still carries its writing brief would publish it at /<page>/index.mdx.
+      - name: Refuse pages that still carry a brief
+        working-directory: docs-site
+        run: npm run check:briefs
+
+      # Every layout, component, chart, diagram component and command in the committed src/data
+      # has a reference entry.
+      - name: Check reference coverage
+        working-directory: docs-site
+        run: npm run check:coverage
+
+      # Generates the slide stills in src/assets/shots and the allowlisted decks in public/decks
+      # (scripts/docs/allowlist.ts) from this checkout of main. Not src/data: the reference tables
+      # come from docs-site as committed, so they keep describing the release the pages document
+      # instead of whatever main is today. Under Xvfb, so Electron can start. DECKSTER_SHOTS_STRICT
+      # makes scripts/docs/ui-shots.ts fail on a skipped shot (it names the shot and what it
+      # lacked), which fails the sync, instead of publishing pages whose screenshots are missing.
+      - name: Sync stills and decks from main
+        working-directory: docs-site
         env:
-          WITH_EXPORTS: ${{ inputs.with_exports && '--with-exports' || '' }}
-        run: pnpm deck build --all --out site $WITH_EXPORTS
+          DECKSTER_SHOTS_STRICT: '1'
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' npm run sync -- --shots --decks
+
+      # Only the decks the sync installed, never decks/*, so a deck outside the allowlist is not
+      # published. Each export writes <deck>.pdf, <deck>.pptx and the PPTX fonts into the deck's
+      # folder, where a <Download file="<deck>.pdf"> on a slide (the showcase deck has one) finds
+      # them. A run after CI has no inputs and always exports.
+      - name: Export the decks
+        if: github.event_name == 'workflow_run' || inputs.with_exports
+        run: |
+          for dir in docs-site/public/decks/*/; do
+            deck="$(basename "$dir")"
+            pnpm deck export "$deck" --out "$GITHUB_WORKSPACE/$dir"
+          done
+
+      - name: Check the site
+        working-directory: docs-site
+        run: npx @cloudflare/nimbus-docs check
+
+      # The site's base path (/deckster) is set in astro.config.ts on the docs-site branch.
+      - name: Build the site
+        working-directory: docs-site
+        run: npm run build
+
+      # Again, now that the built pages exist: checks links, including those into /decks/.
+      - name: Check links after the build
+        working-directory: docs-site
+        run: npx @cloudflare/nimbus-docs check
 
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: site
+          path: docs-site/dist
 
   deploy:
     needs: build

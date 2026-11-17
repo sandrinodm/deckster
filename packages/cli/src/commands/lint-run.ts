@@ -1,6 +1,7 @@
 import { deckCommand } from '@deckster/engine/command';
 import { Console, Effect } from 'effect';
 
+import { checkDeckName } from '#choose-deck.ts';
 import { usageError } from '#cli-error.ts';
 import { EXIT_FAILED, EXIT_OK, type Command } from '#command.ts';
 import { printJson, withJsonErrors } from '#json-output.ts';
@@ -32,6 +33,7 @@ const runLint = Effect.fn('deck.lint')(function* (argv: readonly string[]) {
     );
   }
 
+  yield* checkDeckName(deck);
   const brand = yield* readBrandName('lint', values.brand);
   const report = yield* lintDeck({ deck, brand });
   yield* values.json ? printJson(report) : Console.log(formatReport(report));

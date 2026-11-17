@@ -1,6 +1,6 @@
 import { DEFAULT_BRAND, isSafeName, type BrandError } from '@deckster/brand';
 import { listBrands, loadBrand } from '@deckster/brand/node';
-import { iconSetNames } from '@deckster/kit/icon-sets';
+import { iconSetNames, installIconSetHint } from '@deckster/kit/icon-sets';
 import { Effect, type FileSystem } from 'effect';
 
 import { cliError, usageError, type CliError } from '#cli-error.ts';
@@ -83,7 +83,7 @@ export const listIcons = Effect.fn('listIcons')(function* (
     if (names === undefined) {
       return yield* cliError(
         `The "${set}" icon set is not installed.\n` +
-          `Add \`@iconify-json/${set}\` to @deckster/kit, or change the brand's icons.set.`,
+          `${installIconSetHint(set)}, or change the brand's icons.set.`,
       );
     }
 

@@ -9,6 +9,7 @@ const HELP = `Usage: deck comments <deck> [--open | --resolved | --all] [--slide
        deck comments resolve <deck> <id> [--note <text>] [--json]
        deck comments reopen <deck> <id> [--json]
        deck comments add <deck> <slide> --text <text> [--line <n>] [--step <n>] [--type <type>]
+                         [--json]
        deck comments prune <deck> [--json]
 
 Review comments on a deck: left in the browser in comment mode (press c in \`${deckCommand()} dev\`) or

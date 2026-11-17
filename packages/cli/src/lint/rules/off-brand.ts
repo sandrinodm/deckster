@@ -38,6 +38,35 @@ const MULTIPLE_TOLERANCE = 0.01;
 const PHOTO_TEXT_COLORS = new Set(['#ffffff', '#000000']);
 
 /**
+ * The SVG elements whose `fill` reaches the slide: the shapes with an inside, the text elements,
+ * and `use`, whose copy of the shape it references (not in the snapshot) inherits its paint. Every
+ * other SVG element (`g`, `image`, `svg`, `line`, ...) still has a computed `fill` (black when
+ * nothing sets one, since that is the SVG default), but draws nothing with it.
+ */
+const FILL_PAINTING_TAGS = new Set([
+  'circle',
+  'ellipse',
+  'path',
+  'polygon',
+  'polyline',
+  'rect',
+  'text',
+  'textpath',
+  'tspan',
+  'use',
+]);
+
+/**
+ * The SVG elements that paint their own `stroke`: the fill-painting ones and `line`.
+ */
+const STROKE_PAINTING_TAGS = new Set([...FILL_PAINTING_TAGS, 'line']);
+
+/**
+ * The fill an SVG shape gets when neither it nor an ancestor sets one.
+ */
+const SVG_DEFAULT_FILL = '#000000';
+
+/**
  * The kinds of off-brand value, each with its severity and its fix.
  */
 type OffBrandKind = 'color' | 'family' | 'size' | 'spacing';
@@ -141,7 +170,7 @@ export const offBrandRule: SlideRule = {
 };
 
 /**
- * Checks the element's background, and its SVG fill and stroke.
+ * Checks the element's background, and the SVG fill and stroke it paints itself.
  *
  * @param element - A measured element.
  * @param brand - The brand on the slide's surface.
@@ -153,11 +182,28 @@ function checkPaint(element: ElementSnapshot, brand: BrandContext, add: Add): vo
     add('color', 'background', rgbPart(element.backgroundColor), element);
   }
 
-  for (const [property, color] of Object.entries(element.paint)) {
-    if (color !== null && !isTransparent(color) && !isBrandColor(color, colors)) {
+  const painted: [string, string | null, boolean][] = [
+    ['fill', element.paint.fill, FILL_PAINTING_TAGS.has(element.tag)],
+    ['stroke', element.paint.stroke, STROKE_PAINTING_TAGS.has(element.tag)],
+  ];
+  for (const [property, color, paints] of painted) {
+    if (paints && isOffBrandPaint(color, colors)) {
       add('color', property, rgbPart(color), element);
     }
   }
+}
+
+/**
+ * Whether an SVG paint is a visible color the brand does not have; `none` and URL paints are not.
+ *
+ * @param color - The paint as hex, or `null` for `none` and URL paints.
+ * @param colors - The brand's colors on the surface.
+ */
+function isOffBrandPaint(
+  color: string | null,
+  colors: BrandContext['allowed']['colors'],
+): color is string {
+  return color !== null && !isTransparent(color) && !isBrandColor(color, colors);
 }
 
 /**
@@ -266,8 +312,9 @@ function violation(occurrence: Occurrence, brand: BrandContext): RuleViolation {
     key: `${occurrence.property}|${occurrence.value}`,
     message:
       `${where}${more} uses the ${occurrence.property} ${occurrence.value}, which is not a ` +
-      `${brand.name} brand token${surfaceNote(occurrence.kind, brand)}.`,
-    fix: fixFor(occurrence.kind, brand),
+      `${brand.name} brand token${surfaceNote(occurrence.kind, brand)}.` +
+      defaultFillNote(occurrence),
+    fix: isSvgPaint(occurrence.property) ? svgPaintFix() : fixFor(occurrence.kind, brand),
     selector: first?.selector ?? null,
     severity: severityOf(occurrence.kind),
   };
@@ -282,6 +329,43 @@ function violation(occurrence: Occurrence, brand: BrandContext): RuleViolation {
  */
 function surfaceNote(kind: OffBrandKind, brand: BrandContext): string {
   return kind === 'color' ? ` on the "${brand.surface.name}" surface` : '';
+}
+
+/**
+ * For a black SVG fill, the reminder that black is what a shape without a fill draws, so the color
+ * may come from no attribute at all.
+ *
+ * @param occurrence - The value and where it is used.
+ */
+function defaultFillNote(occurrence: Occurrence): string {
+  if (occurrence.property !== 'fill' || occurrence.value !== SVG_DEFAULT_FILL) {
+    return '';
+  }
+
+  return ' Black is the SVG default for a shape that sets no fill, and the slide draws it.';
+}
+
+/**
+ * Whether the property is an SVG paint, whose fix is an SVG attribute rather than a class.
+ *
+ * @param property - The property as the message names it.
+ */
+function isSvgPaint(property: string): boolean {
+  return property === 'fill' || property === 'stroke';
+}
+
+/**
+ * The fix for an off-brand SVG fill or stroke: give the shape a color role, or no paint.
+ */
+function svgPaintFix(): string {
+  return (
+    'In an `<Svg>` drawing, give the shape a color role of the surface (`data-fill="fg"`, ' +
+    '`data-stroke="edge"`) or map its color to one with `recolor`; in your own SVG markup, use ' +
+    '`currentColor` under a role class such as `text-fg`. Set `fill="none"` on a shape that ' +
+    'should not be filled. `' +
+    deckCommand() +
+    ' brand --json` lists every color.'
+  );
 }
 
 /**

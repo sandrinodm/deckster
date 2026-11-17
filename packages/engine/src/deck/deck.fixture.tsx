@@ -113,11 +113,11 @@ export type MountedDeck = {
  * Renders a deck into a fresh container inside `act()`.
  *
  * @param manifest - The deck.
- * @param options - Plugins and static mode.
+ * @param options - Plugins, static mode and embed mode.
  */
 export function renderDeck(
   manifest: DeckManifest,
-  options: { plugins?: readonly DeckPlugin[]; isStatic?: boolean } = {},
+  options: { plugins?: readonly DeckPlugin[]; isStatic?: boolean; isEmbed?: boolean } = {},
 ): MountedDeck {
   const container = document.createElement('div');
   document.body.append(container);

@@ -152,16 +152,17 @@ behind these choices are in [docs/design.md](docs/design.md).
   an agent to fix ([`@deckster/comments`](packages/comments/README.md)).
 - Present with the slide sidebar, overview, presenter window with notes and pacing, laser and
   blackout ([`@deckster/presenter`](packages/presenter/README.md)), or with `deck present`, which opens
-  the audience and presenter windows on the displays you pick ([docs/present.md](docs/present.md)).
+  the audience and presenter windows on the displays you pick
+  ([deck present and displays](https://sandrinodm.github.io/deckster/present/deck-present-and-displays/)).
 - Export a PDF with bookmarks and links, and a PPTX with editable text, a master per brand surface,
   native charts and diagrams, speaker notes and click animations
   ([`@deckster/export`](packages/export/README.md)).
 - Ask an agent: `pnpm deck dev hello --agent claude` (or `codex`) opens a chat panel beside the
   slide that runs your own signed-in CLI, limited to the deck's content, with undo per turn
-  ([docs/agent.md](docs/agent.md)). `--mcp` alone serves the deck's tools to an agent you run
-  yourself.
+  ([the agent panel](https://sandrinodm.github.io/deckster/ai-agents/agent-panel/)). `--mcp` alone
+  serves the deck's tools to an agent you run yourself.
 - Publish: `pnpm deck build --all --out site` builds every deck into one static folder with a
-  gallery page ([docs/deploy.md](docs/deploy.md)).
+  gallery page ([Build and host](https://sandrinodm.github.io/deckster/export-and-publish/build-and-host/)).
 
 ## Working with agents
 
@@ -213,7 +214,7 @@ then builds `decks/q3-reliability/` and checks it. For a brand, hand it a source
 
 The skills run the CLI for you; for editor type checking in the same folder run `deck types` once.
 The skills need Chromium for `deck lint` and `deck shot` (downloaded once, see
-[the CLI README](packages/cli/README.md#what-it-needs)), and brand-import also uses
+[the CLI README](packages/cli/README.md#optional-dependencies)), and brand-import also uses
 [`uv`](https://docs.astral.sh/uv/) for its Python extractors.
 
 In this repository `.claude/skills` and `.agents/skills` link to `skills/`, so agents working on
@@ -285,13 +286,33 @@ package's README covers its internals and the rules for changing it.
 
 ## Documentation
 
+The user guide is at [sandrinodm.github.io/deckster](https://sandrinodm.github.io/deckster/):
+
+- [Quickstart](https://sandrinodm.github.io/deckster/get-started/quickstart/): install the CLI and
+  make a first deck
+- [Writing slides](https://sandrinodm.github.io/deckster/write-slides/mdx-slides/): MDX and TSX
+  slides, steps, code, media and notes
+- [Brands](https://sandrinodm.github.io/deckster/brands/use-a-brand/): use, create, import and check
+  a brand
+- [Review](https://sandrinodm.github.io/deckster/review/lint/): lint, screenshots, visual diff and
+  comments
+- [Present](https://sandrinodm.github.io/deckster/present/deck-present-and-displays/): the
+  `deck present` window, displays, presenter tools and troubleshooting
+- [Export and publish](https://sandrinodm.github.io/deckster/export-and-publish/pdf/): PDF,
+  PowerPoint and hosting built decks
+- [AI agents](https://sandrinodm.github.io/deckster/ai-agents/skills/): the skills, the agent
+  panel and the MCP tools
+- [Reference](https://sandrinodm.github.io/deckster/reference/cli/): commands, layouts, components,
+  lint rules and the brand schema
+
+For contributors, in this repository:
+
 | Page                                         | Covers                                                  |
 | -------------------------------------------- | ------------------------------------------------------- |
 | [docs/design.md](docs/design.md)             | Why the framework is built the way it is                |
-| [docs/agent.md](docs/agent.md)               | Using the agent panel                                   |
 | [docs/agent-design.md](docs/agent-design.md) | How an agent turn runs and what it is allowed to change |
-| [docs/present.md](docs/present.md)           | `deck present`, displays and troubleshooting            |
-| [docs/deploy.md](docs/deploy.md)             | Hosting built decks                                     |
+| [docs/present.md](docs/present.md)           | Working on `deck present`: internals and what is tested |
+| [docs/deploy.md](docs/deploy.md)             | This repository's own site and hosting from a clone     |
 
 ## Contributing & Security
 

@@ -1,14 +1,11 @@
 import { createContext, useContext } from 'react';
 
+import { readQueryFlag } from '#url/query-flag.ts';
+
 /**
  * The query parameter that turns on static mode.
  */
 const STATIC_PARAM = 'static';
-
-/**
- * Values of the parameter that leave static mode off, compared case-insensitively.
- */
-const FALSE_VALUES = new Set(['0', 'false', 'no']);
 
 /**
  * Whether the deck renders in static mode; provided by the engine.
@@ -32,10 +29,5 @@ export function useStatic(): boolean {
  * @param search - `location.search`, with or without the leading `?`.
  */
 export function readStaticMode(search: string): boolean {
-  const value = new URLSearchParams(search).get(STATIC_PARAM);
-  if (value === null) {
-    return false;
-  }
-
-  return !FALSE_VALUES.has(value.toLowerCase());
+  return readQueryFlag(search, STATIC_PARAM);
 }

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "deckster: a code-first slide framework with typed brands, MDX slides and a deck CLI.",
-  "homepage": "https://github.com/sandrinodm/deckster#readme",
+  "homepage": "https://sandrinodm.github.io/deckster/",
   "bugs": "https://github.com/sandrinodm/deckster/issues",
   "license": "MIT",
   "author": "Sandrino Di Mattia",

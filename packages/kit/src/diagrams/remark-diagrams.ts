@@ -23,6 +23,7 @@ import { checkSequence, duplicates } from '#diagrams/form-validate.ts';
 import { kindIconName, resolveNodeKind } from '#diagrams/node-kinds.ts';
 import { addBuildLayout } from '#diagrams/remark-flow-layout.ts';
 import { setOwn } from '#foundation/lists.ts';
+import { installIconSetHint } from '#icons/icon-sets.ts';
 import {
   attributeValue,
   defaultImport,
@@ -418,7 +419,7 @@ function checkIconName(
       file,
       node,
       `${where} needs the "${set}" icon set, which is not installed.`,
-      "Use a name from the brand's set, or add `@iconify-json/" + set + '` to @deckster/kit.',
+      `${installIconSetHint(set)}, or use a name from the brand's set.`,
     );
   }
 

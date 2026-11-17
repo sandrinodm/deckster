@@ -1360,6 +1360,46 @@ importers:
         specifier: 'catalog:'
         version: 1.4.0(@types/node@26.6.6)(@vitest/ui@5.0.5)(happy-dom@21.0.4)(jiti@2.7.0)(playwright@1.65.0)(typescript@7.0.2)(yaml@2.9.1)
 
+  scripts/docs:
+    dependencies:
+      '@deckster/brand':
+        specifier: workspace:*
+        version: link:../../packages/brand
+      '@deckster/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@deckster/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@deckster/kit':
+        specifier: workspace:*
+        version: link:../../packages/kit
+      '@deckster/vite-plugin':
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin
+      '@effect/platform-node':
+        specifier: 'catalog:'
+        version: 4.1.4(effect@4.1.4)(redis@6.3.1)
+      effect:
+        specifier: 'catalog:'
+        version: 4.1.4
+      playwright:
+        specifier: 'catalog:'
+        version: 1.65.0
+    devDependencies:
+      '@effect/vitest':
+        specifier: 'catalog:'
+        version: 4.1.4(effect@4.1.4)(vitest@5.0.5)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vite-plus:
+        specifier: 'catalog:'
+        version: 1.4.0(@types/node@26.6.6)(@vitest/ui@5.0.5)(happy-dom@21.0.4)(jiti@2.7.0)(playwright@1.65.0)(typescript@7.0.2)(yaml@2.9.1)
+
 packages:
 
   '@ai-sdk/provider@4.0.36':

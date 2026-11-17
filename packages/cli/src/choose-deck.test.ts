@@ -4,6 +4,7 @@ import { Effect, FileSystem } from 'effect';
 import path from 'node:path';
 
 import { defaultDeck } from '#choose-deck.ts';
+import { runCaptured } from '#cli.fixture.ts';
 
 /**
  * Makes a scratch workspace with the named decks; a name ending in `!` is a folder without a
@@ -49,5 +50,20 @@ describe('defaultDeck', () => {
       expect(yield* defaultDeck(yield* workspaceWith(['a', 'b']))).toBe('hello');
       expect(yield* defaultDeck(yield* workspaceWith([]))).toBe('hello');
     }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
+  );
+});
+
+describe('a deck named by a path', () => {
+  it.effect('is refused with the same message by dev, lint, shot and export', () =>
+    Effect.gen(function* () {
+      for (const command of ['dev', 'lint', 'shot', 'export']) {
+        const error = yield* Effect.flip(runCaptured([command, '../x']));
+        expect(error.message, command).toBe(
+          '"../x" is not a deck name: a deck is named by its folder under decks/, in kebab-case: ' +
+            'lowercase letters and digits in words joined by single hyphens, at most 64 ' +
+            'characters.\nPass the folder name, not a path, such as `hello`.',
+        );
+      }
+    }),
   );
 });

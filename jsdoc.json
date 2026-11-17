@@ -1,5 +1,5 @@
 {
-  "roots": ["packages"],
+  "roots": ["packages", "scripts/docs"],
   "excludePaths": ["node_modules", "dist", "coverage", ".tmp-workspaces", "fixtures"],
   "excludeFiles": [
     "\\.d\\.[cm]?ts$",

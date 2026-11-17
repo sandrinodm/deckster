@@ -4,7 +4,12 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import { DeckBuildError } from '#errors.ts';
 import { TEST_CATALOG } from '#layouts/test-catalog.fixture.ts';
-import { transformMdxSlide, transformTsxSlide, type SlideSource } from '#slides/transform-slide.ts';
+import {
+  readSlideMeta,
+  transformMdxSlide,
+  transformTsxSlide,
+  type SlideSource,
+} from '#slides/transform-slide.ts';
 
 const SLIDE_META_PATTERN = /export const slideMeta = (.*);\n$/;
 
@@ -374,5 +379,41 @@ describe('GitHub-flavored markdown in MDX slides', () => {
     expect(code).toContain('_components.table');
     expect(code).toContain('_components.td');
     expect(code).not.toContain('| District |');
+  });
+});
+
+describe('readSlideMeta', () => {
+  it('gives each slide the slideMeta its transform writes', async () => {
+    const cases = [
+      { id: 'framed', kind: 'mdx', code: '---\ntitle: From the frontmatter\n---\n# Not this' },
+      {
+        id: 'headed',
+        kind: 'mdx',
+        code: '<Notes>\n# Not a notes heading\n</Notes>\n\n## Why *now*',
+      },
+      { id: 'bare', kind: 'mdx', code: 'Only text' },
+      { id: 'live', kind: 'tsx', code: 'export default () => <h1>A TSX heading</h1>;' },
+      { id: 'blank', kind: 'tsx', code: 'export default () => <p>no heading</p>;' },
+      {
+        id: 'templated',
+        kind: 'tsx',
+        code: 'export const frontmatter = { layout: `default` };\nexport default () => null;',
+      },
+    ] as const;
+    for (const { id, kind, code } of cases) {
+      const source = slide(id, kind, code);
+      const transformed = await Effect.runPromise(
+        kind === 'mdx' ? transformMdxSlide(source, false) : transformTsxSlide(source),
+      );
+      const meta = await Effect.runPromise(readSlideMeta({ ...source, kind }));
+      expect(meta, id).toEqual(metaOf(transformed));
+    }
+  });
+
+  it('gives a slide that names no layout the default layout', async () => {
+    const meta = await Effect.runPromise(
+      readSlideMeta({ ...slide('bare', 'mdx', 'Only text'), kind: 'mdx' }),
+    );
+    expect(meta.frontmatter.layout).toBe('default');
   });
 });

@@ -11,6 +11,7 @@ import { Console, Effect } from 'effect';
 import type { ExportFormat, ExportOptions } from '#export/export-options.ts';
 import type { ExportResult } from '#export/run-export.ts';
 
+import { checkDeckName } from '#choose-deck.ts';
 import { usageError, type CliError } from '#cli-error.ts';
 import { EXIT_FAILED, EXIT_OK, type Command } from '#command.ts';
 import { DEFAULT_MAX_MEDIA_MB, DEFAULT_RENDERERS, SCALE_RANGE } from '#commands/export-help.ts';
@@ -113,6 +114,7 @@ const readOptions = Effect.fn('readOptions')(function* (
     );
   }
 
+  yield* checkDeckName(deck);
   const formats = new Set<ExportFormat>();
   if (values.pdf) {
     formats.add('pdf');

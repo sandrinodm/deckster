@@ -1,7 +1,7 @@
 import type { AnyLayoutContract } from '@deckster/engine/layout';
 import type { MdxPlugins } from '@deckster/engine/mdx';
 
-import { SLIDE_META_EXPORT, type SlideMeta } from '@deckster/engine/manifest';
+import { SLIDE_META_EXPORT, type SlideKind, type SlideMeta } from '@deckster/engine/manifest';
 import { BODY_SLOT, slotTag } from '@deckster/engine/slots';
 import { Effect } from 'effect';
 
@@ -57,6 +57,22 @@ export type SlideSource = FileRef & {
 };
 
 /**
+ * A slide that passed the build's checks: its module code without the `slideMeta` export, and that
+ * export's value.
+ */
+type CheckedSlide = {
+  /**
+   * The compiled MDX, or the TSX source as written.
+   */
+  code: string;
+
+  /**
+   * The validated frontmatter, the title, the notes and the filled slots.
+   */
+  meta: SlideMeta;
+};
+
+/**
  * Compiles an MDX slide for its layout and appends its `slideMeta` export (validated frontmatter,
  * title, notes, filled slots).
  *
@@ -71,38 +87,27 @@ export const transformMdxSlide = Effect.fn('transformMdxSlide')(function* (
   slide: SlideSource,
   development: boolean,
 ): Effect.fn.Return<string, DeckBuildError> {
-  const { data, body } = yield* readMdxFrontmatter(slide.code, slide);
-  const validated = yield* validateFrontmatter(data, slide.layouts, slide);
-  const { layout } = validated;
-  yield* checkSurface(validated.frontmatter, slide.brand, slide);
-  const frontmatter = withLayoutSurface(
-    validated.frontmatter,
-    layout.contract.surface,
-    slide.brand,
-  );
-  const compiled = yield* compileMdx(body, slide, {
-    development,
-    frontmatter,
-    slotTags: slotTagsOf(layout.contract),
-    ...extensionOptions(slide),
-  });
-  if (compiled.exportProblems.length > 0) {
-    return yield* invalidExports(slide, compiled.exportProblems);
-  }
+  const { code, meta } = yield* compileMdxSlide(slide, development);
+  return `${code}\n${slideMetaExport(meta)}`;
+});
 
-  const usage = {
-    kind: 'mdx',
-    candidates: compiled.candidates,
-    hasBody: compiled.hasBody,
-  } as const;
-  const { slots, problems } = checkSlotUsage(usage, layout, slide.layouts);
-  if (problems.length > 0) {
-    return yield* invalidSlots(slide, problems);
-  }
-
-  const title = frontmatter.title ?? compiled.heading ?? slide.id;
-  const meta = { frontmatter, title, notes: compiled.notes, slots };
-  return `${compiled.code}\n${slideMetaExport(meta)}`;
+/**
+ * The `slideMeta` the build gives a slide, read the way `transformMdxSlide` and `transformTsxSlide`
+ * read it: the validated frontmatter with defaults applied (so `frontmatter.layout` is the layout
+ * the slide renders with), the title (the frontmatter `title`, else the first heading outside
+ * `<Notes>`, an MDX heading after the deck's MDX extensions ran, else the slide id), the notes and
+ * the filled slots.
+ *
+ * @param slide - The slide file, its source and its kind.
+ * @returns The slide's `slideMeta`.
+ * @throws DeckBuildError in the error channel for anything that fails the slide's build.
+ */
+export const readSlideMeta = Effect.fn('readSlideMeta')(function* (
+  slide: SlideSource & { kind: SlideKind },
+): Effect.fn.Return<SlideMeta, DeckBuildError> {
+  const { meta } =
+    slide.kind === 'mdx' ? yield* compileMdxSlide(slide, false) : yield* readTsxSlide(slide);
+  return meta;
 });
 
 /**
@@ -138,6 +143,61 @@ export const transformMdxPartial = Effect.fn('transformMdxPartial')(function* (
 export const transformTsxSlide = Effect.fn('transformTsxSlide')(function* (
   slide: SlideSource,
 ): Effect.fn.Return<string, DeckBuildError> {
+  const { code, meta } = yield* readTsxSlide(slide);
+  return `${code}\n${slideMetaExport(meta)}`;
+});
+
+/**
+ * Compiles an MDX slide for its layout and reads its `slideMeta`, as `transformMdxSlide` does.
+ *
+ * @param slide - The slide file and its source.
+ * @param development - Emit development JSX with source locations.
+ */
+const compileMdxSlide = Effect.fn('compileMdxSlide')(function* (
+  slide: SlideSource,
+  development: boolean,
+): Effect.fn.Return<CheckedSlide, DeckBuildError> {
+  const { data, body } = yield* readMdxFrontmatter(slide.code, slide);
+  const validated = yield* validateFrontmatter(data, slide.layouts, slide);
+  const { layout } = validated;
+  yield* checkSurface(validated.frontmatter, slide.brand, slide);
+  const frontmatter = withLayoutSurface(
+    validated.frontmatter,
+    layout.contract.surface,
+    slide.brand,
+  );
+  const compiled = yield* compileMdx(body, slide, {
+    development,
+    frontmatter,
+    slotTags: slotTagsOf(layout.contract),
+    ...extensionOptions(slide),
+  });
+  if (compiled.exportProblems.length > 0) {
+    return yield* invalidExports(slide, compiled.exportProblems);
+  }
+
+  const usage = {
+    kind: 'mdx',
+    candidates: compiled.candidates,
+    hasBody: compiled.hasBody,
+  } as const;
+  const { slots, problems } = checkSlotUsage(usage, layout, slide.layouts);
+  if (problems.length > 0) {
+    return yield* invalidSlots(slide, problems);
+  }
+
+  const title = frontmatter.title ?? compiled.heading ?? slide.id;
+  return { code: compiled.code, meta: { frontmatter, title, notes: compiled.notes, slots } };
+});
+
+/**
+ * Reads and checks a TSX slide's `slideMeta`, as `transformTsxSlide` does; the code is the source.
+ *
+ * @param slide - The slide file and its source.
+ */
+const readTsxSlide = Effect.fn('readTsxSlide')(function* (
+  slide: SlideSource,
+): Effect.fn.Return<CheckedSlide, DeckBuildError> {
   const meta = yield* tryDeckBuild(() => readTsxMeta(slide.code, slide));
   const validated = yield* validateFrontmatter(meta.frontmatter, slide.layouts, slide);
   const { layout } = validated;
@@ -154,7 +214,7 @@ export const transformTsxSlide = Effect.fn('transformTsxSlide')(function* (
   }
 
   const title = frontmatter.title ?? meta.heading ?? slide.id;
-  return `${slide.code}\n${slideMetaExport({ frontmatter, title, notes: meta.notes, slots })}`;
+  return { code: slide.code, meta: { frontmatter, title, notes: meta.notes, slots } };
 });
 
 /**
