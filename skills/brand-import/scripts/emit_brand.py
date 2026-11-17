@@ -149,6 +149,42 @@ def shadow_layers(value, ref) -> object:
     return layers or "none"
 
 
+DIAGRAM_LOOK_KEYS = ("edges", "groups", "labels", "kinds", "cards")
+CARD_COLOR_FIELDS = ("fill", "border", "text", "subtext")
+CARD_NESTED_COLOR_FIELDS = {"icon": ("color", "fill"), "accent": ("color",)}
+
+
+def diagram_look(diagram, ref) -> dict:
+    """The draft's diagram look (`edges`, `groups`, `labels` with `style` and `type`, `kinds`, `cards`), written in the brand's
+    own field names. A hex colour in a card becomes a palette reference when it is a palette step; roles (`accent`, `accent/12`),
+    palette references and `none` are kept as written. The schema pass that follows checks every value."""
+    if not isinstance(diagram, dict):
+        return {}
+
+    look = {key: diagram[key] for key in DIAGRAM_LOOK_KEYS if isinstance(diagram.get(key), dict)}
+    if "cards" in look:
+        look["cards"] = card_paints(look["cards"], ref)
+    return look
+
+
+def card_paints(cards: dict, ref) -> dict:
+    """Cards with each hex colour that is a palette step turned into a palette reference; roles, references and `none` kept."""
+    def paint(value):
+        return ref(value) if isinstance(value, str) and value.startswith("#") else value
+
+    out = {}
+    for name, card in cards.items():
+        if not isinstance(card, dict):
+            out[name] = card
+            continue
+        card = {**card, **{f: paint(card[f]) for f in CARD_COLOR_FIELDS if f in card}}
+        for part, fields in CARD_NESTED_COLOR_FIELDS.items():
+            if isinstance(card.get(part), dict):
+                card[part] = {**card[part], **{f: paint(card[part][f]) for f in fields if f in card[part]}}
+        out[name] = card
+    return out
+
+
 def charts_section(dv: dict, roles_hex: dict, stroke: dict, notes: list[str]) -> dict:
     """Map the draft's `dataviz` record onto the brand's `charts` tokens. Colours there are ROLE names and
     line weights are stroke names, so each observed value is matched to the nearest one."""
@@ -555,6 +591,8 @@ def run() -> None:
         for theme, tokens in (("code", CODE_TOKENS), ("diagram", DIAGRAM_TOKENS)):
             if isinstance(s.get(theme), dict):
                 spec[theme] = {k.replace("_", "-"): ref(v) for k, v in s[theme].items() if k.replace("_", "-") in tokens}
+        if isinstance(s.get("diagram"), dict) and isinstance(s["diagram"].get("cards"), dict):
+            spec["diagram"]["cards"] = card_paints(s["diagram"]["cards"], ref)
         if isinstance(s.get("shadow"), dict):
             spec["shadow"] = {k: shadow_layers(v, ref) for k, v in s["shadow"].items() if k in ("sm", "md", "lg")}
         if key != "default":
@@ -874,6 +912,9 @@ def run() -> None:
             picked = {k.replace("_", "-"): ref(v) for k, v in d[theme].items() if k.replace("_", "-") in tokens and isinstance(v, str)}
             if picked:
                 brand[theme] = picked
+    look = diagram_look(d.get("diagram"), ref)
+    if look:
+        brand["diagram"] = {**brand.get("diagram", {}), **look}
     charts = charts_section(d.get("dataviz") or {}, base_hex, stroke, notes)
     if charts:
         brand["charts"] = charts

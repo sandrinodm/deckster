@@ -18,18 +18,22 @@ import { DiagramFrame } from '#diagrams/diagram-frame.tsx';
 import { assertDiagramProps, formatProblems, normalizeState } from '#diagrams/diagram-props.ts';
 import { count } from '#diagrams/diagram-summary.ts';
 import {
+  edgeCornerRadius,
+  FALLBACK,
   useDiagramTokens,
   useReducedMotion,
   type DiagramTokens,
+  type LabelType,
 } from '#diagrams/diagram-tokens.ts';
 import { EdgePath } from '#diagrams/flow-edge-view.tsx';
-import { NodeBody, NodeShape } from '#diagrams/flow-node-view.tsx';
+import { NodeBody, NodeShadow, NodeShape } from '#diagrams/flow-node-view.tsx';
 import { PacketDots, PacketTags, type PacketDot, type PacketTag } from '#diagrams/flow-packets.tsx';
 import { optional } from '#diagrams/flow-spec-builder.ts';
 import { Actor, Message, type ActorProps, type MessageProps } from '#diagrams/form-parts.tsx';
 import { checkSequence } from '#diagrams/form-validate.ts';
+import { resolveCard, type ResolvedCard } from '#diagrams/node-cards.ts';
 import { resolveNodeKind, NODE_KINDS } from '#diagrams/node-kinds.ts';
-import { shapeGeometry } from '#diagrams/node-shapes.ts';
+import { cardShape, nodeGeometry } from '#diagrams/node-shapes.ts';
 import { movesAt, planTrip, staticTripPositions, tailBehind } from '#diagrams/packet-motion.ts';
 import { roundedPath, type PathSegment } from '#diagrams/path-geometry.ts';
 import { layoutSequence, type SequenceLayout } from '#diagrams/sequence-layout.ts';
@@ -66,6 +70,12 @@ export type SequenceDiagramProps = {
   height?: number;
 
   /**
+   * The card (a node style the brand defines) for every actor: `default`, `outline`, `solid`,
+   * `tint`, `raised` or one of the brand's own. An actor's own `card` wins over it.
+   */
+  card?: string;
+
+  /**
    * `<Actor>`s, left to right, then `<Message>`s, top to bottom.
    */
   children?: ReactNode;
@@ -86,7 +96,13 @@ export type SequenceDiagramProps = {
  * </SequenceDiagram>
  * ```
  */
-export function SequenceDiagram({ id, title, height, children }: SequenceDiagramProps): ReactNode {
+export function SequenceDiagram({
+  id,
+  title,
+  height,
+  card,
+  children,
+}: SequenceDiagramProps): ReactNode {
   const parsed = useMemo(() => parseSequence(children), [children]);
   const { actors, messages } = parsed;
   const kindIcons = useKindIcons(
@@ -119,8 +135,12 @@ export function SequenceDiagram({ id, title, height, children }: SequenceDiagram
   const root = useRef<HTMLElement | null>(null);
   const size = useElementSize(root);
   const tokens = useDiagramTokens(root);
+  const cards = useMemo(() => actorCards(actors, tokens, card), [actors, tokens, card]);
   const key = JSON.stringify({ actors, messages });
-  const measurements = useMeasurements(root, `${key}|${size?.width ?? 0}`);
+  const measurements = useMeasurements(
+    root,
+    `${key}|${size?.width ?? 0}|${tokens === undefined ? '' : [...cards.values()].map((one) => one.name).join(' ')}`,
+  );
   const layout = useMemo(() => {
     if (size === undefined || tokens === undefined || measurements === undefined) {
       return undefined;
@@ -169,11 +189,11 @@ export function SequenceDiagram({ id, title, height, children }: SequenceDiagram
             step,
             summary,
             groups: [],
-            nodes: describedActors(actors, layout),
+            nodes: describedActors(actors, cards, layout),
             edges: describedMessages(messages, layout, {
               step,
               current,
-              radius: tokens?.radius.sm ?? 0,
+              radius: tokens === undefined ? 0 : messageRadius(tokens),
             }),
             packets: { dots: stillDots(scene, messages, layout, current, tokens), tags: [] },
             lines: lifelineLines(element, actors, layout),
@@ -201,10 +221,11 @@ export function SequenceDiagram({ id, title, height, children }: SequenceDiagram
         ]}
       />
       {layout === undefined || tokens === undefined ? (
-        <MeasureActors actors={actors} extras={extras} width={actorWidth(tokens)} />
+        <MeasureActors actors={actors} cards={cards} extras={extras} width={actorWidth(tokens)} />
       ) : (
         <SequenceDrawing
           actors={actors}
+          cards={cards}
           messages={messages}
           extras={extras}
           layout={layout}
@@ -329,6 +350,11 @@ type MeasureActorsProps = {
   actors: readonly FlowNodeSpec[];
 
   /**
+   * Their cards, by id.
+   */
+  cards: ReadonlyMap<string, ResolvedCard>;
+
+  /**
    * Their icons.
    */
   extras: ReadonlyMap<string, NodeExtras>;
@@ -342,13 +368,14 @@ type MeasureActorsProps = {
 /**
  * Renders every actor, hidden, so the first layout knows how tall the actor boxes are.
  */
-function MeasureActors({ actors, extras, width }: MeasureActorsProps): ReactNode {
+function MeasureActors({ actors, cards, extras, width }: MeasureActorsProps): ReactNode {
   return (
     <div className="kit-flow-html" aria-hidden="true" data-measuring="true">
       {actors.map((actor) => (
         <NodeBody
           key={actor.id}
           node={actor}
+          card={cardOf(cards, actor)}
           extras={extras.get(actor.id)}
           rect={{ x: 0, y: 0, width, height: 0 }}
           inset={{ top: 0, right: 0, bottom: 0, left: 0 }}
@@ -369,6 +396,11 @@ type SequenceDrawingProps = {
    * The actors.
    */
   actors: readonly FlowNodeSpec[];
+
+  /**
+   * The actors' cards, by id.
+   */
+  cards: ReadonlyMap<string, ResolvedCard>;
 
   /**
    * The messages.
@@ -407,6 +439,7 @@ type SequenceDrawingProps = {
  */
 function SequenceDrawing({
   actors,
+  cards,
   messages,
   extras,
   layout,
@@ -420,9 +453,43 @@ function SequenceDrawing({
    */
   const shown = (message: ParsedMessage): boolean =>
     message.at === undefined || message.at <= state.step;
+  const geometries = new Map(
+    actors.flatMap((actor) => {
+      const rect = layout.actors.get(actor.id);
+      return rect === undefined
+        ? []
+        : [
+            [
+              actor.id,
+              {
+                rect,
+                geometry: nodeGeometry(
+                  NODE_KINDS[actor.kind].shape,
+                  cardOf(cards, actor).tokens,
+                  rect,
+                ),
+              },
+            ] as const,
+          ];
+    }),
+  );
   return (
     <>
       <svg className="kit-flow-svg" width="100%" height="100%" aria-hidden="true">
+        {actors.map((actor) => {
+          const placed = geometries.get(actor.id);
+          return placed === undefined ? null : (
+            <NodeShadow
+              key={actor.id}
+              node={actor}
+              card={cardOf(cards, actor)}
+              rect={placed.rect}
+              geometry={placed.geometry}
+              frame={actorFrame(actor, playing)}
+              dimmed={false}
+            />
+          );
+        })}
         {actors.map((actor) => {
           const line = layout.lifelines.get(actor.id);
           return line === undefined ? null : (
@@ -447,24 +514,27 @@ function SequenceDrawing({
               path={{
                 id: message.id,
                 points,
-                segments: roundedPath(points, tokens.radius.sm),
+                segments: roundedPath(points, messageRadius(tokens)),
                 fromSide: 'right',
                 toSide: 'left',
               }}
               frame={{ visible: shown(message), tone: messageTone(message, index, state.current) }}
               dimmed={false}
-              stroke={tokens.stroke.regular}
+              stroke={tokens.edge.stroke}
+              arrow={tokens.edge.arrow}
             />
           );
         })}
         {scene === undefined ? null : <PacketDots dots={scene.dots} />}
         {actors.map((actor) => {
-          const rect = layout.actors.get(actor.id);
-          return rect === undefined ? null : (
+          const placed = geometries.get(actor.id);
+          return placed === undefined ? null : (
             <NodeShape
               key={actor.id}
               node={actor}
-              geometry={shapeGeometry(NODE_KINDS[actor.kind].shape, rect, tokens.radius.md)}
+              card={cardOf(cards, actor)}
+              rect={placed.rect}
+              geometry={placed.geometry}
               frame={actorFrame(actor, playing)}
               dimmed={false}
               arrivalDelay={state.arrival}
@@ -480,17 +550,21 @@ function SequenceDrawing({
             points={layout.messages[index]}
             shown={shown(message)}
             loop={tokens.space.xl + tokens.space.xs}
+            chip={tokens.label.style === 'chip'}
+            step={tokens.label.type}
+            tone={messageTone(message, index, state.current)}
           />
         ))}
         {actors.map((actor) => {
-          const rect = layout.actors.get(actor.id);
-          return rect === undefined ? null : (
+          const placed = geometries.get(actor.id);
+          return placed === undefined ? null : (
             <NodeBody
               key={actor.id}
               node={actor}
+              card={cardOf(cards, actor)}
               extras={extras.get(actor.id)}
-              rect={rect}
-              inset={shapeGeometry(NODE_KINDS[actor.kind].shape, rect, tokens.radius.md).inset}
+              rect={placed.rect}
+              inset={placed.geometry.inset}
               frame={actorFrame(actor, playing)}
               dimmed={false}
               arrivalDelay={state.arrival}
@@ -526,12 +600,36 @@ type MessageLabelProps = {
    * How far right of its lifeline a call to self puts its label.
    */
   loop: number;
+
+  /**
+   * Whether the brand sets edge labels in a bordered chip.
+   */
+  chip: boolean;
+
+  /**
+   * The type step labels are set in.
+   */
+  step: LabelType;
+
+  /**
+   * The message's tone at this step (`active` while it plays), so a chip's border follows the
+   * arrow's colour.
+   */
+  tone: DiagramState | 'active';
 };
 
 /**
  * A message's label: above the middle of its arrow, or beside the loop of a call to self.
  */
-function MessageLabel({ message, points, shown, loop }: MessageLabelProps): ReactNode {
+function MessageLabel({
+  message,
+  points,
+  shown,
+  loop,
+  chip,
+  step,
+  tone,
+}: MessageLabelProps): ReactNode {
   const [a, b] = points ?? [];
   if (a === undefined || b === undefined || message.label === undefined) {
     return null;
@@ -540,9 +638,11 @@ function MessageLabel({ message, points, shown, loop }: MessageLabelProps): Reac
   const self = message.from === message.to;
   return (
     <span
-      className="kit-flow-label kit-sequence-label kit-type-caption"
+      className={`kit-flow-label kit-sequence-label kit-type-${step}`}
       data-diagram-part="edge-label"
       data-edge={message.id}
+      data-tone={tone}
+      data-label-style={chip ? 'chip' : undefined}
       data-visible={String(shown)}
       data-self={flag(self)}
       style={{ left: self ? a.x + loop : (a.x + b.x) / 2, top: a.y }}>
@@ -570,9 +670,14 @@ function messageTone(
  * The actors as the export description lists them.
  *
  * @param actors - The actors.
+ * @param cards - Their cards, by id, for the shape a card gives them.
  * @param layout - Where they are.
  */
-function describedActors(actors: readonly FlowNodeSpec[], layout: SequenceLayout): DescribeNode[] {
+function describedActors(
+  actors: readonly FlowNodeSpec[],
+  cards: ReadonlyMap<string, ResolvedCard>,
+  layout: SequenceLayout,
+): DescribeNode[] {
   return actors.flatMap((actor) => {
     const rect = layout.actors.get(actor.id);
     if (rect === undefined) {
@@ -584,7 +689,7 @@ function describedActors(actors: readonly FlowNodeSpec[], layout: SequenceLayout
         id: actor.id,
         kind: actor.kind,
         state: actor.state,
-        shape: NODE_KINDS[actor.kind].shape,
+        shape: cardShape(NODE_KINDS[actor.kind].shape, cardOf(cards, actor).tokens.shape),
         rect,
       },
     ];
@@ -669,6 +774,7 @@ function parseSequence(children: ReactNode): {
         title: props.title ?? props.id,
         ...optional('subtitle', props.subtitle),
         state: 'default',
+        ...optional('card', props.card),
       });
       extras.set(props.id, {
         ...optional('icon', typeof props.icon === 'function' ? props.icon : undefined),
@@ -794,7 +900,7 @@ function messageScene(
     return emptyMessageScene();
   }
 
-  const segments = roundedPath(points, tokens.radius.sm);
+  const segments = roundedPath(points, messageRadius(tokens));
   const look: MessageLook = { role: 'accent', size: 'md', reply: message.reply };
   return still
     ? stillMessageScene(segments, look)
@@ -937,4 +1043,46 @@ function stillDots(
   return tokens === undefined
     ? []
     : messageScene(messages, layout.messages, current, tokens, true).dots;
+}
+
+/**
+ * The radius a message arrow's corners are rounded with: the small radius, or 0 for a brand that
+ * draws edge corners square.
+ *
+ * @param tokens - The brand's values.
+ */
+function messageRadius(tokens: DiagramTokens): number {
+  return edgeCornerRadius(tokens, tokens.radius.sm);
+}
+
+/**
+ * Each actor's card, by id: its own card, else the diagram's, else the brand's card for its kind,
+ * else `default`; today's node before the brand's values are read.
+ *
+ * @param actors - The actors.
+ * @param tokens - The brand's values, once read.
+ * @param card - The diagram's card.
+ */
+function actorCards(
+  actors: readonly FlowNodeSpec[],
+  tokens: DiagramTokens | undefined,
+  card: string | undefined,
+): Map<string, ResolvedCard> {
+  const source = (tokens ?? FALLBACK).cards;
+  return new Map(
+    actors.map((actor) => [
+      actor.id,
+      resolveCard(source, { own: actor.card, diagram: card, kind: actor.kind }),
+    ]),
+  );
+}
+
+/**
+ * An actor's card from the resolved cards, or today's node when it has none.
+ *
+ * @param cards - Each actor's card, by id.
+ * @param actor - The actor.
+ */
+function cardOf(cards: ReadonlyMap<string, ResolvedCard>, actor: FlowNodeSpec): ResolvedCard {
+  return cards.get(actor.id) ?? resolveCard(FALLBACK.cards, { kind: actor.kind });
 }

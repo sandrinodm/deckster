@@ -8,13 +8,21 @@ export const HELP = `Usage: deck brand [name] [--json]
 
 Prints a brand's resolved tokens, or validates a brand without rendering a deck.
 
-  deck brand [name]        A summary of brands/<name>: families, type scale, spacing and each
+  deck brand [name]        A summary of brands/<name>: families, type scale, spacing, each
                            surface's roles, with the small-text color of a role that reaches only
-                           3:1. Default: "${DEFAULT_BRAND}". With --json, every resolved token:
+                           3:1, the diagram look (edges, groups, edge labels, the card each mapped
+                           node kind uses) and every diagram card with its colors on the default
+                           surface. Default: "${DEFAULT_BRAND}". With --json, every resolved token:
                            palette, surfaces (roles, text colors, backdrop, background layers,
-                           code, diagram, data with the chart plate, charts, shadows), gradients,
-                           typography, shape, spacing, logo, chrome, motion, data and charts.
-                           Colors are hex, sizes canvas px.
+                           code, diagram, diagramCards, data with the chart plate, charts,
+                           shadows), gradients, typography, shape, spacing, logo, chrome, motion,
+                           data, charts and diagram. diagram is { edges, groups, labels: { style,
+                           type }, kinds, cards }: cards has each card's geometry and title type
+                           by name, the five standard cards first, with titleOwn (the brand wrote
+                           the title type, on the card or its default card); a surface's
+                           diagramCards holds each card's colors and shadow there, after any
+                           recoloring the surface writes, with nodeFill (the fill is that
+                           surface's diagram node color). Colors are hex, sizes canvas px.
   deck brand check <name>  Loads and validates brands/<name> and prints every error and warning
                            with its field and fix. Exits with 1 when it has errors.
 

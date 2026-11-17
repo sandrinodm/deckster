@@ -1,5 +1,6 @@
 import type { DescribedShape } from '#diagrams/diagram-description.ts';
 import type { Rect } from '#diagrams/geometry.ts';
+import type { CardShape, CardTokens } from '#diagrams/node-cards.ts';
 import type { NodeShape } from '#diagrams/node-kinds.ts';
 
 import { round2 } from '#diagrams/geometry.ts';
@@ -225,6 +226,41 @@ export function shapeGeometry(shape: NodeShape, rect: Rect, radius: number): Sha
         inset: { top: h * 0.12, bottom: h * 0.12, left: w * 0.2, right: w * 0.2 },
       };
   }
+}
+
+/**
+ * The shape a node is drawn with under a card: the kind's shape, or the card's box or pill. A
+ * dashed (external) kind stays dashed under a box.
+ *
+ * @param kindShape - The kind's shape.
+ * @param cardShape - The card's shape.
+ */
+export function cardShape(kindShape: NodeShape, cardShape: CardShape): NodeShape {
+  switch (cardShape) {
+    case 'kind':
+      return kindShape;
+    case 'box':
+      return kindShape === 'dashed' ? 'dashed' : 'card';
+    case 'pill':
+      return 'pill';
+  }
+}
+
+/**
+ * Builds the geometry of a node's shape under its card: the card's shape override and corner
+ * radius. A dashed (external) kind keeps its dashed outline whatever shape the card gives it.
+ *
+ * @param kindShape - The kind's shape.
+ * @param card - The card's shape and radius.
+ * @param rect - The node's box.
+ */
+export function nodeGeometry(
+  kindShape: NodeShape,
+  card: Pick<CardTokens, 'shape' | 'radius'>,
+  rect: Rect,
+): ShapeGeometry {
+  const geometry = shapeGeometry(cardShape(kindShape, card.shape), rect, card.radius);
+  return kindShape === 'dashed' && !geometry.dashed ? { ...geometry, dashed: true } : geometry;
 }
 
 /**

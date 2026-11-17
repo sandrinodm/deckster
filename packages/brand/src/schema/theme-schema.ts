@@ -66,12 +66,12 @@ export const BrandCode = Schema.Struct({
 } satisfies Record<CodeToken, unknown>);
 
 /**
- * Overrides for the derived diagram theme. At the top level of a brand they apply on every surface;
- * under `color.surfaces.<name>.diagram` they apply on that surface and win over the top-level ones.
- * Tokens left out are derived from the surface's roles, and text stays readable on the node and
- * highlight fills.
+ * Overrides for the derived diagram theme's colors. At the top level of a brand (inside `diagram`,
+ * next to its non-color keys) they apply on every surface; under `color.surfaces.<name>.diagram`
+ * they apply on that surface and win over the top-level ones. Tokens left out are derived from the
+ * surface's roles, and text stays readable on the node and highlight fills.
  */
-export const BrandDiagram = Schema.Struct({
+export const DiagramColors = Schema.Struct({
   node: Schema.optionalKey(ColorRef),
   'node-border': Schema.optionalKey(ColorRef),
   'node-text': Schema.optionalKey(ColorRef),

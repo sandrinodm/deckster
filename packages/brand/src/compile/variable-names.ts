@@ -157,7 +157,90 @@ export const brandVariables = {
    * A diagram theme color on the current surface: `--brand-diagram-node`.
    */
   diagram: (token: string): string => `--brand-diagram-${token}`,
+
+  /**
+   * The brand's diagram card names, space separated: `--brand-diagram-cards`.
+   */
+  diagramCards: '--brand-diagram-cards',
+
+  /**
+   * The card a node kind uses by default, for the kinds the brand maps:
+   * `--brand-diagram-kind-database`.
+   */
+  diagramKind: (kind: string): string => `--brand-diagram-kind-${kind}`,
+
+  /**
+   * One property of the diagram look shared by every card: `--brand-diagram-edge-stroke`.
+   */
+  diagramLook: (property: DiagramLookProperty): string => `--brand-diagram-${property}`,
+
+  /**
+   * One property of a card: `--brand-diagram-card-tint-fill`. Colors and the shadow are per
+   * surface; the rest sit on the brand root.
+   */
+  card: (card: string, property: CardProperty): string =>
+    `--brand-diagram-card-${card}-${property}`,
 } as const;
+
+/**
+ * The diagram look's properties, on the brand root.
+ */
+export const DIAGRAM_LOOK_PROPERTIES = [
+  'edge-stroke',
+  'edge-corners',
+  'edge-arrow',
+  'group-stroke',
+  'group-dashed',
+  'group-radius',
+  'label-style',
+  'label-type',
+] as const;
+
+/**
+ * A diagram look property.
+ */
+export type DiagramLookProperty = (typeof DIAGRAM_LOOK_PROPERTIES)[number];
+
+/**
+ * A card's properties that are the same on every surface, on the brand root.
+ */
+export const CARD_ROOT_PROPERTIES = [
+  'stroke',
+  'radius',
+  'shape',
+  'icon',
+  'accent-side',
+  'accent-width',
+  'title-family',
+  'title-weight',
+  'title-tracking',
+  'title-case',
+  'title-own',
+] as const;
+
+/**
+ * A card's properties that change with the surface, in each surface's rule.
+ */
+export const CARD_SURFACE_PROPERTIES = [
+  'node-fill',
+  'fill',
+  'border',
+  'text',
+  'subtext',
+  'icon-color',
+  'icon-fill',
+  'accent',
+  'shadow',
+  'box-shadow',
+  'detail',
+] as const;
+
+/**
+ * A card property.
+ */
+export type CardProperty =
+  | (typeof CARD_ROOT_PROPERTIES)[number]
+  | (typeof CARD_SURFACE_PROPERTIES)[number];
 
 /**
  * The properties each type step sets.

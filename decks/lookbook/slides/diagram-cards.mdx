@@ -1,0 +1,27 @@
+---
+layout: diagram
+title: Three kinds of partner, and one door into Wrenhaul
+eyebrow: Open Network
+budget: 45s
+---
+
+<Flow title="Shop platforms, tills and parcel carriers, drawn as outlines, all book through Open Network, the one solid card, into the drops store, Flock and the Rider app">
+  <Node id="platforms" kind="external" icon="shopping-bag" title="Shop platforms" card="outline" col={1} row={1} />
+  <Node id="tills" kind="external" icon="receipt" title="Tills" card="outline" col={1} row={2} />
+  <Node id="carriers" kind="external" icon="truck" title="Parcel carriers" card="outline" col={1} row={3} />
+  <Node id="api" kind="gateway" title="Open Network" subtitle="One API" card="solid" col={2} row={2} />
+  <Node id="drops" kind="database" title="Drops store" col={3} row={2} at={1} />
+  <Node id="flock" kind="function" title="Flock" subtitle="Batching" col={4} row={2} at={1} />
+  <Node id="rider" kind="mobile" icon="bike" title="Rider app" col={5} row={2} at={1} />
+  <Edge from="platforms" to="api" />
+  <Edge from="tills" to="api" label="POST /v1/drops" />
+  <Edge from="carriers" to="api" />
+  <Edge from="api" to="drops" at={1} />
+  <Edge from="drops" to="flock" at={1} />
+  <Edge from="flock" to="rider" at={1} />
+</Flow>
+
+<Notes>
+`diagram` with a `<Flow>` whose nodes pick a `card` by name: `solid` for the one that matters, `outline` for systems you do not run; use it when the point is which box is yours, and keep to the standard card names so the slide works in any brand.
+Today any shop platform, any till and any parcel carrier can book a Wrenhaul drop, and they all come through the same door: Open Network, one API. The outlines are theirs; the solid card is ours. [click] Behind that door nothing changes: the drop lands in the drops store, Flock batches it, and a rider sees it on the Rider app.
+</Notes>

@@ -34,6 +34,11 @@ frontmatter. The dark surfaces show the `reversed` logo.
 - **Data.** Forest, terracotta, slate blue, ochre, plum and umber, ordered so neighbours stay apart
   under every color-vision deficiency; a forest sequential ramp and a terracotta-to-slate
   diverging one.
+- **Diagrams.** Printed figures: nodes are paper boxes with a hairline umber rule, small corners
+  and no shadow, titles in Playfair Display, the icon a plain glyph. Edges end in open arrowheads,
+  groups are dashed like a field sketch, and outside services (`external`) are outlines. The
+  brand's own `note` card is an ochre slip with a terracotta rule down its left side, for the one
+  node a slide annotates.
 
 ```sh
 pnpm deck brand check fieldnote   # "fieldnote: is valid (0 errors, 0 warnings)."

@@ -116,6 +116,8 @@ All sizes are canvas pixels on 1920x1080. A colour is a literal (`#1f2937` or `o
 
 **`code`, `diagram`** (optional, top level and per surface): colour overrides for the code theme (`background foreground comment keyword string number function type punctuation highlight added removed`) and the diagram theme (`node node-border node-text group edge label highlight highlight-text packet`). Both are derived from each surface's roles when left out, including the diff colours `added` and `removed`. Set one only when the source shows code or diagrams the derived theme does not match.
 
+**`diagram` look** (optional, top level only): `edges` (`stroke`: a stroke name, `corners: round|sharp`, `arrow: triangle|open|dot`), `groups` (`stroke`: a stroke name or `none`, `dashed`, `radius: none|sm|md|lg|xl`), `labels` (`style: plain|chip`, `type: caption|label`: the type step labels are set in), `kinds` (node kind to card name, such as `database: 'tint'`; kinds are the kit's, listed by `deck diagrams --json`) and `cards` (named node styles: `fill`, `border`, `stroke`, `radius`, `shadow: none|sm|md|lg`, `shape: kind|box|pill`, `text`, `subtext`, `icon: { style: chip|solid|plain|none, color, fill }`, `accent: { side: left|top|right|bottom, color, width }`, `title: { family: display|body|mono, weight, tracking, case: none|upper }`). Card colours are a role with an optional opacity (`accent/12`), a palette reference or a literal; `fill` and `border` also take `none`. Five cards exist in every brand (`default`, `outline`, `solid`, `tint`, `raised`), derived from the roles when not written; a brand writes at most 12 entries. Every card takes `stroke`, `radius` and `title` from the brand's `default` card unless the card (or its standard look, such as `raised`'s hairline) sets them; paint and `shape` are not inherited. A surface recolours a card under `color.surfaces.<name>.diagram.cards.<card>` with the colour fields only (`fill`, `border`, `text`, `subtext`, `icon: { color, fill }`, `accent: { color }`); the card must exist. `brand check` reports a `kinds` entry naming an unknown kind or card, a title family that is not a family role, and card text that does not read on the card's fill on some surface.
+
 ## Limits the framework enforces
 
 The schema rejects values that could leave their place in the compiled CSS or name a file outside the brand. They are listed here because values in a draft come out of a source nobody vetted. `emit_brand.py` applies the same rules before it writes (`scripts/_brand_rules.py`): a number out of range is clamped, an optional value that breaks a rule is left out, each with a `note:` that belongs on the review list; a required value that cannot be made valid (a role that is not a colour, a `NaN`, too few data colours) stops the emitter with the field's path, and nothing is written. Fix the draft.
@@ -138,6 +140,7 @@ The schema rejects values that could leave their place in the compiled CSS or na
 | Fontsource `package` | `@fontsource/<name>` or `@fontsource-variable/<name>`, lower case. `axes` is a file-set name (`wght`, `standard`, `full`); `subsets` are kebab-case. |
 | Logo files | A relative `.svg`, `.png` or `.webp` path inside the brand folder, the content matching the extension. |
 | Names (palette, surface, gradient, logo variant, treatment, easing, duration, the brand itself) | kebab-case; the brand name at most 64 characters. |
+| `diagram.cards`, `diagram.kinds` | At most 12 cards written (standard names included); card names kebab-case; card colours a role with an opacity from 0 to 100 (`accent/12`), a palette reference or a literal; title `tracking` -0.1 to 0.5; `kinds` keys are the kit's node kinds. |
 | `color.data`, and a surface's replacement `data` lists | `categorical` 3 to 12 colours; `sequential` 3 or more; `diverging` an odd number, 3 or more, with the midpoint in the middle. A surface's lists follow the same counts. |
 
 If the schema moves, `scripts/_brand_rules.py` moves with it: the test `scripts/tests/test_emit_rules.py` pins the behaviour.
@@ -149,7 +152,7 @@ The resolver fills a lot in. Emit what the source shows and leave the rest out; 
 - **Missing surfaces.** `inverse`, `accent` and `gradient` are derived from the base roles when the brand omits them. The emitter leaves them out for that reason and prints which ones. Look at them in the rendered decks; if one is wrong for the brand, or `brand check` rejects it, define it in the draft (or re-emit with `--build-surfaces`, which builds them from colours that fit each backdrop).
 - **Roles a surface leaves out are inherited from the base roles**, which were chosen for the default background. On a surface the draft does define, the emitter therefore fills the roles the draft left out with colours that fit that backdrop and prints what it filled.
 - **Data palettes per surface.** Each surface has a chart `plate`. The categorical colours are moved in lightness, keeping hue and order, until they reach 3:1 on it, and the context colour is held to 3:1 on every plate. Write one base palette; write a surface's own `data` only when the source shows different chart colours there.
-- **Code and diagram themes**, per surface.
+- **Code and diagram themes**, per surface, and the diagram look: regular round-cornered edges with triangle arrowheads, hairline groups, plain labels, and the five standard cards from the roles and `shape`. A card's text and icon colours, when not written, are derived to read on its fill.
 - **Substitute fonts**, from the fallback stack, when `substitute` is left out. The emitter still writes `substitute` so the choice is visible and reviewable.
 
 ## What `brand check` checks
@@ -179,6 +182,8 @@ Data palettes, on each surface's chart plate:
 Code themes: the `added` and `removed` line tints must be told apart (a warning when they are tinted almost alike). They are derived from `positive` and `negative`, so a pair chosen to survive colour-vision deficiency can still give similar pale tints; set `code: { added, removed }` on the surface when the check says so.
 
 Not checked by `brand check` but enforced by `deck lint` on slides: text needs 4.5:1 (3:1 at 24 px and up). Layouts set eyebrows in the accent colour at label size, so in practice **the accent needs 4.5:1 on every surface's background**, not the 3:1 the table gives it.
+
+Diagram cards: a card colour the brand writes (`text`, `subtext`, `icon.color`) must reach 4.5:1 for text and 3:1 for the icon on the card's fill on every surface, and a written fill must have some text colour that reads on it there. A surface's recolouring is checked the same way; the fix for a fill that fails on one surface names the surface to recolour it on.
 
 Also: every palette reference resolves, each surface's `gradient` and `logo` exist, logo and font files exist, a Fontsource package has the weights and styles the scale asks for, and a `substitute` is of the same kind (sans, serif, mono) as the family it stands in for.
 
@@ -211,7 +216,7 @@ What this means for an import:
 | `chrome` | `chrome` | `hidden_on` containing `title` sets `skipFirst`. |
 | `motion` | `motion` | |
 | `dataviz` | `charts` | Gridline, axis and label colours are matched to the nearest role and widths to the nearest stroke; number format, big-number colour and table emphasis are mapped. Marks (bar radius, line width) stay in the draft as a record. |
-| `code`, `diagram` | `code`, `diagram` | Only when the draft sets them. |
+| `code`, `diagram` | `code`, `diagram` | Only when the draft sets them. The diagram look (`edges`, `groups`, `labels`, `kinds`, `cards`) passes through at the top level, and a surface's card colours under its `diagram.cards`; a card hex that is a palette step becomes a palette reference. |
 | `layouts`, `provenance`, `review` | not in `brand.ts` | Open review items, `source.kinds` and `source.feel` go to `import-notes.json`, with the emitter's notes. Never into a comment. |
 
 The emitter prints `defaulted:` for every value it had to invent and `note:` for every surface role it filled, every size it raised, every chart colour it matched loosely, every number it clamped, every value it left out because it broke a rule above, and every file or package it refused. The same lines are saved in `import-notes.json`. Read them: each is either something to add to the draft (if you know better) or a line for the review list.
@@ -258,7 +263,7 @@ deck shot zz-<name>-specimen              # every layout, all four surfaces, typ
 deck lint zz-<name>-specimen              # overflow or contrast problems the brand's sizes cause
 ```
 
-For code blocks, terminals and diagrams, which the specimen does not cover, add slides with `deck new slide <deck> <id> --layout code` (or `diagram`): the layout's example carries a working one. Screenshots go to `.deck/shots/<deck>@<name>/` when you pass `--brand`, else `.deck/shots/<deck>/`. `uv run $SKILL_DIR/scripts/compare.py` puts a source page next to a screenshot, and `--sheet` makes a contact sheet of a folder. The specimen's wording is the framework's, so compare treatment, not content: pair like with like (cover with cover, a chart page with a chart slide).
+For code blocks, terminals and diagrams, which the specimen does not cover, add slides with `deck new slide <deck> <id> --layout code` (or `diagram`): the layout's example carries a working one. On a diagram slide, give a few nodes `card="solid"`, `card="tint"` and the brand's own cards so each card shows. Screenshots go to `.deck/shots/<deck>@<name>/` when you pass `--brand`, else `.deck/shots/<deck>/`. `uv run $SKILL_DIR/scripts/compare.py` puts a source page next to a screenshot, and `--sheet` makes a contact sheet of a folder. The specimen's wording is the framework's, so compare treatment, not content: pair like with like (cover with cover, a chart page with a chart slide).
 
 `deck lint zz-<name>-specimen` matters because a brand can be valid and still break slides: a display size too large for the layouts' title lines, margins that squeeze the content, a wide typeface that overflows. Lint errors on a specimen that is clean in the default brand are caused by the brand: fix the scale or spacing in the draft.
 

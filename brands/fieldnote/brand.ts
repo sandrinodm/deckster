@@ -255,6 +255,32 @@ export default defineBrand({
       ],
     },
   },
+  diagram: {
+    edges: { stroke: 'regular', arrow: 'open' },
+    groups: { stroke: 'hairline', dashed: true, radius: 'sm' },
+    kinds: { external: 'outline' },
+    cards: {
+      default: {
+        fill: 'surface',
+        border: 'muted',
+        stroke: 'hairline',
+        radius: 'sm',
+        icon: { style: 'plain' },
+      },
+      outline: { border: 'muted', icon: { style: 'plain' } },
+      raised: { border: 'none', icon: { style: 'plain' } },
+      note: {
+        fill: 'ochre.200',
+        text: 'umber.900',
+        subtext: 'umber.700',
+        border: 'none',
+        radius: 'none',
+        shadow: 'sm',
+        icon: { style: 'plain', color: 'umber.700' },
+        accent: { side: 'left', color: 'clay.500', width: 'bold' },
+      },
+    },
+  },
   spacing: {
     scale: { '2xs': 4, xs: 8, sm: 16, md: 24, lg: 40, xl: 64, '2xl': 100, '3xl': 150 },
     margin: { x: 144, y: 116 },

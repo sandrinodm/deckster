@@ -4,6 +4,7 @@ import type { Brand } from '#schema/brand-schema.ts';
 import type { ContrastWaiver, Role } from '#schema/color-schema.ts';
 import type { BrandProblem } from '#validate/brand-error.ts';
 
+import { checkCardContrast } from '#checks/card-contrast-checks.ts';
 import { GRAPHIC_CONTRAST, TEXT_CONTRAST } from '#checks/contrast-thresholds.ts';
 import { compositeOver, formatHex, fromHex, type Rgba } from '#color/color.ts';
 import { contrastRatio, ensureContrastOnAll, worstContrast } from '#color/contrast.ts';
@@ -121,8 +122,8 @@ export type PairResult = {
 };
 
 /**
- * Checks WCAG contrast for every text-carrying role pair on every surface, and the code and diagram
- * colors a brand overrides. A derived surface that fails is reported once, at
+ * Checks WCAG contrast for every text-carrying role pair on every surface, and the code, diagram
+ * and diagram card colors a brand overrides. A derived surface that fails is reported once, at
  * `color.surfaces.<name>`, listing what fails and telling the author to define that surface or
  * change the fields it was derived from.
  *
@@ -162,6 +163,7 @@ export function checkContrast(
     ...checkTextColors(brand, surface),
     ...checkCode(brand, surface),
     ...checkDiagram(brand, surface),
+    ...checkCardContrast(brand, tokens, surface),
   ]);
   const diffWarnings = surfaces.flatMap((surface) => checkDiffLines(brand, surface).warnings);
   return {
@@ -366,13 +368,14 @@ function overridePath(
   section: 'code' | 'diagram',
   token: CodeToken | DiagramToken,
 ): string | undefined {
-  const own: Readonly<Record<string, string | undefined>> | undefined =
+  const own: Readonly<Partial<Record<CodeToken | DiagramToken, unknown>>> | undefined =
     brand.color.surfaces[surface]?.[section];
   if (own?.[token] !== undefined) {
     return `color.surfaces.${surface}.${section}.${token}`;
   }
 
-  const shared: Readonly<Record<string, string | undefined>> | undefined = brand[section];
+  const shared: Readonly<Partial<Record<CodeToken | DiagramToken, unknown>>> | undefined =
+    brand[section];
   return shared?.[token] === undefined ? undefined : `${section}.${token}`;
 }
 

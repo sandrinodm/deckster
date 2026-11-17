@@ -83,6 +83,7 @@ export default defineBrand({
         border: 'chalk.950',
         positive: 'ultra.800',
         negative: 'hot.600',
+        diagram: { cards: { volt: { fill: 'chalk.0' } } },
         background: [
           {
             type: 'placed',
@@ -218,6 +219,22 @@ export default defineBrand({
       sm: [{ x: 4, y: 4, blur: 0, color: 'chalk.950' }],
       md: [{ x: 8, y: 8, blur: 0, color: 'chalk.950' }],
       lg: [{ x: 14, y: 14, blur: 0, color: 'chalk.950' }],
+    },
+  },
+  diagram: {
+    edges: { stroke: 'regular', corners: 'sharp', arrow: 'triangle' },
+    groups: { stroke: 'regular', radius: 'none' },
+    labels: { style: 'chip', type: 'label' },
+    kinds: { external: 'outline' },
+    cards: {
+      default: {
+        shadow: 'sm',
+        title: { family: 'mono', weight: 600, tracking: 0.02, case: 'upper' },
+      },
+      solid: { border: 'border', shadow: 'md' },
+      tint: { border: 'border', shadow: 'sm' },
+      raised: { stroke: 'regular', border: 'border', shadow: 'lg' },
+      volt: { fill: 'volt.400', border: 'chalk.950', shadow: 'md' },
     },
   },
   spacing: {

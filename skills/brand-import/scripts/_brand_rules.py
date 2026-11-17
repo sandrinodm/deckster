@@ -27,6 +27,9 @@ ROLES = ("bg", "surface", "fg", "heading", "muted", "accent", "accent-fg", "bord
 TYPE_STEPS = ("display", "headline", "title", "lead", "body", "small", "caption", "label", "stat", "quote", "code")
 CODE_TOKENS = ("background", "foreground", "comment", "keyword", "string", "number", "function", "type", "punctuation", "highlight", "added", "removed")
 DIAGRAM_TOKENS = ("node", "node-border", "node-text", "group", "edge", "label", "highlight", "highlight-text", "packet")
+NODE_KINDS = ("service", "database", "queue", "cache", "storage", "user", "client", "mobile", "cloud", "external", "function", "gateway",
+              "loadbalancer", "agent", "llm", "tool", "document", "decision", "node")
+MAX_DIAGRAM_CARDS = 12
 CORNERS = ("top-left", "top-right", "bottom-left", "bottom-right")
 
 _KEBAB = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
@@ -34,6 +37,7 @@ _HEX = re.compile(r"#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})\Z", re.I)
 _F = r"(\d{1,3}(?:\.\d{1,12})?%?|\.\d{1,12}%?)"
 _N = r"(\d{1,3}(?:\.\d{1,12})?|\.\d{1,12})"
 _OKLCH = re.compile(rf"oklch\(\s*{_F}\s+{_N}\s+{_N}(?:deg)?\s*(?:/\s*{_F}\s*)?\)\Z", re.I)
+_ROLE_COLOR = re.compile(r"([a-z]+(?:-[a-z]+)*)(?:/(\d{1,3}))?\Z")
 _PALETTE_REF = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\.[a-z0-9]+(?:/\d{1,3})?\Z")
 _UNICODE_RANGE_ITEM = re.compile(r"U\+(?:[0-9A-F]{1,6}(?:-[0-9A-F]{1,6})?|[0-9A-F]{0,5}\?{1,6})\Z", re.I)
 _FONT_FILE = re.compile(r"(?!/)(?!.*\.\.)(?!.*//)[A-Za-z0-9_./-]+\.(?:woff2|woff|ttf|otf)\Z")
@@ -173,6 +177,27 @@ def color(value, path, notes):
     return value.strip()
 
 
+def is_card_color(value) -> bool:
+    """A diagram card colour: a role with an optional opacity (`accent`, `accent/12`), which follows the slide's surface,
+    or a palette reference or colour literal."""
+    if not isinstance(value, str):
+        return False
+    m = _ROLE_COLOR.match(value)
+    if m and m.group(1) in ROLES:
+        return m.group(2) is None or int(m.group(2)) <= 100
+    return is_color_ref(value)
+
+
+def card_color(value, path, notes):
+    if not is_card_color(value):
+        raise Reject(path, f"expected a role such as accent or accent/12, a palette reference such as ink.900/20 or a colour such as #1f2937, got {str(value)[:60]!r}")
+    return value.strip()
+
+
+def card_paint(value, path, notes):
+    return value if value == "none" else card_color(value, path, notes)
+
+
 def color_literal(value, path, notes):
     if not is_color_literal(value):
         raise Reject(path, f"expected a hex or oklch() colour, got {str(value)[:60]!r}")
@@ -301,7 +326,37 @@ STYLE = one_of("normal", "italic")
 SHADOW_LAYER = struct({"y": OFFSET, "blur": PX, "color": color}, {"x": OFFSET, "spread": OFFSET, "inset": boolean})
 SHADOW = either(one_of("none"), array(SHADOW_LAYER, min_len=1))
 CODE = struct({}, {token: color for token in CODE_TOKENS})
-DIAGRAM = struct({}, {token: color for token in DIAGRAM_TOKENS})
+SURFACE_CARD = struct({}, {
+    "fill": card_paint, "border": card_paint, "text": card_color, "subtext": card_color,
+    "icon": struct({}, {"color": card_color, "fill": card_color}), "accent": struct({}, {"color": card_color}),
+})
+DIAGRAM = struct({}, {**{token: color for token in DIAGRAM_TOKENS}, "cards": record(_kebab_key, SURFACE_CARD, "card name")})
+RADIUS_NAME = one_of("none", "sm", "md", "lg", "xl")
+CARD = struct({}, {
+    "fill": card_paint, "border": card_paint, "stroke": STROKE, "radius": RADIUS_NAME, "shadow": one_of("none", "sm", "md", "lg"),
+    "shape": one_of("kind", "box", "pill"), "text": card_color, "subtext": card_color,
+    "icon": struct({}, {"style": one_of("chip", "solid", "plain", "none"), "color": card_color, "fill": card_color}),
+    "accent": struct({}, {"side": one_of("left", "top", "right", "bottom"), "color": card_color, "width": STROKE}),
+    "title": struct({}, {"family": one_of("display", "body", "mono"), "weight": WEIGHT, "tracking": num(-0.1, 0.5), "case": one_of("none", "upper")}),
+})
+
+
+def cards(value, path, notes):
+    out = record(_kebab_key, CARD, "card name")(value, path, notes)
+    if len(out) > MAX_DIAGRAM_CARDS:
+        notes.append(f"{path}: {len(out)} cards, the framework takes at most {MAX_DIAGRAM_CARDS}; the rest were left out")
+        out = dict(list(out.items())[:MAX_DIAGRAM_CARDS])
+    return out
+
+
+BRAND_DIAGRAM = struct({}, {
+    **{token: color for token in DIAGRAM_TOKENS},
+    "edges": struct({}, {"stroke": STROKE, "corners": one_of("round", "sharp"), "arrow": one_of("triangle", "open", "dot")}),
+    "groups": struct({}, {"stroke": one_of("none", "hairline", "regular", "bold"), "dashed": boolean, "radius": RADIUS_NAME}),
+    "labels": struct({}, {"style": one_of("plain", "chip"), "type": one_of("caption", "label")}),
+    "kinds": record(lambda k: k in NODE_KINDS, kebab, "node kind"),
+    "cards": cards,
+})
 CATEGORICAL = array(color, min_len=3, max_len=12)
 RAMP = array(color, min_len=3)
 DIVERGING = array(color, min_len=3, odd=True)
@@ -379,7 +434,7 @@ BRAND = struct({
     "motion": struct({"easings": record(_kebab_key, fixed_list(num(0, 1), num(-5, 5), num(0, 1), num(-5, 5)), "easing name"),
                       "durations": record(_kebab_key, num(0, 3000), "duration name"),
                       "transition": struct({"kind": one_of("none", "fade", "slide", "rise", "push", "cover", "wipe", "zoom"), "duration": kebab, "easing": kebab})}),
-}, {"code": CODE, "diagram": DIAGRAM, "charts": CHARTS})
+}, {"code": CODE, "diagram": BRAND_DIAGRAM, "charts": CHARTS})
 
 
 def conform(brand: dict, notes: list[str]) -> dict:

@@ -162,6 +162,12 @@ export type FlowNodeSpec = {
    * The id of the innermost group it sits in.
    */
   group?: string;
+
+  /**
+   * The card (node style) it asked for; the diagram's card, the brand's card for its kind or
+   * `default` apply when it has none or the brand lacks it.
+   */
+  card?: string;
 };
 
 /**

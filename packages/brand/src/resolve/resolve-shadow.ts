@@ -2,7 +2,7 @@ import type { ShadowLayerTokens, ShadowTokens } from '#resolve/brand-tokens.ts';
 import type { ColorResolver } from '#resolve/color-resolver.ts';
 import type { Shadow, ShadowName } from '#schema/shape-schema.ts';
 
-import { formatHex, type Rgba } from '#color/color.ts';
+import { formatHex, fromHex, type Rgba } from '#color/color.ts';
 import { cssNumber, cssPx } from '#compile/css-syntax.ts';
 
 /**
@@ -49,6 +49,38 @@ export function resolveShadows<Name extends ShadowName>(
       shadow === undefined ? [] : [[name, resolveShadow(shadow, `${path}.${name}`, colors)]],
     ),
   ) as Partial<Record<Name, ShadowTokens>>;
+}
+
+/**
+ * A diagram card's shadow in the two forms the kit paints it: a CSS `filter` for an outline that is
+ * not a box (one `drop-shadow()` per outer layer, in the shadow's order; `drop-shadow()` has no
+ * spread, so spread is dropped), and a `box-shadow` for HTML parts, whose filter would also shadow
+ * their text and children (the same layers, spread kept). Inset layers are left out of both; a
+ * shadow with no outer layer gives `none` for both.
+ *
+ * @param shadow - A resolved shadow.
+ * @returns The outer layers, the `filter` value and the `box-shadow` value.
+ */
+export function cardShadow(shadow: ShadowTokens): {
+  layers: ShadowLayerTokens[];
+  filter: string;
+  boxShadow: string;
+} {
+  const layers = shadow.layers.filter((layer) => !layer.inset);
+  if (layers.length === 0) {
+    return { layers, filter: 'none', boxShadow: 'none' };
+  }
+
+  const colored = layers.map((layer) => ({
+    layer,
+    color: { ...fromHex(layer.color), alpha: layer.alpha },
+  }));
+  const filter = colored.map(
+    ({ layer, color }) =>
+      `drop-shadow(${length(layer.x)} ${length(layer.y)} ${length(layer.blur)} ${rgb(color)})`,
+  );
+  const boxShadow = colored.map(({ layer, color }) => layerCss(layer, color));
+  return { layers, filter: filter.join(' '), boxShadow: boxShadow.join(', ') };
 }
 
 /**

@@ -242,6 +242,167 @@ export function iconMarkup(svg: SVGSVGElement, color: DescribedColor): string {
 }
 
 /**
+ * A length in a computed `drop-shadow()`: a number in pixels, or a bare zero.
+ */
+const LENGTH_PATTERN = /^(-?[\d.]+(?:e-?\d+)?)(px)?$/;
+
+/**
+ * A whitespace character, which separates a CSS value's tokens.
+ */
+const SPACE_PATTERN = /\s/;
+
+/**
+ * The name of a `drop-shadow()` function in a filter list.
+ */
+const DROP_SHADOW = 'drop-shadow(';
+
+/**
+ * One `drop-shadow()` of a filter, its color still as CSS wrote it.
+ */
+export type DropShadow = {
+  /**
+   * The horizontal offset in pixels.
+   */
+  x: number;
+
+  /**
+   * The vertical offset in pixels.
+   */
+  y: number;
+
+  /**
+   * The blur radius in pixels.
+   */
+  blur: number;
+
+  /**
+   * The color as CSS gives it, such as `rgb(0, 0, 0)` or `oklch(0.2 0.01 250)`; `currentcolor` when
+   * the shadow names none.
+   */
+  color: string;
+};
+
+/**
+ * Reads the `drop-shadow()` functions of a computed `filter` value, in order; other filter
+ * functions are skipped. The color may come before or after the lengths and may itself hold
+ * parentheses (`oklch(…)`, `color(…)`).
+ *
+ * @param filter - A computed `filter`, such as `drop-shadow(rgb(0, 0, 0) 8px 8px 0px)`.
+ * @returns The shadows; none for `none`.
+ */
+export function parseDropShadows(filter: string): DropShadow[] {
+  const shadows: DropShadow[] = [];
+  let from = filter.indexOf(DROP_SHADOW);
+  while (from !== -1) {
+    const start = from + DROP_SHADOW.length;
+    let depth = 1;
+    let end = start;
+    for (; end < filter.length && depth > 0; end += 1) {
+      if (filter[end] === '(') {
+        depth += 1;
+      } else if (filter[end] === ')') {
+        depth -= 1;
+      }
+    }
+
+    const shadow = dropShadowOf(filter.slice(start, end - 1));
+    if (shadow !== null) {
+      shadows.push(shadow);
+    }
+
+    from = filter.indexOf(DROP_SHADOW, end);
+  }
+
+  return shadows;
+}
+
+/**
+ * Reads the outer layers of a computed `box-shadow` value, in order, as shadows; inset layers are
+ * left out and a layer's spread is dropped.
+ *
+ * @param value - A computed `box-shadow`, such as `rgb(0, 0, 0) 4px 4px 0px 0px`.
+ * @returns The outer layers; none for `none`.
+ */
+export function parseBoxShadows(value: string): DropShadow[] {
+  return topLevelParts(value, ',').flatMap((layer) => {
+    const tokens = topLevelTokens(layer);
+    if (tokens.includes('inset')) {
+      return [];
+    }
+
+    const shadow = dropShadowOf(tokens.join(' '));
+    return shadow === null ? [] : [shadow];
+  });
+}
+
+/**
+ * One `drop-shadow()`'s arguments as a shadow: its lengths and its color.
+ *
+ * @param inner - What sits between the function's parentheses.
+ * @returns The shadow; `null` without both offsets.
+ */
+function dropShadowOf(inner: string): DropShadow | null {
+  const lengths: number[] = [];
+  const color: string[] = [];
+  for (const token of topLevelTokens(inner)) {
+    const length = LENGTH_PATTERN.exec(token);
+    if (length === null) {
+      color.push(token);
+    } else {
+      lengths.push(Number(length[1]));
+    }
+  }
+
+  const [x, y, blur = 0] = lengths;
+  if (x === undefined || y === undefined) {
+    return null;
+  }
+
+  return { x, y, blur, color: color.length === 0 ? 'currentcolor' : color.join(' ') };
+}
+
+/**
+ * The space-separated tokens of a CSS value, keeping a function's arguments in its token.
+ *
+ * @param value - The value.
+ */
+function topLevelTokens(value: string): string[] {
+  return topLevelParts(value, ' ');
+}
+
+/**
+ * A CSS value split at a separator outside parentheses, each part trimmed, empty parts dropped. A
+ * space separator splits at any whitespace.
+ *
+ * @param value - The value.
+ * @param separator - `' '` or `','`.
+ */
+function topLevelParts(value: string, separator: ' ' | ','): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let current = '';
+  for (const character of value) {
+    if (character === '(') {
+      depth += 1;
+    } else if (character === ')') {
+      depth -= 1;
+    }
+
+    const splits =
+      depth === 0 && (separator === ' ' ? SPACE_PATTERN.test(character) : character === separator);
+    if (splits) {
+      parts.push(current.trim());
+      current = '';
+    } else {
+      current += character;
+    }
+  }
+
+  parts.push(current.trim());
+  return parts.filter((part) => part !== '' && part !== 'none');
+}
+
+/**
  * Paints a color on the one-pixel canvas and reads it back.
  *
  * @param value - A CSS color.

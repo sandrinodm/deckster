@@ -15,6 +15,11 @@ import { describeElement, round } from '#lint/rules/describe.ts';
 import { visibleTextElements } from '#lint/rules/elements.ts';
 
 /**
+ * The `data-diagram-part` values of the parts a diagram card paints.
+ */
+const CARD_PARTS = new Set(['node', 'node-shape', 'layer', 'item']);
+
+/**
  * Elements whose monospace text is commonly set a little smaller than the text around it, so their
  * font size is not checked against the type scale.
  */
@@ -106,8 +111,9 @@ type Add = (kind: OffBrandKind, property: string, value: string, element: Elemen
  * surface: hard-coded colors and fonts in inline styles or arbitrary Tailwind values, type sizes
  * outside the scale (except text scaled to fit, marked `data-fit`), and Tailwind's default numeric
  * padding and gaps (`p-4`, `gap-6`) where they resolve to a length the brand's spacing scale does
- * not have. Arbitrary spacing such as `pb-[0.14em]` is not checked, and neither are margins: the
- * browser reports `auto` margins as lengths, so they cannot be told apart from `m-4`. Each value is
+ * not have. Inside a diagram part drawn with a card, the card's colors count as brand colors too.
+ * Arbitrary spacing such as `pb-[0.14em]` is not checked, and neither are margins: the browser
+ * reports `auto` margins as lengths, so they cannot be told apart from `m-4`. Each value is
  * reported once per step, with the first element that uses it.
  */
 export const offBrandRule: SlideRule = {
@@ -155,14 +161,24 @@ export const offBrandRule: SlideRule = {
         existing.elements.push(element);
       }
     };
+    const carded = cardedElements(snapshot);
+    const withCards: BrandContext = {
+      ...brand,
+      allowed: { ...brand.allowed, colors: [...brand.allowed.colors, ...brand.allowed.cardColors] },
+    };
+    /**
+     * The brand values for an element: card colors are allowed only inside a part drawn with a
+     * card.
+     */
+    const brandFor = (element: ElementSnapshot) => (carded.has(element.index) ? withCards : brand);
     for (const element of snapshot.elements) {
-      checkPaint(element, brand, add);
+      checkPaint(element, brandFor(element), add);
       checkSpacing(element, brand, add);
     }
 
     const fitted = fittedElements(snapshot);
     for (const element of visibleTextElements(snapshot)) {
-      checkText(element, brand, fitted.has(element.index), add);
+      checkText(element, brandFor(element), fitted.has(element.index), add);
     }
 
     return [...occurrences.values()].map((occurrence) => violation(occurrence, brand));
@@ -239,6 +255,24 @@ function checkText(
   if (checksSize && !isTokenSize(element.fontSizePx, brand.allowed.fontSizes)) {
     add('size', 'font size', `${round(element.fontSizePx)}px`, element);
   }
+}
+
+/**
+ * The diagram parts drawn with a card (a node, its shape, a `<Layers>` band or item) and everything
+ * inside them: the elements a card's colors may paint.
+ *
+ * @param snapshot - The measured slide.
+ */
+function cardedElements(snapshot: StepSnapshot): ReadonlySet<number> {
+  const carded = new Set<number>();
+  for (const element of snapshot.elements) {
+    const inCard = element.parent !== null && carded.has(element.parent);
+    if (inCard || CARD_PARTS.has(element.data['diagram-part'] ?? '')) {
+      carded.add(element.index);
+    }
+  }
+
+  return carded;
 }
 
 /**

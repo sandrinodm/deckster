@@ -4,6 +4,15 @@ import { buildFlowSpec } from '#diagrams/flow-spec-builder.ts';
 import { edge, node, part } from '#diagrams/flow.fixture.ts';
 
 describe('buildFlowSpec', () => {
+  it("keeps a node's card, and leaves it out when the node names none", () => {
+    const spec = buildFlowSpec([
+      part('Node', { id: 'a', card: 'solid', col: 1, row: 1 }),
+      node('b', 2, 1),
+    ]);
+    expect(spec.nodes[0]?.card).toBe('solid');
+    expect(spec.nodes[1]).not.toHaveProperty('card');
+  });
+
   it('expands a journey path into one hop per step, with the way back marked returning', () => {
     const spec = buildFlowSpec([
       node('a', 1, 1),

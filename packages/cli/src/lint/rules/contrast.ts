@@ -8,10 +8,16 @@ import {
   TEXT_CONTRAST,
 } from '@deckster/brand';
 
-import type { ElementSnapshot, SlideRule, SlideRuleInput } from '#lint/types.ts';
+import type {
+  BrandContext,
+  ElementSnapshot,
+  SlideRule,
+  SlideRuleInput,
+  StepSnapshot,
+} from '#lint/types.ts';
 
 import { describeElement } from '#lint/rules/describe.ts';
-import { visibleTextElements } from '#lint/rules/elements.ts';
+import { ancestorsOf, visibleTextElements } from '#lint/rules/elements.ts';
 
 /**
  * The colors meant for text, in the order the fix suggests them: the text roles, then the accent
@@ -31,7 +37,10 @@ const TEXT_COLORS: readonly { name: string; color: (surface: SurfaceTokens) => s
  * alpha and the opacity of everything above it; on a gradient every color of the gradient must
  * pass. Text over a photo, video or picture is checked against the pixels under its glyph boxes
  * (sampled with the text hidden, scrims included): the darkest and lightest of them must both pass.
- * Text on a CSS background image that could not be sampled is not checked.
+ * Text on a CSS background image that could not be sampled is not checked. Text in a diagram node
+ * whose card has a fill of its own sits on that fill, which the node's SVG shape paints and the
+ * snapshot's backgrounds do not include, so the card's fill on the slide's surface is painted over
+ * them first.
  */
 export const contrastRule: SlideRule = {
   /**
@@ -65,7 +74,7 @@ export const contrastRule: SlideRule = {
    */
   check: ({ snapshot, brand, layout }) =>
     visibleTextElements(snapshot).flatMap((element) => {
-      const measured = measure(element);
+      const measured = measure(element, backgroundsInCard(element, snapshot, brand));
       if (measured === undefined || measured.ratio >= measured.required) {
         return [];
       }
@@ -91,25 +100,122 @@ export const contrastRule: SlideRule = {
  * The element's worst contrast over every background color it may sit on, and what it needs.
  *
  * @param element - A text element.
+ * @param inCard - The backgrounds of text inside a diagram card with its own fill
+ *   ({@link backgroundsInCard}), to use in place of the measured ones.
  * @returns The measurement, or `undefined` for text on an image or with unreadable colors.
  */
 function measure(
   element: ElementSnapshot,
+  inCard: Rgba[] | undefined,
 ): { ratio: number; required: number; backgrounds: Rgba[] } | undefined {
   const color = parseColorLiteral(element.color);
   if (element.background.kind === 'image' || color === undefined) {
     return undefined;
   }
 
-  const backgrounds = element.background.colors
-    .map((hex) => parseColorLiteral(hex))
-    .filter((background) => background !== undefined);
+  const backgrounds = inCard ?? opaqueColors(element.background.colors);
   const foreground = { ...color, alpha: color.alpha * element.opacity };
   const ratio = Math.min(...backgrounds.map((background) => contrastRatio(foreground, background)));
   const required = isLargeText(element.renderedFontSizePx, element.fontWeight)
     ? GRAPHIC_CONTRAST
     : TEXT_CONTRAST;
   return Number.isFinite(ratio) ? { ratio, required, backgrounds } : undefined;
+}
+
+/**
+ * The colors text inside a diagram card sits on, when the card paints a fill of its own: the
+ * nearest enclosing flow node (`data-diagram-part="node"`) whose `data-card` has, on the surface, a
+ * fill that is not the diagram `node` color. The node's SVG shape paints that fill, which the
+ * snapshot's backgrounds do not include, so the fill is painted over the node's backgrounds and any
+ * translucent background between the node and the text (a tinted badge) over that. `undefined`
+ * keeps the measured backgrounds: for text outside such a card, text with an opaque background of
+ * its own (a badge), and text over a picture, whose sampled pixels already show the fill.
+ *
+ * @param element - A text element.
+ * @param snapshot - The slide, to walk up from the element.
+ * @param brand - The brand: its cards, and the slide's surface with their colors.
+ */
+function backgroundsInCard(
+  element: ElementSnapshot,
+  snapshot: StepSnapshot,
+  brand: BrandContext,
+): Rgba[] | undefined {
+  if (element.background.kind !== 'colors') {
+    return undefined;
+  }
+
+  const chain = [element.index, ...ancestorsOf(element, snapshot)].map(
+    (index) => snapshot.elements[index],
+  );
+  const at = chain.findIndex((candidate) => candidate?.data['diagram-part'] === 'node');
+  const node = chain[at];
+  const fill = cardFill(node, brand);
+  if (node === undefined || fill === undefined || node.background.kind !== 'colors') {
+    return undefined;
+  }
+
+  const layers = chain
+    .slice(0, at)
+    .reverse()
+    .map((candidate) => parseColorLiteral(candidate?.backgroundColor ?? ''))
+    .filter((layer) => layer !== undefined && layer.alpha > 0) as Rgba[];
+  if (layers.some((layer) => layer.alpha >= 1)) {
+    return undefined;
+  }
+
+  return opaqueColors(node.background.colors).map((under) =>
+    [fill, ...layers].reduce((below, layer) => paintOver(layer, below), under),
+  );
+}
+
+/**
+ * The fill a node's card paints on the slide's surface, when it is not the diagram `node` color
+ * there (the surface's `nodeFill` flag, since a surface may recolor a card's fill).
+ *
+ * @param node - The node element, if any.
+ * @param brand - The brand: its cards, and the slide's surface with their colors.
+ */
+function cardFill(node: ElementSnapshot | undefined, brand: BrandContext): Rgba | undefined {
+  const name = node?.data['card'];
+  const { diagramCards } = brand.surface;
+  if (name === undefined || !Object.hasOwn(diagramCards, name)) {
+    return undefined;
+  }
+
+  const card = diagramCards[name];
+  return card === undefined || card.fill === null || card.nodeFill
+    ? undefined
+    : parseColorLiteral(card.fill);
+}
+
+/**
+ * Parsed background colors, unreadable ones left out.
+ *
+ * @param colors - Hex colors.
+ */
+function opaqueColors(colors: readonly string[]): Rgba[] {
+  return colors
+    .map((hex) => parseColorLiteral(hex))
+    .filter((background) => background !== undefined);
+}
+
+/**
+ * A translucent color painted over an opaque one.
+ *
+ * @param top - The color on top.
+ * @param bottom - The opaque color under it.
+ */
+function paintOver(top: Rgba, bottom: Rgba): Rgba {
+  /**
+   * One channel of `top` over `bottom`, weighted by the top color's alpha.
+   */
+  const blend = (front: number, back: number): number => front * top.alpha + back * (1 - top.alpha);
+  return {
+    r: blend(top.r, bottom.r),
+    g: blend(top.g, bottom.g),
+    b: blend(top.b, bottom.b),
+    alpha: 1,
+  };
 }
 
 /**

@@ -134,7 +134,7 @@ Each slide's `budget` is the time spent on it; the deck's `duration` is the time
 
 ## What lint checks, so you do not have to
 
-`deck lint <deck> --help` lists every rule. In short: schema and frontmatter, overflow and clipping, text overlap, minimum type size, contrast, off-brand values, per-slot content budgets, missing notes, layout repetition, a deck whose chart, diagram and code slides almost never build (`few-builds`), the time budget, chart rules (empty chart, truncated bar axis, too many series or categories, no highlight, topic-style title, missing unit, avoidable legend, donut slices, growing funnel), diagram rules (too dense, overlaps, long words, unlabeled edges), media and demo posters, and open review comments.
+`deck lint <deck> --help` lists every rule. In short: schema and frontmatter, overflow and clipping, text overlap, minimum type size, contrast, off-brand values, per-slot content budgets, missing notes, layout repetition, a deck whose chart, diagram and code slides almost never build (`few-builds`), the time budget, chart rules (empty chart, truncated bar axis, too many series or categories, no highlight, topic-style title, missing unit, avoidable legend, donut slices, growing funnel), diagram rules (too dense, overlaps, long words, unlabeled edges, a card the brand does not have), media and demo posters, and open review comments.
 
 Errors must be fixed. Treat warnings as findings to resolve too: each names its fix, and most point at a real weakness (a chart with no highlight has usually not decided its point). Leave a warning only when you can say why it does not apply, and say so in the handoff.
 

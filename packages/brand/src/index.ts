@@ -37,6 +37,25 @@ export {
   type TableEmphasis,
 } from '#schema/charts-schema.ts';
 export { DEFAULT_SURFACE, REQUIRED_SURFACES, ROLE_NAMES, type Role } from '#schema/color-schema.ts';
+export {
+  CARD_ACCENT_SIDES,
+  CARD_ICON_STYLES,
+  CARD_SHAPES,
+  DIAGRAM_NODE_KINDS,
+  EDGE_ARROWS,
+  EDGE_CORNERS,
+  LABEL_STYLES,
+  MAX_DIAGRAM_CARDS,
+  STANDARD_CARDS,
+  type CardAccentSide,
+  type CardIconStyle,
+  type CardShape,
+  type DiagramNodeKind,
+  type EdgeArrow,
+  type EdgeCorners,
+  type LabelStyle,
+  type StandardCard,
+} from '#schema/diagram-schema.ts';
 export { PLAIN_TREATMENT } from '#schema/identity-schema.ts';
 export {
   CODE_TOKENS,

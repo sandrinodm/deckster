@@ -103,6 +103,66 @@ class EmitRulesTest(unittest.TestCase):
         saved = json.loads((self.ws.brand_dir() / "import-notes.json").read_text(encoding="utf-8"))
         self.assertTrue(any("typography.scale.display.axes" in n for n in saved["notes"]))
 
+    def test_diagram_look_and_cards_are_written_inside_the_rules(self):
+        d = H.draft()
+        d["diagram"] = {
+            "node_border": "#0F1B2D",
+            "edges": {"stroke": "bold", "corners": "sharp", "arrow": "open"},
+            "groups": {"stroke": "none", "dashed": True, "radius": "none"},
+            "labels": {"style": "chip", "type": "label"},
+            "kinds": {"database": "tint", "teapot": "tint"},
+            "cards": {
+                "tint": {"fill": "accent/12", "border": "none"},
+                "note": {"fill": "#0F1B2D", "text": "accent-fg", "radius": "huge", "shadow": "sm", "icon": {"style": "plain"},
+                         "accent": {"side": "left", "color": "teal/200"}, "title": {"family": "mono", "case": "upper", "weight": 5000}},
+            },
+        }
+        run, brand = self.emit(d)
+        self.assertEqual(brand["diagram"], {
+            "node-border": "ink.base",
+            "edges": {"stroke": "bold", "corners": "sharp", "arrow": "open"},
+            "groups": {"stroke": "none", "dashed": True, "radius": "none"},
+            "labels": {"style": "chip", "type": "label"},
+            "kinds": {"database": "tint"},
+            "cards": {
+                "tint": {"fill": "accent/12", "border": "none"},
+                "note": {"fill": "ink.base", "text": "accent-fg", "shadow": "sm", "icon": {"style": "plain"}, "accent": {"side": "left"},
+                         "title": {"family": "mono", "case": "upper", "weight": 1000}},
+            },
+        })
+        for field in ("diagram.kinds", "diagram.cards.note.radius", "diagram.cards.note.accent.color", "diagram.cards.note.title.weight"):
+            self.assertIn(field, run.stdout)
+        framework = H.framework_read(self.ws.brand_dir() / "brand.ts")
+        if framework is not None:
+            self.assertTrue(framework["ok"], framework)
+            self.assertEqual(framework["value"]["diagram"], brand["diagram"])
+
+    def test_a_surface_recolours_a_card_with_colour_fields_only(self):
+        d = H.draft()
+        d["diagram"] = {"cards": {"note": {"fill": "#0F1B2D"}}}
+        d["color"]["surfaces"] = {"inverse": {"bg": "#0F1B2D", "fg": "#F7F4EE", "muted": "#C9C2B4", "accent": "#FF5A36",
+                                             "diagram": {"edge": "#C9C2B4", "cards": {
+                                                 "note": {"fill": "surface", "text": "fg", "radius": "lg", "icon": {"color": "accent", "style": "solid"},
+                                                          "accent": {"color": "#0F1B2D", "side": "top"}},
+                                             }}}}
+        run, brand = self.emit(d)
+        self.assertEqual(brand["color"]["surfaces"]["inverse"]["diagram"], {
+            "edge": "#c9c2b4",
+            "cards": {"note": {"fill": "surface", "text": "fg", "icon": {"color": "accent"}, "accent": {"color": "ink.base"}}},
+        })
+        for field in ("diagram.cards.note.radius", "diagram.cards.note.icon.style", "diagram.cards.note.accent.side"):
+            self.assertIn(field, run.stdout)
+        framework = H.framework_read(self.ws.brand_dir() / "brand.ts")
+        if framework is not None:
+            self.assertTrue(framework["ok"], framework)
+
+    def test_more_cards_than_the_framework_takes_are_cut(self):
+        d = H.draft()
+        d["diagram"] = {"cards": {f"card-{i}": {"radius": "sm"} for i in range(14)}}
+        run, brand = self.emit(d)
+        self.assertEqual(list(brand["diagram"]["cards"]), [f"card-{i}" for i in range(12)])
+        self.assertIn("at most 12", run.stdout)
+
     def test_hex_shadow_alpha_survives_emission_and_framework_reading(self):
         colors = ("#0F1B2D14", "#1234", "#0000", "#12345600", "#0F1B2D", "#ABC")
         expected = ("#0f1b2d14", "#1234", "#0000", "#12345600", "ink.base", "#aabbcc")

@@ -3,6 +3,12 @@
  * brand step, so a diagram follows its brand and surface with no slide edits. One accent marks what
  * matters (a highlighted node, the path a packet travels); everything else stays in the quiet node,
  * edge and label colors. Motion runs on brand durations and easings, and only outside static mode.
+ *
+ * A node's card (a node style the brand names) reaches it through private `--kit-card-*` variables
+ * the renderer sets on the node's elements, each pointing at the brand's variable for that card;
+ * every rule falls back to the node colours, so a stylesheet without cards draws today's node. The
+ * brand's diagram-wide look (edge and group lines, label chips) is read from its `--brand-diagram-*`
+ * variables the same way, with today's look as the fallback.
  */
 @layer theme, base, components, utilities;
 
@@ -70,7 +76,11 @@
   .kit-flow-group {
     fill: var(--brand-diagram-group);
     stroke: var(--brand-diagram-node-border);
-    stroke-width: var(--brand-stroke-hairline);
+    stroke-width: var(--brand-diagram-group-stroke, var(--brand-stroke-hairline));
+  }
+
+  .kit-flow-group[data-dashed='true'] {
+    stroke-dasharray: calc(var(--brand-stroke-regular) * 3) calc(var(--brand-stroke-regular) * 2.5);
   }
 
   .kit-flow-group-label {
@@ -83,7 +93,7 @@
   .kit-flow-edge-line {
     fill: none;
     stroke: var(--brand-diagram-edge);
-    stroke-width: var(--brand-stroke-regular);
+    stroke-width: var(--brand-diagram-edge-stroke, var(--brand-stroke-regular));
     stroke-linejoin: round;
   }
 
@@ -91,9 +101,19 @@
     fill: var(--brand-diagram-edge);
   }
 
+  /* An open arrowhead is two strokes in the line's color and width. */
+  .kit-flow-arrow[data-arrow='open'] {
+    fill: none;
+    stroke: var(--brand-diagram-edge);
+    stroke-width: var(--brand-diagram-edge-stroke, var(--brand-stroke-regular));
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
   .kit-flow-edge[data-dashed='true'] .kit-flow-edge-line,
   .kit-flow-edge[data-tone='error'] .kit-flow-edge-line {
-    stroke-dasharray: calc(var(--brand-stroke-regular) * 3.5) calc(var(--brand-stroke-regular) * 3);
+    stroke-dasharray: calc(var(--brand-diagram-edge-stroke, var(--brand-stroke-regular)) * 3.5)
+      calc(var(--brand-diagram-edge-stroke, var(--brand-stroke-regular)) * 3);
   }
 
   .kit-flow-edge:is([data-tone='active'], [data-tone='highlighted'], [data-tone='trail']) {
@@ -114,6 +134,12 @@
 
   .kit-flow-edge[data-tone]:not([data-tone='default'], [data-tone='muted']) .kit-flow-arrow {
     fill: var(--kit-edge-color);
+  }
+
+  .kit-flow-edge[data-tone]:not([data-tone='default'], [data-tone='muted'])
+    .kit-flow-arrow[data-arrow='open'] {
+    fill: none;
+    stroke: var(--kit-edge-color);
   }
 
   .kit-flow-edge[data-tone='trail'] {
@@ -146,31 +172,91 @@
     text-align: center;
   }
 
+  /*
+   * A brand that sets labels in chips adds a hairline in the edge's color and the surface's fill;
+   * the padding gives up the hairline's width, so the label is as wide as a plain one.
+   */
+  .kit-flow-label[data-label-style='chip'] {
+    padding: 0 calc(var(--brand-space-xs) - var(--brand-stroke-hairline));
+    border: var(--brand-stroke-hairline) solid var(--kit-edge-color, var(--brand-diagram-edge));
+    background: var(--brand-color-surface);
+  }
+
+  .kit-flow-label[data-label-style='chip']:is(
+      [data-tone='active'],
+      [data-tone='highlighted'],
+      [data-tone='trail']
+    ) {
+    --kit-edge-color: var(--brand-diagram-highlight);
+  }
+
+  .kit-flow-label[data-label-style='chip'][data-tone='error'] {
+    --kit-edge-color: var(--brand-color-negative);
+  }
+
+  .kit-flow-label[data-label-style='chip'][data-tone='success'] {
+    --kit-edge-color: var(--brand-color-positive);
+  }
+
   .kit-flow-label-line {
     display: block;
   }
 
-  /* Nodes: the shape in the SVG, the text in the HTML layer over it. */
+  /* Nodes: the shape in the SVG, the text in the HTML layer over it, both in the node's card. */
   .kit-flow-outline,
   .kit-flow-under {
-    fill: var(--brand-diagram-node);
-    stroke: var(--brand-diagram-node-border);
-    stroke-width: var(--brand-stroke-regular);
+    fill: var(--kit-card-fill, var(--brand-diagram-node));
+    stroke: var(--kit-card-border, var(--brand-diagram-node-border));
+    stroke-width: var(--kit-card-stroke, var(--brand-stroke-regular));
     stroke-linejoin: round;
   }
 
   /*
    * On a light surface the group tint sits close to the node fill, so a node inside a group takes
-   * the slide's background instead and stands off the tint.
+   * the slide's background instead and stands off the tint; only a card whose fill is the node
+   * color does (`data-card-fill="own"` marks one that sets its own).
    */
-  .kit-flow-shape[data-grouped='true'] :is(.kit-flow-outline, .kit-flow-under) {
+  .kit-flow-shape[data-grouped='true']:not([data-card-fill='own'])
+    :is(.kit-flow-outline, .kit-flow-under) {
     fill: light-dark(var(--brand-color-bg), var(--brand-diagram-node));
   }
 
   .kit-flow-details {
     fill: none;
-    stroke: var(--brand-diagram-node-border);
-    stroke-width: var(--brand-stroke-regular);
+    stroke: var(--kit-card-detail, var(--brand-diagram-node-border));
+    stroke-width: var(--kit-card-stroke, var(--brand-stroke-regular));
+  }
+
+  /*
+   * A card's accent stripe along one side, clipped to the outline. With a stripe the outline is
+   * drawn twice: its fill under the stripe, its stroke over it, so a state's outline stays whole.
+   */
+  .kit-flow-outline-fill {
+    stroke-opacity: 0;
+  }
+
+  .kit-flow-outline-stroke {
+    fill-opacity: 0;
+  }
+
+  .kit-flow-accent {
+    fill: var(--kit-card-accent, var(--brand-diagram-highlight));
+  }
+
+  /*
+   * A card's shadow: a masked copy of the outline under the edges, so it never shows through the
+   * node and takes no room.
+   */
+  .kit-flow-shadow-cast {
+    filter: var(--kit-card-shadow, none);
+  }
+
+  .kit-flow-shadow-cast path {
+    fill: var(--brand-color-bg);
+  }
+
+  .kit-flow-shadow:is([data-state='muted'], [data-dimmed='true']) {
+    opacity: var(--kit-diagram-dim);
   }
 
   .kit-flow-halo {
@@ -208,7 +294,9 @@
   .kit-flow-shape:is([data-state='highlighted'], [data-state='error'], [data-state='success'])
     .kit-flow-outline {
     stroke: var(--kit-node-color);
-    stroke-width: calc(var(--brand-stroke-regular) * 1.5);
+    stroke-width: calc(
+      max(var(--kit-card-stroke, var(--brand-stroke-regular)), var(--brand-stroke-regular)) * 1.5
+    );
   }
 
   .kit-flow-shape:is([data-state='highlighted'], [data-state='error'], [data-state='success'])
@@ -252,11 +340,25 @@
     place-items: center;
     width: 2em;
     height: 2em;
-    border: var(--brand-stroke-regular) solid var(--brand-diagram-node-border);
+    border: var(--brand-stroke-regular) solid
+      var(--kit-card-detail, var(--brand-diagram-node-border));
     border-radius: var(--brand-radius-sm);
     background: var(--brand-color-bg);
-    color: var(--brand-diagram-node-text);
+    color: var(--kit-card-icon-color, var(--brand-diagram-node-text));
     font-size: var(--brand-type-caption-size);
+  }
+
+  /* A card's icon as a filled tile, or the bare glyph; the border stays, clear, so sizes match. */
+  .kit-flow-node[data-icon='solid'] .kit-flow-node-icon,
+  .kit-layer-item[data-icon='solid'] .kit-flow-node-icon {
+    border-color: transparent;
+    background: var(--kit-card-icon-fill, var(--brand-diagram-highlight));
+  }
+
+  .kit-flow-node[data-icon='plain'] .kit-flow-node-icon,
+  .kit-layer-item[data-icon='plain'] .kit-flow-node-icon {
+    border-color: transparent;
+    background: none;
   }
 
   .kit-flow-node[data-shape='pill'] .kit-flow-node-icon {
@@ -273,17 +375,25 @@
     stroke-width: var(--brand-icon-stroke);
   }
 
-  .kit-flow-node:is([data-state='highlighted'], [data-state='error'], [data-state='success'])
+  /*
+   * A state recolours a chip icon (it has its own tile behind the glyph); a card's solid or plain
+   * icon keeps the card's colours, so the glyph stays readable on the card's fill, and the outline
+   * and halo show the state.
+   */
+  .kit-flow-node:is([data-state='highlighted'], [data-state='error'], [data-state='success']):not(
+      [data-icon]
+    )
     .kit-flow-node-icon {
     border-color: var(--kit-node-color);
   }
 
-  .kit-flow-node[data-state='highlighted'] .kit-flow-node-icon {
+  .kit-flow-node[data-state='highlighted']:not([data-icon]) .kit-flow-node-icon {
     background: var(--brand-diagram-highlight);
     color: var(--brand-diagram-highlight-text);
   }
 
-  .kit-flow-node:is([data-state='error'], [data-state='success']) .kit-flow-node-icon {
+  .kit-flow-node:is([data-state='error'], [data-state='success']):not([data-icon])
+    .kit-flow-node-icon {
     color: var(--kit-node-color);
   }
 
@@ -325,18 +435,19 @@
   }
 
   .kit-flow-node .kit-flow-node-title {
-    --kit-step-family: var(--brand-type-title-family);
-    --kit-step-weight: var(--brand-type-title-weight);
-    --kit-step-tracking: var(--brand-type-title-tracking);
+    --kit-step-family: var(--kit-card-title-family, var(--brand-type-title-family));
+    --kit-step-weight: var(--kit-card-title-weight, var(--brand-type-title-weight));
+    --kit-step-tracking: var(--kit-card-title-tracking, var(--brand-type-title-tracking));
+    --kit-step-case: var(--kit-card-title-case, var(--brand-type-small-case));
     --kit-step-axes: var(--brand-type-title-axes);
     --kit-step-line-height: 1.2;
 
-    color: var(--brand-diagram-node-text);
+    color: var(--kit-card-text, var(--brand-diagram-node-text));
     text-wrap: balance;
   }
 
   .kit-flow-node-subtitle {
-    color: var(--brand-diagram-label);
+    color: var(--kit-card-subtext, var(--brand-diagram-label));
     text-wrap: balance;
   }
 
@@ -655,6 +766,65 @@
     border-left-color: var(--brand-diagram-highlight);
   }
 
+  /* A band whose <Layer> names a card takes the card's look instead of the stack's. */
+  .kit-layer[data-card] {
+    border: var(--kit-card-stroke) solid var(--kit-card-border);
+    border-radius: var(--kit-card-radius);
+    background: var(--kit-card-fill);
+  }
+
+  .kit-layer[data-card][data-state='highlighted'] {
+    border-color: var(--brand-diagram-highlight);
+  }
+
+  .kit-layers .kit-layer[data-card] .kit-layer-title {
+    color: var(--kit-card-text);
+  }
+
+  /*
+   * A band title and a chip's text take their card's title type, at their own sizes, when the
+   * brand wrote that type (`data-card-title="own"`); otherwise they keep the stack's own type.
+   */
+  .kit-layers .kit-layer[data-card-title='own'] .kit-layer-title,
+  .kit-layers .kit-layer-item[data-card-title='own'] .kit-layer-item-title {
+    --kit-step-family: var(--kit-card-title-family);
+    --kit-step-weight: var(--kit-card-title-weight);
+    --kit-step-tracking: var(--kit-card-title-tracking);
+    --kit-step-case: var(--kit-card-title-case);
+  }
+
+  .kit-layer[data-card] .kit-layer-subtitle {
+    color: var(--kit-card-subtext);
+  }
+
+  /*
+   * A band or a chip drawn with a card: its shadow is a `box-shadow` outside its box (the card's
+   * `--kit-card-box-shadow`, set on each element so it never passes down), so it never doubles the
+   * text of a translucent card; its accent stripe is an inset shadow inside its border. Both show
+   * together; each is a clear shadow when the card has none.
+   */
+  :is(.kit-layer, .kit-layer-item)[data-card] {
+    --kit-accent-inset: 0 0 transparent;
+
+    box-shadow: var(--kit-accent-inset), var(--kit-card-box-shadow, 0 0 transparent);
+  }
+
+  :is(.kit-layer, .kit-layer-item)[data-accent='left'] {
+    --kit-accent-inset: inset var(--kit-card-accent-width) 0 0 var(--kit-card-accent);
+  }
+
+  :is(.kit-layer, .kit-layer-item)[data-accent='right'] {
+    --kit-accent-inset: inset calc(-1 * var(--kit-card-accent-width)) 0 0 var(--kit-card-accent);
+  }
+
+  :is(.kit-layer, .kit-layer-item)[data-accent='top'] {
+    --kit-accent-inset: inset 0 var(--kit-card-accent-width) 0 var(--kit-card-accent);
+  }
+
+  :is(.kit-layer, .kit-layer-item)[data-accent='bottom'] {
+    --kit-accent-inset: inset 0 calc(-1 * var(--kit-card-accent-width)) 0 var(--kit-card-accent);
+  }
+
   .kit-layer[data-state='muted'] {
     opacity: var(--kit-diagram-muted);
   }
@@ -686,15 +856,20 @@
     list-style: none;
   }
 
+  /*
+   * A chip takes its card's paint; the card's corner only when a card was named for it, so the
+   * default card alone keeps the stack's small chips.
+   */
   .kit-layer-item {
     display: inline-flex;
     gap: var(--brand-space-xs);
     align-items: center;
     padding: var(--brand-space-xs) var(--brand-space-sm) var(--brand-space-xs) var(--brand-space-xs);
-    border: var(--brand-stroke-regular) solid var(--brand-diagram-node-border);
-    border-radius: var(--brand-radius-sm);
-    background: var(--brand-diagram-node);
-    color: var(--brand-diagram-node-text);
+    border: var(--kit-card-stroke, var(--brand-stroke-regular)) solid
+      var(--kit-card-border, var(--brand-diagram-node-border));
+    border-radius: var(--kit-chip-radius, var(--brand-radius-sm));
+    background: var(--kit-card-fill, var(--brand-diagram-node));
+    color: var(--kit-card-text, var(--brand-diagram-node-text));
   }
 
   .kit-layer-item .kit-flow-node-icon {

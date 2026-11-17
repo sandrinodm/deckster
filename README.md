@@ -138,6 +138,9 @@ behind these choices are in [docs/design.md](docs/design.md).
   highlight one value, take annotations and reveal by step (`pnpm deck charts` lists them).
 - Draw `<Flow>` diagrams placed on a grid or by ELK, with routed edges and packets that travel
   along them by step, plus sequence diagrams, timelines, layers, cycles, trees and sanitised SVG.
+  The brand sets their edges, groups and labels, and a node takes a `card`: a node style the
+  brand defines, with five standard ones (`default`, `outline`, `solid`, `tint`, `raised`) in
+  every brand.
 - Build a slide in steps: `<Step at={n}>` reveals content with the brand's motion (`effect`
   rise, fade, scale, blur or wipe; `focus` mutes earlier steps), charts, diagrams and code fences
   take `at` on their parts, and big numbers count up on arrival. A slide's `transition:` sets how

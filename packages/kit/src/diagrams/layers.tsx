@@ -1,5 +1,13 @@
 import { useReadyHold, useStep } from '@deckster/engine';
-import { Children, isValidElement, useId, useMemo, useRef, type ReactNode } from 'react';
+import {
+  Children,
+  isValidElement,
+  useId,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 
 import type { IconComponent } from '#diagrams/flow-parts.tsx';
 import type { DiagramState } from '#diagrams/flow-spec.ts';
@@ -9,7 +17,16 @@ import { describeDiagram, type DescribeBox } from '#diagrams/describe-diagram.ts
 import { DiagramFrame } from '#diagrams/diagram-frame.tsx';
 import { assertDiagramProps, normalizeState } from '#diagrams/diagram-props.ts';
 import { count } from '#diagrams/diagram-summary.ts';
+import { FALLBACK, useDiagramTokens, type DiagramTokens } from '#diagrams/diagram-tokens.ts';
 import { Item, Layer, type ItemProps, type LayerProps } from '#diagrams/form-parts.tsx';
+import {
+  cardData,
+  cardStyle,
+  cardTitleVariables,
+  resolveCard,
+  type ResolvedCard,
+} from '#diagrams/node-cards.ts';
+import { resolveNodeKind } from '#diagrams/node-kinds.ts';
 import { useDiagramDescription } from '#diagrams/use-description.ts';
 import { useElementSize } from '#diagrams/use-element-size.ts';
 import { smartPunctuation } from '#foundation/smart-punctuation.ts';
@@ -40,6 +57,13 @@ export type LayersProps = {
   height?: number;
 
   /**
+   * The card (a node style the brand defines) for every item of the stack: `default`, `outline`,
+   * `solid`, `tint`, `raised` or one of the brand's own. An item's own `card` wins over it; the
+   * bands keep the stack's own look unless a `<Layer>` names a card.
+   */
+  card?: string;
+
+  /**
    * The `<Layer>`s, top to bottom.
    */
   children?: ReactNode;
@@ -61,12 +85,13 @@ export type LayersProps = {
  * </Layers>
  * ```
  */
-export function Layers({ id, title, height, children }: LayersProps): ReactNode {
+export function Layers({ id, title, height, card, children }: LayersProps): ReactNode {
   const layers = useMemo(() => readLayers(children), [children]);
   const step = useStep();
   const root = useRef<HTMLElement | null>(null);
   const size = useElementSize(root);
-  useReadyHold(size === undefined);
+  const tokens = useDiagramTokens(root);
+  useReadyHold(size === undefined || tokens === undefined);
   const shown = layers.filter((layer) => layer.at === undefined || layer.at <= step);
   const lastAt = lastLayerStep(layers);
   const summary = [
@@ -87,7 +112,7 @@ export function Layers({ id, title, height, children }: LayersProps): ReactNode 
       kind="layers"
       title={title}
       summary={summary}
-      ready={size !== undefined}
+      ready={size !== undefined && tokens !== undefined}
       height={height}
       data={{ 'data-diagram-id': diagramId, 'data-diagram-nodes': String(shown.length) }}>
       <StepMarks
@@ -99,6 +124,7 @@ export function Layers({ id, title, height, children }: LayersProps): ReactNode 
             key={`${layer.title}-${index}`}
             className="kit-layer"
             data-diagram-part="layer"
+            {...bandCardProps(layer.card, card, tokens)}
             data-state={layerState(layer, step, lastAt)}
             data-visible={String(layer.at === undefined || layer.at <= step)}>
             <header className="kit-layer-head">
@@ -113,12 +139,19 @@ export function Layers({ id, title, height, children }: LayersProps): ReactNode 
             </header>
             <div className="kit-layer-items">
               {layer.items.map((item, itemIndex) => {
-                const Icon = item.icon;
+                const itemCard = resolveCard((tokens ?? FALLBACK).cards, {
+                  own: item.card,
+                  diagram: card,
+                  kind: item.kind === undefined ? undefined : resolveNodeKind(item.kind),
+                });
+                const Icon = itemCard.tokens.icon === 'none' ? undefined : item.icon;
                 return (
                   <div
                     key={`${item.title}-${itemIndex}`}
                     className="kit-layer-item"
                     data-diagram-part="item"
+                    {...cardData(itemCard)}
+                    {...cardLook(itemCard)}
                     data-state={item.state ?? 'default'}>
                     {Icon === undefined ? null : (
                       <span className="kit-flow-node-icon" aria-hidden="true">
@@ -137,6 +170,98 @@ export function Layers({ id, title, height, children }: LayersProps): ReactNode 
       </div>
     </DiagramFrame>
   );
+}
+
+/**
+ * The `data-*` attributes and inline style of a part of the stack drawn with a card: its icon and
+ * accent styles, its card's variables, its shadow as a `box-shadow` (`--kit-card-box-shadow`, set
+ * on every part so a band's never reaches its chips), and `data-card-title="own"` when the brand
+ * wrote the card's title type, so its text takes that type at its own size. A chip keeps the
+ * stack's own corner (the small radius) unless a card was named for it, so the default card alone
+ * does not reshape the chips.
+ *
+ * @param card - The resolved card.
+ */
+function cardLook(card: ResolvedCard): {
+  style: CSSProperties;
+  'data-icon'?: string;
+  'data-accent'?: string;
+  'data-card-title'?: string;
+} {
+  const { icon, accent, shape, radius } = card.tokens;
+  const style = {
+    ...cardStyle(card),
+    ...(card.defined && accent.side !== 'none'
+      ? { '--kit-card-accent-width': `${accent.width}px` }
+      : {}),
+    ...(card.defined && card.named
+      ? { '--kit-chip-radius': shape === 'pill' ? '999px' : `${radius}px` }
+      : {}),
+    ...(card.defined
+      ? {
+          '--kit-card-box-shadow': card.tokens.shadow
+            ? `var(--brand-diagram-card-${card.name}-box-shadow)`
+            : '0 0 transparent',
+        }
+      : {}),
+  } as CSSProperties;
+  return {
+    style,
+    ...(icon === 'chip' ? {} : { 'data-icon': icon }),
+    ...(card.defined && accent.side !== 'none' ? { 'data-accent': accent.side } : {}),
+    ...titleOwn(card),
+  };
+}
+
+/**
+ * `data-card-title="own"` for a card whose title type the brand wrote; nothing otherwise, so the
+ * part keeps its own type.
+ *
+ * @param card - The resolved card.
+ */
+function titleOwn(card: ResolvedCard): { 'data-card-title'?: string } {
+  return card.defined && card.tokens.titleOwn ? { 'data-card-title': 'own' } : {};
+}
+
+/**
+ * The `data-*` attributes and inline style of a band. Its paint is its card's when the `<Layer>`
+ * names one the brand has; else the stack's own look, with `data-card-missing` when it named one
+ * the brand lacks. Its title takes the title type of its card (the `<Layer>`'s card, else the
+ * stack's, else `default`) when the brand wrote that type.
+ *
+ * @param name - The card the `<Layer>` names.
+ * @param stack - The card the `<Layers>` names.
+ * @param tokens - The brand's values, once read.
+ */
+function bandCardProps(
+  name: string | undefined,
+  stack: string | undefined,
+  tokens: DiagramTokens | undefined,
+): ReturnType<typeof cardLook> & Partial<ReturnType<typeof cardData>> {
+  if (tokens === undefined) {
+    return { style: {} };
+  }
+
+  const titleCard = resolveCard(tokens.cards, { own: name, diagram: stack });
+  const title =
+    titleOwn(titleCard)['data-card-title'] === undefined
+      ? { style: {} }
+      : { style: cardTitleVariables(titleCard.name), 'data-card-title': 'own' };
+  if (name === undefined) {
+    return title;
+  }
+
+  const card = resolveCard(tokens.cards, { own: name });
+  if (!card.named) {
+    return { ...title, 'data-card-missing': name };
+  }
+
+  const look = cardLook(card);
+  return {
+    ...cardData(card),
+    ...look,
+    style: { ...look.style, '--kit-chip-radius': undefined } as CSSProperties,
+  };
 }
 
 /**

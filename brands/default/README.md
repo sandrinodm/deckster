@@ -32,6 +32,10 @@ frontmatter. The three dark surfaces show the reversed logo.
 - **Motion.** Fade between slides in 280 ms.
 - **Data.** Six categorical colors (cobalt, amber, teal, violet, rose, gray), a cobalt sequential
   ramp and an amber-to-cobalt diverging one.
+- **Diagrams.** Quiet on purpose: nodes keep the light gray fill with a hairline border and the
+  small soft shadow, and each icon sits on a pale cobalt tile, so the accent shows only in the
+  icons and in whatever a slide marks. Groups are a plain gray field with no outline, and outside
+  services (`external`) are drawn as outlines. No cards of its own beyond the five standard ones.
 
 Print every resolved token with:
 

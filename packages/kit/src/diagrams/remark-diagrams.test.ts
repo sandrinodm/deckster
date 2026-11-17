@@ -138,6 +138,23 @@ describe('remarkKitDiagrams', () => {
     expect(node.attributes?.find((attribute) => attribute.name === 'icon')?.value).toBe('none');
   });
 
+  it('keeps `card` on a node and on its flow, as written', () => {
+    const node = element('Node', { id: 'db', kind: 'database', card: 'tint' });
+    const diagram = element('Flow', { title: 'A flow', card: 'outline' }, [node]);
+    const { failure } = run({ type: 'root', children: [diagram] });
+    expect(failure).toBeUndefined();
+    expect(node.attributes?.find((attribute) => attribute.name === 'card')?.value).toBe('tint');
+    expect(diagram.attributes?.find((attribute) => attribute.name === 'card')?.value).toBe(
+      'outline',
+    );
+  });
+
+  it('fails the build on a card name that is not a kebab name', () => {
+    expect(failureOf(flow([element('Node', { id: 'a', card: 'Big Card' })]))).toContain(
+      '<Node card="Big Card"> is not a kebab name',
+    );
+  });
+
   it('fails the build on an unknown kind with the nearest kind', () => {
     const { failure, fix } = run({
       type: 'root',

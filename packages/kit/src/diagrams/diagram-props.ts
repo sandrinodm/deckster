@@ -70,6 +70,12 @@ type CheckedProp = DiagramPropInfo & {
    * The lowest and highest number it takes, for a number prop.
    */
   range?: readonly [number, number];
+
+  /**
+   * The shape a string value must have, for a prop with an open set of names, and what such a name
+   * looks like, for messages.
+   */
+  pattern?: { regex: RegExp; looks: string };
 };
 
 /**
@@ -91,6 +97,7 @@ function prop(
     values?: readonly string[];
     noun?: string;
     range?: readonly [number, number];
+    pattern?: { regex: RegExp; looks: string };
   } = {},
 ): CheckedProp {
   return {
@@ -102,6 +109,7 @@ function prop(
     accepts,
     ...(options.noun === undefined ? {} : { noun: options.noun }),
     ...(options.range === undefined ? {} : { range: options.range }),
+    ...(options.pattern === undefined ? {} : { pattern: options.pattern }),
   };
 }
 
@@ -261,6 +269,36 @@ const SPAN_RANGE = [1, DIAGRAM_HARD_LIMITS.maxGridIndex] as const;
 const PARTICLE_RANGE = [0, DIAGRAM_HARD_LIMITS.maxParticles] as const;
 
 /**
+ * The shape of a card name: a kebab name, as a brand writes its cards.
+ */
+const CARD_NAME = {
+  /**
+   * Lower-case letters, digits and single hyphens, starting with a letter.
+   */
+  regex: /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/,
+
+  /**
+   * What such a name looks like.
+   */
+  looks: 'a kebab name such as `tint` or `spotlight`',
+} as const;
+
+/**
+ * The standard card names every brand has, for descriptions.
+ */
+const STANDARD_CARDS = '`default`, `outline`, `solid`, `tint` or `raised`';
+
+/**
+ * The `card` prop of a diagram, which sets the card of all its nodes.
+ */
+const DIAGRAM_CARD = prop(
+  'string',
+  ['string'],
+  `The card (a node style the brand defines) for all its nodes: ${STANDARD_CARDS}, or one of the brand's own (\`deck brand <name>\` lists them). A node's own \`card\` wins.`,
+  { pattern: CARD_NAME },
+);
+
+/**
  * Every name `kind` takes: the kinds and their aliases.
  */
 const KIND_VALUES: readonly string[] = [...NODE_KIND_NAMES, ...Object.keys(NODE_KIND_ALIASES)];
@@ -343,6 +381,16 @@ export const SHARED_DIAGRAM_PROPS = {
     'string | IconComponent',
     ['string', 'function'],
     "An icon from the brand's set by name (resolved at build time in MDX), \"none\" to drop the kind's icon, or in TSX an icon component (`import Rocket from '~icons/lucide/rocket'`).",
+  ),
+
+  /**
+   * The card a node-like part is drawn with.
+   */
+  card: prop(
+    'string',
+    ['string'],
+    `The card (a node style the brand defines) it is drawn with: ${STANDARD_CARDS}, or one of the brand's own (\`deck brand <name>\` lists them). Without one: the diagram's \`card\`, else the card the brand maps its kind to, else \`default\`; a name the brand lacks is skipped.`,
+    { pattern: CARD_NAME },
   ),
 
   /**
@@ -456,6 +504,7 @@ function propTables() {
       noun: 'direction',
     }),
     height: S.height,
+    card: DIAGRAM_CARD,
     children: children(
       '<Node>, <Group>, <Edge>, <Packet>, <Journey>, <State> and <Focus> elements.',
     ),
@@ -481,6 +530,7 @@ function propTables() {
     state: S.state,
     at: S.at,
     icon: S.icon,
+    card: S.card,
     col: S.col,
     row: S.row,
     colSpan: S.colSpan,
@@ -694,6 +744,7 @@ function propTables() {
     id: S.id,
     title: S.title,
     height: S.height,
+    card: DIAGRAM_CARD,
     children: children('<Actor>s, then <Message>s in order.'),
   } as const;
 
@@ -706,6 +757,7 @@ function propTables() {
     title: prop('string', ['string'], 'Its name; the id when left out.'),
     subtitle: prop('string', ['string'], 'A quieter second line.'),
     icon: S.icon,
+    card: S.card,
   } as const;
 
   /**
@@ -775,6 +827,12 @@ function propTables() {
     id: S.id,
     title: S.title,
     height: S.height,
+    card: prop(
+      'string',
+      ['string'],
+      `The card (a node style the brand defines) for all its items: ${STANDARD_CARDS}, or one of the brand's own. An item's own \`card\` wins; the bands keep the stack's look unless a <Layer> names a card.`,
+      { pattern: CARD_NAME },
+    ),
     children: children('The <Layer>s, top to bottom.'),
   } as const;
 
@@ -786,6 +844,12 @@ function propTables() {
     subtitle: prop('string', ['string'], 'What it does or who owns it.'),
     at: S.at,
     state: S.state,
+    card: prop(
+      'string',
+      ['string'],
+      `The card its band is drawn with: ${STANDARD_CARDS}, or one of the brand's own; without one the band keeps the stack's look (a tint with a bold left edge).`,
+      { pattern: CARD_NAME },
+    ),
     children: children('Its <Item>s.'),
   } as const;
 
@@ -797,6 +861,7 @@ function propTables() {
     title: prop('string', ['string'], 'Its name.', { required: true }),
     icon: S.icon,
     state: S.state,
+    card: S.card,
   } as const;
 
   /**
@@ -810,6 +875,7 @@ function propTables() {
       default: false,
     }),
     height: S.height,
+    card: DIAGRAM_CARD,
     children: children(
       'The stages as <Node>s in order from the top, plus <Edge> (to label or style an arc), <State>, <Packet> and <Focus>.',
     ),
@@ -826,6 +892,7 @@ function propTables() {
       noun: 'direction',
     }),
     height: S.height,
+    card: DIAGRAM_CARD,
     children: children('One root <Node>, with its children nested inside it.'),
   } as const;
 
@@ -1222,6 +1289,16 @@ function checkValue(
     return checkRange(component, name, info.range, value);
   }
 
+  if (typeof value === 'string' && info.pattern !== undefined && !info.pattern.regex.test(value)) {
+    return [
+      {
+        severity: 'error',
+        message: `<${component} ${name}="${value}"> is not ${info.pattern.looks}.`,
+        fix: `Write it in lower case with hyphens, as the brand names it: ${info.description}`,
+      },
+    ];
+  }
+
   if (info.values === undefined || typeof value !== 'string') {
     return [];
   }
@@ -1450,7 +1527,7 @@ function editDistance(a: string, b: string): number {
  * @param info - The checked prop.
  */
 function catalogInfo(info: CheckedProp): DiagramPropInfo {
-  const { accepts: _accepts, noun: _noun, range: _range, ...rest } = info;
+  const { accepts: _accepts, noun: _noun, range: _range, pattern: _pattern, ...rest } = info;
   return rest;
 }
 

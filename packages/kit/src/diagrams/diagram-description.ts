@@ -246,6 +246,96 @@ export type DescribedNode = {
    * The group the node sits in, if any.
    */
   group: string | null;
+
+  /**
+   * The name of the card (the brand's node style) the node is drawn with, such as `raised`. Absent
+   * in descriptions written before cards existed and for parts drawn without one.
+   */
+  card?: string;
+
+  /**
+   * The shadow the node's card casts, outside its outline (it never shows through the node). Absent
+   * or `null` for no shadow.
+   */
+  shadow?: DescribedShadow | null;
+
+  /**
+   * The card's accent stripe along one side, clipped to the node's outline (`path`). Absent or
+   * `null` for no stripe.
+   */
+  accent?: DescribedAccent | null;
+};
+
+/**
+ * The shadow a node casts: one or more layers, like a CSS `drop-shadow()` list (no spread).
+ */
+export type DescribedShadow = {
+  /**
+   * The layers, in the order CSS lists them.
+   */
+  layers: readonly DescribedShadowLayer[];
+
+  /**
+   * The color of the shape that casts the shadow under the node (the slide's background for a flow
+   * node, which keeps a translucent or unfilled node from showing it through); `null` when the node
+   * casts it itself.
+   */
+  fill: DescribedColor;
+
+  /**
+   * The shadow's opacity, 0 to 1, after dimming.
+   */
+  opacity: number;
+};
+
+/**
+ * One layer of a shadow.
+ */
+export type DescribedShadowLayer = {
+  /**
+   * The horizontal offset in canvas pixels.
+   */
+  x: number;
+
+  /**
+   * The vertical offset in canvas pixels.
+   */
+  y: number;
+
+  /**
+   * The blur radius in canvas pixels, as CSS gives it.
+   */
+  blur: number;
+
+  /**
+   * The shadow's color.
+   */
+  color: DescribedColor;
+};
+
+/**
+ * A card's accent stripe: a filled band along one side of the node, clipped to its outline.
+ */
+export type DescribedAccent = {
+  /**
+   * The side it runs along.
+   */
+  side: 'left' | 'top' | 'right' | 'bottom';
+
+  /**
+   * The stripe's box before it is clipped to the node's outline, in canvas pixels.
+   */
+  box: DescribedBox;
+
+  /**
+   * Its color.
+   */
+  color: DescribedColor;
+
+  /**
+   * Its opacity, 0 to 1, after dimming.
+   */
+  opacity: number;
 };
 
 /**
@@ -429,6 +519,13 @@ export type DescribedEdge = {
    * Whether an arrowhead sits at the end.
    */
   arrowEnd: boolean;
+
+  /**
+   * How the arrowheads are drawn: a filled `triangle`, an `open` chevron stroked like the line, or
+   * a filled `dot` whose edge touches the end (added in a later revision of version 1; read a
+   * missing value as `triangle`).
+   */
+  arrow?: 'triangle' | 'open' | 'dot';
 
   /**
    * Its emphasis at this step: `default`, `active` (a packet runs on it), `trail`, `highlighted`,

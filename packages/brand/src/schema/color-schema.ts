@@ -1,9 +1,10 @@
 import { Schema } from 'effect';
 
 import { BackgroundLayers } from '#schema/background-schema.ts';
+import { SurfaceDiagram } from '#schema/diagram-schema.ts';
 import { ColorLiteral, ColorRef, KebabName } from '#schema/primitives.ts';
 import { SurfaceShadows } from '#schema/shape-schema.ts';
-import { BrandCode, BrandDiagram } from '#schema/theme-schema.ts';
+import { BrandCode } from '#schema/theme-schema.ts';
 
 /**
  * The semantic color roles every surface defines. Layouts and components use only these (through
@@ -125,7 +126,7 @@ const Surface = Schema.Struct({
   logo: Schema.optionalKey(KebabName('logo variant', 'reversed')),
   data: Schema.optionalKey(SurfaceData),
   code: Schema.optionalKey(BrandCode),
-  diagram: Schema.optionalKey(BrandDiagram),
+  diagram: Schema.optionalKey(SurfaceDiagram),
   shadow: Schema.optionalKey(SurfaceShadows),
 });
 

@@ -142,8 +142,16 @@ describe('runCli', () => {
     Effect.gen(function* () {
       const summary = yield* runCaptured(['brand', 'nocturne']);
       expect(summary.output).toContain('Nocturne (brands/nocturne/brand.ts)');
+      expect(summary.output).toMatch(/\nDiagrams: edges [\d.]+px, (round|sharp) corners, /u);
+      expect(summary.output).toContain('\nCards (colors on the default surface):\n  default: ');
+      expect(summary.output).toMatch(/\n {2}raised: .*, title \w+ \d+/u);
       const tokens = yield* runCaptured(['brand', 'nocturne', '--json']);
-      expect(parseOutput(tokens.output)).toMatchObject({ name: 'nocturne', charts: {} });
+      expect(parseOutput(tokens.output)).toMatchObject({
+        name: 'nocturne',
+        charts: {},
+        diagram: { cards: { default: {}, raised: {} } },
+        surfaces: { default: { diagramCards: { tint: {} } } },
+      });
       const valid = yield* runCaptured(['brand', 'check', 'default', '--json']);
       expect(valid.code).toBe(0);
       expect(parseOutput(valid.output)).toMatchObject({ brand: 'default', ok: true, errors: [] });

@@ -2,6 +2,63 @@ import { useEffect, useLayoutEffect, useState, type RefObject } from 'react';
 
 import type { MotionTokens } from '#diagrams/packet-motion.ts';
 
+import {
+  ACCENT_SIDES,
+  CARD_ICONS,
+  CARD_SHAPES,
+  DEFAULT_CARD,
+  cardVariables,
+  isCardName,
+  type CardSource,
+  type CardTokens,
+} from '#diagrams/node-cards.ts';
+import { NODE_KIND_NAMES } from '#diagrams/node-kinds.ts';
+
+/**
+ * How edges turn their corners: rounded (the default) or square.
+ */
+export const EDGE_CORNERS = ['round', 'sharp'] as const;
+
+/**
+ * The arrowheads an edge can end in: a filled triangle (the default), an open chevron, or a dot.
+ */
+export const ARROW_STYLES = ['triangle', 'open', 'dot'] as const;
+
+/**
+ * One of {@link ARROW_STYLES}.
+ */
+export type ArrowStyle = (typeof ARROW_STYLES)[number];
+
+/**
+ * How edge labels are set: on a knock-out (the default) or in a bordered chip.
+ */
+export const LABEL_STYLES = ['plain', 'chip'] as const;
+
+/**
+ * One of {@link LABEL_STYLES}.
+ */
+export type LabelStyle = (typeof LABEL_STYLES)[number];
+
+/**
+ * The type step edge labels are set in: the caption step (the default) or the brand's label step.
+ */
+export const LABEL_TYPES = ['caption', 'label'] as const;
+
+/**
+ * One of {@link LABEL_TYPES}.
+ */
+export type LabelType = (typeof LABEL_TYPES)[number];
+
+/**
+ * The most card names read from a brand; the brand package allows fewer.
+ */
+const MAX_CARDS = 32;
+
+/**
+ * Splits a list of names at its whitespace.
+ */
+const WHITESPACE = /\s+/;
+
 /**
  * The brand values a diagram is drawn with, read from the brand's custom properties on the
  * diagram's element, so they follow the slide's brand and surface. Sizes are canvas pixels and
@@ -50,6 +107,36 @@ export type DiagramTokens = {
    * canvas pixels, measured the same way; without a canvas, an estimate.
    */
   measureLabel: (text: string) => number;
+
+  /**
+   * The brand's cards (node styles) and the card each node kind maps to; no cards for a stylesheet
+   * without card variables, whose nodes keep today's look.
+   */
+  cards: CardSource;
+
+  /**
+   * How edges are drawn: the line width in canvas pixels, whether corners are rounded or square,
+   * and the arrowhead.
+   */
+  edge: { stroke: number; corners: (typeof EDGE_CORNERS)[number]; arrow: ArrowStyle };
+
+  /**
+   * How groups are drawn: the outline's width (0 for none), whether it is dashed, and the corner
+   * radius, in canvas pixels.
+   */
+  group: { stroke: number; dashed: boolean; radius: number };
+
+  /**
+   * How edge labels are set.
+   */
+  label: { style: LabelStyle; type: LabelType };
+
+  /**
+   * The width of an edge or message label's text in the step labels are set in (the caption step,
+   * or the label step for a brand that sets them there), in canvas pixels: every measure that sizes
+   * or places a label uses it.
+   */
+  measureEdgeLabel: (text: string) => number;
 };
 
 /**
@@ -74,9 +161,43 @@ const FALLBACK_CAPTION_SIZE = 24;
 const FALLBACK_TITLE_SIZE = 26;
 
 /**
+ * An estimate of a node title's width for the default brand's small step.
+ *
+ * @param text - The title.
+ */
+function estimateTitle(text: string): number {
+  return text.length * FALLBACK_TITLE_SIZE * ESTIMATED_CHAR_WIDTH;
+}
+
+/**
+ * The geometry of today's node, which a node takes when the brand defines no card: the regular
+ * line, the medium radius, the kind's shape and a bordered icon tile, no accent and no shadow.
+ *
+ * @param steps - The brand's radius and stroke steps.
+ * @param measureTitle - The node title measure.
+ */
+function plainCard(
+  steps: Pick<DiagramTokens, 'radius' | 'stroke'>,
+  measureTitle: (text: string) => number,
+): CardTokens {
+  return {
+    name: DEFAULT_CARD,
+    stroke: steps.stroke.regular,
+    radius: steps.radius.md,
+    shape: 'kind',
+    icon: 'chip',
+    accent: { side: 'none', width: steps.stroke.bold },
+    shadow: false,
+    nodeFill: true,
+    titleOwn: false,
+    measureTitle,
+  };
+}
+
+/**
  * Values used when a token is missing, which only happens outside a deck (unit tests).
  */
-const FALLBACK: DiagramTokens = {
+export const FALLBACK: DiagramTokens = {
   /**
    * The default brand's durations and standard easing.
    */
@@ -110,12 +231,44 @@ const FALLBACK: DiagramTokens = {
   /**
    * An estimate for the default brand's small step.
    */
-  measureTitle: (text) => text.length * FALLBACK_TITLE_SIZE * ESTIMATED_CHAR_WIDTH,
+  measureTitle: estimateTitle,
 
   /**
    * An estimate: label text is set in capitals, wider than an average character.
    */
   measureLabel: (text) => text.length * 22 * ESTIMATED_LABEL_CHAR_WIDTH,
+
+  /**
+   * No cards: every node is today's node.
+   */
+  cards: {
+    cards: new Map(),
+    kinds: new Map(),
+    fallback: plainCard(
+      { radius: { sm: 6, md: 12, lg: 20 }, stroke: { hairline: 1, regular: 2, bold: 4 } },
+      estimateTitle,
+    ),
+  },
+
+  /**
+   * Today's edges: the regular line, rounded corners, a filled arrowhead.
+   */
+  edge: { stroke: 2, corners: 'round', arrow: 'triangle' },
+
+  /**
+   * Today's groups: a hairline, solid, with the large radius.
+   */
+  group: { stroke: 1, dashed: false, radius: 20 },
+
+  /**
+   * Today's edge labels, on a knock-out.
+   */
+  label: { style: 'plain', type: 'caption' },
+
+  /**
+   * Labels in the caption step, as the caption estimate.
+   */
+  measureEdgeLabel: (text) => text.length * FALLBACK_CAPTION_SIZE * ESTIMATED_CHAR_WIDTH,
 };
 
 /**
@@ -131,11 +284,13 @@ let measuring: CanvasRenderingContext2D | null | undefined;
  * @param element - An element on the slide.
  * @param classes - The class names of the probe's elements, outermost first.
  * @param size - The type size, for the estimate when there is no canvas.
+ * @param variables - Custom properties set on the probe's outermost element, such as a card's.
  */
 function textMeasurer(
   element: Element,
   classes: readonly string[],
   size: number,
+  variables: Readonly<Record<string, string>> = {},
 ): (text: string) => number {
   /**
    * The estimate used without a canvas.
@@ -160,6 +315,13 @@ function textMeasurer(
     inner.className = name;
     probe.append(inner);
     probe = inner;
+  }
+
+  const first = outer.firstElementChild;
+  if (first instanceof HTMLElement) {
+    for (const [variable, value] of Object.entries(variables)) {
+      first.style.setProperty(variable, value);
+    }
   }
 
   probe.textContent = 'x';
@@ -220,6 +382,29 @@ export function readDiagramTokens(element: Element): DiagramTokens {
     const value = Number.parseFloat(style.getPropertyValue(name));
     return Number.isFinite(value) ? value : fallback;
   };
+  const radius = {
+    sm: read('--brand-radius-sm', FALLBACK.radius.sm),
+    md: read('--brand-radius-md', FALLBACK.radius.md),
+    lg: read('--brand-radius-lg', FALLBACK.radius.lg),
+  };
+  const stroke = {
+    hairline: read('--brand-stroke-hairline', FALLBACK.stroke.hairline),
+    regular: read('--brand-stroke-regular', FALLBACK.stroke.regular),
+    bold: read('--brand-stroke-bold', FALLBACK.stroke.bold),
+  };
+  const smallSize = read('--brand-type-small-size', FALLBACK.type.caption);
+  const measureTitle = textMeasurer(element, TITLE_PROBE, smallSize);
+  const measureCaption = textMeasurer(
+    element,
+    ['kit-type-caption'],
+    read('--brand-type-caption-size', FALLBACK.type.caption),
+  );
+  const measureLabel = textMeasurer(
+    element,
+    ['kit-type-label'],
+    read('--brand-type-label-size', FALLBACK.type.label),
+  );
+  const labelType = keyword(style, '--brand-diagram-label-type', LABEL_TYPES, 'caption');
   return {
     motion: {
       fast: read('--brand-duration-fast', FALLBACK.motion.fast),
@@ -227,16 +412,8 @@ export function readDiagramTokens(element: Element): DiagramTokens {
       slow: read('--brand-duration-slow', FALLBACK.motion.slow),
       easing: readEasing(style.getPropertyValue('--brand-ease-standard')),
     },
-    radius: {
-      sm: read('--brand-radius-sm', FALLBACK.radius.sm),
-      md: read('--brand-radius-md', FALLBACK.radius.md),
-      lg: read('--brand-radius-lg', FALLBACK.radius.lg),
-    },
-    stroke: {
-      hairline: read('--brand-stroke-hairline', FALLBACK.stroke.hairline),
-      regular: read('--brand-stroke-regular', FALLBACK.stroke.regular),
-      bold: read('--brand-stroke-bold', FALLBACK.stroke.bold),
-    },
+    radius,
+    stroke,
     space: {
       xs: read('--brand-space-xs', FALLBACK.space.xs),
       sm: read('--brand-space-sm', FALLBACK.space.sm),
@@ -248,22 +425,165 @@ export function readDiagramTokens(element: Element): DiagramTokens {
       caption: read('--brand-type-caption-size', FALLBACK.type.caption),
       label: read('--brand-type-label-size', FALLBACK.type.label),
     },
-    measureCaption: textMeasurer(
-      element,
-      ['kit-type-caption'],
-      read('--brand-type-caption-size', FALLBACK.type.caption),
-    ),
-    measureLabel: textMeasurer(
-      element,
-      ['kit-type-label'],
-      read('--brand-type-label-size', FALLBACK.type.label),
-    ),
-    measureTitle: textMeasurer(
-      element,
-      ['kit-flow-node', 'kit-flow-node-title kit-type-small'],
-      read('--brand-type-small-size', FALLBACK.type.caption),
-    ),
+    measureCaption,
+    measureLabel,
+    measureTitle,
+    cards: {
+      cards: readCards(element, style, { radius, stroke }, smallSize),
+      kinds: readKinds(style),
+      fallback: plainCard({ radius, stroke }, measureTitle),
+    },
+    edge: {
+      stroke: read('--brand-diagram-edge-stroke', stroke.regular),
+      corners: keyword(style, '--brand-diagram-edge-corners', EDGE_CORNERS, 'round'),
+      arrow: keyword(style, '--brand-diagram-edge-arrow', ARROW_STYLES, 'triangle'),
+    },
+    group: {
+      stroke: read('--brand-diagram-group-stroke', stroke.hairline),
+      dashed: style.getPropertyValue('--brand-diagram-group-dashed').trim() === 'true',
+      radius: read('--brand-diagram-group-radius', radius.lg),
+    },
+    label: {
+      style: keyword(style, '--brand-diagram-label-style', LABEL_STYLES, 'plain'),
+      type: labelType,
+    },
+    measureEdgeLabel: labelType === 'label' ? measureLabel : measureCaption,
   };
+}
+
+/**
+ * The classes of the probe a node title is measured in, outermost first.
+ */
+const TITLE_PROBE = ['kit-flow-node', 'kit-flow-node-title kit-type-small'] as const;
+
+/**
+ * A keyword token: its value when it is one of the allowed values, else the fallback.
+ *
+ * @param style - The computed style holding it.
+ * @param name - The custom property.
+ * @param values - The allowed values.
+ * @param fallback - The value when it is missing or unknown.
+ */
+function keyword<Value extends string>(
+  style: CSSStyleDeclaration,
+  name: string,
+  values: readonly Value[],
+  fallback: Value,
+): Value {
+  const value = style.getPropertyValue(name).trim();
+  return (values as readonly string[]).includes(value) ? (value as Value) : fallback;
+}
+
+/**
+ * The card each node kind maps to, for the kinds the brand maps (`--brand-diagram-kind-<kind>`).
+ *
+ * @param style - The diagram's computed style.
+ */
+function readKinds(style: CSSStyleDeclaration): Map<string, string> {
+  return new Map(
+    NODE_KIND_NAMES.flatMap((kind) => {
+      const card = style.getPropertyValue(`--brand-diagram-kind-${kind}`).trim();
+      return isCardName(card) ? [[kind, card] as const] : [];
+    }),
+  );
+}
+
+/**
+ * Reads the brand's cards: the names in `--brand-diagram-cards` (kebab names only), each with its
+ * geometry from its variables, a missing one the brand's own step, and a measure for its title
+ * font.
+ *
+ * @param element - The diagram's element, where the probes go.
+ * @param style - Its computed style.
+ * @param steps - The brand's radius and stroke steps.
+ * @param smallSize - The small step's size, for the estimate without a canvas.
+ */
+function readCards(
+  element: Element,
+  style: CSSStyleDeclaration,
+  steps: Pick<DiagramTokens, 'radius' | 'stroke'>,
+  smallSize: number,
+): Map<string, CardTokens> {
+  const names = [
+    ...new Set(style.getPropertyValue('--brand-diagram-cards').trim().split(WHITESPACE)),
+  ]
+    .filter(isCardName)
+    .slice(0, MAX_CARDS);
+  if (names.length === 0) {
+    return new Map();
+  }
+
+  const cards = new Map<string, CardTokens>();
+  for (const name of names) {
+    /**
+     * One of the card's variables.
+     */
+    const value = (field: string): string =>
+      style.getPropertyValue(`--brand-diagram-card-${name}-${field}`).trim();
+    /**
+     * One of the card's lengths, or the fallback when it is missing.
+     */
+    const length = (field: string, fallback: number): number => {
+      const parsed = Number.parseFloat(value(field));
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+    const shadow = value('shadow');
+    cards.set(name, {
+      name,
+      stroke: length('stroke', steps.stroke.regular),
+      radius: length('radius', steps.radius.md),
+      shape: keyword(style, `--brand-diagram-card-${name}-shape`, CARD_SHAPES, 'kind'),
+      icon: keyword(style, `--brand-diagram-card-${name}-icon`, CARD_ICONS, 'chip'),
+      accent: {
+        side: keyword(style, `--brand-diagram-card-${name}-accent-side`, ACCENT_SIDES, 'none'),
+        width: length('accent-width', steps.stroke.bold),
+      },
+      shadow: shadow !== '' && shadow !== 'none',
+      nodeFill: nodeFillOf(name, value('node-fill')),
+      titleOwn: value('title-own') === 'true',
+      measureTitle: lazyMeasurer(() =>
+        textMeasurer(element, TITLE_PROBE, smallSize, cardVariables(name)),
+      ),
+    });
+  }
+
+  return cards;
+}
+
+/**
+ * A measure built on its first use and kept, so reading the tokens puts no probe on the page for a
+ * card no node measures with.
+ *
+ * @param build - Builds the measure.
+ */
+function lazyMeasurer(build: () => (text: string) => number): (text: string) => number {
+  let measure: ((text: string) => number) | undefined;
+  return (text) => {
+    measure ??= build();
+    return measure(text);
+  };
+}
+
+/**
+ * Whether a card's fill is the diagram `node` colour, from its `node-fill` variable (`true` or
+ * `false`); without one, only the `default` card's is.
+ *
+ * @param name - The card's name.
+ * @param value - The variable's value; empty when it is missing.
+ */
+function nodeFillOf(name: string, value: string): boolean {
+  return value === '' ? name === DEFAULT_CARD : value === 'true';
+}
+
+/**
+ * The radius an edge's corners are rounded with: the given radius for rounded corners, 0 for a
+ * brand that draws them square.
+ *
+ * @param tokens - The brand's values.
+ * @param radius - The radius the diagram rounds corners with.
+ */
+export function edgeCornerRadius(tokens: Pick<DiagramTokens, 'edge'>, radius: number): number {
+  return tokens.edge.corners === 'sharp' ? 0 : radius;
 }
 
 /**

@@ -138,6 +138,31 @@ export type NodeKindEntry = {
 };
 
 /**
+ * Cards: the node styles a brand defines, and how a node picks one.
+ */
+export type DiagramCardGuide = {
+  /**
+   * How a node's card is chosen, in order, and what happens to a name the brand does not have.
+   */
+  resolution: string;
+
+  /**
+   * The cards every brand has, by name, with their look when the brand does not restyle them.
+   */
+  standard: Readonly<Record<string, string>>;
+
+  /**
+   * Where the brand's own cards come from and how to list them.
+   */
+  custom: string;
+
+  /**
+   * What a card does not change: states, focus, and the bands of a stack.
+   */
+  rules: readonly string[];
+};
+
+/**
  * How to write diagrams in a TSX slide.
  */
 export type DiagramTsxGuide = {
@@ -194,6 +219,11 @@ export type DiagramCatalog = {
    * The fields of the object form of `<Edge flow>`.
    */
   edgeFlow: Readonly<Record<string, DiagramPropInfo>>;
+
+  /**
+   * Cards: the node styles a brand defines, the standard ones and how a node picks one.
+   */
+  cards: DiagramCardGuide;
 
   /**
    * Packets, journeys, state changes, focus and reveals.
@@ -871,6 +901,70 @@ const TSX: DiagramTsxGuide = {
 };
 
 /**
+ * Cards, as the catalog explains them.
+ */
+const CARDS: DiagramCardGuide = {
+  /**
+   * How a node picks its card.
+   */
+  resolution:
+    "A node's card is, in order: its own `card`; its diagram's `card`; the card the brand maps " +
+    'its kind to (`diagram.kinds` in brand.ts); `default`. A name the brand does not have is ' +
+    'skipped (the next in that order applies) and the node carries `data-card-missing` with the ' +
+    'name asked for; every node carries `data-card` with the card it uses.',
+
+  /**
+   * The standard cards.
+   */
+  standard: {
+    /**
+     * Today's node.
+     */
+    default: "The brand's node: its node fill and border, the icon in a bordered tile.",
+
+    /**
+     * Border only.
+     */
+    outline: 'No fill, the node border only.',
+
+    /**
+     * Filled in the accent.
+     */
+    solid: 'Filled in the accent, no border, text in the accent foreground.',
+
+    /**
+     * A light accent tint.
+     */
+    tint: 'The accent at a low opacity with an accent border and a filled icon tile.',
+
+    /**
+     * Lifted off the slide.
+     */
+    raised: "The surface fill, a hairline border and the brand's medium shadow.",
+  },
+
+  /**
+   * The brand's own cards.
+   */
+  custom:
+    'Every brand has the five standard cards and may restyle them or define more of its own ' +
+    '(`deck brand <name>` lists them). Stick to the standard names for a deck that should look ' +
+    'right in any brand.',
+
+  /**
+   * What a card leaves alone.
+   */
+  rules: [
+    'States still win over the card: highlighted, error and success recolour the outline and ' +
+      'show the halo, muted and a focus dim the node.',
+    "On <Layers> the items follow the stack's `card`; the bands keep the stack's own look unless " +
+      'a <Layer> names a card.',
+    'Pick a card for a reason (a role, a group of nodes that belong together), not per node at ' +
+      'random: one or two cards on a slide besides the default.',
+  ],
+};
+
+/**
  * The diagram catalog, as `deck diagrams --json` prints it.
  */
 export const DIAGRAM_CATALOG: DiagramCatalog = {
@@ -911,6 +1005,11 @@ export const DIAGRAM_CATALOG: DiagramCatalog = {
    * The fields of `<Edge flow={{ ... }}>`.
    */
   edgeFlow: EDGE_FLOW_PROPS,
+
+  /**
+   * Cards and how a node picks one.
+   */
+  cards: CARDS,
 
   /**
    * Packets, journeys, state changes, focus and reveals.
@@ -966,6 +1065,11 @@ export const DIAGRAM_CATALOG: DiagramCatalog = {
     `Keep a slide to about ${DIAGRAM_NODE_BUDGET} nodes and ${DIAGRAM_EDGE_BUDGET} edges and ${DIAGRAM_GRID_LIMITS.columns} columns by ${DIAGRAM_GRID_LIMITS.rows} rows; \`deck lint\` warns above that (diagram-too-dense) and reports nodes that overlap.`,
     'One accent: let a journey, a highlight or a state carry the point; ' +
       'everything else stays in the quiet colors.',
+    'Nodes, actors, items and layers take `card` (a node style the brand defines: `default`, ' +
+      "`outline`, `solid`, `tint`, `raised` or one of the brand's own, listed by `deck brand " +
+      "<name>`); a diagram's `card` sets it for all its nodes. Without one a node takes the card " +
+      'the brand maps its kind to, else `default`; a name the brand lacks is skipped. States ' +
+      'still win over the card (`cards` in --json has the details).',
     'Static mode and exports show each step as a still: packets frozen ' +
       'partway along with a tail that shows their direction.',
     'Every diagram puts a JSON description in `data-diagram-description` for ' +

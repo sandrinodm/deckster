@@ -31,6 +31,13 @@ export type ActorProps = {
    * An icon from the brand's set by name, or a component in TSX.
    */
   icon?: string | IconComponent;
+
+  /**
+   * The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`,
+   * `tint`, `raised` or one of the brand's own (`deck brand <name>` lists them). Without one it
+   * takes the diagram's `card`, else the card the brand maps its kind to, else `default`.
+   */
+  card?: string;
 };
 
 /**
@@ -159,6 +166,13 @@ export type ItemProps = {
   icon?: string | IconComponent;
 
   /**
+   * The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`,
+   * `tint`, `raised` or one of the brand's own (`deck brand <name>` lists them). Without one it
+   * takes the diagram's `card`, else the card the brand maps its kind to, else `default`.
+   */
+  card?: string;
+
+  /**
    * Its emphasis.
    */
   state?: DiagramState;
@@ -194,6 +208,12 @@ export type LayerProps = {
    * Its emphasis.
    */
   state?: DiagramState;
+
+  /**
+   * The card (a node style the brand defines) its band is drawn with, as on a `<Node>`; without one
+   * the band keeps the stack's own look (a tint with a bold edge on the left).
+   */
+  card?: string;
 
   /**
    * Its `<Item>`s.

@@ -1,4 +1,4 @@
-import type { BrandTokens, SurfaceTokens } from '@deckster/brand';
+import type { BrandTokens, CardSurfaceTokens, SurfaceTokens } from '@deckster/brand';
 
 import { DEFAULT_SURFACE, typeScaleFacts } from '@deckster/brand';
 
@@ -151,10 +151,38 @@ function brandValues(tokens: BrandTokens, surface: SurfaceTokens): BrandValues {
   const { scale, margin, grid } = tokens.spacing;
   return {
     colors: [...new Set([...surfaceColors, ...brandColors].map((color) => color.toLowerCase()))],
+    cardColors: [
+      ...new Set(
+        Object.values(surface.diagramCards)
+          .flatMap(cardColors)
+          .map((color) => color.toLowerCase()),
+      ),
+    ],
     families: [...new Set(Object.values(tokens.typography.families).map(({ family }) => family))],
     fontSizes: typeScaleFacts(tokens.typography.scale).sizes,
     spacing: [...new Set([...Object.values(scale), margin.x, margin.y, grid.gutter])].sort(
       (a, b) => a - b,
     ),
   };
+}
+
+/**
+ * The colors a diagram card paints on a surface: its fill and outline (when it has them), title,
+ * subtitle, icon glyph and tile, accent stripe and the colors of its shadow's layers. A title color
+ * the brand derives is moved in lightness until it reads on the card, so it is a brand value even
+ * when it matches no role.
+ *
+ * @param card - The card's colors on the surface.
+ */
+function cardColors(card: CardSurfaceTokens): string[] {
+  return [
+    ...(card.fill === null ? [] : [card.fill]),
+    ...(card.border === null ? [] : [card.border]),
+    card.text,
+    card.subtext,
+    card.iconColor,
+    card.iconFill,
+    card.accent,
+    ...card.shadow.layers.map((layer) => layer.color),
+  ];
 }

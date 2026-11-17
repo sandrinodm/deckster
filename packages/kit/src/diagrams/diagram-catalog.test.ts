@@ -88,3 +88,45 @@ describe('DIAGRAM_CATALOG', () => {
     expect(flow?.shared).toContain('height');
   });
 });
+
+describe('cards in the catalog', () => {
+  it('documents `card` on every part that draws a box and every diagram with nodes', () => {
+    const where = DIAGRAM_CATALOG.components.map((entry) => {
+      if (entry.shared.includes('card')) {
+        return [entry.name, 'shared'];
+      }
+
+      return [entry.name, 'card' in entry.props ? 'own' : 'none'];
+    });
+    expect(Object.fromEntries(where)).toMatchObject({
+      Node: 'shared',
+      Actor: 'shared',
+      Item: 'shared',
+      Flow: 'own',
+      Tree: 'own',
+      Cycle: 'own',
+      SequenceDiagram: 'own',
+      Layers: 'own',
+      Layer: 'own',
+      Edge: 'none',
+      Timeline: 'none',
+      Milestone: 'none',
+      Svg: 'none',
+    });
+  });
+
+  it('names the five standard cards, the resolution order and the brand’s own', () => {
+    expect(Object.keys(DIAGRAM_CATALOG.cards.standard)).toEqual([
+      'default',
+      'outline',
+      'solid',
+      'tint',
+      'raised',
+    ]);
+    expect(DIAGRAM_CATALOG.cards.resolution).toContain('data-card-missing');
+    expect(DIAGRAM_CATALOG.cards.resolution).toContain('`diagram.kinds`');
+    expect(DIAGRAM_CATALOG.cards.custom).toContain('deck brand <name>');
+    expect(DIAGRAM_CATALOG.cards.rules.join(' ')).toContain('States still win');
+    expect(DIAGRAM_CATALOG.notes.some((note) => note.includes('`card`'))).toBe(true);
+  });
+});

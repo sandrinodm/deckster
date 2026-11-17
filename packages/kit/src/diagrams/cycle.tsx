@@ -48,6 +48,12 @@ export type CycleProps = {
   height?: number;
 
   /**
+   * The card (a node style the brand defines) for every node of the cycle: `default`, `outline`,
+   * `solid`, `tint`, `raised` or one of the brand's own. A node's own `card` wins over it.
+   */
+  card?: string;
+
+  /**
    * The stages as `<Node>`s, in order around the loop from the top, plus any `<State>`, `<Packet>`
    * or `<Focus>`.
    */
@@ -73,6 +79,7 @@ export function Cycle({
   steps = false,
   spin = false,
   height,
+  card,
   children,
 }: CycleProps): ReactNode {
   const parsed = useMemo(
@@ -82,7 +89,7 @@ export function Cycle({
   const centres = useMemo(() => ringCentres(parsed.spec.nodes.map((node) => node.id)), [parsed]);
   const reshape = useMemo(
     () => (layout: EdgeLayout, tokens: DiagramTokens) =>
-      arcEdges(layout, parsed.spec, centres, tokens.stroke.regular * ARROW_GAP_IN_STROKES),
+      arcEdges(layout, parsed.spec, centres, tokens.edge.stroke * ARROW_GAP_IN_STROKES),
     [parsed, centres],
   );
   return (
@@ -96,6 +103,7 @@ export function Cycle({
       reshape={reshape}
       {...optional('id', id)}
       {...optional('height', height)}
+      {...optional('card', card)}
     />
   );
 }

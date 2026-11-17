@@ -1,0 +1,23 @@
+---
+layout: diagram
+title: Every standard card reads on the slide, and a misspelt card falls back
+eyebrow: Card probe
+---
+
+<Flow title="The five standard cards and a card no brand has">
+  <Node id="web" kind="client" title="Web" col={1} row={1} />
+  <Node id="api" kind="service" title="Orders API" card="solid" col={2} row={1} />
+  <Node id="db" kind="database" title="Ledger" card="tint" col={3} row={1} />
+  <Node id="cache" kind="cache" title="Cache" card="outline" col={1} row={2} />
+  <Node id="pay" kind="external" title="Payments" card="raised" col={2} row={2} />
+  <Node id="mail" kind="function" title="Mailer" card="spotlite" col={3} row={2} />
+  <Edge from="web" to="api" label="HTTPS" />
+  <Edge from="api" to="db" label="SQL" />
+  <Edge from="api" to="cache" label="read" />
+  <Edge from="api" to="pay" label="charge" />
+  <Edge from="pay" to="mail" async />
+</Flow>
+
+<Notes>
+Each standard card on one flow, so their text, icons and shadows show in every brand. The mailer asks for a card no brand has: it is drawn with the next card in the order, and lint reports it (diagram-card-missing).
+</Notes>

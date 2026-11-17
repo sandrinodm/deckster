@@ -226,6 +226,24 @@ export default defineBrand({
       lg: [{ y: 48, blur: 120, spread: -40, color: 'ember.500/35' }],
     },
   },
+  diagram: {
+    edges: { stroke: 'hairline', corners: 'sharp', arrow: 'open' },
+    groups: { stroke: 'hairline', dashed: true, radius: 'none' },
+    labels: { type: 'label' },
+    cards: {
+      default: {
+        fill: 'surface',
+        border: 'muted',
+        stroke: 'hairline',
+        radius: 'none',
+        icon: { style: 'plain', color: 'muted' },
+        title: { weight: 400 },
+      },
+      outline: { border: 'muted', icon: { style: 'plain', color: 'muted' } },
+      tint: { icon: { style: 'plain', color: 'accent' } },
+      raised: { border: 'accent', shadow: 'lg', icon: { style: 'plain', color: 'accent' } },
+    },
+  },
   spacing: {
     scale: { '2xs': 6, xs: 12, sm: 20, md: 32, lg: 48, xl: 80, '2xl': 120, '3xl': 176 },
     margin: { x: 160, y: 112 },
