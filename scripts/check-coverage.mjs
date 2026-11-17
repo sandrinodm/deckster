@@ -16,13 +16,18 @@
  * or a string-literal expression (`of={"BarChart"}`); any other expression is reported. A component
  * inside JavaScript (`{cond && <PropsTable … />}`, a prop value, a spread, an export) fails the
  * check with its page and line: it isn't read, so it can't count.
+ *
+ * Every layout also needs its own page, reference/layouts/<name>.mdx, rendering its own
+ * <LayoutReference name="<name>" /> (LayoutIndex links there), and every other page in that folder
+ * but the index must be named after a layout.
  */
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { componentUses, literalValue, where } from "../src/components/deck/mdx-source.ts";
 
 const SITE_ROOT = path.resolve(import.meta.dirname, "..");
 const DATA = path.join(SITE_ROOT, "src/data");
+const LAYOUT_PAGES = "reference/layouts";
 const IGNORED = new Set(["project/component-demo.mdx"]);
 
 const read = (name) => JSON.parse(readFileSync(path.join(DATA, `${name}.json`), "utf8"));
@@ -70,6 +75,14 @@ for (const { what, tag, attr, names } of REQUIRED) {
   if (gaps.length > 0) missing.push({ what, tag, attr, gaps, total: names.length });
 }
 
+/** Each layout's own page, and pages in the layouts folder that name no layout. */
+const layoutNames = REQUIRED[0].names;
+const ownPage = (name) => `${LAYOUT_PAGES}/${name}.mdx`;
+const withoutPage = layoutNames.filter((name) => !(found.get("LayoutReference")?.get(name) ?? []).includes(ownPage(name)));
+const strayPages = readdirSync(path.join(SITE_ROOT, "src/content/docs", LAYOUT_PAGES))
+  .filter((file) => /\.mdx?$/.test(file) && !/^index\.mdx?$/.test(file))
+  .filter((file) => !layoutNames.includes(file.replace(/\.mdx?$/, "")));
+
 const known = new Map();
 for (const { tag, names } of REQUIRED) known.set(tag, new Set([...(known.get(tag) ?? []), ...names]));
 const unknown = [];
@@ -79,9 +92,11 @@ for (const [tag, byName] of found) {
   }
 }
 
-if (missing.length === 0 && unknown.length === 0 && unreadable.length === 0) {
+if (missing.length === 0 && unknown.length === 0 && unreadable.length === 0 && withoutPage.length === 0 && strayPages.length === 0) {
   const total = REQUIRED.reduce((sum, r) => sum + r.names.length, 0);
-  console.log(`Reference coverage: all ${total} layouts, components, charts, diagram components and commands are documented.`);
+  console.log(
+    `Reference coverage: all ${total} layouts, components, charts, diagram components and commands are documented, and each of the ${layoutNames.length} layouts has its own page.`,
+  );
 } else {
   for (const { what, tag, attr, gaps, total } of missing) {
     console.error(`${gaps.length} of ${total} ${what}s have no <${tag} ${attr}="…" /> in src/content/docs:`);
@@ -92,6 +107,15 @@ if (missing.length === 0 && unknown.length === 0 && unreadable.length === 0) {
   }
   if (unreadable.length > 0) {
     console.error(`References whose name can't be read:\n  ${unreadable.join("\n  ")}`);
+  }
+  if (withoutPage.length > 0) {
+    console.error(
+      `${withoutPage.length} of ${layoutNames.length} layouts have no page of their own (src/content/docs/${LAYOUT_PAGES}/<name>.mdx with <LayoutReference name="<name>" />):`,
+    );
+    console.error(`  ${withoutPage.join(", ")}`);
+  }
+  if (strayPages.length > 0) {
+    console.error(`Pages in src/content/docs/${LAYOUT_PAGES}/ that name no layout:\n  ${strayPages.join("\n  ")}`);
   }
   process.exitCode = 1;
 }

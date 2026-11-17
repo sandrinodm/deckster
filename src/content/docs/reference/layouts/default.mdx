@@ -1,0 +1,49 @@
+---
+title: "default"
+description: "One column of content under an accent rule, centred on the slide."
+sidebar:
+  order: 9
+---
+
+Use the `default` layout for a slide that is a heading and a few lines of Markdown: a definition with a lead paragraph, or a short list you talk through. It sets your content in one column under an accent rule, centred on the slide, and it is the layout a slide gets when its frontmatter has no `layout:`.
+
+## Example
+
+<SlideExample deck="lookbook" slide="default-list" />
+
+Notice that the heading is written in the body (`## Flock makes...`), not taken from `title:`: this layout draws only the body. Each bullet is a `<Step focus>`, so the room reads one point at a time while the earlier ones recede.
+
+## When to use it
+
+The catalog's guidance is short: use it when no more specific layout fits. In practice that means:
+
+- The slide is a heading and a paragraph, or a heading and up to six bullets. The body's budget is 80 words and six bullets.
+- You want Markdown to set the type. A `#` heading takes the brand's display size and the paragraph after it is set as a muted lead; a `##` heading takes the smaller headline size.
+- You need no layout fields. `default` has none: no `eyebrow:`, no `reveal:`. Builds come from `<Step>` in the body.
+
+Pick another layout as soon as one fits the content:
+
+- A point with bullets and a side note: use [`content`](/reference/layouts/content/), which has a title, an `<Aside>` and fits sparse text larger.
+- One claim set large: use [`statement`](/reference/layouts/statement/).
+- Ideas of equal weight: use [`cards`](/reference/layouts/cards/).
+- A process in order: use the [`steps`](/reference/layouts/steps/) layout.
+
+## Reference
+
+<LayoutReference name="default" />
+
+## Common mistakes
+
+- **Too many bullets.** Seven bullets fail [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 7 bullets; its layout allows 6." Merge two, or move to `content` and put the detail in its `<Aside>`.
+- **Layout fields from other layouts.** `eyebrow:` on a `default` slide is a `schema` error: `"eyebrow" is not a frontmatter field.` The fix lists the layouts that do have it. The keys every slide takes, such as `surface` and `budget`, still work; see [slide frontmatter](/reference/slide-frontmatter/).
+- **No heading.** `title:` names the slide in the outline but is not drawn. Without a `#` or `##` heading in the body, the slide has no visible heading.
+- **A run of default slides.** Three slides in a row on the same layout and surface give the `layout-repetition` warning. Its fix is to give one of them another layout or surface, or to merge slides that make the same point.
+
+## Related layouts
+
+- [`content`](/reference/layouts/content/): a stated title, body and `<Aside>`, for explaining one idea.
+- [`statement`](/reference/layouts/statement/): one sentence set large, when the slide is a single claim.
+- [`cards`](/reference/layouts/cards/): two to four parallel ideas with an icon each.
+- [`steps`](/reference/layouts/steps/): a numbered process, when the list has an order.
+
+How `<Step>` and `focus` reveal a list is on [builds](/write-slides/builds/).

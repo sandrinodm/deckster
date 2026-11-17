@@ -1,0 +1,48 @@
+---
+title: "steps"
+description: "A process in order."
+sidebar:
+  order: 13
+---
+
+Use the `steps` layout to show how something is done: three to five numbered steps along a line, each with a short title and a line on how. You can mark the step the talk is on, or bring the steps in one per click as you walk through them.
+
+## Example
+
+<SlideExample deck="lookbook" slide="steps-current" />
+
+Notice `current: 2`: the line is drawn in the accent up to the second step and its marker is filled, which points the room at the step where, as the body says, four in ten sign-ups stop. The steps come from `steps:` in the frontmatter; the body is a single sentence of context.
+
+## When to use it
+
+- The process has three to five steps, in order. `steps:` is required and takes three to five entries, each with a `title` and an optional `text`.
+- Each step fits in a title and a line. The limits tighten as the row fills: a title takes 32 characters (20 in a row of five), and the text 72 (56 in a row of four, 44 in a row of five).
+- You want to say where you are, or walk through it. `current:` marks one step; `reveal: true` adds one step per click, each with its segment of the line.
+- A sentence of context helps. The body takes one sentence of up to 14 words, under the title.
+
+Pick another layout when the order or the count is different:
+
+- The steps have dates: use the [`timeline`](/reference/layouts/timeline/) layout.
+- The items are the parts of the talk: use [`agenda`](/reference/layouts/agenda/).
+- The ideas are not in order: use [`cards`](/reference/layouts/cards/).
+- A longer process: the contract caps the row at five, so group the steps into phases.
+
+## Reference
+
+<LayoutReference name="steps" />
+
+## Common mistakes
+
+- **Long titles in a row of five.** The five-step variant allows 20 characters per title. A 25-character title fails [`deck lint`](/review/lint/) with a `schema` error before the slide renders: "steps[0].title: The steps layout sets at most 20 characters here (five steps), got 25."
+- **A sixth step.** `steps:` takes at most five: "steps: Expected at most 5 steps, got a list of 6 items." Group the steps into phases instead.
+- **A `current` past the end.** With four steps, `current: 5` is an error: "current: 5 names step 5, but there are 4 steps." Steps count from 1.
+- **The steps in the body.** Put them in `steps:`; the body takes one sentence of text, and a list there is a `slot-content` error.
+- **A process that is really a list.** If the order does not matter, the numbers and the line promise one that is not there; that is the case the catalog sends to `cards`.
+
+## Related layouts
+
+- [`timeline`](/reference/layouts/timeline/): dated milestones along a line, for a roadmap or a history.
+- [`agenda`](/reference/layouts/agenda/): the parts of the talk, with `current:` between parts.
+- [`cards`](/reference/layouts/cards/): two to four ideas of equal weight, in no order.
+
+How `reveal` and other builds stage a slide is on [builds](/write-slides/builds/).

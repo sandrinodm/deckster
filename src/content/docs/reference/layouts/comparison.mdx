@@ -1,0 +1,59 @@
+---
+title: "comparison"
+description: "Two or three options side by side, measured on the same two to five rows."
+sidebar:
+  order: 15
+---
+
+Use the `comparison` layout to set two or three options side by side and measure them on the same rows: before and after, you and a competitor, or the options of a decision. You write the options and rows in the frontmatter, mark which option wins each row, and can set the one you recommend on a panel under a badge.
+
+## Example
+
+<SlideExample deck="lookbook" slide="comparison-before-after" />
+
+Two options serve here as before and after. Each row names its `winner`, drawn bold with a diamond, and the last row is won by the old way: setting `winner` on the rows your side loses keeps the slide honest. `false` and `true` draw a dash and a check. The reference below shows three options with `recommended: true`.
+
+## When to use it
+
+- **Two or three alternatives, two to five rows.** `options` and `rows` are both required. Each row has a `label` and one value per option, in the order of `options`: text, or `true` and `false`.
+- **The same measures apply to every option.** If the options are ideas that are not alternatives, use [`cards`](/reference/layouts/cards/); if each option is one number, use [`stats`](/reference/layouts/stats/).
+- **You recommend one.** `recommended: true` on at most one option sets its column on a panel with an accent rule under a badge, "Recommended" unless you write `badge:` (up to 20 characters).
+- **You present one option per click.** `reveal: true` adds one option per step.
+
+The title takes up to 50 characters, one line, so the rows fit under it. With three options the columns are narrower: a row `label` takes 18 characters instead of 24, a value 20 instead of 28, and an option's `summary` 24 instead of 36. More than three options or five rows is a [`table`](/reference/layouts/table/).
+
+## Reference
+
+<LayoutReference name="comparison" />
+
+## Common mistakes
+
+**Two-option text in a three-option slide.** The narrower limits of the three-option variant are checked when the slide is built, so [`deck lint`](/review/lint/) reports them before it renders any slide:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/species.mdx
+  error   schema (species): rows[0].label: The comparison layout sets at most 18 characters here (three options), got 21.
+          Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+  error   schema (species): rows[0].values[0]: The comparison layout sets at most 20 characters here (three options), got 24.
+          Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+
+launch-review: 2 errors, 0 warnings.
+```
+
+**A row with a value missing.** Every row needs one value per option; write `false` for a dash. A row with one value for two options stops the build with `rows[0].values: Expected a value for each option, got a list of 1 item.`
+
+**Two recommended options.** The layout recommends at most one: `options: 2 options are recommended (Pear, Plane); a comparison recommends at most one.`
+
+**A `winner` that counts from zero.** `winner` is the number of the option in the order of `options`, starting at 1.
+
+**A long footnote.** The footnote takes up to 24 words; past that, `content-budget` reports `The footnote slot holds 31 words; its layout allows 24.`
+
+## Related layouts
+
+- [`table`](/reference/layouts/table/): more than three options or five rows, or exact values to look up.
+- [`shift`](/reference/layouts/shift/): one change from the old state to the new, rather than options to choose from.
+- [`cards`](/reference/layouts/cards/): two to four ideas of equal weight that are not alternatives.
+- [`stats`](/reference/layouts/stats/): each option is one number.
+
+What `reveal` does is on [builds](/write-slides/builds/).

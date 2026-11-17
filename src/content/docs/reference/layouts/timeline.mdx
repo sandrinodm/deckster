@@ -1,0 +1,48 @@
+---
+title: "timeline"
+description: "Three to five dated milestones along a line, in time order: a roadmap, a history or a migration."
+sidebar:
+  order: 30
+---
+
+Use the `timeline` layout for three to five dated milestones along a line: a roadmap, a history or a migration. Mark where you stand now, which milestones are done, which slipped and which are only targets.
+
+## Example
+
+<SlideExample deck="lookbook" slide="timeline-roadmap" />
+
+Notice what `current: 1` does: the first milestone is filled and boxed as the one you are at, and the rest are drawn as still to come. The last two set `state: muted`, so their dots are dashed, which tells the room they are targets, not dates. With `reveal: true` each click adds one milestone.
+
+A milestone that slipped takes `state: error`, so the room sees it next to the dates that held:
+
+<SlideShot deck="lookbook" slide="timeline-slipped" alt="A timeline titled 'One opening slipped, and we said so' with four milestones from Sep 2025 to Feb 2026; the Nov 2025 dot, 'Sandgate opens early, slipped to February: no power', is ringed in red, and the line runs filled to the last milestone, Feb 2026." />
+
+## When to use it
+
+- **Dates matter.** Each milestone has a `date` (`Q3 2026`, `Spring 2027`), a `title` and an optional `detail`. A fifth milestone shortens the title and detail; the reference below gives the limits.
+- **Three to five of them.** A longer history goes over two slides.
+- **You want to show where you are.** `current:` takes the number of a milestone, counted from 1. Leave it out and the line fills to the last one, as for a finished history.
+- **Some milestones differ.** `state:` marks one as done (`success`), slipped (`error`) or tentative (`muted`).
+
+The title takes up to 60 characters and the sentence under it up to 14 words. For a process without dates, use the [`steps`](/reference/layouts/steps/) layout; for values over time, use a chart.
+
+## Reference
+
+<LayoutReference name="timeline" />
+
+## Common mistakes
+
+- **`current:` past the end.** It counts milestones from 1. On a four-milestone slide, `current: 5` is a [`schema` error](/reference/lint-rules/): "current: 5 names milestone 5, but there are 4 milestones."
+- **Text that fit four milestones but not five.** Adding a fifth tightens every title and detail. A 30-character title then fails: "milestones[1].title: The timeline layout sets at most 24 characters here (5 milestones), got 30."
+- **Milestones out of order.** The dates are free text, so the layout draws the milestones in the order you list them and cannot sort them. List them oldest first.
+- **Too many dates.** Six milestones are a `schema` error. Cut to the five that matter, or split the history over two slides.
+- **The story in the body.** The body is one sentence on where things stand. Each milestone's line belongs in its `detail`.
+
+## Related layouts
+
+- [`steps`](/reference/layouts/steps/): a process in order, when the steps have no dates.
+- [`columns`](/reference/layouts/columns/): a board of now, next and later, when each period holds several items.
+- [`ask`](/reference/layouts/ask/): an amount and the two to four dated milestones it buys, for a request.
+- [`chart`](/reference/layouts/chart/): values over time, such as a `<LineChart>`.
+
+The layout draws its line with the kit's `<Timeline>`, which you can also write yourself in the `diagram` layout; see [sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/).

@@ -21,6 +21,16 @@ export function budgetText(budget: Budget): string {
     .join(", ");
 }
 
+/**
+ * A variant's limits: its slot budgets, then its per-item field limits with the field path in a
+ * code span, as "body: 30 words, 3 bullets; `title`: 40 characters".
+ */
+export function variantLimits(variant: { budget?: Record<string, Budget>; fields?: Record<string, Budget> }): string {
+  const slots = Object.entries(variant.budget ?? {}).map(([slot, b]) => `${slot}: ${budgetText(b)}`);
+  const fields = Object.entries(variant.fields ?? {}).map(([path, f]) => `\`${path}\`: ${budgetText(f)}`);
+  return [...slots, ...fields].join("; ");
+}
+
 function show(value: unknown): string {
   return typeof value === "string" ? value : JSON.stringify(value);
 }
@@ -56,6 +66,27 @@ export function firstSentence(text: string | undefined): string {
   if (!text) return "";
   const match = /^(.+?[.!?])(\s|$)/s.exec(text);
   return (match ? match[1] : text).trim();
+}
+
+/** A layout's own page, which LayoutIndex and its Markdown twin link to (without the base path). */
+export const layoutPage = (name: string) => `/reference/layouts/${name}/`;
+
+/**
+ * A layout's one-line summary: the first sentence of its catalog description, cut before the
+ * first colon that ends a word outside a code span ("The cover of a deck: the deck title…" gives
+ * "The cover of a deck."). LayoutIndex, its Markdown twin and the frontmatter `description` of
+ * each layout page (src/content/docs/reference/layouts/<name>.mdx) use it.
+ */
+export function layoutSummary(description: string | undefined): string {
+  const sentence = firstSentence(description);
+  let inCode = false;
+  for (let i = 0; i < sentence.length; i++) {
+    if (sentence[i] === "`") inCode = !inCode;
+    else if (!inCode && sentence[i] === ":" && /\s/.test(sentence[i + 1] ?? "")) {
+      return `${sentence.slice(0, i).trimEnd()}.`;
+    }
+  }
+  return sentence;
 }
 
 // ---------------------------------------------------------------- catalog examples

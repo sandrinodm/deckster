@@ -15,7 +15,7 @@
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { budgetText, describeFieldMd, firstSentence, flattenSchema, prettyExample, sectionRows, type SchemaRow } from "./format";
+import { budgetText, describeFieldMd, flattenSchema, layoutPage, layoutSummary, prettyExample, sectionRows, variantLimits, type SchemaRow } from "./format";
 import { componentUses, literalValue, where, type ComponentUse, type WrittenAttribute } from "./mdx-source";
 import { describeRows, type SchemaOf } from "./schema-descriptions";
 
@@ -24,6 +24,8 @@ type Context = { name: string; attrs: Attrs; children: string; base: string };
 type Transform = { revision: string; render: (context: Context) => string };
 
 const DATA_DIR = path.resolve(import.meta.dirname, "../../data");
+/** The layout pages, whose descriptions the LayoutIndex twin lists. */
+const LAYOUT_PAGES = path.resolve(import.meta.dirname, "../../content/docs/reference/layouts");
 const cache = new Map<string, any>();
 
 function data(name: string): any {
@@ -33,13 +35,21 @@ function data(name: string): any {
 
 /** A hash of src/data, so Nimbus regenerates the Markdown when the data changes. */
 function revision(): string {
-  const hash = createHash("sha256").update("deck-components-md-5");
+  const hash = createHash("sha256").update("deck-components-md-7");
   try {
     for (const file of readdirSync(DATA_DIR).filter((f) => f.endsWith(".json")).sort()) {
       hash.update(file).update(readFileSync(path.join(DATA_DIR, file)));
     }
   } catch {
     // No data yet: the page build fails with the real message.
+  }
+  // The index's twin lists each layout page's description, which lives in that page, not the index.
+  try {
+    for (const file of readdirSync(LAYOUT_PAGES).filter((f) => f.endsWith(".mdx")).sort()) {
+      hash.update(file).update(layoutPageDescription(file.replace(/\.mdx$/, "")) ?? "");
+    }
+  } catch {
+    // No layout pages: the coverage check reports it.
   }
   return hash.digest("hex").slice(0, 16);
 }
@@ -129,13 +139,36 @@ function uiShot({ attrs }: Context): string {
   return `*Screenshot (${attrs.name}): ${str(attrs.alt) ?? ""}*`;
 }
 
-function layoutReference({ attrs }: Context): string {
+/** The decks LayoutReference takes a layout's still from first (LAYOUT_STILL_DECKS in data.ts). */
+const LAYOUT_STILL_DECKS = ["lookbook", "layouts"];
+
+/** The slide LayoutReference shows as the layout's still: layoutSlide() in data.ts, in the same order. */
+function layoutStill(layout: string): { deck: string; slide: any } | undefined {
+  const order = [...LAYOUT_STILL_DECKS, ...data("meta").decks.filter((d: string) => !LAYOUT_STILL_DECKS.includes(d))];
+  for (const name of order) {
+    const slide = data("slides").decks.find((d: any) => d.name === name)?.slides.find((s: any) => s.layout === layout);
+    if (slide) return { deck: name, slide };
+  }
+  return undefined;
+}
+
+function layoutReference({ attrs, base }: Context): string {
   const layout = data("layouts").layouts.find((l: any) => l.name === attrs.name);
   if (!layout) return "";
   const out: string[] = [];
   const facts = [`Frontmatter: \`layout: ${layout.name}\``, `surface: ${layout.surface ? `\`${layout.surface}\`` : "the deck's default"}`];
-  if (layout.title?.maxChars) facts.push(`title: ${layout.title.required ? "required" : "optional"}, ${layout.title.maxChars} characters at most`);
+  if (layout.title) {
+    facts.push(`title: ${layout.title.required ? "required" : "optional"}${layout.title.maxChars ? `, ${layout.title.maxChars} characters at most` : ""}`);
+  }
+  if (layout.pptx?.type) facts.push(`PowerPoint: ${layout.pptx.type} slide`);
   out.push(facts.join("; ") + ".", md(layout.description));
+  const shown = layoutStill(layout.name);
+  if (shown) {
+    out.push(
+      `*Slide still (a ${shown.deck} slide in this layout, not the example below): A slide in the ${layout.name} layout: ${md(shown.slide.title)}.* ` +
+        `[Open the slide](${deckLink(base, shown.deck, shown.slide.id)})`,
+    );
+  }
   out.push(
     "**Slots**",
     table(
@@ -161,8 +194,8 @@ function layoutReference({ attrs }: Context): string {
       "**Variants**",
       layout.variants
         .map((v: any) => {
-          const b = Object.entries<any>(v.budget ?? {}).map(([slot, x]) => `${slot}: ${budgetText(x)}`).join("; ");
-          return `- ${v.name}${b ? ` — ${b}` : ""}`;
+          const limits = variantLimits(v);
+          return `- ${md(v.name)}${limits ? ` — ${md(limits)}` : ""}`;
         })
         .join("\n"),
     );
@@ -171,9 +204,31 @@ function layoutReference({ attrs }: Context): string {
   return out.join("\n\n");
 }
 
+/**
+ * A layout page's frontmatter `description`, the summary LayoutIndex shows (it reads the same
+ * field with getEntry). The pages write it as a one-line YAML scalar; a double-quoted one is read
+ * as JSON, whose escapes YAML's double-quoted form shares for this text.
+ */
+function layoutPageDescription(name: string): string | undefined {
+  let source: string;
+  try {
+    source = readFileSync(path.join(LAYOUT_PAGES, `${name}.mdx`), "utf8");
+  } catch {
+    return undefined;
+  }
+  const value = /^---\r?\n[\s\S]*?^description:[ \t]*(.+?)[ \t]*$[\s\S]*?^---/m.exec(source)?.[1];
+  if (!value) return undefined;
+  if (value.startsWith('"')) return JSON.parse(value);
+  if (value.startsWith("'")) return value.slice(1, -1).replace(/''/g, "'");
+  return value;
+}
+
 function layoutIndex({ base }: Context): string {
   return data("layouts")
-    .layouts.map((l: any) => `- [\`${l.name}\`](${root(base)}/reference/layouts/#layout-${l.name}): ${md(firstSentence(l.description))}`)
+    .layouts.map((l: any) => {
+      const summary = layoutPageDescription(l.name) ?? layoutSummary(l.description);
+      return `- [\`${l.name}\`](${root(base)}${layoutPage(l.name)}): ${md(summary)}`;
+    })
     .join("\n");
 }
 

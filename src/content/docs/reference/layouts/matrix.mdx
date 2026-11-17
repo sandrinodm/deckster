@@ -1,0 +1,42 @@
+---
+title: "matrix"
+description: "A two-by-two map."
+sidebar:
+  order: 17
+---
+
+Use the `matrix` layout for a two-by-two map: two axes that cross in the middle, three to ten items placed by judgement, and the one the slide is about marked. Make a positioning or competition slide with it, or any choice framed by two trade-offs.
+
+## Example
+
+<SlideExample deck="lookbook" slide="matrix-cities" />
+
+Notice that only Saltby, marked `us: true`, is set in the accent with a ring, and its quadrant is tinted; the other five stay muted. This map has no `quadrants:` captions, because the axis labels say enough. The plot takes the right five columns, and the note and the source stand to its left.
+
+## When to use it
+
+- **The positions are judgements, not measurements.** `x` and `y` run from 0 at the low end to 100 at the high end, and the plot shows no values. Say in `<Footnote>` who placed the items and how.
+- **Three to ten items.** Each has a `name` of up to 18 characters, or 14 once there are seven or more items.
+- **Two axes you can name in a few words.** `x:` and `y:` each take a `low` and a `high` label of up to 16 characters. `quadrants:` is optional: exactly four captions of up to 24 characters.
+- **One subject.** Mark the one item the slide is about with `us: true`; marking a second is a `schema` error. With `reveal: true` the axes come first, then the other items, then the marked one with the note.
+
+The note beside the plot says what the map means, in up to 40 words. When the positions are measured, plot them with `<Scatter>` in the [`chart`](/reference/layouts/chart/) layout. When options are scored on several rows, use the [`comparison`](/reference/layouts/comparison/) layout.
+
+## Reference
+
+<LayoutReference name="matrix" />
+
+## Common mistakes
+
+- **Two items marked `us`.** Only one item can be the subject. A second is a [`schema` error](/reference/lint-rules/): "items[2].us: More than one item is marked `us`: "Saltby", "Fallowmere"."
+- **Dots on top of each other.** Items must stand at least 6 units apart. Closer than that is an error that names both: "items[2]: "Fallowmere" (70, 61) stands on top of "Ardwen" (68, 58)." Move one, or merge them if they stand for the same thing.
+- **Captions in the wrong corners.** `quadrants:` is read top left, top right, bottom left, bottom right. A list in another order puts "Where we want to be" in the wrong quadrant, and lint cannot tell.
+- **Crowded corners.** Names find room beside their dots by themselves. When the quadrants have captions, keep items out of the corners where the captions sit.
+- **Long names on a full plot.** At seven items or more, every name is held to 14 characters.
+
+## Related layouts
+
+- [`chart`](/reference/layouts/chart/): a `<Scatter>` when the positions are measured values.
+- [`comparison`](/reference/layouts/comparison/): two or three options scored on the same rows.
+
+For when a measured plot is the better form, see [choosing a chart](/data-and-diagrams/choosing-a-chart/).

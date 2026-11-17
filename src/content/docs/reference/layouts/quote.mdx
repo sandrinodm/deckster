@@ -1,0 +1,55 @@
+---
+title: "quote"
+description: "A person speaking for the point: a testimonial, a resident, a user, a partner."
+sidebar:
+  order: 7
+---
+
+The `quote` layout lets someone else make the point: a customer, a resident, a user or a partner, in their own words. The words are set large in the brand's quote style with their name and role under them, and their portrait beside them if you have one.
+
+## Example
+
+<SlideExample deck="lookbook" slide="quote-plain" />
+
+Without `photo:`, the quote takes the width of the slide. The layout sets the quotation marks, hanging in the margin, and the eyebrow is the only text above. The slide's `title:` is not drawn: it names the slide, and the PowerPoint export uses it as the slide title. The entry under Reference shows the same layout with a portrait.
+
+## When to use it
+
+- **Someone else says it better.** For the talk's own claim, use [`statement`](/reference/layouts/statement/). To introduce people rather than quote them, use [`bio`](/reference/layouts/bio/) for one and [`team`](/reference/layouts/team/) for several.
+- **One to three sentences, up to 36 words.** A longer quote steps down in size before `deck lint` stops it at 36.
+- **Say who said it.** `name:` is required, up to 40 characters; `role:` takes up to 64.
+- **Add a portrait** with `photo:` (a file in the deck folder). The quote then keeps to the left and the portrait stands on the right; `focal:` keeps the face in view when it is cropped.
+- **Change the surface** to make one testimonial stand out from the rest: `surface: accent` or `surface: inverse`.
+
+The layout has one slot, the body. There is no `<Footnote>` or `<Caption>`; put where the quote comes from in `role:` or in the notes.
+
+## Reference
+
+<LayoutReference name="quote" />
+
+## Common mistakes
+
+- **A quote that runs on.** Past 36 words, `deck lint` reports it with the `content-budget` rule:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/nurse.mdx
+    error   content-budget (nurse): The body slot holds 44 words; its layout allows 36.
+            Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **Quotes as bullets.** The body takes a quote or text, not a list: `slot-content` reports "The body slot holds a list of 2 items; the quote layout sets it as quote or text."
+- **No `name:`.** A quote without a speaker is a `schema` error, "name is required."
+- **Quotation marks in the body.** Write the words without them; the layout adds its own.
+- **Writing the point in `title:`.** It does not appear on the slide. If the room needs your claim as well as the quote, give it a `statement` slide of its own.
+
+## Related layouts
+
+- [`statement`](/reference/layouts/statement/): one sentence of your own, set large; with `<Attribution>` it also sets a short quote.
+- [`bio`](/reference/layouts/bio/): introduces one person, usually the speaker.
+- [`team`](/reference/layouts/team/): two to eight people with names, roles and photos.
+- [`image`](/reference/layouts/image/): a photo across the slide when the place, not the person, makes the point.
+
+How layouts step text down in size to fit is on [text and fitting](/write-slides/text-and-fitting/).

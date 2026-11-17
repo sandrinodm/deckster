@@ -1,0 +1,55 @@
+---
+title: "logos"
+description: "A logo wall."
+sidebar:
+  order: 28
+---
+
+Use the `logos` layout for a wall of three to eighteen partners, customers or funders. You list each organisation with its logo file in the frontmatter, and the layout sizes marks of any shape to the same visual weight and, by default, sets them all in one colour so the wall reads as a set.
+
+## Example
+
+<SlideExample deck="lookbook" slide="logos-color" />
+
+With `tone: color` the marks keep their own colours, which suits brands people know from the street. Eight logos fill two rows of four, and the title says what they have in common rather than "Our customers". The reference below shows the default `tone: mono`, five marks in one row.
+
+A wall of thirteen to eighteen fills three rows, and each name is limited to 20 characters:
+
+<SlideShot deck="lookbook" slide="logos-wall" alt="Fourteen organisation logos in three rows, all in one dark grey, under the title 'Fourteen organisations stand behind the launch' and a line naming merchants, a parcel carrier, a council, a bike builder and two investors." />
+
+## When to use it
+
+- **The names are the evidence.** `logos` is required: three to eighteen, each with a `name` (up to 32 characters, 20 with thirteen or more) and a `src`, a transparent SVG or PNG in the deck folder. A logo without a file is set as its name.
+- **The marks should read as a set.** `tone: mono`, the default, flattens every mark to one colour of the surface; `tone: color` keeps their colours, in the brand's image `treatment` if you name one.
+- **One mark looks off.** `scale` (0.5 to 1.5) corrects a logo that still looks too large or too small beside the others.
+
+Up to five logos stand in one row; more fill two or three. The title takes up to 72 characters and says what the logos share ("Twelve partners fund the plan"). The body is one sentence of up to 14 words, and the footnote up to 20. For people, use [`team`](/reference/layouts/team/); for one customer with a quote and numbers, use [`proof`](/reference/layouts/proof/).
+
+## Reference
+
+<LayoutReference name="logos" />
+
+## Common mistakes
+
+**Too much in the body.** The sentence under the title takes 14 words. Naming every partner there instead of in `logos:` runs over:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/partners.mdx
+  error   content-budget (partners): The body slot holds 20 words; its layout allows 14.
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+```
+
+**Too few logos.** Two logos stop the build with `logos: Expected at least 3 logos, got a list of 2 items.` Two organisations are better named in a sentence, or shown with `proof`.
+
+**Long names in a full wall.** From thirteen logos on, a name takes 20 characters, because it is also the wordmark drawn when the file is missing. Shorten the name to what people call the organisation.
+
+## Related layouts
+
+- [`team`](/reference/layouts/team/): people rather than organisations.
+- [`proof`](/reference/layouts/proof/): one or two named customers with a quote and the numbers that show what changed.
+- [`gallery`](/reference/layouts/gallery/): two to four photos or screenshots, not marks.
+
+Where a logo file's path points is on [media](/write-slides/media/).

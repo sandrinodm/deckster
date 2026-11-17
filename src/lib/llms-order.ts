@@ -22,23 +22,72 @@ function sections(): Section[] {
   });
 }
 
-/** A sort key per page path (`get-started/quickstart`): its section's place, then its own order. */
-async function pageKeys(): Promise<Map<string, [number, number, string]>> {
+/**
+ * A sort key: one number per level of the page's path, then the title. The first level is the
+ * section's place; each folder below it takes the `sidebar.order` of its `index` page, and the
+ * page's own order comes last. A folder's own index sorts first inside the folder (`-Infinity`
+ * at its own level), so `reference/layouts` is [r, 3, -∞], `reference/layouts/title` is
+ * [r, 3, 1] and `reference/components` is [r, 4]: a folder's pages stay together where its
+ * index sits among its siblings. `names` holds each level's segment, the tie-break when two
+ * folders, or a folder and a page, share an order, so their pages never interleave; pages that
+ * share an order tie on their title, as in the sidebar.
+ */
+type Key = { orders: number[]; names: string[]; title: string };
+
+const UNORDERED = Number.MAX_SAFE_INTEGER;
+
+/** A sort key per page path (`get-started/quickstart`). */
+async function pageKeys(): Promise<Map<string, Key>> {
   const order = sections().map((s) => s.directory);
-  const keys = new Map<string, [number, number, string]>();
-  for (const entry of await getCollection("docs")) {
-    const id = entry.id.replace(/\/index$/, "");
-    const found = order.indexOf(id.split("/")[0]!);
-    const section = id === "index" ? -1 : found < 0 ? order.length : found;
-    const sidebar = (entry.data as { sidebar?: { order?: number } }).sidebar;
-    keys.set(id, [section, sidebar?.order ?? Number.MAX_SAFE_INTEGER, entry.data.title as string]);
+  const entries = (await getCollection("docs")).map((entry) => ({
+    id: entry.id.replace(/\/index$/, ""),
+    order: (entry.data as { sidebar?: { order?: number } }).sidebar?.order ?? UNORDERED,
+    title: entry.data.title as string,
+  }));
+  const orderOf = new Map(entries.map((e) => [e.id, e.order]));
+  const isFolder = (id: string) => entries.some((e) => e.id.startsWith(`${id}/`));
+  const keys = new Map<string, Key>();
+  for (const { id, order: own, title } of entries) {
+    if (id === "index") {
+      keys.set(id, { orders: [-1], names: [""], title });
+      continue;
+    }
+    const parts = id.split("/");
+    const found = order.indexOf(parts[0]!);
+    const orders = [found < 0 ? order.length : found];
+    const names = [parts[0]!];
+    // Each folder between the section and the page: the order of the folder's index page.
+    for (let level = 2; level < parts.length; level++) {
+      const parent = parts.slice(0, level).join("/");
+      orders.push(orderOf.get(parent) ?? UNORDERED);
+      names.push(parts[level - 1]!);
+    }
+    const folder = isFolder(id);
+    if (parts.length > 1) {
+      // A page's own level ties on its title, as in the sidebar; a folder's on its name.
+      orders.push(own);
+      names.push(folder ? parts[parts.length - 1]! : "");
+    }
+    // A folder's index (a section's, or a nested folder's) comes before the folder's pages.
+    if (folder) {
+      orders.push(-Infinity);
+      names.push("");
+    }
+    keys.set(id, { orders, names, title });
   }
   return keys;
 }
 
-const compare = (a: [number, number, string] | undefined, b: [number, number, string] | undefined) => {
+/** Compares level by level (order, then segment name), shorter first, then by title. */
+const compare = (a: Key | undefined, b: Key | undefined) => {
   if (!a || !b) return 0;
-  return a[0] - b[0] || a[1] - b[1] || a[2].localeCompare(b[2]);
+  const n = Math.min(a.orders.length, b.orders.length);
+  for (let i = 0; i < n; i++) {
+    if (a.orders[i] !== b.orders[i]) return a.orders[i]! < b.orders[i]! ? -1 : 1;
+    const byName = a.names[i]!.localeCompare(b.names[i]!);
+    if (byName !== 0) return byName;
+  }
+  return a.orders.length - b.orders.length || a.title.localeCompare(b.title);
 };
 
 /** The page path of a URL on the site: `…/deckster/get-started/quickstart/index.md` → `get-started/quickstart`. */
@@ -48,7 +97,7 @@ function pathOf(url: string, site: string): string {
 }
 
 /** Sorts each run of consecutive list lines by the page or section their link points at. */
-function sortLists(body: string, key: (line: string) => [number, number, string] | undefined): string {
+function sortLists(body: string, key: (line: string) => Key | undefined): string {
   const lines = body.split("\n");
   const out: string[] = [];
   for (let i = 0; i < lines.length; ) {
@@ -85,9 +134,9 @@ export async function orderedLlms(body: string, context: APIContext): Promise<st
     const m = LINK.exec(line);
     if (!m) return undefined;
     const path = pathOf(m[2]!, site);
-    if (path === "index") return [-1, 0, ""];
+    if (path === "index") return { orders: [-1], names: [""], title: "" };
     const section = byDir.get(path);
-    return section ? [section.i, 0, ""] : undefined;
+    return section ? { orders: [section.i], names: [section.directory], title: "" } : undefined;
   });
 }
 

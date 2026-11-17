@@ -1,0 +1,57 @@
+---
+title: "chart"
+description: "A title that states the takeaway, then one chart, big number or table filling the space under it."
+sidebar:
+  order: 21
+---
+
+Use the `chart` layout when one chart, number figure or table is the slide: the title states what it shows, and the figure fills the space under it. You can set the "so what" in an `<Aside>` column beside it and the source on the bottom line.
+
+## Example
+
+<SlideExample deck="lookbook" slide="chart-bar" />
+
+The title carries the number the bars prove (9.4 stops an hour), the `caption` names the measure, place and period, and `highlight` picks out the one bar the title is about. The `<Aside>` gives the reason in a heading and three short sentences, so the chart keeps the rest of the slide.
+
+## When to use it
+
+- **One figure carries the point.** The body slot is required and holds one chart, number or table component: `<BarChart>`, `<LineChart>`, `<Slope>`, `<Waterfall>`, `<BigNumber>`, `<Table>` and the rest that `deck charts` lists.
+- **The title is the takeaway.** It takes up to 90 characters, enough for a sentence with its number: "Tickets fell 40% after the redesign", not "Tickets by month".
+- **The reason fits in a few words.** An `<Aside>` takes up to 36 words: the base budget is 40, and filling the aside switches on the "with aside" variant, which narrows it to 36. A `<Footnote>` takes up to 30 words; the chart's own `source` prop works too.
+- **The data can sit in the frontmatter.** List datasets by name under `data:`, and name one from the chart with `data="name"`; inline rows and imported JSON or CSV files work too.
+
+When the chart needs a paragraph beside it, use [`split`](/reference/layouts/split/); when the point is two to four plain numbers, use [`stats`](/reference/layouts/stats/).
+
+## Reference
+
+<LayoutReference name="chart" />
+
+## Common mistakes
+
+**A topic for a title, and too much aside.** This slide names its subject instead of its finding and explains the gap at length:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/stops.mdx
+  warning chart-topic-title (stops): "Canopy cover by district" looks like a topic, not a takeaway (a heuristic: it reads as "X by Y").
+          Fix: State what the chart shows in the title of decks/launch-review/slides/stops.mdx, with the number when there is one: "Billing tickets doubled in Q3", not "Tickets by queue". Put the measure and period in the chart's `caption`.
+  error   content-budget (stops): The aside slot holds 43 words; its layout allows 36 (with aside).
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+launch-review: 1 error, 1 warning in 1 slide (1 step checked).
+```
+
+`chart-topic-title` is a warning and a heuristic; `content-budget` is an error and fails the run. Write the finding in the title, and the measure, unit and period in the chart's `caption`.
+
+**A second figure in the body.** The body slot accepts any component, so `slot-content` checks neither the kind of block there nor how many there are (only a bulleted list is still reported). Keep it to one figure yourself, and give a second chart a slide of its own.
+
+**Chart problems.** The `chart-*` rules check the figure itself (too many series or categories, a truncated axis, no highlight). [Lint rules](/reference/lint-rules/) lists them with their fixes. `few-builds` warns when too few of a deck's chart, diagram and code slides build in steps ([lint](/review/lint/) has the threshold): stage the chart with `reveal` or `at`.
+
+## Related layouts
+
+- [`stats`](/reference/layouts/stats/): two to four big numbers in a row, when the point is the size of something.
+- [`split`](/reference/layouts/split/): a paragraph or bullets beside the chart, when the text matters as much.
+- [`table`](/reference/layouts/table/): exact values to look up, rather than a pattern.
+- [`diagram`](/reference/layouts/diagram/): the same frame for a diagram instead of data.
+
+Which chart to pick is on [choosing a chart](/data-and-diagrams/choosing-a-chart/).

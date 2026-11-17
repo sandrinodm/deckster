@@ -1,0 +1,52 @@
+---
+title: "code"
+description: "A title that states what the code shows, then a large code area."
+sidebar:
+  order: 23
+---
+
+Use the `code` layout to put one piece of code in front of the room: a fenced block with highlighted lines, a `<CodeMove>` that animates from one version to the next, or a `<Terminal>` session typed one command at a time. The title says what the code shows, and up to three short notes can stand beside it.
+
+## Example
+
+<SlideExample deck="lookbook" slide="code-move" />
+
+Notice the click: the `<CodeMove>` moves from the first version to the second, so the room sees which lines stay and that one `window` line arrives. The `<Aside>` notes take the right column; without them the code gets the full width.
+
+The same layout holds a shell session, with one step per `<Cmd>` and its `<Out>` lines after it:
+
+<SlideShot deck="lookbook" slide="code-terminal" alt="A code slide titled You can book a drop from a terminal: a terminal window headed ~/brightloaf shows three wren commands, each followed by its output in grey or teal, and two bullets beside it read The same API key as the SDK and --json on every command, for scripts." />
+
+## When to use it
+
+- The code is the evidence. The title is required, up to 48 characters on one line, so write the takeaway there ("Auth runs before every route"), not the file name.
+- It fits in 11 lines, the body's budget. Keep lines to 60 columns when you add `<Aside>`, or 90 without it.
+- There is one block. The body takes exactly one fence, `<CodeMove>` or `<Terminal>`.
+- You talk through it in order. A fence with `{2|3-4}` adds one step per part, and each `<Cmd>` adds one step; at step 0 a terminal shows only the prompt and cursor.
+
+Pick another layout when the code is not the point:
+
+- Prose that explains the code: use [`content`](/reference/layouts/content/).
+- A picture or screenshot beside text: use [`split`](/reference/layouts/split/).
+- A running app rather than its source: use [`demo`](/reference/layouts/demo/).
+
+## Reference
+
+<LayoutReference name="code" />
+
+## Common mistakes
+
+- **Too many lines.** A 13-line fence fails [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 13 lines; its layout allows 11." Keep the lines you talk about, or split the code over two slides.
+- **Lines too wide.** Two lines of over 100 columns beside an `<Aside>` gave a `container-overflow` error on the code area and a `text-overlap` error between the code and the notes. Wrap the lines, or drop the `<Aside>` to get 90 columns.
+- **Two blocks in the body.** Two fences fail with `slot-content`: "The body slot holds 2 code blocks; the code layout takes exactly one: code there." For a before and after, put both fences in one `<CodeMove>`.
+- **Long notes.** `<Aside>` takes 40 words and three bullets; a fourth bullet is a `content-budget` error on the aside slot. Put the explanation in `<Notes>`.
+- **Nothing builds.** `few-builds` warns when too few of a deck's chart, diagram and code slides build in steps; [lint rules](/reference/lint-rules/) lists it. Step ranges on the fence (`{2-4|7}`) fix it.
+
+## Related layouts
+
+- [`content`](/reference/layouts/content/): a paragraph or bullets with an aside, when you explain rather than show.
+- [`split`](/reference/layouts/split/): one picture, chart or diagram with text beside it.
+- [`demo`](/reference/layouts/demo/): a live app or widget on the slide instead of its code.
+- [`diagram`](/reference/layouts/diagram/): how the parts connect, when the code has more detail than the room needs.
+
+How to write fences, highlights, `<CodeMove>` and `<Terminal>` is on [code](/write-slides/code/).

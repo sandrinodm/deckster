@@ -1,0 +1,52 @@
+---
+title: "title"
+description: "The cover of a deck."
+sidebar:
+  order: 1
+---
+
+Use the `title` layout for the cover of your deck: the deck title set large on the bottom line, a one-line subtitle, and who is presenting and when. You can add a photo beside the text or behind it, or leave it out for a type-only cover.
+
+## Example
+
+<SlideExample deck="lookbook" slide="title-full" />
+
+Notice `picture: full`: the photo in `<Media>` covers the whole slide, and the logo and the text block each sit on a dark scrim of their own, in light text whatever the surface. The catalog advises a photo that is calm in its lower left (sky, wall, road), since that is where the text block sits.
+
+Without a photo, `align: center` centres the logo, title and subtitle for a keynote cover:
+
+<SlideShot deck="lookbook" slide="title-center" alt="A dark cover with the deck logo centred at the top, the eyebrow Wrenhaul Open Network, the title Every shop, every street, same hour in large type over two lines, a one-line subtitle under it, and the presenter's name on the left and 3 December 2026 on the right of the bottom line." />
+
+## When to use it
+
+- It is the first slide. The catalog's guidance is to use it once, first; use [`section`](/reference/layouts/section/) to open each part of the talk.
+- The deck title is short. `title:` is required and takes at most 36 characters, three lines of display type beside a cover photo.
+- The subtitle is one sentence of at most 14 words, in the body. `byline:` (up to 40 characters) and `date:` (up to 24) sit on the bottom row.
+- Choose how the picture sits:
+  - No `<Media>`: a type-only cover on the gradient surface, the layout's default.
+  - `<Media>` alone (`picture: side`, the default): the photo fills the right five columns to the slide's edges.
+  - `picture: full`: the photo runs across the whole slide, for a picture that is calm in its lower left (sky, wall, road).
+  - `align: center`: only on a type-only cover; with a photo, the text stays on the left.
+
+The cover hides the page chrome (`chrome` defaults to `false` here) and sets the brand logo in its top-left corner instead.
+
+## Reference
+
+<LayoutReference name="title" />
+
+## Common mistakes
+
+- **A long title.** A 47-character title fails [`deck lint`](/review/lint/) with a `schema` error: "title: The title layout sets at most 36 characters, got 47." Put the rest in the subtitle.
+- **A long subtitle.** A 19-word subtitle fails with `content-budget`: "The body slot holds 19 words; its layout allows 14."
+- **More than one picture.** `<Media>` takes one image with alt text. Two images fail with `slot-content`: "The media slot holds 2 images; the title layout takes exactly one: image there."
+- **A busy photo behind the text.** With `picture: full`, the text covers the lower left, so a subject there ends up under the title. Use the side picture instead and set `focal` on the `<Image>`, as the lookbook's `cover` slide does.
+- **A cover for every part.** The catalog keeps `title` for the first slide: a part opens with `section`, and the talk ends on [`closing`](/reference/layouts/closing/).
+
+## Related layouts
+
+- [`section`](/reference/layouts/section/): the divider that opens each part, with its number set large.
+- [`closing`](/reference/layouts/closing/): the last slide, with the one thing to remember and how to follow up.
+- [`image`](/reference/layouts/image/): one photo across the slide mid-talk, with text over it on a scrim.
+- [`bio`](/reference/layouts/bio/): the speaker introduced after the cover.
+
+How to add the cover photo and where its path points is on [media](/write-slides/media/).

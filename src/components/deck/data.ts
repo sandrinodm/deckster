@@ -71,7 +71,7 @@ export type LayoutEntry = {
   surface: string | null;
   slots: Record<string, LayoutSlot>;
   budget: Record<string, Record<string, number>>;
-  variants: { name: string; budget?: Record<string, Record<string, number>> }[];
+  variants: { name: string; budget?: Record<string, Record<string, number>>; fields?: Record<string, Record<string, number>> }[];
   example: { mdx: string } | null;
   pptx?: { type: string };
 };
@@ -399,8 +399,9 @@ export function componentSlide(name: string): { deck: string; slide: SlideEntry;
   return undefined;
 }
 
-/** The anchor LayoutReference sets and LayoutIndex links to. */
+/** The id LayoutReference sets on itself. */
 export const layoutAnchor = (name: string) => `layout-${name}`;
+
 
 // ---------------------------------------------------------------- catalogs
 

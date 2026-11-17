@@ -1,0 +1,52 @@
+---
+title: "ask"
+description: "A request to decide."
+sidebar:
+  order: 32
+---
+
+Use the `ask` layout for the slide where you ask the room for something: one amount of money, headcount or time, and the two to four dated milestones it buys. The amount stands large on an accent panel down the left, the milestones are numbered beside it with their dates aligned on the right, and an optional bar shows how the amount divides.
+
+## Example
+
+<SlideExample deck="lookbook" slide="ask-pilot" />
+
+This is the form without `funds`: one amount with a `label` over it, a sentence on what it buys, and three milestones, each a result the board can check by its date. The reference below shows the full form, with `funds` and `reveal: true`.
+
+## When to use it
+
+- **You ask for one figure.** `amount` is required: a number, or up to 10 characters as it should read (`$2.4M`, `12 FTE`). The field's hint asks for a single figure, never a range; nothing checks that, so write one figure yourself.
+- **The figure buys two to four milestones.** `milestones` is required, each with `text` (up to 56 characters, a measurable result) and `by` (up to 12 characters, such as `Q3 2027`), in time order. A plan with more dates belongs on the [`timeline`](/reference/layouts/timeline/) layout.
+- **You can say where the money goes.** `funds` is optional: two to five allocations, largest first, each a `label` of up to 20 characters and a `share` in percent.
+- **You talk through it.** `reveal: true` brings in the amount first, then one milestone per step, then the bar.
+
+The title takes up to 40 characters, three lines in the panel, and the body one sentence of up to 16 words. For the last slide, with contacts and a QR code, use [`closing`](/reference/layouts/closing/); for a figure with no request, use [`stats`](/reference/layouts/stats/) or a `<BigNumber>` on the [`chart`](/reference/layouts/chart/) layout.
+
+## Reference
+
+<LayoutReference name="ask" />
+
+## Common mistakes
+
+**Shares that do not add up to 100.** The shares in `funds` must add up to 100, within 0.5, so three shares of 33.3 pass and a missing point does not. The build fails, and [`deck lint`](/review/lint/) reports it before it renders any slide:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/the-ask.mdx
+  error   schema (the-ask): funds: The shares add up to 95, not 100.
+          Fix: Give each allocation its share of the amount in percent, so the shares add up to 100; round one share up or down, or add the rest as its own allocation such as "Reserve".
+
+launch-review: 1 error, 0 warnings.
+```
+
+**A fifth milestone.** Lint stops with `milestones: Expected at most 4 milestones, got a list of 5 items.` Keep the four that the amount buys, or move the plan to a `timeline` slide.
+
+**The detail in the body.** The body is one sentence over the milestones. Past 16 words, `content-budget` reports `The body slot holds 19 words; its layout allows 16.`, and a bulleted list there is a `slot-content` error, because the slot takes text only. Put the amount in `amount:` and each result in `milestones:`.
+
+## Related layouts
+
+- [`timeline`](/reference/layouts/timeline/): three to five dated milestones with no amount to ask for.
+- [`closing`](/reference/layouts/closing/): the last slide, with up to three contacts and a QR code.
+- [`stats`](/reference/layouts/stats/): two to four numbers that show the size of something, with no request.
+
+How `reveal` and steps stage a slide is on [builds](/write-slides/builds/).

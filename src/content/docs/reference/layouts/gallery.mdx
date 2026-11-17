@@ -1,0 +1,49 @@
+---
+title: "gallery"
+description: "Two to four photos or screenshots under the title, filling the slide in an asymmetric arrangement."
+sidebar:
+  order: 26
+---
+
+Use the `gallery` layout to show two to four pictures together: screens of a product or a flow, before and after photos, or one subject seen from several places. The first picture is the lead and takes the largest frame; the others share the rest, each with an optional caption under it.
+
+## Example
+
+<SlideExample deck="lookbook" slide="gallery-places" />
+
+Notice three things in the source. The doorstep photo comes first, so it is the lead on the left. Each picture has a `focal:` that keeps its subject in view when the frame crops it. And `surface: default` sets the slide on the brand's default surface instead of the layout's own, `inverse`.
+
+## When to use it
+
+- You have two to four pictures and one point about them. `pictures:` is required and takes two to four entries; the title (up to 60 characters) says what they show together.
+- One picture matters most. Put it first: with two pictures the lead takes the left two thirds and the other a tall frame, as a phone screen needs; with three it takes the left seven columns; with four, the left half.
+- The words are short. The body is one sentence of at most 14 words, and a caption is at most 64 characters, or 40 when there are four pictures.
+- Screenshots should not be cropped. Set `fit: contain` on each one to show it whole, as the lookbook's `gallery-screens` slide does.
+
+Pick another layout when the pictures are not the whole slide:
+
+- One picture with text beside it: use [`split`](/reference/layouts/split/).
+- One photo across the slide: use [`image`](/reference/layouts/image/).
+- Pictures mixed with figures: use [`bento`](/reference/layouts/bento/).
+- One product screen to look at closely: use [`screen`](/reference/layouts/screen/).
+
+## Reference
+
+<LayoutReference name="gallery" />
+
+## Common mistakes
+
+- **Putting the pictures in the body.** The pictures belong in `pictures:`; the body is one sentence. A list in the body fails [`deck lint`](/review/lint/) with `slot-content`: "The body slot holds a list of 2 items; the gallery layout sets it as text."
+- **Long captions with four pictures.** The four-picture variant cuts captions to 40 characters. A 45-character caption is a `schema` error: "pictures[0].caption: The gallery layout sets at most 40 characters here (four pictures), got 45."
+- **A wrong path.** A `src` that names no file is a `media-missing` error that prints the path it looked for. Paths are relative to the slide file with `./` or `../`, or written from the deck folder (`assets/street.jpg`).
+- **A fifth picture.** `pictures:` takes at most four. Split the set over two slides, or pick the four that make the point.
+- **Text over the photo.** The layout never sets text over a picture; a caption always stands under its picture. For a line over a photo, use `image`.
+
+## Related layouts
+
+- [`split`](/reference/layouts/split/): one picture with a title and text beside it.
+- [`image`](/reference/layouts/image/): one photo edge to edge, with optional text over a scrim.
+- [`bento`](/reference/layouts/bento/): tiles of unequal weight that mix pictures with figures and text.
+- [`screen`](/reference/layouts/screen/): one product screen shown whole in a drawn frame, with numbered callouts.
+
+How image paths resolve and what `deck lint` checks about images is on [media](/write-slides/media/).

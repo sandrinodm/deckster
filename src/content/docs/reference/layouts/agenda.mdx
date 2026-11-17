@@ -1,0 +1,56 @@
+---
+title: "agenda"
+description: "The parts of the talk as a numbered list of three to seven items, each with an optional line of detail and a time or duration."
+sidebar:
+  order: 3
+---
+
+The `agenda` layout lists the parts of your talk as three to seven numbered rows, each with a title and, if you want them, a line of detail and a time. Show it after the cover to set out the plan, and again between parts to show the room where they are.
+
+## Example
+
+<SlideExample deck="lookbook" slide="agenda-current" />
+
+This is the opening agenda shown again before the third part: `current: 3` gives that row an accent rule and number, and the two rows before it fade.
+
+<SlideShot deck="lookbook" slide="agenda-long" alt="An agenda on a dark surface lists six numbered rows for a launch day, each with a title, a line of detail in a column beside it and a clock time from 09:00 to 16:00, above a footnote about ride-alongs." />
+
+With five to seven items, the detail moves beside the title on one line and the titles are set a step smaller. A day's programme with clock times fits this form.
+
+## When to use it
+
+- **For the plan of the talk.** Each item is a part you will present. Points of an argument belong on a [`content`](/reference/layouts/content/) slide, and a process on [`steps`](/reference/layouts/steps/).
+- **Three to seven parts.** The schema takes no fewer and no more. More than seven parts need grouping first.
+- **Again between parts.** Repeat the same items and set `current:` to the part that starts (1 is the first). Leave `current:` out on the first agenda.
+- **Short labels.** `title` takes up to 40 characters, `detail` up to 44 and `time` up to 7 (`10 min`, `09:30`). With five to seven items the limits drop to 36 and 32.
+- **A practical note** (breaks, where the slides are) goes in `<Footnote>`, up to 18 words. The slide title is one line of up to 48 characters.
+
+## Reference
+
+<LayoutReference name="agenda" />
+
+## Common mistakes
+
+- **Long titles in a longer agenda.** A title that fits a four-item agenda can be too long once you add a fifth item, because the "5 to 7 items" variant tightens the limits. `deck lint` reports it as a `schema` error that names the item:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/day-plan.mdx
+    error   schema (day-plan): items[0].title: The agenda layout sets at most 36 characters here (5 to 7 items), got 39.
+            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **A `current:` past the last item.** On an agenda of five items, `current: 6` is a `schema` error: "current: 6 names item 6, but there are 5 items."
+- **Text outside `<Footnote>`.** The layout draws only its items and the footnote. A paragraph under the frontmatter is not shown, and `deck lint` does not report it. Put what you will say in `<Notes>`.
+- **Items that change between copies.** The repeated agenda only says "we are here" when its items match the first one. Copy the slide and change only `current:` and the title.
+
+## Related layouts
+
+- [`section`](/reference/layouts/section/): opens one part with a large number, where the agenda shows all of them.
+- [`steps`](/reference/layouts/steps/): a process in three to five steps, with its own `current:`.
+- [`timeline`](/reference/layouts/timeline/): milestones with dates, not parts of the talk.
+- [`content`](/reference/layouts/content/): the points of an argument, as a paragraph or bullets.
+
+Layouts, slots and variants are explained on [layouts and slots](/concepts/layouts-and-slots/).

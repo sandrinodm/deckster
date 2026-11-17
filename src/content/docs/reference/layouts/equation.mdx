@@ -1,0 +1,40 @@
+---
+title: "equation"
+description: "A number built from its parts, written as a sum."
+sidebar:
+  order: 20
+---
+
+Use the `equation` layout to show how a number is built: two to four figures joined by ×, +, − or ÷, then an equals sign and the result. It suits a bottom-up market size, a business model or unit economics, where the room should see the parts as well as the total.
+
+## Example
+
+<SlideExample deck="lookbook" slide="equation-market" />
+
+Notice how the weight falls: the three terms share one baseline, the × signs are set quieter than the figures, and the result stands largest on an accent panel that runs to the right and bottom edges. This slide shows the whole sum at once. With `reveal: true` the terms come in left to right, one per step, and the result comes last, counting up.
+
+## When to use it
+
+- **The total is the product or sum of a few parts.** `terms:` takes two to four items, each with a `value` of up to 8 characters and a `label` of up to 32. `result:` takes a `value` of up to 8 characters and a `label` of up to 40.
+- **The audience should check the arithmetic, or watch it build.** Leave `reveal` out to show it whole; set `reveal: true` to walk through it.
+- **A short title and one line of meaning.** The title takes up to 60 characters, the sentence under it up to 14 words, and the `<Footnote>` with the source up to 16.
+
+The catalog's examples are customers × price × frequency, bookings × take rate = revenue, and lifetime value ÷ acquisition cost. When the figures stand side by side without adding up, use [`stats`](/reference/layouts/stats/); for a trend, use a chart. A longer sum belongs in a [waterfall chart](/reference/charts/#props-Waterfall).
+
+## Reference
+
+<LayoutReference name="equation" />
+
+## Common mistakes
+
+- **A missing operator.** Every term after the first names the operator before it in `op:` (`times`, `plus`, `minus` or `divide`). Leaving it out is a [`schema` error](/reference/lint-rules/): "terms[1].op: Term 2 has no operator joining it to term 1."
+- **An operator on the first term.** Nothing comes before it, so `op` there is also an error: "terms[0].op: The first term has an operator, but nothing comes before it."
+- **Explaining the sum in the body.** The body is one sentence of up to 14 words on what the result means. A 20-word body is a `content-budget` error: "The body slot holds 20 words; its layout allows 14." The figures go in `terms:` and `result:`, the reading in your speaker notes.
+- **A sum that does not add up.** The layout checks the operators, not the arithmetic. Work out the result yourself, and say in `<Footnote>` how it was rounded or what it covers.
+
+## Related layouts
+
+- [`stats`](/reference/layouts/stats/): two to four figures that stand side by side without adding up.
+- [`chart`](/reference/layouts/chart/): one chart, when the point is a trend or a breakdown with more parts than four.
+
+How `reveal: true` steps the terms in is part of [building a slide in steps](/write-slides/builds/).

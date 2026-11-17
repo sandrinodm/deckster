@@ -131,7 +131,7 @@ heading you write above them.
 | `<UiShot name alt />` | The product UI in `deck dev` (showcase deck, 1440x900), the `deck present` windows, and one each of a `deck diff` report, a lint fix, a build gallery and a verify picture | Only `sidebar`, `overview`, `help`, `presenter`, `comments`, `comment-list`, `tools`, `tools-detail` (the tool buttons up close, 1120x400), `agent-panel`, `present-audience`, `present-presenter`, `diff-report` (the hello deck's report, staged: never call it a real change), `lint-before` and `lint-after` (a scratch slide, 1920x1080), `build-gallery`, `export-verify` (hello's title slide in LibreOffice; the CLI's one-row picture rearranged into two rows, 1920x1160: say so), `agent-turn` (a replayed fake-provider turn relabelled "Claude": caption it as a recorded example, never quote its figures; it is on `/ai-agents/agent-panel/`) |
 | `<Diagram name alt />` | One of the six explanatory SVGs, on concept pages and where a brief names one | `build-pipeline`, `step-model`, `brand-resolution`, `agent-turn`, `export-pipeline`, `review-loop`; one per page |
 | `<FrontmatterReference />`, `<SchemaReference of section? />`, `<ChartTypes of? />`, `<DiagramKinds part? />` | The slide frontmatter keys; every field of `brand.ts` (`of="brand"`, one `section` per table) or `deck.config.ts` (`of="deck-config"`); the chart prop types (`Highlight`, `Annotation.*`, ...); diagram node kinds, states and edge options | Types, allowed values, ranges and required. `SchemaReference` also shows a one-line description and default per field from `src/components/deck/schema-descriptions.ts`; the others have none. Write formats, patterns and how fields work together in prose from the code |
-| `<LayoutReference name />`, `<LayoutIndex />`, `<PropsTable of />` (and `<PropsTable shared />` once on charts and diagrams), `<CatalogIndex kind />`, `<CliCommand name />`, `<IconGrid />`, `<BrandTokens name />` | Reference pages and, sparingly, one entry quoted on a guide | Names exactly as in the JSON |
+| `<LayoutReference name />`, `<LayoutIndex />`, `<PropsTable of />` (and `<PropsTable shared />` once on charts and diagrams), `<CatalogIndex kind />`, `<CliCommand name />`, `<IconGrid />`, `<BrandTokens name />` | Reference pages and, sparingly, one entry quoted on a guide. Each layout's `<LayoutReference>` is on its own page, `/reference/layouts/<name>/`; `<LayoutIndex />` is on `/reference/layouts/` | Names exactly as in the JSON |
 
 A still or filmstrip the page needs and the table does not have: do not fake it with another
 slide. Write the page without it and ask for it in your report (deck, slide, step or brand, why).
@@ -154,7 +154,8 @@ From `AGENT.md`: internal links from the site root, no base path, trailing slash
 (`/get-started/quickstart/`); a built deck as `/decks/<name>/`, one slide as
 `/decks/<name>/#/<slide>`; never a bare `/decks/`; source files as
 `https://github.com/sandrinodm/deckster/blob/main/<path>`. Link the first mention of a concept that
-has its own page, once per page. Only the nine published decks and five published brands may
+has its own page, once per page. A layout links to its own page, `/reference/layouts/<name>/`, never to an
+anchor on `/reference/layouts/`. Only the nine published decks and five published brands may
 appear on any page, in examples or screenshots.
 
 ## Newer than v0.3.0

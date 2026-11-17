@@ -1,0 +1,45 @@
+---
+title: "section"
+description: "A divider that opens a part of the talk."
+sidebar:
+  order: 2
+---
+
+Use the `section` layout for the divider that opens each part of your talk: a part number, a title of two to five words and an optional one-line summary. Give every part one and the room always knows where the talk has got to.
+
+## Example
+
+<SlideExample deck="lookbook" slide="part-explain" />
+
+Notice the number: with `number: 3` and `numeral: large`, it is set as 03 in the surface's own tone, behind the title and running off the bottom edge. Every part opener in the [lookbook](/examples/lookbook/) writes the same fields, so the dividers read as a set.
+
+Fill `<Media>` with one image and the divider changes shape: the picture fills the right five columns edge to edge and the text keeps to the left.
+
+<SlideShot deck="lookbook" slide="section-photo" alt="A divider on a light surface: the eyebrow 'Chapter three', the title 'The hub on the square' and a two-line summary on the left over a faint large 03, and an illustration of a hub shop front with a rider loading a cargo bike filling the right of the slide." />
+
+## When to use it
+
+- **One per part, in order.** The catalog asks for every divider on the same surface and with the same options. Nothing in [`deck lint`](/review/lint/) checks that, so pick the fields once and copy them.
+- **A short title and at most one sentence.** `title:` is required and takes 40 characters. The summary is plain text of up to 16 words, or 14 when `<Media>` is filled. When you leave it out, its two lines stay empty, so every divider sets its title at the same height.
+- **The look is set by three fields.** `numeral: large` makes the number a landmark. Leave it out and the number sits small on the top line. `align: center` centres the number, title and summary, but has no effect beside a picture. The divider defaults to the `accent` surface and hides the page number, logo and progress bar (`chrome: false`).
+
+Pick another layout when the slide is not a divider. The cover of the deck is [`title`](/reference/layouts/title/). A list of every part with the current one marked is [`agenda`](/reference/layouts/agenda/), and a single claim is [`statement`](/reference/layouts/statement/).
+
+## Reference
+
+<LayoutReference name="section" />
+
+## Common mistakes
+
+- **A large numeral with no number.** `numeral: large` without `number:` fails with a `schema` error at `numeral`: "`numeral: large` sets the part number large, but the slide has no `number:`." Add `number: 2`, or remove `numeral`.
+- **A list as the summary.** The body slot takes text only. Three bullets under the title get a `slot-content` error: "The body slot holds a list of 3 items; the section layout sets it as text." Write one sentence, and save the points for the part's first slide.
+- **A number that is too long.** `number:` is a whole number from 0 to 99 (shown with two digits, so `3` reads 03) or text of up to three characters (`IV`, `Q3`). Anything longer is a `schema` error.
+- **Dividers that do not match.** One divider with `numeral: small` or another surface among large-numeral accent ones breaks the set. Lint does not catch it.
+
+## Related layouts
+
+- [`title`](/reference/layouts/title/): the cover, used once, first, rather than a part opener.
+- [`agenda`](/reference/layouts/agenda/): shows all the parts at once, with `current:` marking the one that starts.
+- [`statement`](/reference/layouts/statement/): one sentence set large, a claim and not a heading.
+
+The lookbook gives every part opener `transition: cover`; see [transitions and morphs](/write-slides/transitions-and-morphs/).
