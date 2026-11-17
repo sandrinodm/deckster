@@ -86,7 +86,9 @@ These steps make a brand called `acme` in a workspace called `talks`.
 
 8. Set `icons.set` to `lucide` or `tabler`, the two Iconify sets the 0.3.0 CLI carries, and `icons.strokeWidth` to a value from 0.5 to 4.
 
-9. Look at the brand on a real deck, then render stills:
+9. Give diagrams the brand's look in `diagram`: the edges, group outlines, edge labels and the cards nodes are drawn with. Restyle the `default` card first, since every card takes its corner radius, outline width and title type from it. [Diagram look and cards](/brands/diagram-look-and-cards/) walks through it. Leave the section out and diagrams take a look derived from the roles and `shape`.
+
+10. Look at the brand on a real deck, then render stills:
 
    ```sh
    deck dev launch-review --brand acme
@@ -95,7 +97,7 @@ These steps make a brand called `acme` in a workspace called `talks`.
 
    `deck shot` writes one PNG per slide to `.deck/shots/launch-review@acme/`. A deck with one slide per layout shows the most, so lint and shoot one with `--brand acme` before you call the brand done.
 
-10. When it looks right, set `brand: 'acme'` in the deck's `deck.config.ts`, or start new decks with `deck new <deck> --brand acme`.
+11. When it looks right, set `brand: 'acme'` in the deck's `deck.config.ts`, or start new decks with `deck new <deck> --brand acme`.
 
 </Steps>
 
@@ -108,8 +110,8 @@ These steps make a brand called `acme` in a workspace called `talks`.
 A brand that fails its checks doesn't load. `deck dev`, `build`, `shot` and `lint` stop and print the brand file, the field and the fix. The checks run in stages, and you see every problem from the first stage that finds one:
 
 - **Schema:** a missing field, a value out of range, or an unknown field (the fix names the nearest valid one).
-- **References:** a palette step, gradient, surface, logo variant, image treatment, easing, duration or font weight that the brand uses but doesn't define.
-- **Quality:** contrast between role pairs on every surface, and data colours that can't be told apart with normal vision or a colour-vision deficiency.
+- **References:** a palette step, gradient, surface, logo variant, image treatment, easing, duration, font weight or diagram card that the brand uses but doesn't define.
+- **Quality:** contrast between role pairs and of the card colours you write on every surface, and data colours that can't be told apart with normal vision or a colour-vision deficiency.
 - **Files:** the `name` matches the folder, font packages are installed, and font and logo files exist.
 
 [Check a brand](/brands/check-a-brand/) shows the output of each stage and the warnings that don't stop a brand. To have an agent build the brand from an existing template, PDF or website, see [import a brand](/brands/import-a-brand/).

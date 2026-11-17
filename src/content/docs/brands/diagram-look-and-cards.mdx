@@ -1,0 +1,185 @@
+---
+title: "Diagram look and cards"
+description: "Give a brand its own edges, group outlines, edge labels and node cards."
+sidebar:
+  order: 4
+---
+
+A brand decides how its diagrams look: the edges and their arrowheads, the outlines of groups, the edge labels, and named **cards**, the node styles a slide picks with `card="..."`. This page shows you what the `diagram` section of `brand.ts` holds, how the five standard cards and your own cards are filled in, and how to give a brand of your own a diagram look that passes `deck brand check`. Picking a card on a slide is on [flow diagrams](/data-and-diagrams/flow-diagrams/#pick-a-card).
+
+<Aside type="note" title="New in v0.4.0">
+The diagram look and cards need `@deckster/cli` 0.4.0 or later. `deck brand check` in 0.3.0 rejects `edges`, `groups`, `kinds` and `cards` as unknown fields of `diagram`, and a slide with `card` fails with "`card` is not a prop of `<Node>`".
+</Aside>
+
+## What a brand sets
+
+Every key is optional. A brand that writes none gets regular edges with round corners and triangle arrowheads, hairline group outlines, plain edge labels in the caption step, and the five standard cards derived from its roles and `shape`. This is Kinetic's whole section:
+
+```ts
+diagram: {
+  edges: { stroke: 'regular', corners: 'sharp', arrow: 'triangle' },
+  groups: { stroke: 'regular', radius: 'none' },
+  labels: { style: 'chip', type: 'label' },
+  kinds: { external: 'outline' },
+  cards: {
+    default: {
+      shadow: 'sm',
+      title: { family: 'mono', weight: 600, tracking: 0.02, case: 'upper' },
+    },
+    solid: { border: 'border', shadow: 'md' },
+    tint: { border: 'border', shadow: 'sm' },
+    raised: { stroke: 'regular', border: 'border', shadow: 'lg' },
+    volt: { fill: 'volt.400', border: 'chalk.950', shadow: 'md' },
+  },
+},
+```
+
+- `edges`: the line width (`hairline`, `regular` or `bold` from `shape.stroke`), `round` or `sharp` bends, and a `triangle`, `open` or `dot` arrowhead.
+- `groups`: the outline width or `none`, `dashed`, and a corner radius from `shape.radius` or `none`.
+- `labels`: `plain` text or a bordered `chip`, set in the `caption` step or the brand's `label` step.
+- `kinds`: the card a node kind uses when neither the node nor its diagram names one. Keys are the kinds themselves (`database`, not its alias `db`).
+- `cards`: restyles the standard cards and adds the brand's own, at most twelve entries.
+
+The same `<Flow>` in each published brand shows the edges, labels and `default` card change while the slide stays the same:
+
+<BrandGrid slide="lint-path" />
+
+`deck brand <name>` prints the look and every card with its colours on the `default` surface. With Kinetic copied into the workspace, as in [use a brand](/brands/use-a-brand/):
+
+```console
+$ deck brand kinetic
+...
+Diagrams: edges 2px, sharp corners, triangle arrowheads; groups 2px, radius 0px; chip edge labels in the label step; kinds: external outline
+Cards (colors on the default surface):
+  default: fill #ffffff, border #0a0a09 2px, radius 0px, sm shadow, chip icon, title mono 600 upper
+  outline: no fill, border #0a0a09 2px, radius 0px, chip icon, title mono 600 upper
+  solid: fill #3d4bff, border #0a0a09 2px, radius 0px, md shadow, plain icon, title mono 600 upper
+  tint: fill #3d4bff1f, border #0a0a09 2px, radius 0px, sm shadow, solid icon, title mono 600 upper
+  raised: fill #ffffff, border #0a0a09 2px, radius 0px, lg shadow, chip icon, title mono 600 upper
+  volt (the brand's own): fill #d4ff3a, border #0a0a09 2px, radius 0px, md shadow, chip icon, title mono 600 upper
+Run `deck brand kinetic --json` for every token.
+```
+
+The output is cut to the diagram lines. `--json` adds each card's colours on every surface.
+
+## How cards are filled in
+
+Every brand has `default`, `outline`, `solid`, `tint` and `raised`, whether it writes them or not:
+
+<SlideShot deck="diagrams-demo" slide="card-reference" alt="Five service nodes in a row in the default brand, each labelled with its card: default is a pale grey box, outline has a border and no fill, solid is filled in blue with white text, tint is a light blue fill with a blue border, and raised is a pale box with a soft shadow." />
+
+An entry with a standard name is merged over that card field by field, so `solid: { shadow: 'md' }` keeps the accent fill and adds a shadow. An entry with any other kebab-case name is a card of the brand's own, and it starts from the standard `default` look (the diagram node colours, a chip icon, no shadow), not from your restyled `default`.
+
+Three things do come from your `default` card: `stroke`, `radius` and `title` (family, weight, tracking and case). Every card takes them unless it sets its own, so write the brand's corner radius, outline weight and node title type once, on `default`. The standard `raised` keeps its hairline outline. Fill, border, shadow, icon, stripe and shape are never inherited.
+
+Colours are a role (`surface`), a role with an opacity in percent (`accent/12`), a palette reference (`volt.400`), a colour literal, or `none` for a fill or border. A role follows the surface the slide is on; a palette reference or a literal stays the same on every surface. Leave `text`, `subtext` and `icon.color` out and they are derived to read on the card's fill on every surface. A colour you write is checked instead: text at 4.5:1, the icon glyph at 3:1.
+
+An `accent` stripe runs along one side of the node, clipped to its outline. On a box it is a straight band; on a hexagon, a diamond or a cylinder it follows the shape's edge, and a stripe on the top of a cylinder fills its lid. Give the card `shape: 'box'` for a straight stripe on every kind.
+
+## Give your brand a diagram look
+
+These steps restyle `acme`, a copy of `default` made in [create a brand](/brands/create-a-brand/). From 0.4.0 the `default` brand has this `diagram` section; a copy taken from the `v0.3.0` tag has none, so start from this one:
+
+```ts
+diagram: {
+  groups: { stroke: 'none' },
+  kinds: { external: 'outline' },
+  cards: {
+    default: {
+      stroke: 'hairline',
+      shadow: 'sm',
+      icon: { style: 'solid', fill: 'accent/12', color: 'accent' },
+    },
+  },
+},
+```
+
+<Steps>
+
+1. Set the lines and the shared geometry. Square bends with open arrowheads, databases drawn on the `tint` card, and a smaller corner radius on `default`, which every card takes:
+
+   ```ts
+   diagram: {
+     edges: { corners: 'sharp', arrow: 'open' },
+     groups: { stroke: 'none' },
+     kinds: { database: 'tint', external: 'outline' },
+     cards: {
+       default: {
+         stroke: 'hairline',
+         radius: 'sm',
+         shadow: 'sm',
+         icon: { style: 'solid', fill: 'accent/12', color: 'accent' },
+       },
+     },
+   },
+   ```
+
+2. Add a card of the brand's own for a treatment none of the five carries, here a note on a pale fill with a stripe down its left side:
+
+   ```ts
+   callout: {
+     fill: 'amber.200',
+     border: 'none',
+     accent: { side: 'left', color: 'amber.600' },
+   },
+   ```
+
+3. Run the check. A title colour written as a role would follow the surface while the palette fill does not: with `text: 'fg'` on `callout`, the check fails on every dark surface, and each fix names the field to change on that surface only:
+
+   ```console
+   $ deck brand check acme
+   brands/acme/brand.ts
+     error   diagram.cards.callout.text: On the inverse surface, the "callout" card's text color #f4f5f8 on #fde3a7 has contrast 1.15:1; it needs 4.5:1.
+             Fix: Use a text color with more contrast (on this surface only, under color.surfaces.inverse.diagram.cards.callout), such as "#656669", or leave `text` out to derive a readable one.
+   ...
+   acme: cannot be used (3 errors, 0 warnings).
+   ```
+
+   The output is cut after the first of the three errors (`inverse`, `accent` and `gradient`). Leave `text` out, as in step 2, and the title is derived to read on the fill:
+
+   ```console
+   $ deck brand check acme
+   brands/acme/brand.ts
+   acme: is valid (0 errors, 0 warnings).
+   ```
+
+4. Recolour a card on one surface when a fixed colour looks wrong there. A pale note on the dark `inverse` surface takes the surface colour instead. `color.surfaces.<name>.diagram.cards` takes the colour fields only (`fill`, `border`, `text`, `subtext`, `icon.color`, `icon.fill`, `accent.color`), for a card the brand has:
+
+   ```ts
+   inverse: {
+     bg: 'ink.950',
+     // ...
+     logo: 'reversed',
+     diagram: { cards: { callout: { fill: 'surface' } } },
+   },
+   ```
+
+5. Read what the brand resolved:
+
+   ```console
+   $ deck brand acme
+   ...
+   Diagrams: edges 2px, sharp corners, open arrowheads; groups no outline, radius 20px; plain edge labels; kinds: database tint, external outline
+   Cards (colors on the default surface):
+     default: fill #f4f5f8, border #d9dce4 1px, radius 6px, sm shadow, solid icon, title display 600
+     outline: no fill, border #d9dce4 1px, radius 6px, chip icon, title display 600
+     solid: fill #2d4ae0, no border, radius 6px, plain icon, title display 600
+     tint: fill #2d4ae01f, border #2d4ae0 1px, radius 6px, solid icon, title display 600
+     raised: fill #f4f5f8, border #d9dce4 1px, radius 6px, md shadow, chip icon, title display 600
+     callout (the brand's own): fill #fde3a7, no border, radius 6px, chip icon, left accent 4px, title display 600
+   Run `deck brand acme --json` for every token.
+   ```
+
+   Every card has the 6 px radius from `default`; `callout` has the chip icon of the standard look, not the solid icon of your `default`.
+
+6. Look at real diagrams in the brand: `deck shot launch-review --brand acme` renders a deck without changing it. A diagram that names `callout` in another brand falls back and `deck lint` warns with `diagram-card-missing`.
+
+</Steps>
+
+## Which cards to write
+
+Restyle the five standard cards before you add your own. Decks name those five, and the [card reference slide](/decks/diagrams-demo/#/card-reference) shows what each one is for: `default` for most nodes, `outline` for systems you call but do not run, `solid` for the one node that matters, `tint` for nodes that belong together, `raised` for the node you look at closely. A deck that uses only these names renders in any brand. A card of the brand's own suits a deck that belongs to that brand.
+
+`deck brand check` also refuses a `kinds` entry whose card the brand lacks, a surface that recolours a card the brand lacks, a title family that is not `display`, `body` or `mono`, more than twelve cards, and a name made of another card's name and one of its parts, such as `tint-icon` beside `tint`, whose CSS variables would collide. [Check a brand](/brands/check-a-brand/#diagram-cards) shows these errors. Every field and its default is in the [brand schema](/reference/brand-schema/#diagram).
+
+In a [PowerPoint export](/export-and-publish/powerpoint/) the cards keep their fills, borders, radii, shadows and stripes, and the edges their arrowheads.

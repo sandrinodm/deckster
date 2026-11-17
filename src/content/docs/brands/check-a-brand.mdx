@@ -2,7 +2,7 @@
 title: "Check a brand"
 description: "Validate a brand and compare it with its source."
 sidebar:
-  order: 6
+  order: 7
 ---
 
 `deck brand check <name>` validates a brand without rendering a deck. It loads the brand the way every other command does and prints each error and warning with its field and a fix. This page shows how to run the check, read what it prints, and then test the brand on real slides. Use it after you change a brand, and on any brand an agent hands you.
@@ -83,12 +83,50 @@ These steps break a copy of `default` (saved as `brands/acme/`, as in [create a 
 The checks run in stages. A stage that finds a problem reports all of its problems, and the later stages don't run until you fix them. A brand can fail at one stage and then fail again at the next.
 
 1. **Schema.** Types, ranges, required fields and unknown fields. A typo gets the nearest valid name: `"mutd" is not a field of color.roles.` with `Fix: Rename it to "muted".`
-2. **References.** Everything the brand names must exist: palette steps (`"ink.650" refers to a step "650" that the "ink" palette does not have.`), gradients, surfaces, logo variants, image treatments, the transition's easing and duration, font weights a source can supply, and contrast waivers. Backgrounds must be opaque.
+2. **References.** Everything the brand names must exist: palette steps (`"ink.650" refers to a step "650" that the "ink" palette does not have.`), gradients, surfaces, logo variants, image treatments, the transition's easing and duration, font weights a source can supply, contrast waivers, and the node kinds, cards and title families the `diagram` section names. Backgrounds must be opaque.
 3. **Values CSS can hold.** The resolved tokens must be writable as CSS.
-4. **Quality.** WCAG contrast of the role pairs on every surface: 4.5:1 for `fg` and `muted` on `bg` and `surface`, and for `accent-fg` on `accent`; 3:1 for `heading`, `accent`, `positive` and `negative`. The data palettes are checked on each surface's chart plate. Neighbouring categorical colours must stay apart with normal vision and under protanopia, deuteranopia and tritanopia.
+4. **Quality.** WCAG contrast of the role pairs on every surface: 4.5:1 for `fg` and `muted` on `bg` and `surface`, and for `accent-fg` on `accent`; 3:1 for `heading`, `accent`, `positive` and `negative`. Card colours you write are measured on every surface too: title and subtitle at 4.5:1 on the card's fill, the icon at 3:1. The data palettes are checked on each surface's chart plate. Neighbouring categorical colours must stay apart with normal vision and under protanopia, deuteranopia and tritanopia.
 5. **Files.** The `name` matches the folder, font packages are installed in the workspace, and font, logo and background files exist in the brand folder.
 
 [Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/) explains the roles and surfaces these checks measure.
+
+## Diagram cards
+
+The `diagram` section goes through the same stages. A value outside the schema fails first:
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  error   diagram.edges.arrow: Expected "triangle" | "open" | "dot", got "chevron".
+          Fix: Use "triangle", "open" or "dot".
+acme: cannot be used (1 error, 0 warnings).
+```
+
+Then the names. `diagram.kinds` takes a node kind itself, not an alias:
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  error   diagram.kinds.db: There is no node kind named "db".
+          Fix: Use "database": "db" is another name for it on a node, but `diagram.kinds` takes the kind itself.
+acme: cannot be used (1 error, 0 warnings).
+```
+
+A surface may recolour only a card the brand has, a title family is one of `display`, `body` and `mono`, and a card colour without a step is read as a role, so `amber` alone fails where `amber.600` is meant:
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  error   color.surfaces.inverse.diagram.cards.calout: The inverse surface recolors a card "calout" that the brand does not have.
+          Fix: Use "callout". Or define "calout" under `diagram.cards`.
+  error   diagram.cards.callout.title.family: There is no family role named "serif".
+          Fix: Use one of: display, body, mono.
+  error   diagram.cards.callout.accent.color: "amber" refers to a role "amber" that does not exist.
+          Fix: Use one of: bg, surface, fg, heading, muted, accent, accent-fg, border, positive, negative.
+acme: cannot be used (3 errors, 0 warnings).
+```
+
+The same stage refuses more than twelve cards, a `kinds` entry whose card the brand lacks, and two card names whose CSS variables would collide (`tint-icon` beside `tint`). Last come the card colours you write, measured on every surface; a fix for a colour that fails on one surface names the place to recolour the card there. [Diagram look and cards](/brands/diagram-look-and-cards/) shows that error and its fix.
 
 ## Errors and warnings
 
@@ -123,7 +161,7 @@ A waiver only lowers the bar to 3:1. A pair below 3:1 is still an error.
 
 ## Look at what it resolved
 
-`deck brand <name>` prints the resolved values: the families, the type scale, the spacing and every role on every surface, in hex. `accent`, `positive` and `negative` only need 3:1, so small text in those roles uses a text colour held to 4.5:1. When a role reaches only 3:1 on a surface, the summary adds that small-text colour:
+`deck brand <name>` prints the resolved values: the families, the type scale, the spacing, every role on every surface, in hex, and the diagram look with every card's colours on the `default` surface. `accent`, `positive` and `negative` only need 3:1, so small text in those roles uses a text colour held to 4.5:1. When a role reaches only 3:1 on a surface, the summary adds that small-text colour:
 
 ```console
 $ deck brand default
