@@ -67,6 +67,38 @@ launch-review: 1 error, 0 warnings.
 
 Then every step of every slide is rendered in [static mode](/concepts/static-mode-and-readiness/) and measured. Last come the rules over the whole deck, such as `layout-repetition`, `few-builds` and `time-budget`. A `time-budget` or `few-builds` finding names no slide; a `layout-repetition` finding names the slide that makes the run three long.
 
+## Before and after a fix
+
+The slide `plan` of a deck `launch-risks` uses the `content` layout and promises three risks, but lists nine, each long enough to wrap onto two lines:
+
+<UiShot name="lint-before" alt="A slide titled 'The launch plan has three risks we can still remove' with a column of bullets that each wrap onto two lines; the seventh bullet is cut off at the bottom edge of the slide and the rest are not visible." />
+
+Lint finds the overflow twice, once against the canvas and once against the layout's text region, and the two budgets of the body slot:
+
+```console
+$ deck lint launch-risks
+decks/launch-risks/slides/plan.mdx
+  error   canvas-overflow (plan step 0): `div.kit-frame > div.kit-safe > div.kit-region > div.kit-content` extends past the canvas: 313px past the bottom edge.
+          Fix: Cut the content, split it across two slides or move detail into speaker notes. Do not shrink the type to make it fit. If the element is decoration meant to bleed off the edge, mark it with `aria-hidden="true"` or `data-decorative`.
+  error   container-overflow (plan step 0): `div.kit-frame > div.kit-safe > div.kit-region` holds 425px more height than it has (spills out of it); `div.kit-frame > div.kit-safe > div.kit-region > div.kit-content` reaches furthest.
+          Fix: Shorten or remove content inside it, split the slide, or give the container room by simplifying the layout around it. Mark decoration that is meant to bleed out with `aria-hidden="true"` or `data-decorative`.
+  error   content-budget (plan): The body slot holds 131 words; its layout allows 72.
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+  error   content-budget (plan): The body slot holds 9 bullets; its layout allows 6.
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+launch-risks: 4 errors, 0 warnings in 1 slide (1 step checked).
+```
+
+Cut as the `Fix:` lines ask, the slide keeps the three risks its title names, each in one short sentence, and the rest of the list moves into the `<Notes>`:
+
+<UiShot name="lint-after" alt="The same slide with three short bullets, each on two lines with room to spare below them: legal has not countersigned the second warehouse contracts, the pricing page shows last year's tiers in two regions, and support has no training or macros for the new returns flow." />
+
+```console
+$ deck lint launch-risks
+launch-risks: no problems in 1 slide (1 step checked).
+```
+
 ## Fix the common ones
 
 | Rule | What to do |

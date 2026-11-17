@@ -46,6 +46,10 @@ A PowerPoint file can look different in each app that opens it, and different ag
 
 3. Open the `verify/` folder beside the PPTX, here `.deck/exports/launch-review/verify/`. Its pictures show each slide side by side with the web, with crops of the regions that differ, and `report.json` sits beside them.
 
+   Each side-by-side picture is one slide in one renderer: the web slide, the renderer's picture of the PPTX, and the difference between them. This one is the title slide of the `hello` deck, from `deck export hello --verify --renderer libreoffice`:
+
+   <UiShot name="export-verify" alt="Three panels of the slide 'Hello, deck' in a row, labelled 'web (Chromium)', 'libreoffice' and 'difference' with a similarity percentage; the first two look the same, and the third is a pale grey copy with the outlines of the title and subtitle drawn in red where the two renders do not line up." />
+
 </Steps>
 
 ## Read the report

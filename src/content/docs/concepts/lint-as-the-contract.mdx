@@ -11,7 +11,7 @@ In deckster, a slide is finished when `deck lint` reports no errors on it: not w
 
 An agent writes slide files as text and never sees the result. A slide can pass every check the build runs and still show a title cut off at the edge, a list spilling out of its column, grey text on a grey photo, or a colour the brand doesn't have. Without a check it can run, the agent can't tell a good slide from a broken one, and you become the check, one screenshot at a time.
 
-`deck lint` is that check: a command with an exit code and a fix for each finding, so an agent can run it, fix what it reports and run it again without a person.
+`deck lint` is that check: a command with an exit code and a fix for each finding, so an agent can run it, fix what it reports and run it again without a person. [Before and after a fix](/review/lint/#before-and-after-a-fix) shows one slide of nine wrapped bullets that compiles but runs off the canvas, its four lint errors, and the clean run once it is cut to three.
 
 ## Three phases, on the rendered slide
 
