@@ -2,7 +2,6 @@ import type { BrandError } from '@deckster/brand';
 import type { DeckBuildError } from '@deckster/vite-plugin';
 import type { FileSystem, Scope } from 'effect';
 
-import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
 import { Effect } from 'effect';
 
 import type { DeckBrowser } from '#browser/deck-browser.ts';
@@ -58,11 +57,9 @@ export type Command = {
 
   /**
    * The full `--help` text, or a loader for a text that needs heavy modules to write (a list of
-   * rules, a default another package owns), so listing commands loads none of them. A loader gets
-   * whether to word the text for a published copy of the CLI or for the repository checkout, for
-   * the commands whose help differs between the two.
+   * rules, a default another package owns), so listing commands loads none of them.
    */
-  help: string | ((installed: boolean) => Promise<string>);
+  help: string | (() => Promise<string>);
 
   /**
    * Runs the command on the arguments after its name and succeeds with the process exit code.
@@ -157,14 +154,10 @@ const printJsonFailure = Effect.fn('deck.printJsonFailure')(function* (
  * own.
  *
  * @param command - The command.
- * @param installed - Whether to word the text for a published copy of the CLI (`true`) or for the
- *   repository checkout (`false`); defaults to the running copy, so `deck <name> --help` prints
- *   what fits where it runs.
  * @throws CliError in the error channel when the module that holds the text does not load.
  */
 export const commandHelp = Effect.fn('commandHelp')(function* (
   command: Command,
-  installed: boolean = FRAMEWORK_INSTALLED,
 ): Effect.fn.Return<string, CliError> {
   const { help } = command;
   if (typeof help === 'string') {
@@ -172,7 +165,7 @@ export const commandHelp = Effect.fn('commandHelp')(function* (
   }
 
   return yield* Effect.tryPromise({
-    try: () => help(installed),
+    try: help,
     catch: (cause) =>
       cliError(
         `Could not load the help of "${command.name}": ` +

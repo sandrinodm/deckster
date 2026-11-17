@@ -4,8 +4,8 @@ import { Effect } from 'effect';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { readDocsDeck } from '#docs-data/docs-slides.ts';
-import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
+import { readDocsDeck } from '#data/deck-slides.ts';
+import { scratchWorkspace } from '#scratch-workspace.fixture.ts';
 
 /**
  * The scratch deck's slides, by file name: each title source the build knows.

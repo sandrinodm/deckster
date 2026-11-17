@@ -92,20 +92,22 @@ export const transformMdxSlide = Effect.fn('transformMdxSlide')(function* (
 });
 
 /**
- * The title the build gives a slide, read the way `transformMdxSlide` and `transformTsxSlide` read
- * it: the validated frontmatter `title`, else the first heading outside `<Notes>` (an MDX heading
- * after the deck's MDX extensions ran, so with their typographic quotes), else the slide id.
+ * The `slideMeta` the build gives a slide, read the way `transformMdxSlide` and `transformTsxSlide`
+ * read it: the validated frontmatter with defaults applied (so `frontmatter.layout` is the layout
+ * the slide renders with), the title (the frontmatter `title`, else the first heading outside
+ * `<Notes>`, an MDX heading after the deck's MDX extensions ran, else the slide id), the notes and
+ * the filled slots.
  *
  * @param slide - The slide file, its source and its kind.
- * @returns The title.
+ * @returns The slide's `slideMeta`.
  * @throws DeckBuildError in the error channel for anything that fails the slide's build.
  */
-export const readSlideTitle = Effect.fn('readSlideTitle')(function* (
+export const readSlideMeta = Effect.fn('readSlideMeta')(function* (
   slide: SlideSource & { kind: SlideKind },
-): Effect.fn.Return<string, DeckBuildError> {
+): Effect.fn.Return<SlideMeta, DeckBuildError> {
   const { meta } =
     slide.kind === 'mdx' ? yield* compileMdxSlide(slide, false) : yield* readTsxSlide(slide);
-  return meta.title;
+  return meta;
 });
 
 /**

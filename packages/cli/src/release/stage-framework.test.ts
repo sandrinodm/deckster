@@ -29,11 +29,6 @@ describe('isShipped', () => {
     expect(isShipped('testing/deck.tsx')).toBe(false);
   });
 
-  it('leaves out the docs site export, which only the repository runs', () => {
-    expect(isShipped('docs-data/docs-data.ts')).toBe(false);
-    expect(isShipped('docs-data/docs-brands.ts')).toBe(false);
-  });
-
   it('ships sources and their assets', () => {
     expect(isShipped('a/b.ts')).toBe(true);
     expect(isShipped('a/b.tsx')).toBe(true);
@@ -73,17 +68,9 @@ describe('stageFramework', () => {
         JSON.stringify({
           name: '@deckster/cli',
           version: '1.2.3',
-          type: 'module',
-          exports: {
-            '.': './src/index.ts',
-            './docs-data': './src/docs-data/docs-data.ts',
-            './package.json': './package.json',
-          },
           dependencies: { zeta: 'catalog:', alpha: 'catalog:' },
         }),
       );
-      yield* write(root, 'packages/cli/src/index.ts', 'export {};\n');
-      yield* write(root, 'packages/cli/src/docs-data/docs-data.ts', 'export {};\n');
       const cliDir = path.join(root, 'packages/cli');
 
       const staged = yield* stageFramework({ repoRoot: root, cliDir });
@@ -106,13 +93,6 @@ describe('stageFramework', () => {
         type: 'module',
         imports: { '#*': './src/*' },
         exports: { '.': './src/index.ts' },
-      });
-      expect(yield* fs.exists(path.join(framework, 'packages/cli/src/index.ts'))).toBe(true);
-      expect(yield* fs.exists(path.join(framework, 'packages/cli/src/docs-data'))).toBe(false);
-      expect(JSON.parse(yield* read('packages/cli/package.json'))).toEqual({
-        name: '@deckster/cli',
-        type: 'module',
-        exports: { '.': './src/index.ts', './package.json': './package.json' },
       });
       expect(JSON.parse(yield* read('framework.json'))).toEqual({
         version: '1.2.3',

@@ -25,5 +25,5 @@ export { deckViteConfig } from '#vite-config.ts';
 export { APPS_DIR, APP_ENTRY_FILE, discoverApps, type AppLocation } from '#apps/discover-apps.ts';
 export type { MdxWarning } from '#slides/compile-mdx.ts';
 export { validateFrontmatter, type ValidFrontmatter } from '#slides/frontmatter.ts';
-export { slideTitleReader, type SlideTitleReader } from '#slides/slide-titles.ts';
+export { slideMetaReader, type SlideMetaReader } from '#slides/slide-meta.ts';
 export { refuseStylesheetCode } from '#deck-css-guard.ts';

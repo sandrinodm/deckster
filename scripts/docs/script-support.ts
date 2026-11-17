@@ -1,27 +1,35 @@
-import { assertDocsBrands } from '@deckster/cli/docs-brands';
 import { spawn } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { DOCS_BRANDS, DOCS_DECKS } from './docs-allowlist.ts';
+import { DOCS_BRANDS, DOCS_DECKS } from '#allowlist.ts';
+import { assertDocsBrands } from '#check-brands.ts';
 
 /**
- * The workspace root: the folder above `scripts/`.
+ * The workspace root: the folder above `scripts/docs/`.
  */
-export const WORKSPACE_ROOT = path.resolve(import.meta.dirname, '..');
+export const WORKSPACE_ROOT = path.resolve(import.meta.dirname, '..', '..');
 
 /**
  * The environment every `deck` the scripts start runs with: the inherited one, with `DECK_ROOT` set
  * to this workspace, so a `DECK_ROOT` exported in the shell cannot point the CLI at another
  * workspace's decks. A scratch workspace overrides it on purpose.
  */
-export const DECK_ENV: NodeJS.ProcessEnv = { ...process.env, DECK_ROOT: WORKSPACE_ROOT };
+export const DECK_ENV: NodeJS.ProcessEnv = {
+  ...process.env,
+
+  /**
+   * The workspace every `deck` reads its decks and brands from.
+   */
+  DECK_ROOT: WORKSPACE_ROOT,
+};
 
 /**
- * The workspace's own `deck` binary, run directly so no package manager sits in between.
+ * The `deck` binary of this package's `@deckster/cli` dependency (the workspace's CLI), run
+ * directly so no package manager sits in between.
  */
-export const DECK_BIN = path.join(WORKSPACE_ROOT, 'node_modules', '.bin', 'deck');
+export const DECK_BIN = path.join(import.meta.dirname, 'node_modules', '.bin', 'deck');
 
 /**
  * Milliseconds in a second.
@@ -106,7 +114,7 @@ export function readScriptArgs(script: string, flags: readonly string[]): Script
   const { values } = parseArgs({ options: { ...options, out: { type: 'string' } } });
   const usageFlags = flags.map((flag) => ` [--${flag}]`).join('');
   if (typeof values.out !== 'string' || values.out === '') {
-    throw new Error(`Usage: node scripts/${script} --out <dir>${usageFlags}`);
+    throw new Error(`Usage: node scripts/docs/${script} --out <dir>${usageFlags}`);
   }
 
   const out = resolveThroughLinks(path.resolve(process.cwd(), values.out));

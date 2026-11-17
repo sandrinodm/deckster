@@ -4,8 +4,8 @@ import { Effect } from 'effect';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { assertDocsBrands, checkDocsBrands } from '#docs-data/docs-brands.ts';
-import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
+import { assertDocsBrands, checkDocsBrands } from '#check-brands.ts';
+import { scratchWorkspace } from '#scratch-workspace.fixture.ts';
 
 const root = scratchWorkspace('docs-brands-');
 
@@ -56,7 +56,7 @@ describe('checkDocsBrands', () => {
       );
       expect(error.message).toContain('decks/dark renders with the brand "nocturne"');
       expect(error.message).toContain('decks/plain renders with the brand "default"');
-      expect(error.message).toContain('DOCS_BRANDS in scripts/docs-allowlist.ts');
+      expect(error.message).toContain('DOCS_BRANDS in scripts/docs/allowlist.ts');
     }).pipe(Effect.provide(NodeServices.layer)),
   );
 });

@@ -1,14 +1,14 @@
 import { cp, mkdir, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { DOCS_DECKS } from './docs-allowlist.ts';
+import { DOCS_DECKS } from '#allowlist.ts';
 import {
   elapsed,
   readOutDir,
   requireDocsBrands,
   runDeck,
   WORKSPACE_ROOT,
-} from './docs-script-support.ts';
+} from '#script-support.ts';
 
 /**
  * A root-absolute `src` or `href` in a built page, which would break when the deck is served under
@@ -29,7 +29,7 @@ await main();
  */
 async function main(): Promise<void> {
   const start = performance.now();
-  const out = readOutDir('docs-decks.ts');
+  const out = readOutDir('decks.ts');
   await requireEmptyFolder(out);
   await requireDocsBrands();
   await mkdir(out, { recursive: true });

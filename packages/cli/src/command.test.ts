@@ -1,4 +1,3 @@
-import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
 import { describe, expect, it } from '@effect/vitest';
 import { Console, Effect } from 'effect';
 
@@ -99,19 +98,6 @@ describe('commandHelp', () => {
     Effect.gen(function* () {
       expect(yield* commandHelp(commandWith(() => Promise.resolve('Loaded help')))).toBe(
         'Loaded help',
-      );
-    }),
-  );
-
-  it.effect('passes the loader the wording asked for, else the running copy', () =>
-    Effect.gen(function* () {
-      const probe = commandWith((installed) =>
-        Promise.resolve(installed ? 'Installed help' : 'Workspace help'),
-      );
-      expect(yield* commandHelp(probe, true)).toBe('Installed help');
-      expect(yield* commandHelp(probe, false)).toBe('Workspace help');
-      expect(yield* commandHelp(probe)).toBe(
-        FRAMEWORK_INSTALLED ? 'Installed help' : 'Workspace help',
       );
     }),
   );

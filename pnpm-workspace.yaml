@@ -2,6 +2,7 @@ packages:
   - packages/*
   - brands/*
   - decks/*
+  - scripts/docs
 
 catalogMode: prefer
 engineStrict: true

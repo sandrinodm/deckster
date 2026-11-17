@@ -28,9 +28,9 @@ import {
   type Page,
 } from 'playwright';
 
-import type { DocsBrand } from './docs-shots.manifest.ts';
+import type { DocsBrand } from '#shots.manifest.ts';
 
-import { DOCS_DECKS } from './docs-allowlist.ts';
+import { DOCS_DECKS } from '#allowlist.ts';
 import {
   DECK_BIN,
   DECK_ENV,
@@ -40,7 +40,7 @@ import {
   runDeck,
   WORKSPACE_ROOT,
   type DeckRun,
-} from './docs-script-support.ts';
+} from '#script-support.ts';
 
 /**
  * The deck the product UI is shown on.
@@ -50,7 +50,17 @@ const DECK = 'showcase';
 /**
  * The browser window size of every UI shot, in CSS pixels.
  */
-const VIEWPORT = { width: 1440, height: 900 } as const;
+const VIEWPORT = {
+  /**
+   * The width.
+   */
+  width: 1440,
+
+  /**
+   * The height.
+   */
+  height: 900,
+} as const;
 
 /**
  * The time every page and Electron window reads from `Date`, so the presenter's clock shows the
@@ -123,7 +133,17 @@ const COMMENTS_ENDPOINT = '/__deck/comments';
  * The exit code for each signal the script handles: 128 plus the signal number, as a shell reports
  * it.
  */
-const SIGNAL_EXIT_CODES = { SIGINT: 130, SIGTERM: 143 } as const;
+const SIGNAL_EXIT_CODES = {
+  /**
+   * Ctrl-C: 128 + 2.
+   */
+  SIGINT: 130,
+
+  /**
+   * A termination request: 128 + 15.
+   */
+  SIGTERM: 143,
+} as const;
 
 /**
  * How long the dev server may take to answer its first request.
@@ -154,7 +174,17 @@ const SETTLE_MS = 600;
  * Where the pointer goes to reveal the tool cluster: inside the bottom-left zone the presenter
  * watches (280 by 140 pixels).
  */
-const TOOL_ZONE_POINT = { x: 120, y: VIEWPORT.height - 60 } as const;
+const TOOL_ZONE_POINT = {
+  /**
+   * Pixels from the left edge.
+   */
+  x: 120,
+
+  /**
+   * Pixels from the top edge: 60 above the bottom.
+   */
+  y: VIEWPORT.height - 60,
+} as const;
 
 /**
  * The device pixel ratio of the tool cluster close-up, so its icons stay sharp at docs size.
@@ -165,12 +195,42 @@ const DETAIL_SCALE = 2;
  * The part of the window the tool cluster close-up keeps, in CSS pixels: the bottom-left corner,
  * where the cluster sits. At `DETAIL_SCALE` the picture is 1120x400.
  */
-const TOOLS_DETAIL_CLIP = { x: 0, y: VIEWPORT.height - 200, width: 560, height: 200 } as const;
+const TOOLS_DETAIL_CLIP = {
+  /**
+   * The left edge.
+   */
+  x: 0,
+
+  /**
+   * The top edge: 200 above the bottom of the window.
+   */
+  y: VIEWPORT.height - 200,
+
+  /**
+   * The width.
+   */
+  width: 560,
+
+  /**
+   * The height.
+   */
+  height: 200,
+} as const;
 
 /**
  * Where the pointer rests when a shot should show no hover state: the top-right corner.
  */
-const NEUTRAL_POINT = { x: VIEWPORT.width - 4, y: 4 } as const;
+const NEUTRAL_POINT = {
+  /**
+   * Pixels from the left edge: 4 inside the right edge.
+   */
+  x: VIEWPORT.width - 4,
+
+  /**
+   * Pixels from the top edge.
+   */
+  y: 4,
+} as const;
 
 /**
  * The deck the `deck diff` report is made for: small, so its three renders are quick.
@@ -206,7 +266,12 @@ const BASELINE_FILE_PATTERN = /^(\d+)-(.+)\.png$/;
  * check always passes, where the real provider's depends on the machine (installed, signed in,
  * version), and the shot sends no prompt.
  */
-const FAKE_AGENT_ENV = { DECK_TEST_FAKE_AGENT: '1' } as const;
+const FAKE_AGENT_ENV = {
+  /**
+   * Set, so `--agent fake` is accepted.
+   */
+  DECK_TEST_FAKE_AGENT: '1',
+} as const;
 
 /**
  * The deck the agent turn runs on, copied into a scratch workspace so the fake's edit never reaches
@@ -252,7 +317,17 @@ const HEADING_LINE = /^# .*$/m;
  * `packages/agent/src/runtime/status.tsx`), since the transcript the fake replays was recorded from
  * Claude Code.
  */
-const AGENT_LABELS = { fake: 'Fake agent', shown: 'Claude' } as const;
+const AGENT_LABELS = {
+  /**
+   * What the panel shows for the fake provider.
+   */
+  fake: 'Fake agent',
+
+  /**
+   * What the shot shows instead.
+   */
+  shown: 'Claude',
+} as const;
 
 /**
  * How long the fake turn, its lint check and the hot reload after it may take.
@@ -589,7 +664,7 @@ await main();
  */
 async function main(): Promise<void> {
   const start = performance.now();
-  const args = readScriptArgs('docs-ui-shots.ts', [STRICT_FLAG]);
+  const args = readScriptArgs('ui-shots.ts', [STRICT_FLAG]);
   const { out } = args;
   const strict = args.flags.has(STRICT_FLAG) || process.env[STRICT_ENV] === '1';
   await requireDocsBrands();
@@ -599,7 +674,20 @@ async function main(): Promise<void> {
   const { problems } = report;
   // The script cleans up on these signals itself, which needs the browser still open.
   const browser = await chromium.launch({ handleSIGINT: false, handleSIGTERM: false });
+
+  /**
+   * The run's clean-up (comments, shells, servers, browser, temporary folders), shared by the
+   * signal handler and the end of the run; safe to call more than once.
+   *
+   * @returns A promise that resolves once everything was tried.
+   */
   const cleanUp = () => cleanUpRun(browser, feedbackExisted, problems);
+
+  /**
+   * Cleans up on a signal, then exits with the signal's exit code.
+   *
+   * @param signal - The signal received.
+   */
   const onSignal = (signal: HandledSignal): void => {
     console.error(`${signal}: deleting the placed comment first. Press Ctrl-C again to quit now.`);
     void cleanUp().finally(() => {

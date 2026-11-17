@@ -44,7 +44,7 @@ jobs:
       contents: read
       actions: read
     env:
-      # The docs scripts (scripts/docs-*.ts) run from this checkout of main.
+      # The docs scripts (scripts/docs/) run from this checkout of main.
       DECKSTER_REPO: ${{ github.workspace }}
     steps:
       # Full history, so the check below can tell whether the commit is on main. After CI, the
@@ -125,10 +125,10 @@ jobs:
         run: npm run check:coverage
 
       # Generates the slide stills in src/assets/shots and the allowlisted decks in public/decks
-      # (scripts/docs-allowlist.ts) from this checkout of main. Not src/data: the reference tables
+      # (scripts/docs/allowlist.ts) from this checkout of main. Not src/data: the reference tables
       # come from docs-site as committed, so they keep describing the release the pages document
       # instead of whatever main is today. Under Xvfb, so Electron can start. DECKSTER_SHOTS_STRICT
-      # makes scripts/docs-ui-shots.ts fail on a skipped shot (it names the shot and what it
+      # makes scripts/docs/ui-shots.ts fail on a skipped shot (it names the shot and what it
       # lacked), which fails the sync, instead of publishing pages whose screenshots are missing.
       - name: Sync stills and decks from main
         working-directory: docs-site

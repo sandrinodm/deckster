@@ -1,4 +1,4 @@
-import type { DOCS_BRANDS, DOCS_DECKS } from './docs-allowlist.ts';
+import type { DOCS_BRANDS, DOCS_DECKS } from '#allowlist.ts';
 
 /**
  * A deck the docs site publishes.
@@ -32,7 +32,7 @@ export type ManifestSlide = {
 
 /**
  * The slides shot one PNG per step, for the filmstrips on the steps, charts, diagrams and code
- * pages. Each must have at least two steps; `docs-shots.ts` fails when one has fewer.
+ * pages. Each must have at least two steps; `shots.ts` fails when one has fewer.
  */
 export const STEP_SLIDES: readonly ManifestSlide[] = [
   { deck: 'showcase', slide: 'review-rounds', shows: 'A LineChart revealing its series' },

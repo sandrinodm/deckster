@@ -60,20 +60,20 @@ workflow:
    carries its writing brief, and `npm run check:coverage`, which fails when a layout, component,
    chart, diagram component or command in the committed `src/data` has no reference entry.
 5. Runs `npm run sync -- --shots --decks` in `docs-site/` under `xvfb-run`, with `DECKSTER_REPO`
-   set to the checkout of `main` and `DECKSTER_SHOTS_STRICT=1`. It runs `scripts/docs-shots.ts`,
-   `scripts/docs-ui-shots.ts` and `scripts/docs-decks.ts` and installs their output into the site:
+   set to the checkout of `main` and `DECKSTER_SHOTS_STRICT=1`. It runs `scripts/docs/shots.ts`,
+   `scripts/docs/ui-shots.ts` and `scripts/docs/decks.ts` and installs their output into the site:
    the slide stills, the product screenshots and the built decks. It leaves `src/data` alone, so
    the reference tables keep describing the documented release however far `main` has moved.
-   - Only the decks and brands listed in `scripts/docs-allowlist.ts` are published; any other
+   - Only the decks and brands listed in `scripts/docs/allowlist.ts` are published; any other
      folder under `decks/` or `brands/` stays private. Each script refuses to start when an
      allowlisted deck renders with a brand that is not allowlisted.
-   - `DECKSTER_SHOTS_STRICT=1` (the same as `--strict`) makes `docs-ui-shots.ts` exit 1 when it
+   - `DECKSTER_SHOTS_STRICT=1` (the same as `--strict`) makes `ui-shots.ts` exit 1 when it
      skips a shot, naming the shot and what it lacked (Electron, a display, Docker), so the step
      fails instead of publishing pages with missing screenshots. Without it, a skipped shot is
      only reported.
    - The screenshots read a fixed date and time, the `en-US` locale and the UTC time zone, so the
      same commit gives the same pictures on any machine.
-   - `docs-decks.ts` needs an empty or new `--out` (the sync gives it a fresh temporary folder),
+   - `decks.ts` needs an empty or new `--out` (the sync gives it a fresh temporary folder),
      because the site publishes that folder whole.
 6. Exports each published deck with `deck export`, which writes `<deck>.pdf`, `<deck>.pptx` and the
    PPTX fonts beside the deck's `index.html`. A `<Download file="<deck>.pdf">` on a slide links to
@@ -100,7 +100,7 @@ The workflow is disabled by default: it runs only from the Actions tab (`workflo
 use it:
 
 1. Push `docs-site` once its pages pass `npm run check:briefs` and `npm run check:coverage`, and
-   make sure the `main` commit to deploy has the `scripts/docs-*.ts` and a successful CI run from a
+   make sure the `main` commit to deploy has the `scripts/docs/` package and a successful CI run from a
    push.
 2. In the repository, open Settings, Pages, and set Source to GitHub Actions.
 3. Run the workflow once from the Actions tab.

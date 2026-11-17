@@ -2,9 +2,9 @@ import { copyFile, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { DOCS_BRANDS, DOCS_DECKS } from './docs-allowlist.ts';
-import { elapsed, readOutDir, requireDocsBrands, runDeck } from './docs-script-support.ts';
-import { BRAND_GRID_SLIDES, STEP_SLIDES } from './docs-shots.manifest.ts';
+import { DOCS_BRANDS, DOCS_DECKS } from '#allowlist.ts';
+import { elapsed, readOutDir, requireDocsBrands, runDeck } from '#script-support.ts';
+import { BRAND_GRID_SLIDES, STEP_SLIDES } from '#shots.manifest.ts';
 
 /**
  * How many `deck shot` runs go at once; each starts its own Chromium.
@@ -206,7 +206,7 @@ await main();
  */
 async function main(): Promise<void> {
   const start = performance.now();
-  const out = readOutDir('docs-shots.ts');
+  const out = readOutDir('shots.ts');
   await requireDocsBrands();
   await clearOwnedFolders(out);
   const results = await runPool(plannedJobs(), CONCURRENT_RUNS, (job) => runJob(out, job));
@@ -418,6 +418,11 @@ async function runPool<T, R>(
 ): Promise<R[]> {
   const results: R[] = [];
   let next = 0;
+  /**
+   * Takes the next item until none is left.
+   *
+   * @returns A promise that resolves when the items run out.
+   */
   const worker = async (): Promise<void> => {
     while (next < items.length) {
       const index = next;

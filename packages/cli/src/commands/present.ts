@@ -17,8 +17,7 @@ export const presentCommand: Command = {
   /**
    * The text `deck present --help` prints.
    */
-  help: (installed) =>
-    import('#commands/present-help.ts').then((module) => module.presentHelp(installed)),
+  help: () => import('#commands/present-help.ts').then((module) => module.HELP),
 
   /**
    * Loads the command's body on first use and runs it.

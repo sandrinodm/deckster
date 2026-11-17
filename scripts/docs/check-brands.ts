@@ -2,12 +2,12 @@ import { deckBrandName, findDeck, loadDeck, type DeckBuildError } from '@deckste
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { Effect, FileSystem } from 'effect';
 
-import { cliError, type CliError } from '#cli-error.ts';
+import { docsError, type DocsError } from '#docs-error.ts';
 
 /**
  * Where the docs allowlist lives in the repository, for messages.
  */
-const ALLOWLIST_FILE = 'scripts/docs-allowlist.ts';
+const ALLOWLIST_FILE = 'scripts/docs/allowlist.ts';
 
 /**
  * The decks and brands the docs site publishes.
@@ -35,12 +35,12 @@ export type DocsAllowlist = {
  * that brand's look and assets on the public site.
  *
  * @param allowlist - The workspace and the published decks and brands.
- * @throws CliError in the error channel naming each deck and its brand when any brand is not
+ * @throws DocsError in the error channel naming each deck and its brand when any brand is not
  *   allowlisted; DeckBuildError when a deck is missing or its config is invalid.
  */
 export const checkDocsBrands = Effect.fn('checkDocsBrands')(function* (
   allowlist: DocsAllowlist,
-): Effect.fn.Return<void, CliError | DeckBuildError, FileSystem.FileSystem> {
+): Effect.fn.Return<void, DocsError | DeckBuildError, FileSystem.FileSystem> {
   const published = new Set(allowlist.brands);
   const outside: string[] = [];
   for (const name of allowlist.decks) {
@@ -52,7 +52,7 @@ export const checkDocsBrands = Effect.fn('checkDocsBrands')(function* (
   }
 
   if (outside.length > 0) {
-    return yield* cliError(
+    return yield* docsError(
       `${outside.join('; ')}, which DOCS_BRANDS in ${ALLOWLIST_FILE} does not publish. ` +
         'Add the brand to DOCS_BRANDS, or set an allowlisted brand in the deck config.',
     );

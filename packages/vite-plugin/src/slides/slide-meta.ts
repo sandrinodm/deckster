@@ -1,3 +1,5 @@
+import type { SlideMeta } from '@deckster/engine/manifest';
+
 import { Effect, type FileSystem } from 'effect';
 
 import type { DeckBuildError } from '#errors.ts';
@@ -12,22 +14,23 @@ import {
   loadMdxExtensions,
   mdxContextOf,
 } from '#slides/load-mdx-extensions.ts';
-import { readSlideTitle } from '#slides/transform-slide.ts';
+import { readSlideMeta } from '#slides/transform-slide.ts';
 
 /**
- * Reads the title the build gives one slide of a deck from the slide's source.
+ * Reads the `slideMeta` the build gives one slide of a deck from the slide's source.
  */
-export type SlideTitleReader = (
+export type SlideMetaReader = (
   slide: LoadedSlide,
   code: string,
-) => Effect.Effect<string, DeckBuildError>;
+) => Effect.Effect<SlideMeta, DeckBuildError>;
 
 /**
  * Prepares what the build compiles a deck's slides with (the default layout catalogs, the deck's
- * brand and its MDX extensions) and returns a reader that gives each slide the title `deck build`
- * writes into its `slideMeta`: the frontmatter title, else the first heading outside `<Notes>`
- * after the MDX extensions ran (typographic quotes included), else the slide id. It runs the
- * build's own slide checks, so a slide the build would refuse fails here too.
+ * brand and its MDX extensions) and returns a reader that gives each slide the `slideMeta` `deck
+ * build` writes: the validated frontmatter with defaults applied (its `layout` is the one the slide
+ * renders with), the title (the frontmatter title, else the first heading outside `<Notes>` after
+ * the MDX extensions ran, typographic quotes included, else the slide id), the notes and the filled
+ * slots. It runs the build's own slide checks, so a slide the build would refuse fails here too.
  *
  * @param workspaceRoot - The absolute workspace root.
  * @param deck - The loaded deck.
@@ -35,17 +38,17 @@ export type SlideTitleReader = (
  * @throws DeckBuildError in the error channel when the layout catalogs, the deck's brand or the MDX
  *   extensions do not load; the reader fails with one for a slide the build would refuse.
  */
-export const slideTitleReader = Effect.fn('slideTitleReader')(function* (
+export const slideMetaReader = Effect.fn('slideMetaReader')(function* (
   workspaceRoot: string,
   deck: LoadedDeck,
-): Effect.fn.Return<SlideTitleReader, DeckBuildError, FileSystem.FileSystem> {
+): Effect.fn.Return<SlideMetaReader, DeckBuildError, FileSystem.FileSystem> {
   const layouts = yield* loadLayoutCatalog();
   const { tokens } = yield* loadDeckBrand(workspaceRoot, deckBrandName(deck.config));
   const context = mdxContextOf(workspaceRoot, deck.location.dir, tokens);
   const mdx = yield* loadMdxExtensions(DEFAULT_MDX_EXTENSIONS, context);
   const brand = { name: tokens.name, surfaces: Object.keys(tokens.surfaces) };
   return (slide, code) =>
-    readSlideTitle({
+    readSlideMeta({
       id: slide.id,
       kind: slide.kind,
       file: slide.file,

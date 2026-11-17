@@ -1,7 +1,7 @@
 import { DECK_CONFIG_HINTS } from '@deckster/engine/config';
 import { describe, expect, it } from 'vite-plus/test';
 
-import { brandJsonSchema, deckConfigJsonSchema } from '#docs-data/docs-schemas.ts';
+import { brandJsonSchema, deckConfigJsonSchema } from '#data/json-schemas.ts';
 
 /**
  * A JSON Schema object node, as far as these tests read it.

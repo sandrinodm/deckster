@@ -33,9 +33,7 @@
     "#*": "./src/*"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./docs-brands": "./src/docs-data/docs-brands.ts",
-    "./docs-data": "./src/docs-data/docs-data.ts"
+    ".": "./src/index.ts"
   },
   "publishConfig": {
     "bin": {

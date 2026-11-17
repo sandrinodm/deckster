@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vite-plus/test';
 import { DeckBuildError } from '#errors.ts';
 import { TEST_CATALOG } from '#layouts/test-catalog.fixture.ts';
 import {
-  readSlideTitle,
+  readSlideMeta,
   transformMdxSlide,
   transformTsxSlide,
   type SlideSource,
@@ -382,8 +382,8 @@ describe('GitHub-flavored markdown in MDX slides', () => {
   });
 });
 
-describe('readSlideTitle', () => {
-  it('gives each slide the title its transform writes into slideMeta', async () => {
+describe('readSlideMeta', () => {
+  it('gives each slide the slideMeta its transform writes', async () => {
     const cases = [
       { id: 'framed', kind: 'mdx', code: '---\ntitle: From the frontmatter\n---\n# Not this' },
       {
@@ -394,14 +394,26 @@ describe('readSlideTitle', () => {
       { id: 'bare', kind: 'mdx', code: 'Only text' },
       { id: 'live', kind: 'tsx', code: 'export default () => <h1>A TSX heading</h1>;' },
       { id: 'blank', kind: 'tsx', code: 'export default () => <p>no heading</p>;' },
+      {
+        id: 'templated',
+        kind: 'tsx',
+        code: 'export const frontmatter = { layout: `default` };\nexport default () => null;',
+      },
     ] as const;
     for (const { id, kind, code } of cases) {
       const source = slide(id, kind, code);
       const transformed = await Effect.runPromise(
         kind === 'mdx' ? transformMdxSlide(source, false) : transformTsxSlide(source),
       );
-      const title = await Effect.runPromise(readSlideTitle({ ...source, kind }));
-      expect(title, id).toBe((metaOf(transformed) as { title: string }).title);
+      const meta = await Effect.runPromise(readSlideMeta({ ...source, kind }));
+      expect(meta, id).toEqual(metaOf(transformed));
     }
+  });
+
+  it('gives a slide that names no layout the default layout', async () => {
+    const meta = await Effect.runPromise(
+      readSlideMeta({ ...slide('bare', 'mdx', 'Only text'), kind: 'mdx' }),
+    );
+    expect(meta.frontmatter.layout).toBe('default');
   });
 });

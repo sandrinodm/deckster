@@ -3,7 +3,7 @@ import type { PlatformError } from 'effect/PlatformError';
 import { FRAMEWORK_MANIFEST, type FrameworkManifest } from '@deckster/brand/node';
 import * as NodeRuntime from '@effect/platform-node/NodeRuntime';
 import * as NodeServices from '@effect/platform-node/NodeServices';
-import { Console, Effect, FileSystem, Predicate, Schema } from 'effect';
+import { Console, Effect, FileSystem, Schema } from 'effect';
 import path from 'node:path';
 
 import { cliError, type CliError } from '#cli-error.ts';
@@ -25,10 +25,10 @@ const SHIPPED_FOLDERS = ['src', 'assets', 'docker'];
 const DEFAULT_BRAND_FOLDERS = ['logos'];
 
 /**
- * The path segments (folders) whose files never ship: the release tooling itself, the export the
- * repository's docs site is generated from, test helpers and recorded test output.
+ * The path segments (folders) whose files never ship: the release tooling itself, test helpers and
+ * recorded test output.
  */
-const EXCLUDED_FOLDERS = new Set(['release', 'docs-data', 'testing', '__snapshots__']);
+const EXCLUDED_FOLDERS = new Set(['release', 'testing', '__snapshots__']);
 
 /**
  * The files that never ship: tests, test fixtures and their stylesheets, and recorded snapshots.
@@ -155,7 +155,7 @@ const stageFolder = Effect.fn('stageFolder')(function* (
 
   const manifestFile = path.join(source, 'package.json');
   const manifest = yield* readJson(manifestFile, JsonObject);
-  yield* writeJson(path.join(target, 'package.json'), pick(manifest, folders));
+  yield* writeJson(path.join(target, 'package.json'), pick(manifest));
 });
 
 /**
@@ -180,39 +180,14 @@ const copyShipped = Effect.fn('copyShipped')(function* (
 });
 
 /**
- * Keeps the fields of a package manifest that Node needs, without the `exports` entries whose file
- * does not ship.
+ * Keeps the fields of a package manifest that Node needs.
  *
  * @param manifest - The parsed `package.json`.
- * @param folders - The folders of the package that ship.
  */
-function pick(
-  manifest: Readonly<Record<string, unknown>>,
-  folders: readonly string[],
-): Record<string, unknown> {
-  const kept: Record<string, unknown> = Object.fromEntries(
+function pick(manifest: Readonly<Record<string, unknown>>): Record<string, unknown> {
+  return Object.fromEntries(
     KEPT_MANIFEST_FIELDS.flatMap((field) => (field in manifest ? [[field, manifest[field]]] : [])),
   );
-  if (Predicate.isObject(kept.exports)) {
-    const entries = Object.entries(kept.exports);
-    kept.exports = Object.fromEntries(
-      entries.filter(([, target]) => typeof target !== 'string' || targetShips(target, folders)),
-    );
-  }
-
-  return kept;
-}
-
-/**
- * Whether the file an `exports` target names ships: a target outside the shipped folders (such as
- * `./package.json`) always does, one inside them when `isShipped` keeps it.
- *
- * @param target - The target as written, such as `./src/index.ts`.
- * @param folders - The folders of the package that ship.
- */
-function targetShips(target: string, folders: readonly string[]): boolean {
-  const [folder = '', ...rest] = path.normalize(target).split(path.sep);
-  return !folders.includes(folder) || isShipped(rest.join(path.sep));
 }
 
 /**
