@@ -1,9 +1,13 @@
 import {
   DEFAULT_BRAND,
+  DEFAULT_SURFACE,
   describeProblem,
+  STANDARD_CARDS,
   TEXT_TONES,
   type BrandProblem,
   type BrandTokens,
+  type CardSurfaceTokens,
+  type CardTokens,
   type SurfaceTokens,
 } from '@deckster/brand';
 import { brandTokensJson, loadBrand } from '@deckster/brand/node';
@@ -179,6 +183,7 @@ function summarize(tokens: BrandTokens, file: string, warnings: readonly BrandPr
           .map(([role, color]) => `${role} ${color}`)
           .join(', ')}${smallTextNote(surface)}`,
     ),
+    ...diagramLines(tokens),
   ];
   if (warnings.length > 0) {
     lines.push(
@@ -202,4 +207,55 @@ function smallTextNote(surface: SurfaceTokens): string {
   return moved.length === 0
     ? ''
     : `; small text: ${moved.map((tone) => `${tone} ${surface.text[tone]}`).join(', ')}`;
+}
+
+/**
+ * The diagram look for the summary: edges, groups, labels and the kinds the brand maps to a card,
+ * then each card with its colors on the default surface and its geometry. The brand's own cards are
+ * marked; the standard ones exist in every brand.
+ *
+ * @param tokens - The resolved tokens.
+ */
+function diagramLines(tokens: BrandTokens): string[] {
+  const { edges, groups, labels, kinds, cards } = tokens.diagram;
+  const kindLine = Object.entries(kinds)
+    .map(([kind, card]) => `${kind} ${card}`)
+    .join(', ');
+  const outline = groups.dashed ? `${groups.stroke}px dashed` : `${groups.stroke}px`;
+  const surface = tokens.surfaces[DEFAULT_SURFACE] ?? Object.values(tokens.surfaces)[0];
+  return [
+    `Diagrams: edges ${edges.stroke}px, ${edges.corners} corners, ${edges.arrow} arrowheads; ` +
+      `groups ${groups.stroke === 0 ? 'no outline' : outline}, radius ${groups.radius}px; ` +
+      `${labels.style} edge labels${labels.type === 'label' ? ' in the label step' : ''}` +
+      (kindLine === '' ? '' : `; kinds: ${kindLine}`),
+    `Cards (colors on the ${surface?.name ?? DEFAULT_SURFACE} surface):`,
+    ...Object.entries(cards).map(([name, card]) => {
+      const own = (STANDARD_CARDS as readonly string[]).includes(name) ? '' : " (the brand's own)";
+      return `  ${name}${own}: ${cardSummary(card, surface?.diagramCards[name])}`;
+    }),
+  ];
+}
+
+/**
+ * One card for the summary: its fill, outline, corner radius, shape, shadow, icon, accent stripe
+ * and title type.
+ *
+ * @param card - The card's geometry and title type.
+ * @param colors - Its colors on the surface shown, if the surface has it.
+ */
+function cardSummary(card: CardTokens, colors: CardSurfaceTokens | undefined): string {
+  const { title, accent } = card;
+  const fill = colors?.fill === null ? 'no fill' : `fill ${colors?.fill ?? '?'}`;
+  const border =
+    colors?.border === null ? 'no border' : `border ${colors?.border ?? '?'} ${card.stroke}px`;
+  const parts = [
+    ...(colors === undefined ? [] : [fill, border]),
+    `radius ${card.radius}px`,
+    ...(card.shape === 'kind' ? [] : [`${card.shape} shape`]),
+    ...(card.shadow === 'none' ? [] : [`${card.shadow} shadow`]),
+    `${card.icon} icon`,
+    ...(accent.side === 'none' ? [] : [`${accent.side} accent ${accent.width}px`]),
+    `title ${title.family} ${title.weight}${title.case === 'upper' ? ' upper' : ''}`,
+  ];
+  return parts.join(', ');
 }

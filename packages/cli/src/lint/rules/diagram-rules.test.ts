@@ -6,7 +6,9 @@ import { Effect } from 'effect';
 
 import type { ElementSnapshot, SlideRule } from '#lint/types.ts';
 
+import { CARD_FIXTURE_BRAND, fixtureBrandTokens } from '#lint/fixture-brands.fixture.ts';
 import { diagramBadgeOverlapRule } from '#lint/rules/diagram-badge-overlap.ts';
+import { diagramCardMissingRule } from '#lint/rules/diagram-card-missing.ts';
 import { diagramEdgeOverlapRule } from '#lint/rules/diagram-edge-overlap.ts';
 import { diagramLabelOverlapRule } from '#lint/rules/diagram-label-overlap.ts';
 import { diagramLongWordRule } from '#lint/rules/diagram-long-word.ts';
@@ -227,5 +229,54 @@ layer(NodeServices.layer)('diagram lint rules', (it) => {
       ]);
       expect(messages(diagramLongWordRule, tokens, [root({})])).toEqual([]);
     }),
+  );
+
+  it.effect(
+    'diagram-card-missing reports each card name the brand lacks once per diagram, with a fix',
+    () =>
+      Effect.gen(function* () {
+        const tokens = yield* fixtureBrandTokens(CARD_FIXTURE_BRAND);
+        const node = (index: number, title: string, data: Record<string, string>) =>
+          part(index, { data: { 'diagram-part': 'node', 'node-title': title, ...data } });
+        const shape = part(1, {
+          data: { 'diagram-part': 'node-shape', card: 'default', 'card-missing': 'zebra-stripe' },
+        });
+        const orders = node(2, 'Orders', { card: 'default', 'card-missing': 'zebra-stripe' });
+        const ledger = node(3, 'Ledger', { card: 'tint', 'card-missing': 'zebra-stripe' });
+        const fine = node(4, 'Cache', { card: 'raised' });
+        // A stylesheet older than the brand marks a card the brand has: not reported.
+        const stale = node(5, 'Queue', { card: 'default', 'card-missing': 'dark' });
+        const band = part(6, { data: { 'diagram-part': 'layer', 'card-missing': 'tnt' } });
+        const bandTitle = part(7, { parent: 6, text: 'Edge' });
+        const violations = diagramCardMissingRule.check(
+          slideRuleInput(tokens, {
+            elements: [root({}), shape, orders, ledger, fine, stale, band, bandTitle],
+          }),
+        );
+        expect(violations.map((violation) => violation.message)).toEqual([
+          'The <Flow> "stack" asks for the card "zebra-stripe" on the node "Orders" and the node ' +
+            '"Ledger", which the card-fixture brand does not have, so they are drawn with the ' +
+            'next card in the order (the card for their kind, else "default").',
+          'The <Flow> "stack" asks for the card "tnt" on the layer "Edge", which the card-fixture ' +
+            "brand does not have, so it is drawn with the stack's own look.",
+        ]);
+        const cards = 'default, outline, solid, tint, raised, dark, paper';
+        expect(Object.keys(tokens.diagram.cards).join(', ')).toBe(cards);
+        expect(violations[0]?.fix).toBe(
+          'Change the `card` on the <Flow> tag, or on each of those parts, in ' +
+            `decks/test/slides/s.mdx to one of the card-fixture brand's cards: ${cards}. The ` +
+            'standard cards (default, outline, solid, tint, raised) exist in every brand, so a ' +
+            'deck that uses only those renders in any brand.',
+        );
+        expect(violations[1]?.fix).toBe(
+          'Did you mean "tint"? Change the `card` in decks/test/slides/s.mdx to one of the ' +
+            `card-fixture brand's cards: ${cards}. The standard cards (default, outline, solid, ` +
+            'tint, raised) exist in every brand, so a deck that uses only those renders in any ' +
+            'brand.',
+        );
+        expect(violations[0]?.selector).toBe(orders.selector);
+        expect(diagramCardMissingRule.severity).toBe('warning');
+        expect(messages(diagramCardMissingRule, tokens, [root({}), fine])).toEqual([]);
+      }),
   );
 });

@@ -26,8 +26,8 @@ export const run: Command['run'] = Effect.fn('deck.diagrams')(function* (argv) {
 });
 
 /**
- * The plain listing: components with their props, node kinds, edge options, animation, limits, TSX
- * and notes.
+ * The plain listing: components with their props, node kinds, edge options, cards, animation,
+ * limits, TSX and notes.
  */
 function formatCatalog(): string {
   const kinds = DIAGRAM_CATALOG.nodeKinds.map((entry) => {
@@ -51,6 +51,8 @@ function formatCatalog(): string {
     'Edge options',
     ...DIAGRAM_CATALOG.edgeOptions.map(formatEntry),
     '',
+    ...formatCards(),
+    '',
     'Animation',
     ...DIAGRAM_CATALOG.animation.map(formatEntry),
     '',
@@ -64,6 +66,21 @@ function formatCatalog(): string {
     '',
     ...DIAGRAM_CATALOG.notes.map((note) => `- ${note}`),
   ].join('\n');
+}
+
+/**
+ * The cards section of the plain listing: how a node picks its card, the standard cards and what a
+ * card leaves alone.
+ */
+function formatCards(): string[] {
+  const { cards } = DIAGRAM_CATALOG;
+  return [
+    'Cards (card="...")',
+    `  ${cards.resolution}`,
+    ...Object.entries(cards.standard).map(([name, look]) => `  ${name}: ${look}`),
+    `  ${cards.custom}`,
+    ...cards.rules.map((rule) => `  - ${rule}`),
+  ];
 }
 
 /**

@@ -101,10 +101,7 @@ const TAGS: Readonly<Record<string, string>> = {
  * @param diagram - A diagram.
  */
 export function diagramName(diagram: DiagramSnapshot): string {
-  const kind = diagram.root.data[DIAGRAM_ATTRIBUTE] ?? 'diagram';
-  const tag =
-    (Object.hasOwn(TAGS, kind) ? TAGS[kind] : undefined) ??
-    `<${kind[0]?.toUpperCase() ?? ''}${kind.slice(1)}>`;
+  const tag = diagramTag(diagram);
   const name = diagram.root.data['diagram-title'] ?? diagram.root.data['diagram-id'];
   return name === undefined ? `A ${tag}` : `The ${tag} "${name}"`;
 }
@@ -132,4 +129,17 @@ export function partName(part: ElementSnapshot): string {
   }
 
   return text === '' ? `\`${part.selector}\`` : `"${text}"`;
+}
+
+/**
+ * The tag a diagram is written with, such as `<Flow>`.
+ *
+ * @param diagram - A diagram.
+ */
+export function diagramTag(diagram: DiagramSnapshot): string {
+  const kind = diagram.root.data[DIAGRAM_ATTRIBUTE] ?? 'diagram';
+  return (
+    (Object.hasOwn(TAGS, kind) ? TAGS[kind] : undefined) ??
+    `<${kind[0]?.toUpperCase() ?? ''}${kind.slice(1)}>`
+  );
 }

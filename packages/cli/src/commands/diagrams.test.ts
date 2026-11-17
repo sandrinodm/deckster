@@ -84,3 +84,24 @@ it.effect('deck diagrams prints each entry with when to use it and an example', 
     expect(output).toContain('Props: id (string), from (string, required)');
   }),
 );
+
+it.effect('deck diagrams prints the cards: how a node picks one and the standard five', () =>
+  Effect.gen(function* () {
+    const { output } = yield* runCaptured(['diagrams']);
+    expect(output).toContain('Cards (card="...")\n  A node\'s card is, in order: its own `card`');
+    for (const name of ['default', 'outline', 'solid', 'tint', 'raised']) {
+      expect(output).toMatch(new RegExp(`\\n  ${name}: `, 'u'));
+    }
+
+    expect(output).toContain('(`deck brand <name>` lists them)');
+    const { output: json } = yield* runCaptured(['diagrams', '--json']);
+    const catalog = JSON.parse(json) as { cards: { standard: Record<string, string> } };
+    expect(Object.keys(catalog.cards.standard)).toEqual([
+      'default',
+      'outline',
+      'solid',
+      'tint',
+      'raised',
+    ]);
+  }),
+);

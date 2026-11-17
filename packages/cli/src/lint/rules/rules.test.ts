@@ -8,6 +8,8 @@ import { Effect } from 'effect';
 
 import type { ElementSnapshot, SlideRule } from '#lint/types.ts';
 
+import { brandContext, isBrandColor } from '#lint/brand-context.ts';
+import { CARD_FIXTURE_BRAND, fixtureBrandTokens } from '#lint/fixture-brands.fixture.ts';
 import { brokenImageRule } from '#lint/rules/broken-image.ts';
 import { canvasOverflowRule } from '#lint/rules/canvas-overflow.ts';
 import { containerOverflowRule } from '#lint/rules/container-overflow.ts';
@@ -623,6 +625,79 @@ layer(NodeServices.layer)('lint rules for layouts and media', (it) => {
       expect(found[0]).toContain('div.column');
       expect(found[0]).toContain('85px more height');
       expect(found[1]).toContain('p.eyebrow');
+    }),
+  );
+
+  it.effect("off-brand allows a card's colors inside a diagram part, and only there", () =>
+    Effect.gen(function* () {
+      const tokens = yield* fixtureBrandTokens(CARD_FIXTURE_BRAND);
+      const { families, scale } = tokens.typography;
+      const body = { fontFamily: families.body.family, fontSizePx: scale.body.size };
+      for (const surface of Object.values(tokens.surfaces)) {
+        const input = (elements: ElementSnapshot[]) =>
+          slideRuleInput(tokens, { elements }, { slide: { surface: surface.name } });
+        const colors = brandContext(tokens.name, tokens, surface.name).allowed.cardColors;
+        const node = element({ index: 0, data: { 'diagram-part': 'node', card: 'dark' } });
+        const inNode = colors.map((color, index) =>
+          textElement(`card ${index}`, { ...body, index: index + 1, parent: 0, color }),
+        );
+        expect(offBrandRule.check(input([node, ...inNode])).map((v) => v.message)).toEqual([]);
+      }
+
+      const text = tokens.surfaces['default']?.diagramCards['dark']?.text ?? '';
+      const allowed = brandContext(tokens.name, tokens, 'default').allowed;
+      expect(isBrandColor(text, allowed.colors)).toBe(false);
+      const outside = textElement('loose', { ...body, index: 0, color: text });
+      expect(messages(offBrandRule, tokens, [outside])).toEqual([
+        expect.stringContaining(`"loose" uses the text color ${text.slice(0, 7)}`),
+      ]);
+    }),
+  );
+
+  it.effect("contrast measures text in a diagram node against its card's own fill", () =>
+    Effect.gen(function* () {
+      const tokens = yield* fixtureBrandTokens(CARD_FIXTURE_BRAND);
+      const surface = tokens.surfaces['default'];
+      const dark = surface?.diagramCards['dark'];
+      const white = surface?.roles.bg ?? '';
+      const background = { kind: 'colors', colors: [white] } as const;
+      const node = (index: number, card: string) =>
+        element({ index, data: { 'diagram-part': 'node', card }, background });
+      const text = (index: number, parent: number, overrides: Partial<ElementSnapshot> = {}) =>
+        textElement('Orders', {
+          index,
+          parent,
+          selector: `span.text-${index}`,
+          color: dark?.text ?? '',
+          fontSizePx: 20,
+          renderedFontSizePx: 20,
+          fontWeight: 400,
+          background,
+          ...overrides,
+        });
+      const light = { color: white };
+      expect(dark?.nodeFill).toBe(false);
+      const violations = contrastRule.check(
+        slideRuleInput(tokens, {
+          elements: [
+            // On the dark card's fill: passes.
+            node(0, 'dark'),
+            text(1, 0),
+            // On the default card, which keeps the node color: the gray title fails on white.
+            node(2, 'default'),
+            text(3, 2),
+            // A badge with an opaque white background of its own in the dark card: dark text passes.
+            text(4, 0, { color: surface?.roles.fg ?? '', backgroundColor: white }),
+            // White text on a light badge tint over the dark fill: measured on the fill, passes.
+            text(5, 0, { ...light, backgroundColor: '#ffffff1a' }),
+            // Over a picture the sampled pixels already show the fill, so the white `paper` fill is
+            // not painted over them: white text on the dark samples passes.
+            node(6, 'paper'),
+            text(7, 6, { ...light, background: { kind: 'media', colors: [dark?.fill ?? ''] } }),
+          ],
+        }),
+      );
+      expect(violations.map((violation) => violation.selector)).toEqual(['span.text-3']);
     }),
   );
 });

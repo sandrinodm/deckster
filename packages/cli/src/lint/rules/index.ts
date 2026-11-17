@@ -19,6 +19,7 @@ import { containerOverflowRule } from '#lint/rules/container-overflow.ts';
 import { contentBudgetRule } from '#lint/rules/content-budget.ts';
 import { contrastRule } from '#lint/rules/contrast.ts';
 import { diagramBadgeOverlapRule } from '#lint/rules/diagram-badge-overlap.ts';
+import { diagramCardMissingRule } from '#lint/rules/diagram-card-missing.ts';
 import { diagramEdgeOverlapRule } from '#lint/rules/diagram-edge-overlap.ts';
 import { diagramLabelOverlapRule } from '#lint/rules/diagram-label-overlap.ts';
 import { diagramLongWordRule } from '#lint/rules/diagram-long-word.ts';
@@ -81,6 +82,7 @@ export const LINT_RULES: readonly LintRule[] = [
   diagramEdgeOverlapRule,
   diagramBadgeOverlapRule,
   diagramLongWordRule,
+  diagramCardMissingRule,
   contentBudgetRule,
   slotContentRule,
   missingNotesRule,

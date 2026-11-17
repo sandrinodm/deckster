@@ -568,6 +568,14 @@ export type BrandValues = {
   colors: readonly string[];
 
   /**
+   * The colors the brand's diagram cards paint on the surface, as `#rrggbb`: fills, outlines,
+   * accent stripes, shadow colors, and title, subtitle and icon colors, which the brand derives to
+   * read on each fill and so may match no role. Allowed only inside a diagram part drawn with a
+   * card.
+   */
+  cardColors: readonly string[];
+
+  /**
    * The brand's font family names (display, body, mono), as the brand writes them.
    */
   families: readonly string[];

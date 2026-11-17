@@ -1,3 +1,4 @@
+import { resolveBrand } from '@deckster/brand';
 import { Context, Effect, FileSystem, Layer } from 'effect';
 import nodeFs from 'node:fs';
 import path from 'node:path';
@@ -271,6 +272,33 @@ const LAYERED = {
     },
   },
 };
+
+/**
+ * The weak-accent brand with two diagram cards of its own whose fills sit far from the slide's
+ * white: `dark` (a near-black fill, so its derived title color is light and fails on the slide) and
+ * `paper` (a white fill). Unit tests resolve it in memory for card facts that do not move when the
+ * framework's brands are restyled.
+ */
+export const CARD_FIXTURE_BRAND = {
+  ...WEAK_ACCENT,
+  name: 'card-fixture',
+  label: 'Card fixture',
+  diagram: {
+    cards: {
+      dark: { fill: 'gray.900', border: 'none' },
+      paper: { fill: 'gray.0' },
+    },
+  },
+};
+
+/**
+ * The resolved tokens of a fixture brand, resolved in memory without a workspace.
+ *
+ * @param brand - The brand, such as {@link CARD_FIXTURE_BRAND}.
+ */
+export const fixtureBrandTokens = Effect.fn('fixtureBrandTokens')(function* (brand: object) {
+  return (yield* Effect.orDie(resolveBrand(brand))).tokens;
+});
 
 /**
  * The brands the scratch workspaces get, by folder name: `weak-accent`; `wide-sans`, the third
