@@ -179,6 +179,6 @@ A hosted deck has no login. Anyone with the URL can open it, and a site's galler
 
 A build keeps the presenter tools, such as the presenter window, the sidebar and the overview (see [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/)); only reordering slides in the sidebar is limited to `deck dev`. It leaves out everything that needs the dev server: review comments and comment mode, the agent panel and the tools agents connect to. Nobody who opens a hosted deck can leave comments or change it.
 
-<Aside type="note" title="Not in v0.3.0">
-A coming version of deckster adds an embed mode: a built deck opened with `?embed` is shown in an iframe on another page, without the presenter tools and with a small previous and next control. It is not in 0.3.0.
+<Aside type="note" title="New in v0.4.0">
+A built deck opened with `?embed` in its address, before the `#` (`?embed#/3` opens slide 3), is meant for an iframe on another page: it shows the slides without the presenter tools, with a small previous and next control and a link that opens the whole deck in a new tab. [Deck URL and `window.__deck`](/reference/deck-api/#query-parameters) has the details.
 </Aside>
