@@ -95,7 +95,7 @@ The example is a made-up brand. Comments are for explanation; the real file is p
   "icons":   { "set": "lucide", "style": "stroke", "stroke_width": 1.75, "chosen": true },
   "imagery": { "kind": "photography", "treatment": "full colour, rounded 12", "notes": "people at work, cool light" },
   "chrome":  { "page_number": { "show": true, "format": "00", "position": "bottom-right" }, "footer": null, "progress": false, "hidden_on": ["title", "section", "closing"] },
-  "motion":  { "feel": "calm", "easing": { "standard": "cubic-bezier(0.2, 0, 0, 1)" }, "duration": { "fast": 200, "base": 350, "slow": 500 }, "transition": "fade", "derived": true },
+  "motion":  { "feel": "calm", "easing": { "standard": "cubic-bezier(0.2, 0, 0, 1)", "emphasized": "cubic-bezier(0.16, 1, 0.3, 1)", "exit": "cubic-bezier(0.4, 0, 1, 1)" }, "duration": { "fast": 200, "base": 350, "slow": 500 }, "transition": "fade", "derived": true },
 
   "dataviz": {
     "source_has_charts": true, "source_style_is_deliberate": true,

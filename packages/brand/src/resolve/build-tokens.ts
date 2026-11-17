@@ -27,6 +27,7 @@ import {
   fitContext,
   marksVisible,
 } from '#resolve/derive-data.ts';
+import { completeMotion } from '#resolve/derive-motion.ts';
 import {
   deriveCodeTheme,
   deriveDiagramTheme,
@@ -40,6 +41,7 @@ import { NO_SHADOW, resolveShadows } from '#resolve/resolve-shadow.ts';
 import { resolveSurfaceColors, type SurfaceColors } from '#resolve/surface-colors.ts';
 import { deriveTextColors } from '#resolve/text-colors.ts';
 import { DEFAULT_SURFACE } from '#schema/color-schema.ts';
+import { withPlainTreatment } from '#schema/identity-schema.ts';
 import { GENERIC_FAMILIES, TYPE_STEPS, type TypeStep } from '#schema/typography-schema.ts';
 
 /**
@@ -103,8 +105,11 @@ export function buildTokens(brand: Brand, colors: ColorResolver): BrandTokens {
     logo: brand.logo,
     icons: brand.icons,
     imagery: {
-      treatments: mapEntries(brand.imagery.treatments, (treatment, name) =>
-        resolveTreatment(treatment, `imagery.treatments.${name}`, brand, colors),
+      treatments: withPlainTreatment<TreatmentTokens>(
+        mapEntries(brand.imagery.treatments, (treatment, name) =>
+          resolveTreatment(treatment, `imagery.treatments.${name}`, brand, colors),
+        ),
+        { type: 'none' },
       ),
       default: brand.imagery.default,
     },
@@ -429,16 +434,16 @@ function resolveTreatment(
 }
 
 /**
- * Motion with the default transition's duration and easing looked up by name. A name that does not
- * exist gives 0 ms or CSS's `ease`; the reference checks report it.
+ * Motion with every easing and duration the kit reads filled in (`completeMotion`), and the default
+ * transition's duration and easing looked up by name. A name that does not exist gives 0 ms or
+ * CSS's `ease`; the reference checks report it.
  *
  * @param motion - The motion section as the brand writes it.
  */
 function resolveMotion(motion: Brand['motion']): MotionTokens {
   const { transition } = motion;
   return {
-    easings: motion.easings,
-    durations: motion.durations,
+    ...completeMotion(motion),
     transition: {
       kind: transition.kind,
       duration: ownValue(motion.durations, transition.duration) ?? 0,

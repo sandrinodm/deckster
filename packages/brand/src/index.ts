@@ -15,6 +15,12 @@ export type { ShikiTheme, ShikiTokenColor } from '#compile/shiki-theme.ts';
 export { brandVariables, cssVar } from '#compile/variable-names.ts';
 export type * from '#resolve/brand-tokens.ts';
 export { CHART_PLATE_CONTRAST } from '#resolve/derive-data.ts';
+export {
+  MOTION_DURATION_NAMES,
+  MOTION_EASING_NAMES,
+  type MotionDurationName,
+  type MotionEasingName,
+} from '#resolve/derive-motion.ts';
 export { resolveBrand, type BrandSource, type ResolvedBrand } from '#resolve/resolve-brand.ts';
 export { TEXT_TONES, type TextTone } from '#resolve/text-colors.ts';
 export { isLargeText, typeScaleFacts, type TypeScaleFacts } from '#resolve/type-scale-facts.ts';
@@ -31,6 +37,7 @@ export {
   type TableEmphasis,
 } from '#schema/charts-schema.ts';
 export { DEFAULT_SURFACE, REQUIRED_SURFACES, ROLE_NAMES, type Role } from '#schema/color-schema.ts';
+export { PLAIN_TREATMENT } from '#schema/identity-schema.ts';
 export {
   CODE_TOKENS,
   DIAGRAM_TOKENS,

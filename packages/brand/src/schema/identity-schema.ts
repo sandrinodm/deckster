@@ -100,6 +100,30 @@ const Treatment = Schema.Union([
 export type Treatment = typeof Treatment.Type;
 
 /**
+ * The treatment every brand has, which draws a picture as it is: no corners, filter or tint. A
+ * slide names it for a picture whose own colors carry meaning (a product screenshot, a map, a
+ * chart), so it works whatever the brand. A brand need not define it; one that does must define it
+ * as `{ type: 'none' }`.
+ */
+export const PLAIN_TREATMENT = 'plain';
+
+/**
+ * A brand's treatments with {@link PLAIN_TREATMENT} added when the brand does not define it.
+ *
+ * @param treatments - The treatments the brand defines, as written or resolved.
+ * @param plain - The untreated treatment in the same form, `{ type: 'none' }`.
+ * @returns The same treatments, with `plain` added if it was missing.
+ */
+export function withPlainTreatment<Value>(
+  treatments: Readonly<Record<string, Value>>,
+  plain: Value,
+): Readonly<Record<string, Value>> {
+  return Object.hasOwn(treatments, PLAIN_TREATMENT)
+    ? treatments
+    : { ...treatments, [PLAIN_TREATMENT]: plain };
+}
+
+/**
  * The `imagery` section: named image treatments and the one images get by default.
  */
 export const BrandImagery = Schema.Struct({

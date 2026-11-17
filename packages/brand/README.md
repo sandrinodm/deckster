@@ -78,6 +78,13 @@ Type: display 168px, headline 84px, title 56px, lead 38px, body 34px, small 26px
   spacing scale with slide margins and a 12-column grid, logo variants and their placement, an
   Iconify icon set, image treatments, chrome (page number, footer, progress, logo) and motion
   (easings, durations, slide transition).
+- **Motion the kit reads.** The easings and durations are open records, but the kit's entrance,
+  step reveals, chart builds and count-ups read `standard`, `emphasized` and `exit`
+  (`MOTION_EASING_NAMES`) and `fast`, `base` and `slow` (`MOTION_DURATION_NAMES`). A brand should
+  define all six. One that leaves some out still loads: the resolver derives each missing one
+  (`emphasized` and `exit` are `standard`, `fast` is half of `base` and `slow` 1.7 times it, and
+  `standard` and `base` fall back to the default transition's), so every `--brand-ease-*` and
+  `--brand-duration-*` the kit uses is declared for every brand.
 
 ## What the checks do
 

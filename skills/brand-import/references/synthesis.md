@@ -166,6 +166,8 @@ Static sources cannot show motion. Derive a **feel** and say that it is derived:
 
 A website gives real evidence: use `observed.motion.transitions` for the easing curve and scale the durations up a little for slide-sized elements (UI hover timings are shorter than a slide build). PPTX transitions are usually whatever the template shipped with; ignore them unless the user says they matter.
 
+Always write the full set the kit animates with: easings `standard` (fades and colour changes), `emphasized` (the slide entrance, step reveals, chart builds and count-ups) and `exit`, and durations `fast`, `base` and `slow`. The framework derives a missing one (`emphasized` and `exit` from `standard`, `fast` and `slow` from `base`), but then the brand file no longer says what the deck moves with, and a reviewer cannot see that a value was guessed. `emphasized` is usually a stronger ease-out than `standard` (`cubic-bezier(0.16, 1, 0.3, 1)` for a calm brand); `exit` an ease-in (`cubic-bezier(0.4, 0, 1, 1)`). `emit_brand.py` fills in the ones the draft leaves out and lists them as defaulted.
+
 ## Layout archetypes
 
 Goal: say which kit layouts the source uses, how each is treated, and where the kit's default would not look like the source.

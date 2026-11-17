@@ -6,6 +6,7 @@ import type { BrandProblem } from '#validate/brand-error.ts';
 import { ROLE_PAIRS } from '#checks/contrast-checks.ts';
 import { TEXT_CONTRAST } from '#checks/contrast-thresholds.ts';
 import { ROLE_NAMES } from '#schema/color-schema.ts';
+import { PLAIN_TREATMENT, withPlainTreatment } from '#schema/identity-schema.ts';
 import {
   FAMILY_ROLES,
   GENERIC_FAMILIES,
@@ -154,7 +155,7 @@ function checkLayerNames(brand: Brand, layer: BackgroundLayer, path: string): Br
   }
 
   if (layer.type === 'image') {
-    return checkName(layer.treatment, Object.keys(brand.imagery.treatments), {
+    return checkName(layer.treatment, treatmentNames(brand), {
       path: `${path}.treatment`,
       what: 'image treatment',
     });
@@ -221,10 +222,11 @@ function checkDefaults(brand: Brand): BrandProblem[] {
           what: LOGO_VARIANT,
         })
       : missingLogo(brand)),
-    ...checkName(brand.imagery.default, Object.keys(brand.imagery.treatments), {
+    ...checkName(brand.imagery.default, treatmentNames(brand), {
       path: 'imagery.default',
       what: 'image treatment',
     }),
+    ...checkPlainTreatment(brand),
     ...checkName(motion.transition.duration, Object.keys(motion.durations), {
       path: 'motion.transition.duration',
       what: 'duration',
@@ -233,6 +235,40 @@ function checkDefaults(brand: Brand): BrandProblem[] {
       path: 'motion.transition.easing',
       what: 'easing',
     }),
+  ];
+}
+
+/**
+ * The names of a brand's image treatments, with the `plain` one every brand has.
+ *
+ * @param brand - The decoded brand.
+ */
+function treatmentNames(brand: Brand): string[] {
+  return Object.keys(withPlainTreatment(brand.imagery.treatments, { type: 'none' }));
+}
+
+/**
+ * A brand that defines `plain` must define it as no treatment, since slides name it to show a
+ * picture as it is in every brand.
+ *
+ * @param brand - The decoded brand.
+ */
+function checkPlainTreatment(brand: Brand): BrandProblem[] {
+  const plain = brand.imagery.treatments[PLAIN_TREATMENT];
+  if (plain === undefined || plain.type === 'none') {
+    return [];
+  }
+
+  return [
+    {
+      path: `imagery.treatments.${PLAIN_TREATMENT}`,
+      message:
+        `"${PLAIN_TREATMENT}" is the treatment every brand has for a picture drawn as it is, so ` +
+        `it cannot be a ${plain.type} treatment.`,
+      fix:
+        `Give this treatment another name, such as "soft", and leave "${PLAIN_TREATMENT}" out ` +
+        "(every brand has it) or define it as `{ type: 'none' }`.",
+    },
   ];
 }
 

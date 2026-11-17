@@ -378,7 +378,7 @@ BRAND = struct({
     }),
     "motion": struct({"easings": record(_kebab_key, fixed_list(num(0, 1), num(-5, 5), num(0, 1), num(-5, 5)), "easing name"),
                       "durations": record(_kebab_key, num(0, 3000), "duration name"),
-                      "transition": struct({"kind": one_of("none", "fade", "slide", "push", "zoom"), "duration": kebab, "easing": kebab})}),
+                      "transition": struct({"kind": one_of("none", "fade", "slide", "rise", "push", "cover", "wipe", "zoom"), "duration": kebab, "easing": kebab})}),
 }, {"code": CODE, "diagram": DIAGRAM, "charts": CHARTS})
 
 

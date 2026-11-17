@@ -848,11 +848,20 @@ def run() -> None:
 
     easings = {kebab(k): bezier(v) for k, v in (mo.get("easing") or {}).items()} or {"standard": [0.2, 0, 0, 1]}
     easings.setdefault("standard", next(iter(easings.values())))
+    # The kit animates with three easings: standard (fades), emphasized (the slide entrance, step
+    # reveals, chart builds) and exit. The framework derives a missing one from standard, but the
+    # brand file should say what it animates with, so write all three and list the guesses.
+    if mo and "emphasized" not in easings:
+        defaulted.append("motion.easings.emphasized (same curve as standard)")
+    easings.setdefault("emphasized", list(easings["standard"]))
+    if mo and "exit" not in easings:
+        defaulted.append("motion.easings.exit (a plain ease-in)")
+    easings.setdefault("exit", [0.4, 0, 1, 1])
     dur = mo.get("duration") or {}
     durations = {"fast": dur.get("fast", 200), "base": dur.get("base", 350), "slow": dur.get("slow", 500)}
     kind = str(mo.get("transition", "fade"))
     motion = {"easings": easings, "durations": durations,
-              "transition": {"kind": kind if kind in ("none", "fade", "slide", "push", "zoom") else "fade", "duration": "base", "easing": "standard"}}
+              "transition": {"kind": kind if kind in ("none", "fade", "slide", "rise", "push", "cover", "wipe", "zoom") else "fade", "duration": "base", "easing": "standard"}}
     if not mo:
         defaulted.append("motion (calm fade)")
 

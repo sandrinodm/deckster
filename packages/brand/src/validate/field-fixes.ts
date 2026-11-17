@@ -1,3 +1,5 @@
+import { TRANSITION_KIND_LIST } from '@deckster/engine/frontmatter';
+
 /**
  * Matches one path segment in a fix pattern.
  */
@@ -357,7 +359,7 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
   /**
    * The default slide transition.
    */
-  'motion.transition.kind': 'Use "none", "fade", "slide", "push" or "zoom".',
+  'motion.transition.kind': `Use ${TRANSITION_KIND_LIST}.`,
 
   /**
    * The chart, stat and table styles.

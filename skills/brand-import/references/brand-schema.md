@@ -95,11 +95,11 @@ All sizes are canvas pixels on 1920x1080. A colour is a literal (`#1f2937` or `o
 
 **`icons`**: `{ set, strokeWidth }`, `set` being an Iconify collection (`lucide`, `tabler`).
 
-**`imagery`**: named `treatments` (`none`, `rounded` with a radius name, `grayscale`, `duotone` with `shadow` and `highlight`, `tint` with `color` and `opacity`) and a `default`.
+**`imagery`**: named `treatments` (`none`, `rounded` with a radius name, `grayscale`, `duotone` with `shadow` and `highlight`, `tint` with `color` and `opacity`) and a `default`. Every brand also has `plain`, which draws a picture as it is, so slides can name it for screenshots in any brand: leave it out, or define it only as `{ type: 'none' }`.
 
 **`chrome`**: `pageNumber { show, format, corner }` (format contains `{n}`, optionally `{total}`), `footer { show, text, corner }`, `progress { show, edge, thickness }`, `logo { show }`, `skipFirst`.
 
-**`motion`**: named `easings` (cubic-bezier tuples), named `durations` (milliseconds), `transition { kind, duration, easing }` with kind one of `none fade slide push zoom` and `duration` and `easing` naming entries of the two records.
+**`motion`**: named `easings` (cubic-bezier tuples), named `durations` (milliseconds), `transition { kind, duration, easing }` with kind one of `none fade slide rise push cover wipe zoom` and `duration` and `easing` naming entries of the two records. Write the easings `standard`, `emphasized` and `exit` and the durations `fast`, `base` and `slow`: they are what the kit's entrance, step reveals, chart builds and count-ups read. The records are open, so a brand without them still validates, and the framework derives each missing one (from `standard`, from `base`, or from the transition), but the brand file should state them.
 
 **`charts`** (optional; every field optional): how charts, big numbers and tables are drawn. Colours here are **role names** and line weights are **stroke names**, never raw values.
 

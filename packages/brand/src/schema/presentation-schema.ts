@@ -1,3 +1,4 @@
+import { TRANSITION_KINDS } from '@deckster/engine/frontmatter';
 import { Schema } from 'effect';
 
 import { Corner, KebabName, Pixels } from '#schema/primitives.ts';
@@ -23,14 +24,10 @@ export const MAX_DURATION_MS = 3000;
 export const MAX_BEZIER_Y = 5;
 
 /**
- * Slide transitions the engine knows how to run.
+ * Slide transitions the engine knows how to run, and the type of one. The engine owns the list, so
+ * a brand's default and a slide's `transition:` frontmatter accept the same kinds.
  */
-export const TRANSITION_KINDS = ['none', 'fade', 'slide', 'push', 'zoom'] as const;
-
-/**
- * A transition kind.
- */
-export type TransitionKind = (typeof TRANSITION_KINDS)[number];
+export { TRANSITION_KINDS, type TransitionKind } from '@deckster/engine/frontmatter';
 
 /**
  * Bézier control-point x values must stay in 0..1 for the curve to be a function of time.

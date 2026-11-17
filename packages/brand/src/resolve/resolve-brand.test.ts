@@ -329,3 +329,36 @@ describe('resolveBrand names inherited from Object', () => {
     }),
   );
 });
+
+describe('resolveBrand image treatments', () => {
+  it.effect('gives every brand the plain treatment, which draws a picture as it is', () =>
+    Effect.gen(function* () {
+      const { tokens } = yield* resolveBrand(
+        testBrand({
+          'imagery.treatments': { soft: { type: 'rounded', radius: 'lg' } },
+          'imagery.default': 'soft',
+        }),
+      );
+      expect(tokens.imagery.treatments['plain']).toEqual({ type: 'none' });
+      expect(Object.keys(tokens.imagery.treatments)).toEqual(['soft', 'plain']);
+    }),
+  );
+
+  it.effect('takes plain as a default even when the brand does not define it', () =>
+    Effect.gen(function* () {
+      const { tokens } = yield* resolveBrand(
+        testBrand({ 'imagery.treatments': { mono: { type: 'grayscale' } } }),
+      );
+      expect(tokens.imagery.default).toBe('plain');
+    }),
+  );
+
+  it.effect('refuses a plain treatment that changes the picture', () =>
+    Effect.gen(function* () {
+      const error = yield* failure(
+        testBrand({ 'imagery.treatments': { plain: { type: 'grayscale' } } }),
+      );
+      expect(error.problems.map((problem) => problem.path)).toContain('imagery.treatments.plain');
+    }),
+  );
+});

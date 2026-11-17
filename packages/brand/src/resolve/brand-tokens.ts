@@ -1,3 +1,4 @@
+import type { MotionDurationName, MotionEasingName } from '#resolve/derive-motion.ts';
 import type { TextTone } from '#resolve/text-colors.ts';
 import type { LayerAnchor } from '#schema/background-schema.ts';
 import type {
@@ -780,14 +781,17 @@ type BezierCurve = readonly [number, number, number, number];
  */
 export type MotionTokens = {
   /**
-   * Named easing curves as `[x1, y1, x2, y2]`, as in CSS `cubic-bezier()`.
+   * Named easing curves as `[x1, y1, x2, y2]`, as in CSS `cubic-bezier()`: the brand's own, plus
+   * every name the kit reads (`standard`, `emphasized`, `exit`) derived when the brand leaves it
+   * out.
    */
-  easings: Readonly<Record<string, BezierCurve>>;
+  easings: Readonly<Record<MotionEasingName, BezierCurve>> & Readonly<Record<string, BezierCurve>>;
 
   /**
-   * In milliseconds.
+   * In milliseconds: the brand's own, plus every name the kit reads (`fast`, `base`, `slow`)
+   * derived when the brand leaves it out.
    */
-  durations: Readonly<Record<string, number>>;
+  durations: Readonly<Record<MotionDurationName, number>> & Readonly<Record<string, number>>;
 
   /**
    * The default slide transition, with its duration in milliseconds and its easing curve resolved

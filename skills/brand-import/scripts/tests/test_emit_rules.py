@@ -119,6 +119,22 @@ class EmitRulesTest(unittest.TestCase):
                     self.assertTrue(framework["ok"], framework)
                     self.assertEqual(framework["value"]["shape"]["shadow"], brand["shape"]["shadow"])
 
+    def test_motion_names_every_easing_and_duration_the_kit_animates_with(self):
+        # The kit's entrance, step reveals and chart builds read emphasized; a brand without it once
+        # left them still. A draft with one easing, or none, still gets all three.
+        for motion in ({"easing": {"standard": "cubic-bezier(0.22, 1, 0.36, 1)"}}, {}):
+            with self.subTest(motion=motion):
+                d = H.draft()
+                d["motion"] = motion
+                run, brand = self.emit(d)
+                easings = brand["motion"]["easings"]
+                self.assertEqual(sorted(easings), ["emphasized", "exit", "standard"])
+                self.assertEqual(easings["emphasized"], easings["standard"])
+                self.assertEqual(easings["exit"], [0.4, 0, 1, 1])
+                self.assertEqual(sorted(brand["motion"]["durations"]), ["base", "fast", "slow"])
+                if motion:
+                    self.assertIn("motion.easings.emphasized", run.stdout)
+
     def test_malformed_shadow_hex_is_not_truncated_to_a_valid_color(self):
         for color in ("#12345", "#112233445", "#11223344zz"):
             for css in (False, True):
