@@ -6,15 +6,17 @@
  * They run in Node outside Vite, so they read src/data with fs (not import.meta.glob) and know
  * no optimised image URLs: stills become their alt text and a link to the slide in the built deck.
  * Nimbus hands each renderer the MDX attributes as strings: a string as written, an expression as
- * its source (`step={0}` arrives as "0", `of={"BarChart"}` as "\"BarChart\""). So the renderers get
- * attributes normalised first (a string-literal expression becomes its string), and the build
- * fails on a deck component prop the Markdown can't read (checkWrittenProps).
+ * its source (`step={0}` arrives as "0", `of={"BarChart"}` as "\"BarChart\""), and nothing says
+ * which was which. So each tag is looked up among the tags read from the pages (mdx-source.ts),
+ * which know how every attribute was written, and only its expression attributes are decoded
+ * (writtenAttrs). The build fails on a deck component prop the Markdown can't read
+ * (checkWrittenProps).
  */
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { budgetText, describeFieldMd, firstSentence, flattenSchema, prettyExample, sectionRows, type SchemaRow } from "./format";
-import { componentUses, literalValue, where } from "./mdx-source";
+import { componentUses, literalValue, where, type ComponentUse, type WrittenAttribute } from "./mdx-source";
 import { describeRows, type SchemaOf } from "./schema-descriptions";
 
 type Attrs = Record<string, string | boolean>;
@@ -31,7 +33,7 @@ function data(name: string): any {
 
 /** A hash of src/data, so Nimbus regenerates the Markdown when the data changes. */
 function revision(): string {
-  const hash = createHash("sha256").update("deck-components-md-4");
+  const hash = createHash("sha256").update("deck-components-md-5");
   try {
     for (const file of readdirSync(DATA_DIR).filter((f) => f.endsWith(".json")).sort()) {
       hash.update(file).update(readFileSync(path.join(DATA_DIR, file)));
@@ -378,30 +380,80 @@ const RENDERERS: Record<string, (context: Context) => string> = {
   Diagram: diagram,
 };
 
+/** A tag as Nimbus hands it to a renderer: its name and its attributes, each as Nimbus reads it. */
+function signature(name: string, attrs: Attrs): string {
+  return JSON.stringify([name, Object.entries(attrs).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))]);
+}
+
+/** What Nimbus passes for an attribute: a string as written, an expression's source, `true` for a flag. */
+function asNimbusReads(written: WrittenAttribute): string | boolean {
+  if (written.kind === "string") return written.value;
+  if (written.kind === "flag") return true;
+  return written.source;
+}
+
+/** How each attribute of a tag was written, by the tag's signature (deck components only). */
+type WrittenKinds = Map<string, { kinds: ReadonlyMap<string, WrittenAttribute["kind"]>; attrs: Attrs; at: string }>;
+
 /**
- * An attribute as the renderers read it: a string-literal expression (`"BarChart"`, `'x'`) as its
- * string. Numbers and booleans stay as Nimbus passes them ("0", "true"). checkWrittenProps makes
- * sure a quoted value can only have come from an expression.
+ * How the attributes of every deck component on the pages were written, keyed by the tag as Nimbus
+ * passes it to a renderer. Two tags that reach the renderer the same way but were written
+ * differently are reported when that changes a value (`alt='"x"'` and `alt={"x"}`), since the
+ * renderer can't tell them apart; `step="0"` and `step={0}` read the same and pass.
  */
-export function normaliseAttrs(attrs: Attrs): Attrs {
+function writtenKinds(uses: readonly ComponentUse[], problems: string[]): WrittenKinds {
+  const byTag: WrittenKinds = new Map();
+  for (const use of uses) {
+    if (!(use.name in RENDERERS)) continue;
+    const attrs: Attrs = {};
+    const kinds = new Map<string, WrittenAttribute["kind"]>();
+    for (const [name, written] of use.attributes) {
+      attrs[name] = asNimbusReads(written);
+      kinds.set(name, written.kind);
+    }
+    const key = signature(use.name, attrs);
+    const seen = byTag.get(key);
+    const decodingChanges = (name: string) => {
+      const raw = attrs[name];
+      return typeof raw === "string" && String(literalValue(raw) ?? raw) !== raw;
+    };
+    if (seen === undefined) {
+      byTag.set(key, { kinds, attrs, at: where(use) });
+    } else if ([...kinds].some(([name, kind]) => seen.kinds.get(name) !== kind && decodingChanges(name))) {
+      problems.push(
+        `<${use.name}> in ${where(use)} and in ${seen.at}: the same attributes, once as a string and once as an expression; write both the same way`,
+      );
+    }
+  }
+  return byTag;
+}
+
+/**
+ * The attributes as the renderers read them: an attribute written as an expression becomes its
+ * literal's value (`{"BarChart"}` → "BarChart", `{'Bar\u0043hart'}` → "BarChart", `{0x10}` →
+ * "16"); one written as a string stays exactly as written, quotes and all. A tag not found among
+ * the pages' tags passes through unchanged.
+ */
+export function writtenAttrs(name: string, attrs: Attrs, byTag: WrittenKinds): Attrs {
+  const kinds = byTag.get(signature(name, attrs))?.kinds;
+  if (kinds === undefined) return attrs;
   return Object.fromEntries(
     Object.entries(attrs).map(([key, value]) => {
-      if (typeof value !== "string" || !/^["'`]/.test(value)) return [key, value];
+      if (kinds.get(key) !== "expression" || typeof value !== "string") return [key, value];
       const literal = literalValue(value);
-      return [key, typeof literal === "string" ? literal : value];
+      return [key, literal === undefined ? value : String(literal)];
     }),
   );
 }
 
 /**
  * Fails the build when a page passes a deck component a prop the Markdown twin can't read the way
- * the HTML page does: an expression that isn't a literal (`{deck}`, `{"a" + "b"}`, `{[1, 2]}`), a
- * spread, or a string written with its own quotes (`alt='"Ship it"'`), which would read as a
- * string-literal expression.
+ * the HTML page does: an expression that isn't a literal (`{deck}`, `{"a" + "b"}`, `{[1, 2]}`) or a
+ * spread. Returns how every deck component's attributes were written, for writtenAttrs.
  *
  * @throws Error naming every such prop with its page and line.
  */
-export function checkWrittenProps(uses = componentUses()): void {
+export function checkWrittenProps(uses: readonly ComponentUse[] = componentUses()): WrittenKinds {
   const problems: string[] = [];
   for (const use of uses) {
     if (!(use.name in RENDERERS)) continue;
@@ -409,27 +461,27 @@ export function checkWrittenProps(uses = componentUses()): void {
     for (const [name, written] of use.attributes) {
       if (written.kind === "expression" && literalValue(written.source) === undefined) {
         problems.push(`<${use.name}> in ${where(use)}: ${name}={${written.source}} is not a literal`);
-      } else if (written.kind === "string" && /^["'`]/.test(written.value) && literalValue(written.value) !== undefined) {
-        problems.push(`<${use.name}> in ${where(use)}: ${name} is a string wrapped in its own quotes`);
       }
     }
   }
+  const byTag = writtenKinds(uses, problems);
   if (problems.length > 0) {
     throw new Error(
       `Deck component props the Markdown twins can't read (src/components/deck/markdown.ts):\n  ${problems.join("\n  ")}\n` +
         'Pass each prop as a string (deck="hello"), a number (step={0}), a boolean or a string literal (of={"BarChart"}).',
     );
   }
+  return byTag;
 }
 
 /** `markdown.componentMap` for the Nimbus integration. Checks the pages' props first. */
-export function deckMarkdownComponents(): Record<string, Transform> {
-  checkWrittenProps();
+export function deckMarkdownComponents(uses: readonly ComponentUse[] = componentUses()): Record<string, Transform> {
+  const byTag = checkWrittenProps(uses);
   const rev = revision();
   return Object.fromEntries(
     Object.entries(RENDERERS).map(([name, render]) => [
       name,
-      { revision: rev, render: (context: Context) => render({ ...context, attrs: normaliseAttrs(context.attrs) }) },
+      { revision: rev, render: (context: Context) => render({ ...context, attrs: writtenAttrs(name, context.attrs, byTag) }) },
     ]),
   );
 }

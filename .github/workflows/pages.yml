@@ -150,6 +150,9 @@ jobs:
       # No page may carry its writing brief: /<page>/index.mdx would publish it.
       - name: Check for briefs
         run: npm run check:briefs
+      # The MDX reader the coverage check, the sync and the Markdown twins share.
+      - name: Check the MDX reader
+        run: npm run check:mdx-source
       # Every layout, component, chart, diagram component and command in src/data
       # has a reference entry.
       - name: Check reference coverage

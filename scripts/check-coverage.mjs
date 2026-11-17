@@ -13,7 +13,9 @@
  * name that isn't in the data is reported too, though the build already fails on it. Only tags the
  * page renders count: the pages are parsed as MDX (src/components/deck/mdx-source.ts), so a tag in
  * a code span, a fenced block or an MDX comment is text. The name may be a string (`of="BarChart"`)
- * or a string-literal expression (`of={"BarChart"}`); any other expression is reported.
+ * or a string-literal expression (`of={"BarChart"}`); any other expression is reported. A component
+ * inside JavaScript (`{cond && <PropsTable … />}`, a prop value, a spread, an export) fails the
+ * check with its page and line: it isn't read, so it can't count.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -39,7 +41,14 @@ const ATTR_OF = new Map(REQUIRED.map(({ tag, attr }) => [tag, attr]));
 const found = new Map();
 /** Tags whose name isn't a literal, so no name can be read. */
 const unreadable = [];
-for (const use of componentUses()) {
+let uses;
+try {
+  uses = componentUses();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
+for (const use of uses) {
   if (IGNORED.has(use.page) || !ATTR_OF.has(use.name)) continue;
   const written = use.attributes.get(ATTR_OF.get(use.name));
   if (written === undefined) continue; // `<PropsTable shared>` names no entry.
