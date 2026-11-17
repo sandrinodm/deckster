@@ -195,6 +195,16 @@ function missingFix(
     missing.parts.length > 1
       ? `the \`card\` on the ${diagramTag(where.diagram)} tag, or on each of those parts,`
       : 'the `card`';
+  const onlyStandard =
+    where.cards.length === STANDARD_CARDS.length &&
+    STANDARD_CARDS.every((card) => where.cards.includes(card));
+  if (onlyStandard) {
+    return (
+      `${lead}Change ${place} in ${where.file} to one of the standard cards: ` +
+      `${STANDARD_CARDS.join(', ')}, which every brand has.`
+    );
+  }
+
   return (
     `${lead}Change ${place} in ${where.file} to one of the ${where.brand} brand's cards: ` +
     `${where.cards.join(', ')}. The standard cards (${STANDARD_CARDS.join(', ')}) exist in ` +

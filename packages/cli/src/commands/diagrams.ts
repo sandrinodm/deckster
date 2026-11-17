@@ -44,7 +44,7 @@ export const diagramsCommand: Command = {
   /**
    * The line `deck --help` shows for this command.
    */
-  summary: 'List the diagram components, node kinds and animation primitives',
+  summary: 'List the diagram components, node kinds, cards and animation primitives',
 
   /**
    * The text `deck diagrams --help` prints.

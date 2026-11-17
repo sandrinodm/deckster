@@ -310,8 +310,11 @@ const CardTitle = Schema.Struct({
 });
 
 /**
- * A named node style. Every field is optional: a standard card's own look fills what the brand
- * leaves out, and a card of the brand's own takes the `default` card's.
+ * A named node style. Every field is optional. A standard card fills what the brand leaves out from
+ * its own built-in look; a card of the brand's own starts from the built-in look of the standard
+ * `default` card (today's node: its paint, shadow, shape and icon), not from the brand's `default`
+ * entry. Only `stroke`, `radius` and the `title` fields are taken from the brand's `default` entry,
+ * by every card; nothing else is inherited from it.
  */
 export const DiagramCard = Schema.Struct({
   fill: Schema.optionalKey(CardPaint),
