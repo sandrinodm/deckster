@@ -314,7 +314,11 @@ export function deckPlugin(
         loadMdxExtensions(options.mdxExtensions ?? DEFAULT_MDX_EXTENSIONS, {
           workspaceRoot,
           deckDir: deck.location.dir,
-          brand: { name: tokens.name, icons: tokens.icons },
+          brand: {
+            name: tokens.name,
+            icons: tokens.icons,
+            treatments: Object.keys(tokens.imagery.treatments),
+          },
         }),
       );
       const reported: MdxWarning[] = [];

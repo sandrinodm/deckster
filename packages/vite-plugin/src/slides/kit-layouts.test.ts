@@ -114,7 +114,7 @@ describe('the kit layouts in the build', () => {
       );
       expect(message).toContain('<Media> on line');
       expect(message).toContain('is not a slot of the content layout');
-      expect(message).toContain('title, split');
+      expect(message).toContain('title, section, split');
     }),
   );
 

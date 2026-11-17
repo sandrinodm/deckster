@@ -15,7 +15,7 @@ import { transformMdxSlide } from '#slides/transform-slide.ts';
 const CONTEXT = {
   workspaceRoot: '/workspace',
   deckDir: '/workspace/decks/demo',
-  brand: { name: 'demo', icons: { set: 'lucide', strokeWidth: 1.75 } },
+  brand: { name: 'demo', icons: { set: 'lucide', strokeWidth: 1.75 }, treatments: ['plain'] },
 };
 
 describe('loadMdxExtensions', () => {

@@ -54,7 +54,11 @@ describe('compileMdx with the kit extension', () => {
   const extensions = kitMdx.plugins({
     workspaceRoot: root,
     deckDir,
-    brand: { name: 'default', icons: { set: 'lucide', strokeWidth: 2 } },
+    brand: {
+      name: 'default',
+      icons: { set: 'lucide', strokeWidth: 2 },
+      treatments: ['rounded', 'plain'],
+    },
   });
   /**
    * Compiles a slide with the kit's plugins and gives its code, or the error as text.
@@ -89,6 +93,21 @@ describe('compileMdx with the kit extension', () => {
     expect(element).toContain('<Icon name="rockt"> is not an icon of the lucide set.');
     expect(element).toContain('Fix: Closest names in the lucide set: rocket');
     expect(element).not.toContain('Close every JSX tag');
+  });
+
+  it('resolves an <Icon> written in a prop, and reports an unknown one there too', async () => {
+    const code = await compileSlide(
+      '<LinkCard href="https://example.com" title="Docs" icon={<Icon name="book" />} />',
+      {},
+    );
+    expect(code).toContain('"~icons/lucide/book"');
+    expect(code).toMatch(/icon: kitIcon0\b/);
+    const unknown = await compileSlide(
+      '<LinkCard href="https://example.com" title="Docs" icon={<Icon name="bok" />} />',
+      {},
+    );
+    expect(unknown).toContain('<Icon name="bok"> is not an icon of the lucide set.');
+    expect(unknown).toContain('Fix: Closest names in the lucide set: book');
   });
 
   it('imports a bare frontmatter path from the deck folder, and reports a missing one for deck lint', async () => {

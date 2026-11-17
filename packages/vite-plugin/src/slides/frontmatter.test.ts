@@ -159,7 +159,7 @@ describe('validateFrontmatter', () => {
   it('lists the known fields for an unknown key with no close match', () => {
     const error = failure(validate({ colour: 'red' }));
     expect(error.message).toContain(
-      'Fix: Remove it. Known fields: layout, title, surface, background, budget.',
+      'Fix: Remove it. Known fields: layout, title, surface, background, budget, transition.',
     );
   });
 
@@ -178,6 +178,13 @@ describe('validateFrontmatter', () => {
           'for example `budget: 90s` or `1m30s`.',
       },
     ]);
+  });
+
+  it('takes a transition kind and names the kinds for any other value', () => {
+    expect(Effect.runSync(validate({ transition: 'push' })).frontmatter.transition).toBe('push');
+    const [problem] = failure(validate({ transition: 'dissolve' })).problems;
+    expect(problem?.message).toContain('transition: Expected');
+    expect(problem?.fix).toContain('"none", "fade", "slide", "rise", "push", "cover", "wipe" or');
   });
 
   it('reports wrong types and every problem in one error', () => {
