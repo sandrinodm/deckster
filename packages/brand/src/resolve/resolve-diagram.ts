@@ -11,6 +11,7 @@ import type { ColorResolver } from '#resolve/color-resolver.ts';
 import type { SurfaceColors } from '#resolve/surface-colors.ts';
 import type { ShadowName, StrokeName } from '#schema/shape-schema.ts';
 import type { DiagramToken } from '#schema/theme-schema.ts';
+import type { BrandProblem } from '#validate/brand-error.ts';
 
 import { GRAPHIC_CONTRAST, TEXT_CONTRAST } from '#checks/contrast-thresholds.ts';
 import { formatHex, fromHex, type Rgba } from '#color/color.ts';
@@ -119,8 +120,9 @@ const DIAGRAM_DEFAULTS = {
 } as const;
 
 /**
- * The `default` card: today's node, drawn from the surface's diagram theme. A card of the brand's
- * own starts from it too.
+ * The built-in look of the standard `default` card: today's node, drawn from the surface's diagram
+ * theme. A card of the brand's own starts from this look too (not from the brand's `default` entry,
+ * which lends every card only its stroke, radius and title; see {@link cardTokens}).
  */
 const DEFAULT_LOOK: CardLook = {
   /**
@@ -241,7 +243,7 @@ type CardGeometry = {
 
 /**
  * The built-in outline and radius every card starts from: today's regular outline and the brand's
- * medium radius. The brand's `default` card overrides it for every card.
+ * medium radius. The brand's `default` entry overrides it for every card.
  */
 const BASE_GEOMETRY = {
   /**
@@ -287,6 +289,12 @@ const DEFAULT_ACCENT_WIDTH: StrokeName = 'bold';
 const UNRESOLVED_HEX = '#ff00ff';
 
 /**
+ * Steps a fix suggests for a palette name written without one, in order of preference: a mid step
+ * reads as the palette's own color.
+ */
+const EXAMPLE_STEPS = ['600', '500', 'base', '700', '400'];
+
+/**
  * Divides an opacity percentage into an alpha.
  */
 const PERCENT = 100;
@@ -308,11 +316,11 @@ export function diagramCardNames(diagram: BrandDiagram | undefined): string[] {
 
 /**
  * Fills in the brand's `diagram` look from {@link DIAGRAM_DEFAULTS} and every card from its
- * standard look (or the `default` card's, for a card of the brand's own), with outline width,
- * radius and title type inherited from the brand's `default` card, turning stroke and radius names
- * into canvas pixels. A title family the brand does not have falls back to the `title` step's
- * family, and a `kinds` entry naming an unknown kind or card is left out; the reference checks
- * report both.
+ * built-in look (the standard `default` card's built-in look, for a card of the brand's own), with
+ * only outline width, radius and title type inherited from the brand's `default` entry, turning
+ * stroke and radius names into canvas pixels. A title family the brand does not have falls back to
+ * the `title` step's family, and a `kinds` entry naming an unknown kind or card is left out; the
+ * reference checks report both.
  *
  * @param diagram - The brand's `diagram` section, or `undefined` when it leaves it out.
  * @param shape - The brand's resolved shape, for strokes and radii.
@@ -456,6 +464,11 @@ export type SurfaceCardsInput = CardColorSources & {
    * too.
    */
   colors: ColorResolver;
+
+  /**
+   * The brand's palette, to tell a palette name written without a step from a misspelled role.
+   */
+  palette: Readonly<Record<string, Readonly<Record<string, string>>>>;
 };
 
 /**
@@ -479,8 +492,8 @@ export function surfaceDiagramCards(input: SurfaceCardsInput): Record<string, Ca
 }
 
 /**
- * The look a card starts from: its standard look, or the `default` card's for one of the brand's
- * own.
+ * The built-in look a card starts from: its standard look, or the standard `default` card's
+ * built-in look for one of the brand's own (never the brand's `default` entry).
  *
  * @param name - The card name.
  */
@@ -491,7 +504,7 @@ function baseLook(name: string): CardLook {
 /**
  * One card's geometry and title type. Paint, shadow, icon, accent and shape come from the card's
  * own entry over its base look. Outline width, radius and each title field come, last one winning,
- * from the built-in base, the brand's `default` card, the fields a standard card sets for itself
+ * from the built-in base, the brand's `default` entry, the fields a standard card sets for itself
  * ({@link STANDARD_GEOMETRY}) and the card's own entry, so a brand sets them once on `default`.
  *
  * @param name - The card name.
@@ -760,6 +773,35 @@ function resolveColor(input: SurfaceCardsInput, source: PaintSource, path: strin
 }
 
 /**
+ * The problem for a card color that names no role: a palette name written without a step gets that
+ * palette's steps; anything else gets the closest role.
+ *
+ * @param input - The brand's palette.
+ * @param ref - The color as written.
+ */
+function unknownRoleProblem(input: SurfaceCardsInput, ref: RoleRef): BrandProblem {
+  const scale = ownValue(input.palette, ref.role);
+  if (scale === undefined) {
+    return {
+      path: ref.path,
+      message: `"${ref.ref}" refers to a role "${ref.role}" that does not exist.`,
+      fix: pickFrom(ref.role, ROLE_NAMES, 'role'),
+    };
+  }
+
+  const steps = Object.keys(scale);
+  const step = EXAMPLE_STEPS.find((candidate) => steps.includes(candidate)) ?? steps[0] ?? '500';
+  const opacity = ref.opacity === undefined ? '' : `/${ref.opacity}`;
+  return {
+    path: ref.path,
+    message: `"${ref.ref}" names the "${ref.role}" palette without a step, so it is not a color.`,
+    fix:
+      `Write a step such as "${ref.role}.${step}${opacity}"; the "${ref.role}" palette has ` +
+      `${steps.join(', ')}.`,
+  };
+}
+
+/**
  * A role as written in a card color, with its parts.
  */
 type RoleRef = {
@@ -813,11 +855,7 @@ function roleColor(input: SurfaceCardsInput, ref: RoleRef): Hex {
 
   const role = ROLE_NAMES.find((name) => name === ref.role);
   if (role === undefined) {
-    input.colors.problems.push({
-      path: ref.path,
-      message: `"${ref.ref}" refers to a role "${ref.role}" that does not exist.`,
-      fix: pickFrom(ref.role, ROLE_NAMES, 'role'),
-    });
+    input.colors.problems.push(unknownRoleProblem(input, ref));
     return UNRESOLVED_HEX;
   }
 

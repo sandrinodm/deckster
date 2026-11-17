@@ -282,6 +282,7 @@ function resolveSurface(input: SurfacesInput, name: string): SurfaceTokens {
       theme: diagram,
       shadows: shadow,
       colors,
+      palette: brand.color.palette,
     }),
     data,
     charts: surfaceChartColors(charts, surface, data.plate),

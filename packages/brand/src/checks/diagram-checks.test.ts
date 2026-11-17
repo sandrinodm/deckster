@@ -44,6 +44,56 @@ describe('diagram names', () => {
     ]);
   });
 
+  it('answer a palette name written without a step with that palette’s steps, in every card color', () => {
+    const result = Effect.runSync(
+      Effect.result(
+        resolveBrand(
+          testBrand({
+            diagram: {
+              cards: {
+                spotlight: {
+                  fill: 'orange',
+                  border: 'blue/40',
+                  text: 'orange',
+                  subtext: 'orange',
+                  icon: { color: 'orange', fill: 'orange' },
+                  accent: { color: 'orange' },
+                },
+              },
+            },
+            'color.surfaces.inverse': { diagram: { cards: { tint: { fill: 'blue' } } } },
+          }),
+        ),
+      ),
+    );
+    const problems = Result.isFailure(result) ? result.failure.problems : [];
+    expect(problems.map((problem) => problem.path).toSorted()).toEqual(
+      [
+        'diagram.cards.spotlight.fill',
+        'diagram.cards.spotlight.border',
+        'diagram.cards.spotlight.text',
+        'diagram.cards.spotlight.subtext',
+        'diagram.cards.spotlight.icon.color',
+        'diagram.cards.spotlight.icon.fill',
+        'diagram.cards.spotlight.accent.color',
+        'color.surfaces.inverse.diagram.cards.tint.fill',
+      ].toSorted(),
+    );
+    expect(problems.every((problem) => problem.message.includes('palette without a step'))).toBe(
+      true,
+    );
+    expect(problems).toContainEqual({
+      path: 'diagram.cards.spotlight.fill',
+      message: '"orange" names the "orange" palette without a step, so it is not a color.',
+      fix: 'Write a step such as "orange.600"; the "orange" palette has 300, 600.',
+    });
+    expect(problems).toContainEqual({
+      path: 'diagram.cards.spotlight.border',
+      message: '"blue/40" names the "blue" palette without a step, so it is not a color.',
+      fix: 'Write a step such as "blue.600/40"; the "blue" palette has 100, 300, 600, 800.',
+    });
+  });
+
   it('say none takes no opacity', () => {
     expect(problemsOf({ cards: { a: { fill: 'none/12' } } })).toContainEqual({
       path: 'diagram.cards.a.fill',
