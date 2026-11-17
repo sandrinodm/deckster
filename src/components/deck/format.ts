@@ -521,21 +521,21 @@ type CardGeometry = {
   title: { family: string; weight: number; case: string };
 };
 
-/** A card's outline, shape, shadow, icon, stripe and title as table cells (canvas px). */
-export function cardCells(card: CardGeometry, border: string | null): {
-  border: string;
-  radius: string;
-  shadow: string;
-  icon: string;
-  accent: string;
-  title: string;
-} {
+/**
+ * A card's border, look (radius, shape, shadow, icon, stripe, in the words `deck brand` uses) and
+ * title type as table cells, sizes in canvas px.
+ */
+export function cardCells(card: CardGeometry, border: string | null): { border: string; look: string; title: string } {
+  const look = [
+    `radius ${card.radius} px`,
+    ...(card.shape === "kind" ? [] : [`${card.shape} shape`]),
+    ...(card.shadow === "none" ? [] : [`${card.shadow} shadow`]),
+    `${card.icon} icon`,
+    ...(card.accent.side === "none" ? [] : [`${card.accent.side} stripe ${card.accent.width} px`]),
+  ];
   return {
-    border: border === null ? "none" : `${border}, ${card.stroke} px`,
-    radius: `${card.radius} px${card.shape === "kind" ? "" : `, ${card.shape}`}`,
-    shadow: card.shadow,
-    icon: card.icon,
-    accent: card.accent.side === "none" ? "—" : `${card.accent.side}, ${card.accent.width} px`,
+    border: border === null ? "none" : `${border} ${card.stroke} px`,
+    look: look.join(", "),
     title: `${card.title.family} ${card.title.weight}${card.title.case === "upper" ? " upper" : ""}`,
   };
 }

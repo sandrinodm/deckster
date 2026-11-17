@@ -330,12 +330,12 @@ function brandTokens({ attrs, base }: Context): string {
       "**Diagrams**",
       diagramLookLines(t.diagram).join(" "),
       table(
-        ["Card", "Fill", "Border", "Radius", "Shadow", "Icon", "Stripe", "Title"],
+        ["Card", "Fill", "Border", "Look", "Title"],
         Object.entries<any>(t.diagram.cards).map(([name, card]) => {
           const colors = onDefault.diagramCards?.[name];
           const c = cardCells(card, colors?.border ?? null);
           const label = `\`${name}\`${STANDARD_CARDS.includes(name) ? "" : " (the brand's own)"}`;
-          return [label, colors?.fill ?? "none", c.border, c.radius, c.shadow, c.icon, c.accent, c.title];
+          return [label, colors?.fill ?? "none", c.border, c.look, c.title];
         }),
       ),
       `Colours on the \`default\` surface, sizes in px on the 1920×1080 canvas. A slide picks a card with \`card="..."\`; see [diagram look and cards](${root(base)}/brands/diagram-look-and-cards/).`,

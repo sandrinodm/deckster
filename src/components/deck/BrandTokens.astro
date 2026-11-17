@@ -110,7 +110,7 @@ const cards = diagram ? Object.entries(diagram.cards) : [];
       <p class="dk-prose" set:html={diagramLookLines(diagram).map(inline).join(" ")} />
       <div class="nb-table-scroll">
         <table aria-label={`The ${brand.label} brand's diagram cards on the default surface`}>
-          <thead><tr><th>Card</th><th>Fill</th><th>Border</th><th>Radius</th><th>Shadow</th><th>Icon</th><th>Stripe</th><th>Title</th></tr></thead>
+          <thead><tr><th>Card</th><th>Fill</th><th>Border</th><th>Look</th><th>Title</th></tr></thead>
           <tbody>
             {cards.map(([name, card]) => {
               const colors = onDefault.diagramCards?.[name];
@@ -119,11 +119,8 @@ const cards = diagram ? Object.entries(diagram.cards) : [];
                 <tr>
                   <td data-nowrap><code>{name}</code>{!STANDARD_CARDS.includes(name) && <span class="dk-path-names">the brand's own</span>}</td>
                   <td data-mono data-nowrap>{colors?.fill ? <Fragment><i class="dk-dot" style={`background:${colors.fill}`}></i>{colors.fill}</Fragment> : "none"}</td>
-                  <td data-mono>{colors?.border && <i class="dk-dot" style={`background:${colors.border}`}></i>}{cells.border}</td>
-                  <td>{cells.radius}</td>
-                  <td>{cells.shadow}</td>
-                  <td>{cells.icon}</td>
-                  <td>{cells.accent}</td>
+                  <td data-mono data-nowrap>{colors?.border && <i class="dk-dot" style={`background:${colors.border}`}></i>}{cells.border}</td>
+                  <td>{cells.look}</td>
                   <td>{cells.title}</td>
                 </tr>
               );
