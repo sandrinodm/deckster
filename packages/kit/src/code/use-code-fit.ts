@@ -32,15 +32,15 @@ const GROW_HEIGHT_SHARE = 0.92;
 const FIT_PROPERTY = '--kit-code-fit';
 
 /**
- * Extra width in canvas pixels a line may have before it counts as too wide; absorbs sub-pixel
- * rounding.
+ * Extra width or height in canvas pixels a block may have before it counts as too wide or too tall;
+ * absorbs sub-pixel rounding.
  */
-const WIDTH_TOLERANCE_PX = 1;
+const FIT_TOLERANCE_PX = 1;
 
 /**
  * How a block ended up, set as its `data-fit` attribute: stepped up to fill a layout's code region,
- * at the brand's code size, stepped down, or still too wide at the smallest allowed size (then its
- * long lines run out of the frame, which `deck lint` reports as overflow).
+ * at the brand's code size, stepped down, or still too wide or too tall at the smallest allowed
+ * size (then its lines run out of the frame or the region, which `deck lint` reports as overflow).
  */
 export type CodeFit = 'grown' | 'natural' | 'stepped' | 'overflow';
 
@@ -66,11 +66,12 @@ export function allowedScales(basePx: number): number[] {
 }
 
 /**
- * Steps a code block's font size down until its longest line fits the frame, never below the
- * brand's minimum type size; in a layout's code region a short block first steps up, by at most
- * {@link CODE_GROW_STEPS}, as far as its lines and the region's height allow. It measures again
- * after every render and when web fonts finish loading, and holds the deck's `ready()` until the
- * fonts have settled so screenshots and lint see the fitted size.
+ * Steps a code block's font size down until its longest line fits the frame and, in a layout's code
+ * region, the block fits the region's height, never below the brand's minimum type size; in a
+ * layout's code region a short block first steps up, by at most {@link CODE_GROW_STEPS}, as far as
+ * its lines and the region's height allow. It measures again after every render and when web fonts
+ * finish loading, and holds the deck's `ready()` until the fonts have settled so screenshots and
+ * lint see the fitted size.
  *
  * @param ref - The frame's code area; its first element child is the block of lines.
  */
@@ -145,7 +146,14 @@ export function fitCode(area: HTMLElement): CodeFit {
   area.style.setProperty(FIT_PROPERTY, '1');
   const scales = allowedScales(Number.parseFloat(getComputedStyle(area).fontSize));
   const grown = region !== null && growToRegion(area, frame, region, needed);
-  const result = grown ? 'grown' : shrinkToWidth(area, scales, needed);
+  /**
+   * Whether the lines fit at the current scale: as wide as the area, and in a layout's code region
+   * no taller than its room.
+   */
+  const fits = (): boolean =>
+    needed() <= area.clientWidth + FIT_TOLERANCE_PX &&
+    (region === null || frame.offsetHeight <= roomHeight(region) + FIT_TOLERANCE_PX);
+  const result = grown ? 'grown' : shrinkToFit(area, scales, fits);
   area.dataset['fit'] = result;
   return result;
 }
@@ -170,7 +178,7 @@ function growToRegion(
   for (const scale of CODE_GROW_STEPS) {
     area.style.setProperty(FIT_PROPERTY, String(scale));
     const fitsHeight = frame.offsetHeight <= region.clientHeight * GROW_HEIGHT_SHARE;
-    if (fitsHeight && needed() <= area.clientWidth + WIDTH_TOLERANCE_PX) {
+    if (fitsHeight && needed() <= area.clientWidth + FIT_TOLERANCE_PX) {
       return true;
     }
   }
@@ -179,21 +187,34 @@ function growToRegion(
 }
 
 /**
- * Steps a block down through its allowed scales until its lines fit the width.
+ * The height a layout's code region holds: its content box, inside any padding.
+ *
+ * @param region - The layout's code region.
+ */
+function roomHeight(region: HTMLElement): number {
+  const style = getComputedStyle(region);
+  const padding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
+  return region.clientHeight - (Number.isFinite(padding) ? padding : 0);
+}
+
+/**
+ * Steps a block down through its allowed scales until its lines fit: as wide as the frame and, in a
+ * layout's code region, as tall as its room, so a block at the layout's line budget fits a brand
+ * with tall code lines or a footnote below it.
  *
  * @param area - The element that holds the lines.
  * @param scales - The allowed scales, largest first; the first one is the brand's size.
- * @param needed - The width the lines need at the current scale.
+ * @param fits - Whether the lines fit at the current scale.
  * @returns `natural` at the brand's size, `stepped` at a smaller one, `overflow` when none fits.
  */
-function shrinkToWidth(
+function shrinkToFit(
   area: HTMLElement,
   scales: readonly number[],
-  needed: () => number,
+  fits: () => boolean,
 ): Exclude<CodeFit, 'grown'> {
   for (const [index, scale] of scales.entries()) {
     area.style.setProperty(FIT_PROPERTY, String(scale));
-    if (needed() <= area.clientWidth + WIDTH_TOLERANCE_PX) {
+    if (fits()) {
       return index === 0 ? 'natural' : 'stepped';
     }
   }

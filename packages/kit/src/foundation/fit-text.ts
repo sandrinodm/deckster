@@ -178,9 +178,12 @@ export function fitGroupWidth(elements: readonly HTMLElement[]): FitResult {
  * Re-renders the calling component each time the document's web fonts finish loading, so measured
  * text is measured again with the real glyphs. Until the first load settles it holds the deck's
  * `ready()`.
+ *
+ * @returns How many font loads have finished since the component mounted, for a caller that keys a
+ *   measurement to the fonts it was made with.
  */
-export function useRenderOnFontLoad(): void {
-  const [, setVersion] = useState(0);
+export function useRenderOnFontLoad(): number {
+  const [version, setVersion] = useState(0);
   const [settled, setSettled] = useState(() => documentFonts() === undefined);
   useReadyHold(!settled);
   useEffect(() => {
@@ -210,6 +213,8 @@ export function useRenderOnFontLoad(): void {
       fonts.removeEventListener('loadingdone', bump);
     };
   }, []);
+
+  return version;
 }
 
 /**

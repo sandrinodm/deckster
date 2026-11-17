@@ -50,6 +50,25 @@ a.kit-link-card {
   transition: border-color var(--brand-duration-fast) var(--brand-ease-standard);
 }
 
+/* In a row of cards (see the kit's prose.css) every card is as tall as the tallest, with its text
+   from the top, and a button on its own line of that grid keeps its own width. */
+.kit-prose:has(
+    > .deck-slot > .kit-link-card + .kit-link-card,
+    > .deck-slot > .kit-step + .kit-step > .kit-link-card
+  )
+  a.kit-link-card {
+  align-self: stretch;
+  align-items: flex-start;
+}
+
+.kit-prose:has(
+    > .deck-slot > .kit-link-card + .kit-link-card,
+    > .deck-slot > .kit-step + .kit-step > .kit-link-card
+  )
+  a.kit-link-button {
+  justify-self: start;
+}
+
 a.kit-link-card:hover {
   border-color: var(--brand-color-accent);
 }
@@ -100,6 +119,12 @@ a.kit-link-card:hover {
   align-items: center;
   gap: var(--brand-space-sm);
   margin: 0;
+}
+
+/* In running text a QR code keeps to the start of the column; in a layout's media frame it is
+   centred in the frame, as every other component there is. */
+.kit-treated > .deck-slot > .kit-qr {
+  align-self: center;
 }
 
 .kit-qr-code {

@@ -48,6 +48,30 @@ export type FitLevelOptions = {
    * grows sparse content keeps its larger levels for content that leaves room.
    */
   fill?: (level: number) => number;
+
+  /**
+   * Whether to measure what the content holds rather than its own box. This suits content sized to
+   * its region, such as a grid of fixed tracks whose tracks or cells grow past it when their text
+   * needs more.
+   */
+  overflow?: boolean;
+
+  /**
+   * The height the content needs, read from layout geometry, for content whose own box does not
+   * tell: a grid as tall as its region whose rows may need more, where the items spanning every row
+   * are as tall as the rows need. Without it the content's box (or, with `overflow`, its scroll
+   * height) is measured.
+   */
+  height?: (content: HTMLElement) => number;
+
+  /**
+   * Whether each finished load of web fonts starts the ladder again from level 0. The ladder only
+   * steps down, so a level found while the page still set its text in a fallback face (wider or
+   * narrower than the brand's) would otherwise stay after the real fonts arrive; a layout whose
+   * first levels are taken only by content that leaves room needs them measured with the real
+   * glyphs.
+   */
+  restartOnFontLoad?: boolean;
 };
 
 /**
@@ -56,10 +80,20 @@ export type FitLevelOptions = {
  * @param content - The element that must fit.
  * @param region - The region it sits in.
  * @param fill - The share of the region's height the content may take.
+ * @param overflow - Whether to measure the content's scroll height (what it holds, overflow
+ *   included) instead of its box.
+ * @param needs - The height the content needs, when its box does not tell.
  */
-export function fitsRegion(content: HTMLElement, region: HTMLElement, fill = 1): boolean {
+export function fitsRegion(
+  content: HTMLElement,
+  region: HTMLElement,
+  fill = 1,
+  overflow = false,
+  needs?: (content: HTMLElement) => number,
+): boolean {
+  const height = needs?.(content) ?? (overflow ? content.scrollHeight : content.offsetHeight);
   return (
-    content.offsetHeight <= region.clientHeight * fill + MEASURE_TOLERANCE_PX &&
+    height <= region.clientHeight * fill + MEASURE_TOLERANCE_PX &&
     content.scrollWidth <= region.clientWidth + MEASURE_TOLERANCE_PX
   );
 }
@@ -67,8 +101,10 @@ export function fitsRegion(content: HTMLElement, region: HTMLElement, fill = 1):
 /**
  * Picks the largest of a layout's type levels at which its content fits the region: the layout
  * renders at level 0 (its largest text), and while the content overflows the region it renders
- * again one level down, before paint, until it fits or reaches the last level, whose overflow `deck
- * lint` reports. State, not DOM edits, so React's re-renders and hot reload keep the level.
+ * again one level down, before paint, until it fits or reaches the last level. The last level's
+ * overflow is reported for `deck lint`. A new key starts again from level 0, and so, with
+ * `restartOnFontLoad`, does each finished load of web fonts. State, not DOM edits, so React's
+ * re-renders and hot reload keep the level.
  *
  * @param region - The region the content must fit.
  * @param content - The content.
@@ -84,12 +120,13 @@ export function useFitLevel(
   key: string,
   options: FitLevelOptions = {},
 ): FitLevel {
-  const [state, setState] = useState<LevelState>({ key, level: 0, overflows: false });
-  const current = state.key === key ? state : { key, level: 0, overflows: false };
+  const fonts = useRenderOnFontLoad();
+  const fitKey = options.restartOnFontLoad === true ? `${key}\n${fonts}` : key;
+  const [state, setState] = useState<LevelState>({ key: fitKey, level: 0, overflows: false });
+  const current = state.key === fitKey ? state : { key: fitKey, level: 0, overflows: false };
   const last = Math.max(levels - 1, 0);
   const level = Math.min(current.level, last);
   const [, setSize] = useState('');
-  useRenderOnFontLoad();
   // Content that changes size on its own (a chart drawn once its frame is measured) is fitted
   // again: a new size renders the layout, which runs the check below.
   useEffect(() => {
@@ -114,11 +151,11 @@ export function useFitLevel(
     }
 
     const fill = level === last ? 1 : (options.fill?.(level) ?? 1);
-    const fits = fitsRegion(fitted, box, fill);
+    const fits = fitsRegion(fitted, box, fill, options.overflow, options.height);
     if (!fits && level < last) {
-      setState({ key, level: level + 1, overflows: false });
+      setState({ key: fitKey, level: level + 1, overflows: false });
     } else if (level === last && current.overflows === fits) {
-      setState({ key, level, overflows: !fits });
+      setState({ key: fitKey, level, overflows: !fits });
     }
   });
   return { level, overflows: level === last && current.overflows };

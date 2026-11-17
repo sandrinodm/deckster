@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 
 import type { DeltaDirection, DeltaTone } from '#layouts/stat-value.ts';
 
 import { smartPunctuation } from '#foundation/smart-punctuation.ts';
 import { deltaDirection, deltaText, deltaTone, splitStat } from '#layouts/stat-value.ts';
+import { CountingNumber } from '#motion/counting-number.tsx';
+import { useCountUp } from '#motion/use-count-up.ts';
 
 /**
  * What a stat's delta needs: the text, and the tone and trend the slide may set.
@@ -41,20 +43,30 @@ type StatValueProps = {
 };
 
 /**
- * A stat's figure in the brand's stat style with tabular numerals, its unit text set smaller.
+ * A stat's figure in the brand's stat style with tabular numerals, its unit text set smaller. When
+ * the live deck moves forward onto the slide, or onto the step that reveals the figure, a plain
+ * number counts up to its value (`useCountUp`). The final value keeps its place in the layout, so
+ * fitting never sees the count and the figure never shifts. Static mode, `SlideView` copies, going
+ * backward and reduced motion show the value as it is.
  */
 export function StatValue({ value, className }: StatValueProps): ReactNode {
+  const ref = useRef<HTMLParagraphElement>(null);
   const { prefix, number, suffix, spaced } = splitStat(String(value));
+  const counting = useCountUp(number, ref);
   const extra = className === undefined ? '' : ` ${className}`;
   const classes = `kit-stat-value kit-type-stat kit-numeric${extra}`;
   return (
-    <p className={classes}>
+    <p ref={ref} className={classes}>
       {prefix === '' ? null : (
         <span className="kit-stat-unit" data-side="before">
           {prefix}
         </span>
       )}
-      {number}
+      {counting === undefined ? (
+        number
+      ) : (
+        <CountingNumber number={number} counting={counting} align={countAlign(prefix, suffix)} />
+      )}
       {suffix === '' ? null : (
         <span className="kit-stat-unit" data-side="after" data-spaced={spaced}>
           {suffix}
@@ -62,6 +74,17 @@ export function StatValue({ value, className }: StatValueProps): ReactNode {
       )}
     </p>
   );
+}
+
+/**
+ * The edge a counting number keeps to: the start when only a unit before it (a currency sign) would
+ * otherwise drift away from it, else the end, beside the unit after it.
+ *
+ * @param prefix - The text before the number.
+ * @param suffix - The text after it.
+ */
+function countAlign(prefix: string, suffix: string): 'start' | 'end' {
+  return prefix !== '' && suffix === '' ? 'start' : 'end';
 }
 
 /**

@@ -6,7 +6,8 @@ import type { FocalPoint } from '#media/focal-point.ts';
 
 import { StepMarks } from '#code/step-marks.tsx';
 import { checkComponentProps } from '#components/check-component-props.ts';
-import { objectPosition } from '#media/focal-point.ts';
+import { focalStyle } from '#media/focal-point.ts';
+import { useMediaFrame } from '#media/media-frame.ts';
 import {
   assertValidCues,
   cueAts,
@@ -17,6 +18,7 @@ import {
   segmentIndex,
   type CueSegment,
 } from '#media/video-cues.ts';
+import { useHeldByStep } from '#motion/still-motion.ts';
 
 /**
  * Props of {@link Video}.
@@ -130,8 +132,9 @@ export function Video(props: VideoProps): ReactNode {
   const segment = segmentBounds(cues, index);
   const isStatic = useStatic();
   const { brand } = useBrand();
-  const plan = brand.imagery.treatments[brand.imagery.default];
-  const radius = plan?.type === 'rounded' ? plan.radius : 0;
+  const frame = useMediaFrame();
+  const plan = brand.imagery.treatments[frame?.treatment ?? brand.imagery.default];
+  const radius = plan?.type === 'rounded' && frame?.rounded !== false ? plan.radius : 0;
   const parts = ats.length + 1;
   const controls = props.controls === true;
   return (
@@ -194,7 +197,7 @@ function Poster({ poster, alt, fit = 'cover', focal }: VideoProps): ReactNode {
       src={poster}
       alt={alt}
       draggable={false}
-      style={{ objectFit: fit, objectPosition: objectPosition(focal) }}
+      style={{ objectFit: fit, ...focalStyle(focal) }}
     />
   );
 }
@@ -210,12 +213,15 @@ type PlayerProps = VideoProps & {
 };
 
 /**
- * The playing video: starts when the slide becomes the one on screen, pauses when it leaves, and
- * plays the part the current step names.
+ * The playing video: starts when the slide becomes the one on screen (inside a `<Step>`, when the
+ * step reveals it), pauses when it leaves, and plays the part the current step names.
  */
 function Player(props: PlayerProps): ReactNode {
   const { src, poster, alt, segment, loop = false, muted = true, autoPlay = true } = props;
   const { isActive } = useSlide();
+  const held = useHeldByStep();
+  // Inside a `<Step>` the video waits for its step, so it starts from the top as it appears.
+  const playing = isActive && !held;
   const ref = useRef<HTMLVideoElement | null>(null);
   const [ready, setReady] = useState(false);
   useReadyHold(isActive && !ready);
@@ -240,7 +246,7 @@ function Player(props: PlayerProps): ReactNode {
       return undefined;
     }
 
-    if (!isActive) {
+    if (!playing) {
       wasActive.current = false;
       video.pause();
       return undefined;
@@ -249,7 +255,7 @@ function Player(props: PlayerProps): ReactNode {
     const entering = !wasActive.current;
     wasActive.current = true;
     return playSegment(video, { from, to }, { autoPlay, entering });
-  }, [isActive, ready, from, to, autoPlay]);
+  }, [playing, ready, from, to, autoPlay]);
   return (
     // Silent by default, so there is no sound to caption; a deck can add a track in TSX.
     // oxlint-disable-next-line jsx-a11y/media-has-caption
@@ -266,7 +272,7 @@ function Player(props: PlayerProps): ReactNode {
       preload="metadata"
       style={{
         objectFit: props.fit ?? 'cover',
-        objectPosition: objectPosition(props.focal),
+        ...focalStyle(props.focal),
       }}
     />
   );

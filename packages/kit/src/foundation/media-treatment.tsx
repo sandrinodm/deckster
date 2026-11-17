@@ -2,6 +2,7 @@ import { useBrand } from '@deckster/brand/runtime';
 import { useId, type CSSProperties, type ReactNode } from 'react';
 
 import { duotoneTables, planTreatment, type TreatmentPlan } from '#media/image-treatment.ts';
+import { MediaFrameContext } from '#media/media-frame.ts';
 
 /**
  * Characters a React id has that a CSS `url(#id)` reference cannot.
@@ -43,8 +44,9 @@ type TreatedMediaProps = {
 /**
  * A frame that draws the photos and videos placed directly in it (in a layout's media slot, say)
  * with one of the brand's image treatments: rounded corners on the frame, and grayscale, duotone or
- * a tint on the pictures, from the same plan the kit's `Image` uses. Components inside it (a chart,
- * a table, an `Image` with its own treatment) are left as they are.
+ * a tint on the pictures, from the same plan the kit's `Image` uses. An `Image` or `Video` inside
+ * it that names no treatment of its own takes the frame's, and its corners; other components (a
+ * chart, a table) are left as they are.
  */
 export function TreatedMedia({
   className,
@@ -68,7 +70,7 @@ export function TreatedMedia({
       data-treatment={name}
       data-tint={plan.tint !== undefined}
       style={style}>
-      {children}
+      <MediaFrameContext value={{ treatment: name, rounded }}>{children}</MediaFrameContext>
       {plan.duotone === undefined ? null : <DuotoneFilter id={filterId} plan={plan.duotone} />}
     </div>
   );

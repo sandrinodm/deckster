@@ -7,6 +7,7 @@ import {
   findAttribute,
   identifierAttribute,
   walk,
+  type EstreeNode,
   type MdastNode,
 } from '#mdx/mdast.ts';
 import { nearestNames } from '#mdx/nearest-names.ts';
@@ -61,7 +62,8 @@ const require = createRequire(import.meta.url);
  * the brand's icon set (or in `set:name` form, another installed set), checked, and replaced by an
  * import of `~icons/<set>/<name>`, which `unplugin-icons` serves as a React component. Only the
  * icons the slides name end up in the bundle. An unknown name fails the build with the set's
- * closest names as the fix.
+ * closest names as the fix. An `<Icon>` written inside a JavaScript expression, such as the `icon`
+ * prop of `<LinkCard icon={<Icon name="book" />}>`, is resolved the same way.
  *
  * @param options - The brand's icon set.
  */
@@ -69,12 +71,13 @@ export function remarkKitIcons(options: IconOptions): (tree: MdastNode, file: Ic
   return (tree, file) => {
     const imports: MdastNode[] = [];
     const locals = new Map<string, string>();
-    walk(tree, (node) => {
-      const name = node.name === 'Icon' ? attributeValue(node, 'name') : undefined;
-      if (typeof name !== 'string' || findAttribute(node, 'icon') !== undefined) {
-        return false;
-      }
-
+    /**
+     * The binding of an icon's component, checked and imported the first time a slide names it.
+     *
+     * @param name - The name as written.
+     * @param node - The element or expression it is written in, for the place of a failure.
+     */
+    const bindingOf = (name: string, node: MdastNode): string => {
       const { set, icon } = splitName(name, options.set);
       checkIcon(set, icon, name, node, file);
       const id = `${set}/${icon}`;
@@ -85,7 +88,19 @@ export function remarkKitIcons(options: IconOptions): (tree: MdastNode, file: Ic
         imports.push(defaultImport(local, `~icons/${id}`));
       }
 
-      node.attributes?.push(identifierAttribute('icon', local));
+      return local;
+    };
+    walk(tree, (node) => {
+      for (const program of expressionPrograms(node)) {
+        resolveExpressionIcons(program, (name) => bindingOf(name, node));
+      }
+
+      const name = node.name === 'Icon' ? attributeValue(node, 'name') : undefined;
+      if (typeof name !== 'string' || findAttribute(node, 'icon') !== undefined) {
+        return false;
+      }
+
+      node.attributes?.push(identifierAttribute('icon', bindingOf(name, node)));
       return false;
     });
     tree.children = [...imports, ...(tree.children ?? [])];
@@ -212,4 +227,131 @@ function readSet(set: string): IconSet | undefined {
   } catch {
     return undefined;
   }
+}
+
+/**
+ * The programs of a node's JavaScript expressions: a `{...}` expression's own, and those of its
+ * attributes written as expressions (`icon={<Icon name="book" />}`). ESM blocks are left alone.
+ *
+ * @param node - Any mdast node.
+ */
+function expressionPrograms(node: MdastNode): EstreeNode[] {
+  const programs: EstreeNode[] = [];
+  if (node.type !== 'mdxjsEsm' && node.data?.estree !== undefined) {
+    programs.push(node.data.estree);
+  }
+
+  for (const attribute of node.attributes ?? []) {
+    const value = attribute.value;
+    if (typeof value === 'object' && value !== null && value.data?.estree !== undefined) {
+      programs.push(value.data.estree);
+    }
+  }
+
+  return programs;
+}
+
+/**
+ * Gives every `<Icon name="...">` inside a JavaScript expression the `icon` its name resolves to,
+ * as the plugin does for an `<Icon>` written as an element of the slide. An `<Icon>` that already
+ * has an `icon`, or whose name is not a literal string, is left as written.
+ *
+ * @param program - The expression's program.
+ * @param bindingOf - The imported binding of a name; it fails the build for an unknown one.
+ */
+function resolveExpressionIcons(program: EstreeNode, bindingOf: (name: string) => string): void {
+  walkEstree(program, (node) => {
+    if (node.type !== 'JSXOpeningElement' || jsxName(node.name) !== 'Icon') {
+      return;
+    }
+
+    const attributes = node.attributes as EstreeNode[];
+    if (jsxAttribute(attributes, 'icon') !== undefined) {
+      return;
+    }
+
+    const name = literalString(jsxAttribute(attributes, 'name')?.value);
+    if (name === undefined) {
+      return;
+    }
+
+    attributes.push({
+      type: 'JSXAttribute',
+      name: { type: 'JSXIdentifier', name: 'icon' },
+      value: {
+        type: 'JSXExpressionContainer',
+        expression: { type: 'Identifier', name: bindingOf(name) },
+      },
+    });
+  });
+}
+
+/**
+ * Calls the visitor on every estree node under a node, depth first.
+ *
+ * @param node - The root.
+ * @param visitor - Called with each node.
+ */
+function walkEstree(node: EstreeNode, visitor: (node: EstreeNode) => void): void {
+  visitor(node);
+  for (const [key, value] of Object.entries(node)) {
+    // Source positions and comments are not part of the tree.
+    if (key === 'loc' || key === 'range' || key === 'comments') {
+      continue;
+    }
+
+    for (const child of Array.isArray(value) ? value : [value]) {
+      if (isEstreeNode(child)) {
+        walkEstree(child, visitor);
+      }
+    }
+  }
+}
+
+/**
+ * Whether a value is an estree node.
+ *
+ * @param value - Any field of a node.
+ */
+function isEstreeNode(value: unknown): value is EstreeNode {
+  return (
+    typeof value === 'object' && value !== null && typeof Reflect.get(value, 'type') === 'string'
+  );
+}
+
+/**
+ * The name of a JSX element, when it is a plain identifier such as `Icon`.
+ *
+ * @param name - The opening element's `name`.
+ */
+function jsxName(name: unknown): string | undefined {
+  return isEstreeNode(name) && name.type === 'JSXIdentifier' ? String(name.name) : undefined;
+}
+
+/**
+ * The attribute with a name among a JSX element's attributes.
+ *
+ * @param attributes - The opening element's attributes.
+ * @param name - The attribute name.
+ */
+function jsxAttribute(attributes: readonly EstreeNode[], name: string): EstreeNode | undefined {
+  return attributes.find(
+    (attribute) => attribute.type === 'JSXAttribute' && jsxName(attribute.name) === name,
+  );
+}
+
+/**
+ * The string an attribute value holds when it is a literal: `name="book"` or `name={'book'}`.
+ *
+ * @param value - The attribute's value.
+ */
+function literalString(value: unknown): string | undefined {
+  if (!isEstreeNode(value)) {
+    return undefined;
+  }
+
+  const literal = value.type === 'JSXExpressionContainer' ? value.expression : value;
+  return isEstreeNode(literal) && literal.type === 'Literal' && typeof literal.value === 'string'
+    ? literal.value
+    : undefined;
 }

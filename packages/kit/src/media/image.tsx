@@ -4,8 +4,9 @@ import { useId, useRef, type CSSProperties, type ReactNode } from 'react';
 import type { FocalPoint } from '#media/focal-point.ts';
 
 import { checkComponentProps } from '#components/check-component-props.ts';
-import { objectPosition } from '#media/focal-point.ts';
+import { focalStyle } from '#media/focal-point.ts';
 import { duotoneTables, planTreatment } from '#media/image-treatment.ts';
+import { useMediaFrame } from '#media/media-frame.ts';
 import { useImageStatus } from '#media/use-media-ready.ts';
 
 /**
@@ -30,8 +31,9 @@ export type ImageProps = {
   alt: string;
 
   /**
-   * The name of a treatment in the brand's `imagery.treatments`, such as `duotone` or `rounded`.
-   * Defaults to the brand's default treatment.
+   * The name of a treatment in the brand's `imagery.treatments`, such as `duotone` or `rounded`;
+   * `plain`, which every brand has, shows the image as it is. Defaults to the slide's `treatment`
+   * in a layout's media slot, else the brand's default treatment.
    */
   treatment?: string;
 
@@ -46,8 +48,9 @@ export type ImageProps = {
   focal?: FocalPoint;
 
   /**
-   * The frame's width over height, such as `16 / 9`. Without it the frame takes the room its
-   * container gives it, or the image's own shape.
+   * The frame's width over height, such as `16 / 9`: the figure keeps that shape in any container
+   * (a layout's media frame fits the largest such box in), so corners, a tint and a `<Morph>` hold
+   * it. Without it the frame takes the room its container gives it, or the image's own shape.
    */
   ratio?: number;
 
@@ -76,24 +79,30 @@ export function Image(props: ImageProps): ReactNode {
   checkComponentProps('Image', props);
   const { src, alt, treatment, fit = 'cover', focal, ratio, caption } = props;
   const { brand } = useBrand();
-  const name = treatment ?? brand.imagery.default;
+  const frame = useMediaFrame();
+  const name = treatment ?? frame?.treatment ?? brand.imagery.default;
   const plan = planTreatment(brand.imagery.treatments[name]);
   const filterId = `kit-duotone-${useId().replaceAll(NON_WORD, '')}`;
   const ref = useRef<HTMLImageElement | null>(null);
   const status = useImageStatus(ref, src);
   const frameStyle: CSSProperties & Record<`--${string}`, string | number | undefined> = {
-    borderRadius: plan.radius,
+    borderRadius: frame?.rounded === false ? 0 : plan.radius,
     aspectRatio: ratio,
     '--kit-image-tint': plan.tint?.color,
     '--kit-image-tint-opacity': plan.tint?.opacity,
   };
   const imageStyle: CSSProperties = {
     objectFit: fit,
-    objectPosition: objectPosition(focal),
+    ...focalStyle(focal),
     filter: filterOf(plan, filterId),
   };
   return (
-    <figure className="kit-image" data-treatment={name} data-status={status}>
+    <figure
+      className="kit-image"
+      data-treatment={name}
+      data-status={status}
+      data-ratio={ratio === undefined ? undefined : ''}
+      style={ratio === undefined ? undefined : ratioStyle(ratio)}>
       <div className="kit-image-frame" data-tint={plan.tint !== undefined} style={frameStyle}>
         {status === 'error' ? (
           <div className="kit-image-missing kit-type-caption">Image not found: {src}</div>
@@ -113,6 +122,15 @@ export function Image(props: ImageProps): ReactNode {
       )}
     </figure>
   );
+}
+
+/**
+ * The custom property a layout reads to fit a figure of a stated ratio into its frame.
+ *
+ * @param ratio - The frame's width over height.
+ */
+function ratioStyle(ratio: number): CSSProperties & Record<`--${string}`, number> {
+  return { '--kit-image-ratio': ratio };
 }
 
 /**

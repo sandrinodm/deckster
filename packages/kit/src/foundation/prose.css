@@ -126,4 +126,140 @@
     border-left: var(--brand-stroke-bold) solid var(--brand-color-accent);
     color: var(--brand-color-heading);
   }
+
+  /*
+   * A run of link cards sits in an even row, as many to a row as fit at a quarter of the twelve
+   * columns each and no more than there are cards (three or four across the slide, two in the
+   * eight-column measure, one in a narrow column), instead of a stack of cards as wide as their
+   * titles. The column becomes a grid with
+   * the same gap between rows; everything else in it spans the whole row, so text before or after
+   * the cards, or between two runs, keeps its own line. Cards in steps count too.
+   */
+  .kit-prose:has(
+    > .deck-slot > .kit-link-card + .kit-link-card,
+    > .deck-slot > .kit-step + .kit-step > .kit-link-card
+  ) {
+    --kit-card-count: 2;
+    --kit-card-min: calc(3 * var(--kit-column) + 2 * var(--kit-gutter));
+
+    display: grid;
+    /* A track is never narrower than its share of the row with one card per track, so a row never
+       has more tracks than there are cards and the cards always fill it. */
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        min(
+          100%,
+          max(
+            var(--kit-card-min),
+            (100% - (var(--kit-card-count) - 1) * var(--kit-gutter)) / var(--kit-card-count)
+          )
+        ),
+        1fr
+      )
+    );
+    column-gap: var(--kit-gutter);
+    row-gap: var(--kit-flow-gap);
+    align-content: start;
+  }
+
+  .kit-prose:has(
+    > .deck-slot
+      > :is(.kit-link-card, .kit-step)
+      ~ :is(.kit-link-card, .kit-step)
+      ~ :is(.kit-link-card, .kit-step)
+  ) {
+    --kit-card-count: 3;
+  }
+
+  .kit-prose:has(
+    > .deck-slot
+      > :is(.kit-link-card, .kit-step)
+      ~ :is(.kit-link-card, .kit-step)
+      ~ :is(.kit-link-card, .kit-step)
+      ~ :is(.kit-link-card, .kit-step)
+  ) {
+    --kit-card-count: 4;
+  }
+
+  .kit-prose:has(
+      > .deck-slot > .kit-link-card + .kit-link-card,
+      > .deck-slot > .kit-step + .kit-step > .kit-link-card
+    )
+    :is(
+      .kit-prose > :not(.deck-slot),
+      .kit-prose > .deck-slot > :not(.kit-link-card, .kit-step),
+      .kit-prose > .deck-slot > .kit-step > :not(.kit-link-card)
+    ) {
+    grid-column: 1 / -1;
+  }
+
+  /*
+   * A number figure in running text (a big number, a row of stats, a comparison, progress bars or a
+   * table) is as tall as its figures and follows the text before it. A figure fills its region in
+   * a chart's own column, but running text has no height of its own to give it, so a filling
+   * figure would get none and its stats would spill out under the slide.
+   */
+  .kit-prose
+    .kit-chart:is(
+      [data-chart='big-number'],
+      [data-chart='stat-row'],
+      [data-chart='comparison'],
+      [data-chart='progress'],
+      [data-chart='table']
+    ) {
+    flex: none;
+    height: auto;
+  }
+
+  .kit-prose
+    .kit-chart:is(
+      [data-chart='big-number'],
+      [data-chart='stat-row'],
+      [data-chart='comparison'],
+      [data-chart='progress'],
+      [data-chart='table']
+    )
+    > .kit-chart-plot {
+    flex: none;
+  }
+
+  .kit-prose
+    .kit-chart:is(
+      [data-chart='big-number'],
+      [data-chart='stat-row'],
+      [data-chart='comparison'],
+      [data-chart='progress'],
+      [data-chart='table']
+    )
+    > .kit-chart-plot::before,
+  .kit-prose
+    .kit-chart:is(
+      [data-chart='big-number'],
+      [data-chart='stat-row'],
+      [data-chart='comparison'],
+      [data-chart='progress'],
+      [data-chart='table']
+    )
+    > .kit-chart-plot::after {
+    content: none;
+  }
+
+  /* The figure stands a flow gap further from the text before it, so it reads as its own block. */
+  .kit-prose
+    :is(p, ul, ol, h3)
+    + .kit-chart:is(
+      [data-chart='big-number'],
+      [data-chart='stat-row'],
+      [data-chart='comparison'],
+      [data-chart='progress'],
+      [data-chart='table']
+    ) {
+    margin-top: var(--kit-flow-gap);
+  }
+
+  .kit-prose .kit-chart[data-chart='table'] .kit-chart-table {
+    height: auto;
+    max-height: none;
+  }
 }

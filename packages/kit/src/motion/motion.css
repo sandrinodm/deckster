@@ -8,86 +8,160 @@
 
 @layer components {
   /*
-   * Slide transitions. The kit's chrome names the brand's transition in `data-transition`. The
-   * incoming slide comes in on top; the outgoing one stays exactly in place (opaque, not moved or
-   * scaled) until the incoming one has finished, so no strip of the canvas shows at an edge and
-   * nothing shows through between two dark slides. It takes its resting place off screen only
-   * then.
+   * Slide transitions. A stage slide names its transition in `data-transition` when the move it
+   * belongs to sets its own (a slide's `transition:` frontmatter, or `none` for a jump); otherwise
+   * it follows the brand's, which the kit's chrome names in its own `data-transition`. Each kind
+   * only says where the slides before and after the current one rest (moved, scaled, clipped or
+   * transparent); the rules after the kinds move the slides between those places. The engine gives
+   * a neighbour the kind of the move that would bring it on screen, so it already rests where that
+   * move starts.
+   *
+   * The incoming slide comes in on top; the outgoing one stays exactly in place (opaque, not moved,
+   * scaled or clipped) until the incoming one has finished, so no strip of the canvas shows at an
+   * edge and nothing shows through between two dark slides. It takes its resting place off screen
+   * only then. `push` is the one kind that moves the outgoing slide, edge to edge with the
+   * incoming one.
+   */
+  .deck-canvas {
+    --kit-slide-shift: 3%;
+    --kit-rise-shift: 5%;
+  }
+
+  .deck-canvas > .deck-slide {
+    --kit-move: var(--brand-transition-duration);
+    --kit-rest-opacity: 1;
+    --kit-future-translate: none;
+    --kit-past-translate: none;
+    --kit-future-scale: none;
+    --kit-past-scale: none;
+    --kit-future-clip: inset(0);
+    --kit-past-clip: inset(0);
+    --kit-leave-translate: 0s linear var(--kit-move);
+  }
+
+  :is(
+    .deck-canvas:has(> .kit-chrome[data-transition='none']) > .deck-slide:not([data-transition]),
+    .deck-canvas > .deck-slide[data-transition='none']
+  ) {
+    --kit-move: 0s;
+  }
+
+  :is(
+    .deck-canvas:has(> .kit-chrome[data-transition='fade']) > .deck-slide:not([data-transition]),
+    .deck-canvas > .deck-slide[data-transition='fade']
+  ) {
+    --kit-rest-opacity: 0;
+  }
+
+  :is(
+    .deck-canvas:has(> .kit-chrome[data-transition='slide']) > .deck-slide:not([data-transition]),
+    .deck-canvas > .deck-slide[data-transition='slide']
+  ) {
+    --kit-rest-opacity: 0;
+    --kit-future-translate: var(--kit-slide-shift) 0;
+    --kit-past-translate: calc(-1 * var(--kit-slide-shift)) 0;
+  }
+
+  :is(
+    .deck-canvas:has(> .kit-chrome[data-transition='rise']) > .deck-slide:not([data-transition]),
+    .deck-canvas > .deck-slide[data-transition='rise']
+  ) {
+    --kit-rest-opacity: 0;
+    --kit-future-translate: 0 var(--kit-rise-shift);
+    --kit-past-translate: 0 calc(-1 * var(--kit-rise-shift));
+  }
+
+  :is(
+    .deck-canvas:has(> .kit-chrome[data-transition='push']) > .deck-slide:not([data-transition]),
+    .deck-canvas > .deck-slide[data-transition='push']
+  ) {
+    --kit-future-translate: 100% 0;
+    --kit-past-translate: -100% 0;
+    --kit-leave-translate: var(--kit-move) var(--brand-transition-easing);
+  }
+
+  :is(
+    .deck-canvas:has(> .kit-chrome[data-transition='cover']) > .deck-slide:not([data-transition]),
+    .deck-canvas > .deck-slide[data-transition='cover']
+  ) {
+    --kit-future-translate: 100% 0;
+    --kit-past-translate: -100% 0;
+  }
+
+  /* The clip keeps a sliver open on the side the slide comes from, so the edge sweeps across. */
+  :is(
+    .deck-canvas:has(> .kit-chrome[data-transition='wipe']) > .deck-slide:not([data-transition]),
+    .deck-canvas > .deck-slide[data-transition='wipe']
+  ) {
+    --kit-future-clip: inset(0 0 0 100%);
+    --kit-past-clip: inset(0 100% 0 0);
+  }
+
+  :is(
+    .deck-canvas:has(> .kit-chrome[data-transition='zoom']) > .deck-slide:not([data-transition]),
+    .deck-canvas > .deck-slide[data-transition='zoom']
+  ) {
+    --kit-rest-opacity: 0;
+    --kit-future-scale: 0.96;
+    --kit-past-scale: 1.04;
+  }
+
+  /*
+   * Every stage slide is clipped to itself (`inset(0)`) when it is not wiping, so a clip always
+   * interpolates to the next one instead of jumping.
    */
   .deck-viewport[data-static='false'] .deck-canvas > .deck-slide[data-slide-state] {
     z-index: 0;
+    clip-path: inset(0);
     transition:
-      opacity 0s linear var(--brand-transition-duration),
-      translate 0s linear var(--brand-transition-duration),
-      scale 0s linear var(--brand-transition-duration),
-      visibility 0s linear var(--brand-transition-duration);
+      opacity 0s linear var(--kit-move),
+      translate var(--kit-leave-translate),
+      scale 0s linear var(--kit-move),
+      clip-path 0s linear var(--kit-move),
+      visibility 0s linear var(--kit-move);
   }
 
   .deck-viewport[data-static='false'] .deck-canvas > .deck-slide[data-slide-state='current'] {
     z-index: 1;
     transition:
-      opacity var(--brand-transition-duration) var(--brand-transition-easing),
-      translate var(--brand-transition-duration) var(--brand-transition-easing),
-      scale var(--brand-transition-duration) var(--brand-transition-easing),
+      opacity var(--kit-move) var(--brand-transition-easing),
+      translate var(--kit-move) var(--brand-transition-easing),
+      scale var(--kit-move) var(--brand-transition-easing),
+      clip-path var(--kit-move) var(--brand-transition-easing),
       visibility 0s;
   }
 
-  .deck-canvas:has(
-      > .kit-chrome:is(
-        [data-transition='fade'],
-        [data-transition='slide'],
-        [data-transition='zoom']
-      )
-    )
-    > .deck-slide:not([data-slide-state='current']) {
-    opacity: 0;
+  .deck-viewport[data-static='false'] .deck-canvas > .deck-slide[data-slide-state='future'] {
+    opacity: var(--kit-rest-opacity);
+    translate: var(--kit-future-translate);
+    scale: var(--kit-future-scale);
+    clip-path: var(--kit-future-clip);
   }
 
-  .deck-canvas:has(> .kit-chrome[data-transition='slide'])
-    > .deck-slide[data-slide-state='future'] {
-    translate: var(--kit-slide-shift) 0;
+  .deck-viewport[data-static='false'] .deck-canvas > .deck-slide[data-slide-state='past'] {
+    opacity: var(--kit-rest-opacity);
+    translate: var(--kit-past-translate);
+    scale: var(--kit-past-scale);
+    clip-path: var(--kit-past-clip);
   }
 
-  .deck-canvas:has(> .kit-chrome[data-transition='slide']) > .deck-slide[data-slide-state='past'] {
-    translate: calc(-1 * var(--kit-slide-shift)) 0;
-  }
-
-  /* A push moves the outgoing slide off with the incoming one: they stay edge to edge. */
-  .deck-viewport[data-static='false']
-    .deck-canvas:has(> .kit-chrome[data-transition='push'])
-    > .deck-slide[data-slide-state]:not([data-slide-state='current']) {
-    transition:
-      translate var(--brand-transition-duration) var(--brand-transition-easing),
-      visibility 0s linear var(--brand-transition-duration);
-  }
-
-  .deck-canvas:has(> .kit-chrome[data-transition='push']) > .deck-slide[data-slide-state='future'] {
-    translate: 100% 0;
-  }
-
-  .deck-canvas:has(> .kit-chrome[data-transition='push']) > .deck-slide[data-slide-state='past'] {
-    translate: -100% 0;
-  }
-
-  .deck-canvas:has(> .kit-chrome[data-transition='zoom']) > .deck-slide[data-slide-state='future'] {
-    scale: 0.96;
-  }
-
-  .deck-canvas:has(> .kit-chrome[data-transition='zoom']) > .deck-slide[data-slide-state='past'] {
-    scale: 1.04;
-  }
-
-  .deck-canvas:has(> .kit-chrome[data-transition='none']) > .deck-slide[data-slide-state] {
-    transition: none;
-  }
-
-  .deck-canvas {
-    --kit-slide-shift: 3%;
+  /* Reduced motion keeps the fades and drops every move, scale and wipe: those kinds cut. */
+  @media (prefers-reduced-motion: reduce) {
+    .deck-viewport[data-static='false']
+      .deck-canvas
+      > .deck-slide[data-slide-state]:not([data-slide-state='current']) {
+      translate: none;
+      scale: none;
+      clip-path: inset(0);
+    }
   }
 
   /*
    * The slide entrance: when the deck moves forward onto a slide, the elements a layout marks with
    * `data-kit-enter` fade and rise into place in order, starting partway into the slide transition.
+   * The animation fills backwards only: it holds an element out of sight until its turn and lets
+   * go of it once it has arrived, so a step that reveals the element later can still ease it in (a
+   * finished animation that kept filling would hold its opacity and place against the transition).
    */
   @keyframes kit-enter {
     from {
@@ -99,7 +173,7 @@
   .deck-viewport[data-static='false']
     .deck-slide[data-slide-state='current'][data-direction='forward']
     [data-kit-enter] {
-    animation: kit-enter var(--brand-duration-slow) var(--brand-ease-emphasized) both;
+    animation: kit-enter var(--brand-duration-slow) var(--brand-ease-emphasized) backwards;
     animation-delay: calc(
       var(--brand-transition-duration) * 0.35 + var(--kit-enter-order, 0) *
         var(--brand-duration-fast) * 0.5
@@ -131,38 +205,241 @@
   }
 
   /*
-   * Step reveals: each element in a step fades and rises into place; stepping back fades it out.
-   * Visibility switches with the fade, so hidden content is never read or clicked.
+   * Step reveals: each element in a step comes into place with the step's `data-effect` when its
+   * step is reached, and fades out when the deck steps back. Visibility switches with the fade, so
+   * hidden content is never read or clicked. `rise` fades and rises, `fade` only fades, `scale`
+   * grows from slightly smaller, `blur` comes into focus and `wipe` is uncovered from the start
+   * edge. A shown element carries no transform, filter or clip, so its text is never rasterised on
+   * the scaled canvas and its shadows are never cut off. Without `data-motion='on'` (static mode,
+   * `SlideView` copies) a step only shows or hides.
+   *
+   * A step written inside a sentence (`data-flow='inline'`) has no element of its own to move: the
+   * step's wrapper is shown inline and takes the fade, blur and wipe itself. A line of text cannot
+   * be moved or scaled without taking it out of the line, so there `rise` and `scale` only fade.
    */
-  .kit-step[data-motion='on'] > * {
+  .kit-step[data-motion='on']:not([data-flow='inline']) > *,
+  .kit-step[data-motion='on'][data-flow='inline'] {
     transition:
       opacity var(--brand-duration-base) var(--brand-ease-standard),
       translate var(--brand-duration-base) var(--brand-ease-emphasized),
+      scale var(--brand-duration-base) var(--brand-ease-emphasized),
+      filter var(--brand-duration-base) var(--brand-ease-standard),
       visibility var(--brand-duration-base);
   }
 
-  .kit-step > * {
-    visibility: visible;
-  }
-
-  .kit-step[data-step-state='hidden'] > * {
+  /*
+   * A shown step sets no visibility of its own: it inherits its slide's, so a slide that is not on
+   * screen hides its steps with everything else, whatever its transition.
+   */
+  .kit-step:not([data-flow='inline'])[data-step-state='hidden'] > *,
+  .kit-step[data-flow='inline'][data-step-state='hidden'] {
     visibility: hidden;
     opacity: 0;
+  }
+
+  /*
+   * An aside whose whole content sits in steps that are not reached yet shows nothing, so its
+   * accent rule waits with it and arrives with the first of them.
+   */
+  :is(
+      .kit-chart-aside,
+      .kit-code-aside,
+      .kit-content-aside,
+      .kit-demo-aside,
+      .kit-diagram-aside,
+      .kit-table-aside
+    ):has(.kit-step):not(:has(.kit-step:not([data-step-state='hidden']))):not(
+      :has(> .deck-slot > :not(.kit-step), > :not(.deck-slot, .kit-step))
+    ) {
+    border-color: transparent;
+  }
+
+  .deck-viewport[data-static='false']
+    :is(
+      .kit-chart-aside,
+      .kit-code-aside,
+      .kit-content-aside,
+      .kit-demo-aside,
+      .kit-diagram-aside,
+      .kit-table-aside
+    ) {
+    transition: border-color var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  /* A statement's attribution draws its short rule as a `::before`; it waits the same way. */
+  .kit-statement-attribution:has(.kit-step):not(
+      :has(.kit-step:not([data-step-state='hidden']))
+    ):not(:has(> .deck-slot > :not(.kit-step), > :not(.deck-slot, .kit-step)))::before {
+    opacity: 0;
+  }
+
+  .deck-viewport[data-static='false'] .kit-statement-attribution::before {
+    transition: opacity var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  .kit-step[data-effect='rise'][data-step-state='hidden']:not([data-flow='inline']) > * {
     translate: 0 calc(var(--brand-space-sm) * 1.5);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .deck-viewport[data-static='false'] .deck-canvas > .deck-slide[data-slide-state] {
-      translate: none;
-      scale: none;
+  /*
+   * Scale grows from the middle of the content, not of the box: a short line in a full-width
+   * paragraph grows where it is instead of drifting toward the box's centre. The step measures
+   * where its content sits as shares of the box width (`--kit-step-start`, `--kit-step-end`); a
+   * centred or right-aligned line, or a picture, has its middle where it is drawn.
+   */
+  .kit-step[data-motion='on'][data-effect='scale']:not([data-flow='inline']) > * {
+    transform-origin: calc((var(--kit-step-start, 0) + var(--kit-step-end, 1)) * 50%) 50%;
+  }
+
+  .kit-step[data-motion='on'][data-effect='scale'][data-step-state='hidden']:not(
+      [data-flow='inline']
+    )
+    > * {
+    scale: 0.94;
+  }
+
+  .kit-step[data-motion='on'][data-effect='blur'][data-step-state='hidden']:not(
+      [data-flow='inline']
+    )
+    > *,
+  .kit-step[data-motion='on'][data-effect='blur'][data-step-state='hidden'][data-flow='inline'] {
+    filter: blur(var(--brand-space-xs));
+  }
+
+  /*
+   * A clip cannot ease from `none`, so the wipe is an animation that runs once as the step is
+   * revealed (`data-reveal='play'`) and leaves no clip behind; it uncovers the element from the
+   * start edge while it fades in. The edge travels across the content (from `--kit-step-start` to
+   * `--kit-step-end`, which the step measures), not across the empty measure after a short line,
+   * so the line takes the whole wipe to appear. The other three sides are not clipped at all
+   * (`--kit-wipe-open` reaches well past the box), so a list marker hung before the item, a
+   * descender or a shadow fades in with the rest instead of appearing when the clip is dropped.
+   */
+  .kit-step {
+    --kit-wipe-open: calc(-4 * var(--brand-space-xl));
+  }
+
+  @keyframes kit-step-wipe {
+    from {
+      clip-path: inset(
+        var(--kit-wipe-open) calc((1 - var(--kit-step-start, 0)) * 100%) var(--kit-wipe-open)
+          var(--kit-wipe-open)
+      );
     }
 
+    to {
+      clip-path: inset(
+        var(--kit-wipe-open) calc((1 - var(--kit-step-end, 1)) * 100%) var(--kit-wipe-open)
+          var(--kit-wipe-open)
+      );
+    }
+  }
+
+  @keyframes kit-step-wipe-rtl {
+    from {
+      clip-path: inset(
+        var(--kit-wipe-open) var(--kit-wipe-open) var(--kit-wipe-open)
+          calc(var(--kit-step-end, 1) * 100%)
+      );
+    }
+
+    to {
+      clip-path: inset(
+        var(--kit-wipe-open) var(--kit-wipe-open) var(--kit-wipe-open)
+          calc(var(--kit-step-start, 0) * 100%)
+      );
+    }
+  }
+
+  .kit-step[data-motion='on'][data-effect='wipe'][data-reveal='play']:not([data-flow='inline']) > *,
+  .kit-step[data-motion='on'][data-effect='wipe'][data-reveal='play'][data-flow='inline'] {
+    animation: kit-step-wipe var(--brand-duration-slow) var(--brand-ease-emphasized) backwards;
+  }
+
+  .kit-step[data-motion='on'][data-effect='wipe'][data-reveal='play']:not([data-flow='inline'])
+    > :dir(rtl),
+  .kit-step[data-motion='on'][data-effect='wipe'][data-reveal='play'][data-flow='inline']:dir(rtl) {
+    animation-name: kit-step-wipe-rtl;
+  }
+
+  /*
+   * Focus: a step marked `focus` recedes to the surface's muted role color once a later step of
+   * the slide is reached. Its own text, the text roles its children read (headings, strong text,
+   * links, numbers) and its list markers all take the muted color; muted is held to the brand's
+   * text contrast on the surface, so receded text stays as legible as any secondary text. Static
+   * mode never recedes, so shots, lint and exports show every revealed step at full strength.
+   */
+  .kit-step[data-focus='recede'] {
+    --brand-color-fg: var(--brand-color-muted);
+    --brand-color-heading: var(--brand-color-muted);
+    --brand-color-accent-text: var(--brand-color-muted);
+
+    color: var(--brand-color-muted);
+  }
+
+  .kit-step[data-focus='recede'] li::before {
+    background: var(--brand-color-muted);
+  }
+
+  /*
+   * Only what sets its own color eases to the muted one: text that inherits it follows its parent,
+   * so it never lags behind.
+   */
+  .kit-step[data-focus][data-motion='on'] {
+    transition: color var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  .kit-step[data-focus][data-motion='on'] :is(strong, a, h3, blockquote),
+  .kit-step[data-focus][data-motion='on'] li::before {
+    transition:
+      color var(--brand-duration-base) var(--brand-ease-standard),
+      background-color var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  /*
+   * A stat counting up (`CountingNumber`): the final value and the counting one share one grid
+   * cell, so the final value sizes it and the line keeps its baseline; only the counting value
+   * shows, kept to the edge beside the figure's unit.
+   */
+  .kit-count {
+    display: inline-grid;
+  }
+
+  .kit-count > * {
+    grid-area: 1 / 1;
+  }
+
+  .kit-count-final {
+    opacity: 0;
+  }
+
+  .kit-count-live {
+    justify-self: end;
+  }
+
+  .kit-count[data-align='start'] > .kit-count-live {
+    justify-self: start;
+  }
+
+  /*
+   * Reduced motion keeps the fades and the focus colors and drops every move, scale, blur and
+   * wipe.
+   */
+  @media (prefers-reduced-motion: reduce) {
     [data-kit-enter] {
       animation: none !important;
     }
 
-    .kit-step[data-step-state='hidden'] > * {
+    .kit-step[data-motion][data-effect][data-step-state='hidden'] > *,
+    .kit-step[data-motion][data-effect][data-step-state='hidden'][data-flow='inline'] {
       translate: none;
+      scale: none;
+      filter: none;
+    }
+
+    .kit-step > *,
+    .kit-step[data-flow='inline'] {
+      animation: none !important;
     }
   }
 }

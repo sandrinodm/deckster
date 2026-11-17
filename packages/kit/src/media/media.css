@@ -38,6 +38,16 @@
     min-height: 0;
   }
 
+  /* A stated ratio is the picture's box: the figure is as tall as the ratio makes it, not as tall as
+     its container, so the treatment's corners, a tint and a morph keep the picture's shape. */
+  .kit-image[data-ratio] {
+    height: auto;
+  }
+
+  .kit-image[data-ratio] > .kit-image-frame {
+    flex: none;
+  }
+
   .kit-image-frame > img[hidden] {
     display: none;
   }

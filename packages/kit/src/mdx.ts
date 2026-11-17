@@ -9,6 +9,7 @@ import { remarkKitIcons } from '#mdx/remark-icons.ts';
 import { remarkKitMedia } from '#mdx/remark-media.ts';
 import { remarkKitProps } from '#mdx/remark-props.ts';
 import { remarkKitPunctuation } from '#mdx/remark-punctuation.ts';
+import { remarkKitTreatments } from '#mdx/remark-treatments.ts';
 
 /**
  * The kit's build-time MDX extension, loaded in Node by `@deckster/vite-plugin`. It highlights code
@@ -20,8 +21,9 @@ import { remarkKitPunctuation } from '#mdx/remark-punctuation.ts';
  * build fails. It fails the build for an `<AppFrame app>` the deck does not have, resolves `<Icon
  * name>` against the brand's icon set (and the icons and image paths that layout fields such as
  * `cards[].icon` and `members[].photo` name), and sets typographic quotes, apostrophes, ellipses
- * and dashes in the prose. Its warnings carry a rule id (`media-missing`, `code-unknown-language`,
- * ...) that `deck lint` reports them under.
+ * and dashes in the prose. It warns for an image treatment the brand does not have. Its warnings
+ * carry a rule id (`media-missing`, `code-unknown-language`, `treatment-unknown`, ...) that the
+ * linter shows as the finding's rule.
  */
 export default defineMdxExtension({
   /**
@@ -30,7 +32,7 @@ export default defineMdxExtension({
   name: '@deckster/kit',
 
   /**
-   * The plugins for one deck: the brand decides the icon set.
+   * The plugins for one deck: the brand decides the icon set and the image treatments.
    */
   plugins: ({ brand, deckDir, workspaceRoot }) => ({
     remarkPlugins: [
@@ -40,6 +42,7 @@ export default defineMdxExtension({
       [remarkKitApps, { deckDir }],
       [remarkKitIcons, { set: brand.icons.set }],
       [remarkKitFrontmatter, { set: brand.icons.set, deckDir }],
+      [remarkKitTreatments, { brand: brand.name, treatments: brand.treatments }],
       [remarkKitSvg, { deckDir }],
       [remarkKitDiagrams, { set: brand.icons.set }],
       remarkKitPunctuation,

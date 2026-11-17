@@ -7,6 +7,7 @@ import type { IconRole } from '#icons/icon.tsx';
 
 import { checkComponentProps } from '#components/check-component-props.ts';
 import { staticFrame, type StaticFrame } from '#media/lottie-frame.ts';
+import { useHeldByStep } from '#motion/still-motion.ts';
 
 /**
  * Props of {@link Lottie}.
@@ -56,9 +57,10 @@ export type LottieProps = {
 /**
  * A Lottie animation made by a designer, drawn as SVG. The player and the file load the first time
  * the slide is on screen, and the slide's `ready()` waits for them. The animation plays while the
- * slide is on screen and pauses when the deck moves on; static mode, `deck shot` and exports show
- * one frame (the last unless `frame` says otherwise). A Lottie file carries its own colors; `role`
- * redraws them in a color of the slide's surface, so the animation follows the brand.
+ * slide is on screen (inside a `<Step>`, from when the step reveals it) and pauses when the deck
+ * moves on; static mode, `deck shot` and exports show one frame (the last unless `frame` says
+ * otherwise). A Lottie file carries its own colors; `role` redraws them in a color of the slide's
+ * surface, so the animation follows the brand.
  *
  * ```mdx
  * <Lottie src="../assets/check.json" alt="A check mark drawing itself" frame="last" />
@@ -69,6 +71,7 @@ export function Lottie(props: LottieProps): ReactNode {
   const { src, alt, loop = false, frame, ratio = 1, size = 'full', role } = props;
   const isStatic = useStatic();
   const { isActive } = useSlide();
+  const held = useHeldByStep();
   const container = useRef<HTMLDivElement | null>(null);
   const [animation, setAnimation] = useState<AnimationItem>();
   const [failed, setFailed] = useState(false);
@@ -113,12 +116,14 @@ export function Lottie(props: LottieProps): ReactNode {
 
     if (isStatic) {
       animation.goToAndStop(staticFrame(frame, animation.totalFrames), true);
-    } else if (isActive) {
+    } else if (isActive && !held) {
+      // Inside a `<Step>` this runs when the step is reached, so the animation starts from its
+      // first frame as it appears rather than when the slide did.
       animation.goToAndPlay(0, true);
     } else {
       animation.pause();
     }
-  }, [animation, isActive, isStatic, frame]);
+  }, [animation, isActive, isStatic, frame, held]);
   return (
     <figure
       className="kit-lottie"

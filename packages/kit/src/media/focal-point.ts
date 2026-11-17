@@ -36,3 +36,15 @@ export function objectPosition(focal: FocalPoint | undefined): string {
 
   return `${x}% ${y}%`;
 }
+
+/**
+ * The inline `object-position` for a picture's own focal point, or none at all when it has none, so
+ * the position its stylesheet gives it applies: the centre, or the slide's `focal` where a layout
+ * crops it (the image layout's photo).
+ *
+ * @param focal - The picture's focal point, if it has one.
+ * @throws RangeError when a percentage is outside 0 to 100.
+ */
+export function focalStyle(focal: FocalPoint | undefined): { objectPosition?: string } {
+  return focal === undefined ? {} : { objectPosition: objectPosition(focal) };
+}

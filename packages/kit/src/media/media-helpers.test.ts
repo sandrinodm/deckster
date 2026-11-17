@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import { objectPosition } from '#media/focal-point.ts';
+import { focalStyle, objectPosition } from '#media/focal-point.ts';
 import { duotoneTables, planTreatment } from '#media/image-treatment.ts';
 import { staticFrame } from '#media/lottie-frame.ts';
 
@@ -42,6 +42,17 @@ describe('objectPosition', () => {
   it('turns percentages into a position and rejects values outside 0 to 100', () => {
     expect(objectPosition([30, 20])).toBe('30% 20%');
     expect(() => objectPosition([120, 0])).toThrow(/focal/);
+  });
+});
+
+describe('focalStyle', () => {
+  it('sets no position without a focal point, so a layout can crop around its own', () => {
+    expect(focalStyle(undefined)).toEqual({});
+  });
+
+  it('sets the position of a focal point the picture names', () => {
+    expect(focalStyle('center bottom')).toEqual({ objectPosition: 'center bottom' });
+    expect(focalStyle([30, 20])).toEqual({ objectPosition: '30% 20%' });
   });
 });
 

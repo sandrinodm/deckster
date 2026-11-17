@@ -99,8 +99,9 @@ const NO_WORDS: readonly string[] = [];
  *
  * `highlight` focuses lines step by step: the lines outside the focus fade back. Lines may be
  * marked as added or removed (`diff`, or `// [!code ++]` and `// [!code --]`), and `words` marks
- * words inside lines. The font steps down within the brand's limits for long lines; beyond that the
- * lines run past the frame and `deck lint` reports the overflow.
+ * words inside lines. The font steps down within the brand's limits for long lines, and for a block
+ * taller than the layout's code region; beyond that the lines run past the frame and `deck lint`
+ * reports the overflow.
  *
  * ```mdx
  * ```ts title="server.ts" {2-3|5} lineNumbers
@@ -128,7 +129,12 @@ export function Code(props: CodeProps): ReactNode {
   useCodeFit(areaRef);
   const isStatic = useStatic();
   return (
-    <CodeFrame file={props.file} lang={props.lang} label={props.label} kind="code">
+    <CodeFrame
+      file={props.file}
+      lang={props.lang}
+      label={props.label}
+      kind="code"
+      lines={highlighted?.lines.length}>
       <div
         ref={areaRef}
         className="kit-code-area"

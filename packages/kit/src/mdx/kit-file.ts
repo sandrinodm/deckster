@@ -45,7 +45,8 @@ export type KitWarningRule =
   | 'media-gif'
   | 'code-unknown-language'
   | 'code-step-range'
-  | 'terminal-tone';
+  | 'terminal-tone'
+  | 'treatment-unknown';
 
 /**
  * Reports a warning with its kind and fix: the build prints both, and `deck lint` turns it into a

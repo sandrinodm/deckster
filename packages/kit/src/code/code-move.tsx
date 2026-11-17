@@ -105,17 +105,19 @@ export function CodeMove(props: CodeMoveProps): ReactNode {
   useCodeFit(areaRef);
   const isStatic = useStatic();
   const animate = useMoveAnimation(isStatic);
+  const lines = tallestState(states);
   return (
     <CodeFrame
       file={props.file}
       lang={props.lang ?? sharedLang(states)}
       label={props.label}
-      kind="move">
+      kind="move"
+      lines={lines}>
       <MoveArea
         areaRef={areaRef}
         states={states}
         index={index}
-        lines={tallestState(states)}
+        lines={lines}
         isStatic={isStatic}
         animate={animate}
       />

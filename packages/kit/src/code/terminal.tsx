@@ -102,7 +102,8 @@ const FRAME_MS = 16;
  * A terminal window with a typed session. Each `<Cmd>` is typed after the prompt when its step is
  * reached, one step per command, and its `<Out>` lines appear when it is done. Going back a step
  * removes lines with no animation; in static mode the whole session up to the current step shows at
- * once.
+ * once. The window says in `data-code-lines` how many lines the session holds (each `<Cmd>` and
+ * `<Out>`, shown or not), which `deck lint` counts against the layout's `maxLines`.
  *
  * ```mdx
  * <Terminal title="~/larkfield" at={1}>
@@ -125,7 +126,11 @@ export function Terminal(props: TerminalProps): ReactNode {
   const isStatic = useStatic();
   const cursorIndex = lines.findLastIndex((line) => line.state !== 'hidden');
   return (
-    <figure className="kit-terminal" data-motion={isStatic ? 'off' : 'on'} data-text-block="">
+    <figure
+      className="kit-terminal"
+      data-motion={isStatic ? 'off' : 'on'}
+      data-code-lines={items.length}
+      data-text-block="">
       <figcaption className="kit-terminal-bar">
         <span className="kit-terminal-title">{title ?? 'Terminal'}</span>
       </figcaption>

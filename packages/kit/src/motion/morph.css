@@ -1,0 +1,31 @@
+/*
+ * Morphs. The engine scopes the view transition to the canvas, so these pseudo-elements inherit the
+ * brand's motion tokens: each morph moves and cross-fades its look over the brand's transition,
+ * with the slides' own transition running underneath.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* No box of its own: its child is laid out as if unwrapped, and the engine flies the child. */
+  .kit-morph {
+    display: contents;
+  }
+
+  /*
+   * A region holding an element that arrived by a morph skips the slide entrance, which would fade
+   * the element out and in again just after it landed. The engine keeps the mark until the deck
+   * leaves the slide, so stepping on the slide does not restart the entrance.
+   */
+  .deck-viewport[data-static='false']
+    .deck-slide[data-slide-state='current'][data-direction='forward']
+    [data-kit-enter]:has([data-morph-arrived]) {
+    animation: none;
+  }
+
+  .deck-canvas::view-transition-group(*),
+  .deck-canvas::view-transition-old(*),
+  .deck-canvas::view-transition-new(*) {
+    animation-duration: var(--brand-transition-duration);
+    animation-timing-function: var(--brand-transition-easing);
+  }
+}

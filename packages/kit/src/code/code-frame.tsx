@@ -28,6 +28,12 @@ type CodeFrameProps = {
   kind: 'code' | 'move';
 
   /**
+   * How many lines of code the block holds (the tallest version's for a `CodeMove`), blank lines
+   * included; `undefined` while the code is still being highlighted.
+   */
+  lines: number | undefined;
+
+  /**
    * The code area's content.
    */
   children: ReactNode;
@@ -54,12 +60,21 @@ function labelText(
  * The frame around a block of code: the code background of the surface, a rounded outline, and an
  * optional title bar with the file name on the left and the language on the right. Without a file
  * name or a label there is no bar.
+ *
+ * The frame says how many lines of code it holds in `data-code-lines`, which `deck lint` counts
+ * against the layout's `maxLines`: the bar and the line numbers are not lines of code, and a blank
+ * line is one whether or not it shows a number.
  */
-export function CodeFrame({ file, lang, label, kind, children }: CodeFrameProps): ReactNode {
+export function CodeFrame({ file, lang, label, kind, lines, children }: CodeFrameProps): ReactNode {
   const shownLabel = labelText(label, lang);
   const hasBar = file !== undefined || shownLabel !== undefined;
   return (
-    <figure className="kit-code" data-kind={kind} data-bar={hasBar} data-text-block="">
+    <figure
+      className="kit-code"
+      data-kind={kind}
+      data-bar={hasBar}
+      data-code-lines={lines}
+      data-text-block="">
       {hasBar ? <CodeBar file={file} label={shownLabel} /> : null}
       {children}
     </figure>

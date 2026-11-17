@@ -70,6 +70,21 @@
     padding-right: var(--brand-space-sm);
   }
 
+  /* A filled column needs the same air at its start, which cells inside a row otherwise do without
+     (their gap is the padding at the end of the cell before), and so does the column after it, whose
+     text would touch the fill. Headers take it too, so they stay in line with their cells. Only a
+     table with a highlighted column header does this, so a single highlighted cell keeps its place
+     in its column. */
+  .kit-frame
+    table[data-emphasis='fill']:has(th[data-highlight='true'])
+    :is(th, td)[data-highlight='true']:not(tr[data-highlight='true'] > *),
+  .kit-frame
+    table[data-emphasis='fill']:has(th[data-highlight='true'])
+    :is(th, td)[data-highlight='true']:not(tr[data-highlight='true'] > *)
+    + :is(th, td) {
+    padding-left: var(--brand-space-sm);
+  }
+
   .kit-frame
     table[data-emphasis='text']
     :is(tr[data-highlight='true'] > td, td[data-highlight='true']) {

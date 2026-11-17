@@ -216,21 +216,18 @@
     box-shadow: inset var(--brand-stroke-bold) 0 0 0 var(--brand-color-negative);
   }
 
-  .kit-code-line[data-change='remove'] .kit-code-text {
-    opacity: 0.72;
-  }
-
   /*
    * Word focus: a marked word is set in the plain code color, bolder, on a soft accent tile. The
-   * tile is a pseudo-element for the same reason as the diff tint.
+   * tile is a pseudo-element for the same reason as the diff tint. The rules match only runs of a
+   * code line, since other parts of the kit use `data-mark` for their own marks.
    */
-  [data-mark] {
+  .kit-code-text [data-mark] {
     position: relative;
     color: var(--brand-code-foreground);
     font-weight: 650;
   }
 
-  [data-mark]::before {
+  .kit-code-text [data-mark]::before {
     content: '';
     position: absolute;
     inset: -0.04em -0.08em;

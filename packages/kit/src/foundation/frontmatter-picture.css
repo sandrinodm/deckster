@@ -1,0 +1,38 @@
+/*
+ * A picture a layout field names, in a frame the layout sizes. The picture is placed absolutely, so
+ * its file's size never decides the frame's: the layout's grid does. It takes the brand
+ * treatment's filter and tint, as a slot's photo does.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-field-picture {
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+    background: var(--brand-color-surface);
+  }
+
+  .kit-field-picture-image {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: var(--kit-media-filter, none);
+  }
+
+  .kit-field-picture-image[data-fit-picture='contain'] {
+    object-fit: contain;
+  }
+
+  .kit-field-picture[data-tint='true']:has(> .kit-field-picture-image)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--kit-media-tint);
+    opacity: var(--kit-media-tint-opacity);
+    pointer-events: none;
+  }
+}

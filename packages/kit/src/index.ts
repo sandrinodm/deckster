@@ -1,5 +1,7 @@
 export { enterProps, MAX_ENTER_ORDER, useEnter, type EnterProps } from '#motion/enter.ts';
-export { Step } from '#motion/step.tsx';
+export { Step, type KitStepProps } from '#motion/step.tsx';
+export { Morph, type MorphProps } from '#motion/morph.tsx';
+export { STEP_EFFECTS, type StepEffect } from '#motion/step-effects.ts';
 export { Button } from '#links/button.tsx';
 export { Download } from '#links/download.tsx';
 export { LinkCard } from '#links/link-card.tsx';

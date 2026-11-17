@@ -1,0 +1,40 @@
+/*
+ * A mark in one tone: the image sized by the square root of its aspect ratio times the layout's
+ * base (`--kit-mark-size`), within a height (`--kit-mark-height`) and a width
+ * (`--kit-mark-max-width`), standing on the foot of its box so marks in a row share a baseline. The
+ * tone is the surface's muted text color unless the layout sets `--kit-mark-tone`. A layout sets
+ * these on the mark or on any element around it.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-mono-mark {
+    display: inline-flex;
+    align-items: flex-end;
+    min-width: 0;
+    color: var(--kit-mark-tone, var(--brand-color-muted));
+  }
+
+  .kit-mono-mark-image {
+    --kit-mark-default: calc(1.4 * var(--brand-type-title-size));
+
+    display: block;
+    width: min(
+      calc(var(--kit-mark-size, var(--kit-mark-default)) * sqrt(var(--kit-mark-aspect))),
+      calc(var(--kit-mark-height, var(--kit-mark-default)) * var(--kit-mark-aspect)),
+      var(--kit-mark-max-width, 100vw)
+    );
+    height: auto;
+    aspect-ratio: var(--kit-mark-aspect);
+    object-fit: contain;
+    filter: var(--kit-mark-filter, none);
+  }
+
+  .kit-mono-mark-flood {
+    flood-color: var(--kit-mark-tone, var(--brand-color-muted));
+  }
+
+  .kit-mono-mark-name {
+    overflow-wrap: break-word;
+  }
+}
