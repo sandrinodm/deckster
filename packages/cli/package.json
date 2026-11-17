@@ -1,6 +1,6 @@
 {
   "name": "@deckster/cli",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "deck: the command line for deckster, a code-first slide framework (dev server, lint, screenshots, build, PDF and PPTX export, presenter).",
   "keywords": [
     "cli",
