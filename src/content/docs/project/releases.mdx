@@ -9,23 +9,23 @@ Use this page to see which version of deckster these docs describe, upgrade to t
 
 ## The version these pages describe
 
-`@deckster/cli` **0.3.0**, released on 17 November 2026 from commit `4e0b186` (tag `v0.3.0`). Check yours:
+`@deckster/cli` **0.4.0**, released on 17 November 2026 from commit `50e5d19` (tag `v0.4.0`), later the same day as 0.3.0. Check yours:
 
 ```console
 $ deck --version
-0.3.0
+0.4.0
 ```
 
-Features on the repository's `main` branch that are not in a release yet are marked "Not in v0.3.0" where a page mentions them.
+A feature that needs 0.4.0 is marked "New in v0.4.0" where a page describes it. Features on the repository's `main` branch that are not in a release yet are marked "Not in v0.4.0" where a page mentions them.
 
 ## Published versions
 
 ```console
 $ npm view @deckster/cli versions
-[ '0.0.0-stage', '0.1.0', '0.2.1', '0.3.0' ]
+[ '0.0.0-stage', '0.1.0', '0.2.1', '0.3.0', '0.4.0' ]
 ```
 
-The releases are 0.1.0, 0.2.1 and 0.3.0; `latest` points at 0.3.0. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
+The releases are 0.1.0, 0.2.1, 0.3.0 and 0.4.0; `latest` points at 0.4.0. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
 
 ## Upgrade
 
@@ -50,6 +50,13 @@ For a first install, see [quickstart](/get-started/quickstart/).
 ## What changed
 
 There is no changelog file. The [GitHub releases page](https://github.com/sandrinodm/deckster/releases) is the record: the notes for each release list what is new and what changed.
+
+[0.4.0](https://github.com/sandrinodm/deckster/releases/tag/v0.4.0) added two things:
+
+- **Diagram looks and cards.** A brand's `diagram` section sets the edges, group outlines and edge labels, and defines cards, named node styles; a slide picks one with `card="..."`, and `deck lint` warns with `diagram-card-missing` when the brand lacks it. See [diagram look and cards](/brands/diagram-look-and-cards/) and [pick a card](/data-and-diagrams/flow-diagrams/#pick-a-card).
+- **Embed mode.** `?embed` shows a built deck in an iframe on another page, with previous and next controls and a link to the whole deck. See [query parameters](/reference/deck-api/#query-parameters).
+
+The five brands in the repository each got their own diagram look in 0.4.0, so a deck that uses a copy of one taken from `v0.4.0` draws its diagrams differently than with a copy from `v0.3.0`. A brand without the new keys renders as before.
 
 ## How a release is made
 
