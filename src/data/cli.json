@@ -1,6 +1,6 @@
 {
   "command": "deck",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "commands": [
     {
       "name": "dev",
@@ -94,7 +94,7 @@
     },
     {
       "name": "diagrams",
-      "summary": "List the diagram components, node kinds and animation primitives",
+      "summary": "List the diagram components, node kinds, cards and animation primitives",
       "usage": [
         "deck diagrams [--json]"
       ],

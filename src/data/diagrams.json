@@ -1445,7 +1445,7 @@
     },
     "custom": "Every brand has the five standard cards and may restyle them or define more of its own (`deck brand <name>` lists them). Stick to the standard names for a deck that should look right in any brand.",
     "rules": [
-      "States still win over the card: highlighted, error and success recolour the outline and show the halo, muted and a focus dim the node.",
+      "States still win over the card: highlighted, error and success recolor the outline and show the halo, muted and a focus dim the node.",
       "On <Layers> the items follow the stack's `card`; the bands keep the stack's own look unless a <Layer> names a card.",
       "Pick a card for a reason (a role, a group of nodes that belong together), not per node at random: one or two cards on a slide besides the default."
     ]
