@@ -1,0 +1,159 @@
+---
+title: "Use a brand"
+description: "Choose a brand for a deck and switch between brands."
+sidebar:
+  order: 1
+---
+
+A brand is a folder under `brands/` that sets a deck's colours, type, logo, icons and motion. This page shows you how to add one of the published brands to your workspace, pick a brand for a deck, and render the same deck in another brand without editing a slide.
+
+<BrandGrid slide="review-rounds" />
+
+## Which brands you have
+
+Only `default` ships with the npm CLI. It works in every workspace, even one without a `brands/` folder. The other four published brands, `nocturne`, `fieldnote`, `kinetic` and `tidewater`, are folders in the [repository's `brands/` folder](https://github.com/sandrinodm/deckster/tree/main/brands). You copy them into your workspace.
+
+## Add a published brand
+
+These steps add `nocturne` to a workspace called `talks`. The other three work the same way. Only the font packages differ, and `deck brand check` names them.
+
+<Steps>
+
+1. Get a copy of the [repository](https://github.com/sandrinodm/deckster) once, with git or as a ZIP download from GitHub:
+
+   ```sh
+   git clone --depth 1 --branch v0.3.0 https://github.com/sandrinodm/deckster.git ~/deckster
+   ```
+
+2. Copy the brand's folder into your workspace's `brands/` folder, then delete its `package.json` and `tsconfig.json`. They list monorepo dependencies (`workspace:*`, `catalog:`) that mean nothing in your workspace.
+
+   ```sh
+   mkdir -p brands
+   cp -R ~/deckster/brands/nocturne brands/
+   rm brands/nocturne/package.json brands/nocturne/tsconfig.json
+   ```
+
+3. Check the brand. It fails because its fonts aren't installed yet, and each error names the package:
+
+   ```console
+   $ deck brand check nocturne
+   brands/nocturne/brand.ts
+     error   typography.families.display.source.package: @fontsource-variable/fraunces is not installed for brands/nocturne.
+             Fix: Install it in the workspace folder, where the brand's fonts resolve from: npm install @fontsource-variable/fraunces.
+     error   typography.families.body.source.package: @fontsource-variable/manrope is not installed for brands/nocturne.
+             Fix: Install it in the workspace folder, where the brand's fonts resolve from: npm install @fontsource-variable/manrope.
+     error   typography.families.mono.source.package: @fontsource/ibm-plex-mono is not installed for brands/nocturne.
+             Fix: Install it in the workspace folder, where the brand's fonts resolve from: npm install @fontsource/ibm-plex-mono.
+   nocturne: cannot be used (3 errors, 0 warnings).
+   ```
+
+4. Install the packages in the workspace folder, the one that holds `decks/` and `brands/`. If it has no `package.json`, `npm install` creates one.
+
+   ```console
+   $ npm install @fontsource-variable/fraunces @fontsource-variable/manrope @fontsource/ibm-plex-mono
+
+   added 3 packages in 176ms
+
+   3 packages are looking for funding
+     run `npm fund` for details
+   ```
+
+5. Check again:
+
+   ```console
+   $ deck brand check nocturne
+   brands/nocturne/brand.ts
+   nocturne: is valid (0 errors, 0 warnings).
+   ```
+
+</Steps>
+
+The CLI already carries the fonts of `default` (Bricolage Grotesque, Inter and JetBrains Mono), so a brand that uses only those needs no install. [Check a brand](/brands/check-a-brand/) explains the rest of what `deck brand check` reports.
+
+## Which brand a deck uses
+
+A deck names its brand in `deck.config.ts`. `deck new` writes it, `default` unless you pass `--brand`:
+
+```console
+$ deck new board-update --brand nocturne
+decks/board-update/deck.config.ts
+decks/board-update/slides/title.mdx
+Next: run `deck dev board-update`. For editor type checking, run `deck types` once (again after upgrading @deckster/cli).
+```
+
+```ts
+import { defineDeck } from '@deckster/engine/config';
+
+export default defineDeck({
+  title: 'Board update',
+  brand: 'nocturne',
+  slides: ['title'],
+});
+```
+
+Change `brand:` to switch the deck for good. A deck config without a `brand` key uses `default`. The brand must already be in the workspace. Before you add `nocturne`, the same command fails:
+
+```console
+$ deck new board-update --brand nocturne
+There is no brand "nocturne". Brands: default.
+Run `deck new --help` for the usage.
+```
+
+## Render a deck in another brand
+
+To try a brand without touching the deck, pass `--brand <name>` to `deck dev`, `present`, `shot`, `lint`, `diff` or `export`. The slides stay the same; the brand changes every colour, family, size and logo they draw.
+
+```sh
+deck dev launch-review --brand nocturne
+deck lint launch-review --brand nocturne
+deck shot launch-review --brand nocturne
+```
+
+Commands that write files keep each brand apart with an `@<brand>` suffix: `deck shot` writes to `.deck/shots/launch-review@nocturne/`, `deck export` to `.deck/exports/launch-review@nocturne`, and `deck diff` adds the same suffix to its folders. `deck present --built` can't be combined with `--brand`. To compare a deck across every published brand at once, see [one deck in every brand](/examples/brands/).
+
+## See what a brand sets
+
+`deck brand <name>` prints a summary: the three families, the type scale in canvas pixels, the spacing, and every role on every surface:
+
+```console
+$ deck brand nocturne
+Nocturne (brands/nocturne/brand.ts)
+Fonts: display Fraunces, body Manrope, mono IBM Plex Mono
+Type: display 168px, headline 84px, title 56px, lead 38px, body 34px, small 26px, caption 24px, label 22px, stat 184px, quote 88px, code 26px
+Spacing: 2xs 6px, xs 12px, sm 20px, md 32px, lg 48px, xl 80px, 2xl 120px, 3xl 176px; margins 160x112px
+Surfaces:
+  default (dark): bg #0b0911, surface #181426, fg #efe7da, heading #f7f2ea, muted #b4aed0, accent #ff8f6b, accent-fg #0b0911, border #2d2645, positive #5eead4, negative #ff6f84
+  inverse (light): bg #f7f2ea, surface #efe7da, fg #0b0911, heading #0b0911, muted #433a63, accent #c23f1e, accent-fg #f7f2ea, border #e0d4c1, positive #0e7490, negative #b3263c
+  accent (light): bg #ff6f4a, surface #ff8f6b, fg #0b0911, heading #0b0911, muted #1f1a30, accent #0b0911, accent-fg #ffb59a, border #c23f1e, positive #0c4a6e, negative #5c0f1f; small text: positive #003755
+  gradient (dark): bg #0b0911, surface #f7f2ea14, fg #efe7da, heading #f7f2ea, muted #d6d2e8, accent #ffb59a, accent-fg #0b0911, border #f7f2ea29, positive #67e8f9, negative #ffb59a
+Run `deck brand nocturne --json` for every token.
+```
+
+Without a name it prints `default`. `--json` prints every resolved token as hex colours and canvas pixels: palette, surfaces, gradients, typography, shape, spacing, logo, icons, imagery, chrome, motion, data and charts. The fields themselves are listed in the [brand schema](/reference/brand-schema/).
+
+## Icons when you switch brands
+
+Each brand draws its icons from one Iconify set: `default` and `tidewater` use Lucide, and `nocturne`, `fieldnote` and `kinetic` use Tabler. An icon name that exists in only one set breaks the deck in the other brand. Say a `risks` slide of `launch-review` has `<Icon name="arrow-big-down-dash" />`, a Lucide name. `deck lint launch-review` passes, but in `nocturne` lint reports the icon, and `deck dev` shows the same error:
+
+```console
+$ deck lint launch-review --brand nocturne
+decks/launch-review/slides/risks.mdx
+  error   schema (risks): Line 21, column 3: <Icon name="arrow-big-down-dash"> is not an icon of the tabler set.
+          Fix: Closest names in the tabler set: arrow-big-down-line, arrow-big-down, arrow-big-down-lines, arrow-big-down-filled, arrow-down-dashed, arrow-bar-down. Browse the set at https://icon-sets.iconify.design/tabler/. A deck that renders in several brands needs a name that every brand's set has.
+
+launch-review: 1 error, 0 warnings.
+```
+
+For a deck that renders in several brands, pick names from `deck icons`, which lists only the names every brand you name has:
+
+```console
+$ deck icons --brand default,nocturne --search arrow-big
+4 icon names matching "arrow-big" in every one of: default (lucide), nocturne (tabler)
+Sets: lucide, tabler
+
+arrow-big-down, arrow-big-left, arrow-big-right, arrow-big-up
+```
+
+Without `--brand` it uses every brand in the workspace, `default` included. The [icons reference](/reference/icons/) lists the names all five published brands share.
+
+To make a look of your own, [create a brand](/brands/create-a-brand/), or have an agent [import one](/brands/import-a-brand/) from a template, PDF or website.

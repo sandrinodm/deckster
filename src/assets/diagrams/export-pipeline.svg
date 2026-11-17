@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="616" viewBox="0 0 760 616" role="img" aria-label="The PPTX is rebuilt from what Chromium measured, and --verify renders it back to check">
+  <title>The PPTX is rebuilt from what Chromium measured, and --verify renders it back to check</title>
+  <style>
+svg{--ink:#161514;--quiet:#6b6862;--edge:#c4c2bf;--grid:rgba(22,21,20,.12);--accent:#ff4f2b;--tint:rgba(22,21,20,.045);--paper:#ffffff}
+text{font-family:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:13px;fill:var(--ink)}
+.title{font-size:15px;font-weight:600}
+.name{font-weight:600}
+.note{font-size:11.5px;fill:var(--quiet)}
+.small{font-size:11.5px}
+.strong{font-weight:600}
+.mid{text-anchor:middle}
+.end{text-anchor:end}
+.code{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.line{fill:none;stroke:var(--edge);stroke-width:1.25}
+.head{fill:var(--edge)}
+.box{fill:none;stroke:var(--edge);stroke-width:1.25}
+.key{fill:var(--accent);fill-opacity:.08;stroke:var(--accent);stroke-width:2}
+.chip{fill:var(--tint);stroke:var(--edge);stroke-width:1}
+.callout{fill:var(--tint);stroke:var(--edge);stroke-width:1.25}
+</style>
+  <defs>
+    <marker id="export-pipeline-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="head" d="M0 0L10 5L0 10z"/>
+    </marker>
+  </defs>
+  <text class="title" x="24" y="34">The PPTX is rebuilt from what Chromium measured, and --verify renders it back to check</text>
+  <text class="note" x="24" y="54">deck export: one static page at 2x feeds the PowerPoint writer first, then the PDF printer</text>
+  <rect class="box violet" x="24" y="72" width="712" height="56" rx="8"/>
+  <text class="name" x="40" y="96">The deck in headless Chromium</text>
+  <text class="note" x="40" y="114">Opened once at ?static on a quiet dev server, scale 2: every slide mounted, motion at its end state</text>
+  <g class="line"><path d="M196 128V166" marker-end="url(#export-pipeline-arrow)"/></g>
+  <text class="note" x="204" y="152">1. PPTX</text>
+  <g class="line"><path d="M564 128V166" marker-end="url(#export-pipeline-arrow)"/></g>
+  <text class="note" x="572" y="152">2. PDF</text>
+  <rect class="box teal" x="24" y="168" width="344" height="72" rx="8"/>
+  <text class="name" x="36" y="192">captureSlide: collectScene</text>
+  <text class="note" x="36" y="208">Measures in the page: text as laid out,</text>
+  <text class="note" x="36" y="224">boxes, pictures, chart and diagram JSON</text>
+  <rect class="box teal" x="24" y="280" width="344" height="72" rx="8"/>
+  <text class="name" x="36" y="304">captureSlide: planScene</text>
+  <text class="note" x="36" y="320">Native or picture per node (hybrid, native,</text>
+  <text class="note" x="36" y="336">image), then screenshots the pictures</text>
+  <rect class="box teal" x="24" y="392" width="344" height="72" rx="8"/>
+  <text class="name" x="36" y="416">buildPptx</text>
+  <text class="note" x="36" y="432">Writes the OOXML: a master per surface,</text>
+  <text class="note" x="36" y="448">native charts, notes, step animations</text>
+  <rect class="box amber" x="392" y="168" width="344" height="72" rx="8"/>
+  <text class="name" x="404" y="192">printSlide</text>
+  <text class="note" x="404" y="208">Chromium prints each slide as one</text>
+  <text class="note" x="404" y="224">vector page, at its last step</text>
+  <rect class="box amber" x="392" y="280" width="344" height="72" rx="8"/>
+  <text class="name" x="404" y="304">printNotesPage</text>
+  <text class="note" x="404" y="320">With --notes: pages of the slide</text>
+  <text class="note" x="404" y="336">with its speaker notes</text>
+  <rect class="box amber" x="392" y="392" width="344" height="72" rx="8"/>
+  <text class="name" x="404" y="416">assemblePdf</text>
+  <text class="note" x="404" y="432">pdf-lib merges the pages: bookmarks,</text>
+  <text class="note" x="404" y="448">labels, links, structure tree</text>
+  <g class="line"><path d="M196 240V278" marker-end="url(#export-pipeline-arrow)"/></g>
+  <g class="line"><path d="M196 352V390" marker-end="url(#export-pipeline-arrow)"/></g>
+  <g class="line"><path d="M564 240V278" marker-end="url(#export-pipeline-arrow)"/></g>
+  <g class="line"><path d="M564 352V390" marker-end="url(#export-pipeline-arrow)"/></g>
+  <g class="line"><path d="M196 464V502" marker-end="url(#export-pipeline-arrow)"/></g>
+  <text class="note code" x="204" y="488">with --verify</text>
+  <g class="line"><path d="M340 464V484H520V502" marker-end="url(#export-pipeline-arrow)"/></g>
+  <text class="note code mid" x="432" y="478">.pptx</text>
+  <g class="line"><path d="M564 464V502" marker-end="url(#export-pipeline-arrow)"/></g>
+  <text class="note code" x="572" y="488">.pdf</text>
+  <rect class="box rose" x="392" y="504" width="344" height="88" rx="8"/>
+  <text class="name" x="404" y="528">Files in .deck/exports/&lt;deck&gt;/</text>
+  <text class="note" x="404" y="546">&lt;deck&gt;.pptx and &lt;deck&gt;.pdf, the font</text>
+  <text class="note" x="404" y="562">instances in fonts/, and verify/ with</text>
+  <text class="note" x="404" y="578">report.json and side-by-side pictures</text>
+  <rect class="key" x="24" y="504" width="344" height="88" rx="8"/>
+  <text class="name" x="36" y="528">--verify, on the .pptx only</text>
+  <text class="small" x="36" y="546">The Open XML SDK validates the file;</text>
+  <text class="small" x="36" y="562">LibreOffice (and Quick Look on macOS)</text>
+  <text class="small" x="36" y="578">render it; each region is scored</text>
+</svg>

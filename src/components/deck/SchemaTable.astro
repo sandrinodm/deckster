@@ -1,0 +1,116 @@
+---
+/**
+ * SchemaTable — the rows of a JSON Schema as tables. Not an MDX global: FrontmatterReference
+ * and SchemaReference render it, after they have checked their props. A required field (required
+ * by the object it sits in) carries a "required" tag, as in PropsTable. See flattenSchema in
+ * format.ts for how paths are written (`<name>`, `[]`, `[type=image]`).
+ *
+ * The rows are grouped by the first two segments of their path (`color.surfaces`), and each row
+ * shows its path from there (`.<name>.background`), on one line. The objects of a union
+ * (`…background[type=placed]`) are groups of their own, folded in a <details>: they are the long
+ * tail of the brand schema. A table whose rows are all in one group is shown without a heading.
+ */
+import "./deck.css";
+import { inline, literal } from "./data";
+import type { SchemaRow } from "./format";
+
+interface Props {
+  rows: SchemaRow[];
+  /** What the table is of, for its accessible name. */
+  label: string;
+  /** The file and key the rows come from, shown under the table. */
+  source: string;
+}
+
+const { rows, label, source } = Astro.props;
+const descriptions = rows.some((r) => r.description !== undefined || r.default !== undefined);
+
+/**
+ * `color.surfaces` for `color.surfaces.<name>.bg` and for `color.surfaces` itself when it has
+ * fields under it, so an object heads its own group; `color.waivers` for `color.waivers[].on`.
+ * Up to the variant for a row inside a union.
+ */
+const paths = new Set(rows.map((r) => r.path));
+const hasChildren = (path: string) => rows.some((r) => r.path !== path && (r.path.startsWith(`${path}.`) || r.path.startsWith(`${path}[`)));
+function groupOf(path: string): { group: string; variant: boolean } {
+  const variant = /^(.*?\[type=[^\]]+\])/.exec(path);
+  if (variant) return { group: variant[1]!, variant: true };
+  const segments = path.split(".");
+  if (segments.length === 2 && hasChildren(path)) return { group: path, variant: false };
+  if (segments.length < 3) return { group: segments[0]!, variant: false };
+  const group = segments.slice(0, 2).join(".").replace(/(\[\])+$/, "");
+  return { group: paths.has(group) ? group : segments.slice(0, 2).join("."), variant: false };
+}
+
+type Run = { group: string; variant: boolean; rows: SchemaRow[] };
+const runs: Run[] = [];
+for (const row of rows) {
+  const { group, variant } = groupOf(row.path);
+  const last = runs[runs.length - 1];
+  if (last && last.group === group) last.rows.push(row);
+  else runs.push({ group, variant, rows: [row] });
+}
+// A schema of top-level fields only (deck.config.ts) is one table, not one heading per field.
+const grouped = runs.length > 1 && runs.some((run) => run.rows.length > 1 || run.variant);
+if (!grouped && runs.length > 1) runs.splice(0, runs.length, { group: "", variant: false, rows });
+const shownPath = (row: SchemaRow, group: string) => (grouped && row.path !== group && row.path.startsWith(group) ? row.path.slice(group.length) : row.path);
+/** The path in parts that start at each `.` and `[`; the table puts a <wbr> between them, so it can wrap there. */
+const pathParts = (path: string) => path.split(/(?=[.[])/);
+const seen = new Set<string>();
+const heading = (group: string) => {
+  const again = seen.has(group);
+  seen.add(group);
+  return again ? `${group} (continued)` : group;
+};
+---
+
+<div class="dk-schema-groups">
+  {runs.map((run) => {
+    const title = heading(run.group);
+    const table = (
+      <div class="nb-table-scroll">
+        <table class="dk-schema" aria-label={grouped ? `${label}: ${run.group}` : label}>
+          <thead>
+            <tr><th>Field</th><th>Type</th>{descriptions && <th>Description</th>}</tr>
+          </thead>
+          <tbody>
+            {run.rows.map((r) => (
+              <tr>
+                <td>
+                  <code class="dk-path">{pathParts(shownPath(r, run.group)).map((part, i) => <Fragment>{i > 0 && <wbr />}{part}</Fragment>)}</code>
+                  {r.required && <span class="dk-req">required</span>}
+                  {r.names && (
+                    <span class="dk-path-names">one each for {r.names.map((n, i) => <Fragment><code>{n}</code>{i < r.names!.length - 1 ? ", " : ""}</Fragment>)}</span>
+                  )}
+                </td>
+                <td><code data-type>{r.type}</code></td>
+                {descriptions && (
+                  <td>
+                    {r.description && <Fragment set:html={inline(r.description)} />}
+                    {r.default !== undefined && <Fragment> Default <code>{literal(r.default)}</code>.</Fragment>}
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+    if (!grouped) return table;
+    if (run.variant) {
+      return (
+        <details class="dk-schema-variant">
+          <summary><code class="dk-path">{title}</code> <span class="dk-muted">{run.rows.length} {run.rows.length === 1 ? "field" : "fields"}</span></summary>
+          {table}
+        </details>
+      );
+    }
+    return (
+      <div class="dk-schema-group">
+        <p class="dk-schema-heading"><code class="dk-path">{title}</code></p>
+        {table}
+      </div>
+    );
+  })}
+</div>
+<p class="dk-caption"><span class="dk-mono">{source}</span></p>

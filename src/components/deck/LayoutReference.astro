@@ -1,0 +1,125 @@
+---
+/**
+ * LayoutReference — everything about one layout, from src/data/layouts.json.
+ *
+ *   ## statement
+ *
+ *   <LayoutReference name="statement" />
+ *
+ * Shows the description, a still of a slide that uses it, its frontmatter fields, slots, word
+ * budgets, variants and the example slide. The page writes the heading; the component sets
+ * `id="layout-<name>"` on itself, which LayoutIndex links to.
+ *
+ * The still is the first slide using the layout in the lookbook deck, else the layouts deck, else
+ * any published deck: it is a real slide in that layout, not the example below it.
+ */
+import "./deck.css";
+import { Image } from "astro:assets";
+import { Code } from "@/components/ui/code";
+import { budgetText, describeField } from "./format";
+import { caller, deckUrl, findLayout, inline, layoutAnchor, layoutSlide, slideStill } from "./data";
+
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+const c = caller("LayoutReference", { name }, Astro.url);
+const layout = findLayout(c, name);
+const shown = layoutSlide(c, layout.name);
+const still = slideStill(c, shown.deck, shown.slide.id);
+const fields = Object.entries(layout.fields);
+const slots = Object.entries(layout.slots);
+const title = layout.title as { required?: boolean; maxChars?: number } | null;
+---
+
+<section class="dk-ref dk-layout" id={layoutAnchor(layout.name)} aria-label={`The ${layout.name} layout`}>
+  <div class="dk-layout-top">
+    <div class="dk-layout-text">
+      <dl class="dk-facts">
+        <div><dt>Frontmatter</dt><dd><code>layout: {layout.name}</code></dd></div>
+        <div><dt>Surface</dt><dd>{layout.surface ? <code>{layout.surface}</code> : "the deck's default"}</dd></div>
+        {title && (
+          <div><dt>Title</dt><dd>{title.required ? "required" : "optional"}{title.maxChars ? `, ${title.maxChars} characters at most` : ""}</dd></div>
+        )}
+        {layout.pptx && <div><dt>PowerPoint</dt><dd>{layout.pptx.type} slide</dd></div>}
+      </dl>
+      <p class="dk-prose" set:html={inline(layout.description)} />
+    </div>
+    <figure class="dk-layout-still">
+      <a href={deckUrl(shown.deck, shown.slide.id)} data-astro-prefetch="false" data-nb-zoom="off" aria-label={`Open ${shown.deck} / ${shown.slide.id} in the deck`}>
+        <Image src={still.image} alt={`A slide in the ${layout.name} layout: ${shown.slide.title}.`} widths={[480, 960]} sizes="(min-width: 900px) 320px, 100vw" loading="lazy" decoding="async" />
+      </a>
+      <figcaption class="dk-caption">
+        <span>A {shown.deck} slide in this layout, not the example below</span>
+        <span class="dk-mono">{shown.deck} / {shown.slide.id}</span>
+      </figcaption>
+    </figure>
+  </div>
+
+  <h3 class="dk-label">Slots</h3>
+  <div class="nb-table-scroll">
+    <table>
+      <thead><tr><th>Slot</th><th>Takes</th><th>Budget</th><th>What goes in it</th></tr></thead>
+      <tbody>
+        {slots.map(([slot, s]) => (
+          <tr>
+            <td data-nowrap>
+              <code>{s.tag ? `<${s.tag}>` : slot}</code>
+              {s.required && <span class="dk-req" title="Required">required</span>}
+            </td>
+            <td>{s.accepts.join(", ")}</td>
+            <td data-nowrap>{budgetText(layout.budget[slot]) || "—"}</td>
+            <td set:html={inline(s.description)} />
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {fields.length > 0 && (
+    <Fragment>
+      <h3 class="dk-label">Frontmatter fields</h3>
+      <div class="nb-table-scroll">
+        <table>
+          <thead><tr><th>Field</th><th>Values</th><th>How to use it</th></tr></thead>
+          <tbody>
+            {fields.map(([field, f]) => (
+              <tr>
+                <td data-nowrap><code>{field}</code>{f.required && <span class="dk-req">required</span>}</td>
+                <td set:html={describeField(f)} />
+                <td set:html={inline(f.hint)} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Fragment>
+  )}
+
+  {layout.variants.length > 0 && (
+    <Fragment>
+      <h3 class="dk-label">Variants</h3>
+      <ul class="dk-variants">
+        {layout.variants.map((v) => {
+          const budget = Object.entries(v.budget ?? {})
+            .map(([slot, b]) => `${slot}: ${budgetText(b)}`)
+            .join("; ");
+          return (
+            <li>
+              <span set:html={inline(v.name)} />
+              {budget && <span class="dk-muted"> — {budget}</span>}
+            </li>
+          );
+        })}
+      </ul>
+    </Fragment>
+  )}
+
+  {layout.example && (
+    <Fragment>
+      <h3 class="dk-label">Example</h3>
+      <Code code={layout.example.mdx.trimEnd()} lang="mdx" />
+    </Fragment>
+  )}
+</section>

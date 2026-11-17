@@ -1,0 +1,93 @@
+---
+/**
+ * DiagramKinds — what diagrams.json says about the parts of a `<Flow>` that no PropsTable
+ * covers: the node `kind`s (with aliases, shape and icon), the `State` values (with the words
+ * that mean the same) and the `<Edge>` options.
+ *
+ *   ## Node kinds, states and edges
+ *
+ *   <DiagramKinds />
+ *   <DiagramKinds part="kinds" />
+ *
+ * `part` shows one of `kinds`, `states` or `edges`; anything else fails the build. Each part is a
+ * `###` label: "Node kinds", "States", "Edge options", with `id="diagram-<part>"`.
+ */
+import "./deck.css";
+import { Code } from "@/components/ui/code";
+import { caller, checkDiagramPart, diagramParts, inline } from "./data";
+
+interface Props {
+  part?: "kinds" | "states" | "edges";
+}
+
+const { part } = Astro.props;
+const c = caller("DiagramKinds", { part }, Astro.url);
+const parts = checkDiagramPart(c, part);
+const { nodeKinds, states, stateSynonyms, edgeOptions } = diagramParts();
+const iconSets = [...new Set(nodeKinds.flatMap((k) => Object.keys(k.icons ?? {})))];
+const synonyms = (state: string) => Object.entries(stateSynonyms).filter(([, s]) => s === state).map(([word]) => word);
+---
+
+<section class="dk-ref dk-diagram-kinds" aria-label="Diagram node kinds, states and edge options">
+  {parts.includes("kinds") && (
+    <div id="diagram-kinds">
+      <h3 class="dk-label">Node kinds <span class="dk-muted">({nodeKinds.length})</span></h3>
+      <div class="nb-table-scroll">
+        <table aria-label="Node kinds">
+          <thead><tr><th>kind</th><th>Shape</th><th>Icon ({iconSets.join(" / ")})</th><th>Use when</th></tr></thead>
+          <tbody>
+            {nodeKinds.map((k) => (
+              <tr>
+                <td>
+                  <code>{k.kind}</code>
+                  {k.aliases.length > 0 && <span class="dk-path-names">also {k.aliases.map((a, i) => <Fragment><code>{a}</code>{i < k.aliases.length - 1 ? " " : ""}</Fragment>)}</span>}
+                </td>
+                <td>{k.shape}</td>
+                <td>{k.icons ? iconSets.map((set) => k.icons![set] ?? "—").join(" / ") : <span class="dk-muted">none</span>}</td>
+                <td set:html={inline(k.useWhen)} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+  {parts.includes("states") && (
+    <div id="diagram-states">
+      <h3 class="dk-label">States</h3>
+      <div class="nb-table-scroll">
+        <table aria-label="States">
+          <thead><tr><th>State</th><th>Also accepted</th></tr></thead>
+          <tbody>
+            {states.map((state) => {
+              const words = synonyms(state);
+              return (
+                <tr>
+                  <td data-nowrap><code>{state}</code></td>
+                  <td>{words.length > 0 ? words.map((w, i) => <Fragment><code>{w}</code>{i < words.length - 1 ? " " : ""}</Fragment>) : <span class="dk-muted">—</span>}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+  {parts.includes("edges") && (
+    <div id="diagram-edges">
+      <h3 class="dk-label">Edge options</h3>
+      <dl class="dk-edge-options">
+        {edgeOptions.map((o) => (
+          <div>
+            <dt><code>{o.name}</code></dt>
+            <dd>
+              <p class="dk-prose" set:html={inline(o.useWhen)} />
+              <Code code={o.example} lang="mdx" />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )}
+  <p class="dk-caption"><span>The same lists, as JSON, are in <code>deck diagrams --json</code>.</span></p>
+</section>

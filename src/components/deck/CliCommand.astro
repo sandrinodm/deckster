@@ -1,0 +1,35 @@
+---
+/**
+ * CliCommand — one deck command: its summary, usage forms and full help, from src/data/cli.json
+ * (each command's `--help`, as deckster's docs-data.ts captures it with the wording of the
+ * installed npm CLI). `dev` and `present` still point at the repository's docs/*.md, as 0.3.0
+ * itself does; pages never send readers there.
+ *
+ *   ## deck lint
+ *
+ *   <CliCommand name="lint" />
+ *
+ * Sets `id="cli-<name>"` on itself. The CLI version is not repeated per command: the page intro
+ * names the release (src/data/cli.json `version`).
+ */
+import "./deck.css";
+import { Code } from "@/components/ui/code";
+import { caller, cliAnchor, findCommand } from "./data";
+
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+const c = caller("CliCommand", { name }, Astro.url);
+const command = findCommand(c, name);
+---
+
+<section class="dk-ref dk-cli" id={cliAnchor(command.name)} aria-label={`deck ${command.name}`}>
+  <p class="dk-cli-summary">{command.summary.replace(/\.?$/, ".")}</p>
+  <Code code={command.usage.join("\n")} lang="sh" />
+  <details class="dk-cli-help">
+    <summary>Full help: <code>deck {command.name} --help</code></summary>
+    <pre class="dk-cli-pre">{command.help}</pre>
+  </details>
+</section>

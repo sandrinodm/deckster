@@ -1,0 +1,113 @@
+---
+title: "Choosing a chart"
+description: "Pick the chart that fits the point a slide makes."
+sidebar:
+  order: 1
+---
+
+A chart slide makes one point, and the chart is the evidence for it. This page shows you how to pick the form from the point you are making, feed it rows inline, from a CSV or JSON file or from the slide's frontmatter, write a title `deck lint` accepts, and choose the layout it sits in. Every prop is on [the chart reference](/reference/charts/).
+
+## Start from the message
+
+Name what the numbers say before you pick a form. The kit has 16 chart and number components, and each is filed under the messages it can carry:
+
+| Message | Components |
+| --- | --- |
+| single number | `<BigNumber>`, `<StatRow>`, `<Pictogram>`, `<Progress>` |
+| comparison | `<StatRow>`, `<Comparison>`, `<BarChart>`, `<Slope>`, `<Waterfall>`, `<Heatmap>`, `<Table>` |
+| ranking | `<BarChart>` |
+| trend | `<BarChart>`, `<LineChart>`, `<AreaChart>`, `<Sparkline>` |
+| change between two points | `<Comparison>`, `<Slope>` |
+| part-to-whole | `<AreaChart>`, `<Donut>`, `<Pictogram>`, `<Progress>` |
+| distribution | `<Scatter>`, `<Heatmap>` |
+| correlation | `<Scatter>` |
+| flow | `<Waterfall>`, `<Funnel>` |
+| exact values | `<Table>` |
+
+`deck charts` prints every component with its messages, when to use and avoid it, the shape of its data, how it draws a missing value and an example; `deck charts --json` adds this table as `messages`, with the props and limits, for an agent.
+
+<CatalogIndex kind="charts" />
+
+When one number is the message, read [Number components](/data-and-diagrams/number-components/) instead.
+
+## Know when a form is wrong
+
+A form that fits the data can still hide the point. These two slides show the same hours per team: grouped bars make the audience compare fourteen bars in pairs, while the slope draws the change, so the two teams that got slower stand out.
+
+<SlideShot deck="data-stories" slide="wrong-chart" alt="Grouped bars of median hours to resolve a ticket for seven teams in 2025 and 2026: five pairs in grey, and the Payroll and Billing pairs in blue and orange, rising from 12 to 15 hours and from 18 to 22 hours." />
+
+<SlideShot deck="data-stories" slide="right-chart" alt="A slope chart of the same seven teams from 2025 to 2026: Billing and Payroll rise in red, from 18 to 22 hours and from 12 to 15 hours, while the five grey lines fall." />
+
+Each entry on [the chart reference](/reference/charts/) has an Avoid line, the same one `deck charts` prints, that names the misuse or the form to use instead: the [`<Donut>`](/reference/charts/#props-Donut) entry, for example, says to use sorted bars for more than five slices or close values.
+
+`deck lint` holds each chart to the numbers in its `limits`: a `<BarChart>` past 12 categories or a `<Slope>` past 10 gets `chart-too-many-categories`, and a `<Donut>` with more than 5 slices gets `chart-pie-slices`. [Lint rules](/reference/lint-rules/#charts) lists every `chart-*` rule.
+
+## Give the chart data
+
+A chart takes its rows in one of three ways.
+
+Inline, as an array of objects: `data={[{ month: 'Jan', '2025': 5.1 }, ...]}`.
+
+From a CSV or JSON file in the deck folder, imported by a path relative to the slide. A CSV is parsed into rows at build time: the header line names the fields, numbers become numbers and empty cells become `null`. A malformed file fails the build with its path and line.
+
+```csv title="decks/launch-review/data/signups.csv"
+channel,signups
+Search,4200
+Referral,2600
+Social,1900
+Email,
+Events,700
+```
+
+```mdx title="decks/launch-review/slides/signups.mdx"
+import signups from '../data/signups.csv';
+
+<BarChart data={signups} x="channel" y="signups" sort highlight="Search" caption="Signups in October 2026" />
+```
+
+This slide's title, "Signups by channel", is the one `deck lint` flags below.
+
+Or from a named dataset in the slide's `data:` frontmatter, which a chart names with `data="reasons"`:
+
+<SlideExample deck="data-stories" slide="top-reasons" />
+
+When `x` or `y` is left out, a chart picks fields for itself (for a `<BarChart>`, the first text field and every number field), so name them. Two rows for the same category (and series) throw an error.
+
+Each chart draws a missing value (`null`, an empty CSV cell, text that is not a number) in its own way, listed as "Missing values" in `deck charts`. The `Email` row above has no count: the `<BarChart>` draws no bar and no label there and keeps the category in its place. A `<LineChart>` breaks the line, a `<Scatter>` leaves the point out, and a `<Slope>` throws an error naming the item.
+
+A prop name a chart does not take throws, naming the closest one. `deck lint` reports it as a `render-error`:
+
+```console
+$ deck lint launch-review
+...
+  error   render-error (typo step 0): The slide shows an error instead of its content: `value` is not a prop of BarChart; did you mean `y`? Its props are: at, caption, source, label, data, highlight, annotations, format, unit, labels, legend, x, y, series, orientation, stacked, sort, min, max, truncate, reveal. `deck charts --json` describes each one.
+...
+```
+
+(Cut to the one finding.)
+
+## Write the title as the takeaway
+
+The slide title states what the chart shows, as a sentence with the number when there is one: "Billing questions are a third of everything customers ask us". The measure, unit and period go in the chart's `caption`, and the source in `source` or a `<Footnote>`. A title that reads like a topic gets a warning:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/signups.mdx
+  warning chart-topic-title (signups): "Signups by channel" looks like a topic, not a takeaway (a heuristic: it reads as "X by Y").
+          Fix: State what the chart shows in the title of decks/launch-review/slides/signups.mdx, with the number when there is one: "Billing tickets doubled in Q3", not "Tickets by queue". Put the measure and period in the chart's `caption`.
+
+launch-review: 0 errors, 1 warning in 2 slides (2 steps checked).
+```
+
+Then make the chart point at the same thing the title says, with a `highlight`: see [Highlights and annotations](/data-and-diagrams/highlights-and-annotations/).
+
+## Choose the layout
+
+- **`chart`**: the default. One chart, number component or table fills the space under the title; `<Aside>` sets the "so what" beside it and `<Footnote>` the source.
+- **`split`**: text on one side and the chart in `<Media>` on the other, when the chart needs a paragraph or a few bullets.
+- **`table`**: one Markdown table or `<Table>` of exact values, about eight rows and five columns, when the audience will read the numbers rather than the shape.
+- **`stats`**: two to four plain figures in a row, with no chart at all.
+
+The layouts and their limits are on [the layout reference](/reference/layouts/).
+
+Twelve of the 16 components have a native PowerPoint counterpart, which `deck charts --json` names in each chart's `native` field (`null` for `<BigNumber>`, `<StatRow>`, `<Pictogram>` and `<Heatmap>`). [PowerPoint](/export-and-publish/powerpoint/) explains when an export uses it.

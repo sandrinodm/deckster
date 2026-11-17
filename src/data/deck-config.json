@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slides": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string"
+        }
+      ],
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "brand": {
+      "type": "string"
+    },
+    "mouseNavigation": {
+      "type": "boolean"
+    },
+    "duration": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "slides"
+  ],
+  "additionalProperties": false
+}

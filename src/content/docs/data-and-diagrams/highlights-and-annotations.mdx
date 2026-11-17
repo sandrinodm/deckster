@@ -1,0 +1,131 @@
+---
+title: "Highlights and annotations"
+description: "Draw attention to one value in a chart with highlights and annotations."
+sidebar:
+  order: 3
+---
+
+A chart on a slide has a few seconds to make its point, so it should show the audience where to look. This page shows you how to keep one series, category or point in colour, add callouts, reference lines, ranges and brackets, keep the axis honest, and build the chart one step at a time while you talk. Choosing the form comes first: see [Choosing a chart](/data-and-diagrams/choosing-a-chart/).
+
+## Highlight what matters
+
+`highlight` names what the chart is about; everything else drops to the brand's context colour. It takes:
+
+- a series name (`highlight="2026"`), or else a category (`highlight="Billing and invoices"`), or `max`, `min`, `first` or `last`;
+- several names as an array (`highlight={['Billing', 'Payroll']}`);
+- a `Highlight` object, to say exactly what it is and from which step.
+
+<ChartTypes of="Highlight" />
+
+```mdx
+<LineChart data={tickets} x="month" y="2026" highlight={{ range: ['Jun', 'Sep'] }} />
+```
+
+A chart that draws three or more series, or six or more categories, and highlights nothing gets `chart-no-highlight` from `deck lint`, checked on the slide's last step; `<BigNumber>`, `<Pictogram>`, `<Heatmap>` and `<Sparkline>` are exempt. `<Heatmap>` and `<Table>` take their own highlight (a cell, row or column to outline or mark), and `<Sparkline>` takes `last`, `max` or `min`; [the chart reference](/reference/charts/) has each one.
+
+## Annotate the chart
+
+`annotations` is a list of objects, each with a `type`:
+
+- `callout`: a short label pointing at one category, such as the month a change shipped;
+- `reference`: a line across the plot at a value, such as a target; the formatted value is added after its label;
+- `range`: a shaded span of categories, such as a rollout;
+- `bracket`: the change between two points of one series, written for you when you leave out `label`.
+
+This `<AreaChart>` uses three of them:
+
+<SlideExample deck="data-stories" slide="response-time" />
+
+`<BarChart>`, `<LineChart>`, `<AreaChart>` and `<Waterfall>` take all four; `<Slope>` and `<Scatter>` take only callouts and reference lines, and a range or a bracket throws there. The fields of each type:
+
+<ChartTypes of="Annotation.callout" />
+
+<ChartTypes of="Annotation.reference" />
+
+<ChartTypes of="Annotation.range" />
+
+<ChartTypes of="Annotation.bracket" />
+
+## Labels or a legend
+
+Charts label the marks themselves: line ends, bar tips, slices. On `<BarChart>`, `<LineChart>` and `<AreaChart>`, `labels` chooses which values are written: `auto` (the default) labels every value when there are few enough to read, and drops the value axis, else only the highlighted ones; `all`, `highlight`, `ends` and `none` do what they say. A legend appears only where direct labels cannot name the series, as on grouped and stacked bars; `legend` forces it on or off. When a legend shows where direct labels would do, `deck lint` warns with `chart-legend-avoidable`.
+
+## Keep the axis honest
+
+Bars and areas start at zero. A `<BarChart>` with `min` above zero is an error unless you also set `truncate`, which draws an axis break across every bar, the value axis and an "Axis starts at" note:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/truncated.mdx
+  error   chart-truncated-axis (truncated): <BarChart> sets `min` above zero; bars start at zero, so the chart draws from zero.
+          Fix: In decks/launch-review/slides/truncated.mdx, remove `min`, or show the values with a <LineChart> or dots, which may zoom. Add `truncate` only if the cut is essential: the chart then draws an axis break.
+
+launch-review: 1 error, 0 warnings in 2 slides (2 steps checked).
+```
+
+A `<LineChart>` may zoom: its axis hugs the data and says where it starts. Set `zero` to start it at zero, as both slides below do.
+
+## Build the chart step by step
+
+A chart builds with `at`, the step that reveals something, from step 1 (step 0 is the slide before any step). `at` goes on:
+
+- the chart itself, to reveal the whole figure;
+- a series in `y`, written as `{ field: '2026', at: 1 }`;
+- the `highlight` object;
+- each annotation.
+
+This `<LineChart>` shows last year first, this year on step 1, a callout on step 2 and a bracket on step 3:
+
+<StepStrip deck="showcase" slide="review-rounds" />
+
+```mdx
+y={['2025', { field: '2026', at: 1 }]}
+highlight="2026"
+annotations={[
+  { type: 'callout', x: 'Apr', label: 'Decks move to code', at: 2 },
+  { type: 'bracket', from: 'Apr', to: 'Sep', better: 'down', at: 3 },
+]}
+```
+
+The same pattern on another slide; the bracket has no `label`, so it writes the change from June to October itself, −38%:
+
+<StepStrip deck="data-stories" slide="redesign-effect" />
+
+`reveal` builds the marks for you, one series or one category per step: `reveal="series"` or `reveal="categories"` starts at step 1, and the object form starts later. `<BarChart>`, `<LineChart>`, `<AreaChart>`, `<Waterfall>` and `<Funnel>` take it; on a `<Waterfall>` the totals show from the start and the changes between them build.
+
+<ChartTypes of="RevealOption" />
+
+```mdx
+<BarChart
+  data={[
+    { reason: 'Billing', share: 33 },
+    { reason: 'Login', share: 17 },
+    { reason: 'Integrations', share: 13 },
+    { reason: 'Export', share: 9 },
+  ]}
+  x="reason"
+  y="share"
+  unit="%"
+  reveal={{ by: 'categories', from: 1 }}
+  highlight={{ category: 'Billing', at: 5 }}
+  annotations={[{ type: 'reference', value: 30, label: 'Two next together', at: 5 }]}
+  caption="Share of tickets by first-contact reason, 2026"
+/>
+```
+
+Here the four bars arrive on steps 1 to 4, and on step 5 Billing keeps its colour while the others go grey, under a reference line at 30%. The last step is the complete chart, which static mode, `deck shot` and every export show. Write a `[click]` cue in the speaker notes for each step, so the talk and the build stay in order; [Builds](/write-slides/builds/) covers steps across a slide.
+
+## What lint checks
+
+`deck lint` renders every step and reports these chart rules ([lint rules](/reference/lint-rules/#charts) has them all):
+
+| Rule | Severity | Reports |
+| --- | --- | --- |
+| `chart-empty` | error | A chart draws no marks, or a line or area chart has a single point. |
+| `chart-truncated-axis` | error | A bar chart sets `min` above zero without `truncate`. |
+| `chart-no-highlight` | warning | A chart with several series or many categories highlights nothing. |
+| `chart-too-many-series` | warning | More series in their own colour than the brand's categorical palette has colours. |
+| `chart-too-many-categories` | warning | More bars, stages, rows or items than read at a glance, from each chart's `limits`. |
+| `chart-missing-unit` | warning | Values with no unit and no caption naming the measure. |
+| `chart-legend-avoidable` | warning | A legend where direct labels would name the series. |
+| `chart-funnel-grows` | warning | A `<Funnel>` stage holds more than the stage before it. |

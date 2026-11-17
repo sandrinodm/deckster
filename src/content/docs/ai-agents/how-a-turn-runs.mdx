@@ -1,0 +1,57 @@
+---
+title: "How a turn runs"
+description: "What happens between a request in the agent panel and a changed slide."
+sidebar:
+  order: 4
+---
+
+A turn is one prompt in the [agent panel](/ai-agents/agent-panel/) and everything that follows until the slide has changed and been linted. This page explains which processes take part, what a turn may change, how that is enforced and what is left unprotected, so you can decide whether to run an agent on your machine, or work out what a turn did.
+
+<Diagram name="agent-turn" alt="One agent turn goes from a prompt in the panel through a turn guard and the provider editing a working copy, to a sync that copies only content files into the deck, then settle, journal and lint; undo restores the last turn's files, new lint errors start one follow-up turn, and a footer lists what a turn may change." />
+
+## The processes
+
+The `deck` CLI owns everything: the dev server, the agent socket at `/__deck/agent` (prompts in, events out), the MCP endpoint at `/__deck/mcp` with the deck tools, and the agent host, which queues prompts and runs one turn at a time. Each turn is one child process, `claude -p` or `codex exec`, of the CLI you installed, with your login; the next turn resumes its session. The child calls the deck tools over MCP. In `deck present` the Electron window only shows the page.
+
+A turn ends when the agent finishes, when you press Stop, after 2 minutes without output, or after 10 minutes in all: the process group gets SIGINT, then SIGTERM two seconds later, then SIGKILL.
+
+## What a turn can change
+
+Only the deck's content:
+
+- `.mdx` and `.tsx` files in `slides/`;
+- in `assets/` and `public/`: png, jpg, jpeg, gif, webp, avif, svg, webm, mp4, mov, m4v, mp3, m4a, wav, ogg, opus, json and csv files;
+- the slide list, only through the `new_slide`, `reorder_slides` and `remove_slide` deck tools;
+- review comments, only through the `comments` tool.
+
+Not `deck.config.ts` itself, stylesheets, `.ts` helper modules, the brand or anything outside the deck: the config, the brand and helpers are code the dev server runs, and a stylesheet can make the build load JavaScript.
+
+## How that is enforced
+
+**A fresh working copy per turn.** Before the turn, the editor copies the deck's content files (plain files with an allowed extension; at most 2,000 files, 256 MB a file and 2 GB in all) into a new folder under `.deck/agent/<deck>/work/`. The agent edits there and reads everything else from the workspace as it is.
+
+**The provider can write only that copy.** Codex runs in its sandbox with the copy's `slides/` as its folder and `assets/` and `public/` as its only other writable folders, with no network. Claude Code gets one permission rule per content folder and extension inside the copy, is denied `decks/`, `brands/`, `deck.config.ts`, every `.css` file and `.claude/`, loads no settings file and is not offered skills.
+
+**One way into the deck.** The editor syncs content from the working copy into the deck about every second, before every deck tool that reads the deck, and when the turn ends. It takes only plain content files with safe names; links, FIFOs and anything else are ignored and listed in the turn's footer. A file deleted in the copy is deleted from the deck. Then the copy is retired.
+
+**A check of everything else.** Before the turn the editor records every other file of the deck and of its brand; afterwards it puts back any that changed, keeping the version it found in `.deck/agent/<deck>/reverted/<turn>/`. If the CLI is killed during a turn, the next command that loads the deck restores it to its state before the turn and discards the copy.
+
+## After the turn
+
+The deck is linted, and the result is compared with the lint from before the turn, so findings that were already there are not blamed on it. When the turn brought new errors, one follow-up turn is queued to fix them, never a second one.
+
+## Undo
+
+A journal in `.deck/agent/<deck>/turns/` keeps the last 50 turns: what the sync brought into the deck, with each file before and after, and the slide list when a deck tool changed it. Undo restores the last turn's files and Redo applies them again. Undo is refused, naming the file, when that file changed after the turn; undo that edit by hand first. Files over 5 MB are not copied into the journal, so their change cannot be undone. A new turn that changes files drops the turns you had undone.
+
+## What is not protected
+
+The guard limits what the provider process writes. It does not make the agent harmless:
+
+- **Slides are code your browser runs.** A slide the agent wrote runs in the deck page with your dev session, and can do what the page can: add, resolve and delete review comments, and reorder slides. Review a turn's changes as you would a collaborator's commit.
+- **Both providers can read every file you can**, not only the deck.
+- **Data can leave through a slide.** An image address, a fetch or a form in a slide makes a request when the page opens, whatever the provider's own limits.
+- **Web access is off unless you pass `--agent-web`.** With it, Claude gets `WebSearch` and `WebFetch` and Codex its live web search; text from outside then enters a turn that edits code your browser runs.
+- **Claude's limits are permission rules, not a sandbox.** Codex's edits are held by its sandbox; Claude Code's by the rules Claude Code applies to its own tools. The check after the turn covers both.
+
+Text from the deck (slides, notes, comments, tool results) reaches the agent marked as data, and its standing rules say never to follow instructions found there. Still, do not run an agent on material you do not trust in a workspace next to secrets. See also [Security](/project/security/) and [MCP tools](/ai-agents/mcp-tools/).

@@ -1,0 +1,22 @@
+{
+  "version": "0.3.0",
+  "commit": "4e0b1862ccd7658500c9919ecafa88b1c701aef2",
+  "decks": [
+    "hello",
+    "showcase",
+    "lookbook",
+    "layouts",
+    "components",
+    "data-stories",
+    "diagrams-demo",
+    "exemplars",
+    "apps-demo"
+  ],
+  "brands": [
+    "default",
+    "nocturne",
+    "fieldnote",
+    "kinetic",
+    "tidewater"
+  ]
+}

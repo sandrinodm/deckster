@@ -1,0 +1,123 @@
+---
+title: "Workspace layout"
+description: "The folders and files in a deckster workspace and what each one holds."
+sidebar:
+  order: 4
+---
+
+A deckster workspace is a plain folder with `decks/` in it, and maybe `brands/`. This page says how the CLI finds that folder, what each folder holds, what deckster writes on its own, and what to commit.
+
+## A workspace with two decks
+
+<FileTree>
+- talks/
+  - decks/
+    - launch-review/
+      - deck.config.ts
+      - slides/
+        - title.mdx
+        - results.mdx
+        - next-steps.mdx
+      - assets/
+      - public/
+      - lib/
+      - apps/
+      - .feedback/
+        - results.json
+      - dist/
+    - board-update/
+      - deck.config.ts
+      - slides/
+  - brands/
+    - nocturne/
+      - brand.ts
+      - ...
+  - .deck/
+    - shots/
+    - exports/
+    - diff/
+    - baseline/
+    - agent/
+    - shell/
+    - env.d.ts
+  - node_modules/
+  - package.json
+  - tsconfig.json
+</FileTree>
+
+Only `decks/<deck>/deck.config.ts` and the slide files are required. Everything else appears when you add it or run the command that writes it.
+
+## How the CLI finds the workspace
+
+Every `deck` command works in one workspace folder, chosen in this order:
+
+1. `DECK_ROOT`, when it is set and not empty. Use it to run `deck` from outside the folder.
+2. The nearest folder at or above the current one that contains `decks/`. You can run `deck lint launch-review` from inside `decks/launch-review/slides/`.
+3. The current folder, when no folder above has `decks/`. That is how `deck new` starts a workspace in an empty folder.
+
+The CLI never picks your home folder or `/` on its own; it stops and asks you to make a project folder or set `DECK_ROOT`. When the workspace is not the current folder, it says which one it uses on standard error:
+
+```console
+$ cd decks/launch-review && deck new slide launch-review risks
+Using the workspace /Users/you/talks
+decks/launch-review/slides/risks.mdx
+decks/launch-review/deck.config.ts
+```
+
+## A deck folder
+
+Each folder in `decks/` is one deck, named in kebab-case; commands take that name (`deck dev launch-review`).
+
+| Path | What it holds |
+| --- | --- |
+| `deck.config.ts` | The title, brand, talk length and slide order. Every field is in the [deck config reference](/reference/deck-config/). |
+| `slides/` | One `.mdx` or `.tsx` file per slide, named by its id. Only ids listed in `deck.config.ts` are slides; other files there are helpers. |
+| `assets/` | Pictures, video and other files a slide imports by relative path, such as `../assets/mark.svg`. |
+| `public/` | Files served as they are, next to the built deck. |
+| `apps/<name>/` | A mini app, made with `deck new app`, shown on a slide with `<AppFrame>` and built to `dist/apps/<name>/`. |
+| `lib/`, `data/` or any other folder | Ordinary folders of code or data that slides import by relative path. deckster gives these names no meaning of their own. |
+| `.feedback/` | Review comments: one `<slide-id>.json` file per slide, plus the PNG screenshots comments carry, written by the dev server's comment mode and by `deck comments add`. See [Comments](/review/comments/). |
+| `dist/` | The static site `deck build` writes. |
+
+A deck folder needs no `package.json`. Decks copied from the deckster repository bring one along with a `tsconfig.json`; delete both, or every slide fails to build.
+
+## A brand folder
+
+`brands/<name>/` holds one brand: a `brand.ts` file and the files it names, such as logos, background SVGs and font files. It is a folder of plain files and needs no `package.json`. A deck uses it when its `deck.config.ts` says `brand: '<name>'`, or for one command with `--brand <name>`. The `default` brand comes with the CLI, so a workspace without `brands/default/` still renders. A brand that names a Fontsource package the CLI does not carry (it ships Inter, JetBrains Mono and Bricolage Grotesque) finds it in the workspace's `node_modules/`, so you `npm install` it in the workspace; [Fonts and assets](/brands/fonts-and-assets/) covers that.
+
+## What deckster writes to `.deck/`
+
+Generated files go to `.deck/` at the workspace root, one folder per deck inside each:
+
+| Folder | Written by | Holds |
+| --- | --- | --- |
+| `.deck/shots/<deck>/` | `deck shot` | PNGs named `02-results.png`, or `02-results.step1.png` with `--steps` |
+| `.deck/exports/<deck>/` | `deck export` | `<deck>.pdf`, `<deck>.pptx` and the `fonts/` the PPTX embeds |
+| `.deck/baseline/<deck>/` | `deck diff --save-baseline` | The pictures later diffs compare against |
+| `.deck/diff/<deck>/` | `deck diff` | The report, `index.html`, and its pictures |
+| `.deck/agent/<deck>/` | `deck dev --mcp` or `--agent` | `server.json` with the port and the per-run bearer token (mode 0600) while the server runs, and the working copies of agent turns; see [How a turn runs](/ai-agents/how-a-turn-runs/) |
+| `.deck/shell/` | `deck present` | The window positions (`windows.json`) and browser profile of the presenter app, and on macOS a branded copy of the Electron app (`app/`) |
+| `.deck/env.d.ts` | `deck types` | Type declarations for your editor |
+
+With `--brand <name>`, the shot, export, diff and baseline folders are named `<deck>@<name>`.
+
+## `node_modules`, `package.json` and `tsconfig.json`
+
+- **`node_modules/`** appears the first time you run `deck dev` or `deck lint`: it holds Vite's cache in `node_modules/.vite/`. It also holds any package you install in the workspace.
+- **`package.json`** appears when you `npm install` something in the workspace, usually the font packages a copied brand needs (`deck brand check <name>` names them).
+- **`tsconfig.json`** and `.deck/env.d.ts` are written by `deck types`, so that your editor and `tsc` resolve `@deckster/*` imports. Settings you already have in `tsconfig.json` are kept. The paths point into your installed CLI, so run `deck types` again after upgrading `@deckster/cli`.
+
+## What to commit
+
+Commit `decks/`, including each deck's `.feedback/`, and `brands/`. Keep `.deck/` out of git: it holds generated files and, while a dev server with `--mcp` runs, its bearer token. Leave out `node_modules/`, each deck's `dist/` and a `site/` folder from `deck build --out site` too. `deck new` writes no `.gitignore`, so add one yourself:
+
+```text
+.deck/
+node_modules/
+decks/*/dist/
+site/
+```
+
+`tsconfig.json` names folders on your machine; commit it only if everyone who clones the repository installs the CLI the same way.
+
+The deckster repository itself is laid out differently, with every deck as a workspace package; [Work from a clone](/get-started/work-from-a-clone/) covers it.

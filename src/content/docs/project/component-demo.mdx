@@ -1,0 +1,83 @@
+---
+title: Deck component demo
+description: Every deck component once, so the build exercises them. Not listed in the sidebar.
+sidebar:
+  hidden: true
+noindex: true
+---
+
+This page uses each deck component once, so `npm run build` fails when one of them breaks. The components are documented in `AGENT.md`, under "Deck components".
+
+## DeckEmbed
+
+<DeckEmbed deck="showcase" slide="lint-path" step={0} />
+
+## SlideShot
+
+<SlideShot deck="lookbook" slide="statement-claim" alt="A statement slide from the lookbook: one sentence set large on the inverse surface." />
+
+## SlideExample
+
+<SlideExample deck="hello" slide="steps" />
+
+## StepStrip
+
+<StepStrip deck="showcase" slide="review-rounds" />
+
+## BrandGrid
+
+<BrandGrid slide="cover" />
+
+## UiShot
+
+<UiShot name="presenter" alt="The presenter window of the showcase deck, with the current slide, the next slide, the speaker notes and a timer." />
+
+## LayoutReference
+
+<LayoutReference name="statement" />
+
+## LayoutIndex
+
+<LayoutIndex />
+
+## PropsTable
+
+<PropsTable of="Code" />
+
+## CatalogIndex
+
+<CatalogIndex kind="charts" />
+
+## CliCommand
+
+<CliCommand name="lint" />
+
+## IconGrid
+
+<IconGrid />
+
+## BrandTokens
+
+<BrandTokens name="default" />
+
+## FrontmatterReference
+
+<FrontmatterReference />
+
+## SchemaReference
+
+<SchemaReference of="deck-config" />
+
+<SchemaReference of="brand" section="typography" />
+
+## ChartTypes
+
+<ChartTypes of="Highlight" />
+
+## DiagramKinds
+
+<DiagramKinds />
+
+## Diagram
+
+<Diagram name="step-model" alt="A slide with <Step at={1}> and <Step at={3}> has three deck steps, 0, 1 and 2, with hashes #/2/0, #/2/1 and #/2/2, where useStep() returns 0, 1 and 3; going back from step 0 enters the previous slide at its last step, and going on from step 2 enters the next slide at step 0." />

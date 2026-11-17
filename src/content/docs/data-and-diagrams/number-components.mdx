@@ -1,0 +1,87 @@
+---
+title: "Number components"
+description: "Show a single number or a few numbers with the number components."
+sidebar:
+  order: 2
+---
+
+When the point of a slide is one number, or a few, a chart only gets in the way. This page shows you which number component fits the job, how the kit writes the numbers and their changes, when a figure counts up, and when a layout does the job with no component at all. Every prop is on [the chart reference](/reference/charts/).
+
+## Pick the component
+
+| Job | Component |
+| --- | --- |
+| One figure is the message | [`<BigNumber>`](/reference/charts/#props-BigNumber) |
+| Two to four headline figures, each with its change | [`<StatRow>`](/reference/charts/#props-StatRow) |
+| Before and after, or A against B | [`<Comparison>`](/reference/charts/#props-Comparison) |
+| Progress towards a target | [`<Progress>`](/reference/charts/#props-Progress) |
+| A share that should feel human, "3 in 10" | [`<Pictogram>`](/reference/charts/#props-Pictogram) |
+| A trend as context beside a number | [`<Sparkline>`](/reference/charts/#props-Sparkline) |
+
+One of each, in the order of the table:
+
+```mdx
+<BigNumber value={3} unit="days" label="from signup to a live workspace" from={14} better="down" relative={false} />
+<StatRow stats={[{ value: 38, unit: '%', label: 'fewer tickets', highlight: true }, { value: 2.5, unit: 'h', label: 'first reply', from: 14, better: 'down' }]} />
+<Comparison from={{ value: 14, label: '2025' }} to={{ value: 2.5, label: 'October 2026' }} unit="h" better="down" />
+<Progress value={31} target={40} unit="%" label="of questions solved by self-serve" />
+<Pictogram value={3} total={10} label="questions now end in the help centre" />
+<Sparkline values={[9, 7.2, 5.8, 4.9, 3.6, 2.5]} unit="h" />
+```
+
+Put the component in the `chart` layout, alone or with an `<Aside>` beside it. A `<StatRow>` holds four stats at most and a `<Pictogram>` 100 units; past four figures, use a `<Table>` ([Choosing a chart](/data-and-diagrams/choosing-a-chart/) covers tables). `<BigNumber>` takes `trend` and each `<StatRow>` stat takes `spark` for a small line of recent values, so a separate `<Sparkline>` is for an `<Aside>` or a sentence.
+
+Every component takes `at`, the step that reveals it. This slide shows a `<BigNumber>` on step 1 and brings in one region per step after it in its `<Aside>`:
+
+<StepStrip deck="components" slide="edge-latency" />
+
+```mdx
+<BigNumber at={1} value={48} unit="ms" label="median API latency at the edge" from={212} better="down" relative={false} context="All regions, the week after the move" />
+```
+
+## When a figure counts up
+
+In a live deck, a plain figure counts up from zero to its value when the deck moves forward onto its slide, or onto the step that reveals it. It does not count:
+
+- going backward, or when you open the slide directly by its URL;
+- in static mode, so `deck shot`, `deck lint` and every export show the final value;
+- with reduced motion turned on in the system;
+- for a figure that is not a plain number (`<5`, `12–15`, `3 in 10`), that reads as a year (1000 to 2999 with no sign or decimals), or that has fewer than ten steps in its last digit, such as `3`, `7` or `0.5`.
+
+The figures of `<BigNumber>`, `<StatRow>`, `<Comparison>` and a single-bar `<Progress>` count, and so do the figures of the `stats`, `equation` and `bento` layouts. The final value holds its place in the layout the whole time, so nothing reflows while it counts. Steps and motion in general are on [Builds](/write-slides/builds/).
+
+## Deltas and which way is better
+
+Give a figure `from` and the kit computes the change and writes it. `better` says which way is good news (`up` by default; `down` for hours, costs and errors) and colours the change from it. `relative` writes the change as a percentage of `from`, except for values in percent, whose change is written in points:
+
+<SlideExample deck="data-stories" slide="scorecard" />
+
+The second stat is 2.5 h from 14 with `better: 'down'`, so it reads "−82% vs 14 h" in the good-news colour; the third is 91% from 84, so it reads "+7 pts vs 84%". With `relative={false}` the change is written in the unit: the `<BigNumber>` above shows "−164 ms". Without `from`, write the change yourself in `delta` ("+12% since 2025"), with `tone` (`positive`, `negative` or `neutral`) to colour it; on a `<StatRow>` stat, `trend` (`up`, `down`, `flat`) points the arrow of a delta written without a sign. A change across zero is always written in the unit.
+
+`<StatRow>` takes its stats as `RowStat` objects (`<Progress>` takes `items` of the similar `ProgressItem` for several bars):
+
+<ChartTypes of="RowStat" />
+
+`<Comparison>` draws the two values as bars from a shared zero line and writes the change between them. Next to it, a `<Sparkline>` in the `<Aside>` gives the weeks in between:
+
+<SlideShot deck="data-stories" slide="first-reply" alt="A dark slide comparing the median first reply: 14 h in 2025 in grey and 2.5 h in October 2026 in blue, with an arrow marked −82% between them, and an aside with a falling sparkline of the weekly median ending at 2.5 h." />
+
+## Number formats
+
+The brand sets the number style (compact notation, its currency and locale), and `format` overrides it per component or per stat: `"number"`, `"standard"`, `"compact"`, `"currency"`, `"percent"`, `"delta"`, `"percent-delta"`, `"currency-delta"`, or an object:
+
+<ChartTypes of="FormatOptions" />
+
+Percent values are already in percent: write `34` for 34%. `unit` follows each value (`"ms"`, `"h"`, `"trees"`); a scale unit (`K`, `M`, `B`) sits tight against the number and keeps the currency sign, so `unit="M"` with currency writes `$1.2M`.
+
+## When a layout is better
+
+Three layouts set figures from frontmatter, with no component:
+
+- **`stats`**: two to four figures in a row, each with a label and an optional `delta`, when the point is the size of things side by side.
+- **`equation`**: two to four `terms:` joined by `op` (`times`, `plus`, `minus`, `divide`) and a `result:`, when a figure is built from its parts. With `reveal: true` the terms arrive left to right, one per step, and the result last.
+- **`bento`**: three to five tiles of one subject, figures, text and pictures mixed, with the lead tile on the accent surface.
+
+<SlideShot deck="lookbook" slide="equation-arr" alt="An equation slide: 182,000 drops in October 2026, times €3.10 average price a drop, times 12 months, equals €6.8M annual recurring revenue, set large on a blue panel that runs to the right and bottom edges." />
+
+Their fields and limits are on the layout reference: [`stats`](/reference/layouts/#layout-stats), [`equation`](/reference/layouts/#layout-equation) and [`bento`](/reference/layouts/#layout-bento).

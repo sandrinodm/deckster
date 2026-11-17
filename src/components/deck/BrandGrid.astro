@@ -1,0 +1,47 @@
+---
+/**
+ * BrandGrid — one showcase slide in every published brand.
+ *
+ *   <BrandGrid slide="cover" />
+ *
+ * `slide` is one of the brand-grid slides of the showcase deck (cover, review-rounds, lint-path,
+ * from scripts/docs-shots.manifest.ts in deckster). The order is the brand allowlist.
+ */
+import "./deck.css";
+import { Image } from "astro:assets";
+import { brandGridSlides, brandStills, caller, decks, fail, meta } from "./data";
+
+interface Props {
+  slide: string;
+}
+
+const { slide } = Astro.props;
+const c = caller("BrandGrid", { slide }, Astro.url);
+const stills = brandStills(slide);
+if (stills.length === 0) fail(c, "slide", `has no brand stills. Slides shot in every brand: ${brandGridSlides().join(", ")}.`);
+const missing = meta().brands.filter((b) => !stills.some((s) => s.entry.brand === b));
+if (missing.length > 0) fail(c, "slide", `is missing in brands ${missing.join(", ")}. Run \`npm run sync -- --shots\`.`);
+const title = decks().find((d) => d.name === "showcase")?.slides.find((s) => s.id === slide)?.title ?? slide;
+---
+
+<figure class="dk-brands">
+  <ul class="dk-brands-grid">
+    {stills.map(({ entry, image }) => (
+      <li>
+        <Image
+          src={image}
+          alt={`The showcase slide "${title}" in the ${entry.brand} brand.`}
+          widths={[480, 960]}
+          sizes="(min-width: 1100px) 220px, (min-width: 640px) 33vw, 100vw"
+          loading="lazy"
+          decoding="async"
+        />
+        <span class="dk-brands-name">{entry.brand}</span>
+      </li>
+    ))}
+  </ul>
+  <figcaption class="dk-caption">
+    <span class="dk-mono">showcase / {slide}</span>
+    <span>The same slide file, rendered with <code>--brand</code></span>
+  </figcaption>
+</figure>

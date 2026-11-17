@@ -1,0 +1,71 @@
+---
+title: "Troubleshooting"
+description: "Fix common problems when presenting."
+sidebar:
+  order: 3
+---
+
+Each section below is a symptom or the exact message `deck` prints, what causes it and the fix, for problems just before or during a talk. Build and lint errors are on their own pages.
+
+## "Electron's binary is not downloaded"
+
+```text
+Electron's binary is not downloaded (<cli>/node_modules/electron/dist), so `deck present` cannot open a window.
+Run `node "<cli>/node_modules/electron/install.js"` (about 120 MB), or pass --browser to present in Chrome.
+```
+
+npm installs Electron's package but not its binary. Run the `node "..."` command your terminal printed (it has the full path) once. With no time for a 120 MB download, present with `deck present <deck> --browser`, or `deck dev <deck>` in any browser. See [deck present and displays](/present/deck-present-and-displays/).
+
+## "The electron package is not installed"
+
+```text
+The electron package is not installed, so `deck present` cannot open a window.
+Electron is an optional dependency that the install skipped or could not fetch: reinstall @deckster/cli, or pass --browser to present in Chrome.
+```
+
+`electron` is an optional dependency of `@deckster/cli`, and this install left it out. Reinstall `@deckster/cli` with its optional dependencies, or use `--browser`.
+
+## "The Electron shell did not report ... within the start-up timeout"
+
+```text
+The Electron shell did not report its displays within the start-up timeout. Run the command again; if it keeps failing, check that the deck URL loads in a browser.
+```
+
+The window process gets 45 seconds to report the displays after it starts, and again to load the page once the deck is served; the second wait names "the window loaded" instead of "its displays". Loading and building the deck do not count against it. Run the command again. If it fails again, open the URL from the `Presenting ... at` line in a browser: a build error shows there.
+
+A related line, `Warning: the window loaded the page, but no deck is running in it. Open the URL in a browser to see its errors.`, means the page loaded but the deck failed to start; the browser shows why.
+
+## "Could not prepare Deckster.app (...); the window will show as "Electron""
+
+On macOS, `deck present` builds a copy of Electron's app named Deckster in `.deck/shell/app/`. When that fails (the reason is in the brackets), it runs Electron's own app instead: the deck works, but the Dock and the menu bar say Electron. Fix the reason, or delete `.deck/shell/app` so the next `deck present` builds it again.
+
+## The window stays blank
+
+Open View > Toggle Developer Tools (Alt+Cmd+I on macOS, Alt+Ctrl+I elsewhere) and read the console. View > Reload (Cmd/Ctrl+R) loads the page again.
+
+## Keys do nothing
+
+- **A text field has focus.** Keys typed into a text field are ignored by the deck. The agent panel's input keeps every key while it has focus; press Escape to give the keys back to the deck.
+- **A panel is open.** Help, the overview and go-to take the keys while they are open; Escape closes them.
+- **The screen is blacked out.** The first navigation key brings the slide back; the next one moves.
+- **You clicked an element.** Clicks on buttons and links in a slide go to that element, not to the deck, and so does Space pressed on one.
+
+The keys themselves are in [Keyboard shortcuts](/reference/keyboard-shortcuts/).
+
+## The presenter window does not open in a browser
+
+`p` opens the presenter window as a pop-up, which a browser's pop-up blocker can stop. Allow pop-ups for the deck's address, or open it yourself with `?presenter` before the hash, for example `http://localhost:5173/?presenter`. Use the same browser as the audience window: the two windows only stay in step within one browser. See [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/).
+
+## "Port 5173 is already in use"
+
+```console
+$ deck present launch-review --port 5173
+Error: Port 5173 is already in use
+...
+```
+
+`--port <n>` takes that port or fails; the rest of the output is a stack trace. Stop the other server, or leave `--port` out: without it, `deck present` and `deck dev` take the first free port from 5173.
+
+## A link opens in my browser, not in the window
+
+By design. The `deck present` window shows only the deck's own pages. A link to another site opens in your default browser (web and `mailto:` links, at most 3 in 10 seconds across all its windows), and downloads are refused. For a deck that offers a file to download, present with `--browser`.

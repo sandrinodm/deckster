@@ -1,0 +1,57 @@
+---
+/**
+ * SlideShot — a still of one slide, which the page's image zoom enlarges.
+ *
+ *   <SlideShot deck="lookbook" slide="statement-claim" alt="A statement slide: one sentence set large." />
+ *   <SlideShot deck="showcase" slide="cover" brand="nocturne" alt="…" />
+ *   <SlideShot deck="showcase" slide="lint-path" step={2} alt="…" />
+ *
+ * Without `brand` or `step` it is the finished slide in the deck's own brand. `brand` works for the
+ * brand-grid slides (showcase cover, review-rounds, lint-path) and `step` for the slides shot per
+ * step; anything else fails the build with the list of what exists.
+ */
+import "./deck.css";
+import { Image } from "astro:assets";
+import { brandStill, caller, deckUrl, fail, findDeck, findSlide, slideStill, stepStill } from "./data";
+
+interface Props {
+  deck: string;
+  slide: string;
+  /** A published brand, for the brand-grid slides. */
+  brand?: string;
+  /** A step, for the slides shot per step. */
+  step?: number;
+  /** A full sentence saying what the slide shows. */
+  alt: string;
+}
+
+const { deck: deckName, slide: slideId, brand, step, alt } = Astro.props;
+const c = caller("SlideShot", { deck: deckName, slide: slideId, brand, step }, Astro.url);
+if (!alt || !alt.trim()) fail(c, "alt", "is required: a full sentence saying what the slide shows.");
+const deck = findDeck(c, deckName);
+const slide = findSlide(c, deck, slideId);
+if (brand !== undefined && step !== undefined) fail(c, "brand", "and `step` can't be combined: no still is shot both ways.");
+if (brand !== undefined && deck.name !== "showcase") fail(c, "brand", "works only with deck=\"showcase\", whose grid slides are shot in every brand.");
+const still =
+  brand !== undefined
+    ? brandStill(c, slide.id, brand)
+    : step !== undefined
+      ? stepStill(c, deck.name, slide.id, step)
+      : slideStill(c, deck.name, slide.id);
+const where = [deck.name, slide.id, brand, step !== undefined ? `step ${step}` : undefined].filter(Boolean).join(" / ");
+---
+
+<figure class="dk-shot">
+  <Image
+    src={still.image}
+    alt={alt}
+    widths={[640, 960, 1280]}
+    sizes="(min-width: 1100px) 760px, 100vw"
+    loading="lazy"
+    decoding="async"
+  />
+  <figcaption class="dk-caption">
+    <span class="dk-mono">{where}</span>
+    <a href={deckUrl(deck.name, slide.id, step)} data-astro-prefetch="false">Open in the deck</a>
+  </figcaption>
+</figure>

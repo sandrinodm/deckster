@@ -1,0 +1,37 @@
+---
+/**
+ * UiShot — a screenshot of the deck tools, taken by docs-ui-shots.ts in deckster at 1440x900 on
+ * the showcase deck, plus `tools-detail` (a 560x200 crop of the bottom-left corner at 2x, 1120x400)
+ * and `diff-report`, the report page of `deck diff hello` (staged: see AGENT.md).
+ *
+ *   <UiShot name="presenter" alt="The presenter window: the current slide, the next one and the notes." />
+ *
+ * Names: sidebar, overview, help, presenter, comments, comment-list, tools, tools-detail, agent-panel,
+ * diff-report.
+ */
+import "./deck.css";
+import { Image } from "astro:assets";
+import { caller, fail, uiShot } from "./data";
+
+interface Props {
+  name: string;
+  /** A full sentence saying what the screenshot shows. */
+  alt: string;
+}
+
+const { name, alt } = Astro.props;
+const c = caller("UiShot", { name }, Astro.url);
+if (!alt || !alt.trim()) fail(c, "alt", "is required: a full sentence saying what the screenshot shows.");
+const { image } = uiShot(c, name);
+---
+
+<figure class="dk-ui">
+  <Image
+    src={image}
+    alt={alt}
+    widths={[640, 960, 1280]}
+    sizes="(min-width: 1100px) 760px, 100vw"
+    loading="lazy"
+    decoding="async"
+  />
+</figure>

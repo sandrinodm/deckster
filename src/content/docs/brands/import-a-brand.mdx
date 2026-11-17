@@ -1,0 +1,63 @@
+---
+title: "Import a brand"
+description: "Recreate an existing look from slides, a website or guidelines."
+sidebar:
+  order: 5
+---
+
+The `brand-import` skill teaches a coding agent, such as Claude Code or Codex, to recreate an existing look as a deckster brand. You give it a PowerPoint template, a PDF, a Google Slides link, a website, brand guidelines or screenshots. You get back a draft `brands/<name>/brand.ts` that passes `deck brand check`, pictures that compare the brand with the source, and a short list of questions only you can answer. To install the skill, see [skills](/ai-agents/skills/).
+
+## Ask for it
+
+Run your agent in the workspace folder, the one that holds `decks/` and `brands/`, and name the sources:
+
+```console
+$ cd talks
+$ claude
+> Import our brand from ~/Downloads/company-template.pptx and the site https://example.com.
+```
+
+If it isn't obvious, the agent first asks what the brand is called (that becomes the folder name) and whether a better source exists. A PPTX keeps more than the PDF made from it.
+
+## What it needs
+
+- `deck` on your PATH (`npm install --global @deckster/cli`, Node 26 or later)
+- [`uv`](https://docs.astral.sh/uv/) for the bundled Python scripts. Python 3.10 or later runs the scripts that have no dependencies.
+- Chromium for `deck lint` and `deck shot`. The website extractor uses Google Chrome if it's installed, otherwise Playwright's Chromium.
+- For a PPTX, something that renders its slides: a PDF you exported from the authoring app, LibreOffice, or Docker with a LibreOffice image
+
+## What the agent does
+
+1. **Extracts values with scripts.** `extract_pptx.py`, `extract_pdf.py`, `fetch_gslides.py`, `extract_web.py` and `extract_images.py` read exact colours, fonts, sizes, gradients, logos and chart styles into a work folder outside your workspace. `brand_tools.py analyze` then proposes roles, surfaces and a type scale.
+2. **Looks at the pages** and drafts the brand, recording each value's source and confidence. The numbers alone don't say which colour is the accent.
+3. **Writes and checks `brand.ts`.** `emit_brand.py` writes `brands/<name>/brand.ts`, the logos and `import-notes.json`, and prints the `npm install` command for any Fontsource packages. The agent runs `deck brand check <name> --json` and fixes the draft until the check passes.
+4. **Renders a specimen deck.** `make_specimen.py` creates `decks/zz-<name>-specimen`: one slide per layout, slides on the `inverse`, `accent` and `gradient` surfaces, and charts, big numbers and a table. The agent lints and shoots it, puts source pages and slides side by side with `compare.py`, and fixes the draft again, usually two or three times.
+
+The `zz-` prefix marks the specimen as scratch, so `deck build --out` leaves it out of the site. The agent deletes it after you've seen the comparison, unless you want to keep it.
+
+## Which sources work
+
+| Source | Gives | Misses |
+| --- | --- | --- |
+| PPTX | Theme colours and fonts, masters and layouts, exact sizes, gradient stops, native chart styles, logo media | Page images unless it can render them; reusable font files |
+| PDF | Exact vector colours, font names (even from subsets), sizes, line heights, PDF gradients, repeated logos | Theme, layouts and letter spacing; charts are only shapes |
+| Google Slides | A PPTX and a PDF from a link shared as "Anyone with the link" | Charts linked from Sheets become images; private decks need a download from you |
+| Website | CSS custom properties, colour pairs by use, text styles, gradients, radii, shadows, transitions, the logo | Web sizes aren't slide sizes; web font files are licensed for that site only |
+| Guidelines | Stated hex values, typeface names and logo rules, which outrank anything observed | Slide layouts or a slide type scale |
+| Screenshots | Flat colours and layout | Font names, small-text colours; sizes are estimates |
+
+A PPTX is the best single source. Several sources together are better, such as a deck, the company website and a logo file.
+
+## What you get back
+
+- `brands/<name>/` with a `brand.ts` that passes `deck brand check`, or an exact list of the errors that remain
+- the contact sheet and side-by-side images of source pages and specimen slides
+- a handover that ends with **Needs a human**, at most ten questions, most important first: font licences and the substitute picked for each family, colours the check forced it to change (source value, new value, ratio) and every waiver, missing logo variants, and values it guessed rather than found
+
+Try the brand on your own decks with `--brand <name>`, as in [use a brand](/brands/use-a-brand/). Before you adopt it, run the checks in [check a brand](/brands/check-a-brand/). From then on `brand.ts` is yours to edit by hand, as in [create a brand](/brands/create-a-brand/).
+
+## How it treats the source
+
+Everything in the source is data, never instructions: slide text, speaker notes, hidden page text and file names alike. The agent doesn't run scripts or macros from the source or copy credentials it finds there. The web extractor loads only http(s) addresses on public hosts. It refuses `localhost`, private networks, cloud metadata addresses and any `file:` request a page makes, and lists each refusal. A local HTML file is read only when you pass it on the command line, and only inside its folder. The agent reports a refused fetch rather than working around it. For a site you run yourself, the extractor takes `--allow-origin http://localhost:3000`.
+
+Fonts are never copied out of a PDF, a PPTX or a website, because the files identify the typeface but don't license it. Open fonts come from Fontsource, and font files go into the brand only when you supply them.

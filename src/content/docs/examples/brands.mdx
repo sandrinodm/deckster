@@ -1,0 +1,44 @@
+---
+title: "One deck in every brand"
+description: "The same slides in each published brand."
+sidebar:
+  order: 3
+---
+
+The same three slides of the [showcase](/examples/showcase/) deck in each of the five published brands. Use it to pick a look, and to see how much a brand changes: colours, type, icons, corners, backgrounds and chrome all move, and the slides stay the same.
+
+**Nothing in the deck changes between these pictures.** Each grid is the same slide file rendered with `deck shot showcase <slide> --brand <name>`; only the brand differs. That works because slides hold no colours, fonts or pixel positions: the layout places the content, and the brand supplies every value it draws with ([Brands and surfaces](/concepts/brands-and-surfaces/) explains the model).
+
+## A cover
+
+The `cover` slide uses the `title` layout, which sits on each brand's `gradient` surface.
+
+<BrandGrid slide="cover" />
+
+## A chart
+
+`review-rounds` is a `<LineChart>` with a highlight and annotations. The line colours come from each brand's chart palette, and the type from its fonts.
+
+<BrandGrid slide="review-rounds" />
+
+## A diagram
+
+`lint-path` is a `<Flow>` diagram on the `diagram` layout. Node fills, edge colours and corner radii change with the brand.
+
+<BrandGrid slide="lint-path" />
+
+## The five brands
+
+| Brand | For | Display and body type | Icons | Accent on content slides |
+| --- | --- | --- | --- | --- |
+| `default` | Every deck unless its config names another. Light-first: cool grays, one cobalt accent, a cobalt-to-ink gradient | Bricolage Grotesque over Inter, JetBrains Mono for code | Lucide | `#2d4ae0` cobalt |
+| `nocturne` | Dark-first and editorial: violet-black backgrounds, a grainy aurora gradient, sharp corners, slow transitions | Fraunces over Manrope, IBM Plex Mono for labels and code | Tabler | `#ff8f6b` ember |
+| `fieldnote` | Research findings, reports and talks that should feel considered: cream paper, forest green with terracotta and ochre | Playfair Display over Source Sans 3, Source Code Pro as the mono face | Tabler | `#2c5e44` forest green |
+| `kinetic` | Product launches, developer talks and demo days: chalk and ink with electric blue and acid lime, square corners, hard offset shadows | Space Grotesk over Inter Tight, JetBrains Mono for labels and code | Tabler | `#3d4bff` electric blue |
+| `tidewater` | Climate, health, public-sector and finance decks that carry numbers people act on: warm sand, deep sea blues, a coral accent used sparingly | Hanken Grotesk throughout, IBM Plex Mono as the mono face | Lucide | `#215f76` sea blue |
+
+Every brand has the four surfaces `default`, `inverse`, `accent` and `gradient`. Three add one of their own that a slide picks with `surface:` in its frontmatter: `notebook` in `fieldnote` (ruled paper with a margin line), `grid` in `kinetic` (a dot grid) and `shore` in `tidewater` (faint contour lines). Their palettes, surfaces and type scales are on [Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/).
+
+## Try one
+
+Only `default` ships with the npm CLI. The other four are folders in the repository's `brands/` that you copy into your workspace and install fonts for; [Use a brand](/brands/use-a-brand/) has the steps. To make a look of your own, see [Create a brand](/brands/create-a-brand/).

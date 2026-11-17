@@ -1,0 +1,83 @@
+---
+title: "Hello"
+description: "The four-slide starter deck."
+sidebar:
+  order: 2
+---
+
+Hello is the smallest complete deck: four slides, one on each surface of the `default` brand, that show frontmatter, speaker notes, steps, a TSX slide and an image. Read it to see every part a deck has in one sitting, then copy it into your workspace to try it.
+
+<DeckEmbed deck="hello" slide="title" />
+
+Click the slide to load the deck, then use the arrow keys to step through all four slides. The whole built deck is at [/decks/hello/](/decks/hello/).
+
+## The four slides
+
+`deck.config.ts` lists the slides in the order they play. Only files named there are slides:
+
+```ts
+import { defineDeck } from '@deckster/engine/config';
+
+/**
+ * The sample deck: one slide of each kind the engine supports, one per brand surface. Change
+ * `brand` to "nocturne" to restyle every slide.
+ */
+export default defineDeck({
+  title: 'Hello, deck',
+  brand: 'default',
+  slides: ['title', 'steps', 'live-counter', 'closing'],
+});
+```
+
+| Slide | File | Surface | Shows |
+| --- | --- | --- | --- |
+| [`title`](/decks/hello/#/title) | `slides/title.mdx` | `gradient` | Frontmatter (`title`, `surface`, `budget`) and `<Notes>` |
+| [`steps`](/decks/hello/#/steps) | `slides/steps.mdx` | default | `<Step at={n}>` reveals on the `default` layout |
+| [`live-counter`](/decks/hello/#/live-counter) | `slides/live-counter.tsx` | `accent` | A TSX slide: a literal `frontmatter` export, `useStep()`, `<Step>` and `<Notes>` |
+| [`closing`](/decks/hello/#/closing) | `slides/closing.mdx` | `inverse` | An SVG imported from the deck's `assets/` folder |
+
+The deck sets no `duration`, so the `budget` on three of its slides is not checked against a talk length.
+
+## An MDX slide with steps
+
+`steps` reveals one bullet per step. The slide starts at step 0 with only the heading; `<Step at={1}>` appears on the first key press, and so on to step 3. Going back into the slide lands on its last step.
+
+<SlideExample deck="hello" slide="steps" />
+
+[Steps](/concepts/steps/) explains how a slide counts its steps.
+
+## A TSX slide
+
+`live-counter` is a React component. It exports its frontmatter as a literal object, because the build reads it without running the slide, and it reads the current step with `useStep()`:
+
+<SlideExample deck="hello" slide="live-counter" />
+
+[TSX slides](/write-slides/tsx-slides/) covers when to write one.
+
+## What lint says about it
+
+One warning: `closing` has no speaker notes. Warnings do not fail the run.
+
+```console
+$ deck lint hello
+decks/hello/slides/closing.mdx
+  warning missing-notes (closing): The slide has no speaker notes.
+          Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
+
+hello: 0 errors, 1 warning in 4 slides (8 steps checked).
+```
+
+## Run it in your workspace
+
+A workspace made with `deck new` has no hello deck. [Quickstart](/get-started/quickstart/) makes a deck of your own; to run this one, copy it from the repository at the release tag:
+
+```sh
+git clone --depth 1 --branch v0.3.0 https://github.com/sandrinodm/deckster.git ../deckster
+cp -R ../deckster/decks/hello decks/
+rm decks/hello/package.json decks/hello/tsconfig.json
+deck dev hello
+```
+
+Delete those two files: in the repository every deck is a workspace package, and they point into the monorepo. Left in place, every slide fails with `schema` errors that read "Transform failed with 1 error".
+
+The comment in `deck.config.ts` suggests switching `brand` to `nocturne`. That brand is not part of the npm package; [Use a brand](/brands/use-a-brand/) shows how to add it first.

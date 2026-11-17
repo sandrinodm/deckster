@@ -1,0 +1,44 @@
+---
+/**
+ * SlideExample — a slide and the file that produced it, in two tabs.
+ *
+ *   <SlideExample deck="lookbook" slide="statement-claim" />
+ *
+ * The source is read from src/data/slides.json, which the data export takes from the deck's slide
+ * file, so the code shown is the code rendered.
+ */
+import "./deck.css";
+import { Code } from "@/components/ui/code";
+import { Tabs, TabItem } from "@/components/ui/tabs";
+import DeckEmbed from "./DeckEmbed.astro";
+import { caller, findDeck, findSlide } from "./data";
+
+interface Props {
+  deck: string;
+  slide: string;
+  /** The step the live slide opens at; only for slides shot per step (see DeckEmbed). */
+  step?: number;
+}
+
+const { deck: deckName, slide: slideId, step } = Astro.props;
+const c = caller("SlideExample", { deck: deckName, slide: slideId, step }, Astro.url);
+const deck = findDeck(c, deckName);
+const slide = findSlide(c, deck, slideId);
+const lang = slide.file.endsWith(".tsx") ? "tsx" : "mdx";
+const fileName = slide.file.split("/").pop() ?? slide.file;
+---
+
+<div class="dk-example">
+  <Tabs>
+    <TabItem label="Slide">
+      <DeckEmbed deck={deck.name} slide={slide.id} step={step} />
+    </TabItem>
+    <TabItem label={fileName}>
+      <Code code={slide.source.trimEnd()} lang={lang} meta={`title="${slide.file}"`} />
+      <p class="dk-caption">
+        <span>Slide {slide.number} of the <span class="dk-mono">{deck.name}</span> deck</span>
+        <a href={`https://github.com/sandrinodm/deckster/blob/main/${slide.file}`}>View on GitHub</a>
+      </p>
+    </TabItem>
+  </Tabs>
+</div>

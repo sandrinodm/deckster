@@ -1,0 +1,126 @@
+# Checks the site; it publishes nothing. The site is deployed by main's
+# .github/workflows/deploy.yml, run by hand from the Actions tab: it checks
+# out the tip of this branch, syncs the stills and decks from main (src/data
+# is published as committed), builds the site and publishes it to GitHub
+# Pages. A change here goes live on the next run of that workflow.
+#
+# The site is built from generated inputs: src/data (committed), the slide
+# stills in src/assets/shots and the built decks in public/decks (neither
+# committed). `npm run sync` makes them from a checkout of deckster at
+# DECKSTER_REF, which needs Node 26, pnpm and Chromium; the site itself is
+# checked and built with Node 24.
+#
+# One source of truth: the committed src/data says which release the pages
+# document (src/data/meta.json). CI regenerates it from DECKSTER_REF and fails
+# when it differs, instead of quietly building reference tables for whatever
+# main is today. When that check fails, sync the data against the ref and
+# commit it with the pages it changes.
+#
+# Until deckster's scripts/docs-*.ts are committed on main, the sync finds no
+# docs scripts in the checkout and this workflow fails.
+name: Docs site
+on:
+  push:
+    branches: [docs-site]
+  pull_request:
+    branches: [docs-site]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      # Inside the workspace (actions/checkout requires it), and listed in
+      # .gitignore and tsconfig.json's exclude so the site never reads it.
+      DECKSTER_REPO: ${{ github.workspace }}/.deckster-main
+      # The deckster ref the site is built from: a branch, tag or commit.
+      # It stays main, not the v0.3.0 tag the pages document (4e0b186): the
+      # docs scripts (scripts/docs-*.ts) and the ?embed mode DeckEmbed loads
+      # are newer than the tag, and a checkout of v0.3.0 has neither. The data
+      # check below fails as soon as main's catalogs differ from the committed
+      # src/data, so the reference can't drift past the release unnoticed.
+      # Move this to a tag once a release carries the docs scripts and ?embed.
+      DECKSTER_REF: main
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # "Last updated" dates and the sitemap come from git history.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check out deckster
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: sandrinodm/deckster
+          ref: ${{ env.DECKSTER_REF }}
+          path: .deckster-main
+          persist-credentials: false
+
+      # The site's dependencies, with the Node it builds with.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      # deckster's workspace: Node 26 and the pnpm version its package.json names.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          package_json_file: .deckster-main/package.json
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          cache: pnpm
+          cache-dependency-path: .deckster-main/pnpm-lock.yaml
+      - name: Install deckster
+        working-directory: .deckster-main
+        run: pnpm install --frozen-lockfile
+      # deck shot and the UI shots drive Chromium.
+      - name: Install the browser
+        working-directory: .deckster-main
+        run: pnpm exec playwright install chromium --with-deps
+
+      # Regenerates src/data and fails when it differs from the committed
+      # files (meta.json's commit aside), so the reference tables never drift
+      # from the release the pages describe.
+      - name: Check src/data against deckster
+        run: |
+          npm run sync -- --data
+          meta_changed=0
+          diff <(git show HEAD:src/data/meta.json | jq 'del(.commit)') <(jq 'del(.commit)' src/data/meta.json) || meta_changed=1
+          # --porcelain also lists a JSON file the generator newly writes.
+          if [ "$meta_changed" = 1 ] || [ -n "$(git status --porcelain -- src/data ':(exclude)src/data/meta.json')" ]; then
+            git status --short -- src/data
+            echo "::error::src/data differs from deckster at $DECKSTER_REF. Run 'npm run sync -- --data' against that ref and commit src/data with the pages it changes, or pin DECKSTER_REF to the documented release."
+            exit 1
+          fi
+
+      # Runs deckster's docs scripts with Node 26 into scratch folders, then
+      # installs src/assets/shots and public/decks. Before the first check:
+      # public/decks turns on link checking for /decks/ links.
+      - name: Generate stills and decks
+        run: npm run sync -- --shots --decks
+
+      # Back to Node 24 for the site.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # No page may carry its writing brief: /<page>/index.mdx would publish it.
+      - name: Check for briefs
+        run: npm run check:briefs
+      # Every layout, component, chart, diagram component and command in src/data
+      # has a reference entry.
+      - name: Check reference coverage
+        run: npm run check:coverage
+      - name: Check the site
+        run: npx @cloudflare/nimbus-docs check
+      - run: npm run build
+      - name: Check links after the build
+        run: npx @cloudflare/nimbus-docs check

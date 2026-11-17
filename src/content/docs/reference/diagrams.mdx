@@ -1,0 +1,119 @@
+---
+title: "Diagrams"
+description: "Every diagram type and its props."
+sidebar:
+  order: 6
+---
+
+Use this page to look up the props of a diagram component or one of the parts that goes inside it, and the node kinds, states and edge options a `<Flow>` takes. To learn how to draw one, start at [flow diagrams](/data-and-diagrams/flow-diagrams/), [sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/) or [SVG](/data-and-diagrams/svg/).
+
+<CatalogIndex kind="diagrams" />
+
+## Diagrams and parts
+
+Seven components are diagrams: you put one on a slide. The other thirteen are parts, and each part's entry says where it goes ("Goes in"): a `<Node>` in a `<Flow>`, a `<Group>`, a `<Cycle>` or nested in its parent `<Node>` inside a `<Tree>`; a `<Hop>` only in a `<Journey>`; an `<Item>` only in a `<Layer>`. Below, each diagram is followed by its parts. A prop name a component does not take, or a value outside the ones it lists, fails the build naming the closest one.
+
+`<Timeline>` here is the diagram; the `timeline` layout is on [layouts](/reference/layouts/#layout-timeline).
+
+A node's `kind` sets its shape and icon (`service`, `database`, `queue` and so on, each with aliases), its `state` takes one of five values (`default`, `highlighted`, `muted`, `error`, `success`; words that mean the same are accepted), and `<Edge>` takes options such as a dashed line, a route style or an arrow at both ends. All three are listed under [node kinds, states and edges](#node-kinds-states-and-edges) at the end of this page.
+
+## Limits
+
+`deck lint` holds diagrams to these numbers, the same as `deck diagrams --json` prints under `limits`:
+
+- **Density.** More than 12 nodes or 16 edges shown at one step is a `diagram-too-dense` warning.
+- **Grid.** 5 columns and 3 rows fit comfortably in the `diagram` layout. Past 7 columns or 4 rows the nodes are packed tighter than the gutters allow, and `diagram-too-dense` reports the diagram as cramped.
+- **Text.** An edge label takes 18 characters on a line and wraps to 2 lines; past that it ends in an ellipsis, and the full text stays in the accessible summary. A node title wraps to 3 lines at word boundaries before the node grows taller than its row. A word broken across lines leaves at least 3 characters on each.
+- **Hard limits.** Past these the build fails: 60 nodes, 120 edges, 24 particles in one packet or edge flow, 64 for a grid column, row, span or minimum size, and step 999 for an `at` or `until`.
+
+## Shared props
+
+Several diagram components and parts take these props, with the same meaning in each. They are listed once here; each entry below names the ones it takes.
+
+<PropsTable shared="diagrams" />
+
+## Components
+
+### Flow
+
+<PropsTable of="Flow" />
+
+### Node
+
+<PropsTable of="Node" />
+
+### Group
+
+<PropsTable of="Group" />
+
+### Edge
+
+<PropsTable of="Edge" />
+
+### Packet
+
+<PropsTable of="Packet" />
+
+### Journey
+
+<PropsTable of="Journey" />
+
+### Hop
+
+<PropsTable of="Hop" />
+
+### State
+
+<PropsTable of="State" />
+
+### Focus
+
+<PropsTable of="Focus" />
+
+### SequenceDiagram
+
+<PropsTable of="SequenceDiagram" />
+
+### Actor
+
+<PropsTable of="Actor" />
+
+### Message
+
+<PropsTable of="Message" />
+
+### Timeline
+
+<PropsTable of="Timeline" />
+
+### Milestone
+
+<PropsTable of="Milestone" />
+
+### Layers
+
+<PropsTable of="Layers" />
+
+### Layer
+
+<PropsTable of="Layer" />
+
+### Item
+
+<PropsTable of="Item" />
+
+### Cycle
+
+<PropsTable of="Cycle" />
+
+### Tree
+
+<PropsTable of="Tree" />
+
+### Svg
+
+<PropsTable of="Svg" />
+
+## Node kinds, states and edges
+
+<DiagramKinds />

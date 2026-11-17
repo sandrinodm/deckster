@@ -1,0 +1,73 @@
+---
+title: "Contributing"
+description: "Set up the repository, run the checks and send a change."
+sidebar:
+  order: 3
+---
+
+Use this page to report a bug, suggest a feature, or send a change to deckster: which checks must pass, which conventions reviewers hold changes to, and how a pull request goes through. It starts from a working clone; to set one up and run decks from it, follow [work from a clone](/get-started/work-from-a-clone/) first. [CONTRIBUTING.md](https://github.com/sandrinodm/deckster/blob/main/CONTRIBUTING.md) on GitHub is the canonical version of these rules.
+
+## Report a bug or ask for a feature
+
+Open an issue with the [bug report](https://github.com/sandrinodm/deckster/issues/new?template=bug_report.yml) or [feature request](https://github.com/sandrinodm/deckster/issues/new?template=feature_request.yml) template. The bug template asks for what happened, the steps to reproduce it, the error output (plain or `--json`), `deck --version`, `node -v` and your operating system. Report a security problem privately instead; see [security](/project/security/).
+
+## The checks
+
+From the repository root, one command runs every check in order:
+
+```sh
+pnpm ready
+```
+
+| Step | What it runs |
+| --- | --- |
+| `pnpm check` | Checks the generated Tailwind tooling stylesheet is current, then format, lint and types (`vp check`), then `jsdoc-lint` |
+| `pnpm typecheck` | `tsc --noEmit` at the root and in every package |
+| `pnpm test` | Unit tests in every package; a few render in Chromium |
+| `pnpm test:e2e` | Browser tests, one package at a time |
+| `pnpm build` | `deck build` for every deck |
+
+`pnpm format` fixes formatting (`vp check --fix`). The browser tests need their own Chromium, installed once:
+
+```sh
+pnpm --dir packages/engine exec e2e-web install chromium
+```
+
+The export verification tests in `@deckster/export` need Docker (for LibreOffice and the Open XML SDK) and skip on their own without it. CI runs the same steps, then lints every deck, and fails if any of them leaves a modified or untracked file in the checkout.
+
+## Conventions
+
+- **Formatting and lint** are Vite+'s (`vite.config.ts`). Don't switch a rule off to make a check pass.
+- **JSDoc.** Every declaration in `packages/*/src/` has a multi-line JSDoc comment; `jsdoc-lint` enforces it.
+- **The CLI is public surface.** Commands, flags, `--json` output shapes and exit codes are a contract with people, CI and agents. Changing one is a feature; document it in [`packages/cli/README.md`](https://github.com/sandrinodm/deckster/blob/main/packages/cli/README.md).
+- **Names before paths.** Any deck, brand, slide or app name that becomes a path goes through `isSafeName` first; never join raw input into a file path.
+- **A clean tree.** The checks, the builds and `deck lint` must leave no new or modified files behind.
+- **Per package.** Most package READMEs have a section of rules for changing that package ("Rules for changing the engine", "Changing the protocol", "Things to know before changing it"): the engine's public surface, the comments package's rule that nothing reaches a build, and so on. Read it before you change the package; [packages](/project/packages/) links every README.
+
+## Send a pull request
+
+<Steps>
+
+1. Fork [the repository](https://github.com/sandrinodm/deckster) and create a branch from `main`.
+
+2. Make one focused change, with tests for it.
+
+3. Run the checks:
+
+   ```sh
+   pnpm ready
+   ```
+
+   At the least, `pnpm check`, `pnpm typecheck` and `pnpm test` must pass.
+
+4. Open a pull request against `main` and fill in the template: a summary of what changed and why, related issues, and the checklist (checks pass, tests added, READMEs and `docs/` updated if the public surface changed).
+
+5. Wait for CI. It runs the full suite, and the **Slides diff** workflow renders every deck the change affects at `main` and at your branch, compares them picture by picture with `deck diff`, and comments on the pull request with a table of the slides that changed. The side-by-side pictures are in the workflow's artifact. Pull requests from forks get the artifact but no comment.
+
+</Steps>
+
+Releases are cut from `main` after a change lands; see [releases](/project/releases/).
+
+## Change these docs
+
+This site lives on the `docs-site` branch of the same repository, which shares no history with `main`. Its [README](https://github.com/sandrinodm/deckster/blob/docs-site/README.md) says how to run it locally and sync it with the code. Most reference tables on the site are generated from the code on `main`: to change one, change the code (a layout contract, a catalog entry, a `--help` text) rather than the page.

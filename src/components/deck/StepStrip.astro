@@ -1,0 +1,58 @@
+---
+/**
+ * StepStrip — a slide's steps side by side, as a filmstrip.
+ *
+ *   <StepStrip deck="showcase" slide="review-rounds" />
+ *
+ * Works for the slides shot per step (scripts/docs-shots.manifest.ts in deckster); any other
+ * slide fails the build with the list of slides that have step stills. The frames wrap: three to
+ * a row in the content column, two on a phone. A frame opens the deck at that step in a new tab,
+ * as DeckEmbed's "Open full deck" does, so the reader keeps their place in the docs.
+ */
+import "./deck.css";
+import { Image } from "astro:assets";
+import { caller, deckUrl, fail, findDeck, findSlide, stepSlides, stepStills } from "./data";
+
+interface Props {
+  deck: string;
+  slide: string;
+}
+
+const { deck: deckName, slide: slideId } = Astro.props;
+const c = caller("StepStrip", { deck: deckName, slide: slideId }, Astro.url);
+const deck = findDeck(c, deckName);
+const slide = findSlide(c, deck, slideId);
+const steps = stepStills(deck.name, slide.id);
+if (steps.length < 2) {
+  fail(c, "slide", `has no step stills. Slides shot per step: ${stepSlides().join(", ")}.`);
+}
+const last = steps.length - 1;
+const lastStep = steps[last]!.entry.step ?? last;
+---
+
+<figure class="dk-strip" aria-label={`${slide.title}: ${steps.length} steps`}>
+  <ol class="dk-strip-frames" style={`--dk-frames: ${steps.length}`}>
+    {steps.map(({ entry, image }, i) => (
+      <li class="dk-strip-frame">
+        <a href={deckUrl(deck.name, slide.id, entry.step ?? 0)} target="_blank" rel="noopener" data-astro-prefetch="false" data-nb-zoom="off" class="dk-strip-link">
+          <Image
+            src={image}
+            alt={`${slide.title}, step ${entry.step} (of steps 0 to ${lastStep}).`}
+            widths={[320, 640]}
+            sizes="(min-width: 1100px) 220px, 48vw"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+        <span class="dk-strip-label">
+          <span class="dk-strip-step">{entry.step}</span>
+          {i === 0 ? "start" : i === last ? "finished" : ""}
+        </span>
+      </li>
+    ))}
+  </ol>
+  <figcaption class="dk-caption">
+    <span class="dk-mono">{deck.name} / {slide.id}</span>
+    <span>{steps.length} steps; select one to open the deck at that step in a new tab</span>
+  </figcaption>
+</figure>

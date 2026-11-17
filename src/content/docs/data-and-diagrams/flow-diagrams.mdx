@@ -1,0 +1,125 @@
+---
+title: "Flow diagrams"
+description: "Draw boxes and arrows that build step by step."
+sidebar:
+  order: 4
+---
+
+`<Flow>` draws boxes and arrows: an architecture, a request path, a pipeline. This page shows you how to place the nodes, connect and group them, make the diagram build one step at a time as you explain it, and stay inside the limits `deck lint` checks. Every prop is on [the diagram reference](/reference/diagrams/); in the terminal, `deck diagrams` prints the components, node kinds, edge options and animation parts with an example each, and `deck diagrams --json` gives an agent the same as data.
+
+## Place the nodes
+
+Put a `<Flow>` in the `diagram` layout, under a title that states what it shows, with an optional `<Aside>` for what to notice. Its `title` prop is its accessible name; the build fails without one.
+
+Give every node a grid cell with `col` and `row`, counted from 1. `colSpan` and `rowSpan` widen a node across cells, and `cols` and `rows` on the `<Flow>` set the least size of the grid. You never write pixels: the diagram scales to its region and the text stays at the brand's sizes.
+
+```mdx
+<Flow title="Checkout request path">
+  <Node id="web" kind="client" title="Web app" col={1} row={1} />
+  <Node id="api" kind="service" title="Orders API" col={2} row={1} />
+  <Node id="db" kind="database" title="Orders DB" col={3} row={1} />
+  <Edge from="web" to="api" label="HTTPS" />
+  <Edge from="api" to="db" label="SQL" />
+</Flow>
+```
+
+Or leave every cell out and the kit lays the nodes out automatically with ELK: `layout` picks `layered` (the default), `tree`, `force` or `radial`, and `direction` picks `right` (the default), `down`, `left` or `up`. Cells are the reliable choice when an agent writes the diagram; automatic layout suits a map whose shape follows from its edges:
+
+<SlideExample deck="diagrams-demo" slide="service-map" />
+
+Cells are all or nothing. A `<Flow>` that places some nodes and not others fails the build:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/mixed.mdx
+  error   schema (mixed): Line 7, column 1: Some nodes have a grid cell and some do not: "api" have none.
+          Fix: Give every node `col` and `row`, or remove them all for an automatic layout.
+
+launch-review: 1 error, 0 warnings.
+```
+
+## Choose the node kinds
+
+`kind` sets a node's shape and icon. `title` is the name on the node (its `id` when left out), `subtitle` a quieter second line such as `Postgres 16`, and `badge` a small pill on a corner. `icon` overrides the kind's icon with a name from the brand's icon set (`icon="map"`), and `icon="none"` drops it. Several kinds have aliases: `db` is `database`, `lambda` is `function`.
+
+<DiagramKinds part="kinds" />
+
+## Connect the nodes
+
+`<Edge from="api" to="db" />` draws an arrow from one node id to another; `to` equal to `from` draws a small loop on the node, such as a retry. `label` wraps after about 18 characters to two lines and is then cut with an ellipsis. Give an edge an `id` to change it with `<State edge="...">`; without one it is `from->to`. The options:
+
+<DiagramKinds part="edges" />
+
+## Group the nodes
+
+`<Group label="Production VPC">` draws a labelled container around the nodes inside it, and groups nest:
+
+```mdx
+<Group label="Production">
+  <Group label="EU region">
+    <Node id="eu-api" kind="service" title="API" col={2} row={1} />
+    <Node id="eu-db" kind="database" title="Postgres" col={3} row={1} />
+  </Group>
+  <Group label="US region">
+    <Node id="us-api" kind="service" title="API" col={2} row={3} />
+    <Node id="us-db" kind="database" title="Postgres" col={3} row={3} />
+  </Group>
+</Group>
+```
+
+A group wraps its nodes, or takes its own `col`, `row`, `colSpan` and `rowSpan`.
+
+## Build it step by step
+
+Every node, group and edge takes `at`, the step it appears on; an edge also waits for its nodes. Four parts move things on a step:
+
+- `<Packet>`: traffic along an edge, `from` and `to` or a multi-hop `path`. It plays while its `at` step is current, or until `until`; it loops unless `play="once"`, and `reply` sends it back after a pause.
+- `<State>`: changes a node or an edge from `at` on (to `until`): `is="highlighted"`, `"error"`, `"success"`, `"muted"` or `"default"`, with an optional `badge` such as `Timeout`.
+- `<Focus>`: dims everything but some nodes, and the edges between them, from `at` (to `until`).
+- `<Journey>`: a request travelling hop by hop, one hop per step from `at`. `back` brings it back along the path, `focus` dims everything off the path, travelled edges stay lit (`trail`), and `pace="trip"` plays the whole path on one step.
+
+This slide uses packets and state changes: the rules node is in the error state with an "Overflow" badge on step 3 and in the success state on step 4:
+
+<StepStrip deck="showcase" slide="lint-path" />
+
+```mdx
+<Packet path="deck server chromium" at={1} label="slide 7" />
+<State node="chromium" at={1} until={2} is="highlighted" />
+<Packet path="chromium snapshot rules" at={2} />
+<State node="rules" at={3} until={4} is="error" badge="Overflow" />
+<Packet path="rules findings" at={3} label="fix" />
+<State node="rules" at={4} is="success" />
+```
+
+This one is a single line, `<Journey at={1} path="browser cdn gateway orders db" back focus />`, walking a request through a `<Group>` and back while the cache and the queue dim:
+
+<StepStrip deck="diagrams-demo" slide="request-journey" />
+
+When each hop needs its own words, give the journey `<Hop>` children instead of `path`; a hop takes `label`, `reply` and `returning`:
+
+```mdx
+<Journey at={1} focus>
+  <Hop from="shop" to="hub" label="08:43" />
+  <Hop from="hub" to="bike" label="Slot B3" />
+  <Hop from="bike" to="door" label="Stop 7 of 9" reply="Signed" />
+  <Hop path="door api shop" label="drop.delivered" />
+</Journey>
+```
+
+Static mode, `deck shot` and every export show each step as a still, with packets frozen partway along and a tail that shows their direction. Steps across the whole slide are on [Builds](/write-slides/builds/).
+
+## Stay inside the limits
+
+Keep a slide to about 12 nodes, 16 edges, 5 columns and 3 rows. Keep edge labels to a word or two and node titles to about 20 characters: a title wraps to 3 lines at most, and a word too long for its node is broken. `deck lint` checks the drawing on every step with `diagram-overlap` (an error), `diagram-too-dense`, `diagram-label-overlap`, `diagram-unlabeled-edge`, `diagram-edge-overlap`, `diagram-badge-overlap`, `diagram-small-text` and `diagram-long-word`; [Lint rules](/reference/lint-rules/#diagrams) explains each one.
+
+## Write a flow in TSX
+
+In a TSX slide, import the parts from `@deckster/kit/diagrams` and build the nodes from data. With no grid cells, the automatic layout places them:
+
+<SlideExample deck="diagrams-demo" slide="deploy-gates" />
+
+`kind` icons resolve from the brand's icon set as in MDX, but `icon` takes an icon component (`import Rocket from '~icons/lucide/rocket'`) or `"none"`: a name string works only in MDX. Props are checked when the slide renders, and an unknown prop or value shows an error naming the closest one in place of the diagram.
+
+## Why the kit draws the diagrams
+
+Diagrams are drawn by the kit, not by an outside tool such as Mermaid. That is what lets a diagram take the brand's colours and type, build by step, get measured by `deck lint` and come out of a PowerPoint export as native shapes. For other diagram forms, see [Sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/); for a drawing someone made, see [SVG](/data-and-diagrams/svg/).

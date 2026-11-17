@@ -1,0 +1,93 @@
+---
+title: "Speaker notes"
+description: "Write speaker notes for each slide and step."
+sidebar:
+  order: 6
+---
+
+Write what the speaker says under each slide, cue every step, and give each slide a time budget so the presenter window can tell you whether the talk is on pace. This page is also the checklist for reviewing notes an agent wrote.
+
+## Add notes to a slide
+
+In an MDX slide, put a `<Notes>` block at the end. Its content is Markdown:
+
+```mdx
+---
+layout: statement
+title: Opening
+budget: 45s
+---
+
+We ship on Thursday.
+
+<Notes>
+Say the date first, then stop. The rest of the talk is how we get there.
+</Notes>
+```
+
+In a TSX slide, import `Notes` from `@deckster/engine` and render it inside the slide; the build reads its text without running the slide, so keep it to text. See [TSX slides](/write-slides/tsx-slides/).
+
+## What belongs in them
+
+Notes are what the speaker says and does, not a copy of the slide. Text the audience must read belongs on the slide.
+
+- **What the slide proves**, in a sentence, and the point in spoken language.
+- **A `[click]` cue for each step**, in order, where that part is spoken. A slide that builds in four steps has four cues.
+- **Cues for anything else** the speaker does: pause, ask the room, switch to the demo.
+- **Sources and caveats** for questions, after an "If asked" line.
+- **The transition** into the next slide.
+
+The [create-presentation skill](/ai-agents/skills/) writes notes this way and sizes them at about 130 to 150 spoken words per minute of budget. A slide with cues, sources and a transition:
+
+<SlideExample deck="showcase" slide="review-rounds" />
+
+## Give a slide a time budget
+
+`budget:` in the frontmatter is how long you plan to speak on the slide, in minutes and seconds: `30s`, `2m`, `1m30s`. Anything else fails the build:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/plan.mdx
+  error   schema (plan): budget: Expected a duration such as "90s", "2m" or "1m30s", got "30 seconds".
+          Fix: Write the speaking time as minutes and seconds, for example `budget: 90s` or `1m30s`.
+
+launch-review: 1 error, 0 warnings.
+```
+
+The talk's length is `duration` in `deck.config.ts` (`deck new <deck> --duration 20m` writes it):
+
+```ts
+export default defineDeck({
+  title: 'Launch review',
+  brand: 'default',
+  duration: '20m',
+  slides: ['opening', 'plan'],
+});
+```
+
+## What uses the budgets
+
+**The presenter window** paces the talk against them, scaled to fit the `duration` when there is one; [how pacing works](/present/presenter-tools-and-shortcuts/#how-pacing-works) explains the figures it shows.
+
+**`deck lint`** adds the budgets up. When they come to more than the deck's `duration`, `time-budget` is an error; without a `duration` the rule reports nothing. A slide without notes is a `missing-notes` warning:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/plan.mdx
+  warning missing-notes (plan): The slide has no speaker notes.
+          Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
+
+decks/launch-review/deck.config.ts
+  error   time-budget: The slides' budgets add up to 1:15; the talk has 1:00.
+          Fix: Cut slides, shorten their budgets, or move detail into an appendix.
+
+launch-review: 1 error, 1 warning in 2 slides (2 steps checked).
+```
+
+More on reading findings is on [lint](/review/lint/).
+
+## Where notes show
+
+- In the presenter window, beside the current and next slide.
+- In the PDF, as a notes page (the slide with its notes) after the slides, with `deck export <deck> --notes`. See [PDF](/export-and-publish/pdf/).
+- In the PowerPoint export, as each slide's speaker notes.

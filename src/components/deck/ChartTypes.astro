@@ -1,0 +1,53 @@
+---
+/**
+ * ChartTypes — the object types chart props take, from src/data/charts.json `types`: `RowStat`,
+ * `ProgressItem`, `TableColumn`, `SeriesInput`, `FormatOptions`, `Highlight`, `RevealOption` and
+ * the four `Annotation.*` kinds. Each is a `###` label with its fields.
+ *
+ *   ## Types
+ *
+ *   <ChartTypes />
+ *   <ChartTypes of="Highlight" />
+ *
+ * `of` shows one type; an unknown name fails the build with the list. Each type has
+ * `id="type-<name>"` (`type-Annotation.callout`). PropsTable covers the charts themselves.
+ */
+import "./deck.css";
+import { caller, findChartTypes, inline, literal, typeAnchor } from "./data";
+
+interface Props {
+  /** One type, such as "Highlight" or "Annotation.callout". */
+  of?: string;
+}
+
+const { of } = Astro.props;
+const c = caller("ChartTypes", { of }, Astro.url);
+const types = findChartTypes(c, of);
+---
+
+<section class="dk-ref dk-types" aria-label={of ? `${of} type` : "Chart types"}>
+  {types.map(([name, fields]) => (
+    <div id={typeAnchor(name)}>
+      <h3 class="dk-label"><code>{name}</code></h3>
+      <div class="nb-table-scroll">
+        <table aria-label={`${name} fields`}>
+          <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            {Object.entries(fields).map(([field, prop]) => (
+              <tr>
+                <td data-nowrap>
+                  <code>{field}</code>
+                  {prop.required && <span class="dk-req">required</span>}
+                </td>
+                <td><code data-type>{prop.type}</code></td>
+                <td>{prop.default === null || prop.default === undefined ? <span class="dk-muted">—</span> : <code data-type>{literal(prop.default)}</code>}</td>
+                <td set:html={inline(prop.description)} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ))}
+  <p class="dk-caption"><span class="dk-mono">charts.json · types</span></p>
+</section>

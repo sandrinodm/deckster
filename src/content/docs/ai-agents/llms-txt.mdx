@@ -1,0 +1,43 @@
+---
+title: "llms.txt and Markdown pages"
+description: "Point an agent at this documentation: llms.txt, llms-full.txt and a Markdown copy of every page."
+sidebar:
+  order: 5
+---
+
+This documentation site serves plain-text copies of itself for coding agents: an index, the whole site in one file, an index per section, and a Markdown version of every page. Paste one of the URLs below into Claude Code, Codex or any agent that can fetch a page, and it reads these docs without the site's HTML around them.
+
+## The files
+
+| What | URL |
+| --- | --- |
+| Index of the site: one line per section, with a link to that section's index | `https://sandrinodm.github.io/deckster/llms.txt` |
+| The pages in one file, as Markdown | `https://sandrinodm.github.io/deckster/llms-full.txt` |
+| Index of one section: each page with its description and a link to its Markdown | `https://sandrinodm.github.io/deckster/<section>/llms.txt` |
+| One page as Markdown | `https://sandrinodm.github.io/deckster/<section>/<page>/index.md` |
+| One page as its authored MDX source | `https://sandrinodm.github.io/deckster/<section>/<page>/index.mdx` |
+
+`<section>` and `<page>` are the parts of the page's address. For this page:
+
+- `https://sandrinodm.github.io/deckster/ai-agents/llms.txt`
+- `https://sandrinodm.github.io/deckster/ai-agents/llms-txt/index.md`
+
+The home page's Markdown is `https://sandrinodm.github.io/deckster/index.md`. The sections are `get-started`, `concepts`, `write-slides`, `data-and-diagrams`, `brands`, `review`, `present`, `export-and-publish`, `ai-agents`, `reference`, `examples` and `project`.
+
+In the Markdown versions, a slide picture becomes its alt text with a link to the slide, a live deck becomes a link to it, and the reference tables are written out as Markdown tables and lists.
+
+## Which one to use
+
+- **`llms.txt`** when the agent should find its own way: it is small, and each line links to the next level down.
+- **`llms-full.txt`** when the agent should know everything at once, for example at the start of a session where it will write a whole deck.
+- **A page's `index.md`** when you need one topic: paste the address of the page you are reading and change the end to `index.md`.
+
+For example, ask your agent:
+
+```text
+Read https://sandrinodm.github.io/deckster/present/deck-present-and-displays/index.md and set up deck present for my two displays.
+```
+
+These files explain deckster to an agent that reads them. To teach an agent the workflow of writing decks with the CLI, install the [skills](/ai-agents/skills/) as well.
+
+The site serves no `/.well-known/` discovery files, because it is hosted under `/deckster/` rather than at the root of its domain.

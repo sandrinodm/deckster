@@ -1,0 +1,103 @@
+---
+title: "Sequence, timeline, layers, cycle and tree"
+description: "The structured diagram types and when to use each."
+sidebar:
+  order: 5
+---
+
+Not every diagram is a network of boxes. When the content is a conversation between parties, dates on a line, a stack, a loop or a hierarchy, the kit has a form for it that lays itself out. This page shows you when to use each of the five, which parts go inside it and how it builds by step. Each one goes in the `diagram` layout and needs a `title` prop, as a `<Flow>` does; for boxes and arrows, and for `<Edge>`, `<Packet>`, `<State>` and `<Focus>`, see [Flow diagrams](/data-and-diagrams/flow-diagrams/).
+
+## Sequence diagram
+
+Use `<SequenceDiagram>` for who calls whom, in order: a protocol, an API handshake, a retry.
+
+- `<Actor>` goes inside `<SequenceDiagram>`: one per party, drawn as a node over its lifeline, with `id`, `title`, `subtitle`, `kind` and `icon` as on a node.
+- `<Message>` goes inside `<SequenceDiagram>`, after the actors, in order from top to bottom: `from` and `to` (the same actor for a call to itself), `label`, `reply` for a response (a dashed arrow) and `async` for fire-and-forget (a dashed arrow).
+
+Each message takes `at`, the step that reveals it, and its arrow animates while that step is current. This one adds a message per step:
+
+<StepStrip deck="showcase" slide="agent-turn" />
+
+The self-call on step 5 here is the point of the slide:
+
+<SlideExample deck="diagrams-demo" slide="idempotent-charge" />
+
+Message labels sit above their arrows on one line, so keep them short.
+
+## Timeline
+
+Use `<Timeline>` for milestones in time order with where you are now: a roadmap, a migration, a history.
+
+- `<Milestone>` goes inside `<Timeline>`, in time order: `date` as it should read (`Q1 2026`), `title`, a short line of detail as its children, and optionally `state` (`success` for done, as below) and `icon`.
+
+Each milestone takes `at`. The line fills up to the latest milestone shown, or to the one marked `current`, which stays current once revealed while later milestones appear:
+
+<SlideShot deck="diagrams-demo" slide="migration-timeline" alt="A timeline on a blue gradient with four quarters of 2026: Split checkout, Move payments, Region cells and Retire the monolith, each with a line of detail; the Q3 milestone, Region cells, is filled white as the current one." />
+
+```mdx
+<Milestone date="Q3 2026" title="Region cells" at={3} current>EU and US apart</Milestone>
+```
+
+The `timeline` layout draws the same `<Timeline>` from frontmatter: three to five `milestones:` with `date`, `title`, `detail` and `state`, a `current:` milestone number and `reveal: true` for one milestone per click. Use the layout when the timeline is the whole slide and fits its limits; use the component in the `diagram` layout when you want an `<Aside>` beside it or six milestones. The layout's fields are on [the layout reference](/reference/layouts/#layout-timeline).
+
+## Layers
+
+Use `<Layers>` for a stacked architecture or an ownership map: bands from top to bottom, each with its building blocks.
+
+- `<Layer>` goes inside `<Layers>`, top to bottom: `title`, `subtitle` (what it does or who owns it), `at` and `state`.
+- `<Item>` goes inside `<Layer>` only: a chip with `title`, `kind` (for its icon), `icon` and `state`.
+
+Give each layer an `at` to build the stack band by band. While the stack builds, the band each step adds is picked out; once the last band is in, only bands with a `state` stand out, so mark the band the slide is about with `state="highlighted"`.
+
+<SlideShot deck="diagrams-demo" slide="platform-layers" alt="A stack of five grey bands, Experience, Edge, Services, Data and Infrastructure, each with its owning team under the name and chips with icons such as Web, CDN, Orders, Postgres, Kafka and Kubernetes." />
+
+## Cycle
+
+Use `<Cycle>` for a loop of stages that repeats: an incident loop, a feedback cycle, an agent loop.
+
+- `<Node>` goes inside `<Cycle>`: one per stage, in order from the top.
+- `<Edge>` between two consecutive stages labels or styles that arc; `<State>`, `<Packet>` and `<Focus>` work as in a `<Flow>`.
+
+`steps` walks the loop one stage per step; `spin` keeps a packet circling while the slide is on screen.
+
+<SlideShot deck="diagrams-demo" slide="incident-loop" alt="A dark slide with four stages on an oval loop, Detect, Respond, Recover and Learn, joined by arrows; Detect is outlined in blue and the arc from Learn back to Detect is lit, with a dot on it." />
+
+```mdx
+<Cycle title="The incident loop: detect, respond, recover, learn" steps>
+  <Node id="detect" kind="service" title="Detect" subtitle="Alerts and SLOs" />
+  <Node id="respond" kind="user" title="Respond" subtitle="On-call engineer" />
+  <Node id="recover" kind="function" title="Recover" subtitle="Roll back or fail over" />
+  <Node id="learn" kind="document" title="Learn" subtitle="Blameless review" />
+</Cycle>
+```
+
+## Tree
+
+Use `<Tree>` for a hierarchy: an org chart, a decision tree, a module tree.
+
+- One root `<Node>` goes inside `<Tree>`, and every child `<Node>` is nested inside its parent.
+
+`direction` is `down` (the default) or `right`. `at` on a node reveals its branch:
+
+<SlideShot deck="diagrams-demo" slide="pricing-tree" alt="A decision tree growing down from a diamond labelled Price? into Zone, Weight and Speed, each with an icon, and their leaves: Urban €3.90, Rural €5.40, Under 2 kg +€0, Over 2 kg +€1.50 and Same day ×1.8, which is outlined in blue." />
+
+```mdx
+<Node id="weight" kind="node" icon="package" title="Weight" subtitle="Surcharge" at={2}>
+  <Node id="light" title="Under 2 kg" subtitle="+€0" at={2} />
+  <Node id="heavy" title="Over 2 kg" subtitle="+€1.50" at={2} />
+</Node>
+```
+
+## Limits
+
+`deck diagrams` gives each form these limits. They are guidance for one slide: a sequence of seven actors and a tree of 13 nodes both lint without a finding. Past them, split the diagram over two slides.
+
+| Form | Limits |
+| --- | --- |
+| `<SequenceDiagram>` | 6 actors, 10 messages |
+| `<Timeline>` | 6 milestones |
+| `<Layers>` | 6 layers, 6 items per layer |
+| `<Cycle>` | 8 stages |
+| `<Tree>` | 12 nodes, 7 leaves, depth 4 |
+
+Every prop of every part is on [the diagram reference](/reference/diagrams/).

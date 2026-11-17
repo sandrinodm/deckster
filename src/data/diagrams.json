@@ -1,0 +1,1498 @@
+{
+  "shared": {
+    "id": {
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "Its id: what edges, packets and states name it by, and its id in the export description."
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "default": null,
+      "description": "What the diagram shows, in a few words: its accessible name. Every diagram needs one; the build fails without it."
+    },
+    "height": {
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "A fixed height in canvas pixels; without it the diagram fills its region."
+    },
+    "at": {
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The step that reveals it (or plays it); shown from the start when left out."
+    },
+    "until": {
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The step it stops at (exclusive); without it a packet plays only on `at` and a state lasts to the end."
+    },
+    "state": {
+      "type": "\"default\" | \"highlighted\" | \"muted\" | \"error\" | \"success\"",
+      "required": false,
+      "default": "default",
+      "description": "The emphasis it starts with.",
+      "values": [
+        "default",
+        "highlighted",
+        "muted",
+        "error",
+        "success"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "required": false,
+      "default": "node",
+      "description": "What it is, which sets its shape and icon: one of the node kinds (`nodeKinds`), or an alias.",
+      "values": [
+        "service",
+        "database",
+        "queue",
+        "cache",
+        "storage",
+        "user",
+        "client",
+        "mobile",
+        "cloud",
+        "external",
+        "function",
+        "gateway",
+        "loadbalancer",
+        "agent",
+        "llm",
+        "tool",
+        "document",
+        "decision",
+        "node",
+        "browser",
+        "web",
+        "app",
+        "db",
+        "stream",
+        "bus",
+        "lb",
+        "load-balancer",
+        "proxy",
+        "lambda",
+        "worker",
+        "person",
+        "model",
+        "bucket",
+        "file",
+        "phone",
+        "third-party",
+        "generic"
+      ]
+    },
+    "icon": {
+      "type": "string | IconComponent",
+      "required": false,
+      "default": null,
+      "description": "An icon from the brand's set by name (resolved at build time in MDX), \"none\" to drop the kind's icon, or in TSX an icon component (`import Rocket from '~icons/lucide/rocket'`)."
+    },
+    "count": {
+      "type": "number",
+      "required": false,
+      "default": 1,
+      "description": "Particles travelling together."
+    },
+    "speed": {
+      "type": "\"slow\" | \"normal\" | \"fast\"",
+      "required": false,
+      "default": "normal",
+      "description": "How fast they travel, as a multiple of the brand's motion.",
+      "values": [
+        "slow",
+        "normal",
+        "fast"
+      ]
+    },
+    "size": {
+      "type": "\"sm\" | \"md\" | \"lg\"",
+      "required": false,
+      "default": "md",
+      "description": "How big the dots are.",
+      "values": [
+        "sm",
+        "md",
+        "lg"
+      ]
+    },
+    "role": {
+      "type": "\"accent\" | \"positive\" | \"negative\" | \"fg\"",
+      "required": false,
+      "default": "accent",
+      "description": "The color role they travel in.",
+      "values": [
+        "accent",
+        "positive",
+        "negative",
+        "fg"
+      ]
+    },
+    "play": {
+      "type": "\"loop\" | \"once\"",
+      "required": false,
+      "default": "loop",
+      "description": "Loop while the step is current, or play once and rest at the end.",
+      "values": [
+        "loop",
+        "once"
+      ]
+    },
+    "col": {
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The grid column, from 1 on the left."
+    },
+    "row": {
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The grid row, from 1 at the top."
+    },
+    "colSpan": {
+      "type": "number",
+      "required": false,
+      "default": 1,
+      "description": "How many columns it covers."
+    },
+    "rowSpan": {
+      "type": "number",
+      "required": false,
+      "default": 1,
+      "description": "How many rows it covers."
+    }
+  },
+  "components": [
+    {
+      "name": "Flow",
+      "role": "diagram",
+      "inside": null,
+      "useWhen": "Any system of boxes and arrows: an architecture, a request path, a pipeline. Place nodes with col/row (spans for wide nodes) or leave cells out for an automatic layout (`layout`, `direction`).",
+      "example": "<Flow title=\"Checkout request path\">\n  <Node id=\"web\" kind=\"client\" title=\"Web app\" col={1} row={1} />\n  <Node id=\"api\" kind=\"service\" title=\"Orders API\" col={2} row={1} />\n  <Node id=\"db\" kind=\"database\" title=\"Orders DB\" col={3} row={1} />\n  <Edge from=\"web\" to=\"api\" label=\"HTTPS\" />\n  <Edge from=\"api\" to=\"db\" label=\"SQL\" />\n  <Journey at={1} path=\"web api db\" back />\n</Flow>",
+      "shared": [
+        "id",
+        "title",
+        "height"
+      ],
+      "props": {
+        "cols": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Columns the grid has at least; the cells used decide otherwise."
+        },
+        "rows": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Rows the grid has at least."
+        },
+        "layout": {
+          "type": "\"layered\" | \"tree\" | \"force\" | \"radial\"",
+          "required": false,
+          "default": "layered",
+          "description": "The automatic layout used when no node has a grid cell.",
+          "values": [
+            "layered",
+            "tree",
+            "force",
+            "radial"
+          ]
+        },
+        "direction": {
+          "type": "\"right\" | \"down\" | \"left\" | \"up\"",
+          "required": false,
+          "default": "right",
+          "description": "Which way an automatic layout flows.",
+          "values": [
+            "right",
+            "down",
+            "left",
+            "up"
+          ]
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "<Node>, <Group>, <Edge>, <Packet>, <Journey>, <State> and <Focus> elements."
+        }
+      },
+      "children": "<Node>, <Group>, <Edge>, <Packet>, <Journey>, <State> and <Focus>; at least one <Node>.",
+      "limits": {
+        "nodes": 12,
+        "edges": 16,
+        "columns": 5,
+        "maxColumns": 7,
+        "rows": 3,
+        "maxRows": 4,
+        "maxNodes": 60,
+        "maxEdges": 120,
+        "maxParticles": 24,
+        "maxGridIndex": 64,
+        "maxStep": 999,
+        "labelChars": 18,
+        "labelLines": 2,
+        "titleLines": 3,
+        "minBreakChars": 3
+      }
+    },
+    {
+      "name": "SequenceDiagram",
+      "role": "diagram",
+      "inside": null,
+      "useWhen": "Who calls whom, in order: a protocol, an API handshake, a retry. <Actor>s across the top, <Message>s top to bottom; the current message animates.",
+      "example": "<SequenceDiagram title=\"Charging once\">\n  <Actor id=\"web\" kind=\"client\" title=\"Web app\" />\n  <Actor id=\"api\" kind=\"service\" title=\"Payments API\" />\n  <Message from=\"web\" to=\"api\" label=\"POST /charges\" at={1} />\n  <Message from=\"api\" to=\"web\" label=\"201 Created\" reply at={2} />\n</SequenceDiagram>",
+      "shared": [
+        "id",
+        "title",
+        "height"
+      ],
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "<Actor>s, then <Message>s in order."
+        }
+      },
+      "children": "<Actor>s, then <Message>s in order.",
+      "limits": {
+        "actors": 6,
+        "messages": 10
+      },
+      "longText": "Actor titles wrap at word boundaries; message labels sit above their arrows on one line, so keep them short."
+    },
+    {
+      "name": "Timeline",
+      "role": "diagram",
+      "inside": null,
+      "useWhen": "Milestones in time order, with where we are now: a roadmap, a migration, a history. The line fills up to the latest milestone shown, or the one marked `current`.",
+      "example": "<Timeline title=\"Migration\">\n  <Milestone date=\"Q1\" title=\"Split checkout\" at={1}>Orders live</Milestone>\n  <Milestone date=\"Q2\" title=\"Move payments\" at={2} current />\n</Timeline>",
+      "shared": [
+        "id",
+        "title",
+        "height"
+      ],
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The <Milestone>s, in time order."
+        }
+      },
+      "children": "<Milestone>s, in time order.",
+      "limits": {
+        "milestones": 6
+      },
+      "longText": "Titles and details wrap at word boundaries within their column."
+    },
+    {
+      "name": "Layers",
+      "role": "diagram",
+      "inside": null,
+      "useWhen": "A stacked architecture or ownership map: <Layer> bands top to bottom, each with <Item> chips.",
+      "example": "<Layers title=\"Platform\">\n  <Layer title=\"Edge\" subtitle=\"Platform team\" at={1}>\n    <Item kind=\"gateway\" title=\"API gateway\" />\n  </Layer>\n</Layers>",
+      "shared": [
+        "id",
+        "title",
+        "height"
+      ],
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The <Layer>s, top to bottom."
+        }
+      },
+      "children": "<Layer>s, top to bottom.",
+      "limits": {
+        "layers": 6,
+        "itemsPerLayer": 6
+      },
+      "longText": "Items wrap onto a second row of chips; layer names wrap at word boundaries."
+    },
+    {
+      "name": "Cycle",
+      "role": "diagram",
+      "inside": null,
+      "useWhen": "A loop of stages that repeats: an incident loop, a feedback cycle, an agent loop. `steps` walks it one stage per step; `spin` keeps a packet circling; an <Edge> between consecutive stages labels that arc.",
+      "example": "<Cycle title=\"Incident loop\" steps>\n  <Node id=\"detect\" title=\"Detect\" />\n  <Node id=\"respond\" title=\"Respond\" />\n  <Node id=\"learn\" title=\"Learn\" />\n  <Edge from=\"learn\" to=\"detect\" label=\"new alert\" />\n</Cycle>",
+      "shared": [
+        "id",
+        "title",
+        "height"
+      ],
+      "props": {
+        "steps": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Walk the loop one stage per step."
+        },
+        "spin": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Keep a packet circling while the slide is on screen."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The stages as <Node>s in order from the top, plus <Edge> (to label or style an arc), <State>, <Packet> and <Focus>."
+        }
+      },
+      "children": "<Node>s in order from the top, plus <Edge>, <State>, <Packet> and <Focus>.",
+      "limits": {
+        "stages": 8
+      }
+    },
+    {
+      "name": "Tree",
+      "role": "diagram",
+      "inside": null,
+      "useWhen": "A hierarchy: an org chart, a decision tree, a module tree. Nest <Node>s; `direction` down or right; `at` on a node reveals its branch.",
+      "example": "<Tree title=\"Pricing rules\">\n  <Node id=\"price\" kind=\"decision\" title=\"Price?\">\n    <Node id=\"zone\" title=\"Zone\" />\n    <Node id=\"weight\" title=\"Weight\" at={1} />\n  </Node>\n</Tree>",
+      "shared": [
+        "id",
+        "title",
+        "height"
+      ],
+      "props": {
+        "direction": {
+          "type": "\"down\" | \"right\"",
+          "required": false,
+          "default": "down",
+          "description": "Which way it grows.",
+          "values": [
+            "down",
+            "right"
+          ]
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "One root <Node>, with its children nested inside it."
+        }
+      },
+      "children": "One root <Node>, its children nested inside it.",
+      "limits": {
+        "nodes": 12,
+        "leaves": 7,
+        "depth": 4
+      }
+    },
+    {
+      "name": "Svg",
+      "role": "diagram",
+      "inside": null,
+      "useWhen": "A drawing someone made (a floor plan, a product sketch, an exported figure): inlined and cleaned at build time (no scripts, event handlers or external references), it takes brand colors (`recolor`, or data-fill/data-stroke on shapes), reveals elements by id per step (`steps`) and can draw its strokes on (`draw`).",
+      "example": "<Svg src=\"../assets/floor.svg\" title=\"The warehouse floor\" steps={{ inbound: 1, sorting: 2 }} recolor={{ \"#e4572e\": \"accent\" }} draw />",
+      "shared": [
+        "height"
+      ],
+      "props": {
+        "src": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "In MDX a relative path to an .svg file, inlined at build time; in TSX the markup (`?raw` import)."
+        },
+        "title": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What the drawing shows, for people who cannot see it."
+        },
+        "steps": {
+          "type": "Record<string, number>",
+          "required": false,
+          "default": null,
+          "description": "Elements to reveal by step, by id: `{{ dock: 1, sorting: 2 }}`."
+        },
+        "draw": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Draw the strokes of each element on as it is revealed."
+        },
+        "recolor": {
+          "type": "Record<string, SvgRole>",
+          "required": false,
+          "default": null,
+          "description": "Colors in the file to replace with color roles: `{{ \"#ff5a1f\": \"accent\" }}` (`svgRoles`)."
+        }
+      },
+      "children": "",
+      "limits": {},
+      "longText": "Text inside scales with the drawing; `deck lint` reports text drawn below the brand’s caption size."
+    },
+    {
+      "name": "Node",
+      "role": "part",
+      "inside": "<Flow>, <Group>, <Tree> (nested in its parent <Node>) or <Cycle>",
+      "useWhen": "A box in a <Flow>, <Tree> or <Cycle>. `kind` sets its shape and icon; `icon` overrides it (\"none\" drops it).",
+      "example": "<Node id=\"db\" kind=\"database\" title=\"Orders DB\" subtitle=\"Postgres 16\" col={4} row={2} />",
+      "shared": [
+        "kind",
+        "state",
+        "at",
+        "icon",
+        "col",
+        "row",
+        "colSpan",
+        "rowSpan"
+      ],
+      "props": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The id edges and packets name it by."
+        },
+        "title": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The name on the node; the id when left out. Wraps at word boundaries."
+        },
+        "subtitle": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A second, quieter line, such as `Postgres 16`."
+        },
+        "badge": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A small status pill on a corner of the node, such as `503`: the top right unless an edge runs there, then the first free corner."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "In a <Tree>, its child <Node>s; elsewhere content of your own instead of the title and subtitle."
+        }
+      },
+      "children": "In a <Tree>, its child <Node>s; in a <Flow>, optional content of your own instead of title and subtitle.",
+      "limits": {
+        "titleLines": 3
+      }
+    },
+    {
+      "name": "Group",
+      "role": "part",
+      "inside": "<Flow> or another <Group>",
+      "useWhen": "A labelled container (a VPC, a region, \"Client side\"): nest the nodes in it; it wraps them, or takes its own col/row/colSpan/rowSpan.",
+      "example": "<Group label=\"Production VPC\">\n  <Node id=\"api\" kind=\"service\" title=\"API\" col={2} row={1} />\n</Group>",
+      "shared": [
+        "at",
+        "col",
+        "row",
+        "colSpan",
+        "rowSpan"
+      ],
+      "props": {
+        "id": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Its id; made from the label when left out."
+        },
+        "label": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The label in its top-left corner, such as `VPC`."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The <Node>s and inner <Group>s inside it."
+        }
+      },
+      "children": "<Node>s and inner <Group>s.",
+      "limits": {},
+      "longText": "The label sits on one line in the top-left corner; keep it to a few words."
+    },
+    {
+      "name": "Edge",
+      "role": "part",
+      "inside": "<Flow> or <Cycle>",
+      "useWhen": "A connection between two nodes; `to` equal to `from` draws a small loop on the node (a retry). In a <Cycle>, an <Edge> between consecutive stages labels or styles that arc.",
+      "example": "<Edge from=\"api\" to=\"db\" label=\"SQL\" />\n<Edge from=\"worker\" to=\"worker\" label=\"retry\" />",
+      "shared": [
+        "at",
+        "state"
+      ],
+      "props": {
+        "id": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Its id, for <State edge>; `from->to` when left out."
+        },
+        "from": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The node it starts at."
+        },
+        "to": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The node it ends at; the same node as `from` draws a small loop on it, such as a retry."
+        },
+        "label": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Text beside the line, such as `HTTPS`. Wraps after about 18 characters to two lines, then is cut with an ellipsis."
+        },
+        "dashed": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "A dashed line, for asynchronous or optional links."
+        },
+        "async": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Another name for `dashed`."
+        },
+        "route": {
+          "type": "\"orthogonal\" | \"straight\" | \"curved\"",
+          "required": false,
+          "default": "orthogonal",
+          "description": "How it runs between its nodes.",
+          "values": [
+            "orthogonal",
+            "straight",
+            "curved"
+          ]
+        },
+        "arrow": {
+          "type": "\"end\" | \"start\" | \"both\" | \"none\"",
+          "required": false,
+          "default": "end",
+          "description": "Where arrowheads go.",
+          "values": [
+            "end",
+            "start",
+            "both",
+            "none"
+          ]
+        },
+        "bidirectional": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Arrowheads at both ends; `arrow=\"both\"`."
+        },
+        "fromSide": {
+          "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
+          "required": false,
+          "default": null,
+          "description": "The side of `from` it leaves by.",
+          "values": [
+            "top",
+            "right",
+            "bottom",
+            "left"
+          ]
+        },
+        "toSide": {
+          "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
+          "required": false,
+          "default": null,
+          "description": "The side of `to` it enters by.",
+          "values": [
+            "top",
+            "right",
+            "bottom",
+            "left"
+          ]
+        },
+        "flow": {
+          "type": "boolean | number | { count, speed, size, role, reverse }",
+          "required": false,
+          "default": null,
+          "description": "Continuous traffic along it: `true`, a particle count, or the details."
+        }
+      },
+      "children": "",
+      "limits": {
+        "labelChars": 18,
+        "labelLines": 2
+      }
+    },
+    {
+      "name": "Packet",
+      "role": "part",
+      "inside": "<Flow> or <Cycle>",
+      "useWhen": "Traffic along edges on a step: `from`/`to` or a multi-hop `path`, `at` (plays while that step is current) and `until` (to keep playing), `reply` for out, pause and back. Loops by default; `play=\"once\"` rests at the end. from = to rides a self loop.",
+      "example": "<Packet from=\"web\" to=\"api\" at={2} label=\"POST /orders\" reply=\"201\" />",
+      "shared": [
+        "at",
+        "until",
+        "count",
+        "speed",
+        "size",
+        "role",
+        "play"
+      ],
+      "props": {
+        "from": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The node it starts at."
+        },
+        "to": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The node it travels to; `from` again rides a self loop."
+        },
+        "path": {
+          "type": "string | string[]",
+          "required": false,
+          "default": null,
+          "description": "Several hops instead of `from` and `to`: node ids in order."
+        },
+        "label": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A short tag that rides with it, such as `GET /cart`."
+        },
+        "reply": {
+          "type": "boolean | string",
+          "required": false,
+          "default": null,
+          "description": "Come back after a pause at the far end: `true`, or the response's tag."
+        }
+      },
+      "children": "",
+      "limits": {},
+      "longText": "The tag rides on one line beside the packet; keep it to a few words."
+    },
+    {
+      "name": "Journey",
+      "role": "part",
+      "inside": "<Flow>",
+      "useWhen": "A request travelling hop by hop, one hop per step: `path` with `back` for the response, or <Hop> children with their own labels and replies; `focus` dims everything off the path; travelled edges stay lit (`trail`); `pace=\"trip\"` plays the whole path on one step.",
+      "example": "<Journey at={1} path=\"browser cdn gateway orders db\" back focus />",
+      "shared": [
+        "count",
+        "speed",
+        "size",
+        "role",
+        "play"
+      ],
+      "props": {
+        "id": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Its id."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "description": "The step of the first hop; later hops take the steps after it."
+        },
+        "path": {
+          "type": "string | string[]",
+          "required": false,
+          "default": null,
+          "description": "The nodes it passes through: one hop per pair."
+        },
+        "back": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Come back along the path afterwards, one hop per step."
+        },
+        "pace": {
+          "type": "\"hop\" | \"trip\"",
+          "required": false,
+          "default": "hop",
+          "description": "`hop` gives each hop its own step; `trip` plays the whole path on `at`.",
+          "values": [
+            "hop",
+            "trip"
+          ]
+        },
+        "focus": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Dim everything off the path while it plays."
+        },
+        "trail": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Keep travelled edges lit."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "Explicit <Hop>s, instead of `path`."
+        }
+      },
+      "children": "<Hop>s, instead of `path`.",
+      "limits": {}
+    },
+    {
+      "name": "Hop",
+      "role": "part",
+      "inside": "<Journey>",
+      "useWhen": "One hop of a <Journey>, with its own tag and reply.",
+      "example": "<Hop from=\"api\" to=\"db\" label=\"SELECT\" reply=\"12 rows\" />",
+      "shared": [
+        "count",
+        "speed",
+        "size",
+        "role",
+        "play"
+      ],
+      "props": {
+        "from": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The node it starts at."
+        },
+        "to": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The node it travels to."
+        },
+        "path": {
+          "type": "string | string[]",
+          "required": false,
+          "default": null,
+          "description": "Several nodes in one hop, instead of `from` and `to`."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Its step; the step after the previous hop's when left out."
+        },
+        "label": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A tag that rides with the packet."
+        },
+        "reply": {
+          "type": "boolean | string",
+          "required": false,
+          "default": null,
+          "description": "Come back after a pause: `true` or the response's tag."
+        },
+        "returning": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Draw it as a reply on its way back."
+        }
+      },
+      "children": "",
+      "limits": {}
+    },
+    {
+      "name": "State",
+      "role": "part",
+      "inside": "<Flow> or <Cycle>",
+      "useWhen": "Change a node or an edge from a step on: is=\"highlighted\", \"error\", \"success\", \"muted\" or \"default\", with a `badge`.",
+      "example": "<State node=\"payments\" at={3} is=\"error\" badge=\"Timeout\" until={5} />",
+      "shared": [
+        "until"
+      ],
+      "props": {
+        "node": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The node it changes."
+        },
+        "edge": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The edge it changes, by id (`from->to` unless it has its own)."
+        },
+        "is": {
+          "type": "\"default\" | \"highlighted\" | \"muted\" | \"error\" | \"success\"",
+          "required": true,
+          "default": null,
+          "description": "The emphasis it sets from `at` (to `until`).",
+          "values": [
+            "default",
+            "highlighted",
+            "muted",
+            "error",
+            "success"
+          ]
+        },
+        "badge": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A badge to show meanwhile, such as `Timeout`."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": 0,
+          "description": "The step it applies from."
+        }
+      },
+      "children": "",
+      "limits": {},
+      "longText": "The badge sits on one line on a corner of the node; keep it to a word or a number. It takes the top right corner, and moves to the top left, bottom right or bottom left when an edge drawn at that step runs through the top right (the corner is chosen from the edges visible at each step, so it can change between steps). When no corner is free it stays on the one with the fewest edges and `deck lint` warns diagram-badge-overlap: move that edge to another side of the node (`fromSide`/`toSide`) or drop the badge."
+    },
+    {
+      "name": "Focus",
+      "role": "part",
+      "inside": "<Flow> or <Cycle>",
+      "useWhen": "Dim everything but some nodes (and the edges between them) for a range of steps.",
+      "example": "<Focus at={4} nodes=\"api queue worker\" />",
+      "shared": [
+        "until"
+      ],
+      "props": {
+        "nodes": {
+          "type": "string | string[]",
+          "required": true,
+          "default": null,
+          "description": "The nodes that stay lit, such as `\"web api db\"`."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": 0,
+          "description": "The first step it applies on."
+        }
+      },
+      "children": "",
+      "limits": {}
+    },
+    {
+      "name": "Actor",
+      "role": "part",
+      "inside": "<SequenceDiagram>",
+      "useWhen": "A participant of a <SequenceDiagram>, drawn as a node over its lifeline.",
+      "example": "<Actor id=\"api\" kind=\"service\" title=\"Payments API\" />",
+      "shared": [
+        "kind",
+        "icon"
+      ],
+      "props": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The id messages name it by."
+        },
+        "title": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Its name; the id when left out."
+        },
+        "subtitle": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A quieter second line."
+        }
+      },
+      "children": "",
+      "limits": {}
+    },
+    {
+      "name": "Message",
+      "role": "part",
+      "inside": "<SequenceDiagram>",
+      "useWhen": "An arrow between lifelines; `reply` for a response, `async` for fire-and-forget, from = to for a call to itself.",
+      "example": "<Message from=\"web\" to=\"api\" label=\"POST /charges\" at={1} />",
+      "shared": [
+        "play",
+        "state"
+      ],
+      "props": {
+        "from": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The actor it leaves."
+        },
+        "to": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The actor it reaches; the same as `from` for a call to itself."
+        },
+        "label": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "What it says, such as `POST /orders`."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "The step that reveals it; it plays while that step is current."
+        },
+        "reply": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "A response: a dashed arrow, its packet a ring."
+        },
+        "async": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "An asynchronous message: a dashed arrow."
+        }
+      },
+      "children": "",
+      "limits": {},
+      "longText": "The label sits above its arrow on one line."
+    },
+    {
+      "name": "Milestone",
+      "role": "part",
+      "inside": "<Timeline>",
+      "useWhen": "One milestone of a <Timeline>: date, title and a short line of detail as children.",
+      "example": "<Milestone date=\"Q3 2026\" title=\"Region cells\" at={3} current>EU and US apart</Milestone>",
+      "shared": [
+        "at",
+        "state",
+        "icon"
+      ],
+      "props": {
+        "date": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "When, as it should read: `Q1 2026`, `March`."
+        },
+        "title": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What happens, in a few words."
+        },
+        "current": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Marks where we are now; once revealed it stays current over later milestones."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "A short line of detail under the title."
+        }
+      },
+      "children": "A short line of detail.",
+      "limits": {},
+      "longText": "Wraps at word boundaries within its column."
+    },
+    {
+      "name": "Layer",
+      "role": "part",
+      "inside": "<Layers>",
+      "useWhen": "One band of a <Layers> stack. While the stack is built, the band its `at` step adds is picked out; once the last band is in, only bands with `state` stand out, so mark the band the stack is about with `state=\"highlighted\"`.",
+      "example": "<Layer title=\"Data\" subtitle=\"Data team\" at={4}>\n  <Item kind=\"database\" title=\"Postgres\" />\n</Layer>",
+      "shared": [
+        "at",
+        "state"
+      ],
+      "props": {
+        "title": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The layer's name, such as `Data`."
+        },
+        "subtitle": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "What it does or who owns it."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "Its <Item>s."
+        }
+      },
+      "children": "<Item>s.",
+      "limits": {}
+    },
+    {
+      "name": "Item",
+      "role": "part",
+      "inside": "<Layer>",
+      "useWhen": "One building block in a <Layer>, as a chip with its kind’s icon.",
+      "example": "<Item kind=\"queue\" title=\"Kafka\" />",
+      "shared": [
+        "kind",
+        "icon",
+        "state"
+      ],
+      "props": {
+        "title": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Its name."
+        }
+      },
+      "children": "",
+      "limits": {}
+    }
+  ],
+  "nodeKinds": [
+    {
+      "kind": "service",
+      "aliases": [],
+      "shape": "card",
+      "icons": {
+        "lucide": "server",
+        "tabler": "server-2"
+      },
+      "useWhen": "An application service or API you run: orders API, auth service, a backend."
+    },
+    {
+      "kind": "database",
+      "aliases": [
+        "db"
+      ],
+      "shape": "cylinder",
+      "icons": {
+        "lucide": "database",
+        "tabler": "database"
+      },
+      "useWhen": "A database or any system of record: Postgres, DynamoDB, a ledger."
+    },
+    {
+      "kind": "queue",
+      "aliases": [
+        "stream",
+        "bus"
+      ],
+      "shape": "pipe",
+      "icons": {
+        "lucide": "list-ordered",
+        "tabler": "list-numbers"
+      },
+      "useWhen": "A queue, stream or event bus: SQS, Kafka topic, a job queue."
+    },
+    {
+      "kind": "cache",
+      "aliases": [],
+      "shape": "stack",
+      "icons": {
+        "lucide": "zap",
+        "tabler": "bolt"
+      },
+      "useWhen": "An in-memory cache in front of something slower: Redis, Memcached, an edge cache."
+    },
+    {
+      "kind": "storage",
+      "aliases": [
+        "bucket"
+      ],
+      "shape": "card",
+      "icons": {
+        "lucide": "archive",
+        "tabler": "bucket"
+      },
+      "useWhen": "Object or file storage: an S3 bucket, a blob store, a file share."
+    },
+    {
+      "kind": "user",
+      "aliases": [
+        "person"
+      ],
+      "shape": "pill",
+      "icons": {
+        "lucide": "user",
+        "tabler": "user"
+      },
+      "useWhen": "A person: a customer, an operator, a reviewer. Usually where a journey starts."
+    },
+    {
+      "kind": "client",
+      "aliases": [
+        "browser",
+        "web",
+        "app"
+      ],
+      "shape": "window",
+      "icons": {
+        "lucide": "app-window",
+        "tabler": "browser"
+      },
+      "useWhen": "A browser or desktop client: the web app, a single-page app, a CLI on a laptop."
+    },
+    {
+      "kind": "mobile",
+      "aliases": [
+        "phone"
+      ],
+      "shape": "device",
+      "icons": {
+        "lucide": "smartphone",
+        "tabler": "device-mobile"
+      },
+      "useWhen": "A mobile app or device."
+    },
+    {
+      "kind": "cloud",
+      "aliases": [],
+      "shape": "soft",
+      "icons": {
+        "lucide": "cloud",
+        "tabler": "cloud"
+      },
+      "useWhen": "A managed platform or the internet as a whole: a CDN, a cloud provider, \"the web\"."
+    },
+    {
+      "kind": "external",
+      "aliases": [
+        "third-party"
+      ],
+      "shape": "dashed",
+      "icons": {
+        "lucide": "globe",
+        "tabler": "world"
+      },
+      "useWhen": "A system outside your boundary that you call or that calls you: Stripe, a partner API."
+    },
+    {
+      "kind": "function",
+      "aliases": [
+        "lambda",
+        "worker"
+      ],
+      "shape": "chamfer",
+      "icons": {
+        "lucide": "lambda",
+        "tabler": "lambda"
+      },
+      "useWhen": "A serverless function or a worker that runs on demand: Lambda, a cron job."
+    },
+    {
+      "kind": "gateway",
+      "aliases": [
+        "proxy"
+      ],
+      "shape": "hexagon",
+      "icons": {
+        "lucide": "network",
+        "tabler": "network"
+      },
+      "useWhen": "An API gateway, reverse proxy or ingress that routes requests inward."
+    },
+    {
+      "kind": "loadbalancer",
+      "aliases": [
+        "lb",
+        "load-balancer"
+      ],
+      "shape": "hexagon",
+      "icons": {
+        "lucide": "split",
+        "tabler": "arrows-split-2"
+      },
+      "useWhen": "A load balancer that spreads traffic over several instances."
+    },
+    {
+      "kind": "agent",
+      "aliases": [],
+      "shape": "double",
+      "icons": {
+        "lucide": "bot",
+        "tabler": "robot"
+      },
+      "useWhen": "An AI agent: the loop that plans, calls tools and talks to a model."
+    },
+    {
+      "kind": "llm",
+      "aliases": [
+        "model"
+      ],
+      "shape": "double",
+      "icons": {
+        "lucide": "sparkles",
+        "tabler": "sparkles"
+      },
+      "useWhen": "A language model endpoint: the model an agent or a feature calls."
+    },
+    {
+      "kind": "tool",
+      "aliases": [],
+      "shape": "card",
+      "icons": {
+        "lucide": "wrench",
+        "tabler": "tool"
+      },
+      "useWhen": "A tool an agent can call: search, code execution, a calendar API."
+    },
+    {
+      "kind": "document",
+      "aliases": [
+        "file"
+      ],
+      "shape": "folded",
+      "icons": {
+        "lucide": "file-text",
+        "tabler": "file-text"
+      },
+      "useWhen": "A document, file, report or prompt: a PDF, a config file, a knowledge base page."
+    },
+    {
+      "kind": "decision",
+      "aliases": [],
+      "shape": "diamond",
+      "icons": null,
+      "useWhen": "A yes/no branch in a process; keep its title to a short question."
+    },
+    {
+      "kind": "node",
+      "aliases": [
+        "generic"
+      ],
+      "shape": "card",
+      "icons": null,
+      "useWhen": "Anything else: give it an `icon` from the brand set, or children of your own."
+    }
+  ],
+  "edgeOptions": [
+    {
+      "name": "label",
+      "useWhen": "What travels on the edge (HTTPS, SQL, publish); it sits beside the line, never on a node. Wraps after about 18 characters.",
+      "example": "<Edge from=\"api\" to=\"db\" label=\"SQL\" />"
+    },
+    {
+      "name": "dashed / async",
+      "useWhen": "An asynchronous, optional or eventual link (events, replication, fire-and-forget).",
+      "example": "<Edge from=\"orders\" to=\"events\" async />"
+    },
+    {
+      "name": "route: orthogonal | straight | curved",
+      "useWhen": "orthogonal (the default) routes around nodes with rounded corners; straight runs centre to centre; curved bends gently between ports.",
+      "example": "<Edge from=\"a\" to=\"b\" route=\"curved\" />"
+    },
+    {
+      "name": "arrow: end | start | both | none",
+      "useWhen": "Where arrowheads go; `bidirectional` is arrow=\"both\".",
+      "example": "<Edge from=\"agent\" to=\"model\" bidirectional />"
+    },
+    {
+      "name": "fromSide / toSide",
+      "useWhen": "Force the side an edge leaves or enters by (top, right, bottom, left) when the router picks another.",
+      "example": "<Edge from=\"api\" to=\"cache\" fromSide=\"top\" toSide=\"bottom\" />"
+    },
+    {
+      "name": "self loop",
+      "useWhen": "An edge whose `from` and `to` are the same node draws a small loop on it, such as a retry; a packet from and to that node rides it.",
+      "example": "<Edge from=\"worker\" to=\"worker\" label=\"retry\" />"
+    },
+    {
+      "name": "flow",
+      "useWhen": "Continuous traffic along an edge while it is shown: `flow`, `flow={5}` or `flow={{ count, speed, size, role, reverse }}` (see `edgeFlow`).",
+      "example": "<Edge from=\"orders\" to=\"bus\" label=\"publish\" flow={{ count: 3 }} />"
+    },
+    {
+      "name": "at / state / id",
+      "useWhen": "Reveal the edge at a step, start it in a state, or name it for <State edge=\"...\">.",
+      "example": "<Edge id=\"auth\" from=\"api\" to=\"idp\" at={2} />"
+    }
+  ],
+  "edgeFlow": {
+    "count": {
+      "type": "number",
+      "required": false,
+      "default": 3,
+      "description": "Particles on the edge at once."
+    },
+    "speed": {
+      "type": "\"slow\" | \"normal\" | \"fast\"",
+      "required": false,
+      "default": "normal",
+      "description": "How fast they travel, as a multiple of the brand's motion.",
+      "values": [
+        "slow",
+        "normal",
+        "fast"
+      ]
+    },
+    "size": {
+      "type": "\"sm\" | \"md\" | \"lg\"",
+      "required": false,
+      "default": "sm",
+      "description": "How big the dots are.",
+      "values": [
+        "sm",
+        "md",
+        "lg"
+      ]
+    },
+    "role": {
+      "type": "\"accent\" | \"positive\" | \"negative\" | \"fg\"",
+      "required": false,
+      "default": "accent",
+      "description": "The color role they travel in.",
+      "values": [
+        "accent",
+        "positive",
+        "negative",
+        "fg"
+      ]
+    },
+    "reverse": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Travel from `to` back to `from`."
+    }
+  },
+  "animation": [
+    {
+      "name": "Packet",
+      "useWhen": "Traffic along edges on a step: `from`/`to` or a multi-hop `path`, `at` (plays while that step is current) and `until` (to keep playing), `reply` for out, pause and back. Loops by default; `play=\"once\"` rests at the end. from = to rides a self loop.",
+      "example": "<Packet from=\"web\" to=\"api\" at={2} label=\"POST /orders\" reply=\"201\" />"
+    },
+    {
+      "name": "Journey",
+      "useWhen": "A request travelling hop by hop, one hop per step: `path` with `back` for the response, or <Hop> children with their own labels and replies; `focus` dims everything off the path; travelled edges stay lit (`trail`); `pace=\"trip\"` plays the whole path on one step.",
+      "example": "<Journey at={1} path=\"browser cdn gateway orders db\" back focus />"
+    },
+    {
+      "name": "State",
+      "useWhen": "Change a node or an edge from a step on: is=\"highlighted\", \"error\", \"success\", \"muted\" or \"default\", with a `badge`.",
+      "example": "<State node=\"payments\" at={3} is=\"error\" badge=\"Timeout\" until={5} />"
+    },
+    {
+      "name": "Focus",
+      "useWhen": "Dim everything but some nodes (and the edges between them) for a range of steps.",
+      "example": "<Focus at={4} nodes=\"api queue worker\" />"
+    },
+    {
+      "name": "at (reveal)",
+      "useWhen": "Every node, group and edge takes `at` to appear on a step; an edge also waits for its nodes.",
+      "example": "<Node id=\"cache\" kind=\"cache\" title=\"Cache\" col={3} row={1} at={2} />"
+    }
+  ],
+  "states": [
+    "default",
+    "highlighted",
+    "muted",
+    "error",
+    "success"
+  ],
+  "stateSynonyms": {
+    "highlight": "highlighted",
+    "fail": "error",
+    "failed": "error",
+    "failure": "error",
+    "ok": "success",
+    "done": "success",
+    "recover": "success",
+    "recovered": "success",
+    "mute": "muted",
+    "dim": "muted",
+    "dimmed": "muted"
+  },
+  "packetRoles": [
+    "accent",
+    "positive",
+    "negative",
+    "fg"
+  ],
+  "svgRoles": [
+    "fg",
+    "heading",
+    "muted",
+    "accent",
+    "positive",
+    "negative",
+    "bg",
+    "surface",
+    "border",
+    "node",
+    "node-border",
+    "node-text",
+    "group",
+    "edge",
+    "label",
+    "highlight",
+    "packet"
+  ],
+  "limits": {
+    "nodes": 12,
+    "edges": 16,
+    "columns": 5,
+    "maxColumns": 7,
+    "rows": 3,
+    "maxRows": 4,
+    "maxNodes": 60,
+    "maxEdges": 120,
+    "maxParticles": 24,
+    "maxGridIndex": 64,
+    "maxStep": 999,
+    "labelChars": 18,
+    "labelLines": 2,
+    "titleLines": 3,
+    "minBreakChars": 3
+  },
+  "longText": "Node titles and subtitles wrap between words, up to 3 lines for a title; a node first widens (up to fourteen captions, taking room from the gutters down to their least, every one-column node keeping one width) until its widest whole word fits, and only a word wider than that breaks: at a camelCase boundary or after -, _, . or /, else with a hyphen, never leaving fewer than 3 characters on a line. Edge labels take about 18 characters a line (less between two columns the nodes widened into), at most 2 lines, broken the same way; what still does not fit is cut with an ellipsis, one identifier keeping its start and end (OrderCancelled…Event), several words ending after a whole word. The full text stays in the accessible summary; `deck lint` warns (diagram-long-word) for every text broken inside a word or cut. Keep labels to a word or two (HTTPS, publish) and titles to about 20 characters.",
+  "tsx": {
+    "import": "import { Edge, Flow, Node } from '@deckster/kit/diagrams';",
+    "icons": "`kind` icons resolve at run time from the brand's icon set, as in MDX. `icon` takes an icon component (`import Rocket from '~icons/lucide/rocket'`) or \"none\"; a name string is resolved only in MDX.",
+    "errors": "TSX props are checked when the slide renders: an unknown prop or a value outside its set throws an error naming the closest one, shown on the slide in place of the diagram.",
+    "example": "import { Edge, Flow, Node } from '@deckster/kit/diagrams';\n\nexport const frontmatter = { layout: 'diagram', title: 'Orders talk to the database over SQL' };\n\nexport default function Slide() {\n  return (\n    <Flow title=\"Orders and its database\">\n      <Node id=\"api\" kind=\"service\" title=\"Orders API\" col={1} row={1} />\n      <Node id=\"db\" kind=\"database\" title=\"Orders DB\" col={2} row={1} />\n      <Edge from=\"api\" to=\"db\" label=\"SQL\" />\n    </Flow>\n  );\n}"
+  },
+  "notes": [
+    "Use the `diagram` layout: a takeaway title over one diagram that fills the slide, with an optional <Aside>.",
+    "Every diagram needs a `title` (its accessible name); the build fails without one, and on any prop it does not take or value outside its set, naming the closest.",
+    "Place nodes on grid cells (col, row); never pixels. The diagram scales to its region and text stays at brand sizes.",
+    "Keep a slide to about 12 nodes and 16 edges and 5 columns by 3 rows; `deck lint` warns above that (diagram-too-dense) and reports nodes that overlap.",
+    "One accent: let a journey, a highlight or a state carry the point; everything else stays in the quiet colors.",
+    "Static mode and exports show each step as a still: packets frozen partway along with a tail that shows their direction.",
+    "Every diagram puts a JSON description in `data-diagram-description` for native exports (`@deckster/kit/diagram-description`).",
+    "Designer-made motion no diagram expresses (an illustrated loop, a product animation) is a <Lottie> from After Effects; see the media components."
+  ]
+}

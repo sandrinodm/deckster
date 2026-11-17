@@ -1,0 +1,13 @@
+---
+/* The site's logo, inline so it takes the text colour of wherever it sits:
+   the card is the text colour, the squares are cut in the background colour,
+   and one square is vermilion. The drawing lives in logo.ts, which the
+   social cards read too. */
+import { logo } from "./logo";
+
+interface Props { class?: string }
+// Callers give it a whole-pixel box; at 32 × 24 every edge lands on a pixel.
+const { class: cls = "h-6 w-8" } = Astro.props;
+const { card, size } = logo;
+---
+<svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${logo.width} ${logo.height}`} class={cls} aria-hidden="true"><rect x={card.x} y={card.y} width={card.width} height={card.height} rx={card.radius} fill="currentColor" />{logo.squares.map(([x, y], i) => <rect x={x} y={y} width={size} height={size} fill={i === logo.accentIndex ? logo.accent : "var(--nb-background)"} />)}</svg>

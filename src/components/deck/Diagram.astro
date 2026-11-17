@@ -1,0 +1,41 @@
+---
+/**
+ * Diagram — one of the explanatory SVGs in src/assets/diagrams, drawn with the crisp-diagrams
+ * skill in the site palette (light only). Shown as an <img>, so the SVG's own styles stay inside
+ * it; the page's image zoom opens it larger, and the caption links the file. Below 640 px the
+ * diagram keeps a readable 640 px width and scrolls sideways in its frame, with a hint in the caption:
+ * scaled to a phone column its 11.5 px labels would be about 5 px.
+ *
+ *   <Diagram name="build-pipeline" alt="Slide files, deck.config.ts and brand.ts feed …" />
+ *
+ * `alt` is required: a full sentence saying what the diagram shows. A name with no SVG fails the
+ * build with the list. The SVG's text uses system fonts: an <img> can't reach the site's fonts.
+ */
+import "./deck.css";
+import { caller, fail, findDiagram } from "./data";
+
+interface Props {
+  /** The SVG's file name without `.svg`. */
+  name: string;
+  /** A full sentence saying what the diagram shows. */
+  alt: string;
+}
+
+const { name, alt } = Astro.props;
+const c = caller("Diagram", { name }, Astro.url);
+if (!alt || !alt.trim()) fail(c, "alt", "is required: a full sentence saying what the diagram shows.");
+const { url, width, height } = findDiagram(c, name);
+// Twice the drawn size: an SVG stays sharp at any size, and the image zoom only offers to enlarge
+// an image whose size is well above how wide it is shown.
+const ZOOM = 2;
+---
+
+<figure class="dk-diagram">
+  <div class="dk-diagram-frame">
+    <img src={url} alt={alt} width={width * ZOOM} height={height * ZOOM} loading="lazy" decoding="async" data-dk-diagram style={`max-width: ${width * 1.25}px`} />
+  </div>
+  <figcaption class="dk-caption">
+    <span class="dk-mono">{name}.svg <span class="dk-diagram-hint">· scroll sideways →</span></span>
+    <a href={url} data-astro-prefetch="false">Open full size</a>
+  </figcaption>
+</figure>

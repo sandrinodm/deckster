@@ -1,0 +1,102 @@
+---
+title: "Lint rules"
+description: "Every rule deck lint checks, with its severity and fix."
+sidebar:
+  order: 2
+---
+
+Use this page to look up a rule id from a `deck lint` finding: what it checks, whether it fails the run, and the short fix. How to run lint, read a finding and fix the common ones is on [lint](/review/lint/).
+
+The tables list the 41 rules `deck lint --help` prints in 0.3.0, plus `schema` and `brand`, and then the findings the slide compiler adds. An `error` makes `deck lint` exit with 1; a `warning` does not. Each finding prints its own fix, which names the file and is usually longer than the one here. The minimum type size is 20px on the 1920x1080 canvas. To skip decoration in the overflow and text rules, see [exempt decoration](/review/lint/#exempt-decoration).
+
+## Schema and rendering
+
+| Rule | Severity | Fix |
+| --- | --- | --- |
+| `schema` | error | Deck config, brand, frontmatter or MDX problem from the build; the message names the field. A slide file that `deck.config.ts` does not list is a `schema` warning: list it or delete it. |
+| `brand` | error or warning | A problem in the brand, reported once under the brand's file: an error when the brand does not load, such as a contrast failure; a warning for one that does not stop it, such as a waived contrast pair. See [check a brand](/brands/check-a-brand/). |
+| `render-error` | error | A slide or the page threw. Fix the code; `deck dev` shows the stack. |
+
+## Layout and text
+
+| Rule | Severity | Fix |
+| --- | --- | --- |
+| `canvas-overflow` | error | Cut, split or move detail to the notes; do not shrink type. |
+| `container-overflow` | error | Shorten the content inside the container, split the slide, or simplify the layout around it. |
+| `text-truncated` | error | Shorten the text or give it a wider column. |
+| `text-overlap` | error | Move or cut one; check absolute positions, negative margins and line heights below 1. |
+| `min-font-size` | error | Use a type step of at least 20px, or remove the scaling that shrinks it. |
+| `table-too-dense` | error | Keep the rows and columns the title rests on; put the full table in an appendix. |
+
+## Colour
+
+| Rule | Severity | Fix |
+| --- | --- | --- |
+| `contrast` | error | Use a text role of the surface that passes, or another surface. |
+| `off-brand` | error | Use role classes (`text-fg`, `bg-surface`), `font-display`/`font-body`/`font-mono`, `type-*` steps and brand spacing steps (`p-sm`, `gap-lg`) instead of hard-coded values. |
+
+## Media and apps
+
+| Rule | Severity | Fix |
+| --- | --- | --- |
+| `broken-image` | error | Import the file from the deck's `assets/`, or fix the URL. |
+| `low-res-image` | warning | Use an image at least as large as drawn (twice for 2x exports), or an SVG. |
+| `app-missing-poster` | error | Add `poster="./poster.png"` to the `<AppFrame>`. |
+| `app-missing` | error | Create the app with `deck new app <deck> <name>`, or fix the name. |
+| `app-external-src` | warning | Add `fallback="./demo.mp4"`, or bundle the demo with `deck new app`. |
+| `video-cue-posters` | warning | Add `posters={[...]}` with one still per cued part. |
+| `export-missing-poster` | warning | Use `<Video src poster alt>`, `<AppFrame src poster>` or `<Live component poster>`. |
+
+## Charts
+
+| Rule | Severity | Fix |
+| --- | --- | --- |
+| `chart-empty` | error | Check the data and the `x`/`y` field names; show one value as `<BigNumber>`. |
+| `chart-truncated-axis` | error | Remove `min`, use a `<LineChart>`, or add `truncate` for an axis break. |
+| `chart-too-many-series` | warning | Keep the series the point needs; fold the rest into "Other". |
+| `chart-too-many-categories` | warning | Show the top categories and "Other"; move the full list to an appendix. |
+| `chart-pie-slices` | warning | More than 5 slices: fold into "Other" or use a sorted `<BarChart>`. |
+| `chart-no-highlight` | warning | Add `highlight` for what the title is about (`highlight="EMEA"`, `highlight="max"`). |
+| `chart-topic-title` | warning | Write the takeaway as the title; the measure goes in `caption`. |
+| `chart-missing-unit` | warning | Add `unit`, a currency or percent `format`, or a `caption` with the measure. |
+| `chart-legend-avoidable` | warning | Remove `legend`; the chart labels each series where it ends. |
+| `chart-funnel-grows` | warning | Check the stage order and counts, or use a `<BarChart>`. |
+
+## Diagrams
+
+| Rule | Severity | Fix |
+| --- | --- | --- |
+| `diagram-overlap` | error | Give nodes grid cells a cell apart, use fewer rows or columns, or `direction="right"`. |
+| `diagram-too-dense` | warning | More than 12 nodes or 16 edges at once: split, group, or reveal with `at`. |
+| `diagram-label-overlap` | warning | Shorten the label or move the nodes a column apart. |
+| `diagram-unlabeled-edge` | warning | Give the `<Edge>` a short `label`. |
+| `diagram-small-text` | warning | Make the diagram larger or cut its text. |
+| `diagram-edge-overlap` | warning | Move a node or pick other sides with `fromSide`/`toSide`. |
+| `diagram-badge-overlap` | warning | Move the edge with `fromSide`/`toSide`, or drop the badge. |
+| `diagram-long-word` | warning | Use a shorter name or put a space in it ("Order cancelled"). |
+
+## Content and deck
+
+| Rule | Severity | Fix |
+| --- | --- | --- |
+| `content-budget` | error | Cut, split, or pick a layout made for more content. |
+| `slot-content` | error | Put only what the slot accepts in it; move the rest to another slide or slot. |
+| `missing-notes` | warning | Add `<Notes>`. |
+| `layout-repetition` | warning | 3 or more slides in a row share a layout and surface: vary one. |
+| `few-builds` | warning | Stage chart, diagram and code slides in steps. |
+| `time-budget` | error | Cut slides or shorten their budgets. |
+| `open-comments` | warning | Resolve the slide's comments. |
+
+## From the slide compiler
+
+The compiler that turns slide files into the deck reports a few more problems, each with its own fix. `deck lint --help` does not list them.
+
+| Rule | Severity | What it means |
+| --- | --- | --- |
+| `media-missing` | error | An `<Image>`, `<Video>`, `<Lottie>` or poster path that does not exist. |
+| `media-gif` | warning | A GIF that could not be converted to video. |
+| `code-unknown-language` | warning | A code block in a language the highlighter does not know, shown as plain text. |
+| `code-step-range` | warning | A highlight step names lines the code block does not have. |
+| `terminal-tone` | warning | A `<Cmd>` or `<Out>` tone the terminal does not have. |
+| `treatment-unknown` | warning | An image treatment the brand does not have, so the picture is drawn as it is. |
+| `build-warning` | warning | Any other compiler warning that names no rule. |

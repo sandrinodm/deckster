@@ -1,0 +1,125 @@
+---
+title: "Lint"
+description: "Run deck lint, read its findings and fix them."
+sidebar:
+  order: 1
+---
+
+`deck lint` opens your deck in Chromium, measures every step of every slide and tells you what is wrong, where, and how to fix it. After this page you can run it, read its findings, fix the common ones and use its exit code or JSON in a script or CI. Why the deck treats lint as the contract is on [Lint as the contract](/concepts/lint-as-the-contract/).
+
+## Run it
+
+<Steps>
+
+1. Lint a deck by its folder name under `decks/`:
+
+   ```console
+   $ deck lint launch-review
+   decks/launch-review/slides/risks.mdx
+     error   content-budget (risks): The body slot holds 7 bullets; its layout allows 6.
+             Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+   decks/launch-review/slides/revenue.mdx
+     warning chart-topic-title (revenue): "Revenue by region" looks like a topic, not a takeaway (a heuristic: it reads as "X by Y").
+             Fix: State what the chart shows in the title of decks/launch-review/slides/revenue.mdx, with the number when there is one: "Billing tickets doubled in Q3", not "Tickets by queue". Put the measure and period in the chart's `caption`.
+     warning missing-notes (revenue): The slide has no speaker notes.
+             Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
+
+   launch-review: 1 error, 2 warnings in 3 slides (3 steps checked).
+   ```
+
+   The command exits with 1 because there is an error.
+
+2. Make the change each `Fix:` line asks for. Here: cut the `risks` bullets to six or fewer, write the chart's takeaway as the title of `revenue` (the measure goes in the chart's `caption`), and add `<Notes>` to `revenue`.
+
+3. Run it again until it is clean:
+
+   ```console
+   $ deck lint launch-review
+   launch-review: no problems in 3 slides (3 steps checked).
+   ```
+
+</Steps>
+
+`--brand <name>` lints the deck rendered with `brands/<name>` instead of the brand in its `deck.config.ts`, so you can check a deck in a brand before you switch to it. Problems in the brand itself are listed under the brand's file, marked "for every slide"; [Check a brand](/brands/check-a-brand/) covers them.
+
+## Read a finding
+
+Findings are grouped under the file to edit. Each one is two lines:
+
+- the severity (`error` or `warning`), the rule id, and in brackets the slide id, plus `step N` when only one step has the problem;
+- the message, then `Fix:` with what to change. The fix names the file, the prop or the command, so you or your agent can act on it without opening a browser.
+
+The last line counts everything: `<deck>: N errors, N warnings in N slides (N steps checked).`, or `<deck>: no problems in ...` when there is nothing to report. The step count includes every step of every slide: a slide with `<Step at={1}>` to `<Step at={3}>` adds four (steps 0 to 3).
+
+**Errors fail the run, warnings do not.** `deck lint` exits with 1 when there is at least one error, and with 0 when there are only warnings. Bad arguments, an unknown deck or a browser that will not start also exit with 1.
+
+Lint runs in three passes. First the deck config, the brand and every slide file go through the same checks as `deck build`; a problem there is a `schema` finding, and the rendered checks are skipped because the deck cannot render:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/risks.mdx
+  error   schema (risks): "subtitle" is not a frontmatter field.
+          Fix: Remove it. Known fields: layout, title, surface, background, budget, transition, eyebrow, width, chrome.
+
+launch-review: 1 error, 0 warnings.
+```
+
+Then every step of every slide is rendered in [static mode](/concepts/static-mode-and-readiness/) and measured. Last come the rules over the whole deck, such as `layout-repetition`, `few-builds` and `time-budget`. A `time-budget` or `few-builds` finding names no slide; a `layout-repetition` finding names the slide that makes the run three long.
+
+## Fix the common ones
+
+| Rule | What to do |
+| --- | --- |
+| `content-budget` | A slot holds more words, bullets or code lines than its layout allows. Cut, split the slide, move detail to the notes, or pick a layout made for more (`deck layouts`). Each layout's budgets are on [Layouts and slots](/concepts/layouts-and-slots/). |
+| `canvas-overflow` | Something runs past the 1920x1080 canvas. Cut or split; the fix says not to shrink the type. |
+| `text-truncated` | Text is cut with an ellipsis or a line clamp. Shorten it or give it room: another `ratio`, no aside, another layout, fewer chart categories. [Text and fitting](/write-slides/text-and-fitting/) explains what the layouts do with long text. |
+| `contrast` | Text is below WCAG AA (4.5:1, or 3:1 for large text). The fix names the text roles of the slide's surface that pass, with their ratios, or the layout options that move text off a photo. |
+| `missing-notes` | Add a `<Notes>` block: what the slide proves and what to say. See [Speaker notes](/write-slides/speaker-notes/). |
+| `chart-topic-title` | The title reads like a topic ("X by Y", "X vs Y"). Write the takeaway, with the number: "Billing tickets doubled in Q3". The check is a heuristic; the message says so. |
+| `few-builds` | Of a deck's `chart`, `diagram` and `code` slides (when it has 4 or more), fewer than 25% build in steps. Stage the figure in the order the notes explain it: `reveal` or `at` on a chart, `at` on diagram nodes and edges, step ranges on a code fence. Check with `deck shot <deck> <slide> --steps`. |
+| `time-budget` | The slides' `budget:` values add up to more than the deck config's `duration`. Cut slides or shorten budgets. Without a `duration` the rule reports nothing. |
+| `open-comments` | A slide has open review comments in `.feedback/`. Run `deck comments <deck> --slide <id>`, make the changes, then `deck comments resolve`. See [Comments](/review/comments/). |
+
+### Exempt decoration
+
+The overflow and text rules skip anything marked as decoration. Put `aria-hidden="true"` or `data-decorative` on a shape or word that is meant to bleed off the edge or sit under other text.
+
+## Every rule
+
+[Lint rules](/reference/lint-rules/) lists all 41 rules `deck lint --help` prints in 0.3.0, plus `schema`, `brand` and the findings the slide compiler adds, each with its severity and a short fix.
+
+## Use it in a script
+
+`--json` prints the same report as one object:
+
+```console
+$ deck lint launch-review --json
+{
+  "deck": "launch-review",
+  "brand": "default",
+  "ok": false,
+  "summary": {
+    "errors": 1,
+    "warnings": 2,
+    "slides": 3,
+    "steps": 3,
+    "budgetSeconds": null
+  },
+  "findings": [
+    {
+      "slide": "risks",
+      "file": "decks/launch-review/slides/risks.mdx",
+      "step": null,
+      "rule": "content-budget",
+      "severity": "error",
+      "message": "The body slot holds 7 bullets; its layout allows 6.",
+      "fix": "Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).",
+      "selector": "[data-slot=\"body\"] (maxBullets)"
+    },
+...
+```
+
+The output is cut after the first finding. `ok` is `false` when there is an error, and the exit code follows it. When the command itself fails (bad arguments, unknown deck, browser problems) it prints `{ "ok": false, "error": { "type", "message" } }` instead. In CI, `deck lint <deck>` as a step is enough: an error fails the job. Lint needs Chromium; install it with `npx playwright@1.65.0 install chromium`.
+
+The full help is on the [CLI reference](/reference/cli/).

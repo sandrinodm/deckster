@@ -1,0 +1,127 @@
+---
+title: "Components"
+description: "Every slide component and its props."
+sidebar:
+  order: 4
+---
+
+Use this page to look up the props of a slide component that is not a chart or a diagram: code and terminals, images, video and Lottie, icons, links, live demos and mini apps, steps and morphs, and speaker notes. Charts are on [charts](/reference/charts/) and diagrams on [diagrams](/reference/diagrams/).
+
+<CatalogIndex kind="components" />
+
+## How props are checked
+
+Each component takes only the props its table lists. Any other name is refused with the closest prop, when one is close, and the list of props the component takes ("`href` is not a prop of `<Download>`. Did you mean `file`? Its props are: file, variant, children."), and so is a missing required prop: at build time in an MDX slide, and when the slide renders in a TSX slide. None of these components shares props with another, so no row is marked "shared".
+
+The catalog states a few rules that hold for all of them:
+
+- **Files.** Paths to images, video, posters and Lottie files are relative to the slide file and become imports. A missing file is reported by `deck lint` as `media-missing`. A Markdown image alone in its paragraph becomes an `<Image>`.
+- **Static mode.** Static mode, `deck shot` and the exports never play video or load frames: they show posters, the last state of a `<CodeMove>`, and the whole terminal session up to the step.
+- **Steps.** Code highlights, `<CodeMove>` states, `<Terminal>` commands, `<Video>` cues and `<AppFrame>` steps are deck steps: each press moves one.
+- **Build warnings.** What the build warns about reaches `deck lint` with a rule id: `media-missing`, `media-gif`, `code-unknown-language`, `code-step-range` and `terminal-tone`.
+
+`deck components --json` prints the same catalog. The `<LinkCard>` and `<Step>` below are the deck components, not the ones this site uses.
+
+## Code and terminals
+
+How to show code and terminal sessions: [code](/write-slides/code/).
+
+### Code
+
+<PropsTable of="Code" />
+
+### CodeMove
+
+<PropsTable of="CodeMove" />
+
+### CodeStep
+
+<PropsTable of="CodeStep" />
+
+### Terminal
+
+<PropsTable of="Terminal" />
+
+### Cmd
+
+<PropsTable of="Cmd" />
+
+### Out
+
+<PropsTable of="Out" />
+
+## Media
+
+Images, video and animation on a slide: [media](/write-slides/media/).
+
+### Image
+
+<PropsTable of="Image" />
+
+### Video
+
+<PropsTable of="Video" />
+
+### Lottie
+
+<PropsTable of="Lottie" />
+
+## Icons
+
+Icon names: [icons](/reference/icons/).
+
+### Icon
+
+<PropsTable of="Icon" />
+
+## Links
+
+Links, downloads and QR codes: [links](/write-slides/links/).
+
+### Button
+
+<PropsTable of="Button" />
+
+### LinkCard
+
+<PropsTable of="LinkCard" />
+
+### Download
+
+<PropsTable of="Download" />
+
+### QR
+
+<PropsTable of="QR" />
+
+## Apps
+
+Live React components and mini apps: [live components](/write-slides/live-components/) and [mini apps](/write-slides/mini-apps/).
+
+### Live
+
+<PropsTable of="Live" />
+
+### AppFrame
+
+<PropsTable of="AppFrame" />
+
+## Motion
+
+Steps and morphs: [builds](/write-slides/builds/) and [transitions and morphs](/write-slides/transitions-and-morphs/).
+
+### Step
+
+<PropsTable of="Step" />
+
+### Morph
+
+<PropsTable of="Morph" />
+
+## Speaker notes
+
+Speaker notes: [speaker notes](/write-slides/speaker-notes/).
+
+### Notes
+
+<PropsTable of="Notes" />

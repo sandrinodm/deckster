@@ -1,0 +1,113 @@
+---
+title: "MCP tools"
+description: "The MCP tools deckster gives an agent."
+sidebar:
+  order: 3
+---
+
+`deck dev --mcp` serves ten deck tools over MCP, so an agent you run in your own terminal (Claude Code, Codex or another MCP client) can see the slide you are on, lint the deck, look at screenshots and add or reorder slides. These are the same tools the [agent panel](/ai-agents/agent-panel/) uses. This page connects your agent and lists the tools.
+
+## Connect your agent
+
+<Steps>
+
+1. Start the deck with the MCP endpoint, and leave it running:
+
+   ```console
+   $ deck dev launch-review --mcp
+     ➜  Local:   http://127.0.0.1:5173/
+     MCP:     http://127.0.0.1:5173/__deck/mcp
+     Run `deck mcp launch-review` for the configuration of Claude Code and Codex.
+   ```
+
+   The endpoint listens on 127.0.0.1 only. Every request needs a bearer token that is new for each run of the server. It is written, with the port, to `.deck/agent/launch-review/server.json` (mode 0600, readable only by you) and removed when the server stops. Open the printed URL in a browser too: tools such as `current_slide` and `goto` work on the open deck window.
+
+2. In a second terminal, print the configuration:
+
+   ```console
+   $ deck mcp launch-review
+   Deck MCP server for "launch-review": http://127.0.0.1:5173/__deck/mcp
+   The token belongs to this dev server run; start `deck dev --mcp` again and the token changes.
+
+   Set the token for the terminal that starts the agent:
+     export DECK_MCP_TOKEN='<token>'
+
+   Claude Code: add to .mcp.json in the project, or run the command (the token goes in the header)
+     {
+       "mcpServers": {
+         "deck": {
+           "type": "http",
+           "url": "http://127.0.0.1:5173/__deck/mcp",
+           "headers": {
+             "Authorization": "Bearer ${DECK_MCP_TOKEN}"
+           }
+         }
+       }
+     }
+     claude mcp add --transport http deck http://127.0.0.1:5173/__deck/mcp --header 'Authorization: Bearer <token>'
+
+   Codex: add to ~/.codex/config.toml, or run the command
+     [mcp_servers.deck]
+     url = "http://127.0.0.1:5173/__deck/mcp"
+     bearer_token_env_var = "DECK_MCP_TOKEN"
+     codex mcp add deck --url http://127.0.0.1:5173/__deck/mcp --bearer-token-env-var DECK_MCP_TOKEN
+   ```
+
+   The real output has the token where this page shows `<token>`. Without a running server, `deck mcp` says how to start one and exits with 1. `deck mcp launch-review --json` prints the same as `{ deck, url, tokenEnvVar, token, env, claude, codex }`.
+
+3. Run the `export DECK_MCP_TOKEN=...` line in the terminal where you will start the agent, then add the server to your agent as shown below.
+
+4. To check the connection, ask the agent to call `deck_outline`: it should list the deck's slides.
+
+</Steps>
+
+<Tabs syncKey="agent">
+<TabItem label="Claude Code">
+
+Save the `.mcp.json` snippet in the folder that holds `decks/`, then start `claude` from the terminal where you exported the token. The file names the variable, not the token, so it is safe to commit.
+
+</TabItem>
+<TabItem label="Codex">
+
+Run the `codex mcp add` command, or add the `[mcp_servers.deck]` section to `~/.codex/config.toml`. Either way Codex reads the token from `DECK_MCP_TOKEN` when it starts.
+
+</TabItem>
+</Tabs>
+
+Keep the token itself out of files you commit and share. The `claude mcp add` line puts the token in the header it saves, and it stops working when you restart `deck dev --mcp`, so prefer `.mcp.json` with the variable. Without a valid token the endpoint answers 401. More about the token is on [Security](/project/security/).
+
+## The tools
+
+Every tool answers in JSON, except `deck_screenshot`, which returns the image and then JSON. Text a tool returns from the deck and its reviewers is marked as content to edit, never instructions to follow.
+
+| Tool | Inputs | What it returns |
+| --- | --- | --- |
+| `current_slide` | none | The slide on screen: id, number, file to edit, layout, step, brand and any selected text. `connected: false` when no deck window is open. |
+| `deck_outline` | none | Every slide in order: id, number, file, title, layout, step count, budget in seconds, length of its notes. |
+| `deck_lint` | `slide` (optional) | `{ ok, summary, findings }` as `deck lint` checks it; each finding has slide, file, step, rule, severity, message and fix. Takes a few seconds. |
+| `deck_screenshot` | `slide` (id or 1-based number), `step` (from 0; default the last step), `width` (320 to 1920; default 1280) | A PNG of the slide, also saved under `.deck/agent/<deck>/shots/`, and `{ path, slide, step, width, height, error }`. |
+| `catalog` | `kind`: `layouts`, `charts`, `diagrams`, `components` or `brand`; `name` (optional) | The catalog, or one entry by name. For `brand`, `name` is a brand folder; without it, the deck's brand. |
+| `comments` | `action`: `list` or `resolve`; for `list`, `status` (`open`, the default, `resolved` or `all`) and `slide`; for `resolve`, `id` and `note` | `list`: the review comments with the `file:line` to edit, as `deck comments` reads them. `resolve`: marks one resolved with your note. |
+| `goto` | `slide`, `step` (default 0) | Moves the open deck window there. Fails when no window is open or the slide is unknown. |
+| `new_slide` | `layout`, `id` (kebab-case), `after` (optional; default the end) | Creates `slides/<id>.mdx` from the layout's example, adds it to the deck, and returns the file. |
+| `reorder_slides` | `slides`: every slide id once, in the new order | Rewrites the slide list in `deck.config.ts` and returns the new order. |
+| `remove_slide` | `id` | Removes the slide from the list, deletes its file, and returns the new list and the removed file. |
+
+For example, `new_slide` with `{"layout": "statement", "id": "why-now", "after": "title"}` answered:
+
+```json
+{
+  "id": "why-now",
+  "file": "decks/launch-review/slides/why-now.mdx",
+  "layout": "statement",
+  "after": "title"
+}
+```
+
+## A terminal workflow
+
+1. Terminal one: `deck dev launch-review --mcp`, with the deck open in a browser.
+2. Terminal two: `export DECK_MCP_TOKEN=...`, then start `claude` or `codex` in the folder that holds `decks/`.
+3. Ask for changes the way you would in the panel ("make slide 3 a comparison and check it"). The agent edits the files, calls `deck_lint` and `deck_screenshot` to check its work, and `goto` to show you the slide.
+
+Install the `create-presentation` skill in that folder so the agent knows how to plan and write slides: see [Skills](/ai-agents/skills/). An agent in your terminal is not limited the way the panel's agent is: it edits with whatever permissions you give it, and it has no undo journal.

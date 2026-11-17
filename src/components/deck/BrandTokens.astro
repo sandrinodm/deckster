@@ -1,0 +1,101 @@
+---
+/**
+ * BrandTokens — one published brand's palette, surfaces and type, from src/data/brands.json
+ * (`deck brand <name>`).
+ *
+ *   <BrandTokens name="default" />
+ */
+import "./deck.css";
+import { caller, findBrand, inline } from "./data";
+
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+const c = caller("BrandTokens", { name }, Astro.url);
+const brand = findBrand(c, name);
+const { palette, surfaces, typography } = brand.tokens;
+const ramps = Object.entries(palette);
+const surfaceList = Object.entries(surfaces);
+const families = Object.entries(typography.families);
+const scale = Object.entries(typography.scale);
+const SURFACE_ROLES = ["bg", "fg", "heading", "muted", "accent", "border"];
+---
+
+<section class="dk-ref dk-brand" aria-label={`The ${brand.label} brand`}>
+  <p class="dk-prose"><strong>{brand.label}</strong> <span class="dk-mono dk-muted">brands/{brand.name}</span>. <span set:html={inline(brand.description)} /></p>
+
+  <h3 class="dk-label">Palette</h3>
+  <div class="dk-ramps">
+    {ramps.map(([hue, steps]) => (
+      <div class="dk-ramp">
+        <span class="dk-ramp-name dk-mono">{hue}</span>
+        <ul class="dk-ramp-steps">
+          {Object.entries(steps).map(([step, hex]) => (
+            <li title={`${hue}.${step} ${hex}`}>
+              <span class="dk-swatch" style={`background:${hex}`}></span>
+              <span class="dk-swatch-step">{step}</span>
+              <span class="dk-swatch-hex">{hex}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+
+  <h3 class="dk-label">Surfaces</h3>
+  <ul class="dk-surfaces">
+    {surfaceList.map(([key, s]) => (
+      <li>
+        <div class="dk-surface" style={`background:${(s as { background?: string }).background ?? s.roles.bg};color:${s.roles.fg}`} aria-hidden="true">
+          <span class="dk-surface-heading" style={`color:${s.roles.heading ?? s.roles.fg}`}>Aa</span>
+          <span class="dk-surface-muted" style={`color:${s.roles.muted}`}>Body and muted text</span>
+          <span class="dk-surface-accent" style={`background:${s.roles.accent}`}></span>
+        </div>
+        <p class="dk-surface-name"><code>surface: {key}</code> <span class="dk-muted">{s.scheme}</span></p>
+        <p class="dk-surface-roles dk-mono">
+          {SURFACE_ROLES.filter((r) => s.roles[r]).map((r) => (
+            <span><i class="dk-dot" style={`background:${s.roles[r]}`}></i>{r} {s.roles[r]}</span>
+          ))}
+        </p>
+      </li>
+    ))}
+  </ul>
+
+  <h3 class="dk-label">Typefaces</h3>
+  <div class="nb-table-scroll">
+    <table>
+      <thead><tr><th>Role</th><th>Family</th><th>Source</th></tr></thead>
+      <tbody>
+        {families.map(([role, f]) => (
+          <tr>
+            <td><code>{role}</code></td>
+            <td>{f.family}</td>
+            <td data-mono>{f.source?.package ?? f.source?.kind ?? "—"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="dk-label">Type scale <span class="dk-muted">(px on the 1920×1080 canvas)</span></h3>
+  <div class="nb-table-scroll">
+    <table data-num>
+      <thead><tr><th>Step</th><th>Face</th><th>Size</th><th>Line height</th><th>Weight</th><th>Tracking</th><th>Case</th></tr></thead>
+      <tbody>
+        {scale.map(([step, t]) => (
+          <tr>
+            <td><code>{step}</code></td>
+            <td>{t.family}</td>
+            <td>{t.size}</td>
+            <td>{t.lineHeight}</td>
+            <td>{t.weight}</td>
+            <td>{t.tracking}</td>
+            <td>{t.case === "none" ? "—" : t.case}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>

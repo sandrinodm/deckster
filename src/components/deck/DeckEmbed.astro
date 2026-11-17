@@ -1,0 +1,206 @@
+---
+/**
+ * DeckEmbed — a slide of a built deck, live on the page.
+ *
+ *   <DeckEmbed deck="showcase" slide="lint-path" step={0} />
+ *
+ * Renders the slide's still as a 16:9 poster. Clicking it (or Enter/Space on it) swaps in an iframe
+ * of the built deck in `?embed` mode at that slide and step; starting another embed on the page
+ * returns this one to its poster, so one deck runs at a time. Without JavaScript the poster is a
+ * link to the full deck at that slide.
+ *
+ * Without `step`, the poster is the finished slide and the frame opens on it, at the slide's last
+ * step. With `step`, the poster is that step's still and the frame opens at that step; only the
+ * slides shot per step (STEP_SLIDES in deckster's scripts/docs-shots.manifest.ts) have step
+ * stills, so `step` on any other slide fails the build. Otherwise the poster would show the
+ * finished slide and the live frame would open at an earlier step, with content missing.
+ */
+import "./deck.css";
+import { Image } from "astro:assets";
+import { FINISHED_STEP, caller, deckUrl, fail, findDeck, findSlide, slideStill, stepStill } from "./data";
+
+interface Props {
+  /** A published deck: hello, showcase, lookbook, layouts, … */
+  deck: string;
+  /** A slide id of that deck. */
+  slide: string;
+  /**
+   * The step the frame opens at; 0 is the slide before any build. Only for slides shot per step.
+   * Leave it out to open the finished slide.
+   */
+  step?: number;
+  /** Where the component sits, so a SlideExample tab can drop the caption. */
+  caption?: boolean;
+}
+
+const { deck: deckName, slide: slideId, step, caption = true } = Astro.props;
+const c = caller("DeckEmbed", { deck: deckName, slide: slideId, step }, Astro.url);
+const deck = findDeck(c, deckName);
+const slide = findSlide(c, deck, slideId);
+if (step !== undefined && (!Number.isInteger(step) || step < 0)) fail(c, "step", "must be a whole number, 0 or more.");
+// The poster must show what the frame opens at: the finished slide, or a step that has a still.
+const poster = step === undefined ? slideStill(c, deck.name, slide.id) : stepStill(c, deck.name, slide.id, step);
+// The deck clamps a step past the slide's last one to the last, so FINISHED_STEP opens it finished.
+const openStep = step ?? FINISHED_STEP;
+
+const frameSrc = deckUrl(deck.name, slide.id, openStep, true);
+const fullUrl = deckUrl(deck.name, slide.id, openStep);
+const label = `${slide.title} — slide ${slide.number} of ${deck.slides.length}, ${deck.title}`;
+---
+
+<figure class="dk-embed" data-deck-embed data-src={frameSrc} data-title={`Live slide: ${label}`}>
+  <div class="dk-embed-stage">
+    <a
+      class="dk-embed-poster"
+      href={fullUrl}
+      data-astro-prefetch="false"
+      data-nb-zoom="off"
+      aria-label={`Play the slide live: ${label}`}
+    >
+      <Image
+        src={poster.image}
+        alt=""
+        widths={[640, 960, 1280]}
+        sizes="(min-width: 1100px) 760px, 100vw"
+        loading="lazy"
+        decoding="async"
+      />
+      <span class="dk-embed-play" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="14" height="14" focusable="false"><path d="M4 2.5v11l9.5-5.5z" fill="currentColor" /></svg>
+        <span>Play</span>
+      </span>
+    </a>
+  </div>
+  {caption && (
+    <figcaption class="dk-embed-caption">
+      <span class="dk-embed-where"><span class="dk-embed-deck">{deck.name}</span> / {slide.id}</span>
+      <a class="dk-embed-open" href={fullUrl} target="_blank" rel="noopener" data-astro-prefetch="false">Open full deck</a>
+    </figcaption>
+  )}
+</figure>
+
+<script>
+  import "./deck-embed.client";
+</script>
+
+<style is:global>
+  .dk-embed {
+    margin-block: 1.5rem;
+  }
+  .dk-embed-stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 1px solid var(--nb-border);
+    border-radius: var(--nb-radius);
+    background: var(--nb-muted);
+  }
+  .dk-embed-poster,
+  .dk-embed-frame {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .dk-embed-poster {
+    cursor: pointer;
+  }
+  .dk-embed-poster[hidden] {
+    display: none;
+  }
+  .dk-embed-poster img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+  }
+  .dk-embed-poster:focus-visible {
+    outline: 2px solid var(--nb-ring);
+    outline-offset: -2px;
+  }
+  /* The play mark: an ink chip with the vermilion square of the logo, centred on the poster as on
+     a video, so it never sits on the slide's byline, source line or chart axis. */
+  .dk-embed-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem 0.375rem 0.5rem;
+    border-radius: 999px;
+    background: var(--deck-ink);
+    color: var(--deck-paper);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 4px 16px rgb(0 0 0 / 0.18);
+    transition: transform 120ms ease;
+  }
+  .dk-embed-play svg {
+    box-sizing: content-box;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    background: var(--deck-vermilion);
+    color: var(--deck-ink);
+  }
+  .dk-embed-poster:hover .dk-embed-play,
+  .dk-embed-poster:focus-visible .dk-embed-play {
+    transform: translateY(-1px) scale(1.04);
+  }
+  @media (max-width: 639px) {
+    .dk-embed-play {
+      gap: 0.375rem;
+      padding: 0.25rem 0.625rem 0.25rem 0.375rem;
+      font-size: 0.75rem;
+      line-height: 1rem;
+    }
+    .dk-embed-play svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dk-embed-play { transition: none; }
+  }
+  .dk-embed-caption {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    color: var(--nb-muted-foreground);
+  }
+  .dk-embed-where {
+    font-family: var(--nb-font-mono);
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+  .dk-embed-deck {
+    color: var(--nb-foreground);
+  }
+  .dk-embed-open {
+    color: var(--nb-foreground);
+    text-decoration: underline;
+    text-decoration-color: var(--nb-border-strong);
+    text-underline-offset: 3px;
+  }
+  /* Once the deck runs, its own embed controls link to the full deck. */
+  .dk-embed[data-live] .dk-embed-open {
+    visibility: hidden;
+  }
+  .dk-embed-open:hover {
+    text-decoration-color: var(--deck-vermilion);
+  }
+  .dk-embed-open:focus-visible {
+    outline: 2px solid var(--nb-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+</style>

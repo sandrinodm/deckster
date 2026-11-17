@@ -1,0 +1,54 @@
+---
+/**
+ * SchemaReference — every field of a generated JSON Schema as one table: `brand` (brand.ts, from
+ * src/data/brand-schema.json) or `deck-config` (deck.config.ts, from src/data/deck-config.json).
+ *
+ *   ## deck.config.ts fields
+ *
+ *   <SchemaReference of="deck-config" />
+ *
+ *   ## color
+ *
+ *   <SchemaReference of="brand" section="color" />
+ *
+ * `section` limits the table to one top-level field and everything under it (the brand schema
+ * has about 300 rows); an unknown section fails the build with the list. The schemas carry no
+ * descriptions, defaults or name and duration patterns: the Description column comes from the
+ * hand-written overlay in schema-descriptions.ts, and a row without an entry shows nothing there.
+ * An overlay key that names no row fails the build. Sets `id="schema-<of>"`, or
+ * `id="schema-<of>-<section>"`.
+ */
+import "./deck.css";
+import { caller, checkSection, fail, findSchema } from "./data";
+import { flattenSchema, schemaSections, sectionRows } from "./format";
+import { describeRows, unknownDescriptionPaths } from "./schema-descriptions";
+import SchemaTable from "./SchemaTable.astro";
+
+interface Props {
+  of: "brand" | "deck-config";
+  /** One top-level field, such as "color" or "typography". */
+  section?: string;
+}
+
+const { of, section } = Astro.props;
+const c = caller("SchemaReference", { of, section }, Astro.url);
+const { schema, file } = findSchema(c, of);
+checkSection(c, section, schemaSections(schema));
+let rows;
+try {
+  const all = flattenSchema(schema);
+  const unknown = unknownDescriptionPaths(of, all);
+  if (unknown.length > 0) {
+    fail(c, "of", `has descriptions in schema-descriptions.ts for fields the schema does not have: ${unknown.join(", ")}.`);
+  }
+  rows = describeRows(of, sectionRows(all, section));
+} catch (error) {
+  fail(c, "of", error instanceof Error ? error.message : String(error));
+}
+const what = of === "brand" ? "brand.ts" : "deck.config.ts";
+const label = section ? `${what}: ${section}` : `${what} fields`;
+---
+
+<section class="dk-ref dk-schema-ref" id={section ? `schema-${of}-${section}` : `schema-${of}`} aria-label={label}>
+  <SchemaTable rows={rows} label={label} source={section ? `${file} · ${section}` : file} />
+</section>

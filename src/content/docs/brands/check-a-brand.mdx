@@ -1,0 +1,146 @@
+---
+title: "Check a brand"
+description: "Validate a brand and compare it with its source."
+sidebar:
+  order: 6
+---
+
+`deck brand check <name>` validates a brand without rendering a deck. It loads the brand the way every other command does and prints each error and warning with its field and a fix. This page shows how to run the check, read what it prints, and then test the brand on real slides. Use it after you change a brand, and on any brand an agent hands you.
+
+## Run the check
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+acme: is valid (0 errors, 0 warnings).
+```
+
+It exits with 1 when the brand has errors, so it works as a step in a script or CI job. With `--json` it prints `{ brand, file, ok, errors, warnings }`, and each problem is `{ path, message, fix }`. A brand that doesn't exist comes back in the same shape, with one error that lists the brands in `brands/`. This workspace held `acme` and `nocturne`:
+
+```console
+$ deck brand check nope --json
+{
+  "brand": "nope",
+  "ok": false,
+  "file": "brands/nope/brand.ts",
+  "errors": [
+    {
+      "path": "",
+      "message": "There is no brands/nope/brand.ts.",
+      "fix": "Use one of: acme, nocturne. Or create brands/nope/brand.ts."
+    }
+  ],
+  "warnings": []
+}
+```
+
+## Fix a failing brand
+
+These steps break a copy of `default` (saved as `brands/acme/`, as in [create a brand](/brands/create-a-brand/)) on purpose and then fix it.
+
+<Steps>
+
+1. In `brands/acme/brand.ts`, lighten the base `muted` role from `ink.600` to `ink.400`:
+
+   ```ts
+   roles: {
+     bg: 'ink.25',
+     surface: 'ink.50',
+     fg: 'ink.900',
+     muted: 'ink.400',
+     // ...
+   },
+   ```
+
+2. Run the check. `muted` carries secondary text, which needs 4.5:1, and it now falls short against both `bg` and `surface`:
+
+   ```console
+   $ deck brand check acme
+   brands/acme/brand.ts
+     error   color.roles.muted: On the default surface, muted #9aa1ae on bg #fcfcfd has contrast 2.53:1; secondary text needs 4.5:1.
+             Fix: Change muted to a color such as "#6f7582", or change color.roles.bg.
+     error   color.roles.muted: On the default surface, muted #9aa1ae on surface #f4f5f8 has contrast 2.38:1; secondary text on cards needs 4.5:1.
+             Fix: Change muted to a color such as "#69707c", or change color.roles.surface.
+   acme: cannot be used (2 errors, 0 warnings).
+   ```
+
+   The same errors stop every command that renders with the brand. `deck lint launch-review --brand acme` lists them under the brand file and ends with `launch-review: 2 errors, 0 warnings (2 from the brand).`
+
+3. Apply the fix. Use a palette step at least as dark as the colour it suggests. Here that's `ink.600` (`#555c6a`) again, or add the suggested hex to the palette.
+
+4. Check again:
+
+   ```console
+   $ deck brand check acme
+   brands/acme/brand.ts
+   acme: is valid (0 errors, 0 warnings).
+   ```
+
+</Steps>
+
+## What it checks, in order
+
+The checks run in stages. A stage that finds a problem reports all of its problems, and the later stages don't run until you fix them. A brand can fail at one stage and then fail again at the next.
+
+1. **Schema.** Types, ranges, required fields and unknown fields. A typo gets the nearest valid name: `"mutd" is not a field of color.roles.` with `Fix: Rename it to "muted".`
+2. **References.** Everything the brand names must exist: palette steps (`"ink.650" refers to a step "650" that the "ink" palette does not have.`), gradients, surfaces, logo variants, image treatments, the transition's easing and duration, font weights a source can supply, and contrast waivers. Backgrounds must be opaque.
+3. **Values CSS can hold.** The resolved tokens must be writable as CSS.
+4. **Quality.** WCAG contrast of the role pairs on every surface: 4.5:1 for `fg` and `muted` on `bg` and `surface`, and for `accent-fg` on `accent`; 3:1 for `heading`, `accent`, `positive` and `negative`. The data palettes are checked on each surface's chart plate. Neighbouring categorical colours must stay apart with normal vision and under protanopia, deuteranopia and tritanopia.
+5. **Files.** The `name` matches the folder, font packages are installed in the workspace, and font, logo and background files exist in the brand folder.
+
+[Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/) explains the roles and surfaces these checks measure.
+
+## Errors and warnings
+
+An error stops the brand from loading. A warning doesn't, and `deck brand check` exits 0. Warnings are reported once the brand has no errors left. They cover:
+
+- a contrast pair you waived in `color.waivers` that misses 4.5:1 but reaches 3:1
+- neighbouring data colours that are apart, but closer than comfortable
+- `positive` and `negative` that merge under a colour-vision deficiency
+- a font `substitute` of another kind than its family, such as a serif standing in for a sans
+- a family whose source is `unavailable`, which renders in its fallback stack
+
+A waiver goes in `color.waivers`. It names the pair, a reason that the warning repeats and, optionally, a `surface`. Without a surface, the waiver applies on every surface. With `muted` set to `ink.500` (4.38:1 on `bg`):
+
+```ts
+waivers: [
+  { color: 'muted', on: 'bg', reason: 'Secondary text is set at 26px or larger.' },
+  { color: 'muted', on: 'surface', reason: 'Secondary text is set at 26px or larger.' },
+],
+```
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  warning color.roles.muted: On the default surface, muted #707786 on bg #fcfcfd has contrast 4.38:1, below 4.5:1 for secondary text; waived: Secondary text is set at 26px or larger.
+          Fix: Use it only for large text (24px and up), or raise the contrast and drop the waiver.
+  warning color.roles.muted: On the default surface, muted #707786 on surface #f4f5f8 has contrast 4.12:1, below 4.5:1 for secondary text on cards; waived: Secondary text is set at 26px or larger.
+          Fix: Use it only for large text (24px and up), or raise the contrast and drop the waiver.
+acme: is valid (0 errors, 2 warnings).
+```
+
+A waiver only lowers the bar to 3:1. A pair below 3:1 is still an error.
+
+## Look at what it resolved
+
+`deck brand <name>` prints the resolved values: the families, the type scale, the spacing and every role on every surface, in hex. `accent`, `positive` and `negative` only need 3:1, so small text in those roles uses a text colour held to 4.5:1. When a role reaches only 3:1 on a surface, the summary adds that small-text colour:
+
+```console
+$ deck brand default
+...
+  accent (dark): bg #2d4ae0, surface #2439b8, fg #ffffff, heading #ffffff, muted #dde5ff, accent #ffffff, accent-fg #2439b8, border #3f62f5, positive #a5f3fc, negative #ffa98f; small text: negative #ffcbbb
+...
+```
+
+The output above is cut to the `accent` surface. `deck brand <name> --json` prints every token, derived surfaces included.
+
+## Check it on slides
+
+A brand can pass every check and still overflow a layout, because its type scale or margins don't fit. Lint and render real decks in it without editing them:
+
+```sh
+deck lint launch-review --brand acme
+deck shot launch-review --brand acme
+```
+
+`deck shot` writes to `.deck/shots/launch-review@acme/`. For a new brand, use a deck with one slide per layout so every layout meets the brand. The [import workflow](/brands/import-a-brand/) builds one for you. See [lint](/review/lint/) for reading the findings and [screenshots](/review/screenshots/) for the stills.

@@ -1,0 +1,139 @@
+---
+/**
+ * PropsTable — when to use a component, chart or diagram component, and its props.
+ *
+ *   ## BarChart
+ *
+ *   <PropsTable of="BarChart" />
+ *
+ * Looks `of` up in src/data/components.json, charts.json and diagrams.json. Shows a still of a
+ * published slide that uses the component next to "Use when" (none for `Notes` and `Step`), then
+ * the entry's own props, then one line naming the shared props it also takes, then the example,
+ * one prop per line. Sets `id="props-<name>"`, which CatalogIndex links to.
+ *
+ *   <PropsTable shared="charts" />
+ *
+ * The shared props of a catalog (charts or diagrams), once per page, in full: the entries' "Also
+ * takes" lines link to it. Sets `id="props-shared"`.
+ */
+import "./deck.css";
+import { Image } from "astro:assets";
+import { Code } from "@/components/ui/code";
+import { prettyExample } from "./format";
+import { caller, catalog, componentSlide, deckUrl, entryProps, fail, findCatalogEntry, inline, literal, propsAnchor, type CatalogKind, type Prop } from "./data";
+
+interface Props {
+  of?: string;
+  /** A catalog whose shared props to list: `charts` or `diagrams`. Instead of `of`. */
+  shared?: CatalogKind;
+}
+
+const SHARED_ANCHOR = "props-shared";
+
+const { of, shared: sharedOf } = Astro.props;
+const c = caller("PropsTable", { of, shared: sharedOf }, Astro.url);
+if ((of === undefined) === (sharedOf === undefined)) fail(c, "of", "or `shared` is required, not both.");
+
+type Row = { name: string; prop: Prop; shared: boolean };
+let rows: Row[];
+let alsoShared: string[] = [];
+let entry: ReturnType<typeof findCatalogEntry>["entry"] | undefined;
+let shown: ReturnType<typeof componentSlide>;
+
+if (sharedOf !== undefined) {
+  if (sharedOf !== "charts" && sharedOf !== "diagrams") fail(c, "shared", "is `charts` or `diagrams`: the components share no props.");
+  rows = Object.entries(catalog(sharedOf).shared).map(([name, prop]) => ({ name, prop, shared: true }));
+} else {
+  const found = findCatalogEntry(c, of);
+  entry = found.entry;
+  const all = entryProps(entry, found.shared);
+  rows = all.filter((r) => !r.shared);
+  alsoShared = all.filter((r) => r.shared).map((r) => r.name);
+  shown = componentSlide(entry.name);
+}
+
+const extra = entry as (typeof entry & { data?: string; messages?: string[] }) | undefined;
+const limits = Object.entries(entry?.limits ?? {});
+---
+
+{entry ? (
+  <section class="dk-ref dk-props" id={propsAnchor(entry.name)} aria-label={`${entry.name} props`}>
+    <div class={shown ? "dk-layout-top" : undefined}>
+      <dl class="dk-guide">
+        {entry.inside && <div><dt data-pagefind-ignore>Goes in</dt><dd set:html={inline(entry.inside)} /></div>}
+        {entry.useWhen && <div><dt data-pagefind-ignore>Use when</dt><dd set:html={inline(entry.useWhen)} /></div>}
+        {entry.avoid && <div class="dk-guide-avoid"><dt data-pagefind-ignore>Avoid</dt><dd set:html={inline(entry.avoid)} /></div>}
+        {extra?.messages && extra.messages.length > 0 && <div><dt data-pagefind-ignore>Shows</dt><dd>{extra.messages.join(", ")}</dd></div>}
+        {extra?.data && <div><dt data-pagefind-ignore>Data</dt><dd set:html={inline(extra.data)} /></div>}
+        {limits.length > 0 && (
+          <div><dt data-pagefind-ignore>Limits</dt><dd>{limits.map(([k, v], i) => <Fragment><code>{k}</code> {literal(v)}{i < limits.length - 1 ? ", " : ""}</Fragment>)}</dd></div>
+        )}
+      </dl>
+      {shown && (
+        <figure class="dk-layout-still" data-pagefind-ignore>
+          <a href={deckUrl(shown.deck, shown.slide.id)} target="_blank" rel="noopener" data-astro-prefetch="false" data-nb-zoom="off" aria-label={`Open ${shown.deck} / ${shown.slide.id} in the deck`}>
+            <Image src={shown.still.image} alt={`A slide that uses <${entry.name}>: ${shown.slide.title}.`} widths={[480, 960]} sizes="(min-width: 900px) 272px, 100vw" loading="lazy" decoding="async" />
+          </a>
+          <figcaption class="dk-caption"><span class="dk-mono">{shown.deck} / {shown.slide.id}</span></figcaption>
+        </figure>
+      )}
+    </div>
+
+    {rows.length > 0 ? (
+      <div class="nb-table-scroll">
+        <table>
+          <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            {rows.map(({ name, prop }) => (
+              <tr>
+                <td data-nowrap>
+                  <code>{name}</code>
+                  {prop.required && <span class="dk-req">required</span>}
+                </td>
+                <td><code data-type>{prop.type}</code></td>
+                <td>{prop.default === null || prop.default === undefined ? <span class="dk-muted">—</span> : <code data-type>{literal(prop.default)}</code>}</td>
+                <td set:html={inline(prop.description)} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : alsoShared.length === 0 && (
+      <p class="dk-muted dk-small">No props.</p>
+    )}
+
+    {alsoShared.length > 0 && (
+      <p class="dk-small dk-shared-line">
+        {rows.length > 0 ? "Also takes the shared props " : "Takes only shared props: "}
+        {alsoShared.map((name, i) => (
+          <Fragment><a href={`#${SHARED_ANCHOR}`}><code>{name}</code></a>{i < alsoShared.length - 2 ? ", " : i === alsoShared.length - 2 ? " and " : "."}</Fragment>
+        ))}
+      </p>
+    )}
+
+    {entry.example && (
+      <Fragment>
+        <h3 class="dk-label" data-pagefind-ignore>Example</h3>
+        <Code code={prettyExample(entry.example)} lang="mdx" />
+      </Fragment>
+    )}
+  </section>
+) : (
+  <section class="dk-ref dk-props" id={SHARED_ANCHOR} aria-label={`Shared props of the ${sharedOf}`}>
+    <div class="nb-table-scroll">
+      <table>
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          {rows.map(({ name, prop }) => (
+            <tr>
+              <td data-nowrap><code>{name}</code></td>
+              <td><code data-type>{prop.type}</code></td>
+              <td>{prop.default === null || prop.default === undefined ? <span class="dk-muted">—</span> : <code data-type>{literal(prop.default)}</code>}</td>
+              <td set:html={inline(prop.description)} />
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+)}

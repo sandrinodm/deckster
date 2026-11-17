@@ -1,0 +1,40 @@
+---
+/**
+ * IconGrid — every icon name a slide can use, with a filter. From src/data/icons.json.
+ *
+ *   <IconGrid />
+ *
+ * Names only: each brand draws them from its own set (Lucide or Tabler), so the glyph depends on
+ * the brand. Selecting a name copies it.
+ */
+import "./deck.css";
+import { icons } from "./data";
+
+const data = icons();
+const sets = [...new Set(data.brands.map((b) => b.set))];
+---
+
+<div class="dk-icons" data-dk-icons>
+  <div class="dk-icons-bar">
+    <label class="dk-icons-search">
+      <span class="sr-only">Filter icon names</span>
+      <input type="search" placeholder={`Filter ${data.count} icon names`} autocomplete="off" spellcheck="false" data-dk-icons-filter />
+    </label>
+    <p class="dk-icons-count dk-small dk-muted" aria-live="polite" data-dk-icons-count>{data.count} icons</p>
+  </div>
+  <p class="dk-small dk-muted">
+    Sets by brand: {data.brands.map((b, i) => (
+      <Fragment><span class="dk-mono">{b.name}</span> {b.set}{i < data.brands.length - 1 ? ", " : ""}</Fragment>
+    ))}. Write a name as <code>&lt;Icon name="…" /&gt;</code>; {sets.length > 1 ? "the glyph comes from the deck's brand." : ""}
+  </p>
+  <ul class="dk-icons-list" data-dk-icons-list>
+    {data.icons.map((name) => (
+      <li><button type="button" class="dk-icon-name" data-name={name}>{name}</button></li>
+    ))}
+  </ul>
+  <p class="dk-small dk-muted" hidden data-dk-icons-empty>No icon name contains that text.</p>
+</div>
+
+<script>
+  import "./icon-grid.client";
+</script>

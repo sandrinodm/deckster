@@ -1,0 +1,126 @@
+---
+title: "Palettes, surfaces and typography"
+description: "Define a brand's colours, slide surfaces and type scale."
+sidebar:
+  order: 3
+---
+
+A brand's `color` section holds its palette, the ten roles that layouts paint with, the surfaces that remap those roles, and the data colours for charts. Its `typography` section sets three families and eleven type steps. This page shows how to write each part so the brand passes `deck brand check`. [Brands and surfaces](/concepts/brands-and-surfaces/) explains why the model works this way.
+
+<BrandGrid slide="lint-path" />
+
+## Palettes and roles
+
+`color.palette` holds named scales, each mapping a step to a literal colour. Step names are lowercase letters and digits (`50`, `600`, `base`). Palette names are kebab-case and can't reuse a role, type step or data palette name, because each becomes a Tailwind class.
+
+```ts
+palette: {
+  ink: { 0: '#ffffff', 25: '#fcfcfd', 50: '#f4f5f8', /* ... */ 900: '#161920', 950: '#0c0e13' },
+  cobalt: { 50: '#eef2ff', /* ... */ 600: '#2d4ae0', 700: '#2439b8', /* ... */ },
+  /* violet, amber, teal, cyan, rose, mint, coral */
+},
+```
+
+`color.roles` assigns the ten roles: `bg`, `surface` (cards and panels), `fg`, `heading`, `muted`, `accent`, `accent-fg` (text on an accent fill), `border`, `positive` and `negative`. All are required except `heading`, which falls back to `fg`. A role's value is one of:
+
+- a palette step: `'cobalt.600'`
+- a step with an opacity in percent: `'ink.0/12'`
+- a literal: `'#2d4ae0'` or `'oklch(0.62 0.19 259)'`
+
+Layouts and components paint only with roles, never with palette steps, so a slide picks up whatever the brand assigns.
+
+## Surfaces
+
+A surface is a set of role overrides that a slide selects with `surface:` in its frontmatter. Every brand has `default`, `inverse`, `accent` and `gradient`, so any slide works in any brand. `default` usually stays empty and uses the roles as they are:
+
+```ts
+surfaces: {
+  default: {},
+  inverse: { bg: 'ink.950', surface: 'ink.900', fg: 'ink.50', muted: 'ink.400', accent: 'cobalt.400', /* ... */ logo: 'reversed' },
+  accent: { bg: 'cobalt.600', /* ... */ },
+  gradient: { gradient: 'horizon', surface: 'ink.0/12', fg: 'ink.0', /* ... */ },
+},
+```
+
+A surface you leave out is derived from your roles, so a brand that only sets `default` still has all four. The `gradient` surface must name one of the brand's `gradients` (`linear`, `radial` or `mesh`, each with optional `grain` up to 0.4). You can add surfaces of your own: `fieldnote` adds `notebook`. Besides roles, a surface can set `logo` (the [logo variant](/brands/fonts-and-assets/#logos) shown on it), `data`, `code`, `diagram`, `shadow` and `background`.
+
+### Text colours on each surface
+
+Small text needs 4.5:1, but `accent`, `positive` and `negative` only need 3:1, because they mostly carry marks and large text. So each surface also gets an accent, positive and negative text colour held to 4.5:1. Where the role falls short, the CLI derives a lighter or darker shade. `deck brand` prints that shade after the surface's roles:
+
+```console
+$ deck brand default
+...
+  accent (dark): bg #2d4ae0, surface #2439b8, fg #ffffff, heading #ffffff, muted #dde5ff, accent #ffffff, accent-fg #2439b8, border #3f62f5, positive #a5f3fc, negative #ffa98f; small text: negative #ffcbbb
+...
+```
+
+Here `negative` (`#ffa98f`) reaches 3:1 on cobalt but not 4.5:1, so small negative text uses `#ffcbbb`. The output above is cut to that one surface. [Check a brand](/brands/check-a-brand/) lists every pair and its minimum.
+
+### Backgrounds behind a surface
+
+A surface's `background` paints up to six layers over its colour and gradient, in order. The files are SVG, PNG, WebP or JPEG inside the brand folder, usually `backgrounds/`:
+
+- `{ type: 'image', file, fit?, focal?, opacity?, treatment?, tint? }`: a photo or texture that fills the slide
+- `{ type: 'placed', file, aspect, anchor, width, offset?, opacity?, rotate? }`: a mark at a corner, an edge or the centre
+- `{ type: 'pattern', file, aspect, tile, offset?, opacity? }`: a repeating tile
+- `{ type: 'gradient', gradient, opacity? }`: one of the brand's gradients, such as a scrim over a photo
+
+`fieldnote`'s `notebook` surface rules the slide like paper and draws a margin line:
+
+```ts
+notebook: {
+  bg: 'paper.50',
+  background: [
+    { type: 'pattern', file: 'backgrounds/ruled.svg', aspect: 1, tile: 48, opacity: 0.9 },
+    { type: 'placed', file: 'backgrounds/margin.svg', aspect: 0.0037, anchor: 'left', width: 4, offset: { x: 84, y: 0 } },
+  ],
+},
+```
+
+A surface with an `image` or `pattern` layer must set its own `bg`: the colour the background reads as. Contrast checks, the chart plate and solid-colour exports measure against that `bg`. Every `bg` must be opaque.
+
+## Data colours
+
+`color.data` holds the chart palettes:
+
+- `categorical`: 3 to 12 colours for unordered series, in the order charts use them
+- `sequential`: at least 3 colours from low to high
+- `diverging`: at least 3 colours from one extreme through a neutral midpoint to the other
+- `context`: the muted colour for everything that isn't highlighted
+
+The check measures them on each surface's chart plate, the opaque panel charts draw behind themselves. Neighbouring categorical colours must be at least 10 apart (OKLab distance ×100) with normal vision and 8 apart under protanopia, deuteranopia and tritanopia, and it warns below 15. A sequential palette must change lightness in one direction. A diverging palette must move away from its midpoint in lightness on both sides, and its two ends must stay 12 apart under protanopia and deuteranopia. `context` must reach between 1.4:1 and 4.5:1 on the plate. A surface can replace any palette, and its `plate`, under its own `data` key. A failure names both colours:
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  error   color.data.categorical[1]: #3f62f5 is too close to its neighbour #2d4ae0 under normal (ΔE 6.8, wants 10), protanopia (ΔE 5.8, wants 8), deuteranopia (ΔE 5.8, wants 8), tritanopia (ΔE 6.3, wants 8).
+          Fix: Replace one of the two colors with one that differs in lightness as well as hue; no reordering separates every neighbour.
+...
+```
+
+That run set the second categorical colour of `default` to `cobalt.500`; the output is cut after the first error.
+
+## Type
+
+`typography.families` sets `display`, `body` and `mono` ([fonts and assets](/brands/fonts-and-assets/) covers where their files come from). `typography.scale` sets all eleven steps: `display`, `headline`, `title`, `lead`, `body`, `small`, `caption`, `label`, `stat`, `quote` and `code`. Each step is `{ family, size, lineHeight, tracking, weight }` plus optional `case` (`none` or `upper`), `style`, OpenType `features` such as `tnum`, and variable-font `axes`:
+
+```ts
+label: { family: 'display', size: 22, lineHeight: 1.2, tracking: 0.07, weight: 640, case: 'upper', axes: { opsz: 24, wdth: 100 } },
+```
+
+Sizes are canvas pixels on the 1920×1080 slide, and none may be below 20. `lineHeight` runs from 0.7 to 2.5, `tracking` from -0.1 to 0.5 em, and `weight` from 1 to 1000. The two brands below differ most at the top of the scale: `default` sets display 160px, headline 80px, title 48px and body 36px, and `nocturne` sets 168px, 84px, 56px and 34px.
+
+## Motion
+
+`motion` holds named `easings` (cubic-bezier control points `[x1, y1, x2, y2]`), named `durations` in milliseconds (at most 3000), and the default slide `transition`: a `kind` (`none`, `fade`, `slide`, `rise`, `push`, `cover`, `wipe` or `zoom`) with a duration and easing by name. The kit's entrances, step reveals and chart builds read the easings `standard`, `emphasized` and `exit` and the durations `fast`, `base` and `slow`, so define all six. A brand that leaves some out still loads with derived values. `default` uses `{ kind: 'fade', duration: 'base', easing: 'standard' }` with `base` at 280.
+
+## The default brand
+
+<BrandTokens name="default" />
+
+## The nocturne brand
+
+<BrandTokens name="nocturne" />
+
+Every field, with its type and limits, is in the [brand schema](/reference/brand-schema/).

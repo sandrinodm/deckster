@@ -1,0 +1,102 @@
+---
+title: "Text and fitting"
+description: "How slide text is sized to fit its box and how to control it."
+sidebar:
+  order: 3
+---
+
+Write slide text that fits the first time, and fix a slide whose text is too long, too small or cut off. You never set a font size: the layout picks it from the brand's type scale and steps it down when the content is long, and `deck lint` tells you when it still does not fit.
+
+## How slide text is sized
+
+Every slide is drawn on a 1920x1080 canvas and scaled to the screen, so sizes are canvas pixels. The brand's type scale names the sizes; the `default` brand's (the output goes on with spacing and surfaces, cut here):
+
+```console
+$ deck brand default
+Default (brands/default/brand.ts)
+Fonts: display Bricolage Grotesque, body Inter, mono JetBrains Mono
+Type: display 160px, headline 80px, title 48px, lead 40px, body 36px, small 26px, caption 24px, label 22px, stat 184px, quote 84px, code 28px
+...
+```
+
+Each layout sets each part in one of these steps: a content slide's title in `headline`, its eyebrow in `label`, running text in `body`, a statement in `display`. No text may be smaller than 20px on the canvas.
+
+The kit adjusts these steps in three ways:
+
+- **Titles and other single texts step down instead of wrapping further.** A long title shrinks in up to four visible steps (to 88%, 78% and 70% of its size) rather than taking a third line.
+- **Sparse text steps up.** Running text with few words is set one or two steps larger (`lead` or `title` instead of `body`) when it still leaves room at the bottom.
+- **Some layouts fit their whole content to the region.** They render at their largest level and, while the content overflows, step down one level before the slide is shown.
+
+## Layouts that fit their content
+
+| Layout | What steps down when the content is long |
+| --- | --- |
+| `statement` | Up to three lines are set in the display style; a longer statement is set at quote size, in four lines at most. With `size: giant`, the statement is set as large as fits, larger than the display style. |
+| `cards` | The card text goes from the body size to the small size, then to compact cards (smaller tile and title, less padding). |
+| `columns` | The items go from body to small size, then compact columns, then the caption size for a full board under a long title. |
+| `steps` | Three steps start at the lead size, four at body, five at small; the last level is compact. |
+| `timeline` | The items step down through the timeline's levels, largest first. |
+| `bento` | Three tiles start at the body size, more at small; when the text does not fit the whole grid steps down, to compact tiles last. |
+| `table` | A wide or long table steps down in size, never below the brand's smallest type. |
+| `team` | Names get a step smaller and every line the small size, then smaller still. |
+| `proof` | The metrics close up, then set their labels and figures a step smaller. |
+| `shift` | The old state's text and both figures get a step smaller, then the new heading too. |
+| `matrix` | The note beside the map steps down from the lead size. |
+| `equation` | The whole row of figures and signs scales down together. |
+| `screen` | The sentence and callout labels beside the screen step down. |
+| `ask` | The amount steps down to the panel's width, and the plan until it fits. |
+
+A long and a short `statement` side by side:
+
+<SlideShot deck="exemplars" slide="hottest-afternoon" alt="A statement slide on a dark surface: 'An Eastgate bus stop hit 51 °C. Under Riverside's oaks it was 38 °C.' set very large in three lines across the left of the slide." />
+
+<SlideShot deck="exemplars" slide="night-nurse" alt="A statement slide on a blue gradient: a 23-word quote from a charge nurse set at the smaller quote size in four lines, with an opening quote mark and an attribution under a short rule." />
+
+`size: giant` is for the one line a talk is remembered by, up to five words:
+
+<SlideExample deck="exemplars" slide="giant-left" />
+
+## When text is too long anyway
+
+**Before rendering**, the build checks each layout's title limit and `deck lint` checks the slot budgets, in words, bullets and lines of code. A title over the limit stops the build:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/risks.mdx
+  error   schema (risks): title: The cards layout sets at most 60 characters, got 74.
+          Fix: Shorten the title to the point itself and move detail into the body or the notes.
+
+launch-review: 1 error, 0 warnings.
+```
+
+and a slot over its budget is a `content-budget` error:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/claim.mdx
+  error   content-budget (claim): The body slot holds 31 words; its layout allows 24.
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+launch-review: 1 error, 0 warnings in 2 slides (2 steps checked).
+```
+
+**After rendering**, `deck lint` measures every step of every slide:
+
+| Rule | What it finds |
+| --- | --- |
+| `canvas-overflow` | Content past the edge of the canvas, clipped. |
+| `container-overflow` | Content larger than its own container, clipped or spilling out. |
+| `text-truncated` | Text cut short with an ellipsis or a line clamp. |
+| `text-overlap` | Two pieces of text drawn over each other. |
+| `min-font-size` | Text below the 20px minimum on the canvas. |
+
+All five are errors. How to read a finding and fix it is on [lint](/review/lint/); why budgets count words is on [layouts and slots](/concepts/layouts-and-slots/).
+
+## Keep text short
+
+Write the title as the point, within the layout's limit (60 characters on `cards`, 48 on `code`; every layout's limit and budgets are on [layouts](/reference/layouts/)). Make one point per slide and split a slide that makes two. Move detail into the notes, where the speaker can say it. When the content is a list or a comparison, pick a layout made for it from `deck layouts`.
+
+## Automatic typography
+
+- Straight quotes in prose and frontmatter text become typographic ones: `"` and `'` open after a space, a bracket or a dash and close elsewhere, and an apostrophe before a short year (`'26`) stays an apostrophe. Code, commands, URLs and QR values keep their straight quotes, and hyphens and dashes are left as written, so a flag such as `--env` survives.
+- On the `statement` layout, words you mark with `*...*` are set in italics; `emphasis: underline` sets them in the accent over a heavy rule instead, which reads on every surface. Mark the two or three words that carry the claim.

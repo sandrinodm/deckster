@@ -1,0 +1,188 @@
+---
+title: "Your first deck"
+description: "Add a slide, steps and speaker notes, lint the deck and export it."
+sidebar:
+  order: 3
+---
+
+This page takes the `launch-review` deck from the [quickstart](/get-started/quickstart/) to three slides: a row of numbers, a list revealed one point at a time, and speaker notes on every slide. You fix one lint warning on the way and finish with a PNG, a PDF and a PowerPoint file. Keep `deck dev launch-review` running in one terminal and run the commands below in a second one, inside `talks`.
+
+## Add a slide with numbers
+
+<Steps>
+
+1. Add a slide that uses the `stats` layout:
+
+   ```console
+   $ deck new slide launch-review results --layout stats
+   decks/launch-review/slides/results.mdx
+   decks/launch-review/deck.config.ts
+   ```
+
+   The CLI writes `slides/results.mdx` from the layout's example, with the title made from the id, and appends `results` to `slides` in `deck.config.ts`. `deck layouts` lists the 32 layouts you can pass to `--layout`; without it the slide uses `default`.
+
+2. Open `decks/launch-review/slides/results.mdx` and replace the example with your numbers. The `stats` layout takes two to four `stats`, each with a `value` (up to 8 characters) and a `label`; `delta`, `tone` and `highlight` are optional. Write the title as the point the numbers make:
+
+   ```mdx
+   ---
+   layout: stats
+   title: Beta retention beat the target by 21 points
+   budget: 1m
+   stats:
+     - value: "4,100"
+       label: teams signed up in the first week
+     - value: "68%"
+       label: still active after 30 days
+       delta: "+21 pts vs. target"
+       tone: positive
+       highlight: true
+     - value: "1.9 days"
+       label: median time to first deck
+   ---
+
+   <Footnote>Beta cohort, 1 to 31 October.</Footnote>
+
+   <Notes>
+   Lead with retention: it is the number the board asked about.
+   </Notes>
+   ```
+
+   Saved, the slide looks like this:
+
+   ![The results slide in the default brand: the title "Beta retention beat the target by 21 points" above three figures in a row, 4,100 teams signed up in the first week, 68% still active after 30 days in blue with "+21 pts vs. target" under it, and 1.9 days median time to first deck, with "Beta cohort, 1 to 31 October." at the bottom left and "2 / 2" at the bottom right.](../../../assets/tutorial/launch-review-results.webp)
+
+   Save, then press the right arrow to move to the new slide (or open `#/results` in the address bar): the browser stays on the slide it was showing when the deck gained one. From then on the slide reloads each time you save. `budget: 1m` is the time you plan to spend on it: `deck lint` reports an error when the budgets add up to more than the deck's `duration` (20 minutes here). Every field each layout takes is in the [layout reference](/reference/layouts/).
+
+</Steps>
+
+## Reveal points one at a time
+
+A `<Step at={n}>` block appears from step `n` of its slide on. Each slide starts at step 0, and the arrow keys move through the steps before moving to the next slide. The `steps` slide of the hello deck shows it:
+
+<SlideExample deck="hello" slide="steps" />
+
+<Steps>
+
+1. Add a slide with the `default` layout:
+
+   ```console
+   $ deck new slide launch-review next-steps
+   decks/launch-review/slides/next-steps.mdx
+   decks/launch-review/deck.config.ts
+   ```
+
+   Its example already uses `<Step>`.
+
+2. Replace its content with three points, one per step, and leave out the notes for now:
+
+   ```mdx
+   ---
+   layout: default
+   title: Next steps
+   budget: 1m
+   ---
+
+   ## Next steps
+
+   <Step at={1}>
+   - Open the beta to every team on 1 December.
+   </Step>
+
+   <Step at={2}>
+   - Ship the export to PowerPoint before the sales kick-off.
+   </Step>
+
+   <Step at={3}>
+   - Review retention again at 90 days.
+   </Step>
+   ```
+
+   On the `default` layout the `##` heading is what shows on the slide; `title:` names the slide in the sidebar and the presenter window.
+
+   In the browser, go to the slide (press `g`, type 3, press Enter), then press the right arrow three times: one point appears per press.
+
+</Steps>
+
+This is the same build, frame by frame, on a slide of the showcase deck:
+
+<StepStrip deck="showcase" slide="no-styling" />
+
+[Builds](/write-slides/builds/) covers step effects and building charts, diagrams and code.
+
+## Fix a lint finding
+
+<Steps>
+
+1. Lint the deck:
+
+   ```console
+   $ deck lint launch-review
+   decks/launch-review/slides/next-steps.mdx
+     warning missing-notes (next-steps): The slide has no speaker notes.
+             Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
+
+   launch-review: 0 errors, 1 warning in 3 slides (6 steps checked).
+   ```
+
+   Each finding names the file, the severity, the rule (`missing-notes`), the slide and the fix. Warnings leave the exit code at 0; errors make it 1. The deck has six steps: one each for `title` and `results`, four for `next-steps` (0 to 3).
+
+2. Do what the `Fix:` line says. Add notes at the end of `next-steps.mdx`:
+
+   ```mdx
+   <Notes>
+   Three dates, one per key press. Ask for a decision on the first one.
+   </Notes>
+   ```
+
+   Notes show in the presenter window and never on the slide. [Speaker notes](/write-slides/speaker-notes/) has more.
+
+3. Lint again:
+
+   ```console
+   $ deck lint launch-review
+   launch-review: no problems in 3 slides (6 steps checked).
+   ```
+
+</Steps>
+
+Reading findings is on [Lint](/review/lint/), and every rule with its fix on [lint rules](/reference/lint-rules/).
+
+## Get pictures and files out
+
+<Steps>
+
+1. Take a screenshot of one slide, by id or by number:
+
+   ```console
+   $ deck shot launch-review results
+   /Users/you/talks/.deck/shots/launch-review/02-results.png
+   ```
+
+   The CLI prints the absolute path of each 1920×1080 PNG it writes (yours starts with your own workspace path). Files are named by position and id, `NN-id.png`. With `--steps` you get one per step, such as `03-next-steps.step0.png` to `03-next-steps.step3.png`; without it, each slide is captured at its last step. See [Screenshots](/review/screenshots/).
+
+2. Export the deck:
+
+   ```console
+   $ deck export launch-review
+   /Users/you/talks/.deck/exports/launch-review/launch-review.pdf (3 pages, 3 bookmarks, 0 slide links, 0 external links)
+   /Users/you/talks/.deck/exports/launch-review/launch-review.pptx (3 slides, hybrid mode, masters: default, gradient, fonts embedded: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Bricolage Deck Stat, Inter Deck Caption, Inter Deck Lead)
+   /Users/you/talks/.deck/exports/launch-review/fonts: 6 static TrueType instance(s) in 6 families (Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Bricolage Deck Stat, Inter Deck Caption, Inter Deck Lead), cut from the brand fonts at the exact axes the deck uses and embedded in the PPTX; install them where an app ignores embedded fonts (Keynote, Google Slides, LibreOffice).
+   ```
+
+   Without a format flag, `deck export` writes the PDF and the PowerPoint file to `.deck/exports/launch-review/`, plus the font files the PowerPoint file embeds. Each page or slide shows a slide at its last step. [PDF](/export-and-publish/pdf/) and [PowerPoint](/export-and-publish/powerpoint/) cover the options.
+
+</Steps>
+
+Your deck now has three slides, and `deck.config.ts` lists them in order:
+
+```ts
+slides: ['title', 'results', 'next-steps'],
+```
+
+To reorder slides, reorder that list. [MDX slides](/write-slides/mdx-slides/) covers what else a slide file can hold.
+
+## Next
+
+- Give the talk: press `p` in the browser for the presenter window, or run `deck present launch-review`. See [presenter tools](/present/presenter-tools-and-shortcuts/).
+- Share it as a link: [build and host](/export-and-publish/build-and-host/).
+- Let an agent write the next one: [skills](/ai-agents/skills/).

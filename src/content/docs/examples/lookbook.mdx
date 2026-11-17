@@ -1,0 +1,68 @@
+---
+title: "Lookbook"
+description: "One talk that shows every layout and option, every chart, diagram and component, and every transition and step effect."
+sidebar:
+  order: 1.5
+---
+
+The lookbook is one deck that shows everything the kit can make: every layout and every layout option, every chart, diagram and slide component, all four surfaces, all eight slide transitions, the five `<Step>` effects, `focus`, a count-up and a `<Morph>` pair. Use this page to find a slide that looks like the one you need and copy it into your own deck.
+
+<DeckEmbed deck="lookbook" slide="cover" />
+
+It tells one story, so it reads as a talk rather than a specimen sheet: "Same hour, no van", the launch-day talk of Wrenhaul, a cargo-bike delivery company. **Wrenhaul, its people, customers and every figure are invented.** The deck has 137 slides in 12 parts and 268 steps. Its slides' budgets add up to 94 minutes 35 seconds, and `deck.config.ts` sets `duration: '100m'`. The whole deck is at [/decks/lookbook/](/decks/lookbook/).
+
+## Find what you need
+
+- **Parts are named after the job a slide does.** Look in the part named after your problem: "Compare and decide", "Prove it with a number".
+- **Slide ids say what the slide shows**, such as `split-photo-left-bleed`, `chart-waterfall` or `motion-wipe`. They are also the file names in `slides/`.
+- **The first line of every slide's speaker notes names its recipe**: the layout and the options that make the slide, and when to use it. Open the presenter window, or read the `<Notes>` block in the source.
+
+| # | Part | What it shows |
+| --- | --- | --- |
+| 1 | [Open](/decks/lookbook/#/part-open) | Covers with a picture beside or behind the title, a type-only cover, agendas, a speaker with and without a portrait, and the other divider forms |
+| 2 | [Say one thing](/decks/lookbook/#/part-say) | Statements, quotes with and without a portrait, and a picture across the slide with its text in each position |
+| 3 | [Explain](/decks/lookbook/#/part-explain) | The `default` and `content` layouts, text beside a picture, a phone screen or an animation in each ratio, cards, steps and bento grids, with and without builds |
+| 4 | [Compare and decide](/decks/lookbook/#/part-compare) | Comparisons with winners and a recommended option, a shift from old to new, two-by-two matrices, tables with highlighted rows and columns |
+| 5 | [Prove it with a number](/decks/lookbook/#/part-numbers) | Stats rows, a big number that counts up, before and after, sums built term by term, progress, a pictogram and a sparkline |
+| 6 | [Show the pattern](/decks/lookbook/#/part-charts) | One chart per slide: line, bar, donut, waterfall, area, slope, funnel, table, scatter and heatmap |
+| 7 | [Show how it works](/decks/lookbook/#/part-how) | Flow diagrams with journeys, packets and states, a sequence, layers, a cycle, a tree, a diagram timeline and a drawn map; code with stepped highlights, moves, diffs and a terminal; a mini app and a live widget |
+| 8 | [Show the product](/decks/lookbook/#/part-product) | Product screens in a browser, phone, laptop or no frame with numbered callouts, galleries, a screenshot that morphs between slides, and a cued video |
+| 9 | [People and proof](/decks/lookbook/#/part-people) | Founders, a row, a grid and a roster of people, logo walls, and case studies with a customer's quote and numbers |
+| 10 | [Plan ahead and ask](/decks/lookbook/#/part-ahead) | Timelines (a history, a roadmap, a slipped milestone), a board of now, next and later, and the ask |
+| 11 | [Motion](/decks/lookbook/#/part-motion) | The same three beats set as statements, with each `<Step>` effect (rise, fade, scale, blur, wipe) and with `focus` |
+| 12 | [Close](/decks/lookbook/#/part-close) | Link cards, a download, a code to scan, and the closing slide in its two forms |
+
+Two slides from the middle of the deck:
+
+<SlideShot deck="lookbook" slide="chart-waterfall" alt="A waterfall chart titled 'Batching cut €0.58 a drop, more than any other change' steps from €3.40 in October 2025 down through flock batching, denser hubs and faster handovers, up for a rider pay rise, to €2.34 in October 2026, with a short explanation in a side panel." />
+
+<SlideShot deck="lookbook" slide="bento-hub" alt="A bento slide titled 'One hub, Old Town, seen from four sides' with a large cobalt tile reading 680 drops a day, smaller tiles for €1.98 to run a drop and 98.9% on time, and an illustration of cargo bikes in front of a shop." />
+
+## Copy a slide
+
+Here is a split slide with a picture that bleeds off the left edge. The source tab is the file to copy; the first line of its notes is the recipe:
+
+<SlideExample deck="lookbook" slide="split-photo-left-bleed" />
+
+<Steps>
+
+1. Copy the slide file from the source tab, or from `decks/lookbook/slides/<id>.mdx` in the [repository](https://github.com/sandrinodm/deckster/tree/main/decks/lookbook), into your deck's `slides/` folder.
+
+2. Copy the files the slide names. Pictures are in the lookbook's `assets/` folder (this one uses `../assets/scenes/handover.svg`), and their sources and licences are in `assets/CREDITS.txt`. A few chart slides read CSV files from `data/`, and the mini app and live widget slides import code from `lib/` and `apps/`. Keep the same relative paths, or replace the files with your own.
+
+3. Add the slide id to `slides` in your `deck.config.ts`, rewrite the text for your talk, and run `deck lint <deck>`.
+
+</Steps>
+
+To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). It then lints clean with the npm CLI:
+
+```console
+$ deck lint lookbook
+lookbook: no problems in 137 slides (268 steps checked).
+```
+
+## How it stays complete
+
+A test in the repository, [`lookbook-coverage.test.ts`](https://github.com/sandrinodm/deckster/blob/main/packages/cli/src/lookbook/lookbook-coverage.test.ts), reads the kit's catalogs and the lookbook's slide files and fails with a list of what the deck does not show yet: layouts, layout option values, `reveal: true`, surfaces, transitions, step effects, `focus`, a `<Morph>` pair, charts, diagram components and slide components. A layout or component added to the kit fails that test until the lookbook has a slide for it.
+
+Every layout's fields, slots and budgets are in the [layout reference](/reference/layouts/). The motion part pairs with [Builds](/write-slides/builds/) and [Transitions and morphs](/write-slides/transitions-and-morphs/).

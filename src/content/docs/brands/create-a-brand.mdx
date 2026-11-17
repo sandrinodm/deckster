@@ -1,0 +1,115 @@
+---
+title: "Create a brand"
+description: "Write a brand.ts for your own look."
+sidebar:
+  order: 2
+---
+
+A brand is one file, `brands/<name>/brand.ts`, plus its logo and font files. This page takes you from a copy of the `default` brand to a brand of your own that passes `deck brand check` and renders your decks. It doubles as the checklist for reviewing a brand an agent wrote.
+
+## What a brand file looks like
+
+`brand.ts` default-exports one `defineBrand({...})` call from `@deckster/brand`. `defineBrand` returns its argument unchanged and exists for type checking. The file is data, and the CLI validates it every time it loads the brand. This is the start of `default`:
+
+```ts
+import { defineBrand } from '@deckster/brand';
+
+export default defineBrand({
+  name: 'default',
+  label: 'Default',
+  color: {
+    palette: {
+      ink: { 0: '#ffffff', 25: '#fcfcfd', 50: '#f4f5f8', /* ... */ 950: '#0c0e13' },
+      cobalt: { 50: '#eef2ff', /* ... */ 600: '#2d4ae0', /* ... */ 900: '#1b286b' },
+    },
+    roles: { bg: 'ink.25', surface: 'ink.50', fg: 'ink.900', muted: 'ink.600', accent: 'cobalt.600', /* ... */ },
+    surfaces: { default: {}, inverse: { bg: 'ink.950', /* ... */ }, /* accent, gradient */ },
+    data: { categorical: [/* ... */], sequential: [/* ... */], diverging: [/* ... */], context: 'ink.300' },
+  },
+  // gradients, typography, shape, spacing, logo, icons, imagery, chrome, motion
+});
+```
+
+Every top-level section is required except `code`, `diagram` and `charts`. When you leave those three out, they are derived from the roles and the type scale. The [brand schema](/reference/brand-schema/) lists every field.
+
+## From a copy to a checked brand
+
+These steps make a brand called `acme` in a workspace called `talks`.
+
+<Steps>
+
+1. Get a copy of the [repository](https://github.com/sandrinodm/deckster/tree/main/brands) once, with git or as a ZIP download from GitHub:
+
+   ```sh
+   git clone --depth 1 --branch v0.3.0 https://github.com/sandrinodm/deckster.git ~/deckster
+   ```
+
+2. Copy a published brand from it into `brands/acme/`. `default` is the plainest starting point. Delete `package.json` and `tsconfig.json`, which point into the monorepo.
+
+   ```sh
+   mkdir -p brands
+   cp -R ~/deckster/brands/default brands/acme
+   rm brands/acme/package.json brands/acme/tsconfig.json
+   ```
+
+3. Run `deck brand check acme`. The copy still calls itself `default`, and `name` must match the folder:
+
+   ```console
+   $ deck brand check acme
+   brands/acme/brand.ts
+     error   name: The brand is named "default" but lives in brands/acme/.
+             Fix: Set `name: "acme"`, or rename the folder to brands/default/.
+   acme: cannot be used (1 error, 0 warnings).
+   ```
+
+4. Set `name: 'acme'` and a `label`, the name people read. Check again:
+
+   ```console
+   $ deck brand check acme
+   brands/acme/brand.ts
+   acme: is valid (0 errors, 0 warnings).
+   ```
+
+5. Replace the colours. Put your scales in `color.palette`, point the ten roles at them, and give the `inverse`, `accent` and `gradient` surfaces their own roles. You can also delete a surface and let the CLI derive it. Replace the `data` palettes too. [Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/) shows how each part works. Run `deck brand check acme` after each change. It checks contrast on every surface, and each fix names a colour that passes.
+
+6. Set the three font families and the type scale. The CLI carries Inter, JetBrains Mono and Bricolage Grotesque. A family from any other Fontsource package needs `npm install <package>` in the workspace folder, and `deck brand check` prints the exact command. [Fonts and assets](/brands/fonts-and-assets/) covers the other font sources and the `substitute` each family takes.
+
+7. Replace the files in `logos/` and update each variant's `file` and `aspect` (its width divided by its height). A variant whose file is missing fails the check:
+
+   ```console
+   $ deck brand check acme
+   brands/acme/brand.ts
+     error   logo.variants.reversed.file: logos/mark-reversed.svg does not exist in brands/acme/.
+             Fix: Put the logo itself (an SVG, PNG or WebP, not a link to a file elsewhere) in the brand folder, usually logos/, or fix the path.
+   acme: cannot be used (1 error, 0 warnings).
+   ```
+
+8. Set `icons.set` to `lucide` or `tabler`, the two Iconify sets the 0.3.0 CLI carries, and `icons.strokeWidth` to a value from 0.5 to 4.
+
+9. Look at the brand on a real deck, then render stills:
+
+   ```sh
+   deck dev launch-review --brand acme
+   deck shot launch-review --brand acme
+   ```
+
+   `deck shot` writes one PNG per slide to `.deck/shots/launch-review@acme/`. A deck with one slide per layout shows the most, so lint and shoot one with `--brand acme` before you call the brand done.
+
+10. When it looks right, set `brand: 'acme'` in the deck's `deck.config.ts`, or start new decks with `deck new <deck> --brand acme`.
+
+</Steps>
+
+<Aside type="caution" title="Icon sets">
+`deck brand check` accepts any Iconify set name in `icons.set`, but the CLI reads icon data from the folder it's installed in, and 0.3.0 ships only `lucide` and `tabler`. With another set, such as `ph`, the first `<Icon>`, layout `icon` or diagram node `icon` makes `deck lint` and `deck dev` fail with `needs the "ph" icon set, which is not installed`. Installing `@iconify-json/ph` in the workspace doesn't fix it for a globally installed CLI. When the CLI is installed in the workspace, `npm install @iconify-json/ph` next to it makes `deck lint` pass.
+</Aside>
+
+## What stops a brand from loading
+
+A brand that fails its checks doesn't load. `deck dev`, `build`, `shot` and `lint` stop and print the brand file, the field and the fix. The checks run in stages, and you see every problem from the first stage that finds one:
+
+- **Schema:** a missing field, a value out of range, or an unknown field (the fix names the nearest valid one).
+- **References:** a palette step, gradient, surface, logo variant, image treatment, easing, duration or font weight that the brand uses but doesn't define.
+- **Quality:** contrast between role pairs on every surface, and data colours that can't be told apart with normal vision or a colour-vision deficiency.
+- **Files:** the `name` matches the folder, font packages are installed, and font and logo files exist.
+
+[Check a brand](/brands/check-a-brand/) shows the output of each stage and the warnings that don't stop a brand. To have an agent build the brand from an existing template, PDF or website, see [import a brand](/brands/import-a-brand/).

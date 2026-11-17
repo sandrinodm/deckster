@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="640" viewBox="0 0 760 640" role="img" aria-label="One Vite config turns a deck into every output, from the dev server to PPTX">
+  <title>One Vite config turns a deck into every output, from the dev server to PPTX</title>
+  <style>
+svg{--ink:#161514;--quiet:#6b6862;--edge:#c4c2bf;--grid:rgba(22,21,20,.12);--accent:#ff4f2b;--tint:rgba(22,21,20,.045);--paper:#ffffff}
+text{font-family:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:13px;fill:var(--ink)}
+.title{font-size:15px;font-weight:600}
+.name{font-weight:600}
+.note{font-size:11.5px;fill:var(--quiet)}
+.small{font-size:11.5px}
+.strong{font-weight:600}
+.mid{text-anchor:middle}
+.end{text-anchor:end}
+.code{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.line{fill:none;stroke:var(--edge);stroke-width:1.25}
+.head{fill:var(--edge)}
+.box{fill:none;stroke:var(--edge);stroke-width:1.25}
+.key{fill:var(--accent);fill-opacity:.08;stroke:var(--accent);stroke-width:2}
+.chip{fill:var(--tint);stroke:var(--edge);stroke-width:1}
+.callout{fill:var(--tint);stroke:var(--edge);stroke-width:1.25}
+</style>
+  <defs>
+    <marker id="build-pipeline-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="head" d="M0 0L10 5L0 10z"/>
+    </marker>
+  </defs>
+  <text class="title" x="24" y="34">One Vite config turns a deck into every output, from the dev server to PPTX</text>
+  <text class="note" x="24" y="54">What deck dev, deck build, deck shot and deck export run in deckster 0.3.0</text>
+  <rect class="box teal" x="24" y="72" width="216" height="72" rx="8"/>
+  <text class="name" x="36" y="96">Slide files</text>
+  <text class="note" x="36" y="112">slides/*.mdx and *.tsx, only</text>
+  <text class="note" x="36" y="128">the ones the config lists</text>
+  <g class="line"><path d="M132 144V182" marker-end="url(#build-pipeline-arrow)"/></g>
+  <rect class="box teal" x="272" y="72" width="216" height="72" rx="8"/>
+  <text class="name" x="284" y="96">deck.config.ts</text>
+  <text class="note" x="284" y="112">Title, brand and the order</text>
+  <text class="note" x="284" y="128">of the slides</text>
+  <g class="line"><path d="M380 144V182" marker-end="url(#build-pipeline-arrow)"/></g>
+  <rect class="box amber" x="520" y="72" width="216" height="72" rx="8"/>
+  <text class="name" x="532" y="96">brand.ts</text>
+  <text class="note" x="532" y="112">brands/&lt;name&gt;/, resolved and</text>
+  <text class="note" x="532" y="128">checked by @deckster/brand</text>
+  <g class="line"><path d="M628 144V182" marker-end="url(#build-pipeline-arrow)"/></g>
+  <rect class="key" x="24" y="184" width="712" height="72" rx="8"/>
+  <text class="name" x="40" y="208">@deckster/vite-plugin</text>
+  <text class="small" x="40" y="226">Checks the config and every slide&#x27;s frontmatter against the layout contracts, compiles MDX</text>
+  <text class="small" x="40" y="242">with the kit&#x27;s extension, and serves virtual:deck, virtual:deck/plugins and the brand modules</text>
+  <g class="line"><path d="M380 256V294" marker-end="url(#build-pipeline-arrow)"/></g>
+  <rect class="box zone violet" x="24" y="296" width="712" height="128" rx="8"/>
+  <text class="name" x="40" y="320">The page: the engine plus its runtime plugins</text>
+  <rect class="box violet" x="40" y="336" width="216" height="72" rx="8"/>
+  <text class="name" x="52" y="360">Engine</text>
+  <text class="note" x="52" y="376">&lt;Deck&gt; on a 1920x1080 canvas:</text>
+  <text class="note" x="52" y="392">steps, URL hash, window.__deck</text>
+  <rect class="box violet" x="272" y="336" width="216" height="72" rx="8"/>
+  <text class="name" x="284" y="360">Kit</text>
+  <text class="note" x="284" y="376">Layouts, components and motion;</text>
+  <text class="note" x="284" y="392">its catalog is checked in Node</text>
+  <rect class="box violet" x="504" y="336" width="216" height="72" rx="8"/>
+  <text class="name" x="516" y="360">Brand runtime</text>
+  <text class="note" x="516" y="376">CSS variables per surface,</text>
+  <text class="note" x="516" y="392">useBrand() for raw values</text>
+  <g class="line"><path d="M88 424V542" marker-end="url(#build-pipeline-arrow)"/></g>
+  <text class="note code" x="96" y="448">deck dev</text>
+  <g class="line"><path d="M234 424V542" marker-end="url(#build-pipeline-arrow)"/></g>
+  <text class="note code" x="242" y="448">deck build</text>
+  <g class="line"><path d="M526 424V462" marker-end="url(#build-pipeline-arrow)"/></g>
+  <text class="note code" x="534" y="448">deck shot, deck export</text>
+  <rect class="box green" x="316" y="464" width="420" height="40" rx="8"/>
+  <text class="small" x="332" y="488">Quiet dev server, headless Chromium at ?static#/1/0</text>
+  <g class="line"><path d="M380 504V542" marker-end="url(#build-pipeline-arrow)"/></g>
+  <g class="line"><path d="M526 504V542" marker-end="url(#build-pipeline-arrow)"/></g>
+  <g class="line"><path d="M672 504V542" marker-end="url(#build-pipeline-arrow)"/></g>
+  <rect class="box rose" x="24" y="544" width="128" height="72" rx="8"/>
+  <text class="name" x="36" y="568">Dev server</text>
+  <text class="note" x="36" y="584">Hot reload,</text>
+  <text class="note" x="36" y="600">comments, agent</text>
+  <rect class="box rose" x="170" y="544" width="128" height="72" rx="8"/>
+  <text class="name" x="182" y="568">Static site</text>
+  <text class="note" x="182" y="584">decks/&lt;deck&gt;/dist</text>
+  <text class="note" x="182" y="600">base ./, any host</text>
+  <rect class="box rose" x="316" y="544" width="128" height="72" rx="8"/>
+  <text class="name" x="328" y="568">PNG</text>
+  <text class="note" x="328" y="584">In .deck/shots</text>
+  <text class="note" x="328" y="600">1920x1080 each</text>
+  <rect class="box rose" x="462" y="544" width="128" height="72" rx="8"/>
+  <text class="name" x="474" y="568">PDF</text>
+  <text class="note" x="474" y="584">In .deck/exports</text>
+  <text class="note" x="474" y="600">vector pages</text>
+  <rect class="box rose" x="608" y="544" width="128" height="72" rx="8"/>
+  <text class="name" x="620" y="568">PPTX</text>
+  <text class="note" x="620" y="584">In .deck/exports</text>
+  <text class="note" x="620" y="600">editable text</text>
+</svg>

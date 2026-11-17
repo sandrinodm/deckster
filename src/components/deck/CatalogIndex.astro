@@ -1,0 +1,38 @@
+---
+/**
+ * CatalogIndex — everything in one catalog, one line of guidance each.
+ *
+ *   <CatalogIndex kind="charts" />
+ *
+ * `kind` is components, charts or diagrams. Each name links to its PropsTable on the matching
+ * reference page (/reference/<kind>/#props-<name>).
+ */
+import "./deck.css";
+import { CATALOG_KINDS, CATALOG_PAGES, caller, catalog, fail, inline, propsAnchor, withBase, type CatalogKind } from "./data";
+
+interface Props {
+  kind: CatalogKind;
+}
+
+const { kind } = Astro.props;
+const c = caller("CatalogIndex", { kind }, Astro.url);
+if (!CATALOG_KINDS.includes(kind)) fail(c, "kind", `must be one of ${CATALOG_KINDS.join(", ")}.`);
+const entries = catalog(kind).entries;
+const page = withBase(CATALOG_PAGES[kind]);
+const group = (e: (typeof entries)[number]) => e.kind ?? e.role ?? "";
+---
+
+<div class="nb-table-scroll dk-catalog dk-ref">
+  <table>
+    <thead><tr><th>{kind === "charts" ? "Chart" : "Component"}</th><th>{kind === "diagrams" ? "Role" : "Kind"}</th><th>Use when</th></tr></thead>
+    <tbody>
+      {entries.map((e) => (
+        <tr>
+          <td data-nowrap><a href={`${page}#${propsAnchor(e.name)}`}><code>{`<${e.name}>`}</code></a></td>
+          <td data-nowrap data-muted>{group(e)}{e.inside ? ` in ${e.inside.split(" ")[0]}` : ""}</td>
+          <td set:html={inline(e.useWhen)} />
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

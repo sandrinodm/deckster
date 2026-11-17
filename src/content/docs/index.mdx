@@ -1,0 +1,45 @@
+---
+title: "deckster"
+description: "A code-first slide framework with typed brands, MDX slides and a deck CLI."
+sidebar:
+  order: 0
+  label: Home
+---
+
+deckster is a code-first slide framework: one MDX or TSX file per slide, typed layouts and brands, and a `deck` CLI that serves, lints, screenshots, exports and presents your decks. It is built for slides an AI agent writes and a person reviews, with `deck lint` checking every step of every slide in between.
+
+<DeckEmbed deck="showcase" slide="lint-path" step={0} />
+
+This slide comes from the showcase deck, built with deckster. Click it and step through with the arrow keys: a packet travels from the deck through Chromium and the rules, and the findings come back clean.
+
+A brand changes how every slide looks without touching the slide files. This is the showcase deck's `cover` slide in each of the five published brands; only `default` ships with the CLI, and [Use a brand](/brands/use-a-brand/) shows how to add the others:
+
+<BrandGrid slide="cover" />
+
+## Start
+
+With Node.js 26 or later:
+
+```sh
+npm install --global @deckster/cli
+mkdir talks && cd talks
+deck new launch-review --title "Launch review" --duration 20m
+deck dev launch-review
+```
+
+The [quickstart](/get-started/quickstart/) walks through each command and what it prints. [Overview](/get-started/overview/) explains what deckster is and what it needs.
+
+## Find your task
+
+<CardGrid>
+  <LinkCard title="Quickstart" description="Install the CLI, create a deck and open it." href="/get-started/quickstart/" />
+  <LinkCard title="Write slides" description="Frontmatter, layouts, steps and notes in MDX." href="/write-slides/mdx-slides/" />
+  <LinkCard title="Data and diagrams" description="Pick the chart, number or diagram that makes your point." href="/data-and-diagrams/choosing-a-chart/" />
+  <LinkCard title="Review with lint" description="Run deck lint, read a finding and fix it." href="/review/lint/" />
+  <LinkCard title="Present" description="Give the talk with notes and a pacing timer." href="/present/presenter-tools-and-shortcuts/" />
+  <LinkCard title="Export" description="PDF and editable PowerPoint from one command." href="/export-and-publish/pdf/" />
+  <LinkCard title="Work with an AI agent" description="Install the skills that teach Claude Code or Codex the deck CLI." href="/ai-agents/skills/" />
+  <LinkCard title="Examples" description="Full decks to read and copy from." href="/examples/showcase/" />
+</CardGrid>
+
+![A black card box printed with the word deckster and a vermilion square stands beside a stack of blank cards and eight slide-shaped cards in two rows, showing a title rule, a bar chart with one vermilion bar, three boxes joined by arrows, a large 3×, a vermilion quotation mark, a line chart with one vermilion point, a grid of six squares with one vermilion, and a nearly empty card numbered 8.](../../assets/deckster-hero.png)

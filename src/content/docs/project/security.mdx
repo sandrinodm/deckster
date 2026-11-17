@@ -1,0 +1,60 @@
+---
+title: "Security"
+description: "How to report a vulnerability and what deckster runs on your machine."
+sidebar:
+  order: 4
+---
+
+Use this page to report a vulnerability in deckster, or to decide whether it is safe to run on your machine: what each command opens, who can reach it, and what is not protected.
+
+## Report a vulnerability
+
+Do not open a public GitHub issue. Report it privately through [GitHub Security Advisories](https://github.com/sandrinodm/deckster/security/advisories/new), with:
+
+- a description of the problem and what an attacker could do with it,
+- steps to reproduce it or a minimal proof of concept,
+- the command, package or configuration it affects, and your `deck --version`.
+
+Fixes go to the latest published release of `@deckster/cli` and to the `main` branch; upgrade with `npm install --global @deckster/cli@latest` (see [releases](/project/releases/)). You can expect an acknowledgement within a few days and a coordinated fix before the problem is made public.
+
+## What the dev server opens
+
+`deck dev`, and `deck present` without `--built`, run a Vite dev server for one deck.
+
+- **Network.** Without `--host` it listens on `localhost` only, so other machines cannot reach it. `--host` listens on every network interface, to present from a phone or another laptop: anyone on those networks can then load the deck. With `--mcp` (or `--agent`, which implies it) the server listens on `127.0.0.1`.
+- **Page endpoints.** The comments endpoint (`/__deck/comments`), the slide reorder endpoint (`/__deck/reorder`) and the agent panel's socket need the dev session cookie, an `HttpOnly`, `SameSite=Strict` cookie the server sets when your browser opens the deck page from this machine. They refuse requests without it, from another origin, or not from this machine, and the server answers no cross-origin request:
+
+  ```console
+  $ curl -s -w ' %{http_code}\n' http://localhost:5173/__deck/comments
+  {"error":"Missing or wrong dev session cookie. Reload the deck page from its own URL."} 403
+  ```
+
+  In `deck present`, only the window's own first page load gets the session.
+- **MCP endpoint.** `--mcp` serves the deck's tools for agents at `/__deck/mcp` on `127.0.0.1`. Every request needs a bearer token made for that run, written to `.deck/agent/<deck>/server.json` with mode `0600` and removed when the server stops. Without it:
+
+  ```console
+  $ curl -s -w ' %{http_code}\n' -X POST http://127.0.0.1:5173/__deck/mcp
+  {"jsonrpc":"2.0","error":{"code":-32001,"message":"Missing or wrong bearer token. Send `Authorization: Bearer <token>`; run `deck mcp <deck>` for the configuration."},"id":null} 401
+  ```
+
+  See [MCP tools](/ai-agents/mcp-tools/).
+- **Editor links.** Vite's `/__open-in-editor` endpoint, which would let any page script open a file in your editor, always answers 404. The error overlay's click-to-open link does not work as a result.
+- **`.deck/`.** The dev server never serves the workspace's `.deck/` folder, where tokens, screenshots and the `deck present` profile live: a request for a file in it through Vite's `/@fs/` path gets 403.
+
+A program running as you on the same machine can still open the deck page and get the cookie, as it could read your files. That is accepted for a single-user machine.
+
+## What the agent may do
+
+`--agent claude` or `--agent codex` runs your own agent CLI with your login, one process per prompt. It may change only the deck's content (slide files in `slides/`, media and data in `assets/` and `public/`), in a working copy; the deck's config, brand, stylesheets and helper modules are put back if a turn changes them, and a check runs after every turn. Slides are code that runs in your browser with the dev session, so review what a turn changed as you would a collaborator's commit. Web access is off unless you pass `--agent-web`. The full trust model, and the limits it accepts, are on [how a turn runs](/ai-agents/how-a-turn-runs/).
+
+## Other guards
+
+- **Workspace.** `deck` never picks your home folder or `/` as the workspace on its own, because a dev server would sit next to your keys and tokens. See [the CLI reference](/reference/cli/#shared-conventions).
+- **Names.** A deck, brand, slide or app name is a kebab-case name of at most 64 characters, never a path, whether it comes from you, a page or an agent: `deck dev ../x` is refused with `"../x" is not a deck name`, and `deck lint ../decks/hello` finds no such deck. A name cannot reach a folder outside the one it names.
+- **SVG.** The markup of an `<Svg>` drawing is cleaned before it renders: only allow-listed elements and attributes are kept, so a `<script>` element or an `onload` attribute is removed.
+- **`deck present`.** The Electron window loads only the deck's origin; links elsewhere open in your system browser (http, https and mailto only), downloads are refused, and permissions are limited to fullscreen, media and clipboard writes. Windows run sandboxed, with context isolation and no Node integration. See [`deck present` and displays](/present/deck-present-and-displays/).
+- **Mini apps.** An `<AppFrame>` iframe isolates the app's CSS and globals, but it is not a security boundary: bundled apps run with `allow-scripts allow-same-origin allow-forms`. Treat a mini app's code like a slide's.
+
+## What is not protected
+
+A built deck has no access control. `deck build` writes a static site, and anyone with its URL can open every slide, the speaker notes included. Host a deck you need to keep private behind your host's own access control; see [build and host](/export-and-publish/build-and-host/).

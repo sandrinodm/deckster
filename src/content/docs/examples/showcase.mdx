@@ -1,0 +1,119 @@
+---
+title: "Showcase"
+description: "A 45-slide talk about deckster, built with deckster."
+sidebar:
+  order: 1
+---
+
+The showcase is "Slides an agent can write", a 45-slide talk about deckster built with deckster. Use this page to find the slide that shows a technique, open it in the built deck, and read or copy its source.
+
+<DeckEmbed deck="showcase" slide="cover" />
+
+The whole deck is at [/decks/showcase/](/decks/showcase/). It uses 23 of the 32 layouts; ten of the sixteen chart and number components; flow, sequence, layers, cycle and tree diagrams and an imported SVG; code, video, a Lottie animation and two live React demos. Its `deck.config.ts` sets `duration: '45m'`, and every slide has speaker notes and a time `budget`.
+
+**The content is illustrative.** Halden, its people, its clients and every Halden number are fictional, and each chart of Halden data says so in a footnote. The portraits and logos are drawn stand-ins. Numbers about deckster itself (layouts, charts, rules, terminal output) were read from the repository.
+
+## A chart with its source
+
+`review-rounds` is a `<LineChart>` with a highlight and annotations that arrive by step. The source tab shows the frontmatter, the chart props and the notes:
+
+<SlideExample deck="showcase" slide="review-rounds" />
+
+## Which slide shows what
+
+The talk opens with five slides, then four parts, each opened by a `section` slide. Each id links to the slide in the built deck.
+
+| Slide | Layout | Demonstrates |
+| --- | --- | --- |
+| [`cover`](/decks/showcase/#/cover) | `title` | The cover on the gradient surface |
+| [`speaker`](/decks/showcase/#/speaker) | `bio` | Portrait, role and contacts |
+| [`the-claim`](/decks/showcase/#/the-claim) | `statement` | One sentence on the inverse surface |
+| [`three-ways`](/decks/showcase/#/three-ways) | `comparison` | Options with a recommended one and true/false rows |
+| [`agenda`](/decks/showcase/#/agenda) | `agenda` | Parts with times |
+
+**A slide is a file** ([`part-file`](/decks/showcase/#/part-file)):
+
+| Slide | Layout | Demonstrates |
+| --- | --- | --- |
+| [`slide-source`](/decks/showcase/#/slide-source) | `code` | A fenced block with a title and stepped highlights |
+| [`canvas`](/decks/showcase/#/canvas) | `diagram` | `<Svg>`: an imported SVG recoloured to brand roles and revealed by element id |
+| [`layout-contract`](/decks/showcase/#/layout-contract) | `cards` | Cards with icons, one per step (`reveal: true`) |
+| [`limits`](/decks/showcase/#/limits) | `table` | `<Table>` with a highlighted row |
+| [`bullets-to-cards`](/decks/showcase/#/bullets-to-cards) | `code` | `<CodeMove>`: an animated change between two code states |
+| [`no-styling`](/decks/showcase/#/no-styling) | `default` | `<Step>` reveals in plain Markdown |
+| [`kit-numbers`](/decks/showcase/#/kit-numbers) | `stats` | A row of four numbers |
+
+**Evidence makes the point** ([`part-evidence`](/decks/showcase/#/part-evidence)):
+
+| Slide | Layout | Demonstrates |
+| --- | --- | --- |
+| [`review-rounds`](/decks/showcase/#/review-rounds) | `chart` | `<LineChart>` with a highlight and annotations by step |
+| [`deck-hours`](/decks/showcase/#/deck-hours) | `chart` | `<Comparison>` and a `<Sparkline>` |
+| [`where-hours-went`](/decks/showcase/#/where-hours-went) | `chart` | `<Waterfall>` |
+| [`effort-share`](/decks/showcase/#/effort-share) | `split` | `<Donut>` beside text |
+| [`render-path`](/decks/showcase/#/render-path) | `diagram` | `<Flow>` with a `<Journey>` stepping through it |
+| [`packages`](/decks/showcase/#/packages) | `diagram` | `<Layers>` |
+| [`motion`](/decks/showcase/#/motion) | `split` | A cued `<Video>` with one poster per part |
+| [`photo`](/decks/showcase/#/photo) | `image` | A photo edge to edge, with text on a scrim |
+| [`live-widget`](/decks/showcase/#/live-widget) | `demo` | `<Live>`: a React component running in a TSX slide |
+
+**The deck checks itself** ([`part-checks`](/decks/showcase/#/part-checks)):
+
+| Slide | Layout | Demonstrates |
+| --- | --- | --- |
+| [`rebrand`](/decks/showcase/#/rebrand) | `code` | A `diff` fence |
+| [`client-brands`](/decks/showcase/#/client-brands) | `logos` | A logo wall |
+| [`lint-path`](/decks/showcase/#/lint-path) | `diagram` | `<Flow>` with `<Packet>`s and `<State>` changes |
+| [`lint-session`](/decks/showcase/#/lint-session) | `code` | `<Terminal>` with `<Cmd>` and `<Out>`, and a `<Lottie>` animation |
+| [`first-draft`](/decks/showcase/#/first-draft) | `chart` | `<BarChart>`, sorted, with two bars highlighted |
+| [`title-length`](/decks/showcase/#/title-length) | `chart` | `<Scatter>` with a trend |
+| [`author-loop`](/decks/showcase/#/author-loop) | `diagram` | `<Cycle>` |
+
+**People and agents share it** ([`part-people`](/decks/showcase/#/part-people)):
+
+| Slide | Layout | Demonstrates |
+| --- | --- | --- |
+| [`roles`](/decks/showcase/#/roles) | `team` | Four portraits |
+| [`comment-anchor`](/decks/showcase/#/comment-anchor) | `diagram` | `<Tree>`, revealed |
+| [`agent-turn`](/decks/showcase/#/agent-turn) | `diagram` | `<SequenceDiagram>` with `<Actor>`s and `<Message>`s |
+| [`chat-demo`](/decks/showcase/#/chat-demo) | `demo` | `<AppFrame app="agent-chat">` driven by the slide's steps: a scripted replay, no model |
+| [`designer-quote`](/decks/showcase/#/designer-quote) | `quote` | A quote with a portrait |
+| [`presenter`](/decks/showcase/#/presenter) | `content` | Text with an `<Aside>` |
+| [`export-path`](/decks/showcase/#/export-path) | `diagram` | A `<Flow>` written in TSX with automatic layout |
+| [`export-share`](/decks/showcase/#/export-share) | `chart` | `<Pictogram>` |
+| [`week`](/decks/showcase/#/week) | `timeline` | Five milestones |
+| [`start`](/decks/showcase/#/start) | `steps` | Four steps, revealed |
+| [`links`](/decks/showcase/#/links) | `split` | `<Button>`, `<LinkCard>` and `<Download>` |
+| [`recap`](/decks/showcase/#/recap) | `chart` | `<Progress>` bars |
+| [`closing`](/decks/showcase/#/closing) | `closing` | QR code and contacts |
+
+## A diagram that builds
+
+`agent-turn` adds one message of the sequence per step, from the prompt in the chat panel on step 1 to the lint report on step 6:
+
+<StepStrip deck="showcase" slide="agent-turn" />
+
+## Run it or copy from it
+
+The deck is a folder in the repository, `decks/showcase/`. Besides `slides/` (42 MDX files and 3 TSX files) it has `lib/` with the React code the TSX slides import, `apps/agent-chat/` with the mini app `chat-demo` shows, and `assets/` with the pictures, video and animation (sources and licences in `assets/CREDITS.txt`). `BRIEF.md` and `OUTLINE.md` are the brief and outline it was written from.
+
+To run it with the npm CLI, copy the folder into your workspace and delete the two files that tie it to the monorepo:
+
+```sh
+git clone --depth 1 --branch v0.3.0 https://github.com/sandrinodm/deckster.git ../deckster
+cp -R ../deckster/decks/showcase decks/
+rm decks/showcase/package.json decks/showcase/tsconfig.json
+```
+
+Then it lints clean, as in the repository:
+
+```console
+$ deck lint showcase
+showcase: no problems in 45 slides (105 steps checked).
+```
+
+`deck dev showcase` serves it, mini app included. The PDF button on the `links` slide is a `<Download file="showcase.pdf">`, which links to a file only `deck build showcase --with-exports` writes into `decks/showcase/dist/`.
+
+To copy one slide, take its file from `slides/` and the files it imports from `assets/` or `lib/`, add its id to your `deck.config.ts`, and run `deck lint`.
+
+For the smallest deck, see [Hello](/examples/hello/). For every layout and option in one talk, see the [Lookbook](/examples/lookbook/). The showcase slides rendered in every published brand are on [One deck in every brand](/examples/brands/).

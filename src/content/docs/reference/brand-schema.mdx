@@ -1,0 +1,141 @@
+---
+title: "Brand schema"
+description: "Every field of a brand definition."
+sidebar:
+  order: 10
+---
+
+Use this page to check a field of a `brand.ts` while you write or review one: its type, its limits, whether it is required and what fills it in when you leave it out. To build a brand step by step, start at [create a brand](/brands/create-a-brand/).
+
+## The file
+
+A brand is `brands/<name>/brand.ts`, default-exporting a call to `defineBrand` from `@deckster/brand`. `defineBrand` returns its argument unchanged and types it; the build validates the object when a deck loads the brand.
+
+```ts
+import { defineBrand } from '@deckster/brand';
+
+export default defineBrand({
+  name: 'acme',
+  label: 'Acme',
+  color: { /* ... */ },
+  // gradients, typography, shape, spacing, logo, icons, imagery, chrome and motion
+});
+```
+
+Twelve top-level fields are required: `name`, `label`, `color`, `gradients`, `typography`, `shape`, `spacing`, `logo`, `icons`, `imagery`, `chrome` and `motion`. Three are optional and derived when left out: `code`, `diagram` and `charts`. `name` is the brand's folder name in kebab-case (`acme`), and must match the folder. `label` is the name people read, any non-empty text (`Acme`).
+
+## How to read the tables
+
+Each section below is generated from the schema: path, type with its limits, and a **required** tag when the object it sits in needs it. The description, and the default of an optional field the brand fills in when you leave it out, are written by hand from the code of 0.3.0; a field whose name says it all has none. The rows are grouped under their first two path segments (`color.surfaces`), and each row shows its path from there (`.<name>.bg`). The forms of a field that takes several (`[type=placed]` below) are folded: open one to see its fields. In a path, `<name>` stands for a key you choose (`color.surfaces.<name>` is any surface name) or for one of several keys with the same fields, listed under the row (`typography.scale.<name>` is one row for all eleven type steps). `[]` is an item of a list, and `[type=image]` is one form of a field that takes several, picked by its `type`. The prose under each table explains how its fields work together.
+
+Colours, wherever the type says so, are a hex literal (`#1f2937`), an `oklch(...)` literal, or a palette reference: `<palette>.<step>`, with an optional opacity in percent (`ink.900`, `ink.900/12`). Sizes are canvas pixels, on the 1920 by 1080 slide, from 0 to 1920.
+
+## color
+
+<SchemaReference of="brand" section="color" />
+
+`palette` holds your colour scales; everything else references them. `roles` sets the ten colours every surface has (`ROLE_NAMES`): `bg`, `surface`, `fg`, `heading`, `muted`, `accent`, `accent-fg`, `border`, `positive` and `negative`. `heading` is optional and defaults to `fg`. Layouts and components use only these roles, never palette steps.
+
+Every brand has the surfaces `default`, `inverse`, `accent` and `gradient` (`REQUIRED_SURFACES`), so a slide's `surface:` works in every brand; one you leave out of `surfaces`, or define without roles, is derived from the base roles. You may add more. A surface overrides roles on top of the base `roles`. A surface may also name a `gradient`, paint `background` layers (at most six: `image`, `placed`, `pattern` or `gradient`), pick a `logo` variant, and replace the data palettes, `code` and `diagram` colours and `shadow` on that surface. A surface with an image or pattern layer must set its own `bg`, the colour contrast is checked against. `data.plate`, the panel charts draw behind themselves, defaults to `bg` on a solid surface whose text reaches 10:1 on it, else a deeper shade of the surface's background.
+
+`data` holds the chart palettes: `categorical` for unordered series, `sequential` from low to high, `diverging` through a neutral midpoint, and `context`, the muted colour for everything not highlighted. `waivers` accept a contrast shortfall for one role pair, with a `reason`: the pair then needs only 3:1, and a pass below 4.5:1 becomes a warning. How these fit together is on [palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/).
+
+## gradients
+
+<SchemaReference of="brand" section="gradients" />
+
+Named gradients, each `linear` (an `angle` in CSS degrees, 0 pointing up), `radial` (an ellipse unless `shape: circle`) or `mesh` (glows over a `base` colour). Linear and radial need at least two stops; `grain` adds noise up to 0.4 opacity. Surfaces and `gradient` background layers refer to them by name.
+
+## typography
+
+<SchemaReference of="brand" section="typography" />
+
+Three `families`, `display`, `body` and `mono`, each with a CSS family name, a `fallback` list that must end in a generic family (`sans-serif`, `serif`, `monospace` and so on), and a `source`: a Fontsource package installed in the workspace (`fontsource`), font files in the brand folder (`files`), the viewer's system (`system`), or `unavailable` with a `reason`, which renders the fallback and warns on every build. `substitute` names the installed family a PowerPoint export falls back to. See [fonts and assets](/brands/fonts-and-assets/).
+
+`scale` must define all eleven type steps (`TYPE_STEPS`): `display`, `headline`, `title`, `lead`, `body`, `small`, `caption`, `label`, `stat`, `quote` and `code`. Each picks a family role and sets size, line height, tracking in em and weight. No size may be below 20 canvas pixels (`MIN_TYPE_SIZE_PX`); `deck lint` holds rendered text to the same number.
+
+## shape
+
+<SchemaReference of="brand" section="shape" />
+
+Radii, strokes and shadows, each with fixed names. A shadow is `"none"` or a list of layers, top first; a layer's `x` and `spread` default to 0 and `inset` to `false`.
+
+## spacing
+
+<SchemaReference of="brand" section="spacing" />
+
+A spacing `scale` of eight fixed steps, the slide `margin` and the column `grid`.
+
+## logo
+
+<SchemaReference of="brand" section="logo" />
+
+Named logo `variants`, each an SVG, PNG or WebP file in the brand folder with its width divided by its height (`aspect`). `default` names the variant shown unless a surface picks another; `clearSpace` is a multiple of the logo height.
+
+## icons
+
+<SchemaReference of="brand" section="icons" />
+
+`set` is an Iconify collection such as `lucide` or `tabler`, and `strokeWidth` (0.5 to 4) the stroke to draw it at. The names available on slides depend on it: see [icons](/reference/icons/).
+
+## imagery
+
+<SchemaReference of="brand" section="imagery" />
+
+Named image `treatments` (`none`, `rounded`, `grayscale`, `duotone` or `tint`) and the `default` one images get. Every brand also has `plain`, which draws a picture as it is; a brand that defines `plain` itself must define it as `{ type: 'none' }`.
+
+## chrome
+
+<SchemaReference of="brand" section="chrome" />
+
+What is drawn around every slide: the page number (its `format` must contain `{n}` and may contain `{total}`, as in `{n} / {total}`), a footer, a progress bar on the top or bottom edge, and the logo. `skipFirst: true` hides all of it on the first slide.
+
+## motion
+
+<SchemaReference of="brand" section="motion" />
+
+`easings` are cubic Bézier curves `[x1, y1, x2, y2]` as CSS `cubic-bezier()` takes them; `durations` are milliseconds, at most 3000. `transition` is the default slide transition: a kind (`none`, `fade`, `slide`, `rise`, `push`, `cover`, `wipe` or `zoom`) and the names of one duration and one easing.
+
+Both records are open, but the kit's entrances, step reveals, chart builds and count-ups read the easings `standard`, `emphasized` and `exit` and the durations `fast`, `base` and `slow`. Define all six. A brand that leaves some out still loads: `standard` falls back to the transition's easing, `emphasized` and `exit` to `standard`; `base` falls back to the transition's duration, `fast` is half of `base` and `slow` 1.7 times it.
+
+## code
+
+<SchemaReference of="brand" section="code" />
+
+Optional. Colours of the code theme, by token. Leave the section out and the theme is derived from each surface's roles and kept readable on the code background. Set here, a token applies on every surface; set under `color.surfaces.<name>.code`, it applies on that surface and wins.
+
+## diagram
+
+<SchemaReference of="brand" section="diagram" />
+
+Optional. Colours of diagram nodes, groups, edges, labels, highlights and packets, derived and overridden the same way as `code`. Text stays readable on the node and highlight fills.
+
+## charts
+
+<SchemaReference of="brand" section="charts" />
+
+Optional. Gridlines, axes, the type steps of chart text, number formatting (`locale` such as `en-US`, `currency` as an ISO 4217 code such as `EUR`), and the look of big numbers and tables. Every field defaults from the roles and the type scale. Colours here are role names, not colours, so they follow the surface a chart is drawn on.
+
+## Errors
+
+The build, `deck lint` and `deck brand check` report every schema problem with its path and a fix, and a brand with errors does not load:
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  error   lable: "lable" is not a field of a brand.
+          Fix: Rename it to "label".
+  error   label: This field is required.
+          Fix: Give the brand a human-readable name, for example `label: "Acme"`.
+  error   typography.scale.caption.size: Expected a size of at least 20 canvas pixels, got 16.
+          Fix: Write the size in canvas pixels, at least 20, for example `size: 32`.
+acme: cannot be used (3 errors, 0 warnings).
+```
+
+After the schema, the checks follow palette references, gradient, surface and logo names, then contrast on every surface; [check a brand](/brands/check-a-brand/) walks through them.
+
+## Resolved tokens
+
+What the schema becomes once a brand loads: the `default` brand's palette, surfaces and type scale, with every reference and derivation resolved. `deck brand default --json` prints the full set.
+
+<BrandTokens name="default" />

@@ -1,0 +1,123 @@
+---
+title: "Build a slide in steps"
+description: "Reveal points, chart series, diagram parts and code one step at a time, with step effects, focus and count-ups."
+sidebar:
+  label: "Builds"
+  order: 3.5
+---
+
+Make a slide unfold in the order you explain it: reveal points one press at a time with `<Step>`, pick how each one comes in, let earlier points recede so the room looks at the newest, and stage charts, diagrams and code the same way. How steps are numbered and what the hash shows is on [steps](/concepts/steps/); this page is about writing them.
+
+## Reveal content with `<Step>`
+
+Wrap what should come in later in `<Step at={n}>`. Step 0 is the slide as it arrives; `at` is the press that reveals the content, a whole number of 1 or more. A `<Step>` without `at` is refused.
+
+```mdx
+<Step at={1}>
+
+08:42:10 booked.
+
+</Step>
+
+<Step at={2}>
+
+08:42:51 batched.
+
+</Step>
+```
+
+Hidden content keeps its space, so nothing on the slide jumps when it appears. Write the content on its own lines with a blank line after `<Step>` and before `</Step>`: the effect acts on the blocks directly inside the step.
+
+<DeckEmbed deck="lookbook" slide="motion-rise" step={0} />
+
+The slide opens at its first step, before any line is in, so it shows only its eyebrow. Click it and press the right arrow three times. The same three lines with other effects are on the slides after it: [fade](/decks/lookbook/#/motion-fade), [scale](/decks/lookbook/#/motion-scale), [blur](/decks/lookbook/#/motion-blur), [wipe](/decks/lookbook/#/motion-wipe) and [focus](/decks/lookbook/#/motion-focus).
+
+## Choose an effect
+
+`effect` sets how the content comes in. Durations and easings come from the brand.
+
+| `effect` | What it does |
+| --- | --- |
+| `rise` (default) | Fades in and rises into place. |
+| `fade` | Fades in. |
+| `scale` | Fades in from slightly smaller, growing from the middle of the text or picture. |
+| `blur` | Fades in from out of focus. |
+| `wipe` | Is uncovered from the start edge across, list markers fading in with it. |
+
+Words inside a sentence can fade, blur or wipe; `rise` and `scale` only fade there. Any other name is refused with the list of effects. Keep the default and pick another only when it carries meaning: `wipe` for a line read left to right, `scale` for a card that arrives.
+
+<StepStrip deck="components" slide="edge-latency" />
+
+The strip above counts a figure up on step 1, then brings in one line each with `fade`, `scale` and `blur`. A real slide keeps one effect; this test slide uses three to show them.
+
+## Recede earlier points with `focus`
+
+Give each step of a run you walk through `focus`. Once a later step of the slide is reached, a focused step recedes to the brand's muted colour, so the one just revealed is the only one at full strength. It changes colour, never opacity, so receded text keeps its contrast.
+
+```mdx
+<Step at={1} focus>
+
+- **Contract tests** pass against the published schema
+
+</Step>
+
+<Step at={2} focus>
+
+- **The canary** holds its error rate under 0.1% for ten minutes
+
+</Step>
+
+<Step at={3} focus>
+
+- **A rollback** runs green in staging the same day
+
+</Step>
+
+<Step at={4} effect="wipe">
+
+A rollout that skips a check waits for the next window.
+
+</Step>
+```
+
+Going back a step brings the receded point back to full strength.
+
+<StepStrip deck="components" slide="rollout-checks" />
+
+## What builds without `<Step>`
+
+Many parts of a slide take their own steps. They count as deck steps like any `<Step>`.
+
+- **Layouts with a `reveal` field.** `reveal: true` brings the items in one per step on `ask`, `bento`, `cards`, `columns`, `comparison`, `equation`, `matrix`, `proof`, `screen`, `shift`, `steps` and `timeline`. Each layout's order is on [layouts](/reference/layouts/).
+- **Charts.** `at` on a chart, a series, its `highlight` or an annotation, and `reveal` by series or category. See [highlights and annotations](/data-and-diagrams/highlights-and-annotations/).
+- **Diagrams.** `at` on nodes, groups and edges, a `<Journey>` that travels one hop per step, and `<Packet>` traffic. See [flow diagrams](/data-and-diagrams/flow-diagrams/).
+- **Code.** Highlight ranges in a fence (`{2-4|7}`), `<CodeMove>` versions and `<Terminal>` commands. See [code](/write-slides/code/).
+- **Video.** `cues` cut a `<Video>` into parts played one per step. See [media](/write-slides/media/).
+- **Count-ups.** A stat's number, such as a `<BigNumber>`, counts up from zero when the deck moves forward onto its slide or onto the step that reveals it. Years, small numbers and text such as `1 in 4` do not count, and nothing counts going back.
+
+A `cards` slide with `reveal: true` brings in one card per press. The example opens at the slide's last step, with every card in: press the left arrow to take the cards away one at a time.
+
+<SlideExample deck="lookbook" slide="cards-four-reveal" />
+
+## Tell the speaker
+
+Put a `[click]` cue in the notes at the point where each step is spoken, in order. The notes of the slide above read "Our 310 riders are employees. [click] They earn €15.40 an hour, [click] they get sick pay, ...". Notes and cues are on [speaker notes](/write-slides/speaker-notes/).
+
+## When a slide should not build
+
+Exports show a slide's last step, so every slide must read whole. Reveal what the speaker builds on, not every bullet by habit; experts read faster than you reveal. Leave a slide whole when nothing on it is explained part by part.
+
+The opposite mistake has a lint rule. `few-builds` warns when a deck has 4 or more chart, diagram and code slides and fewer than 25% of them build in steps:
+
+```console
+$ deck lint launch-review
+decks/launch-review/deck.config.ts
+  warning few-builds: 0 of 4 chart, diagram and code slides build in steps; these show everything at once: routes, auth, limits, deploy.
+          Fix: Stage the figures the notes walk through, in the order the notes explain them: `reveal` or `at` on a chart and its highlight and annotations, `at` on diagram nodes and edges or a <Journey>, step ranges on a code fence (```ts {2-4|7}), and a [click] cue in the notes for each step. Check the order with `deck shot <deck> <slide> --steps`.
+
+launch-review: 0 errors, 1 warning in 4 slides (4 steps checked).
+```
+
+## Where nothing moves
+
+Static mode, `deck shot` and exports show each step's end state, and every revealed step at full strength: nothing recedes. So do the slide copies in thumbnails and the presenter's panes. Viewers who ask for reduced motion get a fade for every effect, and a PowerPoint export turns each step into a fade on click. To move a whole slide or carry an element to the next one, see [transitions and morphs](/write-slides/transitions-and-morphs/). Every prop of `<Step>` is on [components](/reference/components/#props-Step).

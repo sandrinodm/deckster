@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="672" viewBox="0 0 760 672" role="img" aria-label="A brand compiles to CSS only after it passes schema, reference and contrast checks">
+  <title>A brand compiles to CSS only after it passes schema, reference and contrast checks</title>
+  <style>
+svg{--ink:#161514;--quiet:#6b6862;--edge:#c4c2bf;--grid:rgba(22,21,20,.12);--accent:#ff4f2b;--tint:rgba(22,21,20,.045);--paper:#ffffff}
+text{font-family:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:13px;fill:var(--ink)}
+.title{font-size:15px;font-weight:600}
+.name{font-weight:600}
+.note{font-size:11.5px;fill:var(--quiet)}
+.small{font-size:11.5px}
+.strong{font-weight:600}
+.mid{text-anchor:middle}
+.end{text-anchor:end}
+.code{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.line{fill:none;stroke:var(--edge);stroke-width:1.25}
+.head{fill:var(--edge)}
+.box{fill:none;stroke:var(--edge);stroke-width:1.25}
+.key{fill:var(--accent);fill-opacity:.08;stroke:var(--accent);stroke-width:2}
+.chip{fill:var(--tint);stroke:var(--edge);stroke-width:1}
+.callout{fill:var(--tint);stroke:var(--edge);stroke-width:1.25}
+</style>
+  <defs>
+    <marker id="brand-resolution-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="head" d="M0 0L10 5L0 10z"/>
+    </marker>
+  </defs>
+  <text class="title" x="24" y="34">A brand compiles to CSS only after it passes schema, reference and contrast checks</text>
+  <text class="note" x="24" y="54">What loadBrand in @deckster/brand does with brands/&lt;name&gt;/brand.ts</text>
+  <rect class="box amber" x="24" y="72" width="712" height="56" rx="8"/>
+  <text class="name" x="40" y="96">brands/&lt;name&gt;/brand.ts</text>
+  <text class="note" x="40" y="114">The name must be kebab-case; a turn a crash left is finished; then the default export is imported</text>
+  <g class="line"><path d="M380 128V166" marker-end="url(#brand-resolution-arrow)"/></g>
+  <rect class="key" x="24" y="168" width="712" height="160" rx="8"/>
+  <text class="name" x="40" y="192">resolveBrand: each pass reports every problem it finds; the first that fails stops it</text>
+  <rect class="box" x="40" y="208" width="152" height="104" rx="8"/>
+  <text class="name" x="52" y="232">Schema</text>
+  <text class="small" x="52" y="250">Types, ranges and</text>
+  <text class="small" x="52" y="266">unknown fields</text>
+  <rect class="box" x="216" y="208" width="152" height="104" rx="8"/>
+  <text class="name" x="228" y="232">Tokens</text>
+  <text class="small" x="228" y="250">Palette steps to colors;</text>
+  <text class="small" x="228" y="266">surfaces it leaves out</text>
+  <text class="small" x="228" y="282">are derived</text>
+  <rect class="box" x="392" y="208" width="152" height="104" rx="8"/>
+  <text class="name" x="404" y="232">References</text>
+  <text class="small" x="404" y="250">Every name it uses</text>
+  <text class="small" x="404" y="266">exists; values CSS</text>
+  <text class="small" x="404" y="282">can hold</text>
+  <rect class="box" x="568" y="208" width="152" height="104" rx="8"/>
+  <text class="name" x="580" y="232">Contrast</text>
+  <text class="small" x="580" y="250">4.5:1 text, 3:1 graphics</text>
+  <text class="small" x="580" y="266">on every surface; data</text>
+  <text class="small" x="580" y="282">colors and color vision</text>
+  <g class="line"><path d="M192 260H214" marker-end="url(#brand-resolution-arrow)"/></g>
+  <g class="line"><path d="M368 260H390" marker-end="url(#brand-resolution-arrow)"/></g>
+  <g class="line"><path d="M544 260H566" marker-end="url(#brand-resolution-arrow)"/></g>
+  <g class="line"><path d="M176 328V366" marker-end="url(#brand-resolution-arrow)"/></g>
+  <text class="note" x="184" y="352">first pass that fails</text>
+  <g class="line"><path d="M568 328V366" marker-end="url(#brand-resolution-arrow)"/></g>
+  <text class="note" x="576" y="352">tokens and warnings</text>
+  <rect class="box rose" x="24" y="368" width="304" height="72" rx="8"/>
+  <text class="name" x="36" y="392">BrandError: the brand does not load</text>
+  <text class="note" x="36" y="408">Names the brand file, each field</text>
+  <text class="note" x="36" y="424">and its fix</text>
+  <rect class="box teal" x="400" y="368" width="336" height="72" rx="8"/>
+  <text class="name" x="412" y="392">Disk checks</text>
+  <text class="note" x="412" y="408">The name matches its folder; font, logo</text>
+  <text class="note" x="412" y="424">and background files exist</text>
+  <g class="line"><path d="M400 404H330" marker-end="url(#brand-resolution-arrow)"/></g>
+  <text class="note mid" x="365" y="396">fails</text>
+  <g class="line"><path d="M568 440V478" marker-end="url(#brand-resolution-arrow)"/></g>
+  <text class="note" x="576" y="464">passes</text>
+  <rect class="box teal" x="24" y="480" width="712" height="56" rx="8"/>
+  <text class="name" x="36" y="504">compileBrand</text>
+  <text class="note" x="36" y="520">CSS custom properties, a Tailwind theme with only the brand&#x27;s values, @font-face rules and Shiki themes</text>
+  <g class="line"><path d="M196 536V574" marker-end="url(#brand-resolution-arrow)"/></g>
+  <g class="line"><path d="M564 536V574" marker-end="url(#brand-resolution-arrow)"/></g>
+  <text class="note mid" x="380" y="560">one stylesheet: virtual:deck/brand.css</text>
+  <rect class="box violet" x="24" y="576" width="344" height="72" rx="8"/>
+  <text class="name" x="36" y="600">[data-brand=&quot;&lt;name&gt;&quot;]</text>
+  <text class="note" x="36" y="616">Brand-wide variables: type, spacing,</text>
+  <text class="note" x="36" y="632">strokes, motion</text>
+  <rect class="box violet" x="392" y="576" width="344" height="72" rx="8"/>
+  <text class="name" x="404" y="600">[data-surface=&quot;&lt;surface&gt;&quot;]</text>
+  <text class="note" x="404" y="616">Roles per surface: default, inverse, accent,</text>
+  <text class="note" x="404" y="632">gradient; a slide picks one with surface:</text>
+</svg>

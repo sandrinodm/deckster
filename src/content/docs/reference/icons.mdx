@@ -1,0 +1,56 @@
+---
+title: "Icons"
+description: "The icon sets available on slides."
+sidebar:
+  order: 7
+---
+
+Use this page to find an icon name that works on your slides. The grid below lists the 776 names that every published brand has, so a deck that uses only these renders in all five brands; select a name to copy it.
+
+## Where icon names go
+
+An icon name goes in three places: `<Icon name="rocket" />` on a slide (see [media](/write-slides/media/)), the `icon` field of a layout that has one, and the `icon` prop of a diagram node. A name the brand's set does not have fails the build, and `deck lint` reports it with the closest names:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/claim.mdx
+  error   schema (claim): Line 6, column 22: <Icon name="rocket-ship"> is not an icon of the lucide set.
+          Fix: Closest names in the lucide set: rocket. Browse the set at https://icon-sets.iconify.design/lucide/. A deck that renders in several brands needs a name that every brand's set has.
+
+launch-review: 1 error, 0 warnings.
+```
+
+## Which set each brand uses
+
+Each brand draws its icons from one [Iconify](https://icon-sets.iconify.design/) set, named in its `icons.set`. The same name draws a different picture in each set, and a name exists only if the set has it:
+
+| Brand | Icon set |
+| --- | --- |
+| `default` | Lucide (`lucide`) |
+| `tidewater` | Lucide (`lucide`) |
+| `nocturne` | Tabler (`tabler`) |
+| `fieldnote` | Tabler (`tabler`) |
+| `kinetic` | Tabler (`tabler`) |
+
+Switching a deck to a brand with another set can turn a working name into a build error; see [use a brand](/brands/use-a-brand/).
+
+## Search your own workspace
+
+`deck icons` lists the names shared by every brand your workspace has. In a workspace with only the `default` brand that ships with the CLI, that is every Lucide name:
+
+```console
+$ deck icons --search arrow-right
+15 icon names matching "arrow-right" in every one of: default (lucide)
+Sets: lucide
+
+arrow-right, arrow-right-circle, arrow-right-from-line, arrow-right-left, arrow-right-square,
+arrow-right-to-line, calendar-arrow-right, circle-arrow-right, clock-arrow-right,
+decimals-arrow-right, layout-arrow-right, route-arrow-right, square-arrow-right,
+square-arrow-right-enter, square-arrow-right-exit
+```
+
+Without `--search` it prints the count (2377 names with only `default`) and the first 120 names; `--json` prints them all. `--brand a,b` shares names between the brands you name instead of all of them.
+
+## Names every published brand has
+
+<IconGrid />

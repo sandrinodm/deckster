@@ -1,0 +1,68 @@
+---
+title: "Overview"
+description: "What deckster is, who it is for and how a deck is put together."
+sidebar:
+  order: 1
+---
+
+deckster is a slide framework where every slide is a file: MDX or TSX, filling a typed layout, styled by a brand you never touch from the slide. A `deck` CLI serves, checks, screenshots, exports and presents the result. This page tells you what the parts are, how the work goes, and what your machine needs, so you can decide whether it suits you before the [quickstart](/get-started/quickstart/).
+
+## Who it is for
+
+- **People who write slides as files**, in an editor and in git, rather than in a drawing tool.
+- **People who direct an AI agent** such as Claude Code or Codex to write the slides. The layouts tell the agent how much fits, `deck lint` tells it what broke, and `deck shot` gives it a picture to look at. The [agent skills](/ai-agents/skills/) teach it the workflow.
+- **Teams that review slides like code**: small diffs, one file per slide, comments that point at a file and a line.
+
+## The parts of a deck
+
+<SlideExample deck="hello" slide="steps" />
+
+**A workspace** is a folder of your own with `decks/` in it, and `brands/` when you add brands. The CLI finds it from wherever you run it.
+
+**A deck** is a folder in `decks/` with a `deck.config.ts` that names the title, the brand, the talk length and the slides in order. Reordering slides is a one-line change. See [Decks and slides](/concepts/decks-and-slides/).
+
+**A slide** is one file in the deck's `slides/` folder. An MDX slide is frontmatter plus Markdown and components such as `<Step>` and `<Notes>`; a TSX slide is a React component for slides that need real code. The example above is the whole of `slides/steps.mdx`.
+
+**A layout** is picked by each slide's `layout:` field. There are 32, such as `stats`, `cards` and `comparison`. The layout owns the grid, the type and the spacing, and its contract says which fields and slots it takes and how much content fits. See [Layouts and slots](/concepts/layouts-and-slots/).
+
+**A brand** is a typed `brand.ts` with colours, surfaces, fonts, icons, motion and chart palettes. Slides hold no colours or pixel positions, so the same deck renders in another brand without an edit. The `default` brand comes with the CLI.
+
+## How the work goes
+
+1. Write the slides, or have an agent write them.
+2. Run `deck lint`. It renders every step of every slide in Chromium and reports overflow, text cut short, contrast, off-brand values, content over a layout's budget, missing notes and a talk over its length, each with a fix. See [Lint as the contract](/concepts/lint-as-the-contract/).
+3. Run `deck shot` to get a PNG of any slide, for you or the agent to look at.
+4. Open `deck dev` to click through the deck with hot reload, and press `c` to leave a comment on an element.
+5. When it is ready: `deck present` to give the talk, `deck export` for a PDF and an editable PowerPoint file, or `deck build` for a static site.
+
+The reasons behind these choices are on [Design decisions](/project/design-decisions/).
+
+## What your machine needs
+
+| For | You need |
+| --- | --- |
+| Every command | Node.js 26 or later |
+| `deck lint`, `deck shot`, `deck diff`, `deck export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.0 install chromium` for 0.3.0 |
+| `deck present` | Electron's binary, downloaded once (about 120 MB). Without it, `deck present` prints the command that downloads it; `--browser` presents in Chrome instead. Checked on macOS with one display only: several displays, Windows and Linux are untested |
+| `deck diff` against a git ref | A git repository; otherwise compare with a folder saved by `deck diff --save-baseline` |
+| `deck export --verify` | Docker, for the LibreOffice and Open XML SDK checks. The `quicklook` and `keynote` renderers work on macOS only |
+| `deck dev --agent claude` or `--agent codex` | That CLI installed and signed in. `deck agent doctor` checks both |
+| GIFs as looping video | `ffmpeg` on your `PATH`. Without it a GIF stays an image |
+
+`deck new`, `deck dev` and `deck build` need nothing beyond Node.js.
+
+Without Electron's binary, `deck present` prints this (paths shortened):
+
+```console
+$ deck present launch-review
+Electron's binary is not downloaded (.../node_modules/electron/dist), so `deck present` cannot open a window.
+Run `node ".../node_modules/electron/install.js"` (about 120 MB), or pass --browser to present in Chrome.
+```
+
+## What it is not
+
+- **Not a visual editor.** You change a slide by editing its file, or by asking an agent to. The browser shows the deck; it does not edit it.
+- **Not a hosted service.** Everything runs on your machine. `deck build` writes static files you host where you like.
+- **No comments on a built deck.** Comment mode is part of `deck dev`; a built or exported deck has none.
+
+Next: install the CLI and make a deck in the [quickstart](/get-started/quickstart/).

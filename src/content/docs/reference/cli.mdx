@@ -1,0 +1,189 @@
+---
+title: "CLI"
+description: "Every deck command, its arguments and flags."
+sidebar:
+  order: 1
+---
+
+Use this page to look up the exact arguments and flags of a `deck` command. Each section shows the command's summary, its usage lines and, folded, the full `deck <command> --help` as `@deckster/cli` 0.3.0 prints it. `deck --help` lists the commands in the same order:
+
+```console
+$ deck --help
+Usage: deck <command> [options]
+
+Commands:
+  dev         Serve a deck with hot reload
+  present     Open a deck in its own window, with displays and presenter view
+  build       Build a deck (or every deck) to decks/<deck>/dist
+  preview     Serve the built output of a deck
+  shot        Write PNG screenshots of slides (and steps)
+  diff        Show which slides changed visually against a git ref or baseline
+  export      Export a deck to PDF, PNG and PowerPoint
+  lint        Check a deck for schema errors, overflow, contrast and off-brand values
+  layouts     List the layouts available to a deck
+  icons       List the icon names every brand has
+  charts      List the chart and number components and when to use each
+  diagrams    List the diagram components, node kinds and animation primitives
+  components  List the code, media, link and demo components with their props
+  brand       Print a brand's resolved tokens, or check a brand
+  new         Create a deck, or add a slide to one
+  types       Write tsconfig.json so editors and tsc resolve @deckster imports
+  comments    List, resolve, reopen, add and prune review comments
+  mcp         Print Claude Code and Codex configuration for a running deck dev --mcp
+  agent       Check the agent CLIs (Claude Code, Codex): installed, version, signed in
+
+Run `deck <command> --help` for the options of one command; `--version` prints the version.
+```
+
+## Shared conventions
+
+**Workspace.** Every command works in one workspace: the folder `DECK_ROOT` names, else the nearest folder at or above the current one that contains `decks/`, else the current folder (so `deck new` can start a workspace in an empty folder). When the workspace is not the current folder, the CLI prints `Using the workspace <path>` on standard error. It never picks your home folder or `/` on its own, and exits with 1 (your home folder's path appears where `/Users/you` is):
+
+```console
+$ cd ~ && deck layouts
+/Users/you is a home or root folder, so deck will not use it as a workspace: a deck's dev server would sit next to your keys and tokens.
+Make a project folder (`mkdir talks && cd talks`) and run the command there, or set DECK_ROOT to the folder you mean.
+```
+
+**Deck name.** A deck is named by its folder under `decks/`, never by a path. When the deck argument is left out, `dev`, `present` and `layouts` use `DECK`, else `hello` when the workspace has it, else the workspace's only deck. `preview` and `mcp` use `DECK`, else `hello`, so name the deck when the workspace has no `hello`. `build` builds every deck (or the one in `DECK`). Others, such as `deck lint`, need the deck named and print `Which deck? Name one, for example` and an example when it is missing.
+
+**`--brand <name>`.** On `dev`, `present`, `shot`, `lint`, `diff` and `export` it renders with `brands/<name>` instead of the brand in `deck.config.ts`. On `new` it is the brand written into the new deck's config, and on `icons` it takes a comma-separated list of brands to share names between.
+
+**`--json`.** A command that takes `--json` prints its result as indented JSON on standard output. When `shot`, `diff`, `export`, `lint`, `icons`, `brand`, `comments`, `mcp`, `agent` or `present --list-displays` fails with `--json`, it prints the failure there too and exits with 1:
+
+```console
+$ deck lint nope --json
+{
+  "ok": false,
+  "error": {
+    "type": "DeckBuildError",
+    "message": "No such deck in decks/nope:\n  - There is no decks/nope/deck.config.ts.\n    Fix: Use one of: launch-review; or create decks/nope/deck.config.ts."
+  }
+}
+```
+
+`type` names the kind of failure: `CliError` for a bad command line, `DeckBuildError` for a deck that does not exist or does not load, and others such as `BrandError` and `BrowserError`. A deck that cannot render also carries its lint `findings`. The catalog commands (`layouts`, `charts`, `diagrams`, `components`) print a failure as text on standard error, with or without `--json`.
+
+**Exit codes.** `0` on success; `1` when the command fails, lint reports errors, or `deck diff --fail-on-change` finds a change; `129` when the terminal closes (`SIGHUP`). Ctrl+C, `SIGTERM` and `SIGHUP` close the servers and browsers a command started before it exits.
+
+**Environment variables.**
+
+| Variable | What it sets |
+| --- | --- |
+| `DECK_ROOT` | The workspace folder, so you can run `deck` from anywhere. Empty counts as unset. |
+| `DECK` | The deck a command uses when none is named. Empty counts as unset. |
+| `DECK_AUTHOR` | The name new comments and resolutions are signed with. Without it, git's `user.name`, else `Reviewer`. |
+
+## deck dev
+
+<CliCommand name="dev" />
+
+Guide: [quickstart](/get-started/quickstart/).
+
+## deck present
+
+<CliCommand name="present" />
+
+Guide: [`deck present` and displays](/present/deck-present-and-displays/).
+
+## deck build
+
+<CliCommand name="build" />
+
+Guide: [build and host](/export-and-publish/build-and-host/).
+
+## deck preview
+
+<CliCommand name="preview" />
+
+Guide: [build and host](/export-and-publish/build-and-host/).
+
+## deck shot
+
+<CliCommand name="shot" />
+
+Guide: [screenshots](/review/screenshots/).
+
+## deck diff
+
+<CliCommand name="diff" />
+
+Guide: [visual diff](/review/visual-diff/).
+
+## deck export
+
+<CliCommand name="export" />
+
+Guides: [PDF](/export-and-publish/pdf/), [PowerPoint](/export-and-publish/powerpoint/).
+
+## deck lint
+
+<CliCommand name="lint" />
+
+Guide: [lint](/review/lint/). Every rule: [lint rules](/reference/lint-rules/).
+
+## deck layouts
+
+<CliCommand name="layouts" />
+
+Every layout in full: [layouts reference](/reference/layouts/).
+
+## deck icons
+
+<CliCommand name="icons" />
+
+The names every published brand shares: [icons reference](/reference/icons/).
+
+## deck charts
+
+<CliCommand name="charts" />
+
+Every chart's props: [charts reference](/reference/charts/).
+
+## deck diagrams
+
+<CliCommand name="diagrams" />
+
+Every diagram's props: [diagrams reference](/reference/diagrams/).
+
+## deck components
+
+<CliCommand name="components" />
+
+Every component's props: [components reference](/reference/components/).
+
+## deck brand
+
+<CliCommand name="brand" />
+
+Guide: [check a brand](/brands/check-a-brand/).
+
+## deck new
+
+<CliCommand name="new" />
+
+Guide: [your first deck](/get-started/your-first-deck/).
+
+## deck types
+
+<CliCommand name="types" />
+
+Guide: [workspace layout](/get-started/workspace-layout/).
+
+## deck comments
+
+<CliCommand name="comments" />
+
+Guide: [comments](/review/comments/).
+
+## deck mcp
+
+<CliCommand name="mcp" />
+
+Guide: [MCP tools](/ai-agents/mcp-tools/).
+
+## deck agent
+
+<CliCommand name="agent" />
+
+Guide: [agent panel](/ai-agents/agent-panel/).

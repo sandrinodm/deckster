@@ -1,0 +1,67 @@
+---
+title: "Deck URL and window.__deck"
+description: "The URL hash and parameters a running deck reads, and the browser API it exposes for automation."
+sidebar:
+  order: 11
+---
+
+Use this page to link to a slide and step, open a deck in static mode or as the presenter window, and drive a running deck from a browser script such as a Playwright test. Every deck, in `deck dev`, `deck present` or a build, reads the same URL and exposes the same `window.__deck`.
+
+## The URL hash
+
+A deck writes its position into the URL as `#/<slide>/<step>`:
+
+- `<slide>` is the slide's number, counted from 1, so it matches page numbers. In a hash you type or link to, it may also be the slide's id: `#/steps/2` is the same as `#/2/2` in the `hello` deck.
+- `<step>` counts from 0, where 0 is the slide before any `<Step>` shows (see [steps](/concepts/steps/)). Leave it out for step 0: `#/3`.
+
+The deck writes the number back: open `#/steps/1` and the address bar shows `#/2/1`. A hash with an unknown id or a number out of range is ignored.
+
+## Query parameters
+
+Version 0.3.0 reads two:
+
+| Parameter | Does |
+| --- | --- |
+| `?static` | Static mode: every slide mounts, and motion, video and live demos show their final state. `?static=1` and `?static=true` also turn it on; `?static=0`, `false` or `no` leave it off. `deck shot`, `deck lint` and the exports open pages this way. See [static mode and readiness](/concepts/static-mode-and-readiness/). |
+| `?presenter` | Opens the page as the presenter window, with notes and timer, instead of the audience window. In a browser, `p` opens this URL at the current position. |
+
+They combine with the hash: `http://localhost:5173/?static#/steps/2`.
+
+<Aside type="note" title="Not in v0.3.0">
+`?embed`, for a deck shown in an iframe on another page (no presenter tools, a small previous and next control instead), is not in any release yet, 0.3.0 included.
+</Aside>
+
+## `window.__deck`
+
+While a deck is mounted, `window.__deck` holds its automation API, the one `deck shot`, `deck lint` and the exports use:
+
+| Member | What it is |
+| --- | --- |
+| `slides` | The slides in order. Each has `index` (from 0), `id`, `file`, `title`, `layout`, `stepCount` (step 0 included; `undefined` until the slide has mounted once), `notes`, `budget` (in seconds) and `frontmatter`. |
+| `position` | The slide and step on screen: `{ slide, step }`, the slide counted from 0. |
+| `isStatic` | Whether the page runs in `?static` mode. |
+| `goto(slide, step?)` | Shows a slide, by index from 0 or by id, at a step (default 0). A step past the slide's last clamps to it. Throws a `RangeError` for a slide that does not exist. |
+| `next()` | The next step, or the next slide after the last step. Does nothing at the end. |
+| `prev()` | The previous step, or the previous slide at its last step. Does nothing at the start. |
+| `ready()` | A promise that resolves when the slide on screen (every slide, in static mode) is ready to capture. |
+
+`goto`, `next` and `prev` apply synchronously: when the call returns, the new slide is rendered. They never morph; a morph that a key press started finishes at once, so the API always moves from where the deck really is. Note that `position` and `goto` count slides from 0 while the hash counts from 1.
+
+`ready()` waits until no component holds the slide with `useReadyHold`, web fonts have loaded, and every image and CSS background image on the slide has loaded or failed. Steps that register late are counted by then, so `stepCount` is final, and a step `goto` asked for early has been applied. A failed image does not reject: the broken image shows up in the screenshot instead. After 30 seconds `ready()` rejects with an error that starts `ready() gave up after 30s:` and names what it was still waiting for, such as the slides still held. Late-loading TSX calls `useReadyHold(true)` until its content is in and `false` after; see [static mode and readiness](/concepts/static-mode-and-readiness/).
+
+## Example
+
+Against `deck dev hello` (the `hello` deck copied into the workspace), opened at `http://localhost:5173/?static`, in the browser console or a Playwright `page.evaluate`:
+
+```js
+await window.__deck.ready();
+window.__deck.slides.map((slide) => [slide.id, slide.stepCount]);
+// [["title",1],["steps",4],["live-counter",2],["closing",1]]
+window.__deck.goto('steps', 2);
+window.__deck.position; // {"slide":1,"step":2}
+location.hash; // "#/2/2"
+window.__deck.goto('nope');
+// RangeError: No slide with id "nope". Slide ids: title, steps, live-counter, closing.
+```
+
+To capture slides as PNG files without writing a script, use [`deck shot`](/review/screenshots/).

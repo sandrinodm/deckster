@@ -1,0 +1,19 @@
+// The deck components: MDX globals registered in src/components.ts. See AGENT.md, "Deck components".
+export { default as BrandGrid } from "./BrandGrid.astro";
+export { default as BrandTokens } from "./BrandTokens.astro";
+export { default as CatalogIndex } from "./CatalogIndex.astro";
+export { default as ChartTypes } from "./ChartTypes.astro";
+export { default as CliCommand } from "./CliCommand.astro";
+export { default as DeckEmbed } from "./DeckEmbed.astro";
+export { default as Diagram } from "./Diagram.astro";
+export { default as DiagramKinds } from "./DiagramKinds.astro";
+export { default as FrontmatterReference } from "./FrontmatterReference.astro";
+export { default as IconGrid } from "./IconGrid.astro";
+export { default as LayoutIndex } from "./LayoutIndex.astro";
+export { default as LayoutReference } from "./LayoutReference.astro";
+export { default as PropsTable } from "./PropsTable.astro";
+export { default as SchemaReference } from "./SchemaReference.astro";
+export { default as SlideExample } from "./SlideExample.astro";
+export { default as SlideShot } from "./SlideShot.astro";
+export { default as StepStrip } from "./StepStrip.astro";
+export { default as UiShot } from "./UiShot.astro";

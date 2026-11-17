@@ -1,0 +1,61 @@
+---
+title: "Verify an export"
+description: "Check a PowerPoint export against the web deck with --verify."
+sidebar:
+  order: 3
+---
+
+A PowerPoint file can look different in each app that opens it, and different again on a machine without the brand's fonts. `deck export --verify` checks the file for you before you send it. After this page you can run it, read its report per renderer, and decide whether to send the fonts or export with other options. How to export the file in the first place is on [PowerPoint](/export-and-publish/powerpoint/).
+
+## What it checks
+
+`--verify` exports the PPTX and then checks it: it validates the file with the Open XML SDK (in Docker), renders it back to pictures, and compares each text block, chart, diagram, picture and table with the web slide by position, size and line count. It checks the PPTX only, not the PDF.
+
+## Run it
+
+<Steps>
+
+1. Start Docker. The validator and the LibreOffice renderers run in containers; `quicklook` needs macOS.
+
+2. Export with `--verify`:
+
+   ```console
+   $ deck export launch-review --verify
+   /Users/you/talks/.deck/exports/launch-review/launch-review.pptx (3 slides, hybrid mode, masters: default, gradient, fonts embedded: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Inter Deck Caption, Inter Deck Lead)
+   ...
+   Open XML SDK 3.3 validator (Microsoft 365 format): valid
+   libreoffice: 1 of 12 regions differ (LibreOffice Impress 7.4 (Debian bookworm, Docker), fonts installed: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Inter Deck Caption, Inter Deck Lead)
+   libreoffice-nofonts: 6 of 12 regions differ (LibreOffice Impress 7.4 (Debian bookworm, Docker), brand fonts not installed and embedded fonts removed (an app that ignores embedding); substitutes Liberation Sans/Serif/Mono for Arial, Helvetica, Times New Roman and Courier New, DejaVu Serif for Georgia, DejaVu Sans Mono for Menlo, Carlito and Caladea for Calibri and Cambria)
+   quicklook: 5 of 12 regions differ (macOS Quick Look (Apple's Office renderer, as Keynote and Finder use it), none of the presentation's fonts installed on this Mac)
+   Regions: 12 of 36 differ
+     01 title: 4 region(s) differ
+        text "Launch review": shifted 16px up (libreoffice-nofonts)
+        text "One sentence that says what this ta…": 12% narrower (quicklook)
+        text "Launch review": shifted 10px up (libreoffice)
+     02 revenue: 4 region(s) differ
+   ...
+     03 risks: 4 region(s) differ
+        text "The payment provider has not signed…": 3 lines vs 5, 14% wider (quicklook)
+        text "Three risks could delay the launch": 25% wider (libreoffice-nofonts)
+        text "Three risks could delay the launch": 7% wider (quicklook)
+   Wrote 9 side-by-side picture(s), 12 region crop(s) and report.json to /Users/you/talks/.deck/exports/launch-review/verify
+   ```
+
+   The output is cut in two places. This three-slide run took 26 seconds on a Mac (measured with `time`).
+
+3. Open the `verify/` folder beside the PPTX, here `.deck/exports/launch-review/verify/`. Its pictures show each slide side by side with the web, with crops of the regions that differ, and `report.json` sits beside them.
+
+</Steps>
+
+## Read the report
+
+Read it per renderer. Here, with the fonts installed, LibreOffice moved one region; without them, the substitutes changed widths and line counts. So send the `fonts/` folder with the file, or export with `--fonts system` (see [fonts](/export-and-publish/powerpoint/#fonts)).
+
+## Options
+
+| Option | What it does |
+| --- | --- |
+| `--renderer <ids>` | Which renderers to use, comma-separated. Default: `libreoffice`, `libreoffice-nofonts` (both Docker) and `quicklook` (macOS only). Also `libreoffice-embedded` (Docker, the file's embedded fonts only) and `keynote` (macOS; opens Keynote and needs Automation permission, so it is never on by default). |
+| `--strict` | With `--verify`, exits non-zero when any region differs or nothing was rendered. |
+
+The full option list is in `deck export --help` and on the [CLI reference](/reference/cli/#cli-export).

@@ -1,0 +1,85 @@
+---
+title: "Live components"
+description: "Put interactive React components on a slide."
+sidebar:
+  order: 7
+---
+
+Put a small working React widget, such as a counter, a slider or a calculator, on a slide with `<Live>`. It runs in the slide's own React tree, takes clicks and keys without moving the deck, and shows a still poster in exports.
+
+<DeckEmbed deck="showcase" slide="live-widget" />
+
+The still is the slide's poster, which draws the counter without its − and + buttons; they appear once the widget runs. Click the slide to load it, then click the counter and press the arrow keys: the number changes and the deck stays where it is. Press Escape to hand the keyboard back.
+
+## Put a component on a slide
+
+Write the widget as a React component in a file of its own, such as `lib/counter.tsx` in the deck folder, and host it with `<Live component>`. In a [TSX slide](/write-slides/tsx-slides/):
+
+<SlideExample deck="apps-demo" slide="counter" />
+
+`<Live>` works from MDX too: import the component with a path relative to the slide.
+
+```mdx
+---
+layout: demo
+title: A counter from an MDX slide
+---
+
+import { Counter } from '../lib/counter.tsx';
+
+<Live component={Counter} poster="../assets/counter.png" alt="The counter at 3" label="A counter" />
+
+<Notes>
+Click the counter and press the arrow keys.
+</Notes>
+```
+
+| Prop | What it does |
+| --- | --- |
+| `component` | The component to host. Or write the widget as children instead; not both. |
+| `props` | The props passed to `component`. |
+| `poster` | What static mode, `deck shot` and exports show instead of the widget: an image path, or a function that renders it and gets the slide's `step`. |
+| `alt` | The poster image's alt text. |
+| `label` | What the region is called to assistive technology. |
+| `mount` | `adjacent` (default) mounts the widget as soon as its slide is on the stage, so it is ready on arrival; `active` mounts it only while its slide is on screen. |
+
+The [`demo` layout](/reference/layouts/#layout-demo) gives the widget the whole region under the title, with up to three short notes in `<Aside>`. In the widget, read `useSlide().isActive` from `@deckster/engine` to pause timers while the slide is not on screen; the counter above reads it to mark itself inactive.
+
+## Clicks and keys stay in the widget
+
+The region is interactive: clicks inside it do not move the deck. Once something inside has focus, the keyboard is the widget's, arrows and Space included, and a small "Esc to return" hint shows. Escape gives the keyboard back to the deck.
+
+## When it throws
+
+The widget runs inside an error boundary. If it throws while rendering, the region shows a card in the slide's own colours that says "This widget stopped" with the error message, and the rest of the slide and the deck keep working.
+
+## Posters, screenshots and exports
+
+Static mode, `deck shot`, `deck lint` and exports draw the `poster` and never mount the widget. Without a poster, the widget itself renders there, which is right only for a widget with no timers, fetches or randomness. Nothing in `deck lint` asks for a `<Live>` poster, so give one to every widget that changes on its own. More on what static mode draws is on [static mode and readiness](/concepts/static-mode-and-readiness/).
+
+A poster as a function draws the widget's opening state with the same markup, so the still matches the live widget:
+
+```tsx
+<Live
+  component={Counter}
+  label="A counter"
+  poster={() => (
+    <div className="counter">
+      <p className="counter-label">Votes for the demo</p>
+      <output className="counter-value">3</output>
+    </div>
+  )}
+/>
+```
+
+## `<Live>` or `<AppFrame>`
+
+| | `<Live>` | `<AppFrame>` |
+| --- | --- | --- |
+| Runs | In the slide's own React tree | In an iframe, as a page of its own |
+| Styles and globals | Shared with the deck | Isolated from the deck |
+| Build | None of its own | Its own entry, built into `dist/apps/<name>/` |
+| Talks to the deck | Reads hooks such as `useSlide()` and `useStep()` | Through the app bridge: brand, steps, ready, errors |
+| Use for | A counter, a slider, a calculator | A full demo: an agent chat replay, a product screen |
+
+Neither is a security boundary: both run your code with the deck. For the second column, see [mini apps](/write-slides/mini-apps/). Every prop is on [components](/reference/components/#props-Live).

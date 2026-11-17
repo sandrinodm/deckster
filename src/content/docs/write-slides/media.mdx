@@ -1,0 +1,135 @@
+---
+title: "Media"
+description: "Add images, video with cues, Lottie animations and icons to a slide."
+sidebar:
+  order: 5
+---
+
+Add photos, screenshots, video cut into steps, small animations and icons to a slide, and put a picture behind a whole slide. Every media path is relative to the slide file, and the brand decides how pictures are treated, so the same slide fits every brand.
+
+## Add an image
+
+A Markdown image alone in its paragraph becomes an `<Image>`. Write `<Image>` when you need its props:
+
+<SlideExample deck="components" slide="register" />
+
+| Prop | What it does |
+| --- | --- |
+| `src`, `alt` | The file, relative to the slide, and what it shows (`alt=""` only for decoration). Both required. |
+| `treatment` | A treatment from the brand's imagery, such as its duotone. `plain`, which every brand has, shows the image as it is: use it for screenshots and maps. Default: the slide's treatment, else the brand's. |
+| `fit` | `cover` (default) crops to fill the frame; `contain` shows all of it. |
+| `focal` | The point cropping keeps in view, such as `focal="top"` or `focal={[50, 30]}` (percent across and down). Default: the centre. |
+| `ratio` | The frame's width over height. |
+| `caption` | A caption under the image. |
+
+Pictures go in a layout's `<Media>` slot. Four layouts have one: `title` and `section` (a photo that bleeds off the right edge), `split` (beside the text) and `image` (the whole slide). The brand's treatments and imagery are on [fonts and assets](/brands/fonts-and-assets/).
+
+**Text over a photo** belongs to the `image` layout, or a `title` cover with `picture: full`: they set the text in white on a dark scrim sized to it, and `deck lint` checks the contrast against the pixels underneath. Do not place text over a picture by hand.
+
+<SlideShot deck="showcase" slide="photo" alt="A photo of a residential street under tall maples fills the whole slide; the eyebrow, the title 'Text over a photo stays readable' and a line of text sit in white at the bottom left, and a photo credit sits at the bottom right." />
+
+## What gets checked
+
+| Rule | When |
+| --- | --- |
+| `media-missing` | A file named in `src`, `poster` or another media prop does not exist. An error. |
+| `broken-image` | An image fails to load in the browser. An error. |
+| `low-res-image` | A raster image has fewer pixels than the size it is drawn at on the 1920x1080 canvas. A warning. |
+| `media-gif` | A local GIF that cannot be converted to video because `ffmpeg` is not installed. With `ffmpeg`, the build converts it. |
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/harbour-map.mdx
+  warning low-res-image (harbour-map step 0): harbour-map.png is 320x180 pixels but is drawn at 816x856 canvas pixels.
+          Fix: Use an image at least 816x856 pixels (twice that for 2x exports), an SVG, or draw it smaller.
+
+launch-review: 0 errors, 1 warning in 4 slides (4 steps checked).
+```
+
+## Add video and cut it into steps
+
+`<Video>` plays when its slide appears and pauses when the deck leaves. Use WebM. `poster` is required: static mode, `deck shot` and exports show it instead of the video.
+
+`cues` cut the video into parts, one per step: the first part plays on arrival and holds, and each press plays the next. Stepping back plays a part again from its start. Give one still per part in `posters`, so each step exports as its own picture; without them every step shows `poster` and `deck lint` warns with `video-cue-posters`.
+
+<SlideExample deck="components" slide="video-cues" />
+
+Video is muted by default (`muted={false}` to hear it); `loop`, `controls`, `fit`, `focal` and `caption` work as on `<Image>`. Inside a `<Step>`, a video starts from the top when the step reveals it.
+
+## Add a Lottie animation
+
+`<Lottie src alt>` plays a small vector animation from a Lottie JSON file, such as a check mark drawing itself. On its own it plays as the slide arrives; inside a `<Step>` it plays when the step reveals it. `role` draws every stroke and fill in one colour of the surface, so the animation follows the brand. Static mode shows its last frame (`frame` changes that).
+
+```mdx
+<Media>
+
+<Lottie src="../assets/media/check.json" alt="A ring and a check mark drawing themselves: the handover confirmation" size="full" role="accent" />
+
+</Media>
+```
+
+<SlideShot deck="lookbook" slide="split-lottie" alt="A split slide with a large blue ring and check mark on the left, and the title 'Every handover ends with a check' with a line of text on the right." />
+
+## Use icons
+
+`<Icon name>` draws an icon from the brand's icon set, at the size of the text around it. `role="accent"` colours it; `label` gives it a text alternative, and without one it is decorative. Layout fields named `icon`, such as each card's `icon` on the `cards` layout, take the same names.
+
+Find a name from the terminal:
+
+```console
+$ deck icons --search rocket
+1 icon names matching "rocket" in every one of: default (lucide)
+Sets: lucide
+
+rocket
+```
+
+`deck icons` lists the names every brand in the workspace shares. A name the set does not have fails the build with the closest ones:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/icon.mdx
+  error   schema (icon): Line 6, column 3: <Icon name="rockett"> is not an icon of the lucide set.
+          Fix: Closest names in the lucide set: rocket, pocket, brackets, ticket, tickets. Browse the set at https://icon-sets.iconify.design/lucide/. A deck that renders in several brands needs a name that every brand's set has.
+
+launch-review: 1 error, 0 warnings.
+```
+
+The names the published brands share are on [icons](/reference/icons/).
+
+## Put a picture behind a whole slide
+
+`background:` in the frontmatter paints an image over the slide's surface colour, behind everything else. Give a path:
+
+```mdx
+---
+layout: statement
+title: Harbour
+surface: inverse
+background: ../assets/harbour.png
+---
+```
+
+or an object with options:
+
+```mdx
+---
+layout: statement
+title: Harbour at night
+surface: inverse
+background:
+  src: ../assets/harbour.png
+  fit: cover
+  focal: { x: 50, y: 30 }
+  tint: { role: bg, opacity: 0.6 }
+  layers: over
+---
+```
+
+`fit` and `focal` work as on `<Image>` (`focal` in percent, 0 to 100), `opacity` fades the image, `tint` lays a colour role of the surface over it (`bg`, `surface`, `fg` or `accent`, at an `opacity`) so text stays readable in every brand, and `layers: over` paints the image above the surface's own background layers instead of hiding them (`replace`, the default).
+
+`background: none` hides the surface's background layers and paints no image. Every slide frontmatter key is on [slide frontmatter](/reference/slide-frontmatter/).
+
+## In static mode and exports
+
+Static mode, `deck shot` and exports never play video or animation: they show the posters, and a Lottie's chosen frame. See [static mode and readiness](/concepts/static-mode-and-readiness/). Buttons, link cards and QR codes are on [links](/write-slides/links/); every media prop is on [components](/reference/components/#props-Image).

@@ -1,0 +1,141 @@
+---
+title: "Fonts and assets"
+description: "Add fonts, logos and other files to a brand."
+sidebar:
+  order: 4
+---
+
+A brand ships its own typefaces, logos, icon set and image treatments. This page shows where each font can come from, how to install it in an npm workspace, how logo variants appear on each surface, and what `deck brand check` says when a file is missing.
+
+## Font sources
+
+A brand has three families, `display`, `body` and `mono`. Each is `{ family, fallback, substitute?, source }`, and `source.kind` says where its files come from:
+
+| `kind` | Files | Fields |
+| --- | --- | --- |
+| `fontsource` | A Fontsource npm package | `package`, and optional `axes`, `weights`, `styles`, `subsets` |
+| `files` | Font files in the brand folder | `files`: at least one `{ path, weight, style?, unicodeRange? }` |
+| `system` | None: the viewer's machine provides the family | none |
+| `unavailable` | None yet: the text renders in the fallback stack | `reason` |
+
+`fallback` must end in a generic family such as `sans-serif`, `serif`, `monospace` or `ui-monospace`.
+
+### Fontsource packages
+
+This is the display family of `default`:
+
+```ts
+display: {
+  family: 'Bricolage Grotesque',
+  fallback: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+  substitute: { family: 'Arial' },
+  source: {
+    kind: 'fontsource',
+    package: '@fontsource-variable/bricolage-grotesque',
+    axes: 'standard',
+  },
+},
+```
+
+A variable package (`@fontsource-variable/*`) loads one file set, `axes`. The default is `wght`. Fontsource's larger sets, `standard` and `full`, carry more axes, such as the `opsz` and `wdth` that `default` sets in its type scale. A variable package takes no `weights`. A static package (`@fontsource/*`) needs `weights`, and every weight the type scale uses must be one of them. Without a match, the check fails:
+
+```console
+$ deck brand check nocturne
+brands/nocturne/brand.ts
+  error   typography.scale.label.weight: Weight 500 (normal) is not loaded for IBM Plex Mono, so the browser would fake it.
+          Fix: Load that weight and style in the family's source, or pick a loaded weight.
+nocturne: cannot be used (1 error, 0 warnings).
+```
+
+That run had `weights: [400]` where `nocturne` lists `[400, 500]`. Without `subsets`, a family loads `latin` and `latin-ext`.
+
+The CLI carries three packages: `@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono` and `@fontsource-variable/bricolage-grotesque`. Install any other package with `npm install <package>` in the workspace folder, the one with `decks/` and `brands/`. The brand's fonts resolve from there, and `npm install` creates a `package.json` if the folder has none. Until you do, `deck brand check` fails with `<package> is not installed for brands/<name>.` and prints the command. [Use a brand](/brands/use-a-brand/#add-a-published-brand) shows the full output.
+
+### Files, system and unavailable fonts
+
+For a typeface you have licensed files for, put the files in the brand folder, usually `fonts/`, and list them. `path` is relative to the brand folder and ends in `.woff2`, `.woff`, `.ttf` or `.otf`. `weight` is a number, or `[min, max]` for a variable file:
+
+```ts
+source: { kind: 'files', files: [{ path: 'fonts/acme-sans.woff2', weight: [100, 900] }] },
+```
+
+A file that isn't there fails the check:
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  error   typography.families.body.source.files[0].path: fonts/acme-sans.woff2 does not exist in brands/acme/.
+          Fix: Put the font file itself (a .woff2, .woff, .ttf or .otf, not a link to a file elsewhere) in the brand folder, usually fonts/, or fix the path.
+acme: cannot be used (1 error, 0 warnings).
+```
+
+`system` loads nothing and passes the check. Use it for a family every viewer's machine has.
+
+`unavailable` is for a commercial face whose files you don't have yet. The brand loads, and the check warns until you switch the family to `files`. With the `mono` family of a copy of `default` set to `source: { kind: 'unavailable', reason: 'Acme Mono is licensed; web font files not supplied yet.' }`:
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  warning typography.families.mono.source: JetBrains Mono has no font files (Acme Mono is licensed; web font files not supplied yet.), so text renders in "JetBrains Mono", ui-monospace, monospace.
+          Fix: Add the licensed files to the brand's fonts/ folder and use `kind: "files"`.
+acme: is valid (0 errors, 1 warning).
+```
+
+### Substitutes
+
+`substitute` is the installed family that exported documents fall back to where the brand font is neither embedded nor installed. PowerPoint writes it next to the brand font, and `deck export --fonts system` renders with it. Pick one of the same kind as the family: Arial for a sans, Georgia for a serif, Courier New for a mono. For a family the export doesn't know, give its `panose` (20 hex digits). The check judges the family's kind from its fallback stack and warns on a mismatch:
+
+```console
+$ deck brand check acme
+brands/acme/brand.ts
+  warning typography.families.display.substitute.family: "Georgia" is a serif family, but Bricolage Grotesque reads as sans.
+          Fix: Pick a sans substitute, such as Arial.
+acme: is valid (0 errors, 1 warning).
+```
+
+See [PowerPoint](/export-and-publish/powerpoint/) for `--no-embed-fonts` and `--fonts system`.
+
+### Licences
+
+The brand schema has no licence field. Keep each family's licence with the brand, for example in a README in the brand folder. The only place `brand.ts` records one is an `unavailable` family's `reason`, which every check repeats.
+
+## Logos
+
+A brand names its logo files as variants, sets one as the default, and says where the logo goes. From `default`:
+
+```ts
+logo: {
+  variants: {
+    primary: { file: 'logos/mark.svg', aspect: 3.349 },
+    reversed: { file: 'logos/mark-reversed.svg', aspect: 3.349 },
+  },
+  default: 'primary',
+  clearSpace: 0.5,
+  placement: { corner: 'top-right', height: 32 },
+},
+```
+
+- `file` is an SVG, PNG or WebP inside the brand folder. `aspect` is its width divided by its height, at most 50, and reserves the space before the image loads.
+- A surface shows `default` unless it names another variant. All three dark surfaces of `default` set `logo: 'reversed'`.
+- `placement.corner` is `top-left`, `top-right`, `bottom-left` or `bottom-right`, and `height` is in canvas pixels. `clearSpace` is a multiple of the logo height, from 0 to 10.
+- `chrome.logo.show` turns the logo on or off. The page number, footer and logo that are shown must each sit in their own corner.
+
+A brand without a logo writes `logo.variants: {}` and `chrome.logo.show: false`.
+
+## Icons and image treatments
+
+`icons` names one Iconify set and the stroke width to draw it at, such as `{ set: 'lucide', strokeWidth: 1.75 }`. The 0.3.0 CLI carries `lucide` and `tabler`; [use a brand](/brands/use-a-brand/#icons-when-you-switch-brands) covers names that differ between them.
+
+`imagery.treatments` names the looks a slide's pictures can take, and `imagery.default` is the one they get without asking. Each treatment has a `type`:
+
+| `type` | Fields | Does |
+| --- | --- | --- |
+| `none` | none | Draws the picture as it is |
+| `rounded` | `radius`: `sm`, `md`, `lg` or `xl` | Rounds the corners with the brand's radius |
+| `grayscale` | none | Removes the colour |
+| `duotone` | `shadow`, `highlight` | Maps the picture onto two colours |
+| `tint` | `color`, `opacity` | Lays a colour over it |
+
+The names are yours. `nocturne` has `duotone` (its default), `plain` and `mono`, a `grayscale` treatment. Every brand also has `plain`, which draws a picture as it is, so a slide can name it in any brand. A brand that defines `plain` must define it as `{ type: 'none' }`. [Media](/write-slides/media/) shows how a slide picks a treatment.
+
+The full field list is in the [brand schema](/reference/brand-schema/). To start a brand from scratch, see [create a brand](/brands/create-a-brand/).

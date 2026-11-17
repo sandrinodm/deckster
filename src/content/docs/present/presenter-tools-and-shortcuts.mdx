@@ -1,0 +1,81 @@
+---
+title: "Presenter tools and shortcuts"
+description: "The presenter window, its tools and the keys that drive them."
+sidebar:
+  order: 1
+---
+
+Every running deck, in `deck dev` and in a build, carries its own presenting tools: a slide sidebar, an overview, go-to, blackout, a laser pointer and a presenter window with notes and a pacing timer. This page shows each tool and the keys you use while presenting from a browser. For a desktop window on a second display, see [deck present and displays](/present/deck-present-and-displays/).
+
+## The tool cluster
+
+Move the pointer to the bottom-left corner of the slide and a row of small icon buttons appears; it fades when the pointer moves away. Hover a button for its name. From left to right:
+
+| Button | Key | Where it appears |
+| --- | --- | --- |
+| Slide sidebar | `s` | everywhere |
+| Overview | `o` | everywhere |
+| Presenter window | `p` | everywhere |
+| Fullscreen | `f` | everywhere |
+| Displays | none | only in the `deck present` window |
+| Keyboard shortcuts | `?` | everywhere |
+| Comment mode | `c` | `deck dev` and `deck present` without `--built`, after a divider |
+| Agent | `a` | with `--agent` |
+
+A built deck has five: Slide sidebar, Overview, Presenter window, Fullscreen and Keyboard shortcuts.
+
+<UiShot name="tools-detail" alt="Close up of the bottom-left corner of a slide in deck dev: a rounded bar of six outline icons for the slide sidebar, overview, presenter window, fullscreen and keyboard shortcuts, then a divider and a speech bubble for comment mode." />
+
+## Keys while presenting
+
+| Key | What it does | Works in |
+| --- | --- | --- |
+| Right, Down, PageDown, Space | Next step or slide | both windows |
+| Left, Up, PageUp, Shift+Space | Previous step or slide | both windows |
+| Home, End | First or last slide | both windows |
+| `g` | Go to slide: type its number, then Enter | both windows |
+| `b`, `w` | Black out or white out the screen; press again, or any navigation key, to bring the slide back | both windows |
+| `l` | Laser pointer | both windows |
+| `f` | Fullscreen | both windows |
+| `p` | Open the presenter window | audience window |
+| `s` | Slide sidebar | audience window |
+| `o` | Overview | audience window |
+| `?` | Every key the running deck knows | both windows |
+| Escape | Close the panel on top | both windows |
+
+A key pressed with Ctrl, Alt or Meta is left to the browser. The full list is in [Keyboard shortcuts](/reference/keyboard-shortcuts/).
+
+## Find a slide: sidebar and overview
+
+`s` opens the sidebar: every slide as a thumbnail with its number, title and time budget, the current one outlined. Click a thumbnail to go there.
+
+<UiShot name="sidebar" alt="The slide sidebar is open on the left with thumbnails of slides 14 to 19, each with its number, title and time budget; slide 17 is outlined in red." />
+
+In `deck dev` you can also drag a thumbnail to reorder the slides, and the dev server writes the new order into `deck.config.ts`. A build has no server to write to, so dragging is dev only.
+
+`o` opens the overview, the whole deck as a grid: the arrow keys move, Enter opens the selected slide, Escape closes. A slide that builds shows its step count.
+
+<UiShot name="overview" alt="The overview shows the showcase deck as a grid of thumbnails, four to a row, each with its number, title and time budget, slide 17 outlined in red, and a header listing arrows to move, Enter to open and Esc to close." />
+
+## The presenter window
+
+Press `p`, or click the presenter button, and a second window opens at the same address with `?presenter` added, for example `http://localhost:5173/?presenter#/1/0`; you can also open that address yourself. Drag it to the screen only you can see.
+
+<UiShot name="presenter" alt="The presenter window of the showcase deck: 'Slide 17 of 45', a 0:00 timer with Start and Reset, a 'Not started' label and the wall clock along the top; the current slide on the left above This slide 1:08, Talk left 45:00 and Schedule; the next slide and the speaker notes on the right." />
+
+It shows the slide number; the timer with Start (then Pause) and Reset, and the wall clock; the current slide (click it for the next step) and the next slide or step; the speaker notes from `<Notes>`, with A− and A+ to resize them; and three pacing figures. Writing notes and budgets is covered in [Speaker notes](/write-slides/speaker-notes/).
+
+## How pacing works
+
+The timer starts when you press Start. Pacing compares it with each slide's `budget` (in the slide's frontmatter, such as `budget: 30s`):
+
+- **Without a `duration`** in `deck.config.ts`, the budgets stand as written, and the second figure reads Budgets left.
+- **With a `duration`**, the slides without a budget share the time the budgets leave over equally, and then every budget is scaled so they add up to the duration exactly. A 20-minute talk whose budgets add up to 10 minutes plans each slide at twice its budget. The second figure reads Talk left.
+
+The label at the top right says Not started until you press Start, then On pace while the timer is inside the current slide's planned window, or Ahead or Behind with the minutes and seconds. This slide counts down the current slide's budget from the moment it came on screen; Schedule shows how far ahead (positive) or behind (negative) you are. With no budgets and no duration, the label reads No budgets.
+
+## Two windows, one position
+
+The two windows talk over the browser's `BroadcastChannel`, named for the deck, so open them in the same browser. They share the position (a step in either window moves both), blackout and white-out, and the laser point, which shows on the audience screen. The presenter window closes itself when the audience window closes, but not when the audience window reloads, so a hot reload does not cost you your notes.
+
+A presentation clicker sends PageDown, PageUp or the arrow keys. In the presenter window those keys and Space always move the deck unless a text field has focus, and clicking a tool button does not take the focus, so the clicker never gets stuck on a button. While the screen is blacked out, the first press brings the slide back instead of moving on.

@@ -1,0 +1,844 @@
+{
+  "shared": {},
+  "components": [
+    {
+      "name": "Code",
+      "kind": "code",
+      "useWhen": "A block of code in a slide; a fence (```ts title=\"a.ts\" {2-4|7} lineNumbers diff /word/) is the usual way to write one.",
+      "avoid": "More than 11 lines, or 60 columns beside notes (90 without): cut it or split the slide.",
+      "props": {
+        "code": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The source; a literal is highlighted at build time."
+        },
+        "children": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The source as the tag's child, instead of `code`."
+        },
+        "lang": {
+          "type": "string",
+          "required": false,
+          "default": "text",
+          "description": "The language id, such as ts, tsx, bash or json."
+        },
+        "data": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The block highlighted at build time; the build writes it."
+        },
+        "file": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The file name in the title bar."
+        },
+        "label": {
+          "type": "string | false",
+          "required": false,
+          "default": "the language name",
+          "description": "The language label in the title bar; false hides it."
+        },
+        "lineNumbers": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Show line numbers."
+        },
+        "start": {
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "description": "The number of the first line."
+        },
+        "highlight": {
+          "type": "string | string[] | Record<number, string>",
+          "required": false,
+          "default": null,
+          "description": "Lines to focus, by step: '2-4|7', a list, or { 1: '2-4' }. Each entry is a step; a step that names no line of the block is reported as code-step-range."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "description": "The step of the first highlight entry."
+        },
+        "dim": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Whether lines outside the focus fade back."
+        },
+        "diff": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Read a leading + or - as an added or removed line, tinted with the surface diff colors."
+        },
+        "words": {
+          "type": "string[]",
+          "required": false,
+          "default": null,
+          "description": "Words to mark wherever they occur as whole words (`step` does not mark `steps`)."
+        }
+      },
+      "example": "```ts title=\"server.ts\" {2|3-4} lineNumbers\nconst app = createApp();\napp.use(cors());\n```",
+      "shared": []
+    },
+    {
+      "name": "CodeMove",
+      "kind": "code",
+      "useWhen": "Code that changes between versions: tokens glide from each state to the next, one per step.",
+      "avoid": "Unrelated snippets; use separate slides. More than four states loses the room.",
+      "props": {
+        "data": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The states highlighted at build time; the build writes it."
+        },
+        "steps": {
+          "type": "(string | { code, lang })[]",
+          "required": false,
+          "default": null,
+          "description": "The states, for TSX slides; highlighted in the browser."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The states: a fence or a <CodeStep> per state."
+        },
+        "lang": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The language of every state that names none."
+        },
+        "file": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The file name in the title bar."
+        },
+        "label": {
+          "type": "string | false",
+          "required": false,
+          "default": "the language name",
+          "description": "The language label in the title bar; false hides it."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "description": "The step at which the second state appears."
+        }
+      },
+      "example": "<CodeMove file=\"a.ts\">\n\n```ts\nlet a = 1;\n```\n\n```ts\nconst a = 1;\n```\n\n</CodeMove>",
+      "shared": []
+    },
+    {
+      "name": "CodeStep",
+      "kind": "code",
+      "useWhen": "One state of a <CodeMove>, when a fence will not do (a different language).",
+      "avoid": "Anywhere outside a <CodeMove>.",
+      "props": {
+        "code": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The code of this state."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The code of this state, as a fence or a string."
+        },
+        "lang": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The state's language, when it differs."
+        }
+      },
+      "example": "<CodeMove>\n<CodeStep lang=\"js\">{`a()`}</CodeStep>\n<CodeStep lang=\"ts\">{`a(1)`}</CodeStep>\n</CodeMove>",
+      "shared": []
+    },
+    {
+      "name": "Terminal",
+      "kind": "code",
+      "useWhen": "A shell session typed live: each <Cmd> adds one step (there is no `at` on a <Cmd>): the first is typed at the <Terminal>'s `at`, the next at `at` + 1, and so on, and each command's <Out> lines appear once it is typed. With the default `at={1}` step 0 shows only the prompt and a waiting cursor; `<Out>` written before the first <Cmd> shows from step 0, and `at={0}` types the first command on arrival.",
+      "avoid": "Long logs; show the two lines that matter.",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The session: <Cmd> and <Out> elements in order."
+        },
+        "title": {
+          "type": "string",
+          "required": false,
+          "default": "Terminal",
+          "description": "The title in the window bar."
+        },
+        "prompt": {
+          "type": "string",
+          "required": false,
+          "default": "$",
+          "description": "The prompt before each command."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "description": "The step at which the first command is typed; each further <Cmd> is typed one step later. At 1 the terminal arrives showing only the prompt and cursor."
+        }
+      },
+      "example": "<Terminal title=\"~/app\">\n  <Cmd>pnpm test</Cmd>\n  <Out tone=\"success\">64 passed</Out>\n</Terminal>",
+      "shared": []
+    },
+    {
+      "name": "Cmd",
+      "kind": "code",
+      "useWhen": "A command in a <Terminal>, kept exactly as written: URLs and *stars* stay text. Each one adds a step, in order; it takes no `at` of its own.",
+      "avoid": "Anywhere outside a <Terminal>.",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The command as typed after the prompt."
+        },
+        "text": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The command as a string; the build sets it from the tag's text."
+        }
+      },
+      "example": "<Cmd>curl -s https://api.example.com/v1/items?limit=100 | jq</Cmd>",
+      "shared": []
+    },
+    {
+      "name": "Out",
+      "kind": "code",
+      "useWhen": "A line of output in a <Terminal>, shown once the command before it is typed.",
+      "avoid": "Anywhere outside a <Terminal>.",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The output line."
+        },
+        "text": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The line as a string; the build sets it from the tag's text."
+        },
+        "tone": {
+          "type": "'plain' | 'muted' | 'success' | 'warning' | 'error'",
+          "required": false,
+          "default": "plain",
+          "description": "The color of the line; error sets it on the removed-line tint. Another value is a terminal-tone warning."
+        }
+      },
+      "example": "<Out tone=\"muted\">built in 1.4 s</Out>",
+      "shared": []
+    },
+    {
+      "name": "Image",
+      "kind": "media",
+      "useWhen": "A photo or picture with the brand's treatment, cropped to its frame; a markdown image alone in its paragraph becomes one.",
+      "avoid": "GIFs: the build converts a local GIF to video when ffmpeg is installed.",
+      "props": {
+        "src": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The file, relative to the slide; a missing file is media-missing."
+        },
+        "alt": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What the image shows; '' only for decoration."
+        },
+        "treatment": {
+          "type": "string",
+          "required": false,
+          "default": "the slide's treatment, else the brand default",
+          "description": "A treatment from the brand's imagery; `plain`, which every brand has, shows the image as it is (a screenshot, a map). An unknown name is a treatment-unknown warning."
+        },
+        "fit": {
+          "type": "'cover' | 'contain'",
+          "required": false,
+          "default": "cover",
+          "description": "Crop to fill, or show all of it."
+        },
+        "focal": {
+          "type": "string | [number, number]",
+          "required": false,
+          "default": "center",
+          "description": "The point cropping keeps in view."
+        },
+        "ratio": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "The frame's width over height. The figure keeps that shape (a media frame fits the largest such box), so corners, a tint and a <Morph> hold it."
+        },
+        "caption": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "A caption under the image."
+        }
+      },
+      "example": "<Image src=\"../assets/street.jpg\" alt=\"A street under maple trees\" focal=\"top\" />",
+      "shared": []
+    },
+    {
+      "name": "Video",
+      "kind": "media",
+      "useWhen": "Motion: plays on its slide, pauses when the deck leaves, and can be cut into parts by steps. Inside a <Step> it starts from the top when the step reveals it.",
+      "avoid": "Sound the room must hear without a caption. Use WebM, not MP4.",
+      "props": {
+        "src": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The video file (WebM)."
+        },
+        "poster": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The still static mode, shots and exports show."
+        },
+        "posters": {
+          "type": "string[]",
+          "required": false,
+          "default": null,
+          "description": "One still per part of a cued video, so static mode and `deck shot --steps` show each part; without them every step shows `poster`, which `deck lint` reports as video-cue-posters."
+        },
+        "alt": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What the video shows."
+        },
+        "loop": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Play again from the start when it ends."
+        },
+        "muted": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Keep the sound off."
+        },
+        "autoPlay": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Start playing when the slide appears."
+        },
+        "controls": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Show the browser's controls."
+        },
+        "cues": {
+          "type": "number[]",
+          "required": false,
+          "default": null,
+          "description": "Times in seconds that cut the video into parts played step by step; stepping back plays a part again from its start."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": 1,
+          "description": "The step of the second cue."
+        },
+        "fit": {
+          "type": "'cover' | 'contain'",
+          "required": false,
+          "default": "cover",
+          "description": "Crop to fill, or show all of it."
+        },
+        "focal": {
+          "type": "string | [number, number]",
+          "required": false,
+          "default": "center",
+          "description": "The point cropping keeps in view."
+        },
+        "ratio": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "The frame's width over height."
+        },
+        "caption": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "A caption under the video."
+        }
+      },
+      "example": "<Video src=\"../assets/demo.webm\" poster=\"../assets/demo.jpg\" alt=\"The deploy, start to finish\" cues={[0, 3, 6]} />",
+      "shared": []
+    },
+    {
+      "name": "Lottie",
+      "kind": "media",
+      "useWhen": "A small vector animation, such as a check mark drawing itself. Inside a <Step> it plays when the step reveals it, so the room sees it draw.",
+      "avoid": "Long or busy animations; they pull the eye from the speaker.",
+      "props": {
+        "src": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The Lottie JSON file."
+        },
+        "alt": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What the animation shows."
+        },
+        "loop": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Play again from the start when it ends."
+        },
+        "frame": {
+          "type": "number | 'first' | 'last'",
+          "required": false,
+          "default": "last",
+          "description": "The frame static mode shows."
+        },
+        "ratio": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "The frame's width over height."
+        },
+        "size": {
+          "type": "'sm' | 'md' | 'lg' | 'full'",
+          "required": false,
+          "default": "full",
+          "description": "How wide the animation is."
+        },
+        "role": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Draw every stroke and fill in this color role."
+        }
+      },
+      "example": "<Lottie src=\"../assets/check.json\" alt=\"A check mark\" size=\"md\" role=\"fg\" />",
+      "shared": []
+    },
+    {
+      "name": "Icon",
+      "kind": "icon",
+      "useWhen": "An icon from the brand's icon set, at the size of the text around it.",
+      "avoid": "Names only one set has; use names both brands share.",
+      "props": {
+        "name": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The icon's name in the brand's set, or set:name."
+        },
+        "icon": {
+          "type": "ComponentType",
+          "required": false,
+          "default": null,
+          "description": "An icon component, for TSX slides."
+        },
+        "size": {
+          "type": "string",
+          "required": false,
+          "default": "body",
+          "description": "The type step whose size it takes."
+        },
+        "role": {
+          "type": "string",
+          "required": false,
+          "default": "the text color",
+          "description": "The color role of the surface."
+        },
+        "label": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A text alternative; without it the icon is decorative."
+        }
+      },
+      "example": "<Icon name=\"rocket\" role=\"accent\" />",
+      "shared": []
+    },
+    {
+      "name": "Button",
+      "kind": "link",
+      "useWhen": "A call to action that opens a link; external links open in a new tab.",
+      "avoid": "Links in running text; write a markdown link instead.",
+      "props": {
+        "href": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Where it goes: http(s), mailto or tel, a path or a #fragment; javascript: and other schemes are refused."
+        },
+        "variant": {
+          "type": "'solid' | 'outline'",
+          "required": false,
+          "default": "solid",
+          "description": "Filled with the accent, or a ring."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": true,
+          "default": null,
+          "description": "The label."
+        }
+      },
+      "example": "<Button href=\"https://example.com/signup\">Try it</Button>",
+      "shared": []
+    },
+    {
+      "name": "LinkCard",
+      "kind": "link",
+      "useWhen": "A link worth a card: a title, a sentence and the readable URL.",
+      "avoid": "More than three on a slide.",
+      "props": {
+        "href": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Where the card goes; the same schemes as Button."
+        },
+        "title": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What the link is."
+        },
+        "description": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A sentence about it."
+        },
+        "icon": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "An icon or logo at the start of the card."
+        }
+      },
+      "example": "<LinkCard href=\"https://github.com/acme/api\" title=\"The repository\" />",
+      "shared": []
+    },
+    {
+      "name": "Download",
+      "kind": "link",
+      "useWhen": "A button that downloads one of the deck's exports, built with `deck build --with-exports`.",
+      "avoid": "Files the build does not write; link to them with Button.",
+      "props": {
+        "file": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The file, relative to the built deck, such as talk.pdf."
+        },
+        "variant": {
+          "type": "'solid' | 'outline'",
+          "required": false,
+          "default": "solid",
+          "description": "Filled with the accent, or a ring."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": true,
+          "default": null,
+          "description": "The label."
+        }
+      },
+      "example": "<Download file=\"talk.pdf\">Download the slides (PDF)</Download>",
+      "shared": []
+    },
+    {
+      "name": "QR",
+      "kind": "link",
+      "useWhen": "A link the room should open on their phones.",
+      "avoid": "Long URLs; shorten them first.",
+      "props": {
+        "value": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What the code opens, usually a URL."
+        },
+        "size": {
+          "type": "number",
+          "required": false,
+          "default": 300,
+          "description": "Width and height on the canvas, in pixels."
+        },
+        "caption": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Print the readable URL beneath the code."
+        }
+      },
+      "example": "<QR value=\"https://example.com/slides\" />",
+      "shared": []
+    },
+    {
+      "name": "Live",
+      "kind": "app",
+      "useWhen": "A small React widget running inline on the slide, such as a counter or a slider.",
+      "avoid": "Anything with its own styles or globals; make it a mini app (AppFrame).",
+      "props": {
+        "component": {
+          "type": "ComponentType",
+          "required": false,
+          "default": null,
+          "description": "The component to host; or give children."
+        },
+        "props": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "The props passed to component."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The widget as JSX, instead of component."
+        },
+        "poster": {
+          "type": "string | ({ step }) => ReactNode",
+          "required": false,
+          "default": null,
+          "description": "What static mode and exports show."
+        },
+        "alt": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "The poster image's alt text."
+        },
+        "mount": {
+          "type": "'adjacent' | 'active'",
+          "required": false,
+          "default": "adjacent",
+          "description": "When the widget mounts."
+        },
+        "label": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "What the region is called to assistive technology."
+        }
+      },
+      "example": "<Live component={Counter} poster=\"../assets/counter.png\" alt=\"The counter at 3\" />",
+      "shared": []
+    },
+    {
+      "name": "AppFrame",
+      "kind": "app",
+      "useWhen": "A mini app (decks/<deck>/apps/<name>/, `deck new app`) or an external page in a sandboxed frame, with the brand and the steps.",
+      "avoid": "An external page without fallback=: the venue Wi-Fi decides whether it shows.",
+      "props": {
+        "app": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The app folder under apps/; a name the deck does not have fails the build (app-missing in lint for a computed name)."
+        },
+        "src": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A URL or path to load instead of app."
+        },
+        "poster": {
+          "type": "string | ({ step }) => ReactNode",
+          "required": true,
+          "default": null,
+          "description": "What static mode, exports and offline runs show."
+        },
+        "alt": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "What the app shows; the frame title."
+        },
+        "fallback": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "A recorded video played when the browser is offline, the host does not answer or the app fails; the presenter switches to it and back with the Recording control or the v key."
+        },
+        "chrome": {
+          "type": "'none' | 'browser' | 'window'",
+          "required": false,
+          "default": "none",
+          "description": "The frame's dressing."
+        },
+        "title": {
+          "type": "string",
+          "required": false,
+          "default": "the app name or host",
+          "description": "The text in the address or title bar."
+        },
+        "steps": {
+          "type": "number",
+          "required": false,
+          "default": 0,
+          "description": "The slide steps the app owns in static mode."
+        },
+        "mount": {
+          "type": "'adjacent' | 'active'",
+          "required": false,
+          "default": "adjacent",
+          "description": "When the frame loads."
+        },
+        "keepAlive": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Keep the app mounted after its slide leaves."
+        },
+        "bridge": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Turn the bridge on for an external src."
+        },
+        "sandbox": {
+          "type": "string[]",
+          "required": false,
+          "default": null,
+          "description": "Tokens to add to the iframe's sandbox."
+        },
+        "allow": {
+          "type": "string[]",
+          "required": false,
+          "default": null,
+          "description": "Features to add to the iframe's allow."
+        },
+        "readyTimeout": {
+          "type": "number",
+          "required": false,
+          "default": 8000,
+          "description": "Milliseconds to wait for the app to be ready."
+        },
+        "onResize": {
+          "type": "(size) => void",
+          "required": false,
+          "default": null,
+          "description": "Called with the size an app asks for."
+        }
+      },
+      "example": "<AppFrame app=\"agent-demo\" poster=\"../assets/agent.png\" alt=\"An agent run\" chrome=\"window\" />",
+      "shared": []
+    },
+    {
+      "name": "Step",
+      "kind": "motion",
+      "useWhen": "Segment an explanation: reveal the part the speaker is about to talk about at a later step; it keeps its space while hidden. Give each step of a run you walk through (points, cards) `focus`, so the one just revealed is at full strength and earlier ones recede to the muted color: that signals where to look.",
+      "avoid": "Revealing every bullet one by one by habit, or for experts, who read faster than you reveal: reveal what the speaker builds on. Do not mix effects for variety; keep the default and pick another only when it carries meaning (wipe for a line read left to right, scale for a card that arrives). Charts and diagrams take their own `at`.",
+      "props": {
+        "at": {
+          "type": "number",
+          "required": true,
+          "default": null,
+          "description": "The step that reveals the children, an integer of 1 or more; a bare <Step> is refused."
+        },
+        "effect": {
+          "type": "'rise' | 'fade' | 'scale' | 'blur' | 'wipe'",
+          "required": false,
+          "default": "rise",
+          "description": "How the content comes in: rise (fade and rise), fade, scale (fade in from slightly smaller, growing from the middle of the text or picture, wherever it is aligned), blur (fade in from out of focus) or wipe (uncovered from the start edge across the content, list markers fading in with it). Each acts on the blocks directly inside the step: write the content on its own lines with blank lines inside the <Step>. Words inside a sentence fade, blur or wipe, but cannot rise or scale, which only fade there. Blur keeps the treatment of the kit's <Image>, <Video> and <Lottie>; a raw element whose own `style` sets a filter keeps that filter and is not blurred. Durations and easings are the brand's. Static mode and exports show the end state, reduced motion turns every effect into a fade, and a PPTX export into a fade on click."
+        },
+        "focus": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Recede the content to the brand's muted color once a later step of the slide is reached, so the latest step stands out. It changes color, never opacity, so receded text keeps its contrast. Static mode and exports show every revealed step at full strength."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The content to reveal."
+        }
+      },
+      "example": "<Step at={1} focus>\n\n- **Eastgate:** 14 residents\n\n</Step>\n\n<Step at={2} focus>\n\n- **Riverside:** 2 residents\n\n</Step>\n\n<Step at={3} effect=\"wipe\">\n\nSeven times the shade for each tree.\n\n</Step>",
+      "shared": []
+    },
+    {
+      "name": "Morph",
+      "kind": "motion",
+      "useWhen": "Carry one element across two consecutive slides: the photo that moves from one side to the other, the logo that shrinks into a corner, an icon or a short heading that changes place. Wrap it in a <Morph> with the same id on both slides and it flies to its new place and size instead of cross-fading with the rest.",
+      "avoid": "Morphing everything: one or two elements per move keep the eye on what carries over. Morphs play only between neighbouring slides; give each id once per slide. The box of the wrapped element flies, so a chart or number figure that fills its whole region flies as that region; morph something whose box is its own size. For a reveal within one slide use <Step>.",
+      "props": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The name shared with the matching <Morph> on the neighbouring slide; unique on the slide. It flies over the brand transition while the slides run their own. Static mode, exports and reduced motion show no morph."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "What flies: one element, such as a picture, a logo, an icon or a heading. Only the first element flies; the wrapper itself has no box."
+        }
+      },
+      "example": "<Morph id=\"logo\">\n  <Icon name=\"trees\" role=\"accent\" />\n</Morph>",
+      "shared": []
+    },
+    {
+      "name": "Notes",
+      "kind": "notes",
+      "useWhen": "Speaker notes: what the slide proves and what to say. Every slide has them.",
+      "avoid": "Text the audience must read; that belongs on the slide.",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "The notes, in markdown."
+        }
+      },
+      "example": "<Notes>\nSay what the slide proves in a sentence.\n</Notes>",
+      "shared": []
+    }
+  ],
+  "insight": {
+    "props": "Each component takes the props its catalog entry lists; another name is refused with the closest one (\"`href` is not a prop of Download; did you mean `file`?\"), at build time in MDX and when the slide renders in TSX. A missing required prop is refused the same way.",
+    "files": "Paths to images, video, posters and Lottie files are relative to the slide and become imports; a missing one is reported by `deck lint` as media-missing. A markdown image alone in its paragraph becomes an <Image>.",
+    "static": "Static mode, `deck shot` and exports never play video or load frames: they show posters, the last state of a CodeMove and the whole terminal session up to the step.",
+    "steps": "Code highlights, CodeMove states, Terminal commands, Video cues and AppFrame steps are deck steps: each press moves one.",
+    "warnings": "What the build warns about reaches `deck lint` with a rule id: media-missing, media-gif, code-unknown-language, code-step-range, terminal-tone."
+  }
+}

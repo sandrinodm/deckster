@@ -1,0 +1,30 @@
+---
+/**
+ * FrontmatterReference — the keys every slide's frontmatter takes, from the JSON Schema in
+ * src/data/layouts.json (`slideFrontmatter`): each key's type, its allowed values and limits,
+ * and the fields of `background`'s object form.
+ *
+ *   ## Keys
+ *
+ *   <FrontmatterReference />
+ *
+ * The schema carries no descriptions or defaults, so the page says what each key does. A layout's
+ * own fields are on /reference/layouts/ (LayoutReference). Takes no props.
+ */
+import "./deck.css";
+import { caller, fail, slideFrontmatterSchema } from "./data";
+import { flattenSchema } from "./format";
+import SchemaTable from "./SchemaTable.astro";
+
+const c = caller("FrontmatterReference", {}, Astro.url);
+let rows;
+try {
+  rows = flattenSchema(slideFrontmatterSchema());
+} catch (error) {
+  fail(c, "(layouts.json slideFrontmatter)", error instanceof Error ? error.message : String(error));
+}
+---
+
+<section class="dk-ref dk-schema-ref" id="slide-frontmatter" aria-label="Slide frontmatter keys">
+  <SchemaTable rows={rows} label="Slide frontmatter keys" source="layouts.json · slideFrontmatter" />
+</section>
