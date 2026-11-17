@@ -1182,6 +1182,11 @@ async function shootShellWindow(
   await app.evaluate(({ BrowserWindow }, size) => {
     for (const shellWindow of BrowserWindow.getAllWindows()) {
       shellWindow.setContentSize(size.width, size.height);
+      // A hidden window paints no frames on Linux, so a screenshot there never returns. The run
+      // is under a virtual display (Xvfb) on Linux, where a shown window is seen by nobody.
+      if (process.platform === 'linux') {
+        shellWindow.showInactive();
+      }
     }
   }, VIEWPORT);
   await window.waitForTimeout(SETTLE_MS);
