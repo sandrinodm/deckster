@@ -63,7 +63,7 @@ jobs:
       # check below fails as soon as main's catalogs differ from the committed
       # src/data, so the reference can't drift past the release unnoticed.
       # Move this to a tag once a release carries the docs scripts and ?embed.
-      DECKSTER_REF: main
+      DECKSTER_REF: fix/docs-electron-shots
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
