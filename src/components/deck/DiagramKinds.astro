@@ -2,33 +2,35 @@
 /**
  * DiagramKinds — what diagrams.json says about the parts of a `<Flow>` that no PropsTable
  * covers: the node `kind`s (with aliases, shape and icon), the `State` values (with the words
- * that mean the same) and the `<Edge>` options.
+ * that mean the same), the `<Edge>` options and the cards guide (how a node picks its `card`,
+ * the five standard cards and what a card leaves alone).
  *
  *   ## Node kinds, states and edges
  *
  *   <DiagramKinds />
  *   <DiagramKinds part="kinds" />
  *
- * `part` shows one of `kinds`, `states` or `edges`; anything else fails the build. Each part is a
- * `###` label: "Node kinds", "States", "Edge options", with `id="diagram-<part>"`.
+ * `part` shows one of `kinds`, `states`, `edges` or `cards`; anything else fails the build. Each
+ * part is a `###` label: "Node kinds", "States", "Edge options", "Cards", with
+ * `id="diagram-<part>"`.
  */
 import "./deck.css";
 import { Code } from "@/components/ui/code";
 import { caller, checkDiagramPart, diagramParts, inline } from "./data";
 
 interface Props {
-  part?: "kinds" | "states" | "edges";
+  part?: "kinds" | "states" | "edges" | "cards";
 }
 
 const { part } = Astro.props;
 const c = caller("DiagramKinds", { part }, Astro.url);
 const parts = checkDiagramPart(c, part);
-const { nodeKinds, states, stateSynonyms, edgeOptions } = diagramParts();
+const { nodeKinds, states, stateSynonyms, edgeOptions, cards } = diagramParts();
 const iconSets = [...new Set(nodeKinds.flatMap((k) => Object.keys(k.icons ?? {})))];
 const synonyms = (state: string) => Object.entries(stateSynonyms).filter(([, s]) => s === state).map(([word]) => word);
 ---
 
-<section class="dk-ref dk-diagram-kinds" aria-label="Diagram node kinds, states and edge options">
+<section class="dk-ref dk-diagram-kinds" aria-label="Diagram node kinds, states, edge options and cards">
   {parts.includes("kinds") && (
     <div id="diagram-kinds">
       <h3 class="dk-label">Node kinds <span class="dk-muted">({nodeKinds.length})</span></h3>
@@ -87,6 +89,29 @@ const synonyms = (state: string) => Object.entries(stateSynonyms).filter(([, s])
           </div>
         ))}
       </dl>
+    </div>
+  )}
+  {parts.includes("cards") && (
+    <div id="diagram-cards">
+      <h3 class="dk-label">Cards <span class="dk-muted">(<code>card="..."</code>)</span></h3>
+      <p class="dk-prose" set:html={inline(cards.resolution)} />
+      <div class="nb-table-scroll">
+        <table aria-label="Standard cards">
+          <thead><tr><th>Card</th><th>Look, unless the brand restyles it</th></tr></thead>
+          <tbody>
+            {Object.entries(cards.standard).map(([name, look]) => (
+              <tr>
+                <td data-nowrap><code>{name}</code></td>
+                <td set:html={inline(look)} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="dk-prose" set:html={inline(cards.custom)} />
+      <ul class="dk-variants">
+        {cards.rules.map((rule) => <li set:html={inline(rule)} />)}
+      </ul>
     </div>
   )}
   <p class="dk-caption"><span>The same lists, as JSON, are in <code>deck diagrams --json</code>.</span></p>

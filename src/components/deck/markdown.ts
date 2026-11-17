@@ -15,7 +15,7 @@
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { budgetText, describeFieldMd, flattenSchema, layoutPage, layoutSummary, prettyExample, sectionRows, variantLimits, type SchemaRow } from "./format";
+import { budgetText, cardCells, describeFieldMd, diagramLookLines, flattenSchema, layoutPage, layoutSummary, prettyExample, sectionRows, STANDARD_CARDS, variantLimits, type SchemaRow } from "./format";
 import { componentUses, literalValue, where, type ComponentUse, type WrittenAttribute } from "./mdx-source";
 import { describeRows, type SchemaOf } from "./schema-descriptions";
 
@@ -35,7 +35,7 @@ function data(name: string): any {
 
 /** A hash of src/data, so Nimbus regenerates the Markdown when the data changes. */
 function revision(): string {
-  const hash = createHash("sha256").update("deck-components-md-7");
+  const hash = createHash("sha256").update("deck-components-md-8");
   try {
     for (const file of readdirSync(DATA_DIR).filter((f) => f.endsWith(".json")).sort()) {
       hash.update(file).update(readFileSync(path.join(DATA_DIR, file)));
@@ -295,7 +295,7 @@ function iconGrid(): string {
   return `${icons.count} icon names, drawn from each brand's set: ${sets}.\n\n${icons.icons.map((n: string) => `\`${n}\``).join(", ")}`;
 }
 
-function brandTokens({ attrs }: Context): string {
+function brandTokens({ attrs, base }: Context): string {
   const brand = data("brands").brands.find((b: any) => b.name === attrs.name);
   if (!brand) return "";
   const t = brand.tokens;
@@ -324,6 +324,23 @@ function brandTokens({ attrs }: Context): string {
       Object.entries<any>(t.typography.scale).map(([s, x]) => [`\`${s}\``, x.family, x.size, x.lineHeight, x.weight, x.tracking, x.case]),
     ),
   );
+  const onDefault = t.surfaces.default;
+  if (t.diagram && onDefault) {
+    out.push(
+      "**Diagrams**",
+      diagramLookLines(t.diagram).join(" "),
+      table(
+        ["Card", "Fill", "Border", "Radius", "Shadow", "Icon", "Stripe", "Title"],
+        Object.entries<any>(t.diagram.cards).map(([name, card]) => {
+          const colors = onDefault.diagramCards?.[name];
+          const c = cardCells(card, colors?.border ?? null);
+          const label = `\`${name}\`${STANDARD_CARDS.includes(name) ? "" : " (the brand's own)"}`;
+          return [label, colors?.fill ?? "none", c.border, c.radius, c.shadow, c.icon, c.accent, c.title];
+        }),
+      ),
+      `Colours on the \`default\` surface, sizes in px on the 1920×1080 canvas. A slide picks a card with \`card="..."\`; see [diagram look and cards](${root(base)}/brands/diagram-look-and-cards/).`,
+    );
+  }
   return out.join("\n\n");
 }
 
@@ -406,6 +423,18 @@ function diagramKinds({ attrs }: Context): string {
   }
   if (!part || part === "edges") {
     out.push("**Edge options**", d.edgeOptions.map((o: any) => `- \`${o.name}\`: ${md(o.useWhen)} \`${o.example}\``).join("\n"));
+  }
+  if (!part || part === "cards") {
+    out.push(
+      "**Cards** (`card=\"...\"`)",
+      md(d.cards.resolution),
+      table(
+        ["Card", "Look, unless the brand restyles it"],
+        Object.entries<string>(d.cards.standard).map(([name, look]) => [`\`${name}\``, md(look)]),
+      ),
+      md(d.cards.custom),
+      d.cards.rules.map((rule: string) => `- ${md(rule)}`).join("\n"),
+    );
   }
   return out.join("\n\n");
 }
