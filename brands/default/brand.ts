@@ -239,6 +239,17 @@ export default defineBrand({
       ],
     },
   },
+  diagram: {
+    groups: { stroke: 'none' },
+    kinds: { external: 'outline' },
+    cards: {
+      default: {
+        stroke: 'hairline',
+        shadow: 'sm',
+        icon: { style: 'solid', fill: 'accent/12', color: 'accent' },
+      },
+    },
+  },
   spacing: {
     scale: { '2xs': 4, xs: 8, sm: 16, md: 24, lg: 40, xl: 64, '2xl': 96, '3xl': 144 },
     margin: { x: 128, y: 112 },

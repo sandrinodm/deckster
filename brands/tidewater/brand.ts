@@ -241,6 +241,30 @@ export default defineBrand({
       ],
     },
   },
+  diagram: {
+    groups: { stroke: 'none', radius: 'xl' },
+    labels: { style: 'chip' },
+    kinds: { external: 'outline' },
+    cards: {
+      default: {
+        fill: 'surface',
+        border: 'none',
+        radius: 'lg',
+        shadow: 'md',
+        icon: { style: 'plain' },
+      },
+      outline: { border: 'muted', stroke: 'hairline' },
+      solid: { shadow: 'md' },
+      raised: { border: 'none', shadow: 'lg' },
+      capsule: {
+        fill: 'surface',
+        border: 'none',
+        shape: 'pill',
+        shadow: 'md',
+        icon: { style: 'plain' },
+      },
+    },
+  },
   spacing: {
     scale: { '2xs': 4, xs: 8, sm: 16, md: 24, lg: 40, xl: 64, '2xl': 104, '3xl': 160 },
     margin: { x: 136, y: 112 },

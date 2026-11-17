@@ -109,6 +109,7 @@ export default defineDeck({
     'diagram-cycle',
     'code-webhook',
     'diagram-tree',
+    'diagram-cards',
     'diagram-timeline',
     'diagram-svg',
     'demo-appframe',

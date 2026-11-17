@@ -19,8 +19,8 @@ pnpm deck lint lookbook
 pnpm deck lint lookbook --brand nocturne
 ```
 
-The deck has 137 slides in 12 parts and 268 steps. Its slides' `budget:` values add up to 94
-minutes 35 seconds, so `deck.config.ts` sets `duration: '100m'`, with five minutes of slack. That
+The deck has 138 slides in 12 parts and 270 steps. Its slides' `budget:` values add up to 95
+minutes 20 seconds, so `deck.config.ts` sets `duration: '100m'`, with five minutes of slack. That
 is the lookbook read end to end, not the forty-minute launch talk the story imagines
 (`BRIEF.md`), which would use a few slides from each part.
 

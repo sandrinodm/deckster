@@ -1,0 +1,27 @@
+---
+layout: diagram
+title: Payments is the one service that moves money, so it gets the second review
+eyebrow: Cards
+budget: 1m
+surface: inverse
+---
+
+<Flow title="The checkout path, with the payments service marked and the outside providers drawn as outlines">
+  <Node id="web" kind="client" title="Web app" col={1} row={2} />
+  <Node id="checkout" kind="service" title="Checkout" col={2} row={2} />
+  <Node id="payments" kind="service" title="Payments" subtitle="Two reviewers" card="solid" col={3} row={2} />
+  <Node id="ledger" kind="database" title="Ledger" col={4} row={2} />
+  <Node id="fraud" kind="external" title="Fraud score" card="outline" col={3} row={1} />
+  <Node id="network" kind="external" title="Card network" card="outline" col={4} row={1} />
+  <Node id="email" kind="external" title="Email provider" card="outline" col={3} row={3} />
+  <Edge from="web" to="checkout" />
+  <Edge from="checkout" to="payments" label="Charge" />
+  <Edge from="payments" to="ledger" />
+  <Edge from="payments" to="fraud" />
+  <Edge from="payments" to="network" />
+  <Edge from="checkout" to="email" label="Receipt" async />
+</Flow>
+
+<Notes>
+Every node here is a service or a store, but only one of them can charge a card twice. That one sits on the solid card, and its pull requests need two reviewers. The three outside providers are outlines: we call them, we do not run them. The cards are standard names, so the slide says the same thing in any brand.
+</Notes>

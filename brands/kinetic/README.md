@@ -35,6 +35,12 @@ frontmatter. The dark surfaces show the `reversed` logo.
 - **Motion.** Slides push over 240 ms.
 - **Data.** Blue, magenta, olive, graphite, flare orange and aqua, ordered so neighbours stay apart
   under every color-vision deficiency; a blue sequential ramp and a magenta-to-blue diverging one.
+- **Diagrams.** Nodes are white boxes with an ink border and the small hard shadow (lime on the
+  inverse surface), titles in upper-case JetBrains Mono on every card and in Layers chips, edges
+  bent square, groups framed in a regular ink line, and edge and message labels set in the mono
+  label step inside bordered chips. `solid` and `raised` carry bigger offsets, outside services
+  (`external`) are outlines, and the brand's own `volt` card fills a node with acid lime for the
+  one thing on a slide that has to shout (white on the lime section surface).
 
 ```sh
 pnpm deck brand check kinetic   # "kinetic: is valid (0 errors, 0 warnings)."

@@ -36,6 +36,11 @@ frontmatter. The two light surfaces (`inverse`, `accent`) show the dark `ink` lo
 - **Motion.** Slides slide in over 520 ms.
 - **Data.** Six categorical colors (ember, sky, gold, jade, orchid, rose), an ember sequential
   ramp and a blue-to-ember diverging one, both ramps written in OKLCH.
+- **Diagrams.** Drawn like an engraving: nodes are night panels with a hairline muted outline and
+  square corners, titles in Fraunces at a book weight, the icon a plain muted glyph; `outline`
+  keeps the line and drops the panel. Edges are hairlines with square bends and open arrowheads,
+  their labels in the mono label step, groups a dashed hairline. `raised` is the one card that lifts off the night: an ember outline
+  with the large ember glow.
 
 Print every resolved token with:
 

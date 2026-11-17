@@ -36,6 +36,10 @@ frontmatter. The dark surfaces show the `reversed` logo.
 - **Data.** Sea blue, coral, lilac, gold, deep navy and kelp green, ordered so neighbours stay
   apart under every color-vision deficiency; a sea-blue sequential ramp and a coral-to-blue
   diverging one.
+- **Diagrams.** Soft and lifted: nodes are white with no border, large rounded corners and the
+  long blue-tinted shadow; the icon is a plain glyph. Edge labels sit in rounded chips, and groups
+  are open fields with no outline. Outside services (`external`) are hairline outlines, and the
+  brand's own `capsule` card draws a node as a pill.
 
 ```sh
 pnpm deck brand check tidewater   # "tidewater: is valid (0 errors, 0 warnings)."

@@ -1,14 +1,14 @@
 # @deckster/deck-diagrams-demo
 
 Test deck for the diagram components, told as a platform team walking a new hire through how
-their system handles a request, one diagram per slide. 13 slides, 62 steps. Parcelwise and its
+their system handles a request, one diagram per slide. 15 slides, 64 steps. Parcelwise and its
 systems are fictional.
 
 Run these from the repository root:
 
 ```sh
 pnpm deck dev diagrams-demo
-pnpm deck lint diagrams-demo    # diagrams-demo: no problems in 13 slides (62 steps checked).
+pnpm deck lint diagrams-demo    # diagrams-demo: no problems in 15 slides (64 steps checked).
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures.
@@ -25,6 +25,8 @@ pnpm deck lint diagrams-demo    # diagrams-demo: no problems in 13 slides (62 st
 | `pricing-tree`                  | `<Tree>`                                                       |
 | `warehouse-floor`               | `<Svg>` importing [assets/warehouse.svg](assets/warehouse.svg) |
 | `deploy-gates`                  | A flow written in TSX                                          |
+| `money-path`                    | A `<Flow>` whose nodes pick the `solid` and `outline` cards    |
+| `card-reference`                | The five standard cards side by side, one `card` each          |
 
 Used by:
 
