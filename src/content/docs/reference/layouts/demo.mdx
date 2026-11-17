@@ -1,0 +1,54 @@
+---
+title: "demo"
+description: "A title that states what the audience is about to watch, then one large region for a live demo."
+sidebar:
+  order: 24
+---
+
+The `demo` layout gives a live demo the slide under a one-line title: a mini app in an `<AppFrame>` or a React widget in a `<Live>`, with up to three short notes beside it. Use it when the room should watch the product move, or try it.
+
+## Example
+
+<SlideExample deck="lookbook" slide="demo-live" />
+
+This slide is a TSX file. The `<Live>` widget is the default export, its `poster` is drawn from the same component so exports show the calculator at its opening value, and the notes beside it are a named `Aside` export.
+
+<SlideShot deck="apps-demo" slide="agent" alt="A demo slide titled An agent checks two sources, then answers, with a window called Ops console across the full width showing a chat request, two tool calls, the answer and a run trace." />
+
+Without `<Aside>` the demo takes all twelve columns. With it, the demo takes eight and the notes the last four.
+
+## When to use it
+
+- **Something has to run in front of the room.** For a still screen, use [`screen`](/reference/layouts/screen/). For a terminal session or code that changes, use [`code`](/reference/layouts/code/).
+- **The title says what to watch for**, in one line of up to 48 characters: "Watch Flock build a loop", not "Demo".
+- **The body is one element.** One `<AppFrame>` or one `<Live>`, nothing else; it fills the region. Which one to pick is on [live components](/write-slides/live-components/) and [mini apps](/write-slides/mini-apps/).
+- **Notes are a few words each.** `<Aside>` takes up to three bullets and 34 words. What you will say while it runs goes in `<Notes>`.
+- **A source or caveat** goes in `<Footnote>`, up to 30 words.
+
+## Reference
+
+<LayoutReference name="demo" />
+
+## Common mistakes
+
+- **A fourth note beside the demo.** `deck lint` holds `<Aside>` to its budget with the `content-budget` rule:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/demo.mdx
+    error   content-budget (demo): The aside slot holds 4 bullets; its layout allows 3.
+            Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **An `<AppFrame>` without a `poster`.** Static mode, exports and offline runs show the poster, so leaving it out is a `schema` error: "`<AppFrame>` needs `poster`: What static mode, exports and offline runs show."
+- **An app that does not exist.** `app="dispatch-sim"` needs `decks/<deck>/apps/dispatch-sim/index.html`. Without it, `deck lint` reports a `schema` error and tells you to run `deck new app <deck> dispatch-sim`.
+- **Only an `<Aside>`.** The body is required: a slide with notes and no demo is a `schema` error, "The demo layout needs content outside its slot tags."
+
+## Related layouts
+
+- [`screen`](/reference/layouts/screen/): one product screen, framed and still, with numbered callouts.
+- [`code`](/reference/layouts/code/): code, a `<CodeMove>` or a `<Terminal>` session instead of a running app.
+- [`split`](/reference/layouts/split/): a component beside a paragraph, when the text matters as much.
+- [`diagram`](/reference/layouts/diagram/): how the system works, drawn instead of run.

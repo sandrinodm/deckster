@@ -13,7 +13,7 @@ Use this page to look up the props of a diagram component or one of the parts th
 
 Seven components are diagrams: you put one on a slide. The other thirteen are parts, and each part's entry says where it goes ("Goes in"): a `<Node>` in a `<Flow>`, a `<Group>`, a `<Cycle>` or nested in its parent `<Node>` inside a `<Tree>`; a `<Hop>` only in a `<Journey>`; an `<Item>` only in a `<Layer>`. Below, each diagram is followed by its parts. A prop name a component does not take, or a value outside the ones it lists, fails the build naming the closest one.
 
-`<Timeline>` here is the diagram; the `timeline` layout is on [layouts](/reference/layouts/#layout-timeline).
+`<Timeline>` here is the diagram; the `timeline` layout has [its own page](/reference/layouts/timeline/).
 
 A node's `kind` sets its shape and icon (`service`, `database`, `queue` and so on, each with aliases), its `state` takes one of five values (`default`, `highlighted`, `muted`, `error`, `success`; words that mean the same are accepted), and `<Edge>` takes options such as a dashed line, a route style or an arrow at both ends. All three are listed under [node kinds, states and edges](#node-kinds-states-and-edges) at the end of this page.
 

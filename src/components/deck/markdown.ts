@@ -15,7 +15,7 @@
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { budgetText, describeFieldMd, firstSentence, flattenSchema, prettyExample, sectionRows, type SchemaRow } from "./format";
+import { budgetText, describeFieldMd, flattenSchema, layoutPage, layoutSummary, prettyExample, sectionRows, type SchemaRow } from "./format";
 import { componentUses, literalValue, where, type ComponentUse, type WrittenAttribute } from "./mdx-source";
 import { describeRows, type SchemaOf } from "./schema-descriptions";
 
@@ -33,7 +33,7 @@ function data(name: string): any {
 
 /** A hash of src/data, so Nimbus regenerates the Markdown when the data changes. */
 function revision(): string {
-  const hash = createHash("sha256").update("deck-components-md-5");
+  const hash = createHash("sha256").update("deck-components-md-6");
   try {
     for (const file of readdirSync(DATA_DIR).filter((f) => f.endsWith(".json")).sort()) {
       hash.update(file).update(readFileSync(path.join(DATA_DIR, file)));
@@ -173,7 +173,7 @@ function layoutReference({ attrs }: Context): string {
 
 function layoutIndex({ base }: Context): string {
   return data("layouts")
-    .layouts.map((l: any) => `- [\`${l.name}\`](${root(base)}/reference/layouts/#layout-${l.name}): ${md(firstSentence(l.description))}`)
+    .layouts.map((l: any) => `- [\`${l.name}\`](${root(base)}${layoutPage(l.name)}): ${md(layoutSummary(l.description))}`)
     .join("\n");
 }
 

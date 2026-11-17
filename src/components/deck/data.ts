@@ -399,8 +399,9 @@ export function componentSlide(name: string): { deck: string; slide: SlideEntry;
   return undefined;
 }
 
-/** The anchor LayoutReference sets and LayoutIndex links to. */
+/** The id LayoutReference sets on itself. */
 export const layoutAnchor = (name: string) => `layout-${name}`;
+
 
 // ---------------------------------------------------------------- catalogs
 

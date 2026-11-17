@@ -1,0 +1,56 @@
+---
+title: "columns"
+description: "Two to four headed columns of short items, set as a board."
+sidebar:
+  order: 31
+---
+
+The `columns` layout sets two to four headed columns of short items as a board: a roadmap of now, next and later, work by status, or a plan in three parts. Each column has a heading, an optional tag and one to four items, and you can light the column that matters now.
+
+## Example
+
+<SlideExample deck="lookbook" slide="columns-four" />
+
+Each column comes from one entry in `columns:`. Its `note:` is the tag above the heading, and the number beside the tag counts its items. The items line up across the columns in even rows, and `reveal: true` brings in one city per step; the still shows the last step.
+
+<SlideShot deck="layouts" slide="columns-requests" alt="A board of four columns on a blue accent surface, headed Requested, Surveyed, Planting and Planted, each with a tag such as 212 open and a count of its items; the Planting column stands out on a near-black panel." />
+
+`current: 3` lights the third column. A lit column takes the accent surface; on a slide that is itself on the accent surface, as here, it takes the inverse surface instead, so it still stands out.
+
+## When to use it
+
+- **Each group holds several short items.** Use [`cards`](/reference/layouts/cards/) when each idea is one card with a line of text, [`steps`](/reference/layouts/steps/) when the groups are stages of one process, [`timeline`](/reference/layouts/timeline/) when they have dates, and [`comparison`](/reference/layouts/comparison/) when options are measured on the same rows.
+- **Two to four columns, one to four items each.** A column's `title` takes up to 24 characters, its `note` up to 16 and each item up to 48. With four columns the limits are 16, 12 and 40.
+- **One column matters now.** Set `current:` to its number (1 is the first) and the others stay quiet.
+- **Read across.** Items share rows, so two columns can pair each ask with its answer on the same line, as the `columns-asks` slide of the [layouts](/decks/layouts/#/columns-asks) deck does.
+- **A source or caveat** goes in `<Footnote>`, up to 24 words. The slide title takes up to 60 characters.
+
+## Reference
+
+<LayoutReference name="columns" />
+
+## Common mistakes
+
+- **Long headings on a board of four.** The "four columns" variant tightens every column, so adding a fourth column can push existing headings over. `deck lint` reports a `schema` error that names the field:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/cities.mdx
+    error   schema (cities): columns[0].title: The columns layout sets at most 16 characters here (four columns), got 21.
+            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **A fifth item in a column.** The schema stops at four: "columns[0].items: Expected at most 4 items in a column, got a list of 5 items." Merge items or move detail into the notes.
+- **A `current:` past the last column.** It is a `schema` error that names the count, such as "current: 4 names column 4, but there are 3 columns."
+- **Text outside `<Footnote>`.** The layout draws only its columns and the footnote. A paragraph under the frontmatter is not shown, and `deck lint` does not report it.
+
+## Related layouts
+
+- [`cards`](/reference/layouts/cards/): one idea per card, with an icon and a line of text.
+- [`timeline`](/reference/layouts/timeline/): when the groups are dated milestones on a line.
+- [`steps`](/reference/layouts/steps/): when the groups are stages of one process, in order.
+- [`comparison`](/reference/layouts/comparison/): options measured on the same labelled rows.
+
+`reveal` and the other ways a slide builds are on [builds](/write-slides/builds/).

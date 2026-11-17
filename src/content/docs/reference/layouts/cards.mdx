@@ -1,0 +1,54 @@
+---
+title: "cards"
+description: "Two to four parallel ideas of equal weight (features, pillars, options, principles), each a card with an icon from the brand set, a short title and a line or two of text."
+sidebar:
+  order: 12
+---
+
+The `cards` layout sets two to four ideas of equal weight side by side, each a card with an icon, a short title and a line of text. Use it for features, pillars, principles or options that are peers, with one sentence under the title on what they have in common.
+
+## Example
+
+<SlideExample deck="lookbook" slide="cards-accent" />
+
+The ideas are in `cards:` in the frontmatter, and the line under the title is the slide's body. Icons, titles and text line up across the row whatever their length, and `surface: accent` sets this short set apart from the slides around it.
+
+<SlideShot deck="lookbook" slide="cards-four-reveal" alt="Four cards in a row under a two-line title, each with an icon on an accent tile, a short title such as €15.40 an hour or Sick pay and one line of text, with a source footnote below." />
+
+Four cards take the "four cards" variant, with shorter titles and text. This slide also sets `reveal: true`, which brings in one card per step; the still shows the last step.
+
+## When to use it
+
+- **The ideas are peers.** Use [`steps`](/reference/layouts/steps/) when they happen in order, [`stats`](/reference/layouts/stats/) when each is a number, [`comparison`](/reference/layouts/comparison/) when they are alternatives measured on the same rows, and [`content`](/reference/layouts/content/) for a list.
+- **Two to four cards.** Each has a `title` of up to 28 characters and optionally `text` of up to 56 and an `icon`. In a row of four, the limits are 22 and 44.
+- **The body is one sentence.** It says what the cards share, in up to 14 words. A source or caveat goes in `<Footnote>`, up to 24 words. The slide title takes up to 60 characters.
+- **Name the cards one at a time** with `reveal: true`, and put a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+- **Icons come from the brand's set.** A deck that renders in several brands needs names every brand's set has; [icons](/reference/icons/) lists the names all published brands share.
+
+## Reference
+
+<LayoutReference name="cards" />
+
+## Common mistakes
+
+- **Bullets in the body.** The ideas belong in `cards:`, and the body takes text only. `deck lint` reports a list there with the `slot-content` rule:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/windows.mdx
+    error   slot-content (windows): The body slot holds a list of 3 items; the cards layout sets it as text.
+            Fix: Write it as a sentence, or move the points to a layout made for a list (content or split; `deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **Adding a fourth card without shortening the others.** The "four cards" variant applies to every card, so a title that was fine in a row of three becomes a `schema` error: "cards[0].title: The cards layout sets at most 22 characters here (four cards), got 27."
+- **An icon name the brand's set lacks.** It is a `schema` error that suggests the closest names, for example "`cards[0].icon: clockz-nope` is not an icon of the lucide set."
+- **A fifth card.** The schema stops at four: "cards: Expected at most 4 cards, got a list of 5 items." Group the ideas, or set more of them as a [`content`](/reference/layouts/content/) list or a [`table`](/reference/layouts/table/).
+
+## Related layouts
+
+- [`steps`](/reference/layouts/steps/): numbered along a line, because the order matters.
+- [`stats`](/reference/layouts/stats/): two to four big numbers instead of ideas.
+- [`columns`](/reference/layouts/columns/): when each group holds several short items rather than one line of text.
+- [`bento`](/reference/layouts/bento/): facets of one subject, when one of them matters most.

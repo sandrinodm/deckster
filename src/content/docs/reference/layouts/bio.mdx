@@ -1,0 +1,51 @@
+---
+title: "bio"
+description: "Introduces one person, usually the speaker."
+sidebar:
+  order: 4
+---
+
+Use the `bio` layout to introduce one person, usually yourself, near the start of a talk. You get a portrait down the left side, the person's name and role beside it, a few facts that say why the room should listen, and up to two ways to reach them.
+
+## Example
+
+<SlideExample deck="lookbook" slide="bio-founder" />
+
+Notice that the slide's `title:` is nowhere on the slide: the large line is `name:`, and `title:` only names the slide in the outline. The facts are three bullets, the most the body takes.
+
+Without `photo:`, the layout draws the person's initials in place of the portrait:
+
+<SlideShot deck="lookbook" slide="bio-initials" alt="A bio slide with a pale blue tile showing the initials AB on the left; on the right the eyebrow Your ride-along lead, the name Aoife Brennan, the role Rider lead, Kestwick Old Town, two sentences about her and one email contact on the bottom line." />
+
+## When to use it
+
+- One person, once, near the start. The catalog's guidance is to use it once; it is the slide that says who is speaking before the argument begins.
+- The facts fit in 28 words or three bullets. That is the body's budget; anything longer belongs in the speaker notes.
+- `name:` is the only required field. `role:` (up to 48 characters), `photo:` and `contacts:` (at most two) are optional, so a slide with only a name and a sentence is valid.
+
+Pick another layout when the slide is about more than one person or about what they said:
+
+- Three or more people: use `team`, which the `bio` description names for that case.
+- Someone speaking for your point: use `quote`, which sets their words, not their CV.
+- A customer with numbers: use `proof`.
+
+## Reference
+
+<LayoutReference name="bio" />
+
+## Common mistakes
+
+- **Too many facts.** A fourth bullet fails [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 4 bullets; its layout allows 3." Keep the best three, or turn them into one sentence of at most 28 words.
+- **A third contact.** `contacts:` takes at most two entries. A third is a `schema` error before the slide renders: "contacts: Expected at most 2 contacts, got a list of 3 items." Each contact needs `label` (up to 16 characters) and `text` (up to 40); `href` is optional and makes it a link.
+- **Expecting `title:` on the slide.** The name is the heading. Write the person's name in `name:` (up to 32 characters) and use `title:` for how the slide reads in the outline, such as "Who is speaking".
+- **A face cropped off.** The portrait is cropped to a tall frame, keeping the centre of the upper third unless you say otherwise. When the face sits elsewhere, set `focal:` as a CSS position, such as `focal: 40% 20%`.
+- **A portrait in brand colours.** The portrait takes the brand's default image treatment. For a picture that must keep its own colours, set `treatment: plain`, which every brand has.
+
+## Related layouts
+
+- [`team`](/reference/layouts/team/): three or more people on one slide instead of one.
+- [`quote`](/reference/layouts/quote/): what someone said, not who they are.
+- [`proof`](/reference/layouts/proof/): a named customer with a quote and the numbers behind it.
+- [`title`](/reference/layouts/title/): the cover that comes before the bio, with the presenter in `byline:`.
+
+How paths in `photo:` resolve, and what `deck lint` checks about images, is on [media](/write-slides/media/).

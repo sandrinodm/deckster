@@ -276,8 +276,8 @@
 
 .dk-layout-index ul {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: 1rem 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 1.5rem 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -304,6 +304,13 @@
   font-family: var(--nb-font-mono);
   font-size: 0.75rem;
   line-height: 1rem;
+}
+
+.docs-content .dk-layout-index-summary {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  color: var(--nb-muted-foreground);
 }
 
 .dk-layout-index a:hover img {

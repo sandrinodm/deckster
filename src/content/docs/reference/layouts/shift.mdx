@@ -1,0 +1,46 @@
+---
+title: "shift"
+description: "One change, from the way things are to the way they will be."
+sidebar:
+  order: 16
+---
+
+Use the `shift` layout for the one change a talk argues for: a new process, a new cost, a new owner. The old state (`from:`) stands on the left, the new state (`to:`) on an accent panel that runs to the right and bottom edges, with an arrow on the seam between them.
+
+## Example
+
+<SlideExample deck="lookbook" slide="shift-cost" />
+
+Notice that both states fill the same four parts, a `label`, a `value`, a `title` and a `text`, and that the rows line up across the seam: €6.40 sits level with €3.10, so the eye compares like with like. The old state is set smaller and muted; the new one is larger, on the panel.
+
+## When to use it
+
+- There is one change and two states. `from:` and `to:` are both required, and each needs a `title` (up to 36 characters). `label` (up to 24), `value` (a figure as shown, up to 8 characters) and `text` (up to 80) are optional.
+- Both sides need a sentence of why. When the change is a single number, the `<Comparison>` chart says it with less.
+- You want the room to see the old way first. `reveal: true` shows the old state, then brings in the panel, the arrow and the new state on the next step.
+- The title (up to 60 characters) can say the change outright: "A drop costs half of what a van costs".
+
+Pick another layout when it is not one change:
+
+- Two or three options measured on several rows: use the `comparison` layout.
+- Several changes or numbers at once: use `stats`.
+- A change over dated milestones: use the `timeline` layout.
+
+## Reference
+
+<LayoutReference name="shift" />
+
+## Common mistakes
+
+- **A long body.** The body is one sentence under the title on why the change matters, at most 14 words. A 19-word sentence fails [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 19 words; its layout allows 14." Move the reasons into each state's `text`, or into the notes.
+- **A missing state.** A slide with only `to:` is a `schema` error before it renders: "from is required." Its fix lists what `from:` takes.
+- **The states in the body.** Write the two states in `from:` and `to:`, not as bullets in the body; the body takes text only.
+- **Long state text.** Each state's `text` takes at most 80 characters. When the text still does not fit, the layout sets the old state's text and both figures a step smaller, then the new heading too; shorter text keeps the larger sizes.
+
+## Related layouts
+
+- [`comparison`](/reference/layouts/comparison/): two or three options measured on the same two to five rows.
+- [`stats`](/reference/layouts/stats/): two to four figures side by side, with no before and after.
+- [`timeline`](/reference/layouts/timeline/): a change in dated milestones rather than two states.
+
+For a change that is one number, see [`<Comparison>`](/reference/charts/#props-Comparison). How `reveal` stages a slide is on [builds](/write-slides/builds/).

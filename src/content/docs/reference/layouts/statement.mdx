@@ -1,0 +1,58 @@
+---
+title: "statement"
+description: "One sentence set large, on its own."
+sidebar:
+  order: 6
+---
+
+Use the `statement` layout for one sentence set large on its own: the claim the talk turns on, a turn in the story, or a quote with the speaker named under it. You write the sentence as the body, and the layout sets it in the display style on the inverse surface unless you choose another.
+
+## Example
+
+<SlideExample deck="lookbook" slide="statement-center" />
+
+`align: center` centres a short statement for a turn in the story, and `surface: accent` sets it on the brand's accent colour. The `title:` names the slide in the outline and is not shown; the `<br />` breaks the line where the sentence turns. The reference below shows the default left-aligned form with `emphasis: underline`.
+
+`size: giant` sets a statement of up to five words across most of the slide, larger than the display style:
+
+<SlideShot deck="lookbook" slide="statement-giant" alt="The words 'Same hour. No van.' in white, set in two lines that fill most of a near-black slide." />
+
+## When to use it
+
+- **One sentence, no list.** The body is required: one sentence or two short ones, up to 24 words. Up to three lines are set in the display style; a longer statement is set at quote size, in four lines at most.
+- **A few words carry the claim.** Mark them once with emphasis (`*front door*`) and write `emphasis: underline` to set them in the accent over a heavy rule, which reads on every surface. Without it, emphasis is set in italics.
+- **Someone else said it.** Fill `<Attribution>` with the name and role, up to 12 words, and the statement becomes a quote. Write the words without quotation marks; the layout sets them.
+- **The one line to remember.** `size: giant` takes five words at most, for the line a keynote is remembered by.
+
+The catalog asks you to use the layout sparingly, at most once per part. For a testimonial with a portrait, use `quote`; for a claim that needs a reason under it, use `content`.
+
+## Reference
+
+<LayoutReference name="statement" />
+
+## Common mistakes
+
+**Too many words for `size: giant`.** The giant variant takes five words, and the finding names the way back to the longer budget:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/claim.mdx
+  error   content-budget (claim): The body slot holds 10 words; its layout allows 5 (`size: giant`; leave `size` out for a longer statement).
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+```
+
+**A list instead of a sentence.** The body takes text or a quote, not bullets: `slot-content` reports ``The body slot holds a list of 2 items; the statement layout sets it as text or quote.`` and suggests `content` or `split`.
+
+**A paragraph.** Past 24 words, `content-budget` reports `The body slot holds 28 words; its layout allows 24.` Cut it to the claim and say the rest; the reasoning belongs in the `<Notes>`.
+
+**Expecting the title on the slide.** `title:` only names the slide in the outline. Put every word the audience should read in the body.
+
+## Related layouts
+
+- [quote](/reference/layouts/quote/): a person speaking for the point, with name, role and portrait.
+- [section](/reference/layouts/section/): a divider that opens a part of the talk, with its number.
+- [closing](/reference/layouts/closing/): the last slide, with the one thing to do and how to follow up.
+- [content](/reference/layouts/content/): a title that states the point, with a paragraph or bullets under it.
+- Guide: [Text and fitting](/write-slides/text-and-fitting/) for how long text is set.

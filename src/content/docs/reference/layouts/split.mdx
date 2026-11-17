@@ -1,0 +1,56 @@
+---
+title: "split"
+description: "Text beside a picture or the evidence for it: a title and a short paragraph or bullets on one side, a photo, chart, diagram, table or component on the other."
+sidebar:
+  order: 11
+---
+
+The `split` layout sets text beside a picture or the evidence for it: a title and a short paragraph or bullets on one side, and a photo, chart, diagram, table, video or component on the other. Use it when the point needs something to look at and a few sentences to explain it.
+
+## Example
+
+<SlideExample deck="lookbook" slide="split-photo-left-bleed" />
+
+`ratio: 7:5` gives the text seven of the twelve columns, `side: left` puts the picture on the left, and `bleed: true` runs it to the edges of the slide. With a bleed, the caption moves to the foot of the text column.
+
+<SlideShot deck="lookbook" slide="split-donut" alt="A split slide titled Two kinds of shop pay 59%, with a short paragraph on the left and, on the right, a donut chart of revenue by merchant type with two slices in blue and 59% in its centre." />
+
+Anything but a photo is centred in its frame, not cropped: here a `<Donut>` at `ratio: 5:7`, which gives the chart the wider side.
+
+## When to use it
+
+- **There is something to show.** With nothing to show, use [`content`](/reference/layouts/content/). When the photo needs only one line of text, use [`image`](/reference/layouts/image/).
+- **The text explains the media.** A chart that stands alone with a one-line "so what" belongs on [`chart`](/reference/layouts/chart/); split is for a chart that needs a paragraph beside it.
+- **Pick the ratio by what matters more.** `ratio:` shares the columns text:media, `1:1` (the default), `5:7` or `7:5`, and `side:` puts the media `left` or `right` (the default).
+- **Fit the text to the ratio.** At `1:1` the body takes up to 40 words; at `5:7` up to 30 words and three bullets, with a title of up to 40 characters; at `7:5`, 48 words. Otherwise the body takes up to four bullets and the title up to 44 characters, and `bleed: true` lowers the word count to 34 at `1:1` and 42 at `7:5`.
+- **Credit the media** in `<Caption>`, up to 20 words (14 with a bleed). A source for the text goes in `<Footnote>`.
+
+## Reference
+
+<LayoutReference name="split" />
+
+## Common mistakes
+
+- **Bullets that fit at `1:1` but not at `5:7`.** Narrowing the text column tightens its budget:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/shade.mdx
+    error   content-budget (shade): The body slot holds 4 bullets; its layout allows 3 (ratio 5:7).
+            Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **Leaving out `ratio:` and writing for the widest column.** The default is `1:1`, so a 44-word body is over budget: "The body slot holds 44 words; its layout allows 40 (ratio 1:1)."
+- **The media outside `<Media>`.** The slot is required; without it `deck lint` reports a `schema` error, "The split layout needs its media slot."
+- **A chart or diagram that sits small.** Only photos fill the frame. Give other media `height: 100%` to fill it.
+
+## Related layouts
+
+- [`content`](/reference/layouts/content/): the same text with nothing beside it.
+- [`image`](/reference/layouts/image/): one photo across the whole slide with at most a line of text.
+- [`chart`](/reference/layouts/chart/): one chart filling the slide, with a short "so what" in `<Aside>`.
+- [`screen`](/reference/layouts/screen/): a product screen shown whole in a drawn frame, when the picture matters more than the text.
+
+Images, video and the paths they take are on [media](/write-slides/media/).

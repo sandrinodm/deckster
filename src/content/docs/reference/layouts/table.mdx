@@ -1,0 +1,54 @@
+---
+title: "table"
+description: "A title that states the takeaway over one table of exact values, written as a Markdown table or the kit <Table>."
+sidebar:
+  order: 18
+---
+
+The `table` layout sets one table of exact values under a title that states the takeaway: a lookup, a schedule, a price list or a feature grid. Write it as a Markdown table or a `<Table>`, mark the row or column the point rests on, and set the "so what" beside it if you need one.
+
+## Example
+
+<SlideExample deck="lookbook" slide="table-plans" />
+
+`highlight: { column: Per drop }` marks the column the title is about, the way the brand's charts mark a highlight. `numbers: left` keeps every column aligned as written, so a grid that mixes prices and words reads as one block. The still under Reference shows the defaults with a highlighted row and an `<Aside>`.
+
+## When to use it
+
+- **The audience needs the exact values.** For a pattern across many values, use a [`chart`](/reference/layouts/chart/); for two or three options on a few rows, [`comparison`](/reference/layouts/comparison/); for up to four headline numbers, [`stats`](/reference/layouts/stats/).
+- **About eight rows and five columns.** A wide or long table steps down in size, but never below the smallest type the brand allows.
+- **One row or column carries the point.** Name a row by its first cell or number (`highlight: { row: Eastgate }`, `{ row: 3 }`), or a column by its header or number (`{ column: 2027 }`).
+- **Figures line up.** Columns of numbers are aligned right with tabular figures; write `numbers: left` to keep every column as the table writes it.
+- **The "so what" goes in `<Aside>`**: a `###` heading and a sentence or two, up to 36 words. The source goes in `<Footnote>`, up to 30 words.
+
+`<Table>` takes the same highlight and alignment as a Markdown table, plus its own props, listed on [charts](/reference/charts/#props-Table).
+
+## Reference
+
+<LayoutReference name="table" />
+
+## Common mistakes
+
+- **A sentence above the table.** The body takes one table and nothing else; the takeaway goes in `title:` and the comment in `<Aside>`. `deck lint` reports text there with the `slot-content` rule:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/schedule.mdx
+    error   slot-content (schedule): The body slot holds text; the table layout takes exactly one: table there.
+            Fix: One table: a Markdown table or a kit <Table>, and nothing else. Write the takeaway in `title:`, and keep to about eight rows and five columns. Move the rest to another slide or slot.
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **Two tables on one slide.** The same rule reports "The body slot holds 2 tables". Split them over two slides.
+- **A table too big to fit.** Once it would have to shrink below the brand's smallest type, `table-too-dense` reports "The table needs more room than the slide has, even set at the smallest type the brand allows", usually with `canvas-overflow` and `container-overflow` errors. Keep the rows and columns the title rests on, and put the full table in an appendix or handout.
+- **A highlight that matches no row.** `highlight: { row: Eastgatee }` on a table without that row passes `deck lint` without a finding. Copy the first cell exactly as written, or use the row's number, and look at the slide.
+
+## Related layouts
+
+- [`chart`](/reference/layouts/chart/): one chart or big number filling the slide, for the shape of the data.
+- [`comparison`](/reference/layouts/comparison/): two or three options on the same labelled rows, with a winner per row.
+- [`stats`](/reference/layouts/stats/): two to four numbers set large.
+- [`columns`](/reference/layouts/columns/): short items in groups, not values in cells.
+
+Which form fits which message is on [choosing a chart](/data-and-diagrams/choosing-a-chart/).

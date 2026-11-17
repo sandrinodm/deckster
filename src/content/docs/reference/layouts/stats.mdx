@@ -1,0 +1,43 @@
+---
+title: "stats"
+description: "Two to four big numbers in a row, each with what it counts and, optionally, how it changed."
+sidebar:
+  order: 19
+---
+
+Use the `stats` layout when the point of a slide is the size of a few things: two to four big numbers in one row, each with a label and, if you like, how it changed. The title says what the numbers mean together.
+
+## Example
+
+<SlideExample deck="lookbook" slide="stats-three" />
+
+Notice two fields. `highlight: true` on the middle stat sets its figure and the rule above it in the accent, so the room knows which number carries the point. The last stat's delta has no sign, so `trend: down` draws the arrow and `tone: positive` shows the fall as good news.
+
+## When to use it
+
+- **Two to four figures of equal standing.** `stats:` takes at least two and at most four items. Each has a `value` of up to 8 characters ("€15.40", "1 in 4") and a `label` of up to 48, or 32 in a row of four.
+- **A change worth showing.** `delta` takes up to 24 characters ("+12% since 2023"). Deltas line up across the row whatever the labels' lengths.
+- **A title that draws the conclusion.** Up to 90 characters. A sentence of context under it is up to 24 words, and a `<Footnote>` for the source up to 30.
+
+The row stands at the same height on every stats slide, so a run of them reads steadily. Use a chart for a trend, a table for more than four figures, and `equation` when the figures add up to a result.
+
+## Reference
+
+<LayoutReference name="stats" />
+
+## Common mistakes
+
+- **Long labels in a row of four.** The fourth stat cuts every label to 32 characters. A 39-character label is a [`schema` error](/reference/lint-rules/): "stats[0].label: The stats layout sets at most 32 characters here (four stats), got 39." Shorten it, or drop to three stats.
+- **A fall that reads as bad news.** Without `tone`, a delta that starts with a minus sign (or a down arrow) is shown as negative, and one that starts with a plus as positive. Fewer emergency visits or a lower cost need `tone: positive` set by hand.
+- **A misspelt key.** Each stat takes only `value`, `label`, `delta`, `tone`, `trend` and `highlight`. A typo is a `schema` error rather than a field that quietly does nothing: "stats[1].tones is not a field of stats[1]."
+- **Figures written as sentences.** The value is the figure as shown, at most 8 characters. Put the words in `label` and the comparison in `delta`.
+- **Context in the body.** The body is one sentence of up to 24 words. The meaning of the numbers belongs in `title:`.
+
+## Related layouts
+
+- [`equation`](/reference/layouts/equation/): figures joined by operators to a result, when they add up rather than stand side by side.
+- [`chart`](/reference/layouts/chart/): one chart under the title, when the point is a trend or a pattern.
+- [`table`](/reference/layouts/table/): exact values, when there are more than four figures.
+- [`bento`](/reference/layouts/bento/): facets of one subject when one of them matters most and not every facet is a number.
+
+To set a row of figures inside another layout, with `from` and `better`, see [number components](/data-and-diagrams/number-components/).

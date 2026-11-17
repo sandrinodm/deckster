@@ -58,6 +58,27 @@ export function firstSentence(text: string | undefined): string {
   return (match ? match[1] : text).trim();
 }
 
+/** A layout's own page, which LayoutIndex and its Markdown twin link to (without the base path). */
+export const layoutPage = (name: string) => `/reference/layouts/${name}/`;
+
+/**
+ * A layout's one-line summary: the first sentence of its catalog description, cut before the
+ * first colon that ends a word outside a code span ("The cover of a deck: the deck title…" gives
+ * "The cover of a deck."). LayoutIndex, its Markdown twin and the frontmatter `description` of
+ * each layout page (src/content/docs/reference/layouts/<name>.mdx) use it.
+ */
+export function layoutSummary(description: string | undefined): string {
+  const sentence = firstSentence(description);
+  let inCode = false;
+  for (let i = 0; i < sentence.length; i++) {
+    if (sentence[i] === "`") inCode = !inCode;
+    else if (!inCode && sentence[i] === ":" && /\s/.test(sentence[i + 1] ?? "")) {
+      return `${sentence.slice(0, i).trimEnd()}.`;
+    }
+  }
+  return sentence;
+}
+
 // ---------------------------------------------------------------- catalog examples
 
 /** Past this many characters a line of a catalog example is split, one prop per line. */

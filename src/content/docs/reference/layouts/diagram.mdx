@@ -1,0 +1,54 @@
+---
+title: "diagram"
+description: "A title that states what the diagram shows (\"Every checkout crosses four hops\"), then one diagram filling the space under it."
+sidebar:
+  order: 22
+---
+
+Use the `diagram` layout when one diagram is the slide: an architecture, a request path, a sequence of calls, layers, a cycle or a tree. The title states what the diagram shows, the diagram fills the space under it, and an optional `<Aside>` column says what to notice.
+
+## Example
+
+<SlideExample deck="lookbook" slide="diagram-sequence" />
+
+The title is the finding, with its number (52 minutes), not the name of the system. Each `<Message>` arrives at its own step, so the diagram builds as you talk, and the `<Aside>` holds the one figure the room should keep: a heading and a sentence.
+
+## When to use it
+
+- **One diagram carries the point.** The body slot is required and holds one diagram component: `<Flow>` (nodes, edges, packets and journeys), `<SequenceDiagram>`, `<Timeline>`, `<Layers>`, `<Cycle>`, `<Tree>` or an `<Svg>`. `deck diagrams` lists them.
+- **The title says what it shows.** Up to 90 characters: "Every checkout crosses four hops", not "Checkout architecture".
+- **What to notice is short.** The `<Aside>` takes a `###` heading and a sentence, or up to three bullets, within 40 words. The `<Footnote>` takes up to 30.
+- **You can reveal it in parts.** Bring in nodes, edges and messages with `at` steps instead of adding text to the slide.
+
+When the diagram needs a paragraph beside it, use `split`. For data rather than structure, use the `chart` layout.
+
+## Reference
+
+<LayoutReference name="diagram" />
+
+## Common mistakes
+
+**A fourth bullet in the aside.** The aside takes up to three bullets. A fourth is a `content-budget` error:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/checkout.mdx
+  error   content-budget (checkout): The aside slot holds 4 bullets; its layout allows 3.
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+```
+
+Keep the point the title does not already make, and move the rest into the `<Notes>`.
+
+**A second diagram, or text, in the body.** The body slot accepts any component, so `slot-content` checks neither the kind of block there nor how many there are (only a bulleted list is still reported). Keep it to one diagram yourself; the explanation goes in the aside, the notes or a `split` slide.
+
+**Diagram problems.** The `diagram-*` rules check the drawing itself (nodes or labels drawn on top of each other, text smaller than the brand's caption and label sizes, more than 12 nodes or 16 edges at once). [Lint rules](/reference/lint-rules/) lists them with their fixes. And `few-builds` warns when fewer than 25% of a deck's `chart`, `diagram` and `code` slides build in steps, once the deck has four or more of them: stage the diagram with `at`.
+
+## Related layouts
+
+- [split](/reference/layouts/split/): a paragraph or bullets beside the diagram, when the text matters as much.
+- [chart](/reference/layouts/chart/): the same frame for a chart, number or table.
+- [steps](/reference/layouts/steps/): a process in order, written as numbered steps rather than drawn.
+- [timeline](/reference/layouts/timeline/): three to five dated milestones from the frontmatter, without writing a component.
+- Guide: [Flow diagrams](/data-and-diagrams/flow-diagrams/), and [Sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/).

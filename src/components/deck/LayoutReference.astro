@@ -2,13 +2,14 @@
 /**
  * LayoutReference — everything about one layout, from src/data/layouts.json.
  *
- *   ## statement
+ *   ## Reference
  *
  *   <LayoutReference name="statement" />
  *
  * Shows the description, a still of a slide that uses it, its frontmatter fields, slots, word
- * budgets, variants and the example slide. The page writes the heading; the component sets
- * `id="layout-<name>"` on itself, which LayoutIndex links to.
+ * budgets, variants and the example slide. It renders no heading of its own: the page writes one
+ * above it. Each layout's entry is on its own page, src/content/docs/reference/layouts/<name>.mdx,
+ * which LayoutIndex links to; the component also sets `id="layout-<name>"` on itself.
  *
  * The still is the first slide using the layout in the lookbook deck, else the layouts deck, else
  * any published deck: it is a real slide in that layout, not the example below it.

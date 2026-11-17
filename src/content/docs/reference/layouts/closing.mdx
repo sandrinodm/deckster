@@ -1,0 +1,44 @@
+---
+title: "closing"
+description: "The last slide."
+sidebar:
+  order: 5
+---
+
+Use the `closing` layout for the last slide of your talk: the one thing to remember or do, set large, a line under it, and how to follow up. It takes up to three contacts and a QR code the room can scan for the slides or a sign-up page.
+
+## Example
+
+<SlideExample deck="lookbook" slide="closing-ask" />
+
+Notice that the title is the ask itself, not "Thank you": the eyebrow carries the thanks. The `qr:` address is drawn as a code with the address under it, and the two `contacts:` sit under a rule along the bottom. By default the layout uses the `gradient` surface and hides the page chrome (`chrome: false`), and the brand logo sits top left.
+
+For a questions slide, title it with the question you want answered and leave out the code:
+
+<SlideShot deck="lookbook" slide="closing-questions" alt="A closing slide on a blue gradient with the eyebrow 'Questions', the title 'What should we deliver next?', the line 'Ask us now, or write to us after the talk.', and three contacts under a rule: Ines, Partners and Network, each with an address." />
+
+## When to use it
+
+- **Once, last.** The catalog reserves it for the end of the talk. For the cover, use `title`; for a claim in the middle of the talk, `statement`.
+- **A title of up to 40 characters** that says what to remember or do. The line under it takes up to 20 words.
+- **Follow-up the room can act on.** `contacts:` takes up to three, each with a `label` of up to 16 characters, the `text` as people should type it (up to 40, or 32 with three contacts) and an optional `href`. `qr:` takes an `http://` or `https://` address of up to 56 characters.
+
+## Reference
+
+<LayoutReference name="closing" />
+
+## Common mistakes
+
+- **A QR address that will not fit under the code.** The address is shown without the scheme and `www.`, on at most two lines, and breaks only at slashes and dots. It may have 44 characters, and no part between slashes and dots longer than 22. A long path is a [`schema` error](/reference/lint-rules/): "qr: The address under the code, wrenhaul.example/open-network-partner-signup, has a part of 27 characters between its slashes and dots; one line takes at most 22." Use a short redirect.
+- **Long contacts once there are three.** A third contact cuts each `text` to 32 characters: "contacts[0].text: The closing layout sets at most 32 characters here (three contacts), got 38."
+- **A link the slide will not make.** `href` takes `mailto:`, `tel:`, `http:` and `https:` links, a path or a `#fragment`. Any other scheme is a `schema` error.
+- **"Thank you" as the title.** The title is set largest and is meant for the one thing to remember or do. Put the thanks in `eyebrow:`, as the example does.
+- **A list in the body.** The body is one line of text: what to do next. The ways to reach you go in `contacts:`.
+
+## Related layouts
+
+- [`ask`](/reference/layouts/ask/): one amount and the milestones it buys, for the decision you came for; `closing` follows it with the contacts.
+- [`title`](/reference/layouts/title/): the cover, used once, first.
+- [`statement`](/reference/layouts/statement/): one sentence set large, for a claim mid-talk.
+
+For QR codes and call-to-action links elsewhere in a deck, see [links, downloads and QR codes](/write-slides/links/).

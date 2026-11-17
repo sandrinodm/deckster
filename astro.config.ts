@@ -25,21 +25,26 @@ const nimbusConfig = defineNimbusConfig({
   // project page under /deckster, so leave them out.
   agents: { discovery: false },
   // Top-level order of the rail; each folder's pages fill in automatically.
+  // `defaultCollapsed` closes every group that sets no `collapsed` of its own: the top-level groups
+  // below all set `collapsed: false`, so only the folders inside them start closed. Today that is
+  // reference/layouts/ (32 pages), which opens on its own pages. Frontmatter can't collapse a
+  // folder group (`sidebar.group` takes only label, badge, icon and hideIndex).
   sidebar: {
+    defaultCollapsed: true,
     items: [
       "index",
-      { label: "Get started", autogenerate: { directory: "get-started" } },
-      { label: "Concepts", autogenerate: { directory: "concepts" } },
-      { label: "Write slides", autogenerate: { directory: "write-slides" } },
-      { label: "Data and diagrams", autogenerate: { directory: "data-and-diagrams" } },
-      { label: "Brands", autogenerate: { directory: "brands" } },
-      { label: "Review", autogenerate: { directory: "review" } },
-      { label: "Present", autogenerate: { directory: "present" } },
-      { label: "Export and publish", autogenerate: { directory: "export-and-publish" } },
-      { label: "AI agents", autogenerate: { directory: "ai-agents" } },
-      { label: "Reference", autogenerate: { directory: "reference" } },
-      { label: "Examples", autogenerate: { directory: "examples" } },
-      { label: "Project", autogenerate: { directory: "project" } },
+      { label: "Get started", autogenerate: { directory: "get-started" }, collapsed: false },
+      { label: "Concepts", autogenerate: { directory: "concepts" }, collapsed: false },
+      { label: "Write slides", autogenerate: { directory: "write-slides" }, collapsed: false },
+      { label: "Data and diagrams", autogenerate: { directory: "data-and-diagrams" }, collapsed: false },
+      { label: "Brands", autogenerate: { directory: "brands" }, collapsed: false },
+      { label: "Review", autogenerate: { directory: "review" }, collapsed: false },
+      { label: "Present", autogenerate: { directory: "present" }, collapsed: false },
+      { label: "Export and publish", autogenerate: { directory: "export-and-publish" }, collapsed: false },
+      { label: "AI agents", autogenerate: { directory: "ai-agents" }, collapsed: false },
+      { label: "Reference", autogenerate: { directory: "reference" }, collapsed: false },
+      { label: "Examples", autogenerate: { directory: "examples" }, collapsed: false },
+      { label: "Project", autogenerate: { directory: "project" }, collapsed: false },
     ],
   },
 });

@@ -1,0 +1,59 @@
+---
+title: "image"
+description: "One photo across the whole slide, edge to edge, for a place, a moment or a scale the room should see."
+sidebar:
+  order: 8
+---
+
+The `image` layout runs one photo across the whole slide, edge to edge, for a place, a moment or a scale the room should see. You can set the title and one line of text over it, or leave the photo alone.
+
+## Example
+
+<SlideExample deck="lookbook" slide="image-left" />
+
+`text: left` sets the title and its line in the left third, over the dark sky, and `focal: center` keeps the rider in view when the picture is cropped to the slide. The caption takes the opposite bottom corner. The text is white on a dark scrim sized to it, whatever the surface.
+
+<SlideShot deck="lookbook" slide="image-alone" alt="A full-slide illustration with no text: a cargo-bike rider rides into an old town street past a no-vans sign while a delivery van waits at the bollards." />
+
+`text: none` shows the photo alone. The slide still needs a `title:`, but it is not drawn.
+
+## When to use it
+
+- **One picture makes the point**, with at most a line of text. When the photo needs more than that beside it, use [`split`](/reference/layouts/split/).
+- **Put the text where the photo is calm** (sky, road, wall), not over the subject. `text:` takes `bottom` (the default), `left`, `right` or `none`.
+- **Keep the line short.** The body takes up to 24 words along the bottom and 14 in a third. The title takes up to 44 characters.
+- **Credit the photo** in `<Caption>`, up to 14 words.
+- **Use a photo at least 1920 pixels wide**, and set `focal` (`top`, `center 30%`) to keep the subject in view when it is cropped to 16:9.
+- **For a screenshot, map or chart**, `treatment: plain` shows it in its own colors; a product screen shown whole is better on [`screen`](/reference/layouts/screen/).
+
+The layout defaults to the inverse surface and hides the page chrome (`chrome: false`).
+
+## Reference
+
+<LayoutReference name="image" />
+
+## Common mistakes
+
+- **A full line of text in a third.** The "text left" and "text right" variants cut the body from 24 words to 14:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/evening.mdx
+    error   content-budget (evening): The body slot holds 18 words; its layout allows 14 (text left).
+            Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **The photo outside `<Media>`.** A Markdown image written at the top level is not the photo slot, and `deck lint` reports a `schema` error: "The image layout needs its media slot."
+- **A small photo.** Stretched across the slide, it gets a `low-res-image` warning, such as "street.png is 640x360 pixels but is drawn at 1920x1080 canvas pixels."
+- **A body with `text: none`.** Only the photo and the caption are drawn, so a line of text under the frontmatter does not appear.
+
+## Related layouts
+
+- [`split`](/reference/layouts/split/): the photo in part of the slide, with a paragraph or bullets beside it.
+- [`gallery`](/reference/layouts/gallery/): two to four pictures on one slide.
+- [`screen`](/reference/layouts/screen/): a product screen shown whole in a drawn frame, never cropped.
+- [`section`](/reference/layouts/section/): opens a part of the talk and can take a photo in its right five columns.
+
+Adding images, the paths they take and what lint checks are on [media](/write-slides/media/).

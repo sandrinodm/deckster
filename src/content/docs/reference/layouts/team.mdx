@@ -1,0 +1,56 @@
+---
+title: "team"
+description: "The people behind the work, two to eight of them, with a name, a role and a photo each."
+sidebar:
+  order: 27
+---
+
+Use the `team` layout to show the people behind the work, two to eight of them, each with a name, a role and a photo. You list them in the frontmatter, and the layout picks the arrangement from how many there are; for two to four founders it also sets why each is the right person and where they worked before.
+
+## Example
+
+<SlideExample deck="lookbook" slide="team-row" />
+
+Four people stand in one row of portraits, each with a role that says what they own rather than a bare job title. The fourth has no `photo`, so her tile shows her initials. The reference below shows the founders form, with `edge` and `previously:`.
+
+Seven or eight people are set as a roster in two columns, each name beside its portrait:
+
+<SlideShot deck="lookbook" slide="team-roster" alt="Eight people in two columns, each with a small portrait or an initials tile beside their name and a one-line role, under the title 'Eight people opened the first six cities'." />
+
+## When to use it
+
+- **Two to eight people.** `members` is required, each with a `name` and a `role`, and optionally a `photo` and a `focal` point that keeps the face in view when the photo is cropped.
+- **The count sets the arrangement.** Three or four stand in one row; five or six sit in a grid of three; seven or eight are a roster in two columns. Text gets shorter as the grid gets denser: a name takes 32 characters in a row and 24 in a grid or roster; a role 56, 30 in a grid and 26 in a roster.
+- **The audience is judging the founders.** On a slide of two to four people, each may carry an `edge` (up to 70 characters on why they are the right person) and `previously:`, up to three past organisations with a name of up to 24 characters and a logo file.
+
+The title takes up to 56 characters, the body one sentence of up to 14 words, and the footnote up to 16. For one speaker, use `bio`; for a larger group, a `table`.
+
+## Reference
+
+<LayoutReference name="team" />
+
+## Common mistakes
+
+**An edge on a larger team.** Only a slide of two to four people has room for `edge` and `previously:`. Add a fifth person and the build fails:
+
+```console
+$ deck lint launch-review
+decks/launch-review/slides/team.mdx
+  error   schema (team): members[0].edge: A team of 5 has no room for `edge`; only a slide of two to 4 people shows it.
+          Fix: Remove `edge` from the members, or show the founders or leads on a slide of their own, two to 4 of them.
+
+launch-review: 1 error, 0 warnings.
+```
+
+A `schema` finding stops lint before the slides are rendered ([Lint](/review/lint/) explains the passes).
+
+**A role that fit in a row but not in a grid.** Going from four people to five tightens the role to 30 characters: `members[0].role: The team layout sets at most 30 characters here (grid of 5 or 6), got 44.` Rewrite the roles when you add someone.
+
+**The names in the body.** Name the people in `members:`; the body is one sentence on what they do together. At 15 words, `content-budget` reports `The body slot holds 15 words; its layout allows 14.`
+## Related layouts
+
+- [bio](/reference/layouts/bio/): one person, usually the speaker, with a large portrait and a few facts.
+- [logos](/reference/layouts/logos/): organisations rather than people.
+- [quote](/reference/layouts/quote/): one person speaking for the point, with their portrait.
+- [table](/reference/layouts/table/): a group larger than eight.
+- Guide: [Media](/write-slides/media/) for where a `photo` path points.

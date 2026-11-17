@@ -1,0 +1,42 @@
+---
+title: "bento"
+description: "Three to five facets of one subject on tiles of unequal weight, with the title in the top-left cell of the grid rather than above it."
+sidebar:
+  order: 14
+---
+
+Use the `bento` layout to show one thing from several sides: a product, a result or a place, as three to five tiles of unequal weight, with the facet that matters most in the largest. The title sits in the grid's top-left cell instead of above it.
+
+## Example
+
+<SlideExample deck="lookbook" slide="bento-reveal" />
+
+Notice where each tile lands. The first, "14 hubs", is the lead: it takes the large cell at the top right on the accent surface. The second, the picture, stands under the title, and the rest share the row under the lead. Figure, picture and text tiles mix freely, and `reveal: true` brings them in one per step, in the order you list them.
+
+## When to use it
+
+- **One subject, one facet that matters most.** Put that facet first in `tiles:`. The layout takes three to five tiles.
+- **Facets of different kinds.** A figure tile has `value` (up to 8 characters) and `label`. A text tile has `title`, an optional line of `text` and an optional `icon` from the brand set. A picture tile has `src` and `alt` (up to 120 characters), and optionally `focal` and `treatment`.
+- **Short words.** With three tiles, a label takes 48 characters, a title 28 and a text 64. With four or five tiles the limits drop to 32, 22 and 44. The slide title takes 40 characters, the line under it 12 words, and the `<Footnote>` 24.
+
+When the ideas are equal peers, use the `cards` layout. When every facet is a number of the same weight, use `stats`, and when every tile is a picture, use `gallery`.
+
+## Reference
+
+<LayoutReference name="bento" />
+
+## Common mistakes
+
+- **Limits that tighten at the fourth tile.** A 26-character tile title passes with three tiles and fails with four: "tiles[1].title: The bento layout sets at most 22 characters here (four or five tiles), got 26."
+- **A tile of two kinds.** Each tile sets exactly one of `value`, `title` or `src`. A figure tile with a `title` as well is a [`schema` error](/reference/lint-rules/): "tiles[0]: The tile sets more than one of value, title and src." A tile's other fields must match its kind too: a picture tile needs `alt`, and a figure tile needs `label`.
+- **The lead in the wrong place.** Order decides weight. A minor fact listed first gets the accent cell.
+- **A drawing or screenshot recoloured.** Without `treatment`, a picture tile gets the brand's default image treatment. `treatment: plain`, which every brand has, draws it in its own colours; the [lookbook](/examples/lookbook/) sets it on every picture tile.
+- **Context in the body.** The body is one short sentence in the title cell. The facets belong in `tiles:`.
+
+## Related layouts
+
+- [`cards`](/reference/layouts/cards/): two to four ideas of equal weight, each on a card of the same size.
+- [`stats`](/reference/layouts/stats/): two to four numbers of equal weight in a row.
+- [`gallery`](/reference/layouts/gallery/): two to four pictures with no figures or text tiles.
+
+For `src`, `focal` and image treatments, see [media](/write-slides/media/).

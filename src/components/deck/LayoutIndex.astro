@@ -1,32 +1,34 @@
 ---
 /**
- * LayoutIndex — every layout as a small still, linking to its LayoutReference.
+ * LayoutIndex — every layout as a small still with its one-line summary, linking to its page.
  *
  *   <LayoutIndex />
  *
- * Links go to /reference/layouts/#layout-<name>, so the layouts reference page must hold a
- * <LayoutReference> for each (the coverage check enforces that).
+ * Links go to /reference/layouts/<name>/, so every layout needs its own page there holding its
+ * <LayoutReference> (the coverage check enforces that). The summary is `layoutSummary` of the
+ * catalog description; each layout page's frontmatter `description` is the same text without code marks.
  */
 import "./deck.css";
 import { Image } from "astro:assets";
-import { caller, layoutAnchor, layouts, layoutSlide, slideStill, withBase } from "./data";
+import { layoutPage, layoutSummary } from "./format";
+import { caller, inline, layouts, layoutSlide, slideStill, withBase } from "./data";
 
 const c = caller("LayoutIndex", {}, Astro.url);
 const items = layouts().map((layout) => {
   const shown = layoutSlide(c, layout.name);
-  return { layout, still: slideStill(c, shown.deck, shown.slide.id) };
+  return { layout, summary: layoutSummary(layout.description), still: slideStill(c, shown.deck, shown.slide.id) };
 });
-const page = withBase("/reference/layouts/");
 ---
 
 <nav class="dk-layout-index" aria-label="Layouts">
   <ul>
-    {items.map(({ layout, still }) => (
+    {items.map(({ layout, summary, still }) => (
       <li>
-        <a href={`${page}#${layoutAnchor(layout.name)}`} data-nb-zoom="off">
-          <Image src={still.image} alt="" widths={[320, 480]} sizes="(min-width: 1100px) 180px, 45vw" loading="lazy" decoding="async" />
+        <a href={withBase(layoutPage(layout.name))} data-nb-zoom="off">
+          <Image src={still.image} alt="" widths={[320, 480]} sizes="(min-width: 1100px) 200px, 45vw" loading="lazy" decoding="async" />
           <span class="dk-layout-index-name">{layout.name}</span>
         </a>
+        <p class="dk-layout-index-summary" set:html={inline(summary)} />
       </li>
     ))}
   </ul>
