@@ -5,6 +5,7 @@ import plugins from 'virtual:deck/plugins';
 import type { DeckManifest } from '#contract/manifest.ts';
 
 import { Deck } from '#deck/deck.tsx';
+import { readEmbedMode } from '#embed/embed-mode.ts';
 import { readStaticMode } from '#static/static-mode.ts';
 import '#app/app.css';
 
@@ -30,6 +31,11 @@ const root = createRoot(container);
  * Whether the page was opened with `?static`, read once at start-up.
  */
 const isStatic = readStaticMode(window.location.search);
+
+/**
+ * Whether the page was opened with `?embed`, read once at start-up.
+ */
+const isEmbed = readEmbedMode(window.location.search);
 render(deck);
 
 // A changed slide or manifest re-renders in place; the position survives in the URL hash.
@@ -49,5 +55,13 @@ if (import.meta.hot) {
  */
 function render(manifest: DeckManifest): void {
   const slideIds = manifest.slides.map((slide) => slide.id).join(',');
-  root.render(<Deck key={slideIds} manifest={manifest} plugins={plugins} isStatic={isStatic} />);
+  root.render(
+    <Deck
+      key={slideIds}
+      manifest={manifest}
+      plugins={plugins}
+      isStatic={isStatic}
+      isEmbed={isEmbed}
+    />,
+  );
 }
