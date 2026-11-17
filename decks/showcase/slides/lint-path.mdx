@@ -10,7 +10,7 @@ budget: 1m30s
   <Node id="server" kind="service" title="Dev server" subtitle="Static mode" col={2} row={1} />
   <Node id="chromium" kind="client" title="Chromium" subtitle="Every step" col={3} row={1} />
   <Node id="snapshot" kind="database" title="Snapshot" subtitle="Boxes, text, colours" col={3} row={2} />
-  <Node id="rules" kind="function" title="41 rules" subtitle="Measure and compare" col={2} row={2} />
+  <Node id="rules" kind="function" title="42 rules" subtitle="Measure and compare" col={2} row={2} />
   <Node id="findings" kind="document" title="Findings" subtitle="File, rule, fix" col={1} row={2} />
   <Edge from="deck" to="server" label="serve" />
   <Edge from="server" to="chromium" label="render" />
@@ -27,7 +27,7 @@ budget: 1m30s
 </Flow>
 
 <Notes>
-The linter does not read your source and guess. [click] It serves the deck and opens every step of every slide in Chromium. [click] It measures what was drawn: every box, every line of text, the colours under the glyphs. [click] Forty-one rules run over that snapshot. Here one fires: overflow. The finding carries the file, the rule and the fix. [click] You fix it, run again, clean.
+The linter does not read your source and guess. [click] It serves the deck and opens every step of every slide in Chromium. [click] It measures what was drawn: every box, every line of text, the colours under the glyphs. [click] Forty-two rules run over that snapshot. Here one fires: overflow. The finding carries the file, the rule and the fix. [click] You fix it, run again, clean.
 
 That is why the same check works for a person and for an agent: the finding is text with an instruction in it.
 

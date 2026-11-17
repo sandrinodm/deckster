@@ -1,0 +1,39 @@
+---
+layout: split
+title: The launch film opens in light alone
+eyebrow: Launch film
+ratio: 5:7
+side: right
+budget: 45s
+---
+
+- **0:00** A band of light cuts the dark
+
+<Step at={1}>
+
+- **0:03** It swings upright, like a clock hand
+
+</Step>
+
+<Step at={2}>
+
+- **0:06** It sets, and amber fills the frame
+
+</Step>
+
+<Media>
+  <Video
+    src="../assets/media/aurora.webm"
+    poster="../assets/media/aurora-poster.jpg"
+    posters={['../assets/media/aurora-part-1.jpg', '../assets/media/aurora-part-2.jpg', '../assets/media/aurora-part-3.jpg']}
+    alt="The launch film's title sequence: one band of blue light sweeping across a dark frame until amber fills it"
+    cues={[0, 3, 6]}
+  />
+</Media>
+
+<Caption>The title sequence of the launch film: nine seconds, no sound, before the first rider appears.</Caption>
+
+<Notes>
+`split` with `ratio: 5:7` and a `<Video>` with `cues={[0, 3, 6]}`, a `poster` and one of `posters` per part; use cues when a clip has parts you talk over one at a time.
+The film opens on light, not on bikes: one band sweeping the frame like the hand of a clock, a working day in nine seconds. First it cuts the dark, the hour before the first loops leave. [click] Then it swings upright, the middle of the day. [click] And it sets, and amber fills the frame: the evening window. The riders come after the titles.
+</Notes>

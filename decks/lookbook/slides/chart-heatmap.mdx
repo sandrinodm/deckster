@@ -1,0 +1,24 @@
+---
+layout: chart
+title: Friday from four to six is the busiest two hours of the week
+eyebrow: When Kestwick orders
+budget: 45s
+---
+
+import load from '../data/kestwick-load.csv';
+
+<Heatmap
+  data={load}
+  x="band"
+  y="day"
+  value="drops"
+  highlight={{ x: '16–18', y: 'Fri' }}
+  scale={['Quiet', 'Busy']}
+  caption="Average drops per two-hour band, Kestwick, October 2026"
+  source="Wrenhaul operating report, October 2026"
+/>
+
+<Notes>
+`chart` with a `<Heatmap>` of weekday by time, one cell outlined; use it for a pattern across two dimensions.
+Read it like a rota. Every weekday builds to the late afternoon, and Friday from four to six is the peak of the week: 510 drops on average, from offices and households ordering for the weekend. Saturday is the exception: it peaks at lunchtime and is quiet by six. We roster riders to this picture.
+</Notes>

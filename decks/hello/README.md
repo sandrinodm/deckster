@@ -70,4 +70,5 @@ deck of your own, start a new one with `deck new <name>` rather than editing thi
 
 Change the slides with care: those tests read their text and step counts.
 
-[`decks/showcase`](../showcase/README.md) is the long tour of what a deck can contain.
+[`decks/showcase`](../showcase/README.md) is a long talk about deckster, and
+[`decks/lookbook`](../lookbook/README.md) shows every layout, chart, diagram and component in use.

@@ -1,0 +1,21 @@
+---
+layout: chart
+title: A drop costs us €2.34, a euro less than a year ago
+eyebrow: Cost per drop
+budget: 45s
+---
+
+<Comparison
+  from={{ value: 3.4, label: 'October 2025' }}
+  to={{ value: 2.34, label: 'October 2026' }}
+  better="down"
+  format={{ style: 'currency', currency: 'EUR', digits: 2 }}
+  caption="Rider time, hub, bike and software per drop"
+/>
+
+<Footnote>Wrenhaul operating report, October 2026.</Footnote>
+
+<Notes>
+`chart` with a `<Comparison>` and `better="down"`: two values, the change between them, coloured as good news when it falls; use it when one number moved and the move is the point.
+A year ago a drop cost us €3.40 and sold for €2.90: we lost fifty cents on every one. Now it costs €2.34 and sells for €3.10. Part six shows where the euro went.
+</Notes>

@@ -1,0 +1,28 @@
+---
+layout: demo
+title: Watch Flock build a loop
+eyebrow: Dispatch, live
+budget: 1m30s
+---
+
+import { FlockBoard } from '../lib/dispatch-sim/flock-board.tsx';
+import { LAST_STEP, STEP_TICKS } from '../lib/dispatch-sim/script.ts';
+
+<AppFrame
+  app="dispatch-sim"
+  chrome="window"
+  title="Dispatch · Old Town hub"
+  alt="Dispatch at the Old Town hub: eighteen waiting drops are batched into two loops of nine, routed, and handed to two riders"
+  steps={LAST_STEP}
+  poster={({ step }) => <FlockBoard step={step} tick={STEP_TICKS} />}
+/>
+
+<Aside>
+- Each colour is one rider's loop
+- Flock batches every 90 seconds
+</Aside>
+
+<Notes>
+`demo` with an `<AppFrame>` running a mini app from `apps/dispatch-sim`, its steps driven by the slide and a poster drawn from the same component for every step; use it when the product has to move in front of the room. It is scripted and needs no network.
+This is Dispatch at the Old Town hub, with eighteen drops waiting and twelve seconds to the next batch. [click] Flock batches: the countdown runs out and the drops split into two loops of nine. [click] The route solver orders each loop's stops, and each route is about seventy minutes. [click] And each loop goes to a rider who is back at the hub: Aoife takes 17, Jonas takes 18. If the frame fails, the poster shows the same moment.
+</Notes>

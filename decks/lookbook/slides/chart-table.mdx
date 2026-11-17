@@ -1,0 +1,40 @@
+---
+layout: chart
+title: Pharmacies grew fastest, four times in a year
+eyebrow: Drops by merchant type
+surface: inverse
+budget: 1m
+---
+
+<Table
+  data={[
+    { type: 'Pharmacies and health', before: 9000, after: 38000, growth: 4.2 },
+    { type: 'Grocers', before: 26000, after: 69000, growth: 2.7 },
+    { type: 'Food and bakery', before: 14000, after: 31000, growth: 2.2 },
+    { type: 'Other shops', before: 12000, after: 18000, growth: 1.5 },
+    { type: 'Parcel partners', before: 0, after: 26000, growth: null },
+  ]}
+  columns={[
+    { key: 'type', label: 'Merchant type' },
+    { key: 'before', label: 'October 2025', format: 'compact' },
+    { key: 'after', label: 'October 2026', format: 'compact' },
+    { key: 'growth', label: 'Growth', unit: '×', format: { digits: 1 }, bar: true },
+  ]}
+  highlight={{ row: 'Pharmacies and health' }}
+  caption="Drops a month by merchant type"
+/>
+
+<Aside>
+
+### 4.2×
+
+Pharmacies went from 9,000 drops a month to 38,000. The cold boxes we ship next quarter are built for them.
+
+</Aside>
+
+<Footnote>Parcel partners are new with the Open Network beta in September 2026. Source: Wrenhaul operating report, October 2026.</Footnote>
+
+<Notes>
+`chart` with the kit `<Table>`, a bar column for growth and the row that matters highlighted, on the inverse surface; use it when the exact values matter as much as the pattern.
+Read the highlighted row: pharmacies and health went from 9,000 drops a month to 38,000, 4.2 times. Grocers are still the biggest at 69,000. Parcel partners had nothing a year ago and are already 26,000, which is why the beta matters.
+</Notes>

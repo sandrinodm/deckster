@@ -1,0 +1,37 @@
+---
+layout: comparison
+title: A bike beats a van on every row but one
+eyebrow: Three ways to deliver
+budget: 1m
+options:
+  - name: Own van
+    summary: The merchant's own
+  - name: Van courier
+    summary: A next-day network
+  - name: Wrenhaul
+    summary: Cargo bikes from hubs
+    recommended: true
+rows:
+  - label: Cost per drop
+    values: ["€6.40", "€4.80", "€3.10"]
+    winner: 3
+  - label: Delivered
+    values: [Same day, Next day, Within the hour]
+    winner: 3
+  - label: Stops an hour
+    values: ["5.1", "5.8", "9.4"]
+    winner: 3
+  - label: Into the Old Town
+    values: [false, false, true]
+    winner: 3
+  - label: Heaviest parcel
+    values: [Any size, 30 kg, 25 kg]
+    winner: 1
+---
+
+<Footnote>Van figures from our merchant survey, n = 112; Wrenhaul operating report, October 2026.</Footnote>
+
+<Notes>
+`comparison` with three options, a `winner` on every row and `recommended: true`; use it when two or three options are scored on the same few rows, including the row you lose.
+Cheaper, faster, nearly twice the stops, and allowed where vans are not. The last row is honest: a bike box takes 25 kg, so anything heavier goes to a partner van. And a hub only pays off above about 250 drops a day, so outside dense centres a van is still the answer.
+</Notes>

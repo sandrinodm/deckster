@@ -1,0 +1,28 @@
+---
+layout: content
+title: Three checks gate every rollout, and they run in this order
+eyebrow: Release
+budget: 1m
+---
+
+<Step at={1} focus>
+- **Contract tests** pass against the published schema
+</Step>
+
+<Step at={2} focus>
+- **The canary** holds its error rate under 0.1% for ten minutes
+</Step>
+
+<Step at={3} focus>
+- **A rollback** runs green in staging the same day
+</Step>
+
+<Step at={4} effect="wipe">
+A rollout that skips a check waits for the next window.
+</Step>
+
+<Notes>
+Each press adds one check, and the one before it recedes to the muted color, so the room reads the check you are talking about. At the last press the rule wipes in under the three.
+
+A static shot or an export shows all three at full strength.
+</Notes>

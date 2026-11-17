@@ -1,0 +1,206 @@
+/*
+ * Dispatch's view of one batch. Every value is a brand custom property: the deck sets them on a
+ * slide and the bridge sets them in the app's frame, so one stylesheet serves the poster and the
+ * app in every brand and on every surface. Sizes are canvas pixels.
+ */
+.fb {
+  --fb-loop: var(--brand-color-muted);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 440px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--brand-color-bg);
+  color: var(--brand-color-fg);
+  font-family: var(--brand-font-body);
+  font-size: var(--brand-type-small-size);
+  line-height: var(--brand-type-small-line-height);
+}
+
+.fb *,
+.fb *::before,
+.fb *::after {
+  box-sizing: border-box;
+}
+
+.fb p {
+  margin: 0;
+}
+
+.fb [data-color='1'] {
+  --fb-loop: var(--brand-data-1);
+}
+
+.fb [data-color='2'] {
+  --fb-loop: var(--brand-data-2);
+}
+
+.fb-map {
+  display: block;
+  fill: none;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: var(--brand-space-sm);
+}
+
+.fb-streets line {
+  stroke: var(--brand-color-border);
+  stroke-width: 3;
+}
+
+.fb-river {
+  fill: none;
+  stroke: var(--brand-color-surface);
+  stroke-width: 44;
+  stroke-linecap: round;
+}
+
+.fb-hub {
+  fill: var(--brand-color-heading);
+}
+
+.fb-route {
+  fill: none;
+  stroke: var(--fb-loop);
+  stroke-width: 6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--brand-duration-base) var(--brand-ease-standard);
+}
+
+.fb-stop {
+  fill: var(--brand-color-bg);
+  stroke: var(--brand-color-muted);
+  stroke-width: 5;
+  transition: stroke var(--brand-duration-base) var(--brand-ease-standard);
+}
+
+.fb-stop[data-coloured='true'] {
+  fill: var(--fb-loop);
+  stroke: var(--fb-loop);
+}
+
+.fb-rider {
+  fill: var(--brand-color-bg);
+  stroke: var(--fb-loop);
+  stroke-width: 8;
+}
+
+.fb-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--brand-space-sm);
+  min-width: 0;
+  padding: var(--brand-space-md);
+  border-left: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  background: var(--brand-color-surface);
+}
+
+.fb-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--brand-space-xs);
+  align-items: center;
+  justify-content: space-between;
+  color: var(--brand-color-muted);
+  font-size: var(--brand-type-caption-size);
+  line-height: var(--brand-type-caption-line-height);
+}
+
+.fb-status {
+  display: inline-flex;
+  gap: var(--brand-space-xs);
+  align-items: center;
+  padding: var(--brand-space-2xs) var(--brand-space-sm);
+  border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  border-radius: var(--brand-radius-xl);
+  background: var(--brand-color-bg);
+  color: var(--brand-color-fg);
+  white-space: nowrap;
+}
+
+.fb-status i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--brand-color-accent);
+}
+
+.fb-status[data-phase='waiting'] i {
+  background: var(--brand-color-muted);
+}
+
+.fb-headline {
+  color: var(--brand-color-heading);
+  font-family: var(--brand-font-display);
+  font-size: var(--brand-type-lead-size);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--brand-type-lead-line-height);
+}
+
+.fb-sub {
+  color: var(--brand-color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.fb-loops {
+  display: flex;
+  flex-direction: column;
+  gap: var(--brand-space-xs);
+  margin-top: var(--brand-space-xs);
+}
+
+.fb-loop {
+  display: grid;
+  gap: var(--brand-space-2xs);
+  padding: var(--brand-space-xs) var(--brand-space-sm);
+  border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  border-left: var(--brand-stroke-bold) solid var(--fb-loop);
+  border-radius: var(--brand-radius-md);
+  background: var(--brand-color-bg);
+  transition: opacity var(--brand-duration-base) var(--brand-ease-standard);
+}
+
+.fb-loop[data-shown='false'],
+.fb-loop [data-shown='false'] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.fb-loop header {
+  display: flex;
+  gap: var(--brand-space-xs);
+  align-items: center;
+}
+
+.fb-loop header i {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--fb-loop);
+}
+
+.fb-loop header strong {
+  flex: 1;
+  color: var(--brand-color-heading);
+  font-weight: 650;
+}
+
+.fb-loop header span {
+  color: var(--brand-color-fg);
+}
+
+.fb-loop p {
+  color: var(--brand-color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fb * {
+    transition: none !important;
+  }
+}

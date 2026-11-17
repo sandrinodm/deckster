@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1600" height="1000" fill="#f3f5f1"/>
+  <rect width="1600" height="64" fill="#ffffff"/>
+  <rect y="63" width="1600" height="1" fill="#dfe5e0"/>
+  <circle cx="40" cy="32" r="12" fill="#2c6e4f"/>
+  <text x="64" y="39" font-size="20" font-weight="700" fill="#1c2420">Larkfield Trees</text>
+  <text x="280" y="39" font-size="17" fill="#5b6660">Requests</text>
+  <text x="390" y="39" font-size="17" fill="#5b6660">Planting map</text>
+  <text x="540" y="39" font-size="17" font-weight="600" fill="#2c6e4f">Rounds</text>
+  <rect x="536" y="58" width="62" height="3" rx="1.5" fill="#2c6e4f"/>
+  <circle cx="1556" cy="32" r="16" fill="#dfe8e1"/><text x="1556" y="38" font-size="14" font-weight="700" fill="#2c6e4f" text-anchor="middle">DO</text>
+  <text x="48" y="128" font-size="15" font-weight="600" fill="#5b6660" letter-spacing="1">ROUND 4 · AUTUMN 2026</text>
+  <text x="48" y="172" font-size="34" font-weight="700" fill="#1c2420">Eastgate and Riverside</text>
+  <rect x="1336" y="112" width="216" height="52" rx="26" fill="#1c2420"/>
+  <text x="1444" y="144" font-size="17" font-weight="600" fill="#ffffff" text-anchor="middle">Export crew sheets</text>
+  <rect x="48" y="204" width="358" height="148" rx="16" fill="#ffffff"/>
+  <text x="76" y="244" font-size="16" fill="#5b6660">Trees planted</text>
+  <text x="76" y="300" font-size="44" font-weight="700" fill="#1c2420">1,240</text>
+  <text x="76" y="332" font-size="15" fill="#2c6e4f">+18% on round 3</text>
+  <rect x="430" y="204" width="358" height="148" rx="16" fill="#ffffff"/>
+  <text x="458" y="244" font-size="16" fill="#5b6660">Still alive</text>
+  <text x="458" y="300" font-size="44" font-weight="700" fill="#1c2420">96%</text>
+  <text x="458" y="332" font-size="15" fill="#2c6e4f">after the first summer</text>
+  <rect x="812" y="204" width="358" height="148" rx="16" fill="#ffffff"/>
+  <text x="840" y="244" font-size="16" fill="#5b6660">Open requests</text>
+  <text x="840" y="300" font-size="44" font-weight="700" fill="#1c2420">412</text>
+  <text x="840" y="332" font-size="15" fill="#2c6e4f">286 on hot blocks</text>
+  <rect x="1194" y="204" width="358" height="148" rx="16" fill="#ffffff"/>
+  <text x="1222" y="244" font-size="16" fill="#5b6660">Next planting</text>
+  <text x="1222" y="300" font-size="44" font-weight="700" fill="#1c2420">14 Mar</text>
+  <text x="1222" y="332" font-size="15" fill="#2c6e4f">Harrow Road, 38 trees</text>
+  <rect x="48" y="376" width="930" height="576" rx="16" fill="#ffffff"/>
+  <text x="76" y="420" font-size="20" font-weight="700" fill="#1c2420">Trees planted each month</text>
+  <text x="76" y="448" font-size="15" fill="#5b6660">Planting stops in the summer heat and picks up in autumn</text>
+  <rect x="112" y="880" width="830" height="1" fill="#e6ebe7"/>
+  <text x="98" y="885" font-size="13" fill="#8a948e" text-anchor="end">0</text>
+  <rect x="112" y="785" width="830" height="1" fill="#e6ebe7"/>
+  <text x="98" y="790" font-size="13" fill="#8a948e" text-anchor="end">50</text>
+  <rect x="112" y="690" width="830" height="1" fill="#e6ebe7"/>
+  <text x="98" y="695" font-size="13" fill="#8a948e" text-anchor="end">100</text>
+  <rect x="112" y="595" width="830" height="1" fill="#e6ebe7"/>
+  <text x="98" y="600" font-size="13" fill="#8a948e" text-anchor="end">150</text>
+  <rect x="112" y="500" width="830" height="1" fill="#e6ebe7"/>
+  <text x="98" y="505" font-size="13" fill="#8a948e" text-anchor="end">200</text>
+  <rect x="140" y="762" width="52" height="118" rx="6" fill="#9dbca8"/>
+  <text x="166" y="910" font-size="14" fill="#5b6660" text-anchor="middle">Mar</text>
+  <rect x="230" y="656" width="52" height="224" rx="6" fill="#9dbca8"/>
+  <text x="256" y="910" font-size="14" fill="#5b6660" text-anchor="middle">Apr</text>
+  <rect x="320" y="614" width="52" height="266" rx="6" fill="#9dbca8"/>
+  <text x="346" y="910" font-size="14" fill="#5b6660" text-anchor="middle">May</text>
+  <rect x="410" y="698" width="52" height="182" rx="6" fill="#9dbca8"/>
+  <text x="436" y="910" font-size="14" fill="#5b6660" text-anchor="middle">Jun</text>
+  <rect x="500" y="804" width="52" height="76" rx="6" fill="#9dbca8"/>
+  <text x="526" y="910" font-size="14" fill="#5b6660" text-anchor="middle">Jul</text>
+  <rect x="590" y="827" width="52" height="53" rx="6" fill="#9dbca8"/>
+  <text x="616" y="910" font-size="14" fill="#5b6660" text-anchor="middle">Aug</text>
+  <rect x="680" y="625" width="52" height="255" rx="6" fill="#2c6e4f"/>
+  <text x="706" y="910" font-size="14" fill="#5b6660" text-anchor="middle">Sep</text>
+  <rect x="770" y="527" width="52" height="353" rx="6" fill="#2c6e4f"/>
+  <text x="796" y="910" font-size="14" fill="#5b6660" text-anchor="middle">Oct</text>
+  <rect x="860" y="576" width="52" height="304" rx="6" fill="#2c6e4f"/>
+  <text x="886" y="910" font-size="14" fill="#5b6660" text-anchor="middle">Nov</text>
+  <rect x="1002" y="376" width="550" height="576" rx="16" fill="#ffffff"/>
+  <text x="1030" y="420" font-size="20" font-weight="700" fill="#1c2420">Streets in this round</text>
+  <text x="1030" y="466" font-size="13" font-weight="600" fill="#8a948e" letter-spacing="1">STREET</text>
+  <text x="1340" y="466" font-size="13" font-weight="600" fill="#8a948e" letter-spacing="1">TREES</text>
+  <text x="1430" y="466" font-size="13" font-weight="600" fill="#8a948e" letter-spacing="1">CREW</text>
+  <rect x="1030" y="484" width="494" height="1" fill="#e6ebe7"/>
+  <text x="1030" y="522" font-size="17" fill="#1c2420">Harrow Road</text>
+  <text x="1340" y="522" font-size="17" fill="#1c2420">38</text>
+  <rect x="1430" y="500" width="78" height="30" rx="15" fill="#dfe8e1"/>
+  <text x="1469" y="520" font-size="14" fill="#2c6e4f" text-anchor="middle">North</text>
+  <rect x="1030" y="546" width="494" height="1" fill="#e6ebe7"/>
+  <text x="1030" y="584" font-size="17" fill="#1c2420">Mill Lane</text>
+  <text x="1340" y="584" font-size="17" fill="#1c2420">24</text>
+  <rect x="1430" y="562" width="78" height="30" rx="15" fill="#dfe8e1"/>
+  <text x="1469" y="582" font-size="14" fill="#2c6e4f" text-anchor="middle">North</text>
+  <rect x="1030" y="608" width="494" height="1" fill="#e6ebe7"/>
+  <text x="1030" y="646" font-size="17" fill="#1c2420">Station Square</text>
+  <text x="1340" y="646" font-size="17" fill="#1c2420">19</text>
+  <rect x="1430" y="624" width="78" height="30" rx="15" fill="#dfe8e1"/>
+  <text x="1469" y="644" font-size="14" fill="#2c6e4f" text-anchor="middle">River</text>
+  <rect x="1030" y="670" width="494" height="1" fill="#e6ebe7"/>
+  <text x="1030" y="708" font-size="17" fill="#1c2420">Canal Walk</text>
+  <text x="1340" y="708" font-size="17" fill="#1c2420">17</text>
+  <rect x="1430" y="686" width="78" height="30" rx="15" fill="#dfe8e1"/>
+  <text x="1469" y="706" font-size="14" fill="#2c6e4f" text-anchor="middle">River</text>
+  <rect x="1030" y="732" width="494" height="1" fill="#e6ebe7"/>
+  <text x="1030" y="770" font-size="17" fill="#1c2420">Orchard Street</text>
+  <text x="1340" y="770" font-size="17" fill="#1c2420">15</text>
+  <rect x="1430" y="748" width="78" height="30" rx="15" fill="#dfe8e1"/>
+  <text x="1469" y="768" font-size="14" fill="#2c6e4f" text-anchor="middle">East</text>
+  <rect x="1030" y="794" width="494" height="1" fill="#e6ebe7"/>
+  <text x="1030" y="832" font-size="17" fill="#1c2420">Bell Yard</text>
+  <text x="1340" y="832" font-size="17" fill="#1c2420">12</text>
+  <rect x="1430" y="810" width="78" height="30" rx="15" fill="#dfe8e1"/>
+  <text x="1469" y="830" font-size="14" fill="#2c6e4f" text-anchor="middle">East</text>
+  <rect x="1030" y="856" width="494" height="1" fill="#e6ebe7"/>
+  <text x="1030" y="894" font-size="17" fill="#1c2420">Tanner Row</text>
+  <text x="1340" y="894" font-size="17" fill="#1c2420">9</text>
+  <rect x="1430" y="872" width="78" height="30" rx="15" fill="#dfe8e1"/>
+  <text x="1469" y="892" font-size="14" fill="#2c6e4f" text-anchor="middle">North</text>
+</svg>

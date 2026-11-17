@@ -1,0 +1,27 @@
+---
+layout: chart
+title: Drops tripled in a year, and the Open Network beta bent the curve
+eyebrow: Drops per month
+budget: 1m15s
+---
+
+import drops from '../data/drops-by-month.csv';
+
+<LineChart
+  data={drops}
+  x="month"
+  y={['2025', '2026']}
+  highlight={{ series: '2026', at: 1 }}
+  zero
+  unit="K"
+  annotations={[
+    { type: 'callout', x: 'Sep', series: '2026', label: 'Open Network beta opens', at: 2 },
+  ]}
+  caption="Drops delivered per month, thousands, January 2025 to October 2026"
+  source="Wrenhaul operating report, October 2026"
+/>
+
+<Notes>
+`chart` with a `<LineChart>` of two years, the highlight and a callout each on their own step; use it for a trend with a cause.
+Two years of drops, month by month. [click] This year is the line that matters: 182,000 drops in October against 61,000 a year earlier, three times as many. [click] And look where it bends: September, when the Open Network beta opened to 60 merchants and Halyard Parcel. The December peak last year was the holidays; this year we expect it to be higher still.
+</Notes>

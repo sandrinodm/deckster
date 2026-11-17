@@ -1,0 +1,22 @@
+---
+layout: content
+title: Everything you need to ship a drop today
+eyebrow: Start here
+width: full
+budget: 30s
+---
+
+<LinkCard href="https://docs.wrenhaul.example" title="Docs: book your first drop" description="From a test key to a webhook in ten minutes." />
+
+<LinkCard href="https://docs.wrenhaul.example/sdk" title="The TypeScript SDK and the CLI" description="Runs in Node and the browser, and installs the wren CLI." />
+
+<LinkCard href="https://status.wrenhaul.example" title="Status of every hub, live" description="Queues and on-time rates, hub by hub." />
+
+Every link on this slide is in the PDF of the talk.
+
+<Download file="lookbook.pdf">Download the PDF</Download>
+
+<Notes>
+`content` with `width: full`, three `<LinkCard>`s with descriptions in a row and a `<Download>` of the deck under them; adjacent cards share one row when the column is wide enough. Use it for the links slide near the end, and build with `deck build --with-exports` so the download has a file.
+Three links to take away. The docs, which start with booking a drop. The SDK, which also installs the wren CLI. And the status page, hub by hub. The slides are a download underneath, with every link in them.
+</Notes>

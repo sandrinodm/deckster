@@ -1,0 +1,36 @@
+---
+layout: diagram
+title: Every drop crosses five systems on its way to a rider
+eyebrow: The architecture
+budget: 1m30s
+---
+
+<Flow title="A drop's path from a shop's checkout through Open Network, the drops store, Flock and the route solver to the Rider app">
+  <Group label="Merchants">
+    <Node id="shop" kind="client" icon="shopping-bag" title="Shop checkout" col={1} row={1} />
+    <Node id="carrier" kind="external" icon="truck" title="Parcel carrier" col={1} row={2} />
+  </Group>
+  <Group label="Wrenhaul">
+    <Node id="api" kind="gateway" title="Open Network" subtitle="API" col={2} row={1} />
+    <Node id="drops" kind="database" title="Drops store" col={3} row={1} />
+    <Node id="flock" kind="function" title="Flock" subtitle="Batching" col={4} row={1} />
+    <Node id="solver" kind="function" icon="route" title="Route solver" col={4} row={2} />
+    <Node id="rider" kind="mobile" icon="bike" title="Rider app" col={5} row={2} />
+    <Node id="events" kind="queue" title="Event stream" col={3} row={2} />
+  </Group>
+  <Edge from="shop" to="api" label="POST /v1/drops" />
+  <Edge from="carrier" to="api" />
+  <Edge from="api" to="drops" />
+  <Edge from="drops" to="flock" label="every 90 s" />
+  <Edge from="flock" to="solver" label="a loop" />
+  <Edge from="solver" to="rider" label="9 stops" />
+  <Edge from="drops" to="events" label="changes" async />
+  <Edge from="events" to="carrier" label="webhooks" async />
+  <Journey at={1} path="shop api drops flock solver rider" focus />
+</Flow>
+
+<Notes>
+`diagram` with a `<Flow>` in two `<Group>`s and a `<Journey focus>`; use it when the claim is one path through a system, and let everything off the path dim.
+A shop's checkout books a drop, and five of our systems handle it before a rider sees it. [click] The checkout calls Open Network with one POST. [click] The drop lands in the drops store and waits. [click] Every 90 seconds Flock takes the waiting drops and groups them into loops. [click] The route solver puts each loop's stops in order. [click] And the loop arrives on a rider's phone: nine stops, in order.
+The event stream and the carrier dim while the drop travels: they matter for the next slides, not for this path.
+</Notes>

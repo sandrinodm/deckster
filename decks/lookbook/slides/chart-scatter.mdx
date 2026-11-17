@@ -1,0 +1,28 @@
+---
+layout: chart
+title: The denser the hub, the cheaper the drop
+eyebrow: Fourteen hubs
+budget: 1m15s
+---
+
+import hubs from '../data/hub-density.csv';
+
+<Scatter
+  data={hubs}
+  x="density"
+  y="cost"
+  label="hub"
+  trend
+  highlight={{ category: ['Old Town', 'Sandgate'], at: 1 }}
+  annotations={[{ type: 'reference', value: 3.1, label: 'Average price', at: 1 }]}
+  format={{ style: 'currency', currency: 'EUR', digits: 2 }}
+  xLabel="Drops per km² a day"
+  yLabel="Cost per drop"
+  caption="Cost per drop against drops per km² of each hub's area, October 2026"
+  source="Wrenhaul operating report, October 2026"
+/>
+
+<Notes>
+`chart` with a `<Scatter>`, a `trend` line, two highlighted points and a reference line; use it when two measures move together and a few points tell the story.
+Each dot is one of our fourteen hubs: how many drops it makes per square kilometre against what a drop costs. The line is the trend: the denser the hub, the cheaper the drop. [click] At the two ends, Old Town makes 410 drops a km² at €1.98; Sandgate makes 120 at €3.12, the only hub that costs more than the €3.10 a drop earns. That is why we choose new cities by how many drops fit in a square kilometre.
+</Notes>

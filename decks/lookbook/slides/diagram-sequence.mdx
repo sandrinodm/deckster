@@ -1,0 +1,31 @@
+---
+layout: diagram
+title: A drop is booked, batched and handed over in 52 minutes
+eyebrow: One drop in time
+budget: 1m30s
+---
+
+<SequenceDiagram title="One same-hour drop from booking to handover: the shop, Open Network, Flock, the rider and the recipient">
+  <Actor id="shop" kind="client" icon="shopping-bag" title="Shop" />
+  <Actor id="api" kind="gateway" title="Open Network" />
+  <Actor id="flock" kind="function" title="Flock" />
+  <Actor id="rider" kind="mobile" icon="bike" title="Rider" />
+  <Actor id="recipient" kind="user" title="Recipient" />
+  <Message from="shop" to="api" label="POST /v1/drops" at={1} />
+  <Message from="api" to="shop" label="201, door 09:24" reply at={2} />
+  <Message from="api" to="flock" label="Drop waiting" async at={3} />
+  <Message from="flock" to="flock" label="Batch in 90 s" at={4} />
+  <Message from="flock" to="rider" label="Loop of 9" at={5} />
+  <Message from="rider" to="recipient" label="Handover" at={6} />
+</SequenceDiagram>
+
+<Aside>
+### 52 min
+
+The median from booking to the door for a same-hour drop, October 2026.
+</Aside>
+
+<Notes>
+`diagram` with a `<SequenceDiagram>`, one `<Message>` per step and an `<Aside>`; use it when the order of the calls is the point.
+Here is a same-hour drop as a sequence in time. [click] The shop books it. [click] Open Network answers at once with the time it will be at the door. [click] The drop waits for Flock. [click] Within 90 seconds Flock batches it into a loop. [click] The loop goes to a rider with nine stops. [click] And the rider hands it over. Booking to door is 52 minutes at the median; our loaf took 39.
+</Notes>

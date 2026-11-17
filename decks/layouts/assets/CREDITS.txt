@@ -14,3 +14,9 @@ people/*.svg
 
 logos/*.svg
   Marks of fictional organisations, drawn for this deck. No restrictions.
+
+eastgate-heat-map.jpg
+  Drawn for the exemplars deck from generated data; Larkfield is fictional. No restrictions.
+
+screens/*.svg
+  Screens of a fictional tree request service, drawn for this deck. No restrictions.

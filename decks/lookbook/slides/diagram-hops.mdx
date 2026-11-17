@@ -1,0 +1,38 @@
+---
+layout: diagram
+title: A drop's trip from shop to door, hop by hop
+eyebrow: One parcel
+budget: 1m
+---
+
+<Flow title="One parcel's trip: from Brightloaf to the Old Town hub, into slot B3 of Aoife's bike, to the door on Weir Street, and the news back to the shop through Open Network">
+  <Node id="shop" kind="node" icon="shopping-bag" title="Brightloaf" subtitle="Bakery, Old Town" col={1} row={1} />
+  <Node id="hub" kind="node" icon="building" title="Old Town hub" subtitle="0.6 km away" col={1} row={2} />
+  <Node id="bike" kind="node" icon="bike" title="Aoife's bike" subtitle="Loop 14" col={1} row={3} />
+  <Node id="door" kind="user" title="14 Weir Street" subtitle="Flat 2" col={3} row={3} />
+  <Node id="api" kind="service" title="Open Network" subtitle="Webhooks" col={3} row={1} />
+  <Edge from="shop" to="hub" />
+  <Edge from="hub" to="bike" />
+  <Edge from="bike" to="door" />
+  <Edge from="door" to="api" async />
+  <Edge from="api" to="shop" async />
+  <Journey at={1} focus>
+    <Hop from="shop" to="hub" label="08:43" />
+    <Hop from="hub" to="bike" label="Slot B3" />
+    <Hop from="bike" to="door" label="Stop 7 of 9" reply="Signed" />
+    <Hop path="door api shop" label="drop.delivered" />
+  </Journey>
+</Flow>
+
+<Aside>
+
+### 39 minutes, oven to door
+
+Booked at 08:42, signed for at 09:21: three minutes inside the time we promised, and five kilometres by bike.
+
+</Aside>
+
+<Notes>
+`diagram` with a `<Flow>` in a loop of three rows and a `<Journey>` of `<Hop>` children, each with its own label and one with a reply, and an `<Aside>` with the trip's one number; use it when every hop has something to say.
+Now the parcel itself, not the software. [click] A rider collects it from Brightloaf at 08:43 and brings it to the Old Town hub. [click] At the hub it goes into slot B3 of Aoife's box. [click] It is the seventh of nine stops on her loop, and the recipient signs for it. [click] At 09:21 the shop hears it was delivered, through Open Network, three minutes before the time we promised.
+</Notes>

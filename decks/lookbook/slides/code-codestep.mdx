@@ -1,0 +1,43 @@
+---
+layout: code
+title: The SDK is the same call, typed
+eyebrow: Any language
+budget: 45s
+---
+
+<CodeMove>
+<CodeStep>
+
+```bash
+curl https://api.wrenhaul.example/v1/drops \
+  -H "Authorization: Bearer $WREN_KEY" \
+  -d '{
+    "pickup": "hub:old-town",
+    "dropoff": "14 Weir Street"
+  }'
+```
+
+</CodeStep>
+<CodeStep>
+
+```ts
+const drop = await wren.drops.create({
+    pickup: 'hub:old-town',
+    dropoff: '14 Weir Street',
+});
+
+drop.doorEta; // string: '09:24'
+```
+
+</CodeStep>
+</CodeMove>
+
+<Aside>
+- The same fields, with the same names
+- Your editor flags a missing `dropoff` before you ship
+</Aside>
+
+<Notes>
+`code` with a `<CodeMove>` of two `<CodeStep>`s in different languages; use it to show that two forms of the same thing line up.
+Here is the raw HTTP call, for anyone who would rather not take a dependency. [click] And here is the SDK: the same two fields, in the same place, with types, so a missing address fails in your editor and not at the door.
+</Notes>

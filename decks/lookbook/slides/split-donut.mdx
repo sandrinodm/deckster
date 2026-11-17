@@ -1,0 +1,36 @@
+---
+layout: split
+title: Two kinds of shop pay 59%
+eyebrow: Who pays us
+ratio: "5:7"
+side: right
+budget: 45s
+---
+
+Grocers and pharmacies sell what cannot wait for tomorrow's van: fresh food and prescriptions. Parcel partners, new with the beta, are already 14%.
+
+<Media>
+
+<Donut
+  data={[
+    { type: 'Grocers', share: 38 },
+    { type: 'Pharmacies and health', share: 21 },
+    { type: 'Food and bakery', share: 17 },
+    { type: 'Parcel partners', share: 14 },
+    { type: 'Other shops', share: 10 },
+  ]}
+  x="type"
+  y="share"
+  highlight={['Grocers', 'Pharmacies and health']}
+  centerLabel="grocers and pharmacies"
+  caption="Revenue by merchant type, October 2026"
+/>
+
+</Media>
+
+<Footnote>Source: Wrenhaul operating report, October 2026.</Footnote>
+
+<Notes>
+`split` at `ratio: 5:7` with a `<Donut>` in `<Media>`, two slices highlighted and a `centerLabel`; use it for a share of a whole that needs a sentence beside it.
+Grocers are 38% of our revenue and pharmacies 21%: together 59%. What they have in common is urgency, fresh food and prescriptions. Parcel partners are the new slice: 14% in only the second month of the beta.
+</Notes>

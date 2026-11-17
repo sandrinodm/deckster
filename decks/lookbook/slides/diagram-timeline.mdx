@@ -1,0 +1,20 @@
+---
+layout: diagram
+title: Open Network went from beta to launch in 12 weeks
+eyebrow: The rollout
+surface: inverse
+budget: 1m
+---
+
+<Timeline title="Open Network's rollout from the beta in September 2026 to the launch today, with returns pick-up next">
+  <Milestone date="10 Sep" title="Beta opens" at={1} state="success">60 merchants and Halyard</Milestone>
+  <Milestone date="8 Oct" title="SDK and CLI" at={2} state="success">@wrenhaul/sdk 1.0</Milestone>
+  <Milestone date="12 Nov" title="Webhook retries" at={3} state="success">No event lost</Milestone>
+  <Milestone date="3 Dec" title="Launch" at={4} current>Open to every shop</Milestone>
+  <Milestone date="Q1 2027" title="Returns pick-up" at={5} state="muted">On the next loop</Milestone>
+</Timeline>
+
+<Notes>
+`diagram` with a `<Timeline>` of `<Milestone>`s, one per step, with `current` on today, on inverse; use it for a short history that ends where the room is now.
+Twelve weeks, in four steps. [click] In September we opened a beta to 60 merchants and to Halyard Parcel. [click] In October the SDK and the CLI reached 1.0. [click] In November webhooks learned to retry, so no merchant misses an event. [click] Today, the launch: open to every shop. [click] And early next year, the first thing we add: riders pick up returns on their next loop.
+</Notes>

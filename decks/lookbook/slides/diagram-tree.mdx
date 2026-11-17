@@ -1,0 +1,21 @@
+---
+layout: diagram
+title: Flock sends nine drops in ten to a bike
+eyebrow: Routing
+budget: 1m
+---
+
+<Tree title="How Flock routes a waiting drop: a bike when one can take it in time, else a partner van, else the next day">
+  <Node id="bike-fit" kind="decision" title="Fits a bike?">
+    <Node id="bike" kind="node" icon="bike" title="Bike loop" subtitle="93% of drops" state="highlighted" />
+    <Node id="van-fit" kind="decision" title="Van in time?" at={1}>
+      <Node id="van" kind="node" icon="truck" title="Partner van" subtitle="5% of drops" at={1} />
+      <Node id="nextday" kind="node" icon="calendar-clock" title="Next day" subtitle="2%, if they agree" at={1} />
+    </Node>
+  </Node>
+</Tree>
+
+<Notes>
+`diagram` with a `<Tree>` and a branch revealed at a step; use it for a decision with a main road and exceptions.
+Flock asks one question of every waiting drop: can a bike take it? Under 25 kilos, with a rider who can make the window. Then it goes on a bike loop: 93% of drops. [click] The rest: if a partner van can make the window, the van takes it, 5%; if not, we offer the recipient the next day, 2%.
+</Notes>

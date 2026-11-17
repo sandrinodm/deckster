@@ -1,0 +1,22 @@
+---
+layout: split
+title: Every handover ends with a check
+ratio: 1:1
+side: left
+budget: 30s
+---
+
+The rider taps Hand over at the door. The same check appears on the recipient's Track page, and the merchant gets `drop.delivered` a second later.
+
+<Media>
+
+<Lottie src="../assets/media/check.json" alt="A ring and a check mark drawing themselves: the handover confirmation" size="full" role="accent" />
+
+</Media>
+
+<Caption>The Rider app's handover confirmation, as all three of them see it.</Caption>
+
+<Notes>
+`split` with `side: left` and a `<Lottie>` in `<Media>`; use it for a small animation that marks a moment. Outside a `<Step>` it draws itself as the slide arrives, so the room sees it once, with nothing to click.
+Watch the check draw itself: this is what everybody sees at the end of a drop. The rider taps one button at the door, the recipient sees the same check on Track, and the merchant's system hears it through a webhook a second later.
+</Notes>

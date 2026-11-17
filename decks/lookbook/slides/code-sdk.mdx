@@ -1,0 +1,25 @@
+---
+layout: code
+title: Booking a drop is one call
+eyebrow: Open Network SDK
+budget: 1m
+---
+
+```ts title="checkout.ts" {4-7|4-10}
+import { Wrenhaul } from '@wrenhaul/sdk';
+
+const wren = new Wrenhaul({ apiKey: process.env.WREN_KEY });
+const drop = await wren.drops.create({
+  pickup: 'hub:old-town',
+  dropoff: '14 Weir Street',
+});
+
+drop.status;   // 'batching'
+drop.doorEta;  // '09:24', inside the same-hour window
+```
+
+<Notes>
+`code` with a fenced block, a `title` and stepped highlights (`{4-7|4-10}`); use it when the code has two points and you talk through them in order.
+This is the whole integration for a shop's checkout. [click] One call with where the parcel is and where it goes; leave the window out and you get the same hour. [click] And what comes back with it: the drop is already waiting for the next batch, and you get the time it will be at the door, which you can show your customer straight away.
+If asked: the API key comes from the Open Network console; test keys never reach a rider.
+</Notes>

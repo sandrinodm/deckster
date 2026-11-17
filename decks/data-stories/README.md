@@ -8,7 +8,7 @@ Run these from the repository root:
 
 ```sh
 pnpm deck dev data-stories
-pnpm deck lint data-stories    # data-stories: no problems in 18 slides (21 steps checked).
+pnpm deck lint data-stories    # data-stories: 0 errors, 1 warning in 18 slides (21 steps checked).
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures.

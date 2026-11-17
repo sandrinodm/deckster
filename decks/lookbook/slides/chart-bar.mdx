@@ -1,0 +1,37 @@
+---
+layout: chart
+title: A rider makes 9.4 stops an hour, nearly twice a merchant's own van
+eyebrow: Stops per hour
+budget: 1m
+---
+
+<BarChart
+  data={[
+    { way: 'Wrenhaul rider', stops: 9.4 },
+    { way: 'Van courier', stops: 5.8 },
+    { way: "Merchant's own van", stops: 5.1 },
+    { way: 'Gig delivery car', stops: 4.2 },
+    { way: 'Walking courier', stops: 3.0 },
+  ]}
+  x="way"
+  y="stops"
+  orientation="horizontal"
+  sort
+  highlight="Wrenhaul rider"
+  format={{ digits: 1 }}
+  caption="Stops made per hour on the road, centre of Kestwick, October 2026"
+  source="Merchant survey, n = 112; Wrenhaul operating report, October 2026"
+/>
+
+<Aside>
+
+### No parking
+
+A rider stops at the door and walks the parcel in. A van circles for a loading bay. That is most of the gap.
+
+</Aside>
+
+<Notes>
+`chart` with a sorted horizontal `<BarChart>`, one bar highlighted and an `<Aside>` for the reason; use it to rank a handful of options.
+Five ways to deliver in the centre of Kestwick, ranked by stops an hour. A Wrenhaul rider makes 9.4; the merchant's own van makes 5.1, so nearly twice as many, and a van courier 5.8. The reason is not speed: it is that a bike never has to park.
+</Notes>

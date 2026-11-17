@@ -1,0 +1,20 @@
+---
+layout: diagram
+title: A hub's day is one loop, run 56 times
+eyebrow: The hub's day
+budget: 1m
+---
+
+<Cycle title="The loop every hub runs: collect, batch, ride, hand over, return" steps>
+  <Node id="collect" kind="node" icon="shopping-bag" title="Collect" subtitle="From the shops" />
+  <Node id="batch" kind="function" title="Batch" subtitle="Flock, 90 s" />
+  <Node id="ride" kind="node" icon="bike" title="Ride" subtitle="7.2 km" />
+  <Node id="handover" kind="user" title="Hand over" subtitle="9 doors" />
+  <Node id="return" kind="node" icon="building" title="Return" subtitle="Empties, returns" />
+  <Edge from="return" to="collect" label="next loop" />
+</Cycle>
+
+<Notes>
+`diagram` with a `<Cycle steps>` and an `<Edge>` label on the arc that closes it; use it when the process repeats and the repeat is the point.
+Every hub runs the same loop all day. It starts when riders collect from the shops nearby. [click] Flock batches the waiting drops. [click] The rider rides the loop, 7.2 kilometres at the median. [click] Nine handovers at nine doors. [click] Back to the hub with the empty boxes and any returns. [click] And that starts the next loop. A hub of 500 drops a day runs it about 56 times.
+</Notes>

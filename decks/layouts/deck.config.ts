@@ -3,9 +3,10 @@ import { defineDeck } from '@deckster/engine/config';
 /**
  * The layout catalogue: every kit layout added after the six exemplars, in each of its variants,
  * told as the Larkfield Urban Forestry Division's annual review of its canopy programme. One part
- * per layout, each opened by a divider, so the deck doubles as a kitchen sink for the layouts in
- * every brand. Larkfield, its people, partners and figures are fictional; portraits and logos are
- * drawn for this deck, and the photos are CC0 from Wikimedia Commons (see `assets/CREDITS.txt`).
+ * per layout or pair of related layouts, each opened by a divider, so the deck doubles as a kitchen
+ * sink for the layouts in every brand. Larkfield, its people, partners and figures are fictional;
+ * portraits, logos and app screens are drawn for this deck, and the photos are CC0 from Wikimedia
+ * Commons (see `assets/CREDITS.txt`).
  */
 export default defineDeck({
   title: 'The canopy programme in every layout',
@@ -21,6 +22,8 @@ export default defineDeck({
     'team-row',
     'team-grid',
     'team-roster',
+    'team-founders',
+    'team-leads',
     'part-people',
     'quote-portrait',
     'quote-plain',
@@ -52,6 +55,39 @@ export default defineDeck({
     'image-bottom',
     'image-side',
     'image-alone',
+    'part-bento',
+    'bento-pilot',
+    'bento-square',
+    'bento-plane',
+    'part-shift',
+    'shift-requests',
+    'shift-species',
+    'part-gallery',
+    'gallery-canopy',
+    'gallery-app',
+    'gallery-season',
+    'part-proof',
+    'proof-holloway',
+    'proof-eastgate',
+    'proof-single',
+    'part-structure',
+    'columns-roadmap',
+    'columns-requests',
+    'columns-asks',
+    'matrix-peers',
+    'matrix-districts',
+    'matrix-options',
+    'part-numbers',
+    'equation-value',
+    'equation-budget',
+    'equation-return',
+    'ask-capital',
+    'ask-crews',
+    'ask-grant',
+    'part-screen',
+    'screen-map',
+    'screen-phone',
+    'screen-laptop',
     'part-closing',
     'closing-ask',
     'closing-questions',

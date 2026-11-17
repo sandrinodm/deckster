@@ -1,0 +1,26 @@
+---
+layout: code
+title: You can book a drop from a terminal
+eyebrow: The wren CLI
+budget: 1m
+---
+
+<Terminal title="~/brightloaf">
+  <Cmd>wren quote --dropoff "14 Weir Street" --window same_hour</Cmd>
+  <Out tone="muted">€3.10 · at the door by 09:24</Out>
+  <Cmd>wren drops create --dropoff "14 Weir Street"</Cmd>
+  <Out tone="success">drp_7Hq2 booked · batching</Out>
+  <Cmd>wren drops watch drp_7Hq2</Cmd>
+  <Out tone="muted">08:42 batched into loop 14 with Aoife</Out>
+  <Out tone="success">09:21 delivered, 3 minutes early</Out>
+</Terminal>
+
+<Aside>
+- The same API key as the SDK
+- `--json` on every command, for scripts
+</Aside>
+
+<Notes>
+`code` with a `<Terminal>`, one `<Cmd>` per step and its `<Out>` lines after it; use it when the demo is a few commands typed in order.
+Not every shop has a developer, so the same calls work from a terminal. [click] Ask for a price first: €3.10, and the time it would be at the door. [click] Book it: the drop has an id and is already waiting for a batch. [click] Then watch it: batched into Aoife's loop, and at the door three minutes early.
+</Notes>

@@ -1,0 +1,25 @@
+---
+layout: code
+title: A webhook tells you the parcel is home
+eyebrow: Webhooks
+surface: inverse
+budget: 1m
+---
+
+```ts title="webhooks.ts" {2-3|5-8} lineNumbers /verify/ /drop.delivered/
+app.post('/hooks', async (req, res) => {
+  const signature = req.header('wren-signature');
+  if (!wren.webhooks.verify(req.body, signature)) return res.sendStatus(401);
+
+  const event = JSON.parse(req.body);
+  if (event.type === 'drop.delivered') {
+    await orders.markDelivered(event.drop.reference);
+  }
+  res.sendStatus(200);
+});
+```
+
+<Notes>
+`code` with a fenced block, `lineNumbers`, marked words and two highlight steps, on inverse and without an aside, so the code takes the full width; use it when a reader should find the same words in their own code later.
+This is Pantry Lane's whole webhook handler. [click] First it verifies the signature, so nobody else can tell their shop a parcel arrived. [click] Then it reads the event: when a drop is delivered, it marks their own order as delivered, by their own order number. The answer is 200, and we stop retrying.
+</Notes>

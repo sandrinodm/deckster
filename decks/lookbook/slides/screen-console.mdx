@@ -1,0 +1,22 @@
+---
+layout: screen
+title: Developers test a drop before they ship
+eyebrow: Open Network console
+frame: none
+surface: default
+src: ../assets/screens/console.svg
+alt: The Open Network console in test mode, with a test drop request, a 201 response with a price of €3.10 and a webhook log
+callouts:
+  - x: 78
+    y: 42.5
+    label: Test drops get a real quote
+  - x: 89.5
+    y: 81
+    label: A failed webhook is retried
+budget: 40s
+---
+
+<Notes>
+`screen` with `frame: none` on the default surface and two `callouts`; use it when the screen needs no device around it, such as a console or a document.
+In test mode a drop is batched like a real one and never reaches a rider. The response has the price, €3.10, and when the rider would be at the door. Below, the webhook log: the one that failed with a 500 was retried two seconds later.
+</Notes>

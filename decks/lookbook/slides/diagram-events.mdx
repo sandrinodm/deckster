@@ -1,0 +1,35 @@
+---
+layout: diagram
+title: Every change reaches the merchant within a second, or is retried until it does
+eyebrow: Events and webhooks
+budget: 1m30s
+---
+
+<Flow title="A delivery event on the event stream, fanned out to Track, Insights and the merchant's webhook, which fails once and is retried">
+  <Node id="rider" kind="mobile" icon="bike" title="Rider app" col={1} row={2} />
+  <Node id="stream" kind="queue" title="Event stream" col={2} row={2} />
+  <Node id="track" kind="client" title="Track page" col={3} row={1} />
+  <Node id="hooks" kind="function" title="Webhooks" col={3} row={2} />
+  <Node id="insights" kind="service" title="Insights" col={3} row={3} />
+  <Node id="shop" kind="external" title="Pantry Lane" subtitle="/hooks" col={4} row={2} />
+  <Edge from="rider" to="stream" label="drop.delivered" />
+  <Edge from="stream" to="track" async />
+  <Edge from="stream" to="hooks" async />
+  <Edge from="stream" to="insights" async />
+  <Edge id="post" from="hooks" to="shop" label="POST" />
+  <Edge from="hooks" to="hooks" label="retry in 2 s" at={3} />
+  <Packet path="rider stream hooks shop" at={1} label="0.4 s" />
+  <Packet path="stream track" at={1} />
+  <Packet path="stream insights" at={1} />
+  <State node="shop" at={2} until={3} is="error" badge="500" />
+  <State edge="post" at={2} until={3} is="error" />
+  <Focus at={3} nodes="hooks shop" />
+  <Packet from="hooks" to="shop" at={3} play="once" reply="200" />
+  <State node="shop" at={3} is="success" badge="200" />
+</Flow>
+
+<Notes>
+`diagram` with a `<Flow>`, `<Packet>`s on the stream, a `<State>` that fails and recovers, and `<Focus>` on the retry; use it when the story is what happens when something breaks.
+Every change a rider makes goes on the event stream once, and everything that cares reads it from there. [click] The rider taps delivered: Track updates, Insights counts it, and the merchant's webhook gets it, 0.4 seconds after the tap at the median. [click] Sometimes the merchant's server is down and answers 500. [click] We do not drop the event: the webhook is retried after two seconds, and again with longer gaps, until the merchant answers 200.
+If asked: retries back off to two, four and eight seconds, then hourly for a day; the console's webhook log shows every attempt.
+</Notes>

@@ -1,0 +1,168 @@
+/*
+ * The drop price calculator. Every value is a brand custom property, so the widget and its poster
+ * follow the brand and the surface. Sizes are canvas pixels.
+ */
+.pc {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--brand-space-xl);
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--brand-space-lg);
+  border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  border-radius: var(--brand-radius-lg);
+  background: var(--brand-color-surface);
+  color: var(--brand-color-fg);
+  font-family: var(--brand-font-body);
+  font-size: var(--brand-type-small-size);
+  line-height: var(--brand-type-small-line-height);
+}
+
+.pc *,
+.pc *::before,
+.pc *::after {
+  box-sizing: border-box;
+}
+
+.pc p {
+  margin: 0;
+}
+
+.pc-volume {
+  display: grid;
+  gap: var(--brand-space-xs);
+}
+
+.pc-label {
+  color: var(--brand-color-muted);
+  font-family: var(--brand-type-label-family);
+  font-size: var(--brand-type-label-size);
+  font-weight: var(--brand-type-label-weight);
+  letter-spacing: var(--brand-type-label-tracking);
+  line-height: var(--brand-type-label-line-height);
+  text-transform: uppercase;
+}
+
+.pc-count {
+  color: var(--brand-color-heading);
+  font-family: var(--brand-type-stat-family);
+  font-size: var(--brand-type-stat-size);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--brand-type-stat-line-height);
+}
+
+.pc-slider {
+  position: relative;
+  height: var(--brand-space-lg);
+}
+
+.pc-track {
+  position: absolute;
+  inset: calc(50% - var(--brand-stroke-bold)) 0 auto;
+  height: calc(var(--brand-stroke-bold) * 2);
+  border-radius: var(--brand-radius-xl);
+  background: var(--brand-color-border);
+}
+
+.pc-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--brand-color-accent);
+}
+
+.pc-thumb {
+  position: absolute;
+  top: 50%;
+  width: var(--brand-space-lg);
+  height: var(--brand-space-lg);
+  border: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  border-radius: 50%;
+  background: var(--brand-color-bg);
+  transform: translate(-50%, -50%);
+}
+
+/* The native range input sits invisibly over the drawn track, so it takes the pointer and keys. */
+.pc-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pc-slider:has(.pc-input:focus-visible) .pc-thumb {
+  outline: var(--brand-stroke-bold) solid var(--brand-color-heading);
+  outline-offset: var(--brand-stroke-bold);
+}
+
+.pc-range {
+  display: flex;
+  justify-content: space-between;
+  color: var(--brand-color-muted);
+  font-size: var(--brand-type-caption-size);
+  line-height: var(--brand-type-caption-line-height);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-plans {
+  display: grid;
+  gap: var(--brand-space-xs);
+}
+
+.pc-plan {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--brand-space-md);
+  align-items: baseline;
+  padding: var(--brand-space-sm) var(--brand-space-md);
+  border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  border-radius: var(--brand-radius-md);
+  background: var(--brand-color-bg);
+}
+
+.pc-plan[data-cheapest='true'] {
+  border-color: var(--brand-color-accent);
+  box-shadow: inset var(--brand-stroke-bold) 0 0 0 var(--brand-color-accent);
+}
+
+.pc-plan-name {
+  grid-column: 1;
+  grid-row: 1;
+  color: var(--brand-color-heading);
+  font-weight: 600;
+}
+
+.pc-tag {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  padding: 0 var(--brand-space-xs);
+  border-radius: var(--brand-radius-sm);
+  background: var(--brand-color-accent);
+  color: var(--brand-color-accent-fg);
+  font-size: var(--brand-type-caption-size);
+  line-height: var(--brand-type-caption-line-height);
+}
+
+.pc-plan-drop {
+  grid-column: 1;
+  grid-row: 2;
+  color: var(--brand-color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-plan-month {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 5ch;
+  color: var(--brand-color-heading);
+  font-family: var(--brand-font-display);
+  font-size: var(--brand-type-lead-size);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--brand-type-lead-line-height);
+  text-align: right;
+}

@@ -1,0 +1,25 @@
+---
+layout: content
+title: Every number moved the right way this year
+eyebrow: October 2025 to October 2026
+width: full
+budget: 1m
+---
+
+A drop sells for more, costs less, and the rider who brings it stays longer.
+
+<StatRow
+  stats={[
+    { value: 3.1, from: 2.9, label: 'price a drop', format: { style: 'currency', currency: 'EUR', digits: 2 } },
+    { value: 2.34, from: 3.4, better: 'down', label: 'cost a drop', format: { style: 'currency', currency: 'EUR', digits: 2 } },
+    { value: 24.5, delta: '+41.5 pts', tone: 'positive', trend: 'up', unit: '%', label: 'gross margin, from −17%', highlight: true },
+    { value: 4, from: 7.1, better: 'down', unit: '%', label: 'riders leaving a month' },
+  ]}
+/>
+
+<Footnote>Wrenhaul operating report, October 2026; rider turnover compared with January 2026.</Footnote>
+
+<Notes>
+`content` with `width: full` and a `<StatRow>` of four figures with their changes and one highlight; use it when a sentence frames a row of related numbers.
+Price up twenty cents, cost down more than a euro. Put together, a drop that lost money a year ago now makes a 24.5% margin. And riders leave at half the rate they did in January.
+</Notes>

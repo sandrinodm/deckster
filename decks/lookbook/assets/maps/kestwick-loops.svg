@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none">
+<rect x="20" y="20" width="1560" height="860" rx="18" fill="#ffffff" stroke="#9aa1ae" stroke-width="3"/>
+<g id="streets">
+<path d="M20 700 C400 640 700 860 1100 760 S1500 600 1580 640 L1580 730 C1480 700 1300 830 1100 850 S400 740 20 790 Z" fill="#f4f5f8" stroke="#d5d9e0" stroke-width="3"/>
+<path d="M40 80 C500 110 1100 50 1560 92" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M40 190 C500 220 1100 160 1560 202" stroke="#d5d9e0" stroke-width="8" fill="none"/>
+<path d="M40 300 C500 330 1100 270 1560 312" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M40 410 C500 440 1100 380 1560 422" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M40 520 C500 550 1100 490 1560 532" stroke="#d5d9e0" stroke-width="8" fill="none"/>
+<path d="M40 630 C500 660 1100 600 1560 642" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M40 740 C500 770 1100 710 1560 752" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M40 850 C500 880 1100 820 1560 862" stroke="#d5d9e0" stroke-width="8" fill="none"/>
+<path d="M120 30 C146 300 98 600 130 870" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M260 30 C286 300 238 600 270 870" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M400 30 C426 300 378 600 410 870" stroke="#d5d9e0" stroke-width="8" fill="none"/>
+<path d="M540 30 C566 300 518 600 550 870" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M680 30 C706 300 658 600 690 870" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M820 30 C846 300 798 600 830 870" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M960 30 C986 300 938 600 970 870" stroke="#d5d9e0" stroke-width="8" fill="none"/>
+<path d="M1100 30 C1126 300 1078 600 1110 870" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M1240 30 C1266 300 1218 600 1250 870" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M1380 30 C1406 300 1358 600 1390 870" stroke="#d5d9e0" stroke-width="4" fill="none"/>
+<path d="M1520 30 C1546 300 1498 600 1530 870" stroke="#d5d9e0" stroke-width="8" fill="none"/>
+<text x="1150" y="815" font-size="38" font-weight="600" fill="#555c6a">River Kest</text>
+</g>
+<g id="loop-1"><path d="M800 470 L930 380 L1080 330 L1250 360 L1300 470 L1180 540 L1000 530 L800 470" stroke="#e4572e" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/></g>
+<g id="loop-2"><path d="M800 470 L700 360 L600 230 L760 160 L900 210 L880 330 L800 470" stroke="#161920" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/></g>
+<g id="loop-3"><path d="M800 470 L680 560 L520 640 L600 760 L800 740 L900 620 L800 470" stroke="#555c6a" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="16 12"/></g>
+<g id="stops-1"><circle cx="930" cy="380" r="15" fill="#ffffff" stroke="#e4572e" stroke-width="7"/><circle cx="1080" cy="330" r="15" fill="#ffffff" stroke="#e4572e" stroke-width="7"/><circle cx="1250" cy="360" r="15" fill="#ffffff" stroke="#e4572e" stroke-width="7"/><circle cx="1300" cy="470" r="15" fill="#ffffff" stroke="#e4572e" stroke-width="7"/><circle cx="1180" cy="540" r="15" fill="#ffffff" stroke="#e4572e" stroke-width="7"/><circle cx="1000" cy="530" r="15" fill="#ffffff" stroke="#e4572e" stroke-width="7"/></g>
+<g id="stops-2"><circle cx="700" cy="360" r="15" fill="#ffffff" stroke="#161920" stroke-width="7"/><circle cx="600" cy="230" r="15" fill="#ffffff" stroke="#161920" stroke-width="7"/><circle cx="760" cy="160" r="15" fill="#ffffff" stroke="#161920" stroke-width="7"/><circle cx="900" cy="210" r="15" fill="#ffffff" stroke="#161920" stroke-width="7"/><circle cx="880" cy="330" r="15" fill="#ffffff" stroke="#161920" stroke-width="7"/></g>
+<g id="stops-3"><circle cx="680" cy="560" r="15" fill="#ffffff" stroke="#555c6a" stroke-width="7"/><circle cx="520" cy="640" r="15" fill="#ffffff" stroke="#555c6a" stroke-width="7"/><circle cx="600" cy="760" r="15" fill="#ffffff" stroke="#555c6a" stroke-width="7"/><circle cx="800" cy="740" r="15" fill="#ffffff" stroke="#555c6a" stroke-width="7"/><circle cx="900" cy="620" r="15" fill="#ffffff" stroke="#555c6a" stroke-width="7"/></g>
+<g id="hub"><rect x="766" y="436" width="68" height="68" rx="14" fill="#161920"/><text x="800" y="483" text-anchor="middle" font-size="38" font-weight="700" fill="#ffffff">H</text></g>
+<g id="labels">
+<rect x="56" y="56" width="420" height="296" rx="16" fill="#ffffff" stroke="#9aa1ae" stroke-width="3"/>
+<rect x="84" y="84" width="44" height="44" rx="10" fill="#161920"/><text x="150" y="120" font-size="38" font-weight="600" fill="#161920">Old Town hub</text>
+<path d="M86 180h40" stroke="#e4572e" stroke-width="10" stroke-linecap="round"/><text x="150" y="193" font-size="38" font-weight="600" fill="#161920">Loop 14</text>
+<path d="M86 240h40" stroke="#161920" stroke-width="10" stroke-linecap="round"/><text x="150" y="253" font-size="38" font-weight="600" fill="#161920">Loop 15</text>
+<path d="M86 300h40" stroke="#555c6a" stroke-width="10" stroke-linecap="round" stroke-dasharray="10 8"/><text x="150" y="313" font-size="38" font-weight="600" fill="#161920">Loop 16</text>
+</g>
+</svg>

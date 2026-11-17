@@ -1,0 +1,33 @@
+---
+layout: chart
+title: Four in ten sign-ups never connect their shop
+eyebrow: Where new merchants stop
+budget: 1m
+---
+
+<Funnel
+  data={[
+    { stage: 'Signed up', merchants: 1480 },
+    { stage: 'Connected their shop', merchants: 910 },
+    { stage: 'Sent a first drop', merchants: 640 },
+    { stage: 'Still sending after 90 days', merchants: 352 },
+  ]}
+  x="stage"
+  y="merchants"
+  highlight="Connected their shop"
+  caption="Merchants who signed up in 2026, January to October"
+  source="Wrenhaul operating report, October 2026"
+/>
+
+<Aside>
+
+### 570 merchants
+
+signed up this year and never connected. That is twice the loss at any later stage, so it is the first one we fix.
+
+</Aside>
+
+<Notes>
+`chart` with a `<Funnel>`, the stage after the biggest loss highlighted and the loss in an `<Aside>`; use it for drop-off through ordered stages.
+1,480 merchants signed up this year. Only 910 connected their shop: 570 stopped at the first step, four in ten. Every later step loses fewer than 300. So the fix is not more marketing; it is making the first connection take minutes instead of a developer.
+</Notes>

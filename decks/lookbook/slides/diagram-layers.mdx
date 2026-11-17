@@ -1,0 +1,40 @@
+---
+layout: diagram
+title: Merchants touch one layer; riders another
+eyebrow: The stack
+surface: inverse
+budget: 1m
+---
+
+<Layers title="Wrenhaul's stack from merchants down to the street: who books, the API, planning, the apps and the hubs">
+  <Layer title="Merchants" subtitle="Shops and carriers" at={1}>
+    <Item kind="client" icon="shopping-cart" title="Shop platforms" />
+    <Item kind="client" icon="barcode" title="Tills" />
+    <Item kind="external" icon="truck" title="Parcel carriers" />
+  </Layer>
+  <Layer title="Open Network" subtitle="What merchants touch" at={2} state="highlighted">
+    <Item kind="gateway" title="API" />
+    <Item kind="document" icon="code" title="SDK" />
+    <Item kind="client" icon="terminal" title="wren CLI" />
+  </Layer>
+  <Layer title="Planning" subtitle="Runs inside Wrenhaul" at={3}>
+    <Item kind="function" title="Flock" />
+    <Item kind="function" icon="route" title="Route solver" />
+    <Item kind="database" title="Drops store" />
+  </Layer>
+  <Layer title="Screens" subtitle="Hub leads and recipients" at={4}>
+    <Item kind="client" title="Dispatch" />
+    <Item kind="client" icon="chart-bar" title="Insights" />
+    <Item kind="mobile" title="Track" />
+  </Layer>
+  <Layer title="Streets" subtitle="What riders touch" at={5} state="highlighted">
+    <Item kind="mobile" title="Rider app" />
+    <Item kind="node" icon="bike" title="Cargo bikes" />
+    <Item kind="node" icon="building" title="14 hubs" />
+  </Layer>
+</Layers>
+
+<Notes>
+`diagram` with `<Layers>` of five `<Layer>`s and their `<Item>` chips, built top down, on inverse; use it for a stack where each band has an owner or a user.
+Read it from the top. [click] Merchants and carriers book drops from their own systems. [click] The only layer they ever touch is Open Network: the API, the SDK and the CLI. [click] Under it, Flock and the route solver plan the loops. [click] Hub leads run the day in Dispatch, merchants read Insights, and recipients watch Track. [click] Riders see none of that. Their layer is the street: the Rider app, the bike and the hub they ride from. Two layers lit, and they never need to meet.
+</Notes>

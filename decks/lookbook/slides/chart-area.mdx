@@ -1,0 +1,26 @@
+---
+layout: chart
+title: Same-hour drops tripled this year, faster than any other window
+eyebrow: Drops by window
+surface: inverse
+budget: 1m
+---
+
+import windows from '../data/drops-by-window.csv';
+
+<AreaChart
+  data={windows}
+  x="month"
+  y={['Same hour', 'Two-hour', 'Evening']}
+  stacked
+  highlight="Same hour"
+  unit="K"
+  annotations={[{ type: 'callout', x: 'Oct', series: 'Same hour', label: 'Nearly half of October' }]}
+  caption="Drops per month by delivery window, thousands, January to October 2026"
+  source="Wrenhaul operating report, October 2026"
+/>
+
+<Notes>
+`chart` with a stacked `<AreaChart>`, the series that matters at the baseline and highlighted, on the inverse surface; use it when a total grows and its make-up changes.
+The whole stack is every drop this year, split by the window the recipient chose. Same hour, at the bottom, went from 28,000 in January to 88,000 in October: 3.1 times. Two-hour doubled and evening grew 2.7 times. Same hour is now nearly half of what we deliver.
+</Notes>

@@ -1,0 +1,43 @@
+---
+layout: chart
+title: Batching cut €0.58 a drop, more than any other change
+eyebrow: Cost per drop
+budget: 1m15s
+---
+
+<Waterfall
+  data={[
+    { step: 'October 2025', cost: 3.4 },
+    { step: 'Flock batching', cost: -0.58 },
+    { step: 'Denser hubs', cost: -0.41 },
+    { step: 'Faster handovers', cost: -0.22 },
+    { step: 'Rider pay rise', cost: 0.15 },
+    { step: 'October 2026', cost: null },
+  ]}
+  x="step"
+  y="cost"
+  totals={['October 2025', 'October 2026']}
+  better="down"
+  reveal="series"
+  highlight={{ category: 'Flock batching', at: 2 }}
+  format={{ style: 'currency', currency: 'EUR', digits: 2 }}
+  caption="What one drop costs us in rider time, hub, bike and software"
+  source="Wrenhaul operating report, October 2026"
+/>
+
+<Aside>
+
+<Step at={2}>
+
+### Every 90 seconds
+
+Flock now batches waiting drops every 90 seconds, so each loop carries more of them. That alone paid for the pay rise almost four times over.
+
+</Step>
+
+</Aside>
+
+<Notes>
+`chart` with a `<Waterfall>` between two totals: the totals first, the changes between them on a click (`reveal="series"`), then the step that matters highlighted with its `<Aside>`; use it for a bridge from one total to another.
+A drop cost us €3.40 a year ago and €2.34 now. [click] Three changes took cost out, and one, the rider pay rise, put 15 cents back in. [click] The biggest by far is Flock: batching every 90 seconds instead of every five minutes saved 58 cents a drop, almost four times what the pay rise cost.
+</Notes>

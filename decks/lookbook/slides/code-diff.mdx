@@ -1,0 +1,25 @@
+---
+layout: code
+title: Batching every 90 seconds was a one-line change
+eyebrow: Flock's config
+budget: 45s
+---
+
+```yaml title="flock.yaml" diff lineNumbers
+batching:
+-  interval: 300s
++  interval: 90s
+  max_drops_per_loop: 9
+  max_loop_minutes: 75
+  overflow: partner_van
+```
+
+<Aside>
+- Drops wait at most 90 seconds for a loop, not five minutes
+- Hana Sato's team made the solver fast enough first
+</Aside>
+
+<Notes>
+`code` with a fenced YAML block marked `diff` and an `<Aside>`; use it when the change itself is the news.
+The change that made the same-hour window work was one line. Flock used to batch every five minutes; now it batches every 90 seconds, so a drop waits at most a minute and a half before it is on a loop. The line was the easy part: Hana Sato's team first had to make the solver plan a hub's loops inside that time.
+</Notes>

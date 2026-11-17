@@ -1,0 +1,30 @@
+---
+layout: chart
+title: €8M of the €14M is committed
+eyebrow: Series A
+budget: 40s
+---
+
+<Progress
+  value={8}
+  max={14}
+  target={14}
+  unit="M"
+  format={{ style: 'currency', currency: 'EUR' }}
+  label="committed to the Series A"
+/>
+
+<Aside>
+
+### €6M open
+
+Saltglass Capital leads with €8M. The rest of the round is open to the investors in this room.
+
+</Aside>
+
+<Footnote>Commitments as of 3 December 2026.</Footnote>
+
+<Notes>
+`chart` with one `<Progress>` bar, its target marked, and an `<Aside>`; use it for progress toward a goal.
+Saltglass Capital leads with €8M. Six million is still open, and we would like some of it to come from people in this room.
+</Notes>

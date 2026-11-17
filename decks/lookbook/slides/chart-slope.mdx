@@ -1,0 +1,40 @@
+---
+layout: chart
+title: The three newest cities closed the gap by October
+eyebrow: On time by city
+budget: 1m
+---
+
+<Slope
+  data={[
+    { city: 'Kestwick', before: 97.0, after: 98.6 },
+    { city: 'Marrowgate', before: 95.4, after: 97.9 },
+    { city: 'Port Ellis', before: 94.1, after: 97.1 },
+    { city: 'Hollin', before: 92.8, after: 98.2 },
+    { city: 'Ebbsford', before: 90.2, after: 96.4 },
+    { city: 'Calder Bay', before: 89.6, after: 96.9 },
+  ]}
+  x="city"
+  from="before"
+  to="after"
+  fromLabel="March 2026"
+  toLabel="October 2026"
+  highlight={['Hollin', 'Ebbsford', 'Calder Bay']}
+  unit="%"
+  format={{ digits: 1 }}
+  caption="Drops at the door inside their window, by city"
+  source="Wrenhaul operating report, October 2026"
+/>
+
+<Aside>
+
+### 5 to 7 points
+
+Hollin, Ebbsford and Calder Bay opened in February and gained 5.4 to 7.3 points in seven months; the older three gained 1.6 to 3.0.
+
+</Aside>
+
+<Notes>
+`chart` with a `<Slope>` of six items between two dates, the three that tell the story highlighted, and an `<Aside>` with the number; use it for change between two points across several items.
+March was the first full month for the three cities we opened in February, and they started four or five points behind. Every line goes up, but the highlighted ones climb steepest: by October Hollin was ahead of Marrowgate, and the gap between new and old was under a point.
+</Notes>

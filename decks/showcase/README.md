@@ -1,7 +1,7 @@
 # The showcase deck
 
-"Slides an agent can write": a 45-slide talk about deckster, built with deckster. It uses all 23
-kit layouts, every diagram form, ten of the sixteen chart and figure components, code, media, two
+"Slides an agent can write": a 45-slide talk about deckster, built with deckster. It uses 23 of the
+32 kit layouts, every diagram form, ten of the sixteen chart and figure components, code, media, two
 live React demos, and slides about the tools around a deck (lint, comments, the agent, the
 presenter window, export). Read it as a tour of what a deck can contain, and open the slide files
 to see how each part is written.
@@ -121,5 +121,6 @@ Every slide has speaker notes (`<Notes>`) and a time `budget`. The charts it doe
 (`BigNumber`, `StatRow`, `AreaChart`, `Slope`, `Funnel`, `Heatmap`) are shown in the
 `data-stories` fixture deck.
 
-For the smallest possible deck, see [decks/hello](../hello/README.md). The decks the test suites
-drive, one per area of the kit, are in [decks](../README.md).
+For the smallest possible deck, see [decks/hello](../hello/README.md); for every layout, option,
+chart, diagram and component in one talk, see [decks/lookbook](../lookbook/README.md). The decks
+the test suites drive, one per area of the kit, are in [decks](../README.md).

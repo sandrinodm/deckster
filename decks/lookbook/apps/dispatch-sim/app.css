@@ -1,0 +1,73 @@
+/*
+ * The page around the batch. The deck sends its brand tokens as custom properties on this page's
+ * root; the fallbacks below are what the app shows when it is opened on its own.
+ */
+:root {
+  --brand-color-bg: #fcfcfd;
+  --brand-color-surface: #f4f5f8;
+  --brand-color-fg: #161920;
+  --brand-color-heading: #161920;
+  --brand-color-muted: #555c6a;
+  --brand-color-accent: #2d4ae0;
+  --brand-color-accent-fg: #ffffff;
+  --brand-color-border: #d9dce4;
+  --brand-color-positive: #0a7a8a;
+  --brand-font-body: Inter, system-ui, sans-serif;
+  --brand-font-display: Inter, system-ui, sans-serif;
+  --brand-font-mono: ui-monospace, monospace;
+  --brand-space-2xs: 4px;
+  --brand-space-xs: 8px;
+  --brand-space-sm: 16px;
+  --brand-space-md: 24px;
+  --brand-space-xl: 64px;
+  --brand-radius-sm: 6px;
+  --brand-radius-md: 12px;
+  --brand-radius-lg: 20px;
+  --brand-radius-xl: 32px;
+  --brand-stroke-hairline: 1px;
+  --brand-stroke-regular: 2px;
+  --brand-stroke-bold: 4px;
+  --brand-type-small-size: 26px;
+  --brand-type-small-line-height: 1.45;
+  --brand-type-caption-size: 24px;
+  --brand-type-caption-line-height: 1.4;
+  --brand-type-lead-size: 40px;
+  --brand-type-label-size: 22px;
+  --brand-type-lead-line-height: 1.2;
+  --brand-data-1: #2d4ae0;
+  --brand-data-2: #b86e00;
+  --brand-duration-base: 280ms;
+  --brand-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --brand-ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --brand-shadow-sm: none;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: var(--brand-color-bg);
+}
+
+.app {
+  display: grid;
+  gap: var(--brand-space-md);
+  place-content: center;
+  min-height: 100vh;
+  padding: var(--brand-space-xl);
+  color: var(--brand-color-fg);
+  font-family: var(--brand-font-body);
+}
+
+.app-error {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+}

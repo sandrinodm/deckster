@@ -1,0 +1,36 @@
+---
+layout: code
+title: Windows are one new field
+eyebrow: Delivery windows
+budget: 1m
+---
+
+<CodeMove file="checkout.ts">
+
+```ts
+const drop = await wren.drops.create({
+  pickup: 'hub:old-town',
+  dropoff: '14 Weir Street',
+});
+```
+
+```ts
+const drop = await wren.drops.create({
+  pickup: 'hub:old-town',
+  dropoff: '14 Weir Street',
+  window: { kind: 'two_hour', from: '14:00' },
+});
+```
+
+</CodeMove>
+
+<Aside>
+- Leave it out for the same hour
+- `two_hour` starts on any hour from 8 am to 6 pm
+- `evening` is 6 to 9 pm
+</Aside>
+
+<Notes>
+`code` with a `<CodeMove>` between two fenced versions; use it when the change between versions is the point, so the room sees which lines stay and which arrive.
+This is the call from two slides ago. [click] To sell a two-hour slot instead, you add one field: the kind of window and when it starts. Nothing else moves. Leave it out and you get the same hour, which is what eight in ten recipients pick anyway.
+</Notes>
