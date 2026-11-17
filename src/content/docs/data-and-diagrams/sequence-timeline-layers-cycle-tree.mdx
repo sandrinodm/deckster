@@ -11,7 +11,7 @@ Not every diagram is a network of boxes. When the content is a conversation betw
 
 Use `<SequenceDiagram>` for who calls whom, in order: a protocol, an API handshake, a retry.
 
-- `<Actor>` goes inside `<SequenceDiagram>`: one per party, drawn as a node over its lifeline, with `id`, `title`, `subtitle`, `kind` and `icon` as on a node.
+- `<Actor>` goes inside `<SequenceDiagram>`: one per party, drawn as a node over its lifeline, with `id`, `title`, `subtitle`, `kind`, `icon` and `card` as on a node.
 - `<Message>` goes inside `<SequenceDiagram>`, after the actors, in order from top to bottom: `from` and `to` (the same actor for a call to itself), `label`, `reply` for a response (a dashed arrow) and `async` for fire-and-forget (a dashed arrow).
 
 Each message takes `at`, the step that reveals it, and its arrow animates while that step is current. This one adds a message per step:
@@ -44,8 +44,8 @@ The `timeline` layout draws the same `<Timeline>` from frontmatter: three to fiv
 
 Use `<Layers>` for a stacked architecture or an ownership map: bands from top to bottom, each with its building blocks.
 
-- `<Layer>` goes inside `<Layers>`, top to bottom: `title`, `subtitle` (what it does or who owns it), `at` and `state`.
-- `<Item>` goes inside `<Layer>` only: a chip with `title`, `kind` (for its icon), `icon` and `state`.
+- `<Layer>` goes inside `<Layers>`, top to bottom: `title`, `subtitle` (what it does or who owns it), `at`, `state` and `card`.
+- `<Item>` goes inside `<Layer>` only: a chip with `title`, `kind` (for its icon), `icon`, `state` and `card`.
 
 Give each layer an `at` to build the stack band by band. While the stack builds, the band each step adds is picked out; once the last band is in, only bands with a `state` stand out, so mark the band the slide is about with `state="highlighted"`.
 
@@ -86,6 +86,38 @@ Use `<Tree>` for a hierarchy: an org chart, a decision tree, a module tree.
   <Node id="light" title="Under 2 kg" subtitle="+€0" at={2} />
   <Node id="heavy" title="Over 2 kg" subtitle="+€1.50" at={2} />
 </Node>
+```
+
+## Cards
+
+Four of the five forms take `card`, the node style a brand defines, as a `<Flow>` does: put it on one part, or on the diagram for all its parts, and a part's own `card` wins. Choosing a card, the order a node follows and the standard names are on [flow diagrams](/data-and-diagrams/flow-diagrams/#pick-a-card).
+
+| Form | Takes `card` |
+| --- | --- |
+| `<SequenceDiagram>` | On `<Actor>`, or on the diagram for every actor. |
+| `<Layers>` | On `<Item>`, on `<Layer>` for its band, and on `<Layers>` for every item. |
+| `<Cycle>` | On each stage's `<Node>`, or on the cycle. |
+| `<Tree>` | On each `<Node>`, or on the tree. |
+| `<Timeline>` | No: milestones take no card. |
+
+On `<Layers>` the bands keep the stack's own look, a tint with a bold left edge, unless a `<Layer>` names a card; the stack's `card` styles only the item chips. Here every chip is an outline, the services band is on `tint` and Payments is on `solid`:
+
+```mdx
+<Layers title="The platform in three layers, with the services layer and the payments service marked" card="outline">
+  <Layer title="Edge" subtitle="Platform team">
+    <Item kind="cloud" title="CDN" />
+    <Item kind="gateway" title="API gateway" />
+  </Layer>
+  <Layer title="Services" subtitle="Domain teams" card="tint">
+    <Item kind="service" title="Orders" />
+    <Item kind="service" title="Payments" card="solid" />
+    <Item kind="service" title="Routing" />
+  </Layer>
+  <Layer title="Data" subtitle="Data team">
+    <Item kind="database" title="Postgres" />
+    <Item kind="queue" title="Kafka" />
+  </Layer>
+</Layers>
 ```
 
 ## Limits

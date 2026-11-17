@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-`<Flow>` draws boxes and arrows: an architecture, a request path, a pipeline. This page shows you how to place the nodes, connect and group them, make the diagram build one step at a time as you explain it, and stay inside the limits `deck lint` checks. Every prop is on [the diagram reference](/reference/diagrams/); in the terminal, `deck diagrams` prints the components, node kinds, edge options and animation parts with an example each, and `deck diagrams --json` gives an agent the same as data.
+`<Flow>` draws boxes and arrows: an architecture, a request path, a pipeline. This page shows you how to place the nodes, connect and group them, mark the nodes that matter with a card, make the diagram build one step at a time as you explain it, and stay inside the limits `deck lint` checks. Every prop is on [the diagram reference](/reference/diagrams/); in the terminal, `deck diagrams` prints the components, node kinds, edge options, cards and animation parts with an example each, and `deck diagrams --json` gives an agent the same as data.
 
 ## Place the nodes
 
@@ -68,6 +68,36 @@ launch-review: 1 error, 0 warnings.
 ```
 
 A group wraps its nodes, or takes its own `col`, `row`, `colSpan` and `rowSpan`.
+
+## Pick a card
+
+`card` picks the style a node is drawn with, from the cards the brand defines. Five exist in every brand: `default`, `outline`, `solid`, `tint` and `raised`. Each brand draws them in its own way, and a brand may add cards of its own. Use cards to mark the few nodes the slide is about: the one service that matters on `solid`, the systems you call but do not run as `outline`, and every other node on the brand's default.
+
+<SlideExample deck="diagrams-demo" slide="money-path" />
+
+Put `card` on a `<Node>` for that node, or on the `<Flow>` for all its nodes. A node takes, in order:
+
+1. its own `card`;
+2. its diagram's `card`;
+3. the card the brand maps its kind to in [`diagram.kinds`](/brands/diagram-look-and-cards/#what-a-brand-sets) (four of the five published brands draw `external` nodes as `outline`; Nocturne maps no kind, so the slide above names `outline` itself to draw the providers as outlines in every brand);
+4. `default`.
+
+States still win over the card: `highlighted`, `error` and `success` recolour the outline, and `muted` nodes and a `<Focus>` still dim. Use one or two cards on a slide besides the default, each for a reason.
+
+Stay on the five standard names for a deck that should render in any brand. A name the brand does not have does not fail the build: the node falls back to the next card in the order, and `deck lint` warns. Here the same slide, copied into a deck in the Kinetic brand with Payments on Kinetic's own `volt` card, is linted in `default`:
+
+```console
+$ deck lint launch-review --brand default
+decks/launch-review/slides/money-path.mdx
+  warning diagram-card-missing (money-path): The <Flow> "The checkout path, with the payments service marked and the outside providers drawn as outlines" asks for the card "volt" on the node "Payments", which the default brand does not have, so it is drawn with "default".
+          Fix: Change the `card` in decks/launch-review/slides/money-path.mdx to one of the default brand's cards: default, outline, solid, tint, raised. The standard cards (default, outline, solid, tint, raised) exist in every brand, so a deck that uses only those renders in any brand.
+
+launch-review: 0 errors, 1 warning in 3 slides (3 steps checked).
+```
+
+`deck brand <name>` lists a brand's cards, its own included. How a brand defines them is on [diagram look and cards](/brands/diagram-look-and-cards/). Cards need `@deckster/cli` 0.4.0 or later. The guide `deck diagrams` prints:
+
+<DiagramKinds part="cards" />
 
 ## Build it step by step
 
