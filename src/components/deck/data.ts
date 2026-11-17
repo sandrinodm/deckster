@@ -71,7 +71,7 @@ export type LayoutEntry = {
   surface: string | null;
   slots: Record<string, LayoutSlot>;
   budget: Record<string, Record<string, number>>;
-  variants: { name: string; budget?: Record<string, Record<string, number>> }[];
+  variants: { name: string; budget?: Record<string, Record<string, number>>; fields?: Record<string, Record<string, number>> }[];
   example: { mdx: string } | null;
   pptx?: { type: string };
 };

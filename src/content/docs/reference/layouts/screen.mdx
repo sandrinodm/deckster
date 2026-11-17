@@ -19,7 +19,7 @@ Use the `screen` layout to show one product screen as large as the slide allows:
 - **You pick the frame.** `frame` is `browser` (the default), `phone`, `laptop` or `none`. Only `browser` shows an `address`, up to 40 characters; keep it to the host and a word, since a long one is cut with an ellipsis when the window is narrow.
 - **You point at up to four parts.** Each callout has `x` and `y` (percent of the picture from its top-left corner) and a `label` of up to 32 characters. Put the point just beside or at the end of what it names, since the marker covers what is under it.
 
-The title takes up to 60 characters. The body is one optional sentence of up to 14 words beside the screen, for when the title does not say what the audience is looking at. For two to four screens, use `gallery`; when the text matters as much as the picture, `split`; for a photo, `image`.
+The title takes up to 60 characters. The body is one optional sentence of up to 14 words beside the screen, for when the title does not say what the audience is looking at. For two to four screens, use [`gallery`](/reference/layouts/gallery/); when the text matters as much as the picture, [`split`](/reference/layouts/split/); for a photo, [`image`](/reference/layouts/image/).
 
 ## Reference
 
@@ -27,7 +27,7 @@ The title takes up to 60 characters. The body is one optional sentence of up to 
 
 ## Common mistakes
 
-**Fields that need another field.** An `address` needs the browser frame, and `reveal` needs callouts to reveal. Both are checked when the slide is built:
+**Fields that need another field.** An `address` needs the browser frame, and `reveal` needs callouts to reveal. Both are checked when the slide is built, so [`deck lint`](/review/lint/) reports them before it renders any slide:
 
 ```console
 $ deck lint launch-review
@@ -40,16 +40,15 @@ decks/launch-review/slides/map.mdx
 launch-review: 2 errors, 0 warnings.
 ```
 
-A `schema` finding stops lint before the slides are rendered ([Lint](/review/lint/) explains the passes).
-
 **The tour in the body.** Points on the screen belong in `callouts:`, not in the body. A body of 20 words is a `content-budget` error: `The body slot holds 20 words; its layout allows 14.` A fifth point is a second slide.
 
 **The device in the file.** A screenshot that still has its browser bar or phone bezel gets a second one from the frame. Crop it to the app, or write `frame: none`.
 
 ## Related layouts
 
-- [gallery](/reference/layouts/gallery/): two to four screens or photos, the first one largest.
-- [split](/reference/layouts/split/): a picture with a paragraph or bullets beside it, when the text matters as much.
-- [image](/reference/layouts/image/): one photo across the whole slide, edge to edge.
-- [demo](/reference/layouts/demo/): a live app or page instead of a still.
-- Guide: [Media](/write-slides/media/) for where `src` points.
+- [`gallery`](/reference/layouts/gallery/): two to four screens or photos, the first one largest.
+- [`split`](/reference/layouts/split/): a picture with a paragraph or bullets beside it, when the text matters as much.
+- [`image`](/reference/layouts/image/): one photo across the whole slide, edge to edge.
+- [`demo`](/reference/layouts/demo/): a live app or page instead of a still.
+
+Where `src` points is on [media](/write-slides/media/).

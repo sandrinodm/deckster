@@ -5,19 +5,26 @@
  *   <LayoutIndex />
  *
  * Links go to /reference/layouts/<name>/, so every layout needs its own page there holding its
- * <LayoutReference> (the coverage check enforces that). The summary is `layoutSummary` of the
- * catalog description; each layout page's frontmatter `description` is the same text without code marks.
+ * <LayoutReference> (the coverage check enforces that). The summary is the layout page's
+ * frontmatter description, so the card and the page say the same thing; `layoutSummary` of the
+ * catalog description stands in only while a layout has no page. The Markdown twin (markdown.ts)
+ * reads the same field.
  */
 import "./deck.css";
 import { Image } from "astro:assets";
+import { getEntry } from "astro:content";
 import { layoutPage, layoutSummary } from "./format";
 import { caller, inline, layouts, layoutSlide, slideStill, withBase } from "./data";
 
 const c = caller("LayoutIndex", {}, Astro.url);
-const items = layouts().map((layout) => {
-  const shown = layoutSlide(c, layout.name);
-  return { layout, summary: layoutSummary(layout.description), still: slideStill(c, shown.deck, shown.slide.id) };
-});
+const items = await Promise.all(
+  layouts().map(async (layout) => {
+    const shown = layoutSlide(c, layout.name);
+    const page = await getEntry("docs", `reference/layouts/${layout.name}`);
+    const summary = (page?.data.description as string | undefined) ?? layoutSummary(layout.description);
+    return { layout, summary, still: slideStill(c, shown.deck, shown.slide.id) };
+  }),
+);
 ---
 
 <nav class="dk-layout-index" aria-label="Layouts">

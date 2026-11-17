@@ -26,9 +26,9 @@ The same layout holds a shell session, with one step per `<Cmd>` and its `<Out>`
 
 Pick another layout when the code is not the point:
 
-- Prose that explains the code: use `content`.
-- A picture or screenshot beside text: use `split`.
-- A running app rather than its source: use `demo`.
+- Prose that explains the code: use [`content`](/reference/layouts/content/).
+- A picture or screenshot beside text: use [`split`](/reference/layouts/split/).
+- A running app rather than its source: use [`demo`](/reference/layouts/demo/).
 
 ## Reference
 
@@ -40,7 +40,7 @@ Pick another layout when the code is not the point:
 - **Lines too wide.** Two lines of over 100 columns beside an `<Aside>` gave a `container-overflow` error on the code area and a `text-overlap` error between the code and the notes. Wrap the lines, or drop the `<Aside>` to get 90 columns.
 - **Two blocks in the body.** Two fences fail with `slot-content`: "The body slot holds 2 code blocks; the code layout takes exactly one: code there." For a before and after, put both fences in one `<CodeMove>`.
 - **Long notes.** `<Aside>` takes 40 words and three bullets; a fourth bullet is a `content-budget` error on the aside slot. Put the explanation in `<Notes>`.
-- **Nothing builds.** The `few-builds` warning looks at a deck's chart, diagram and code slides together: when there are four or more and fewer than a quarter build in steps, it lists the ones that show everything at once. Step ranges on the fence (`{2-4|7}`) fix it.
+- **Nothing builds.** `few-builds` warns when too few of a deck's chart, diagram and code slides build in steps; [lint rules](/reference/lint-rules/) lists it. Step ranges on the fence (`{2-4|7}`) fix it.
 
 ## Related layouts
 

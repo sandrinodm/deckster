@@ -21,6 +21,16 @@ export function budgetText(budget: Budget): string {
     .join(", ");
 }
 
+/**
+ * A variant's limits: its slot budgets, then its per-item field limits with the field path in a
+ * code span, as "body: 30 words, 3 bullets; `title`: 40 characters".
+ */
+export function variantLimits(variant: { budget?: Record<string, Budget>; fields?: Record<string, Budget> }): string {
+  const slots = Object.entries(variant.budget ?? {}).map(([slot, b]) => `${slot}: ${budgetText(b)}`);
+  const fields = Object.entries(variant.fields ?? {}).map(([path, f]) => `\`${path}\`: ${budgetText(f)}`);
+  return [...slots, ...fields].join("; ");
+}
+
 function show(value: unknown): string {
   return typeof value === "string" ? value : JSON.stringify(value);
 }

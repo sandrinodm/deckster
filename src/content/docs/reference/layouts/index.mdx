@@ -1,6 +1,6 @@
 ---
 title: "Layouts"
-description: "Every layout, its slots and its options."
+description: "Every layout as it renders, what it is for, and a link to its page."
 sidebar:
   order: 3
   group:
@@ -10,6 +10,8 @@ sidebar:
 Use this page to choose a layout for a slide, then open its page to check what it takes before you fill it. Every slide names one in its frontmatter (`layout: stats`); a slide that names none uses `default`. The index below shows each of the 32 layouts as it renders, with what it is for; each links to the layout's own page. For how layouts and slots fit together, read [layouts and slots](/concepts/layouts-and-slots/); for how to fill them in a slide file, [MDX slides](/write-slides/mdx-slides/).
 
 <LayoutIndex />
+
+The grid follows the catalog order, the order `deck layouts` prints; the table below groups the layouts by purpose.
 
 ## Layouts by purpose
 
@@ -32,7 +34,7 @@ The groups follow the parts of the [lookbook](/examples/lookbook/) deck, which s
 Each layout page opens with a published slide in that layout and the file that made it (a slide of the lookbook deck), says when to use the layout, gives its reference entry, lists common mistakes and links related layouts. The reference entry has these parts:
 
 - **Frontmatter, surface, title.** The line to write, the surface the slide gets unless its frontmatter sets `surface`, and whether `title:` is required and how many characters it may have. "Optional" with no limit means the title names the slide in the outline and may not be shown.
-- **PowerPoint.** The PowerPoint slide layout `deck export --pptx` maps the slide to, so its title and body stay editable placeholders. A layout without this line exports its text as free text boxes.
+- **PowerPoint.** The PowerPoint slide layout `deck export --pptx` maps the slide to, so its title and body stay editable placeholders.
 - **Description.** What the layout is for and how it sets its content.
 - **Slots.** Each named region: the tag you write it with (`body` is the content outside any slot tag), what it accepts (text, bullets, an image, a component), and its budget in words, bullets or code lines. A `*` or a `required` mark means `deck lint` reports a `schema` error when the slot is empty. The budgets are the same in every brand; `deck lint` holds each slide to them.
 - **Fields.** The layout's own frontmatter keys, with their default and allowed values. The keys every slide takes are on [slide frontmatter](/reference/slide-frontmatter/).

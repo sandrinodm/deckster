@@ -19,12 +19,12 @@ A milestone that slipped takes `state: error`, so the room sees it next to the d
 
 ## When to use it
 
-- **Dates matter.** Each milestone has a `date` of up to 12 characters (`Q3 2026`, `Spring 2027`), a `title` of up to 32 and an optional `detail` of up to 40. With five milestones, the title and detail drop to 24 and 32.
+- **Dates matter.** Each milestone has a `date` (`Q3 2026`, `Spring 2027`), a `title` and an optional `detail`. A fifth milestone shortens the title and detail; the variant in the reference below gives the limits.
 - **Three to five of them.** A longer history goes over two slides.
 - **You want to show where you are.** `current:` takes the number of a milestone, counted from 1. Leave it out and the line fills to the last one, as for a finished history.
 - **Some milestones differ.** `state:` marks one as done (`success`), slipped (`error`) or tentative (`muted`).
 
-The title takes up to 60 characters and the sentence under it up to 14 words. For a process without dates, use the `steps` layout; for values over time, use a chart.
+The title takes up to 60 characters and the sentence under it up to 14 words. For a process without dates, use the [`steps`](/reference/layouts/steps/) layout; for values over time, use a chart.
 
 ## Reference
 

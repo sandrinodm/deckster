@@ -22,8 +22,8 @@ Anything but a photo is centred in its frame, not cropped: here a `<Donut>` at `
 - **There is something to show.** With nothing to show, use [`content`](/reference/layouts/content/). When the photo needs only one line of text, use [`image`](/reference/layouts/image/).
 - **The text explains the media.** A chart that stands alone with a one-line "so what" belongs on [`chart`](/reference/layouts/chart/); split is for a chart that needs a paragraph beside it.
 - **Pick the ratio by what matters more.** `ratio:` shares the columns text:media, `1:1` (the default), `5:7` or `7:5`, and `side:` puts the media `left` or `right` (the default).
-- **Fit the text to the ratio.** At `1:1` the body takes up to 40 words; at `5:7` up to 30 words and three bullets, with a title of up to 40 characters; at `7:5`, 48 words. Otherwise the body takes up to four bullets and the title up to 44 characters, and `bleed: true` lowers the word count to 34 at `1:1` and 42 at `7:5`.
-- **Credit the media** in `<Caption>`, up to 20 words (14 with a bleed). A source for the text goes in `<Footnote>`.
+- **Fit the text to the ratio.** The narrower the text column, the less it holds: `5:7` takes the fewest words, three bullets and a shorter title, and `bleed: true` takes a few words more off. The variants in the reference below give each limit.
+- **Credit the media** in `<Caption>`. A source for the text goes in `<Footnote>`.
 
 ## Reference
 

@@ -20,7 +20,7 @@ The title is the finding, with its number (52 minutes), not the name of the syst
 - **What to notice is short.** The `<Aside>` takes a `###` heading and a sentence, or up to three bullets, within 40 words. The `<Footnote>` takes up to 30.
 - **You can reveal it in parts.** Bring in nodes, edges and messages with `at` steps instead of adding text to the slide.
 
-When the diagram needs a paragraph beside it, use `split`. For data rather than structure, use the `chart` layout.
+When the diagram needs a paragraph beside it, use [`split`](/reference/layouts/split/). For data rather than structure, use the [`chart`](/reference/layouts/chart/) layout.
 
 ## Reference
 
@@ -43,12 +43,13 @@ Keep the point the title does not already make, and move the rest into the `<Not
 
 **A second diagram, or text, in the body.** The body slot accepts any component, so `slot-content` checks neither the kind of block there nor how many there are (only a bulleted list is still reported). Keep it to one diagram yourself; the explanation goes in the aside, the notes or a `split` slide.
 
-**Diagram problems.** The `diagram-*` rules check the drawing itself (nodes or labels drawn on top of each other, text smaller than the brand's caption and label sizes, more than 12 nodes or 16 edges at once). [Lint rules](/reference/lint-rules/) lists them with their fixes. And `few-builds` warns when fewer than 25% of a deck's `chart`, `diagram` and `code` slides build in steps, once the deck has four or more of them: stage the diagram with `at`.
+**Diagram problems.** The `diagram-*` rules check the drawing itself (nodes or labels drawn on top of each other, text smaller than the brand's caption and label sizes, more than 12 nodes or 16 edges at once). [Lint rules](/reference/lint-rules/) lists them with their fixes. `few-builds` warns when too few of a deck's chart, diagram and code slides build in steps ([lint](/review/lint/) has the threshold): stage the diagram with `at`.
 
 ## Related layouts
 
-- [split](/reference/layouts/split/): a paragraph or bullets beside the diagram, when the text matters as much.
-- [chart](/reference/layouts/chart/): the same frame for a chart, number or table.
-- [steps](/reference/layouts/steps/): a process in order, written as numbered steps rather than drawn.
-- [timeline](/reference/layouts/timeline/): three to five dated milestones from the frontmatter, without writing a component.
-- Guide: [Flow diagrams](/data-and-diagrams/flow-diagrams/), and [Sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/).
+- [`split`](/reference/layouts/split/): a paragraph or bullets beside the diagram, when the text matters as much.
+- [`chart`](/reference/layouts/chart/): the same frame for a chart, number or table.
+- [`steps`](/reference/layouts/steps/): a process in order, written as numbered steps rather than drawn.
+- [`timeline`](/reference/layouts/timeline/): three to five dated milestones from the frontmatter, without writing a component.
+
+How to draw each diagram is on [flow diagrams](/data-and-diagrams/flow-diagrams/) and [sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/).

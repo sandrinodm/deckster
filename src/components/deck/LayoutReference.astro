@@ -17,7 +17,7 @@
 import "./deck.css";
 import { Image } from "astro:assets";
 import { Code } from "@/components/ui/code";
-import { budgetText, describeField } from "./format";
+import { budgetText, describeField, variantLimits } from "./format";
 import { caller, deckUrl, findLayout, inline, layoutAnchor, layoutSlide, slideStill } from "./data";
 
 interface Props {
@@ -103,13 +103,11 @@ const title = layout.title as { required?: boolean; maxChars?: number } | null;
       <h3 class="dk-label">Variants</h3>
       <ul class="dk-variants">
         {layout.variants.map((v) => {
-          const budget = Object.entries(v.budget ?? {})
-            .map(([slot, b]) => `${slot}: ${budgetText(b)}`)
-            .join("; ");
+          const limits = variantLimits(v);
           return (
             <li>
               <span set:html={inline(v.name)} />
-              {budget && <span class="dk-muted"> — {budget}</span>}
+              {limits && <span class="dk-muted" set:html={` — ${inline(limits)}`} />}
             </li>
           );
         })}

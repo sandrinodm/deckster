@@ -16,11 +16,11 @@ Two options serve here as before and after. Each row names its `winner`, drawn b
 ## When to use it
 
 - **Two or three alternatives, two to five rows.** `options` and `rows` are both required. Each row has a `label` and one value per option, in the order of `options`: text, or `true` and `false`.
-- **The same measures apply to every option.** If the options are ideas that are not alternatives, use `cards`; if each option is one number, use `stats`.
+- **The same measures apply to every option.** If the options are ideas that are not alternatives, use [`cards`](/reference/layouts/cards/); if each option is one number, use [`stats`](/reference/layouts/stats/).
 - **You recommend one.** `recommended: true` on at most one option sets its column on a panel with an accent rule under a badge, "Recommended" unless you write `badge:` (up to 20 characters).
 - **You present one option per click.** `reveal: true` adds one option per step.
 
-The title takes up to 50 characters, one line, so the rows fit under it. With three options the columns are narrower: a row `label` takes 18 characters instead of 24, a value 20 instead of 28, and an option's `summary` 24 instead of 36. More than three options or five rows is a `table`.
+The title takes up to 50 characters, one line, so the rows fit under it. With three options the columns are narrower: a row `label` takes 18 characters instead of 24, a value 20 instead of 28, and an option's `summary` 24 instead of 36. More than three options or five rows is a [`table`](/reference/layouts/table/).
 
 ## Reference
 
@@ -28,7 +28,7 @@ The title takes up to 50 characters, one line, so the rows fit under it. With th
 
 ## Common mistakes
 
-**Two-option text in a three-option slide.** The narrower limits of the three-option variant are checked when the slide is built:
+**Two-option text in a three-option slide.** The narrower limits of the three-option variant are checked when the slide is built, so [`deck lint`](/review/lint/) reports them before it renders any slide:
 
 ```console
 $ deck lint launch-review
@@ -41,8 +41,6 @@ decks/launch-review/slides/species.mdx
 launch-review: 2 errors, 0 warnings.
 ```
 
-A `schema` finding stops lint before the slides are rendered, so fix these first ([Lint](/review/lint/) explains the passes).
-
 **A row with a value missing.** Every row needs one value per option; write `false` for a dash. A row with one value for two options stops the build with `rows[0].values: Expected a value for each option, got a list of 1 item.`
 
 **Two recommended options.** The layout recommends at most one: `options: 2 options are recommended (Pear, Plane); a comparison recommends at most one.`
@@ -53,8 +51,9 @@ A `schema` finding stops lint before the slides are rendered, so fix these first
 
 ## Related layouts
 
-- [table](/reference/layouts/table/): more than three options or five rows, or exact values to look up.
-- [shift](/reference/layouts/shift/): one change from the old state to the new, rather than options to choose from.
-- [cards](/reference/layouts/cards/): two to four ideas of equal weight that are not alternatives.
-- [stats](/reference/layouts/stats/): each option is one number.
-- Guide: [Build a slide in steps](/write-slides/builds/) for what `reveal` does.
+- [`table`](/reference/layouts/table/): more than three options or five rows, or exact values to look up.
+- [`shift`](/reference/layouts/shift/): one change from the old state to the new, rather than options to choose from.
+- [`cards`](/reference/layouts/cards/): two to four ideas of equal weight that are not alternatives.
+- [`stats`](/reference/layouts/stats/): each option is one number.
+
+What `reveal` does is on [builds](/write-slides/builds/).

@@ -15,11 +15,11 @@ Notice two fields. `highlight: true` on the middle stat sets its figure and the 
 
 ## When to use it
 
-- **Two to four figures of equal standing.** `stats:` takes at least two and at most four items. Each has a `value` of up to 8 characters ("€15.40", "1 in 4") and a `label` of up to 48, or 32 in a row of four.
-- **A change worth showing.** `delta` takes up to 24 characters ("+12% since 2023"). Deltas line up across the row whatever the labels' lengths.
-- **A title that draws the conclusion.** Up to 90 characters. A sentence of context under it is up to 24 words, and a `<Footnote>` for the source up to 30.
+- **Two to four figures of equal standing.** `stats:` takes two to four items, each a short `value` ("€15.40", "1 in 4") and a `label`. A row of four shortens the labels; the variant in the reference below gives the limit.
+- **A change worth showing.** `delta` takes a short note of the change ("+12% since 2023"). Deltas line up across the row whatever the labels' lengths.
+- **A title that draws the conclusion.** A sentence of context can go under it, and the source in a `<Footnote>`.
 
-The row stands at the same height on every stats slide, so a run of them reads steadily. Use a chart for a trend, a table for more than four figures, and `equation` when the figures add up to a result.
+The row stands at the same height on every stats slide, so a run of them reads steadily. Use a chart for a trend, a table for more than four figures, and [`equation`](/reference/layouts/equation/) when the figures add up to a result.
 
 ## Reference
 
