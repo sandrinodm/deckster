@@ -8,6 +8,7 @@ import type { FlowSpec } from '#diagrams/flow-spec.ts';
 import type { Point, Rect, Side } from '#diagrams/geometry.ts';
 
 import { assertDiagramProps, formatProblems } from '#diagrams/diagram-props.ts';
+import { edgeCornerRadius } from '#diagrams/diagram-tokens.ts';
 import { type NodeExtras, type ParsedFlow } from '#diagrams/flow-children.ts';
 import { PART_NAMES } from '#diagrams/flow-parts.tsx';
 import { buildFlowSpec, optional, type FlowPart } from '#diagrams/flow-spec-builder.ts';
@@ -78,6 +79,12 @@ export type TreeProps = {
   height?: number;
 
   /**
+   * The card (a node style the brand defines) for every node of the tree: `default`, `outline`,
+   * `solid`, `tint`, `raised` or one of the brand's own. A node's own `card` wins over it.
+   */
+  card?: string;
+
+  /**
    * One root `<Node>`, with its children nested inside it.
    */
   children?: ReactNode;
@@ -97,14 +104,21 @@ export type TreeProps = {
  * </Tree>
  * ```
  */
-export function Tree({ id, title, direction = 'down', height, children }: TreeProps): ReactNode {
+export function Tree({
+  id,
+  title,
+  direction = 'down',
+  height,
+  card,
+  children,
+}: TreeProps): ReactNode {
   const parsed = useMemo(() => parseTree(children, direction), [children, direction]);
   const tips = useMemo(() => parentTips(parsed.parents, direction), [parsed, direction]);
   const reshape = useMemo(
     () => (layout: EdgeLayout, tokens: DiagramTokens) =>
       busEdges(layout, parsed.spec, direction, {
-        radius: tokens.radius.lg,
-        gap: tokens.stroke.regular * ARROW_GAP_STROKES,
+        radius: edgeCornerRadius(tokens, tokens.radius.lg),
+        gap: tokens.edge.stroke * ARROW_GAP_STROKES,
       }),
     [parsed, direction],
   );
@@ -119,6 +133,7 @@ export function Tree({ id, title, direction = 'down', height, children }: TreePr
       reshape={reshape}
       {...optional('id', id)}
       {...optional('height', height)}
+      {...optional('card', card)}
     />
   );
 }

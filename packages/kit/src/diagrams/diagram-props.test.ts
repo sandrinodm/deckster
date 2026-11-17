@@ -178,3 +178,38 @@ describe('names that are properties of every object', () => {
     expect(messages('Node', { id: 'a', state: name })[0]).toContain('is not a state');
   });
 });
+
+describe('card', () => {
+  const PARTS = [
+    ['Flow', { title: 'x' }],
+    ['Tree', { title: 'x' }],
+    ['Cycle', { title: 'x' }],
+    ['SequenceDiagram', { title: 'x' }],
+    ['Layers', { title: 'x' }],
+    ['Node', { id: 'a' }],
+    ['Actor', { id: 'a' }],
+    ['Item', { title: 'a' }],
+    ['Layer', { title: 'a' }],
+  ] as const;
+
+  it.each(PARTS)('<%s> takes a standard card or one of the brand’s own', (component, props) => {
+    expect(messages(component, { ...props, card: 'tint' })).toEqual([]);
+    expect(messages(component, { ...props, card: 'spotlight-2' })).toEqual([]);
+  });
+
+  it.each(PARTS)('<%s> rejects a card that is not a string', (component, props) => {
+    expect(messages(component, { ...props, card: 3 })[0]).toContain('takes string, not a number');
+  });
+
+  it('rejects a card name that is not a kebab name, with the fix', () => {
+    const [message] = messages('Node', { id: 'a', card: 'Spot Light' });
+    expect(message).toContain('<Node card="Spot Light"> is not a kebab name');
+    expect(message).toContain('lower case with hyphens');
+    expect(messages('Flow', { title: 'x', card: '-tint' })[0]).toContain('is not a kebab name');
+  });
+
+  it('leaves the names open: no fixed set of values in the catalog', () => {
+    expect(DIAGRAM_PROPS.Node.card?.values).toBeUndefined();
+    expect(DIAGRAM_PROPS.Flow.card?.type).toBe('string');
+  });
+});

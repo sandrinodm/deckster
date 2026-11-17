@@ -100,6 +100,13 @@ export type NodeProps = CellProps & {
   at?: number;
 
   /**
+   * The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`,
+   * `tint`, `raised` or one of the brand's own (`deck brand <name>` lists them). Without one it
+   * takes the diagram's `card`, else the card the brand maps its kind to, else `default`.
+   */
+  card?: string;
+
+  /**
    * An icon from the brand's set by name (resolved at build time in MDX), an icon component in TSX,
    * or `none` to drop the kind's icon.
    */

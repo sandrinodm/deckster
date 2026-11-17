@@ -1,4 +1,6 @@
+import type { DropShadow } from '#diagrams/describe-dom.ts';
 import type {
+  DescribedAccent,
   DescribedDecoration,
   DescribedEdge,
   DescribedGroup,
@@ -6,6 +8,7 @@ import type {
   DescribedNode,
   DescribedPacket,
   DescribedPaint,
+  DescribedShadow,
   DescribedText,
   DiagramDescription,
   DiagramKind,
@@ -20,6 +23,8 @@ import {
   iconMarkup,
   offsetWithin,
   opacityWithin,
+  parseBoxShadows,
+  parseDropShadows,
   primaryFontFamily,
   shiftBox,
 } from '#diagrams/describe-dom.ts';
@@ -97,6 +102,16 @@ const TAG_GAP_EM = 0.6;
  * The font weight of a packet tag that does not set one.
  */
 const DEFAULT_FONT_WEIGHT = 400;
+
+/**
+ * The sides an accent stripe can run along.
+ */
+const ACCENT_SIDES: readonly DescribedAccent['side'][] = ['left', 'top', 'right', 'bottom'];
+
+/**
+ * The arrowhead styles a `data-arrow` can name besides the default filled triangle.
+ */
+const ARROW_STYLES: readonly NonNullable<DescribedEdge['arrow']>[] = ['open', 'dot'];
 
 /**
  * A node to describe: where the layout put it and how it is drawn.
@@ -328,7 +343,10 @@ export function describeDiagram(input: DescribeInput): DiagramDescription {
   const origin = canvasOrigin(element);
   const style = getComputedStyle(element);
   const radius = Number.parseFloat(style.getPropertyValue('--brand-radius-md')) || 0;
-  const groupRadius = Number.parseFloat(style.getPropertyValue('--brand-radius-lg')) || 0;
+  const largeRadius = Number.parseFloat(style.getPropertyValue('--brand-radius-lg')) || 0;
+  const groupRadius = lengthOr(style.getPropertyValue('--brand-diagram-group-radius'), largeRadius);
+  const sharp = style.getPropertyValue('--brand-diagram-edge-corners').trim() === 'sharp';
+  const cornerRadius = sharp ? 0 : largeRadius;
   return {
     version: DIAGRAM_DESCRIPTION_VERSION,
     kind: input.kind,
@@ -337,7 +355,7 @@ export function describeDiagram(input: DescribeInput): DiagramDescription {
     box: shiftBox({ x: 0, y: 0, width: element.offsetWidth, height: element.offsetHeight }, origin),
     summary: input.summary,
     groups: describeGroups(input, element, origin, groupRadius),
-    edges: input.edges.flatMap((edge) => describeEdge(edge, element, origin, groupRadius)),
+    edges: input.edges.flatMap((edge) => describeEdge(edge, element, origin, cornerRadius)),
     nodes: [
       ...input.nodes.flatMap((node) => describeFlowNode(node, element, origin, radius)),
       ...(input.boxes ?? []).map((box) => describeBox(box, element, origin)),
@@ -416,8 +434,18 @@ function describeFlowNode(
     return [];
   }
 
-  const geometry = shapeGeometry(node.shape, shiftRect(node.rect, origin), radius);
+  const cardRadius = lengthOr(
+    getComputedStyle(shapeElement).getPropertyValue('--kit-card-radius'),
+    radius,
+  );
+  const geometry = shapeGeometry(node.shape, shiftRect(node.rect, origin), cardRadius);
   const icon = body.querySelector('.kit-flow-node-icon svg');
+  const card = cardName(shapeElement);
+  const shadow = castShadow(
+    element.querySelector(`.kit-flow-shadow[data-node="${CSS.escape(node.id)}"]`),
+    element,
+  );
+  const accent = stripeOf(shapeElement.querySelector('.kit-flow-accent'), element, origin);
   const color = icon === null ? null : cssColorToHex(getComputedStyle(icon).color);
   return [
     {
@@ -450,8 +478,195 @@ function describeFlowNode(
           : null,
       group: node.group ?? null,
       decorations: nodeDecorations(shapeElement, geometry, element),
+      ...cardFields(card, shadow, accent),
     },
   ];
+}
+
+/**
+ * The card a node element is drawn with: its `data-card`, when the stylesheet defines cards (the
+ * element carries the card's `--kit-card-*` variables inline); `null` for a stylesheet without
+ * cards, whose nodes are described as they were before cards existed.
+ *
+ * @param shape - The node's shape element.
+ */
+function cardName(shape: Element): string | null {
+  const inline =
+    shape instanceof HTMLElement || shape instanceof SVGElement
+      ? shape.style.getPropertyValue('--kit-card-fill')
+      : '';
+  return inline === '' ? null : shape.getAttribute('data-card');
+}
+
+/**
+ * The card fields of a described node, each left out when it has nothing to say, so a diagram
+ * without cards is described exactly as before.
+ *
+ * @param card - The card's name, or `null`.
+ * @param shadow - Its shadow, or `null`.
+ * @param accent - Its accent stripe, or `null`.
+ */
+function cardFields(
+  card: string | null,
+  shadow: DescribedShadow | null,
+  accent: DescribedAccent | null,
+): Pick<DescribedNode, 'card' | 'shadow' | 'accent'> {
+  return {
+    ...(card === null ? {} : { card }),
+    ...(shadow === null ? {} : { shadow }),
+    ...(accent === null ? {} : { accent }),
+  };
+}
+
+/**
+ * A length read from a custom property, or a fallback when it is missing or not a number.
+ *
+ * @param value - The property's value, such as `12px`.
+ * @param fallback - The length without one.
+ */
+function lengthOr(value: string, fallback: number): number {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+/**
+ * The shadow a flow node's card casts, from its shadow group: the `drop-shadow()` layers of the
+ * cast's filter, the cast's fill and the group's opacity.
+ *
+ * @param shadow - The node's `.kit-flow-shadow` group, if one was drawn.
+ * @param element - The diagram's root.
+ */
+function castShadow(shadow: Element | null, element: HTMLElement): DescribedShadow | null {
+  const cast = shadow?.querySelector('.kit-flow-shadow-cast') ?? null;
+  if (shadow === null || cast === null) {
+    return null;
+  }
+
+  const layers = shadowLayers(getComputedStyle(cast).filter);
+  if (layers.length === 0) {
+    return null;
+  }
+
+  const path = cast.querySelector('path');
+  return {
+    layers,
+    fill: path === null ? null : cssColorToHex(getComputedStyle(path).fill),
+    opacity: opacityWithin(shadow, element),
+  };
+}
+
+/**
+ * The layers of a computed `filter`'s `drop-shadow()` functions, colors as hex; a fully transparent
+ * layer is left out.
+ *
+ * @param filter - The computed filter.
+ */
+function shadowLayers(filter: string): DescribedShadow['layers'] {
+  return colouredLayers(parseDropShadows(filter));
+}
+
+/**
+ * Shadow layers with their colors as hex; a fully transparent layer is left out.
+ *
+ * @param layers - The layers, colors as CSS gives them.
+ */
+function colouredLayers(layers: readonly DropShadow[]): DescribedShadow['layers'] {
+  return layers.flatMap((layer) => {
+    const color = cssColorToHex(layer.color);
+    return color === null
+      ? []
+      : [{ x: round2(layer.x), y: round2(layer.y), blur: round2(layer.blur), color }];
+  });
+}
+
+/**
+ * A flow node's accent stripe from its drawn rectangle, before the clip to the outline.
+ *
+ * @param stripe - The `.kit-flow-accent` rectangle, if the card has one.
+ * @param element - The diagram's root.
+ * @param origin - Its place on the canvas.
+ */
+function stripeOf(
+  stripe: Element | null,
+  element: HTMLElement,
+  origin: Point,
+): DescribedAccent | null {
+  const side = ACCENT_SIDES.find((one) => one === stripe?.getAttribute('data-side'));
+  if (stripe === null || side === undefined) {
+    return null;
+  }
+
+  /**
+   * One of the rectangle's numeric attributes.
+   */
+  const attribute = (name: string): number => Number(stripe.getAttribute(name) ?? '0') || 0;
+  return {
+    side,
+    box: shiftBox(
+      {
+        x: attribute('x'),
+        y: attribute('y'),
+        width: attribute('width'),
+        height: attribute('height'),
+      },
+      origin,
+    ),
+    color: cssColorToHex(getComputedStyle(stripe).fill),
+    opacity: opacityWithin(stripe, element),
+  };
+}
+
+/**
+ * The accent stripe of a node drawn in HTML (a layer's band or chip, an inset box shadow along the
+ * side its `data-accent` names), inside the element's border.
+ *
+ * @param shape - The element.
+ * @param box - Its box on the canvas.
+ * @param style - Its computed style.
+ * @param root - The diagram's root.
+ */
+function boxStripe(
+  shape: Element,
+  box: { x: number; y: number; width: number; height: number },
+  style: CSSStyleDeclaration,
+  root: HTMLElement,
+): DescribedAccent | null {
+  const side = ACCENT_SIDES.find((one) => one === shape.getAttribute('data-accent'));
+  const width = Number.parseFloat(style.getPropertyValue('--kit-card-accent-width'));
+  if (side === undefined || !Number.isFinite(width) || width <= 0) {
+    return null;
+  }
+
+  const left = Number.parseFloat(style.borderLeftWidth) || 0;
+  const top = Number.parseFloat(style.borderTopWidth) || 0;
+  const right = Number.parseFloat(style.borderRightWidth) || 0;
+  const bottom = Number.parseFloat(style.borderBottomWidth) || 0;
+  const inner = {
+    x: box.x + left,
+    y: box.y + top,
+    width: Math.max(0, box.width - left - right),
+    height: Math.max(0, box.height - top - bottom),
+  };
+  const stripe = {
+    left: { ...inner, width: Math.min(width, inner.width) },
+    right: {
+      ...inner,
+      x: inner.x + inner.width - Math.min(width, inner.width),
+      width: Math.min(width, inner.width),
+    },
+    top: { ...inner, height: Math.min(width, inner.height) },
+    bottom: {
+      ...inner,
+      y: inner.y + inner.height - Math.min(width, inner.height),
+      height: Math.min(width, inner.height),
+    },
+  }[side];
+  return {
+    side,
+    box: shiftBox(stripe, { x: 0, y: 0 }),
+    color: cssColorToHex(style.getPropertyValue('--kit-card-accent').trim()),
+    opacity: opacityWithin(shape, root),
+  };
 }
 
 /**
@@ -498,6 +713,7 @@ function describeBox(box: DescribeBox, element: HTMLElement, origin: Point): Des
   const rect = offsetWithin(box.shape, element);
   const radius = Number.parseFloat(style.borderTopLeftRadius) || 0;
   const shifted = shiftBox(rect, origin);
+  const card = cardName(box.shape);
   return {
     id: box.id,
     kind: box.kind,
@@ -522,7 +738,32 @@ function describeBox(box: DescribeBox, element: HTMLElement, origin: Point): Des
     icon: null,
     group: box.group ?? null,
     decorations: [],
+    ...(card === null
+      ? {}
+      : cardFields(
+          card,
+          ownShadow(style, box.shape, element),
+          boxStripe(box.shape, shifted, style, element),
+        )),
   };
+}
+
+/**
+ * The shadow an element drawn in HTML casts itself: the outer layers of its `box-shadow` (inset
+ * layers are its accent stripe), else its `filter`'s `drop-shadow()` layers.
+ *
+ * @param style - Its computed style.
+ * @param shape - The element.
+ * @param root - The diagram's root.
+ */
+function ownShadow(
+  style: CSSStyleDeclaration,
+  shape: Element,
+  root: HTMLElement,
+): DescribedShadow | null {
+  const outer = colouredLayers(parseBoxShadows(style.boxShadow));
+  const layers = outer.length > 0 ? outer : shadowLayers(style.filter);
+  return layers.length === 0 ? null : { layers, fill: null, opacity: opacityWithin(shape, root) };
 }
 
 /**
@@ -748,6 +989,8 @@ function describeEdge(
 
   const label = element.querySelector(`.kit-flow-label[data-edge="${CSS.escape(edge.id)}"]`);
   const text = describeText(label, element, origin);
+  const head = line.parentElement?.querySelector('.kit-flow-arrow')?.getAttribute('data-arrow');
+  const arrow = ARROW_STYLES.find((one) => one === head) ?? 'triangle';
   const style = getComputedStyle(line);
   const shifted = shiftSegments(edge.segments, origin);
   return [
@@ -767,6 +1010,7 @@ function describeEdge(
       dashed: style.strokeDasharray !== 'none' && style.strokeDasharray !== '',
       arrowStart: edge.arrow === 'start' || edge.arrow === 'both',
       arrowEnd: edge.arrow === 'end' || edge.arrow === 'both',
+      ...(arrow === 'triangle' ? {} : { arrow }),
       tone: edge.tone,
       opacity: opacityWithin(line, element),
       label:

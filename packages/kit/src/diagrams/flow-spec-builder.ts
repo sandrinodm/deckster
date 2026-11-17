@@ -214,6 +214,7 @@ class SpecBuilder {
       ...optional('at', props.at),
       ...optional('cell', cell),
       ...optional('group', group),
+      ...optional('card', props.card),
     });
   }
 

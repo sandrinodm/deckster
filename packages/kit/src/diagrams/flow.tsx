@@ -4,16 +4,19 @@ import { useId, useMemo, useRef, type ReactNode } from 'react';
 import type { AutoPositions } from '#diagrams/elk-layout.ts';
 import type { FlowMetrics } from '#diagrams/flow-grid.ts';
 import type { RoutedEdge } from '#diagrams/flow-route.ts';
-import type { AutoLayout, FlowDirection, FlowSpec } from '#diagrams/flow-spec.ts';
+import type { AutoLayout, FlowDirection, FlowNodeSpec, FlowSpec } from '#diagrams/flow-spec.ts';
 import type { Point, Side } from '#diagrams/geometry.ts';
 
 import { StepMarks } from '#code/step-marks.tsx';
 import { flowFrame, flowSteps } from '#diagrams/choreography.ts';
+import { flag } from '#diagrams/data-flags.ts';
 import { describeDiagram, type DescribeInput } from '#diagrams/describe-diagram.ts';
 import { DiagramFrame } from '#diagrams/diagram-frame.tsx';
 import { LABEL_MAX_CHARS } from '#diagrams/diagram-limits.ts';
 import { flowLiveNote, flowSummary } from '#diagrams/diagram-summary.ts';
 import {
+  edgeCornerRadius,
+  FALLBACK,
   useDiagramTokens,
   useReducedMotion,
   type DiagramTokens,
@@ -31,7 +34,7 @@ import {
 } from '#diagrams/flow-grid.ts';
 import { labelBox, labelLines } from '#diagrams/flow-labels.ts';
 import { layoutFlow, type EdgeLayout, type FlowLayout } from '#diagrams/flow-layout.ts';
-import { NodeBadge, NodeBody, NodeShape } from '#diagrams/flow-node-view.tsx';
+import { NodeBadge, NodeBody, NodeShadow, NodeShape } from '#diagrams/flow-node-view.tsx';
 import {
   PacketDots,
   PacketTags,
@@ -41,8 +44,9 @@ import {
 } from '#diagrams/flow-packets.tsx';
 import { optional } from '#diagrams/flow-spec-builder.ts';
 import { validateFlow } from '#diagrams/flow-validate.ts';
+import { resolveCard, type ResolvedCard } from '#diagrams/node-cards.ts';
 import { NODE_KINDS } from '#diagrams/node-kinds.ts';
-import { roundRect, shapeGeometry } from '#diagrams/node-shapes.ts';
+import { cardShape, nodeGeometry, roundRect } from '#diagrams/node-shapes.ts';
 import { movesAt } from '#diagrams/packet-motion.ts';
 import { useAutoLayout, type AutoCandidate } from '#diagrams/use-auto-layout.ts';
 import { useDiagramDescription } from '#diagrams/use-description.ts';
@@ -93,6 +97,12 @@ export type FlowProps = {
    * A fixed height in canvas pixels; without it the diagram fills its region.
    */
   height?: number;
+
+  /**
+   * The card (a node style the brand defines) for every node of the diagram: `default`, `outline`,
+   * `solid`, `tint`, `raised` or one of the brand's own. A node's own `card` wins over it.
+   */
+  card?: string;
 
   /**
    * The automatic layout, computed by the build for MDX slides; never written by hand.
@@ -193,6 +203,7 @@ export function Flow({
   direction = 'right',
   height,
   positions,
+  card,
   children,
 }: FlowProps): ReactNode {
   const parsed = useMemo(() => parseFlowChildren(children), [children]);
@@ -208,6 +219,7 @@ export function Flow({
       {...optional('rows', rows)}
       {...optional('height', height)}
       {...optional('positions', positions)}
+      {...optional('card', card)}
     />
   );
 }
@@ -281,6 +293,11 @@ export type FlowViewProps = {
    * The automatic layout the build computed.
    */
   positions?: AutoPositions;
+
+  /**
+   * The card for every node that names none of its own.
+   */
+  card?: string;
 };
 
 /**
@@ -301,6 +318,7 @@ export function FlowView({
   tips,
   reshape,
   positions,
+  card,
 }: FlowViewProps): ReactNode {
   const specKey = JSON.stringify(parsed.spec);
   const spec = useMemo(() => validSpec(specKey), [specKey]);
@@ -324,9 +342,10 @@ export function FlowView({
   const root = useRef<HTMLElement | null>(null);
   const size = useElementSize(root);
   const tokens = useDiagramTokens(root);
+  const cards = useMemo(() => nodeCards(spec, tokens ?? FALLBACK, card), [spec, tokens, card]);
   const metrics = useMemo(
-    () => (tokens === undefined ? undefined : flowMetrics(tokens, spec)),
-    [tokens, spec],
+    () => (tokens === undefined ? undefined : flowMetrics(tokens, spec, cards)),
+    [tokens, spec, cards],
   );
   const isAuto = spec.nodes.length > 0 && spec.nodes.every((node) => node.cell === undefined);
   const grid = gridSize(
@@ -334,7 +353,10 @@ export function FlowView({
     { ...(cols === undefined ? {} : { cols }), ...(rows === undefined ? {} : { rows }) },
   );
   const nodeWidth = singleNodeWidth(size, metrics, isAuto ? undefined : grid.cols, spec);
-  const measurements = useMeasurements(root, `${specKey}|${Math.round(nodeWidth)}`);
+  const measurements = useMeasurements(
+    root,
+    `${specKey}|${Math.round(nodeWidth)}|${[...cards.values()].map((one) => one.name).join(' ')}`,
+  );
   const measured = useMemo(
     () =>
       metrics === undefined
@@ -375,14 +397,20 @@ export function FlowView({
       metrics: measured,
       route: {
         margin: tokens.space.md,
-        radius: tokens.radius.lg,
+        radius: edgeCornerRadius(tokens, tokens.radius.lg),
         portSpacing: tokens.space.md,
-        arrowGap: tokens.stroke.regular * ARROW_GAP_STROKES,
+        arrowGap: tokens.edge.stroke * ARROW_GAP_STROKES,
       },
       grid: { cols: grid.cols, rows: grid.rows },
       ...(centres === undefined ? {} : { centres, snap }),
       ...(measurements === undefined ? {} : { nodeHeights: measurements.nodeHeights }),
       ...(tips === undefined ? {} : { tips }),
+      shapes: new Map(
+        spec.nodes.map((node) => [
+          node.id,
+          cardShape(NODE_KINDS[node.kind].shape, cardOf(cards, node).tokens.shape),
+        ]),
+      ),
       labels: measurements?.labels ?? new Map(),
       groupLabels: measurements?.groupLabels ?? new Map(),
       ...(reshape === undefined ? {} : { reshape: (edges: EdgeLayout) => reshape(edges, tokens) }),
@@ -400,6 +428,7 @@ export function FlowView({
     measurements,
     tips,
     reshape,
+    cards,
   ]);
   const ready =
     layout !== undefined && measurements !== undefined && (!isAuto || centres !== undefined);
@@ -452,6 +481,7 @@ export function FlowView({
               kind,
               id: diagramId,
               spec,
+              cards,
               layout,
               frame,
               summary,
@@ -471,7 +501,7 @@ export function FlowView({
   const longText =
     layout === undefined || tokens === undefined
       ? []
-      : longTextOf(spec, layout, tokens, labelWidths);
+      : longTextOf(spec, cards, layout, tokens, labelWidths);
   return (
     <DiagramFrame
       ref={root}
@@ -498,6 +528,7 @@ export function FlowView({
       {layout === undefined || tokens === undefined ? null : (
         <FlowDrawing
           spec={spec}
+          cards={cards}
           layout={layout}
           frame={frame}
           tokens={tokens}
@@ -508,7 +539,7 @@ export function FlowView({
         />
       )}
       {layout === undefined || layout.nodes.size === 0 ? (
-        <MeasureNodes spec={spec} extras={extras} width={nodeWidth} />
+        <MeasureNodes spec={spec} cards={cards} extras={extras} width={nodeWidth} />
       ) : null}
     </DiagramFrame>
   );
@@ -643,6 +674,11 @@ type FlowDrawingProps = {
   spec: FlowSpec;
 
   /**
+   * Each node's card, by id.
+   */
+  cards: ReadonlyMap<string, ResolvedCard>;
+
+  /**
    * Where everything goes.
    */
   layout: FlowLayout;
@@ -684,6 +720,7 @@ type FlowDrawingProps = {
  */
 function FlowDrawing({
   spec,
+  cards,
   layout,
   frame,
   tokens,
@@ -698,7 +735,12 @@ function FlowDrawing({
       const rect = layout.nodes.get(node.id);
       return rect === undefined
         ? []
-        : [[node.id, shapeGeometry(NODE_KINDS[node.kind].shape, rect, tokens.radius.md)] as const];
+        : [
+            [
+              node.id,
+              nodeGeometry(NODE_KINDS[node.kind].shape, cardOf(cards, node).tokens, rect),
+            ] as const,
+          ];
     }),
   );
   const badges = placeBadges(layout, frame.nodes, frame.edges, tokens);
@@ -720,8 +762,29 @@ function FlowDrawing({
                 data-diagram-part="group"
                 data-group={group.id}
                 data-depth={box.depth}
+                data-dashed={flag(tokens.group.dashed)}
                 data-visible={String(frame.groups.get(group.id) === true)}
-                d={roundRect(box.rect, tokens.radius.lg)}
+                d={roundRect(box.rect, tokens.group.radius)}
+              />
+            );
+          })}
+        </g>
+        <g className="kit-flow-shadows">
+          {spec.nodes.map((node) => {
+            const rect = layout.nodes.get(node.id);
+            const geometry = geometries.get(node.id);
+            const nodeFrame = frame.nodes.get(node.id);
+            return rect === undefined ||
+              geometry === undefined ||
+              nodeFrame === undefined ? null : (
+              <NodeShadow
+                key={node.id}
+                node={node}
+                card={cardOf(cards, node)}
+                rect={rect}
+                geometry={geometry}
+                frame={nodeFrame}
+                dimmed={frame.dimmed.has(node.id)}
               />
             );
           })}
@@ -737,7 +800,8 @@ function FlowDrawing({
                 path={path}
                 frame={edgeFrame}
                 dimmed={frame.dimmed.has(edge.id)}
-                stroke={tokens.stroke.regular}
+                stroke={tokens.edge.stroke}
+                arrow={tokens.edge.arrow}
               />
             );
           })}
@@ -768,6 +832,8 @@ function FlowDrawing({
               frame={edgeFrame}
               dimmed={frame.dimmed.has(edge.id)}
               lines={labelSet(edge.label, tokens, labelWidths.get(edge.id))}
+              chip={tokens.label.style === 'chip'}
+              step={tokens.label.type}
             />
           );
         })}
@@ -783,12 +849,17 @@ function FlowDrawing({
         </g>
         <g className="kit-flow-shapes">
           {spec.nodes.map((node) => {
+            const rect = layout.nodes.get(node.id);
             const geometry = geometries.get(node.id);
             const nodeFrame = frame.nodes.get(node.id);
-            return geometry === undefined || nodeFrame === undefined ? null : (
+            return rect === undefined ||
+              geometry === undefined ||
+              nodeFrame === undefined ? null : (
               <NodeShape
                 key={node.id}
                 node={node}
+                card={cardOf(cards, node)}
+                rect={rect}
                 geometry={geometry}
                 frame={nodeFrame}
                 dimmed={frame.dimmed.has(node.id)}
@@ -807,6 +878,7 @@ function FlowDrawing({
             <NodeBody
               key={node.id}
               node={node}
+              card={cardOf(cards, node)}
               extras={extras.get(node.id)}
               rect={rect}
               inset={geometry.inset}
@@ -847,6 +919,11 @@ type MeasureNodesProps = {
   spec: FlowSpec;
 
   /**
+   * Each node's card, by id, so a card's title font is measured.
+   */
+  cards: ReadonlyMap<string, ResolvedCard>;
+
+  /**
    * Icons and content by node id.
    */
   extras: ReturnType<typeof parseFlowChildren>['extras'];
@@ -861,7 +938,7 @@ type MeasureNodesProps = {
  * Renders every node body, hidden, at the width nodes will get, so the first layout knows how tall
  * nodes are.
  */
-function MeasureNodes({ spec, extras, width }: MeasureNodesProps): ReactNode {
+function MeasureNodes({ spec, cards, extras, width }: MeasureNodesProps): ReactNode {
   const hidden = { visible: false, state: 'default' as const, arrival: false };
   return (
     <div className="kit-flow-html" aria-hidden="true" data-measuring="true">
@@ -869,6 +946,7 @@ function MeasureNodes({ spec, extras, width }: MeasureNodesProps): ReactNode {
         <NodeBody
           key={node.id}
           node={node}
+          card={cardOf(cards, node)}
           extras={extras.get(node.id)}
           rect={{ x: 0, y: 0, width, height: 0 }}
           inset={{ top: 0, right: 0, bottom: 0, left: 0 }}
@@ -889,25 +967,27 @@ function MeasureNodes({ spec, extras, width }: MeasureNodesProps): ReactNode {
  *
  * @param tokens - The brand's values.
  * @param spec - The diagram, for its edge labels.
+ * @param cards - Each node's card, by id, for its title font and shape; today's node without one.
  */
 export function flowMetrics(
   tokens: DiagramTokens,
   spec: FlowSpec,
+  cards?: ReadonlyMap<string, ResolvedCard>,
 ): FlowMetrics & { labelMaxWidth: number } {
   const { caption } = tokens.type;
   const padding = 2 * tokens.space.xs;
   const labelMaxWidth =
-    tokens.measureCaption(LABEL_SAMPLE) * (LABEL_MAX_CHARS / LABEL_SAMPLE.length);
+    tokens.measureEdgeLabel(LABEL_SAMPLE) * (LABEL_MAX_CHARS / LABEL_SAMPLE.length);
   const widest = maxOf(
     spec.edges
       .filter((edge) => edge.label !== undefined && runsAcross(edge, spec))
-      .map((edge) => labelBox(edge.label ?? '', tokens.measureCaption, labelMaxWidth).width),
+      .map((edge) => labelBox(edge.label ?? '', tokens.measureEdgeLabel, labelMaxWidth).width),
     0,
   );
   const labelRoom = widest === 0 ? 0 : widest + padding + 2 * LABEL_GUTTER_CLEARANCE;
-  const shortLabel = tokens.measureCaption(LABEL_SAMPLE.slice(0, SHORT_LABEL_CHARS));
+  const shortLabel = tokens.measureEdgeLabel(LABEL_SAMPLE.slice(0, SHORT_LABEL_CHARS));
   return {
-    wordWidths: wordWidthsOf(tokens, spec),
+    wordWidths: wordWidthsOf(tokens, spec, cards),
     ...(widest === 0 ? {} : { labelGutterMin: shortLabel + padding + 2 * LABEL_GUTTER_CLEARANCE }),
     nodeMinWidth: caption * NODE_MIN_CAPTIONS,
     nodeMaxWidth: caption * NODE_MAX_CAPTIONS,
@@ -935,7 +1015,7 @@ function labelSet(
 ): string[] | undefined {
   return label === undefined || width === undefined || width <= 0
     ? undefined
-    : labelLines(label, tokens.measureCaption, width);
+    : labelLines(label, tokens.measureEdgeLabel, width);
 }
 
 /**
@@ -960,7 +1040,7 @@ function labelWidthsOf(
 ): Map<string, number> {
   const padding = 2 * tokens.space.xs;
   const base = metrics.labelMaxWidth - padding;
-  const least = tokens.measureCaption(LABEL_SAMPLE.slice(0, SHORT_LABEL_CHARS));
+  const least = tokens.measureEdgeLabel(LABEL_SAMPLE.slice(0, SHORT_LABEL_CHARS));
   const gutter =
     width === undefined || cols <= 1
       ? undefined
@@ -976,7 +1056,7 @@ function labelWidthsOf(
         gutter === undefined || !runsAcross(edge, spec)
           ? base
           : Math.min(base, gutter - padding - 2 * LABEL_GUTTER_CLEARANCE);
-      const word = Math.min(base, widestWord(edge.label, tokens.measureCaption));
+      const word = Math.min(base, widestWord(edge.label, tokens.measureEdgeLabel));
       return [[edge.id, Math.max(room, least, word)] as const];
     }),
   );
@@ -988,12 +1068,14 @@ function labelWidthsOf(
  * short.
  *
  * @param spec - The diagram.
+ * @param cards - Each node's card, by id.
  * @param layout - Where its nodes went.
  * @param tokens - The brand's values, with the text measures.
  * @param labelWidths - The widest each label's lines get.
  */
 function longTextOf(
   spec: FlowSpec,
+  cards: ReadonlyMap<string, ResolvedCard>,
   layout: FlowLayout,
   tokens: DiagramTokens,
   labelWidths: ReadonlyMap<string, number>,
@@ -1004,14 +1086,15 @@ function longTextOf(
       return [];
     }
 
-    const { inset } = shapeGeometry(NODE_KINDS[node.kind].shape, rect, tokens.radius.md);
+    const card = cardOf(cards, node).tokens;
+    const { inset } = nodeGeometry(NODE_KINDS[node.kind].shape, card, rect);
     const chrome =
       rect.width < NARROW_NODE_WIDTH
         ? 2 * tokens.space.xs
         : 3 * tokens.space.sm + 2 * tokens.type.caption;
     const room = rect.width - chrome - inset.left - inset.right;
     return [
-      ['title', node.title, tokens.measureTitle] as const,
+      ['title', node.title, card.measureTitle] as const,
       ['subtitle', node.subtitle ?? '', tokens.measureCaption] as const,
     ].flatMap(([part, text, measure]) =>
       widestWord(text, measure) > room ? [`the node ${part} "${text}"`] : [],
@@ -1023,7 +1106,7 @@ function longTextOf(
       return [];
     }
 
-    const box = labelBox(edge.label, tokens.measureCaption, width);
+    const box = labelBox(edge.label, tokens.measureEdgeLabel, width);
     return box.broken || box.truncated ? [`the edge label "${edge.label}"`] : [];
   });
   return [...nodes, ...labels];
@@ -1037,20 +1120,23 @@ function longTextOf(
  *
  * @param tokens - The brand's values, with the text measurers.
  * @param spec - The diagram.
+ * @param cards - Each node's card, by id, for its title font and shape; today's node without one.
  */
 export function wordWidthsOf(
   tokens: DiagramTokens,
   spec: FlowSpec,
+  cards: ReadonlyMap<string, ResolvedCard> = nodeCards(spec, tokens, undefined),
 ): { narrow: number; wide: number } {
   let narrow = 0;
   let wide = 0;
   for (const node of spec.nodes) {
+    const card = cardOf(cards, node).tokens;
     const word = Math.max(
-      widestWord(node.title, tokens.measureTitle),
+      widestWord(node.title, card.measureTitle),
       widestWord(node.subtitle ?? '', tokens.measureCaption),
     );
     const sample = { x: 0, y: 0, width: NARROW_NODE_WIDTH, height: tokens.type.caption * 4 };
-    const { inset } = shapeGeometry(NODE_KINDS[node.kind].shape, sample, tokens.radius.md);
+    const { inset } = nodeGeometry(NODE_KINDS[node.kind].shape, card, sample);
     const sides = inset.left + inset.right + WORD_SLACK;
     const needNarrow = word + 2 * tokens.space.xs + sides;
     const needWide = word + 3 * tokens.space.sm + 2 * tokens.type.caption + sides;
@@ -1118,6 +1204,7 @@ function flowParts(input: {
   kind: 'flow' | 'tree' | 'cycle';
   id: string;
   spec: FlowSpec;
+  cards: ReadonlyMap<string, ResolvedCard>;
   layout: FlowLayout;
   frame: ReturnType<typeof flowFrame>;
   summary: string;
@@ -1172,7 +1259,7 @@ function flowParts(input: {
           id: node.id,
           kind: node.kind,
           state,
-          shape: NODE_KINDS[node.kind].shape,
+          shape: cardShape(NODE_KINDS[node.kind].shape, cardOf(input.cards, node).tokens.shape),
           rect,
           ...optional('group', node.group),
         },
@@ -1315,4 +1402,35 @@ function edgeNames(spec: FlowSpec): Map<string, string> {
  */
 function visibleCount(entries: ReadonlyMap<string, { visible: boolean }>): number {
   return [...entries.values()].filter((entry) => entry.visible).length;
+}
+
+/**
+ * Each node's card, by id: its own card, else the diagram's, else the brand's card for its kind,
+ * else `default` ({@link resolveCard}).
+ *
+ * @param spec - The diagram.
+ * @param tokens - The brand's values, with its cards.
+ * @param card - The diagram's card.
+ */
+export function nodeCards(
+  spec: FlowSpec,
+  tokens: Pick<DiagramTokens, 'cards'>,
+  card: string | undefined,
+): Map<string, ResolvedCard> {
+  return new Map(
+    spec.nodes.map((node) => [
+      node.id,
+      resolveCard(tokens.cards, { own: node.card, diagram: card, kind: node.kind }),
+    ]),
+  );
+}
+
+/**
+ * A node's card from the resolved cards, or today's node when it has none.
+ *
+ * @param cards - Each node's card, by id.
+ * @param node - The node.
+ */
+function cardOf(cards: ReadonlyMap<string, ResolvedCard>, node: FlowNodeSpec): ResolvedCard {
+  return cards.get(node.id) ?? resolveCard(FALLBACK.cards, { kind: node.kind });
 }

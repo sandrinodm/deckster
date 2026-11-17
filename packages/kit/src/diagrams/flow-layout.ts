@@ -14,7 +14,7 @@ import { placeLabels, type LabelRequest, type PlacedLabel } from '#diagrams/flow
 import { collinearOverlaps, routeEdges, type RoutedEdge } from '#diagrams/flow-route.ts';
 import { isInGroup } from '#diagrams/flow-validate.ts';
 import { inflate, intersects, type Point, type Rect, type Side } from '#diagrams/geometry.ts';
-import { NODE_KINDS } from '#diagrams/node-kinds.ts';
+import { NODE_KINDS, type NodeShape } from '#diagrams/node-kinds.ts';
 
 /**
  * How far two boxes must overlap each way, in pixels, to count as drawn on top of each other.
@@ -122,6 +122,12 @@ export type FlowLayoutInput = {
    * Node sides where every edge meets one point, besides the shapes' own tips.
    */
   tips?: ReadonlyMap<string, ReadonlySet<Side>>;
+
+  /**
+   * The shape each node is drawn with, by id, when a card replaces its kind's shape; the kind's
+   * shape for a node without one.
+   */
+  shapes?: ReadonlyMap<string, NodeShape>;
 
   /**
    * Each edge label's measured size, by edge id.
@@ -508,7 +514,7 @@ function routeAll(
       radius: route.radius,
       portSpacing: route.portSpacing,
       bounds,
-      tips: new Map([...tipsOf(spec), ...(input.tips ?? [])]),
+      tips: new Map([...tipsOf(spec, input.shapes), ...(input.tips ?? [])]),
       ...(placement.cells === undefined ? {} : { cells: placement.cells }),
       obstacles: [...groups.values()].map((group) => group.label),
     },
@@ -582,11 +588,15 @@ function edgeOverlapsOf(
  * ends and every corner of a diamond.
  *
  * @param spec - The diagram.
+ * @param shapes - The shape each node is drawn with, when its card replaces its kind's.
  */
-function tipsOf(spec: FlowSpec): Map<string, ReadonlySet<Side>> {
+export function tipsOf(
+  spec: FlowSpec,
+  shapes?: ReadonlyMap<string, NodeShape>,
+): Map<string, ReadonlySet<Side>> {
   const tips = new Map<string, ReadonlySet<Side>>();
   for (const node of spec.nodes) {
-    const shape = NODE_KINDS[node.kind].shape;
+    const shape = shapes?.get(node.id) ?? NODE_KINDS[node.kind].shape;
     if (shape === 'hexagon') {
       tips.set(node.id, new Set<Side>(['left', 'right']));
     }
