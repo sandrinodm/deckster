@@ -21,7 +21,7 @@ Sales has little peer-reviewed research and a lot of vendor data. Use the follow
 2. **The problem and its cost:** make the status quo expensive, with their numbers where discovery provided them. Leave room in the deck for a question here.
 3. **What good looks like:** the outcome they want, described before the product.
 4. **How we get you there:** the product, limited to the two or three capabilities that address their stated problem. Demo here, most valuable thing first.
-5. **Proof:** a similar customer, the measurable result, a quote.
+5. **Proof:** a similar customer, the measurable result, a quote; one `proof` slide carries all three.
 6. **Why us, why now:** the honest differentiators and the cost of waiting.
 7. **The path:** what happens next, effort required from them, timeline, a specific ask.
 

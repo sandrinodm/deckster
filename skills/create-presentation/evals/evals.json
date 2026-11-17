@@ -155,7 +155,8 @@
         "The handoff states the lint result and that the screenshots were looked at, and lists what the user must supply",
         "The deck is buyer-first (their situation and a question before the product) and fits about 10 minutes",
         "The seller kit (talk track per slide, discovery questions, the three objections, BILL positioning) exists outside the customer-facing slides",
-        "Pricing, SAP and BILL are not claimed beyond what the prompt gives"
+        "Pricing, SAP and BILL are not claimed beyond what the prompt gives",
+        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deck lint` reports no few-builds warning"
       ]
     },
     {
@@ -175,7 +176,8 @@
         "The routing rules are one diagram staged with steps, and its last step reads on its own",
         "There is practice with feedback and a retrieval check, with answers revealed on a step",
         "Notes are a facilitator guide with timings for a remote session",
-        "The proration calculation is not invented as policy"
+        "The proration calculation is not invented as policy",
+        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deck lint` reports no few-builds warning"
       ]
     },
     {
@@ -195,12 +197,54 @@
         "The ask is on the first content slide and repeated at the close",
         "Each data slide uses the form its message calls for (a number or comparison for two values, a table for scenarios), with units and a caption",
         "The CFO's overrun objection and vendor lock-in are addressed on slides",
-        "Derived figures (saving, payback) show their arithmetic in notes or a backup slide"
+        "Derived figures (saving, payback) show their arithmetic in notes or a backup slide",
+        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deck lint` reports no few-builds warning"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "render-conference-talk-builds",
+      "prompt": "I'm giving a 25-minute talk at a platform engineering meetup next month: how we cut our CI pipeline from 42 minutes to 11. The room is engineers. What happened: the median pipeline took 42 minutes in January and 11 in June (our CI dashboard). Three changes did it, in this order: remote build cache (hit rate went from 23% to 81%), test sharding across 8 runners instead of 2, and moving the Docker image build off the critical path. Monthly median by month: Jan 42, Feb 39, Mar 31, Apr 22, May 14, Jun 11. A job now goes runner -> cache lookup -> (hit: restore artifacts | miss: build, then upload to cache) -> tests on 8 shards -> report. The cache key is a hash of the lockfile, the toolchain version and the source tree; I can paste the function that computes it if you want it on a slide: `export function cacheKey(lock, toolchain, tree) { const h = createHash('sha256'); h.update(lock); h.update(toolchain); h.update(tree); return h.digest('hex').slice(0, 16); }`. The one gotcha we hit: forgetting the toolchain version in the key served stale artifacts for two days in March. Default brand. Build the deck; I'm travelling and can't review the outline.",
+      "expected_output": "A rendered deck for an engineering audience whose evidence builds: the monthly trend chart reveals toward the June value with the three changes as callouts at their steps, the job path is a diagram walked with a Journey or per-step reveals, the cache-key code steps through the lines that matter, and the speaker notes carry a [click] for every step; section slides share options; lint is clean.",
+      "files": [],
+      "expectations": [
+        "pnpm deck lint <deck> reports no errors and no warnings in the deck's brand, few-builds among them",
+        "The outline (in the handoff or the working notes) has a Build column naming what arrives at each step, or 'whole', for every slide",
+        "The monthly medians are a chart whose build follows the notes: the line or the changes arrive at steps, and the last step shows the whole trend with the highlight",
+        "The job path is a diagram that reveals or travels the path in the order the notes explain it (a <Journey>, per-step `at`, or both), including the hit and miss branches",
+        "If the cache-key code is on a slide, it is a code block with step ranges on the lines the notes discuss (the toolchain line among them)",
+        "For every slide that builds, the number of [click] cues in its notes equals its steps minus one, checked against `deck shot --steps`",
+        "Not every slide builds: a statement, a single number or a slide whose point is the whole stays whole, and no list is revealed bullet by bullet unless the notes walk through it",
+        "The last step of every built slide reads on its own in the screenshots",
+        "If the deck has section slides, they share one surface and the same options",
+        "No invented facts: every number is the user's; the 42-to-11 change and the hit rates are stated as given"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "outline-pitch-layouts",
+      "prompt": "I'm raising a £1.5M seed round for Dispensa, software that runs repeat prescriptions for independent pharmacies. It's a 12-minute pitch to angel investors next month, in person, default brand. What I have: 41 pharmacies pay us £100 a month, up from 6 in January (paying pharmacies by month: Jan 6, Feb 9, Mar 14, Apr 19, May 26, Jun 33, Jul 41). There are about 4,000 independent pharmacies in England (NHS figures, I can send the link). Hillside Pharmacy in Leeds cut the time to process a repeat prescription from 9 minutes to 2 after switching; the owner, Amira Haddad, told us \"We stopped losing Mondays to paperwork.\" Competition: the incumbent pharmacy systems are fully integrated with the NHS but take months to set up; a few lightweight apps are quick to adopt but don't integrate. We're quick to adopt and integrated. I have a screenshot of our dashboard. Founders: me (Tom Reyes, eight years as a community pharmacist) and Lena Park (built the e-prescription integration at one of the incumbents). The money buys NHS accreditation by March 2027, 150 paying pharmacies by June 2027 and break-even by December 2027; it goes 60% to engineering, 25% to sales and 15% to compliance. Plan the deck and show me the outline before you build anything.",
+      "expected_output": "An outline, no slide files, whose Layout column uses the layouts the kit has for these jobs: traction early, the market as an equation built bottom-up, the competition as a matrix, the Hillside result as one proof slide, the dashboard as a screen, the team with a line on why each founder, and an ask slide with one amount and the dated milestones.",
+      "files": [],
+      "expectations": [
+        "No slide files are created; the reply shows the outline and stops for review",
+        "Every layout named in the outline exists in `deck layouts --summary`, and each slide's title fits that layout's title length",
+        "Traction (41 paying pharmacies, up from 6 in January) appears within the first four slides of the outline",
+        "The market is built bottom-up as pharmacies × price on an `equation` slide (4,000 × £1,200 a year = £4.8M), with the arithmetic correct, rather than a top-down figure, nested circles or a `stats` row",
+        "The competition is a `matrix` on the two trade-offs the prompt gives (time to set up, NHS integration) with Dispensa marked `us`, not a `<Scatter>` with invented coordinates",
+        "The Hillside result is one `proof` slide with Amira Haddad's words and the 9-to-2-minute metric, not a `quote` slide plus a `stats` slide",
+        "The dashboard is a `screen` slide with at most four callouts, not a screenshot in `split`",
+        "The ask is an `ask` slide with the single amount £1.5M, the three dated milestones and the 60/25/15 use of funds; no range appears",
+        "The team slide says why each founder is the right person (an `edge` line each), not only past employers",
+        "No invented numbers, customers or quotes: every figure is from the prompt or derived with its arithmetic shown",
+        "The reply asks at most three questions, none about information already given"
       ]
     }
   ],
   "changelog": [
     "After iteration 1: eval 2 question limit changed from two to three. Both configurations failed 'at most two'; the with-skill run's four questions were all substantive review questions, so two was an arbitrary bar. Three matches the skill's revised guidance. Iteration-1 gradings keep the original wording.",
-    "After iteration 1: eval 7 assertion arithmetic corrected ($17.3M total growth and 55%, not $16.5M and 58%). The iteration-1 grader had already graded against the recomputed figures."
+    "After iteration 1: eval 7 assertion arithmetic corrected ($17.3M total growth and 55%, not $16.5M and 58%). The iteration-1 grader had already graded against the recomputed figures.",
+    "Added case 11 (render-conference-talk-builds) and a build expectation to cases 8 to 10, after a deck written with the skill showed nearly every evidence slide all at once. The expectation checks that builds follow the notes, carry [click] cues and leave whole slides whole, and that `deck lint` reports no few-builds warning.",
+    "Added case 12 (outline-pitch-layouts) when the kit gained the `screen`, `matrix`, `equation`, `ask`, `proof` and `columns` layouts and the team's `edge` line. It checks that an outline picks the layout each pitch job has rather than its near miss (a screenshot in `split`, a `<Scatter>` of invented positions, a quote and a stats slide for one customer)."
   ]
 }

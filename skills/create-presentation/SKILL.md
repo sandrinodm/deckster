@@ -137,14 +137,15 @@ Write the storyline as five to nine sentences, each a claim, that read as a comp
 Expand the storyline into a slide-by-slide outline and save it as `OUTLINE.md`:
 
 ```markdown
-| #   | Assertion (the slide title)                      | Evidence shown                | Layout              | Budget | Job in the story |
-| --- | ------------------------------------------------ | ----------------------------- | ------------------- | ------ | ---------------- |
-| 1   | Checkout latency doubled after the March release | Line chart, March highlighted | content + LineChart | 60s    | Complication     |
+| #   | Assertion (the slide title)                      | Evidence shown                | Layout            | Build                                         | Budget | Job in the story |
+| --- | ------------------------------------------------ | ----------------------------- | ----------------- | --------------------------------------------- | ------ | ---------------- |
+| 1   | Checkout latency doubled after the March release | Line chart, March highlighted | chart + LineChart | 0 last year; 1 this year; 2 callout at March | 60s    | Complication     |
 ```
 
 - **Assertion:** a full sentence the audience could repeat, ideally 12 words or fewer. "Q3 results" is a topic; "Q3 revenue grew 18% while headcount stayed flat" is an assertion. Titles such as Agenda, Overview, Background, Results and Next steps are signs the thinking is unfinished. Structural slides (title, section, closing) are exempt.
 - **Evidence:** what the audience looks at while the speaker makes the point: a chart, diagram, screenshot, demo, quote, code, big number, or two to four short supporting lines. Prefer a visual to bullets when one exists. If the evidence is a number or dataset, or the claim is about how something works or flows, decide the form now using `references/data-visuals.md` (which chart for which message; when a diagram beats bullets).
-- **Layout:** read `deck layouts <deck> --summary` before filling this column (the catalog commands need a deck to read; if the workspace has none and an outline must not create one, scaffold a throwaway one in a scratch folder: `export DECK_ROOT=$(mktemp -d)`, `deck new probe`, `deck layouts probe --summary`, then unset `DECK_ROOT`). The set of layouts grows, each has a title length and a content budget, and an outline written against layouts that do not exist, or with sentence titles in layouts whose title is one short line, has to be redone.
+- **Layout:** read `deck layouts <deck> --summary` before filling this column (the catalog commands need a deck to read; if the workspace has none and an outline must not create one, scaffold a throwaway one in a scratch folder: `export DECK_ROOT=$(mktemp -d)`, `deck new probe`, `deck layouts probe --summary`, then unset `DECK_ROOT`). The set of layouts grows, each has a title length and a content budget, and an outline written against layouts that do not exist, or with sentence titles in layouts whose title is one short line, has to be redone. Several jobs have a layout of their own (a product screen, a competitor map, a market size, the ask, a customer's result); `references/slide-craft.md` (section 3) lists them with the near misses they replace.
+- **Build:** what arrives at each step, in the order the notes will explain it, or "whole". A chart builds from its context to its highlight, a diagram along the path the notes walk, code through the lines being discussed, a list the speaker walks through one `focus` item at a time; a photo, a quote, a statement or a single number stays whole. `references/slide-craft.md` (section 7) says when a build helps and when it is noise. Deciding it here keeps the notes and the slide in step, and a column of "whole" down a talk full of charts and diagrams is a sign the deck will show everything at once.
 - **Read-through test:** read only the assertion column top to bottom. It should tell the whole story with no gaps and no repeats. Fix the outline, not the slides, until it does.
 - **Budget:** seconds per slide, summing to the time budget from step 3. There is no reliable "minutes per slide" rule; a big-number slide takes 20 seconds and a demo takes five minutes. Budget by content, then sanity-check the pace: a slide with a table, a comparison or several numbers needs 90 seconds or more with a senior audience, and if most slides sit under a minute the talk will feel rushed however the total adds up. Cut slides before you cut seconds.
 
@@ -168,25 +169,25 @@ deck icons --brand a,b       # icon names every brand of the deck has (add --sea
 
 Then write one file per slide, following `references/slide-craft.md`:
 
-- Pick the layout that fits the evidence, not the other way round. Stay inside its title length and content budget; when content does not fit, split the slide or move words to notes rather than shrinking anything.
+- Pick the layout that fits the evidence, not the other way round. Stay inside its title length and content budget; when content does not fit, split the slide or move words to notes rather than shrinking anything. `decks/lookbook` in the deckster repository shows every layout and option in use.
 - Never write raw colors, fonts, sizes or positions. The brand owns those, and lint rejects them.
-- Vary layouts and surfaces to give the deck rhythm, and show the audience where they are: section slides in a long deck, eyebrows in a deck of about twelve slides or fewer. A run of slides that look alike is the most common way a correct deck ends up dull.
+- Vary layouts and surfaces to give the deck rhythm, and show the audience where they are: section slides in a long deck (all with the same options, such as `numeral: large`), eyebrows in a deck of about twelve slides or fewer. Put the peak on a surface its neighbours do not have. A run of slides that look alike is the most common way a correct deck ends up dull.
 - Give every slide enough to look at. A slide whose evidence is one short line or a three-box strip leaves most of the canvas empty and reads as unfinished; give the claim its evidence, or fold it into a neighbour.
 - For any slide carrying numbers, follow `references/data-visuals.md`: choose the form from the message, highlight the one thing, title with the takeaway, caption with the measure and period.
 - When the claim is about a process, a path or a structure, draw it as a diagram and stage it with steps (`references/data-visuals.md`, section 15) instead of listing it.
-- Use steps to reveal complex slides piece by piece instead of showing everything at once.
+- Build each slide as the outline's Build column says: `at` on a chart's series, highlight and annotations, `at` on diagram nodes and edges or a `<Journey>`, step ranges on a code fence, `<Step at={n} focus>` around the items of a list the speaker walks through (`references/framework.md`, Builds, transitions and morphs). The last step must read on its own, because exports show only it. Leave transitions to the brand except for one role (the section dividers, say), and use a `<Morph>` only for a picture that continues onto the next slide.
 
 Build in batches of three or four slides and run the check in step 7 on each batch. The first batch tells you how the layouts really behave, which is cheaper to learn on four slides than on twenty.
 
 ## Step 6: Speaker notes
 
-Every content slide gets notes. Write them as what the presenter says and does, not a repeat of the slide: the opening line, the point in spoken language, the transition into the next slide, and any cue (pause, click, ask the room, switch to demo). Size them to the budget at roughly 130 to 150 spoken words per minute. `references/slide-craft.md` has the pattern and the format files add what each format needs in notes (talk tracks, facilitation prompts, anticipated questions).
+Every content slide gets notes. Write them as what the presenter says and does, not a repeat of the slide: the opening line, the point in spoken language, the transition into the next slide, and any cue (pause, click, ask the room, switch to demo). A slide that builds gets one `[click]` per step, where its part is spoken. Size them to the budget at roughly 130 to 150 spoken words per minute. `references/slide-craft.md` has the pattern and the format files add what each format needs in notes (talk tracks, facilitation prompts, anticipated questions).
 
 ## Step 7: Check what you built: lint clean, then look
 
 ```
 deck lint <deck> --json      # schema, overflow, budgets, contrast, chart and diagram rules, notes, time
-deck shot <deck>             # a PNG per slide in .deck/shots/<deck>/ (add --steps for stepped slides)
+deck shot <deck> --steps     # a PNG per step in .deck/shots/<deck>/; the last step of each slide is its plain screenshot
 python3 <skill dir>/scripts/read_through.py decks/<deck>   # titles in order, notes against budgets, [NEEDS] list
 ```
 
@@ -195,7 +196,7 @@ python3 <skill dir>/scripts/read_through.py decks/<deck>   # titles in order, no
 The build is done when both of these are true, in every brand the deck must support:
 
 1. **Lint is clean.** No errors, and no warnings you cannot justify. Each finding names its fix. A warning is usually a real weakness (a chart with no highlight, a diagram too dense to read), so fix it rather than explain it away.
-2. **You have opened every screenshot and it passes section G of `references/rubric.md`.** View the PNGs with your image-viewing tool; do not infer how a slide looks from its source. Is the title the first thing the eye lands on? Is anything cramped, clipped, or stranded as a small island in a mostly empty slide? Can you state each chart's point in five seconds, and is its highlight unmistakable? Does each diagram's main path read at a glance? Do three slides in a row look the same? `references/framework.md` has the full list of what to look for.
+2. **You have opened every screenshot, every step of a slide that builds, and it passes section G of `references/rubric.md`.** View the PNGs with your image-viewing tool; do not infer how a slide looks from its source. Is the title the first thing the eye lands on? Is anything cramped, clipped, or stranded as a small island in a mostly empty slide? Can you state each chart's point in five seconds, and is its highlight unmistakable? Does each diagram's main path read at a glance? Do three slides in a row look the same? `references/framework.md` has the full list of what to look for.
 
 Fix what you find, then lint and shoot again; repeat until a full pass changes nothing. Text can be right and the slide still wrong, and the screenshot is the only way you see what the audience sees. For each further brand, run both commands with `--brand <name>` and open every one of its screenshots too: a second brand changes type and line breaks, so three spot checks miss the broken slides.
 

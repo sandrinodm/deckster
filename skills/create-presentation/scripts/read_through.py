@@ -32,7 +32,7 @@ from pathlib import Path
 
 WPM = 150
 # Layouts whose title is a name by design.
-STRUCTURAL = {"title", "section", "closing", "agenda", "logo-wall", "team"}
+STRUCTURAL = {"title", "section", "closing", "agenda", "logos", "team"}
 
 TOPIC_TITLES = {
     "agenda", "overview", "introduction", "intro", "background", "context",

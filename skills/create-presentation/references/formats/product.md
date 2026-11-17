@@ -18,7 +18,7 @@ Frame the problem as:
 1. **Hook:** the user's situation or the surprising fact.
 2. **The problem and its cost.**
 3. **The insight:** the one idea behind your approach. This is the big idea; it should be repeatable.
-4. **The product, shown:** a demo or walkthrough organized around the user's goal, not the feature list.
+4. **The product, shown:** a demo or walkthrough organized around the user's goal, not the feature list. Get to it quickly. Screens go one per slide on the `screen` layout, large, with a few callouts at most.
 5. **Proof it works:** results, early customers, benchmarks, before-and-after.
 6. **What is and is not included:** scope, availability, pricing or rollout as relevant. Honest limits build trust.
 7. **What happens next and what you need from this audience.**
@@ -26,7 +26,7 @@ Frame the problem as:
 Variants:
 
 - **Launch (external):** contrast structure works well. Alternate the frustrating present with what is now possible, and end on the future state.
-- **Roadmap:** organize by customer problems or themes, not by team or quarter. State confidence levels (committed, planned, exploring) and what was deliberately left out. For executives, answer first.
+- **Roadmap:** organize by customer problems or themes, not by team or quarter. State confidence levels (committed, planned, exploring) and what was deliberately left out. A `columns` board of now, next and later suits it. For executives, answer first.
 - **Product review (internal):** what we learned, what we shipped, what moved, what we will do next; data-forward, see `data-visuals.md`.
 
 ## Demo flow

@@ -128,6 +128,17 @@ export const frontmatter%s = {
                 self.assertEqual(data["slides"][0]["layout"], "statement")
                 self.assertEqual(data["slides"][0]["budget"], 45)
 
+    def test_a_logos_slide_may_have_a_name_for_a_title(self):
+        for layout, flagged in (("logos", False), ("content", True)):
+            with self.subTest(layout=layout):
+                slide = SLIDE.replace("layout: content", f"layout: {layout}").replace(
+                    "Churn fell by a third after the onboarding rewrite", "Traction"
+                )
+                (self.deck / "slides/named.mdx").write_text(slide, encoding="utf-8")
+                run, data = self.run_script(config("export default defineDeck({ duration: '10m', slides: ['named'] });"))
+                labels = [f for f in data["findings"] if "topic label" in f["message"]]
+                self.assertEqual(bool(labels), flagged, run.stdout)
+
     def test_the_repo_sample_deck_still_reads(self):
         root = next((p for p in Path(__file__).resolve().parents if (p / "decks/hello/deck.config.ts").is_file()), None)
         if root is None:

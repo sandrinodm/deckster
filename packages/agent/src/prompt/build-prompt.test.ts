@@ -151,6 +151,12 @@ describe('standingRules', () => {
     expect(rules).not.toMatch(/work\/\d/);
   });
 
+  it('say to build evidence slides in the order of the notes, with a cue per step', () => {
+    const rules = standingRules('hello', false);
+    expect(rules).toContain('build it in steps in the order the notes explain it');
+    expect(rules).toContain('[click] cue in the notes for each step');
+  });
+
   it('says there is no web access, or how to treat search results', () => {
     expect(standingRules('hello', false)).toContain('restart the deck with `--agent-web`');
     const web = standingRules('hello', true);

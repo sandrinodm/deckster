@@ -32,10 +32,12 @@ Run the starter deck locally:
 pnpm dev hello
 ```
 
-Or explore the 45-slide showcase deck:
+Or explore the 45-slide showcase deck, a talk about deckster, and the lookbook, which shows every
+layout, option, chart, diagram and component:
 
 ```sh
 pnpm deck dev showcase
+pnpm deck dev lookbook
 ```
 
 ## Checks and tests

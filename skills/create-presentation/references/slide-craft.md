@@ -1,4 +1,4 @@
-# Slide craft: assertion-evidence, cognitive load, diagrams, demos, notes
+# Slide craft: assertion-evidence, cognitive load, builds, diagrams, demos, notes
 
 How to build and check slides with the deck CLI (catalogs, frontmatter, slots, lint, screenshots) is in `framework.md`. Numbers, charts and diagrams are in `data-visuals.md`. Evidence labels are explained at the top of `narrative.md`; sources are in `sources.md`.
 
@@ -10,11 +10,12 @@ How to build and check slides with the deck CLI (catalogs, frontmatter, slots, l
 4. Cognitive load: what the research supports
 5. Text on slides
 6. Rhythm across the deck
-7. Diagrams
-8. Code
-9. Demos
-10. Speaker notes
-11. Slide types that need special care
+7. Builds: segmenting, not decoration
+8. Diagrams
+9. Code
+10. Demos
+11. Speaker notes
+12. Slide types that need special care
 
 ## 1. Assertion-evidence
 
@@ -60,7 +61,22 @@ Ask what would make a skeptical listener believe the title, then choose the most
 
 Bullets are the fallback, not the default. They are right for genuinely list-like content (three requirements, four steps). When you use them: parallel grammar, at most four, one level, fragments rather than sentences, and no bullet that merely restates the title.
 
-Pictures must be evidence. Decorative stock imagery adds processing without adding meaning (coherence principle, below). A photo of the actual customer site is evidence; a handshake photo is noise.
+Pictures must be evidence. Decorative stock imagery adds processing without adding meaning (coherence principle, below). A photo of the actual customer site is evidence; a handshake photo is noise. Give a photo the slide or half of it, never a small frame in the middle: `image` runs it edge to edge with the text on the side where the picture is calm (`text: left`, `right` or `bottom`), `split` with `bleed: true` runs it to the edges of its half, and the cover and dividers take one in `<Media>`.
+
+Show the product rather than describing it: one screen per slide, as large as the slide allows, with at most a few callouts on the parts the notes talk about. Ten thumbnails on one slide is a screenshot dump; nobody can read any of them.
+
+Some jobs have a layout of their own, and the near miss is the layout that comes to mind first. `deck layouts <deck> --json` has the fields and limits; `decks/lookbook` in the deckster repository shows every layout and option in use.
+
+| The slide's job                                                          | Layout                                                                                     | Not                                                                                                   |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| One product screen and what to look at on it                             | `screen`: a `browser`, `phone` or `laptop` frame (or `none`), up to four numbered callouts | A screenshot in `split` (right only when the text matters as much) or `image`; two to four screens of one flow are a `gallery` |
+| You and the alternatives on two trade-offs                               | `matrix`: positions by judgement, the subject marked `us`                                  | A `<Scatter>` with invented numbers; it is for positions that were measured                           |
+| A number built from its parts: customers × price, bookings × take rate   | `equation`: two to four terms and the result                                               | `stats`, whose figures stand side by side without adding up; nested circles of market size            |
+| A request with an amount: money, headcount, a date to commit to          | `ask`: one `amount` and the two to four dated `milestones` it buys                         | A range; the amount alone in a `statement` or on the `closing` slide                                  |
+| A named customer's result                                                | `proof`: their words beside one to three before-and-after `metrics`                        | A `quote` and then a `stats` slide; a `logos` wall                                                    |
+| Short items in groups: now, next and later, or work by status            | `columns`, with `current:` on the group that matters now                                   | `cards` (one line per idea), `steps` (stages of one process), `timeline` (dated)                      |
+| One to five words that should fill the slide                             | `statement` with `size: giant`, at most once a part                                        | A plain `statement`, which sets a sentence                                                            |
+| The founders, and why they are the ones to do it                         | `team` with an `edge` line (and `previously`) on each of two to four people                | Names and past employers alone; a `bio` for each                                                       |
 
 ## 4. Cognitive load: what the research supports
 
@@ -88,6 +104,7 @@ Kosslyn's analysis of 140 real slide decks found the same rules violated almost 
 
 ## 5. Text on slides
 
+- A slide is read at a glance. If its point cannot be taken in within about three seconds, the slide holds two points or too much evidence: split it or cut it. (A chart takes a little longer to read; its test in `data-visuals.md` allows five.)
 - Stay inside the layout's content budget. When text does not fit, the answer is to split the slide or move words to notes. Never shrink type or tighten spacing; the layouts own those and `deck lint` reports it (`content-budget`, `off-brand`).
 - One idea per slide. Two ideas become two slides; slides are free.
 - Use the audience's words. Define a term the first time it appears if any part of the audience might not know it.
@@ -102,12 +119,53 @@ Kosslyn's analysis of 140 real slide decks found the same rules violated almost 
 ## 6. Rhythm across the deck
 
 - In a deck long enough to have parts (more than about twelve slides, or more than about fifteen minutes), open each part with a section slide. In a shorter deck a section slide costs a slide the argument needs: mark the parts with the eyebrow above the title instead. Above about twelve slides, choose the section slides and surfaces on purpose rather than letting them fall out. Either way, vary layouts within a part. Three identical layouts in a row on the same surface read as monotony (`deck lint` warns: `layout-repetition`). When the content really is three charts in a row, break the run with a statement slide that says what they add up to, or put one on a different surface.
-- Use surfaces deliberately: a different surface for section breaks, statements and the key moment gives the deck a pulse without custom styling.
+- Use surfaces deliberately: a different surface for section breaks, statements and the key moment gives the deck a pulse without custom styling. In a long deck where most slides sit on the default surface, the eye stops noticing slides; two or three moments on another surface are enough to break that.
 - Follow a dense slide with a light one: a chart, then a statement that says what it means.
-- Plan one peak: the slide or moment the audience should remember (the result, the demo, the before-and-after). Clear space around it.
+- Plan one peak: the slide or moment the audience should remember (the result, the demo, the before-and-after). Clear space around it, and give it a surface its neighbours do not have.
+- Make the section slides a set: the same surface and the same options on each (`numeral: large`, for example, sets the part number as a graphic), so each reads as a landmark rather than another slide. If the deck uses a transition other than the brand's, the dividers are the place for it, all with the same one.
+- Keep motion sparse and short. The cover and the dividers may carry more of it than the body slides, which get their build and the brand's transition and nothing else.
+- Vary the form when the content allows it, not only the layout name: two to four screenshots of one flow can share a `gallery`, an argument from the old way to the new one is a `shift`, one subject with a facet that matters most is a `bento`. Change the layout only when the content fits its budget as it is; cutting the evidence to fit a fresher layout is the wrong trade.
+- Carry a picture across two slides with a `<Morph>` only when the same picture really continues; it is a signal that the subject stays the same, and used elsewhere it is decoration.
 - Keep recurring elements consistent: the same color for the same entity in every chart and diagram, the same term for the same thing.
 
-## 7. Diagrams
+## 7. Builds: segmenting, not decoration
+
+A build reveals a slide in the order the presenter explains it: segmenting, signaling and temporal contiguity (section 4) applied inside one slide. The audience sees each part while it is being talked about, and the newest part is the one that stands out. The research supports segmenting and signaling in general **[evidence]**; there is little research on slide builds as such, so the rules below are practice derived from it. How to write each kind of build is in `framework.md` (Builds, transitions and morphs).
+
+Plan the build in the outline, not after the slides exist. For each evidence slide, the outline's Build column names what arrives at each step, or says "whole":
+
+| Slide                                         | Build                                                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| A line chart with a cause                      | 0 the line; 1 the highlight and the callout at the event; 2 the aside that says why              |
+| A request through four services               | 0 the services; 1 to 3 a `<Journey>` along the path, one hop per step, in the order of the notes |
+| A protocol handshake                          | 0 the actors; one message per step                                                               |
+| Three events the speaker recounts in order    | each item a `focus` step                                                                         |
+| Code with two points                          | 0 the block; 1 and 2 a step range on the lines each point is about                               |
+| A photo, a quote, a statement, one big number | whole (numbers count up on their own)                                                            |
+
+What earns a build:
+
+- The notes walk the parts in an order: first, then, finally; a numbered list; a path. Build in that order, and only those parts.
+- A chart whose point is a contrast or a change: context first, then the highlighted series or category, then the annotation that explains why (`data-visuals.md` section 9).
+- A diagram whose claim is a path or a sequence: reveal it or travel it in the order of the explanation (`data-visuals.md` section 15).
+- Code: the lines being discussed, one range per point.
+
+What does not:
+
+- Every bullet of every slide, by habit. A list the speaker does not walk through only slows the room down.
+- A slide whose point is the whole picture: a photo, a quote, a statement, a single number, a logo wall.
+- Effects chosen for variety. Keep the brand's entrance and the default `<Step>` effect; pick another only when it means something.
+- Simple slides for an expert audience (expertise reversal, section 4): show more at once and use fewer clicks. Two or three steps on a slide is common; past five, ask whether it is two slides.
+- A read-alone deck: the reader sees only the last step.
+
+Rules that keep a build honest:
+
+- The last step stands alone. Static mode, screenshots, the PDF and the PowerPoint show only it, so it must carry the whole claim: nothing left dimmed, nothing the conclusion depends on still hidden.
+- Each step has a `[click]` cue in the notes, where the presenter says that part (section 11).
+- Look at every step (`deck shot <deck> <slide> --steps`), and click through the slide once in `deck dev`: screenshots show each step at rest, not the motion.
+- In a live talk with charts, diagrams or code, most of those slides have something the notes walk through, so most of them build. A deck that shows nearly all of them at once is what `deck lint` reports as `few-builds`.
+
+## 8. Diagrams
 
 - A diagram should show the mechanism the title claims, not an inventory of parts. Title: "Every write goes through the queue before the database". Diagram: that path, highlighted.
 - Limit a diagram to what fits working memory: about five to seven nodes visible at a level. For bigger systems, show an overview and zoom into one region per slide.
@@ -116,13 +174,13 @@ Kosslyn's analysis of 140 real slide decks found the same rules violated almost 
 - Highlight the one path or component the slide is about; mute the rest.
 - Which diagram component fits which claim, and how to stage one with steps, is in `data-visuals.md` section 15; the components are listed by `deck diagrams --json`.
 
-## 8. Code
+## 9. Code
 
 - Show only the lines that carry the point, at a size readable from the back; elide the rest.
 - Highlight the lines being discussed and step through them (a fence takes step ranges such as `{2-4|7}`; `deck components --json` lists the code and terminal components). Never present a wall of code and talk over it. The `code` layout has a line budget; code that does not fit is a sign the slide shows too much.
 - The title states what the code demonstrates ("Retries are one decorator"), not the file name.
 
-## 9. Demos
+## 10. Demos
 
 Controlled research on demos in presentations is thin; this section is practice plus vendor data and should be held loosely.
 
@@ -133,7 +191,7 @@ Controlled research on demos in presentations is thin; this section is practice 
 - **Always have a fallback.** A recorded video or screenshot sequence for when the network, the build or the model fails. Live apps and videos take a `poster` for this reason (static mode and exports show it), and lint reports a demo without one. Tell the presenter in the notes when to switch.
 - **Budget honestly.** Demos run long. Give the demo a time budget and a "skip to" point.
 
-## 10. Speaker notes
+## 11. Speaker notes
 
 There is little direct research on notes. The guidance follows from the redundancy principle (the speaker should say what is not on the slide) and from practice.
 
@@ -141,7 +199,7 @@ For each content slide write:
 
 1. **The line that lands the point:** the title's claim in spoken language, not read verbatim.
 2. **The explanation:** what to say about the evidence, in the order the eye should travel. For a chart: what the axes are, where to look, what it means.
-3. **Cues** in brackets: [click], [pause], [ask the room: …], [switch to demo], [if short on time, skip to X].
+3. **Cues** in brackets: [click], [pause], [ask the room: …], [switch to demo], [if short on time, skip to X]. Every step of a build gets a [click] where its part is spoken, in step order, so the count of [click] cues is the slide's steps minus one; in a numbered or bulleted list put it after the marker (`2. [click] …`).
 4. **The transition:** one sentence that makes the next slide the natural next question. Transitions are where talks feel coherent or disjointed, and they are the first thing presenters forget.
 
 Conventions:
@@ -164,13 +222,18 @@ If asked: n=412 churned accounts, Jan to Sep, source is the retention dashboard.
 Transition: So the question becomes, why don't they invite anyone? That's the next slide.
 ```
 
-## 11. Slide types that need special care
+## 12. Slide types that need special care
 
 - **Title slide:** the talk's promise, not just its topic. A subtitle can carry the big idea.
 - **Agenda:** only for talks over about 15 minutes, three to five items, phrased as the questions the talk will answer. Skip it for short talks.
-- **Section slides:** a landmark and a breath. One line.
-- **Statement slides:** the big idea, the turn in the story, the ask. Use sparingly so they keep their weight. A statement slide's frontmatter `title` is not shown on the slide, but it is the slide's line in the outline, the presenter view and the export: write the claim there too, not a label like "Quote".
+- **Section slides:** a landmark and a breath. One line. Give every divider of the deck the same surface and options; `numeral: large` turns the part number into the slide's graphic.
+- **Statement slides:** the big idea, the turn in the story, the ask (an ask with an amount and the milestones it buys has its own `ask` layout). Use sparingly so they keep their weight. When two or three words carry the claim, mark them `*…*` and set `emphasis: underline`. A statement slide's frontmatter `title` is not shown on the slide, but it is the slide's line in the outline, the presenter view and the export: write the claim there too, not a label like "Quote".
 - **Quote slides:** real, attributed, short, and chosen because the wording itself is evidence.
-- **Comparison slides:** same attributes in the same order on both sides; highlight the row that decides it.
+- **Customer proof:** one or two named customers with their before-and-after numbers persuade more than a wall of logos. Put the person's words and the numbers on one `proof` slide, the strongest result first.
+- **Comparison slides:** same attributes in the same order on both sides; highlight the row that decides it. Keep the rows where the recommended option loses (`winner:` on those too): an honest trade reads as confidence.
+- **Market size:** bottom-up, as the customers you can reach times what each pays, convinces more than a large top-down figure in nested circles. An `equation` slide shows the multiplication; the sources of each term go in the footnote and the notes.
+- **The ask:** one specific amount, never a range, followed by the dated milestones it buys (`ask`).
+- **Team slides:** say why each person is the right one for this problem (the `edge` line on `team`), not only where they worked.
+- **Product screens:** one `screen` per slide, with callouts in the order the notes walk them. The screenshot is the app alone, without its own browser bar or device bezel, since the frame draws those.
 - **Closing slide:** the takeaway and the next step, since it stays up during Q&A. Not "Thank you", not "Questions?".
 - **Appendix:** backup slides for likely questions, after the closing slide, each marked "Backup" in its eyebrow with a token time budget (`framework.md`, Time budgets). They are exempt from the one-idea discipline but still need assertion titles, so they can be found and used under pressure.

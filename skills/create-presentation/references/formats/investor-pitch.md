@@ -28,9 +28,11 @@ Ask which one the user needs; offer both if they are raising.
 8. **Competition:** honest landscape including the status quo, and why you win.
 9. **Team:** why these people for this problem.
 10. **Financials and plan:** key projections with stated assumptions.
-11. **The ask:** how much, what it buys, what milestones it reaches.
+11. **The ask:** one amount, never a range, what it buys, and the dated milestones it reaches.
 
 Order by strength. If traction is exceptional, lead with it after the purpose. If the team is the reason to believe, move it up. The first two minutes should contain your best evidence.
+
+Several beats have a layout of their own: the product as a `screen`, a named customer's result as a `proof`, the market as an `equation`, the competition as a `matrix`, the team with an `edge` line for each founder, and the ask as an `ask` (`slide-craft.md`, section 3).
 
 ## Content rules
 

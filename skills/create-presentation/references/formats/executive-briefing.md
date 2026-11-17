@@ -10,7 +10,7 @@ The exception is a recommendation the room is primed to reject. Then open with t
 
 ## Spine
 
-1. **The ask and the answer:** what you recommend, what you need (decision, money, people, air cover), by when. One slide.
+1. **The ask and the answer:** what you recommend, what you need (decision, money, people, air cover), by when. One slide; when the need is an amount, the `ask` layout sets it with the dated milestones it buys.
 2. **Why now / what is at stake:** the situation and complication in two or three sentences. One slide.
 3. **Reasons:** two to four, each one slide with its evidence. Financial impact, customer or market evidence, risk.
 4. **Options considered:** two or three real alternatives, including doing nothing, compared on the criteria that matter, with the recommendation marked. Executives decide between options; a single option invites them to invent their own.

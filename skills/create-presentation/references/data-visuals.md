@@ -2,7 +2,7 @@
 
 A data slide has one job: make one quantitative point believable at a glance. An exploratory chart invites the viewer to find patterns; a presentation chart has already found the pattern and shows it. This file gets you from "what am I trying to say" to a form, and then through the details that decide whether the point lands.
 
-The components named here are the ones `deck charts --json` and `deck diagrams --json` listed when this was written. The catalogs are the source of truth for names, props and limits: read a component's entry (`useWhen`, `avoid`, `props`, `example`) before you use it, and prefer the catalog's `messages` map when it and this file disagree. `decks/showcase` shows every chart and every diagram in use.
+The components named here are the ones `deck charts --json` and `deck diagrams --json` listed when this was written. The catalogs are the source of truth for names, props and limits: read a component's entry (`useWhen`, `avoid`, `props`, `example`) before you use it, and prefer the catalog's `messages` map when it and this file disagree. `decks/lookbook` in the deckster repository shows every chart, diagram and layout in use.
 
 Evidence labels: see the top of `narrative.md`. Sources: `sources.md`.
 
@@ -47,6 +47,9 @@ Evidence labels: see the top of `narrative.md`. Sources: `sources.md`.
 | **Part of a whole, many parts**                          | `<BarChart sort>` (bars need not sum visually)                                                        | A donut over five slices (lint warns)         | Combine the tail into "Other"                                                               |
 | **Composition changing over time**                       | `<AreaChart stacked>` or `<BarChart stacked>`, the series of interest at the baseline                 | Many stacked series                           | Only the bottom series and the total read well                                              |
 | **How a total builds up or breaks down** (flow)          | `<Waterfall>`                                                                                         | A stacked bar with many colors                | Bridges: last year to this year, cost today to cost after                                   |
+| **A number built from its parts**                        | The `equation` layout: two to four terms, the operators, the result                                   | Nested circles; `stats` that do not add up    | Market size as customers × price, unit economics; each term carries its source             |
+| **Positions on two trade-offs**                          | The `matrix` layout, the subject marked `us`                                                          | A `<Scatter>` with invented coordinates       | You and the competition. Positions are judgement and show no values; use `<Scatter>` only when both axes were measured |
+| **A named customer's before and after**                  | The `proof` layout: their quote beside one to three metrics with `from`                              | A `quote` slide, then a `stats` slide          | The strongest result first, with the timeframe                                              |
 | **Drop-off through stages** (flow)                       | `<Funnel>`                                                                                            | Donut                                         | The share that carries on between stages is usually the point                               |
 | **Distribution, spread, outliers** (distribution)        | `<Scatter>` of the items, `<Heatmap>` for two dimensions, or `<BarChart>` over ordered bins           | An average alone                              | Averages hide the shape; for lay audiences a few example values                             |
 | **Relationship between two measures** (correlation)      | `<Scatter trend>` with the notable points labeled                                                     | Dual-axis lines                               |                                                                                             |
@@ -128,7 +131,15 @@ Complex data slides overload when shown all at once. Build them **[evidence for 
 3. Add the highlighted series or point, and make the claim.
 4. Add the annotation that explains why.
 
-Charts build with the deck's steps: `at` on a series in `y` (`y={['2025', { field: '2026', at: 1 }]}`), on `highlight` (`{ series: '2026', at: 2 }`) and on each annotation; `reveal="series"` or `"categories"` builds mark by mark. The presenter drives each step. The last step must be a complete, self-explanatory chart, since exports and static mode show only the end state; check the order with `deck shot <deck> <slide> --steps`. For a big number, revealing the context first and the number second gives it weight. Do not animate for its own sake: an animation should correspond to something the presenter is saying at that moment.
+Charts build with the deck's steps: `at` on a series in `y` (`y={['2025', { field: '2026', at: 1 }]}`), on `highlight` (`{ series: '2026', at: 2 }`, or `{ category: 'EMEA', at: 1 }`) and on each annotation; `reveal="series"` or `"categories"` builds mark by mark from step 1, and `reveal={{ by: 'categories', from: 2 }}` starts later (`from` is 1 or more; the catalog lists it as `types.RevealOption`). The presenter drives each step. The last step must be a complete, self-explanatory chart, since exports and static mode show only the end state; check the order with `deck shot <deck> <slide> --steps`. Do not animate for its own sake: an animation should correspond to something the presenter is saying at that moment.
+
+Which build fits which chart:
+
+- **A comparison of a few bars** (us against the average, before against after): `reveal="categories"` with the context category first in the data, so the bar the title is about rises last. Step 0 shows the empty axes and the caption, which is when you say what is measured.
+- **A trend with a turning point:** the line from the start, then `highlight` with a `range` and a `callout` at the turning point on step 1. Before its step the line shows its own colour, so the highlight arriving is itself the signal.
+- **A funnel or a waterfall:** `reveal="categories"` brings a funnel in one stage per step, and a waterfall one change per step between totals that show from the start (`reveal="series"` brings all the changes at once). When the build would be more clicks than the point is worth, show the whole figure on arrival, then `highlight={{ category: …, at: 1 }}` on the stage or bar the title is about; the `<Aside>` that explains why can follow in a `<Step>` inside it.
+- **A big number, a `<StatRow>`, a `<Comparison>` or `<Progress>`:** they count up on arrival, which is the build. Add a step only for the context that comes after the number (an aside, a second figure).
+- **A table:** whole. Exact values are read, not built.
 
 ## 10. Common mistakes
 
@@ -206,6 +217,8 @@ Read the layout catalog for the current list. At the time of writing the choices
 
 - **`chart` layout:** an assertion title, then one figure filling the slide: any chart, a `<BigNumber>`, a `<StatRow>`, a `<Table>`. `<Aside>` holds the "so what" in a sentence or a key number; `<Footnote>` the source and definitions. This is the default home for a data slide.
 - **`stats` layout:** two to four plain numbers from the `stats:` frontmatter, when the point is the size of things and no chart is needed.
+- **`equation` layout:** two to four figures joined by operators and the result they come to, when the point is how a number is built (a bottom-up market, a business model).
+- **`proof` layout:** one to three before-and-after metrics beside a named customer's words, when the numbers are a customer's result.
 - **`split` layout:** a short paragraph or a few bullets beside a figure in `<Media>`, when the figure needs words next to it. Its title column is narrow, so the title must be short.
 - **`content` layout with `width: full`:** a figure under a sentence of text.
 
@@ -272,9 +285,9 @@ How to make one that works:
 - **Place on the grid.** Nodes take `col` and `row`, never pixels; reading order is left to right or top to bottom, and position should mean something (same row, same stage). The catalog's `limits` give the grid that fits a slide.
 - **Make it big enough.** A diagram fills its region, but three or four small nodes in one row leave a thin strip across a mostly empty slide. If the mechanism really is that small, it may be a sentence, or the diagram needs the part that makes it interesting (the branch, the exception path, the return trip) on a second row.
 - **Keep words short.** A node title of two or three words, an edge label of one or two ("HTTPS", "approves"). Long text is broken or cut and lint reports it (`diagram-long-word`). Detail goes in the notes or the `<Aside>`.
-- **Stage it.** Reveal in the order you will explain (`at` on nodes, groups and edges), and let one thing carry the point at each step: a `<Journey>` for something travelling hop by hop (with `focus` to dim what is off the path; check the last step, because a journey that ends focused leaves the final picture dimmed, and the final picture is what exports show), a `<State>` to turn a node into an error or a success at a step, a `<Focus>` to dim everything but a region, a `<Packet>` for traffic on an edge. One accent at a time; everything else stays quiet.
+- **Stage it.** Reveal in the order you will explain (`at` on nodes, groups and edges; `at` on each `<Message>` of a `<SequenceDiagram>`, one message per step; `steps` on a `<Cycle>`, whose step 0 is the whole loop and step 1 the move to the second stage), and let one thing carry the point at each step: a `<Journey>` for something travelling hop by hop (with `focus` to dim what is off the path; check the last step, because a journey that ends focused leaves the final picture dimmed, and the final picture is what exports show), a `<State>` to turn a node into an error or a success at a step, a `<Focus>` to dim everything but a region, a `<Packet>` for traffic on an edge. One accent at a time; everything else stays quiet.
 - **Walk one concrete case.** "A $450 refund on day 12" travelling through the routing rules teaches more than the rules shown all at once. Put the case in the notes and step through it.
 - **The last step stands alone.** Static mode and exports show the final state, so it must read without the animation. Shoot with `--steps` and check each step shows exactly what the presenter is saying at that moment.
 - **Look at it.** Lint catches overlaps and density; only the screenshot shows crossing edges, a lopsided layout or a path the eye cannot follow. Rearrange cells until the main path runs straight.
 
-In the notes, write the walk: what to say at each step, in order, with `[click]` cues that match the step count.
+In the notes, write the walk: what to say at each step, in order, with `[click]` cues that match the step count. A diagram that the notes do not walk (one structure shown for orientation) can stay whole.

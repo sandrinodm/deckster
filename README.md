@@ -32,7 +32,8 @@ git clone https://github.com/sandrinodm/deckster.git
 cd deckster
 pnpm install
 pnpm dev hello              # the 4-slide starter deck, with hot reload
-pnpm deck dev showcase      # a 45-slide tour of everything a deck can hold
+pnpm deck dev showcase      # a 45-slide talk about deckster, built with deckster
+pnpm deck dev lookbook      # every layout, option, chart, diagram and component in one talk
 ```
 
 The dev server prints its URL (the first free port from 5173). When working in this repository,
@@ -115,7 +116,7 @@ An agent that writes slides needs rules it can read and a check it can run. deck
 Slides fill typed layouts. A layout such as `cards`, `stats` or `comparison` owns the grid, the type
 and the spacing, and its contract says which frontmatter fields and slots it takes and how much
 content fits: words, bullets and items, counted the same in every brand. `pnpm deck layouts
---summary` prints that budget for all 23 layouts, and the `charts`, `diagrams`, `components` and
+--summary` prints that budget for all 32 layouts, and the `charts`, `diagrams`, `components` and
 `icons` commands list the rest. The build fails on an unknown layout, field or icon.
 
 `deck lint` is the check. It renders every step of every slide in Chromium and reports overflow,
@@ -130,13 +131,18 @@ behind these choices are in [docs/design.md](docs/design.md).
 
 ## What it does
 
-- Write MDX or TSX slides on [23 kit layouts](packages/kit/README.md), with code blocks (Shiki,
+- Write MDX or TSX slides on [32 kit layouts](packages/kit/README.md), with code blocks (Shiki,
   line steps, diffs, `<CodeMove>`), `<Terminal>`, images, video with cues, Lottie and icons from
   the brand's icon set.
 - Put numbers on a slide with chart and number components in the brand's chart palette that
   highlight one value, take annotations and reveal by step (`pnpm deck charts` lists them).
 - Draw `<Flow>` diagrams placed on a grid or by ELK, with routed edges and packets that travel
   along them by step, plus sequence diagrams, timelines, layers, cycles, trees and sanitised SVG.
+- Build a slide in steps: `<Step at={n}>` reveals content with the brand's motion (`effect`
+  rise, fade, scale, blur or wipe; `focus` mutes earlier steps), charts, diagrams and code fences
+  take `at` on their parts, and big numbers count up on arrival. A slide's `transition:` sets how
+  it comes in (none, fade, slide, rise, push, cover, wipe or zoom), and `<Morph>` carries one
+  picture or logo across two consecutive slides. Static mode and exports show the last step.
 - Embed live React components with `<Live>`, and mini apps in `<AppFrame>` that talk to the deck
   over [`@deckster/app-bridge`](packages/app-bridge/README.md).
 - Check a deck with `deck lint`, and see which slides changed visually against a git ref or a
@@ -240,7 +246,8 @@ Brands and decks:
 | [brands/default](brands/default/README.md)   | Light, cool grays with a cobalt accent; every deck here uses it                   |
 | [brands/nocturne](brands/nocturne/README.md) | Dark and editorial; the tests render decks in it to check they fit both           |
 | [decks/hello](decks/hello/README.md)         | The 4-slide starter and the default deck of `deck dev`                            |
-| [decks/showcase](decks/showcase/README.md)   | A 45-slide talk about deckster that uses every layout                             |
+| [decks/showcase](decks/showcase/README.md)   | A 45-slide talk about deckster that uses 23 of the 32 layouts                     |
+| [decks/lookbook](decks/lookbook/README.md)   | One talk that shows every layout and option, every chart, diagram and component   |
 | [decks/\*](decks/README.md)                  | Six test decks the suites drive, one area of the kit each; run them like any deck |
 
 ## Requirements
