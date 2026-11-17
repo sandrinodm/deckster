@@ -20,7 +20,8 @@ Options:
                 PPTX export builds, or null). A prop name in neither shared nor props throws.
                 types lists the fields of RowStat, ProgressItem, TableColumn, SeriesInput,
                 FormatOptions, Highlight and each Annotation. messages lists the components
-                for each message, best first; insight explains the props, highlight,
+                for each message, in catalog order (not ranked: read each one's useWhen
+                and avoid to choose); insight explains the props, highlight,
                 annotations, labels, axis honesty, steps, data, nulls, format, relative and
                 limits; spec names the attribute and module of each figure's serialisable
                 description.

@@ -206,6 +206,19 @@ layer(NodeFileSystem.layer)('loadBrand errors', (it) => {
     }),
   );
 
+  it.effect('names the built-in default brand in a workspace that has no brands/ folder', () =>
+    Effect.gen(function* () {
+      const workspace = yield* makeWorkspace;
+      expect(yield* loadError(workspace, 'acme')).toBe(
+        [
+          'BrandError: No such brand in brands/acme/brand.ts:',
+          '  - There is no brands/acme/brand.ts.',
+          '    Fix: Use one of: default. Or create brands/acme/brand.ts.',
+        ].join('\n'),
+      );
+    }),
+  );
+
   it.effect('refuses a brand name that is a path, without importing the brand.ts it names', () =>
     Effect.gen(function* () {
       const workspace = yield* makeWorkspace;

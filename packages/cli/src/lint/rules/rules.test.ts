@@ -347,6 +347,37 @@ layer(NodeServices.layer)('lint rules', (it) => {
     }),
   );
 
+  it.effect('off-brand checks the SVG paint a shape draws, not the black a group inherits', () =>
+    Effect.gen(function* () {
+      const tokens = yield* testBrandTokens('default');
+      const black: ElementSnapshot['paint'] = { fill: '#000000', stroke: null };
+      const svgElement = (index: number, tag: string, paint = black) =>
+        element({ index, tag, selector: `svg > ${tag}`, inSvg: true, paint });
+      const violations = offBrandRule.check(
+        slideRuleInput(tokens, {
+          elements: [
+            svgElement(0, 'g'),
+            svgElement(1, 'image'),
+            svgElement(2, 'line'),
+            svgElement(3, 'use', { fill: '#ff00aa', stroke: null }),
+            svgElement(4, 'rect'),
+            svgElement(5, 'line', { fill: '#000000', stroke: '#ff00aa' }),
+          ],
+        }),
+      );
+      expect(violations.map(({ message }) => message)).toEqual([
+        '`svg > use` uses the fill #ff00aa, which is not a default brand token on the "default" ' +
+          'surface.',
+        '`svg > rect` uses the fill #000000, which is not a default brand token on the "default" ' +
+          'surface. Black is the SVG default for a shape that sets no fill, and the slide draws it.',
+        '`svg > line` uses the stroke #ff00aa, which is not a default brand token on the ' +
+          '"default" surface.',
+      ]);
+      expect(violations[1]?.fix).toContain('data-fill="fg"');
+      expect(violations[1]?.fix).toContain('fill="none"');
+    }),
+  );
+
   it.effect('low-res-image reports a raster drawn larger than its pixels, not an SVG', () =>
     Effect.gen(function* () {
       const tokens = yield* testBrandTokens('default');

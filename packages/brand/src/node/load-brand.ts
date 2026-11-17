@@ -167,7 +167,7 @@ const locateBrand = Effect.fn('locateBrand')(function* (
   name: string,
 ): Effect.fn.Return<BrandLocation, BrandError, FileSystem.FileSystem> {
   if (!isSafeName(name)) {
-    const brands = yield* listBrands(workspaceRoot);
+    const brands = yield* availableBrands(workspaceRoot);
     return yield* brandError({
       summary: 'Invalid brand name',
       source: `${BRANDS_DIR}/`,
@@ -208,7 +208,7 @@ const assertExists = Effect.fn('assertExists')(function* (
     return;
   }
 
-  const brands = yield* listBrands(workspaceRoot);
+  const brands = yield* availableBrands(workspaceRoot);
   const create = `create ${location.displayPath}`;
   const fix =
     brands.length === 0
@@ -217,6 +217,22 @@ const assertExists = Effect.fn('assertExists')(function* (
   return yield* failure(location, 'No such brand', [
     { path: '', message: `There is no ${location.displayPath}.`, fix },
   ]);
+});
+
+/**
+ * The brands a deck in the workspace can name: the workspace's own, plus the framework's built-in
+ * `default`, which `locateBrand` falls back to when the workspace has no `brands/default` (an
+ * installed CLI's workspace usually has none).
+ *
+ * @param workspaceRoot - The absolute workspace root.
+ * @returns Brand names, sorted and without duplicates; empty only when neither exists.
+ */
+const availableBrands = Effect.fn('availableBrands')(function* (
+  workspaceRoot: string,
+): Effect.fn.Return<string[], never, FileSystem.FileSystem> {
+  const own = yield* listBrands(workspaceRoot);
+  const hasBuiltIn = yield* fileExists(brandLocation(FRAMEWORK_ROOT, DEFAULT_BRAND).file);
+  return hasBuiltIn ? [...new Set([DEFAULT_BRAND, ...own])].toSorted() : own;
 });
 
 /**

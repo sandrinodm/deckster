@@ -143,7 +143,7 @@ export type ChartCatalog = {
   charts: readonly ChartInfo[];
 
   /**
-   * The components for each kind of message, best first.
+   * The components for each kind of message, in catalog order (the order of `charts`), not ranked.
    */
   messages: Readonly<Record<ChartMessage, readonly string[]>>;
 

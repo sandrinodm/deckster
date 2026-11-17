@@ -36,7 +36,22 @@ export const chooseDeck = Effect.fn('chooseDeck')(function* (
       onNone: () => fallback,
       onSome: (value) => (value === '' ? fallback : value),
     });
-  if (deck !== undefined && !isSafeName(deck)) {
+  return deck === undefined ? undefined : yield* checkDeckName(deck);
+});
+
+/**
+ * Checks that a deck named on the command line is a folder name under `decks/`, so every command
+ * reports a path such as `../x` the same way, before looking for the deck.
+ *
+ * @param deck - The deck as given.
+ * @returns The same name.
+ * @throws CliError in the error channel when the deck is not a kebab-case folder name, such as a
+ *   path.
+ */
+export const checkDeckName = Effect.fn('checkDeckName')(function* (
+  deck: string,
+): Effect.fn.Return<string, CliError> {
+  if (!isSafeName(deck)) {
     return yield* cliError(
       `"${deck}" is not a deck name: a deck is named by its folder under decks/, ` +
         `in ${SAFE_NAME_RULE}.\n` +

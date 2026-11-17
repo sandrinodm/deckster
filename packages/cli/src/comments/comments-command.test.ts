@@ -194,4 +194,16 @@ layer(Scratch.layer.pipe(Layer.provideMerge(NodeServices.layer)))('deck comments
       expect(noSlide.message).toContain('eight-bullets');
     }),
   );
+
+  it.effect('shows --json in the usage of every form that prints JSON', () =>
+    Effect.gen(function* () {
+      const { output } = yield* comments(['add', '--help']);
+      const usage = output.slice(0, output.indexOf('\n\n'));
+      const forms = usage.split(/\n(?=\s*deck comments)/);
+      expect(forms).toHaveLength(5);
+      for (const form of forms) {
+        expect(form).toContain('[--json]');
+      }
+    }),
+  );
 });

@@ -60,3 +60,25 @@ it.effect('deck charts lists each chart with its messages and example in plain t
     expect(output).toContain('Use when:');
   }),
 );
+
+it.effect(
+  'deck charts --json lists the components for a message in catalog order, as its help says',
+  () =>
+    Effect.gen(function* () {
+      const { output } = yield* runCaptured(['charts', '--json']);
+      const catalog = JSON.parse(output) as {
+        charts: { name: string; messages: string[] }[];
+        messages: Record<string, string[]>;
+      };
+      for (const [message, names] of Object.entries(catalog.messages)) {
+        const inCatalogOrder = catalog.charts
+          .filter((chart) => chart.messages.includes(message))
+          .map((chart) => chart.name);
+        expect(names).toEqual(inCatalogOrder);
+      }
+
+      const { output: help } = yield* runCaptured(['charts', '--help']);
+      expect(help).toContain('in catalog order');
+      expect(help).not.toContain('best first');
+    }),
+);

@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module';
 
+import { installIconSetHint } from '#icons/icon-sets.ts';
 import { failBuild, type KitFile } from '#mdx/kit-file.ts';
 import {
   attributeValue,
@@ -173,7 +174,7 @@ export function unknownIconFix(set: string, icon: string): string {
   const data = readSet(set);
   if (data === undefined) {
     return (
-      `Add \`@iconify-json/${set}\` to @deckster/kit, or use a name from the brand's set without the ` +
+      `${installIconSetHint(set)}, or use a name from the brand's set without the ` +
       '`set:` prefix.'
     );
   }
