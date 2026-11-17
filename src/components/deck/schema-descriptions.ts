@@ -1,12 +1,13 @@
 /**
  * One-line descriptions (and defaults) for the rows SchemaReference shows. The generated JSON
  * Schemas (src/data/brand-schema.json, deck-config.json) carry types, ranges and required flags
- * only, so what each field does is written here, by hand, from deckster's code at v0.3.0
- * (commit 4e0b186): packages/brand/src/schema/*.ts and resolve/*.ts for the brand,
- * packages/engine/src/contract/deck-config.ts for the deck config. The diagram look and cards
- * (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` and `color.surfaces.<name>.diagram.cards`)
- * are new in 0.4.0 and were written from commit 6c27269: schema/diagram-schema.ts and
- * resolve/resolve-diagram.ts.
+ * only, so what each field does is written here, by hand, from deckster's code:
+ * packages/brand/src/schema/*.ts and resolve/*.ts for the brand,
+ * packages/engine/src/contract/deck-config.ts for the deck config. Written at v0.3.0 (commit
+ * 4e0b186); the diagram look and cards (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` and
+ * `color.surfaces.<name>.diagram.cards`), new in 0.4.0, from schema/diagram-schema.ts and
+ * resolve/resolve-diagram.ts at commit 6c27269. Checked against the 0.4.0 release commit
+ * (c018637): the brand and deck-config schemas and their defaults are otherwise unchanged.
  *
  * Keys are the row paths exactly as flattenSchema in format.ts writes them
  * (`color.surfaces.<name>.background[type=image].fit`). A row with no entry shows an empty
