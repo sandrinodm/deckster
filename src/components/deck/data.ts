@@ -302,7 +302,7 @@ export function stepStill(c: Caller, deck: string, slide: string, step: number):
       c,
       "step",
       `needs a still of that step, and ${deck}/${slide} is not shot per step. Leave \`step\` out to show the finished slide, ` +
-        `or add the slide to STEP_SLIDES in deckster's scripts/docs-shots.manifest.ts. Slides shot per step: ${options(stepSlides(), 20)}.`,
+        `or add the slide to STEP_SLIDES in deckster's scripts/docs/shots.manifest.ts. Slides shot per step: ${options(stepSlides(), 20)}.`,
     );
   }
   const found = steps.find((s) => s.entry.step === step);

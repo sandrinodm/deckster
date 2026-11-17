@@ -9,18 +9,18 @@
  * this site). Its docs scripts run with Node from the checkout, each into a fresh scratch folder,
  * and the results are installed here:
  *
- *   --data   scripts/docs-data.ts          -> src/data/*.json              (committed)
- *   --shots  scripts/docs-shots.ts and
- *            scripts/docs-ui-shots.ts      -> src/assets/shots/** as WebP  (generated, gitignored)
+ *   --data   scripts/docs/data.ts          -> src/data/*.json              (committed)
+ *   --shots  scripts/docs/shots.ts and
+ *            scripts/docs/ui-shots.ts      -> src/assets/shots/** as WebP  (generated, gitignored)
  *                                             plus src/assets/shots/shots.json
- *   --decks  scripts/docs-decks.ts         -> public/decks/<deck>/         (generated, gitignored)
+ *   --decks  scripts/docs/decks.ts         -> public/decks/<deck>/         (generated, gitignored)
  *
  * A part whose script fails is not installed, so a broken run never replaces good files, and the
- * sync exits 1 after trying the other parts. One exception: when only docs-ui-shots.ts fails, the
+ * sync exits 1 after trying the other parts. One exception: when only ui-shots.ts fails, the
  * new slide stills are installed with the UI shots of the previous sync, and the sync still exits 1.
  *
  * The UI shots are checked against the names the pages use (every `<UiShot name>` in
- * src/content/docs, the component demo included) before anything is installed. docs-ui-shots.ts
+ * src/content/docs, the component demo included) before anything is installed. ui-shots.ts
  * skips a shot whose prerequisite is missing and still exits 0, so a run that lacks a needed shot
  * counts as a failed run: its shots are dropped, and the previous sync's are kept when they have
  * every needed name. When they don't either, src/assets/shots is left as it was. With
@@ -33,8 +33,9 @@
  * leaves its staging (`.<target>.sync-<pid>`) or old copy (`.<target>.old-<pid>`) behind; the next
  * sync puts back an old copy whose target is missing and deletes the rest.
  *
- * The checkout's tracked files are never written. Its docs-decks.ts does build each deck into
- * decks/<deck>/dist inside the checkout, which git ignores.
+ * The checkout's tracked files are never written. Its decks.ts does build each deck into
+ * decks/<deck>/dist inside the checkout, and its data.ts packs the CLI into packages/cli/dist (with
+ * pnpm, so pnpm must be on the PATH), both of which git ignores.
  */
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -46,6 +47,9 @@ import sharp from "sharp";
 import { componentUses, literalValue, where } from "../src/components/deck/mdx-source.ts";
 
 const SITE_ROOT = path.resolve(import.meta.dirname, "..");
+
+/** Where a deckster checkout keeps its docs scripts, relative to the checkout. */
+const SCRIPTS_DIR = "scripts/docs";
 
 /** Stills are scaled to this width; the slides are 1920x1080 and UI shots 1440x900. */
 const SHOT_WIDTH = 1280;
@@ -150,11 +154,11 @@ function findRepo() {
   const candidates = fromEnv
     ? [path.resolve(fromEnv)]
     : ["../2026-11-13-presentation", "../deckster"].map((p) => path.resolve(SITE_ROOT, p));
-  const found = candidates.find((dir) => existsSync(path.join(dir, "scripts", "docs-data.ts")));
+  const found = candidates.find((dir) => existsSync(path.join(dir, SCRIPTS_DIR, "data.ts")));
   if (!found) {
     const how = fromEnv ? `DECKSTER_REPO=${fromEnv}` : "../2026-11-13-presentation or ../deckster";
     throw new Error(
-      `No deckster checkout with scripts/docs-data.ts at ${how}. ` +
+      `No deckster checkout with ${SCRIPTS_DIR}/data.ts at ${how}. ` +
         "Set DECKSTER_REPO to a checkout of main with its dependencies installed.",
     );
   }
@@ -163,9 +167,9 @@ function findRepo() {
 
 /** src/data/*.json: replaced as a whole, so a file the script stopped writing goes away. */
 async function syncData(repo) {
-  const out = await runScript(repo, "docs-data.ts");
+  const out = await runScript(repo, "data.ts");
   const files = (await readdir(out)).filter((f) => f.endsWith(".json"));
-  if (!files.includes("meta.json")) throw new Error(`docs-data.ts wrote no meta.json in ${out}`);
+  if (!files.includes("meta.json")) throw new Error(`data.ts wrote no meta.json in ${out}`);
   const stage = await stageFor(TARGETS.data);
   for (const file of files) await cp(path.join(out, file), path.join(stage, file));
   await swapIn(stage, TARGETS.data);
@@ -173,16 +177,16 @@ async function syncData(repo) {
 }
 
 /**
- * src/assets/shots: the slide, step and brand stills from docs-shots.ts, and the product UI from
- * docs-ui-shots.ts under ui/, all as WebP, with one shots.json that lists every file.
+ * src/assets/shots: the slide, step and brand stills from shots.ts, and the product UI from
+ * ui-shots.ts under ui/, all as WebP, with one shots.json that lists every file.
  */
 async function syncShots(repo) {
   const required = requiredUiShots();
-  const slidesOut = await runScript(repo, "docs-shots.ts");
+  const slidesOut = await runScript(repo, "shots.ts");
   let uiOut;
   let uiProblem;
   try {
-    uiOut = await runScript(repo, "docs-ui-shots.ts", process.env.DECKSTER_SHOTS_STRICT === "1" ? ["--strict"] : []);
+    uiOut = await runScript(repo, "ui-shots.ts", process.env.DECKSTER_SHOTS_STRICT === "1" ? ["--strict"] : []);
   } catch (error) {
     uiProblem = error instanceof Error ? error.message : String(error);
   }
@@ -190,7 +194,7 @@ async function syncShots(repo) {
   if (uiOut !== undefined) {
     const missing = missingNames(required, uiFiles.map((f) => f.replace(/\.png$/, "")));
     if (missing.length > 0) {
-      uiProblem = `scripts/docs-ui-shots.ts wrote no ${missing.join(", ")}, which the pages use (see the skipped shots above)`;
+      uiProblem = `${SCRIPTS_DIR}/ui-shots.ts wrote no ${missing.join(", ")}, which the pages use (see the skipped shots above)`;
       await rm(uiOut, { recursive: true, force: true });
       uiOut = undefined;
       uiFiles = [];
@@ -232,7 +236,7 @@ async function syncShots(repo) {
     return { ...job.entry, width: info.width, height: info.height, path: job.to };
   });
 
-  // The UI shots of the previous sync, already WebP, when docs-ui-shots.ts failed.
+  // The UI shots of the previous sync, already WebP, when ui-shots.ts failed.
   for (const entry of previousUi) {
     const target = path.join(stage, ...entry.path.split("/"));
     await mkdir(path.dirname(target), { recursive: true });
@@ -289,9 +293,9 @@ async function previousUiShots() {
 
 /** public/decks/<deck>/: the built decks, replaced as a whole. */
 async function syncDecks(repo) {
-  const out = await runScript(repo, "docs-decks.ts");
+  const out = await runScript(repo, "decks.ts");
   const decks = (await readdir(out, { withFileTypes: true })).filter((d) => d.isDirectory());
-  if (decks.length === 0) throw new Error(`docs-decks.ts built no deck in ${out}`);
+  if (decks.length === 0) throw new Error(`decks.ts built no deck in ${out}`);
   const stage = await stageFor(TARGETS.decks);
   await cp(out, stage, { recursive: true });
   await swapIn(stage, TARGETS.decks);
@@ -299,23 +303,23 @@ async function syncDecks(repo) {
 }
 
 /**
- * Runs one of the checkout's docs scripts into a new scratch folder.
+ * Runs one of the checkout's docs scripts (a file in its scripts/docs/) into a new scratch folder.
  *
  * @returns The scratch folder.
  * @throws When the script exits non-zero; its output has already been printed.
  */
 async function runScript(repo, script, extra = []) {
   const out = await mkdtemp(path.join(tmpdir(), `deckster-sync-${script.replace(/\.ts$/, "")}-`));
-  console.log(`\n> node scripts/${script} --out ${out}${extra.map((a) => ` ${a}`).join("")}`);
+  console.log(`\n> node ${SCRIPTS_DIR}/${script} --out ${out}${extra.map((a) => ` ${a}`).join("")}`);
   const code = await new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [`scripts/${script}`, "--out", out, ...extra], {
+    const child = spawn(process.execPath, [`${SCRIPTS_DIR}/${script}`, "--out", out, ...extra], {
       cwd: repo,
       stdio: "inherit",
     });
     child.on("error", reject);
     child.on("close", resolve);
   });
-  if (code !== 0) throw new Error(`scripts/${script} exited ${code}`);
+  if (code !== 0) throw new Error(`${SCRIPTS_DIR}/${script} exited ${code}`);
   return out;
 }
 

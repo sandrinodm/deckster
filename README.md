@@ -9,7 +9,7 @@ slide stills and builds the example decks from `main`, builds the site and publi
 checks; it publishes nothing, so a change here goes live on the next run of `deploy.yml`.
 
 **Not working yet.** That deploy workflow, the docs scripts it and the sync run
-(`scripts/docs-*.ts`) and the embed mode `<DeckEmbed>` loads (`?embed`) exist only as uncommitted
+(`scripts/docs/`) and the embed mode `<DeckEmbed>` loads (`?embed`) exist only as uncommitted
 work in the product repository. At `main`'s current commit (`4e0b186`, the v0.3.0 release)
 `deploy.yml` publishes the deck gallery (`deck build --all`), never this site, and `pages.yml`
 here fails at its first sync because the checkout has no docs scripts. Both work once that work is

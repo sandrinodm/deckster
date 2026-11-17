@@ -145,7 +145,7 @@ landing pages, `<FileTree>` for folder layouts.
 `alt` is required and is a full sentence that says what the image shows, not what it is for:
 "The presenter window shows the current slide, the next slide, the speaker notes and a timer."
 Not "Presenter window screenshot". Open the WebP (stills in `src/assets/shots/`, or run
-`node scripts/docs-shots.ts --out <dir>` / `docs-ui-shots.ts` in the deckster repo) before you
+`node scripts/docs/shots.ts --out <dir>` / `ui-shots.ts` in the deckster repo) before you
 describe it.
 
 ## Links
