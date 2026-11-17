@@ -143,3 +143,54 @@ export function describedDiagram(overrides: Partial<DiagramDescription> = {}): D
     ...overrides,
   };
 }
+
+/**
+ * The flow diagram with cards: the API card raised (a hard shadow cast under the edges) with an
+ * accent stripe on its left, the gateway hexagon with a stripe on top, and dot arrowheads.
+ *
+ * @param overrides - Fields that differ.
+ */
+export function describedCardDiagram(
+  overrides: Partial<DiagramDescription> = {},
+): DiagramDescription {
+  const base = describedDiagram();
+  return {
+    ...base,
+    nodes: base.nodes.map((node) => {
+      switch (node.id) {
+        case 'api':
+          return {
+            ...node,
+            card: 'raised',
+            shadow: {
+              layers: [{ x: 8, y: 8, blur: 0, color: '#161920' }],
+              fill: '#fcfcfd',
+              opacity: 1,
+            },
+            accent: {
+              side: 'left' as const,
+              box: { x: 100, y: 300, width: 10, height: 100 },
+              color: '#2d4ae0',
+              opacity: 1,
+            },
+          };
+        case 'gate':
+          return {
+            ...node,
+            path: 'M620 700H780L800 750L780 800H620L600 750Z',
+            card: 'stripe',
+            accent: {
+              side: 'top' as const,
+              box: { x: 600, y: 700, width: 200, height: 8 },
+              color: '#2d4ae0',
+              opacity: 1,
+            },
+          };
+        default:
+          return node;
+      }
+    }),
+    edges: base.edges.map((edge) => ({ ...edge, arrow: 'dot' as const })),
+    ...overrides,
+  };
+}

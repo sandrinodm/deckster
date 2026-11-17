@@ -52,6 +52,27 @@ const Paint = Schema.Struct({
 });
 
 /**
+ * The shadow a node's card casts.
+ */
+const Shadow = Schema.Struct({
+  layers: Schema.Array(
+    Schema.Struct({ x: Schema.Number, y: Schema.Number, blur: Schema.Number, color: Color }),
+  ),
+  fill: Color,
+  opacity: Schema.Number,
+});
+
+/**
+ * A card's accent stripe.
+ */
+const Accent = Schema.Struct({
+  side: Schema.Literals(['left', 'top', 'right', 'bottom']),
+  box: Box,
+  color: Color,
+  opacity: Schema.Number,
+});
+
+/**
  * A node.
  */
 const Node = Schema.Struct({
@@ -86,6 +107,9 @@ const Node = Schema.Struct({
   ),
   icon: Schema.NullOr(Schema.Struct({ box: Box, color: Color, svg: Schema.String })),
   group: Schema.NullOr(Schema.String),
+  card: Schema.optionalKey(Schema.String),
+  shadow: Schema.optionalKey(Schema.NullOr(Shadow)),
+  accent: Schema.optionalKey(Schema.NullOr(Accent)),
 });
 
 /**
@@ -116,6 +140,7 @@ const Edge = Schema.Struct({
   dashed: Schema.Boolean,
   arrowStart: Schema.Boolean,
   arrowEnd: Schema.Boolean,
+  arrow: Schema.optionalKey(Schema.Literals(['triangle', 'open', 'dot'])),
   tone: Schema.String,
   opacity: Schema.Number,
   label: Schema.NullOr(Schema.Struct({ ...Text.fields, background: Color })),

@@ -1,6 +1,7 @@
 import type {
   DescribedBox,
   DescribedEdge,
+  DescribedShadow,
   DescribedGroup,
   DescribedLine,
   DescribedNode,
@@ -19,17 +20,19 @@ import type {
   RunStyle,
   SceneParagraph,
   SceneRect,
+  SceneShadow,
   SlideScene,
   SvgNode,
 } from '#scene/scene.ts';
 import type { PathCommand, Point } from '#vector/svg-path.ts';
 
+import { clipOutlineToBox } from '#diagram/clip-outline.ts';
 import { matchDiagramParts, textOf } from '#diagram/diagram-parts.ts';
 import { connectorGeometry, type ConnectorGeometry } from '#diagram/diagram-routes.ts';
 import { findSite, outlineSites, presetSites, touchesBox } from '#diagram/diagram-sites.ts';
 import { el, escapeXml } from '#ooxml/xml.ts';
 import { textFrameXml } from '#pptx/frame-xml.ts';
-import { boxXml, cNvPr, vectorGroupXml, xfrm } from '#pptx/shape-xml.ts';
+import { boxXml, cNvPr, shadowXml, vectorGroupXml, xfrm } from '#pptx/shape-xml.ts';
 import { layoutFrame, paragraphXml } from '#pptx/text-xml.ts';
 import { colorXml } from '#pptx/theme.ts';
 import { degreesToDrawing, pxToEmu } from '#units.ts';
@@ -96,6 +99,28 @@ const RING = {
  * The kit's arrowheads: about five line widths long and four wide, PowerPoint's large size.
  */
 const ARROW_SIZE = 'lg';
+
+/**
+ * PowerPoint's line end for each of the kit's arrowheads, and its size: a filled triangle, an open
+ * chevron (`arrow`, two strokes), and a dot (`oval`, about three line widths across like the kit's,
+ * though PowerPoint centres it on the line's end where the kit sets it just before).
+ */
+const ARROW_ENDS: Readonly<Record<NonNullable<DescribedEdge['arrow']>, Record<string, string>>> = {
+  /**
+   * The default filled triangle.
+   */
+  triangle: { type: 'triangle', w: ARROW_SIZE, len: ARROW_SIZE },
+
+  /**
+   * An open chevron.
+   */
+  open: { type: 'arrow', w: ARROW_SIZE, len: ARROW_SIZE },
+
+  /**
+   * A filled dot.
+   */
+  dot: { type: 'oval', w: 'med', len: 'med' },
+};
 
 /**
  * How close to a shape's sides its text may run when a label set in another font needs more room,
@@ -254,6 +279,7 @@ export function diagramXml(input: DiagramWriteInput): string {
 
   const children = [
     ...diagram.groups.map((group) => groupXml(writer, group)),
+    ...diagram.nodes.flatMap((node) => castShadowXml(writer, node)),
     ...(diagram.lines ?? []).map((line) => plainLineXml(writer, line)),
     ...diagram.edges.map((edge) => edgeXml(writer, edge)),
     ...diagram.nodes.flatMap((node) => nodeXml(writer, node)),
@@ -391,6 +417,9 @@ function nodeXml(writer: DiagramWriter, node: DescribedNode): string[] {
           arrows: null,
         }),
       );
+  const own = castsItself(node) ? (node.shadow ?? null) : null;
+  const cast = node.shadow?.fill ?? null;
+  const flattens = cast !== null && node.paint.fill !== null && !isOpaqueFill(node.paint);
   const main = shapeXml(writer, {
     id: shape.id,
     name: `Node: ${nodeTitle(node)}`,
@@ -399,8 +428,244 @@ function nodeXml(writer: DiagramWriter, node: DescribedNode): string[] {
     paint: node.paint,
     texts: stackedTexts(node),
     textInset: shape.preset === 'roundRect' ? roundedTextInset(node.box, cornerRadius(node)) : 0,
+    effects: own === null ? '' : shadowEffectXml(writer, own, node.box),
+    ...(cast !== null && flattens ? { fill: flattenedFill(writer, node, cast) } : {}),
   });
-  return [ring, ...drawn('under'), main, ...drawn('details')];
+  const accent = accentXml(writer, node);
+  return [
+    ring,
+    ...drawn('under'),
+    main,
+    accent,
+    accent === '' ? '' : outlineOverXml(writer, node, geometry),
+    ...drawn('details'),
+  ];
+}
+
+/**
+ * Whether a node casts its shadow from its own shape: a box drawn in HTML, whose description gives
+ * no cast color. Other nodes cast it from a copy under the edges (see {@link castShadowXml}).
+ *
+ * @param node - The node.
+ */
+function castsItself(node: DescribedNode): boolean {
+  return node.shadow?.fill === null;
+}
+
+/**
+ * The opaque color a node with a cast shadow is filled with, and its copy under the edges: the
+ * node's fill at its opacity laid over what is behind it (the slide's background and the fills of
+ * the groups it sits in), or just that backdrop for a node without a fill. The page masks its copy
+ * out inside the outline; PowerPoint cannot, so a translucent or dimmed node is flattened onto its
+ * backdrop instead, and looks the same.
+ *
+ * @param writer - The diagram's state.
+ * @param node - The node.
+ * @param background - The slide's background behind the diagram.
+ */
+function flattenedFill(writer: DiagramWriter, node: DescribedNode, background: string): string {
+  const groups = new Map(writer.input.diagram.groups.map((group) => [group.id, group]));
+  const chain: DescribedGroup[] = [];
+  for (let id = node.group; id !== null && chain.length < groups.size;) {
+    const group = groups.get(id);
+    if (group === undefined) {
+      break;
+    }
+
+    chain.unshift(group);
+    id = group.parent;
+  }
+
+  const backdrop = chain.reduce(
+    (under, group) =>
+      group.paint.fill === null
+        ? under
+        : over(withOpacity(group.paint.fill, group.paint.opacity), under),
+    opaque(background),
+  );
+  return node.paint.fill === null
+    ? backdrop
+    : over(withOpacity(node.paint.fill, node.paint.opacity), backdrop);
+}
+
+/**
+ * A color laid over an opaque one.
+ *
+ * @param top - `#rrggbb` or `#rrggbbaa`.
+ * @param under - `#rrggbb`.
+ */
+export function over(top: string, under: string): string {
+  const alpha =
+    top.length > OPAQUE_HEX_LENGTH + 1
+      ? Number.parseInt(top.slice(OPAQUE_HEX_LENGTH + 1), HEX_RADIX) / CHANNEL_MAX
+      : 1;
+  /**
+   * One 8-bit channel of a color, 0 for red.
+   */
+  const channel = (hex: string, index: number): number =>
+    Number.parseInt(hex.slice(1 + index * 2, 3 + index * 2), HEX_RADIX);
+  const mixed = [0, 1, 2].map((index) =>
+    Math.round(channel(top, index) * alpha + channel(under, index) * (1 - alpha))
+      .toString(HEX_RADIX)
+      .padStart(2, '0'),
+  );
+  return `#${mixed.join('')}`;
+}
+
+/**
+ * A color without its alpha.
+ *
+ * @param hex - `#rrggbb` or `#rrggbbaa`.
+ */
+function opaque(hex: string): string {
+  return hex.slice(0, OPAQUE_HEX_LENGTH + 1);
+}
+
+/**
+ * Whether a paint fills its shape with an opaque color at full opacity.
+ *
+ * @param paint - The paint.
+ */
+function isOpaqueFill(paint: DescribedPaint): boolean {
+  return paint.fill !== null && paint.fill.length <= OPAQUE_HEX_LENGTH + 1 && paint.opacity >= 1;
+}
+
+/**
+ * The outline's line drawn again over a card's accent stripe, with no fill, so the stripe sits
+ * under the whole stroke as it does on the page.
+ *
+ * @param writer - The diagram's state.
+ * @param node - The node.
+ * @param geometry - The node's geometry markup.
+ */
+function outlineOverXml(writer: DiagramWriter, node: DescribedNode, geometry: string): string {
+  if (node.paint.stroke === null || node.paint.strokeWidth <= 0) {
+    return '';
+  }
+
+  return el(
+    'p:sp',
+    {},
+    el(
+      'p:nvSpPr',
+      {},
+      cNvPr(writer.input.nextId(), `Outline: ${nodeTitle(node)}`),
+      el('p:cNvSpPr'),
+      el('p:nvPr'),
+    ),
+    el('p:spPr', {}, xfrm(node.box), geometry, el('a:noFill'), outlineXml(writer, node.paint)),
+  );
+}
+
+/**
+ * The shadow a node's card casts under the edges and lifelines: a copy of its outline (and of its
+ * back layer) in the node's own opaque fill with the shadow as its effect, drawn before them so
+ * arrowheads stay on top; the node covers the copy exactly, so only the shadow outside it shows, as
+ * on the page. A node that casts its shadow itself (see {@link castsItself}) gets the effect on its
+ * own shape instead, and nothing here.
+ *
+ * @param writer - The diagram's state.
+ * @param node - The node.
+ */
+function castShadowXml(writer: DiagramWriter, node: DescribedNode): string[] {
+  const shadow = node.shadow;
+  const shape = writer.nodes.get(node.id);
+  if (shadow === undefined || shadow === null || shadow.fill === null || shape === undefined) {
+    return [];
+  }
+
+  const effects = shadowEffectXml(writer, shadow, node.box);
+  if (effects === '') {
+    return [];
+  }
+
+  const paint: DescribedPaint = {
+    fill: flattenedFill(writer, node, shadow.fill),
+    stroke: null,
+    strokeWidth: 0,
+    dashed: false,
+    opacity: 1,
+  };
+  const name = `Shadow: ${nodeTitle(node)}`;
+  const under = (node.decorations ?? [])
+    .filter((decoration) => decoration.kind === 'under')
+    .map((decoration) =>
+      freeformXml(writer, parsePathData(decoration.path), paint, { name, arrows: null, effects }),
+    );
+  return [
+    ...under,
+    el(
+      'p:sp',
+      {},
+      el('p:nvSpPr', {}, cNvPr(writer.input.nextId(), name), el('p:cNvSpPr'), el('p:nvPr')),
+      el(
+        'p:spPr',
+        {},
+        xfrm(node.box),
+        shape.preset === null
+          ? outlineGeometry(parsePathData(node.path), node.box, [])
+          : presetGeometry(shape.preset, node.box, cornerRadius(node)),
+        fillXml(writer, paint.fill, paint.opacity),
+        el('a:ln', {}, el('a:noFill')),
+        effects,
+      ),
+    ),
+  ];
+}
+
+/**
+ * A described shadow as the shape effect the slide's other boxes use: PowerPoint draws one outer
+ * shadow per shape, so the most visible layer is kept, its color at the shadow's opacity.
+ *
+ * @param writer - The diagram's state.
+ * @param shadow - The shadow.
+ * @param box - The box that casts it.
+ */
+function shadowEffectXml(
+  writer: DiagramWriter,
+  shadow: DescribedShadow,
+  box: DescribedBox,
+): string {
+  const layers = shadow.layers.flatMap((layer): SceneShadow[] =>
+    layer.color === null
+      ? []
+      : [
+          {
+            x: layer.x,
+            y: layer.y,
+            blur: layer.blur,
+            spread: 0,
+            color: withOpacity(layer.color, shadow.opacity),
+            inset: false,
+          },
+        ],
+  );
+  return shadowXml(layers, box, theme(writer));
+}
+
+/**
+ * A card's accent stripe: the node's outline clipped to the stripe's box, filled with the accent.
+ *
+ * @param writer - The diagram's state.
+ * @param node - The node.
+ */
+function accentXml(writer: DiagramWriter, node: DescribedNode): string {
+  const accent = node.accent;
+  if (accent === undefined || accent === null || accent.color === null) {
+    return '';
+  }
+
+  const commands = clipOutlineToBox(parsePathData(node.path), accent.box);
+  if (commands.length === 0) {
+    return '';
+  }
+
+  return freeformXml(
+    writer,
+    commands,
+    { fill: accent.color, stroke: null, strokeWidth: 0, dashed: false, opacity: accent.opacity },
+    { name: `Accent: ${nodeTitle(node)}`, arrows: null },
+  );
 }
 
 /**
@@ -505,6 +770,17 @@ type ShapeSpec = {
    * applies the insets inside it.
    */
   textInset: number;
+
+  /**
+   * The shape's `a:effectLst`, such as its shadow; empty for none.
+   */
+  effects?: string;
+
+  /**
+   * An opaque fill that replaces the paint's, with the paint's opacity left to the outline (a node
+   * flattened onto its backdrop under a cast shadow).
+   */
+  fill?: string;
 };
 
 /**
@@ -523,8 +799,11 @@ function shapeXml(writer: DiagramWriter, spec: ShapeSpec): string {
       {},
       xfrm(spec.box),
       spec.geometry,
-      fillXml(writer, spec.paint.fill, spec.paint.opacity),
+      spec.fill === undefined
+        ? fillXml(writer, spec.paint.fill, spec.paint.opacity)
+        : fillXml(writer, spec.fill, 1),
       outlineXml(writer, spec.paint),
+      spec.effects ?? '',
     ),
     textBodyXml(writer, spec.texts, spec.box, true, spec.textInset),
   );
@@ -924,7 +1203,7 @@ function edgeXml(writer: DiagramWriter, edge: DescribedEdge): string {
     dashed: edge.dashed,
     opacity: edge.opacity,
   };
-  const arrows = { start: edge.arrowStart, end: edge.arrowEnd };
+  const arrows = { start: edge.arrowStart, end: edge.arrowEnd, style: edge.arrow ?? 'triangle' };
   const geometry = edge.route === 'curved' ? null : connectorGeometry(edge.points);
   if (geometry === null) {
     return freeformXml(writer, parsePathData(edge.path), paint, { name, arrows });
@@ -1000,6 +1279,11 @@ type Arrows = {
    * An arrowhead where the line ends.
    */
   end: boolean;
+
+  /**
+   * How the arrowheads are drawn; a filled triangle without one.
+   */
+  style?: NonNullable<DescribedEdge['arrow']>;
 };
 
 /**
@@ -1073,15 +1357,16 @@ function connectorXml(
  * @param writer - The diagram's state.
  * @param commands - The path.
  * @param paint - Its fill and line.
- * @param options - Its name and arrowheads.
+ * @param options - Its name, arrowheads and effects.
  * @param options.name - The name.
  * @param options.arrows - The arrowheads, or `null`.
+ * @param options.effects - Its `a:effectLst`, such as a shadow.
  */
 function freeformXml(
   writer: DiagramWriter,
   commands: readonly PathCommand[],
   paint: DescribedPaint,
-  options: { name: string; arrows: Arrows | null },
+  options: { name: string; arrows: Arrows | null; effects?: string },
 ): string {
   const bounds = pathBounds(commands);
   if (bounds === null) {
@@ -1104,6 +1389,7 @@ function freeformXml(
       outlineGeometry(commands, box, [], paint.fill !== null),
       fillXml(writer, paint.fill, paint.opacity),
       outlineXml(writer, paint, options.arrows),
+      options.effects ?? '',
     ),
   );
 }
@@ -1140,7 +1426,7 @@ function outlineXml(
     return el('a:ln', {}, el('a:noFill'));
   }
 
-  const arrow = { type: 'triangle', w: ARROW_SIZE, len: ARROW_SIZE };
+  const arrow = ARROW_ENDS[arrows?.style ?? 'triangle'];
   return el(
     'a:ln',
     { w: pxToEmu(strokeWidth) },

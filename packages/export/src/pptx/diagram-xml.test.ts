@@ -8,11 +8,18 @@ import {
   isDrawableDiagram,
 } from '#diagram/decode-diagram.ts';
 import { diagramPlanNote } from '#diagram/diagram-plan.ts';
-import { describedDiagram, describedText } from '#diagram/diagram.fixture.ts';
-import { diagramXml, withOpacity } from '#pptx/diagram-xml.ts';
+import {
+  describedCardDiagram,
+  describedDiagram,
+  describedEdge,
+  describedNode,
+  describedText,
+} from '#diagram/diagram.fixture.ts';
+import { diagramXml, over, withOpacity } from '#pptx/diagram-xml.ts';
 import { idAllocator } from '#pptx/shape-xml.ts';
 import { surfaceThemeFixture } from '#pptx/theme.fixture.ts';
 import { line, paragraph, run, runStyle, textNode } from '#scene/scene.fixture.ts';
+import { pxToEmu } from '#units.ts';
 
 /**
  * A text context on a light surface.
@@ -49,6 +56,27 @@ function write(diagram = describedDiagram()): string {
  */
 function shapeId(xml: string, name: string): string | undefined {
   return new RegExp(`<p:cNvPr id="(\\d+)" (?:descr="[^"]*" )?name="${name}"`).exec(xml)?.[1];
+}
+
+/**
+ * The markup of the shape with a name, from its name to the end of the shape.
+ *
+ * @param xml - The shapes.
+ * @param name - The name.
+ */
+function shapeXmlNamed(xml: string, name: string): string {
+  return new RegExp(`name="${name}".*?</p:sp>`).exec(xml)?.[0] ?? '';
+}
+
+/**
+ * The fill of a shape's markup: the first fill after its geometry.
+ *
+ * @param xml - The shape.
+ */
+function fillOf(xml: string): string {
+  return (
+    /<\/a:(?:prstGeom|custGeom)>(<a:(?:solidFill>.*?<\/a:solidFill|noFill\/)>)/.exec(xml)?.[1] ?? ''
+  );
 }
 
 describe('diagramXml', () => {
@@ -144,6 +172,150 @@ describe('diagramXml', () => {
     expect(xml).toContain('name="Label: HTTPS"');
     expect(xml).toMatch(/name="Label: HTTPS".*?<a:solidFill><a:schemeClr val="bg1"\/>/);
   });
+
+  it('casts a node shadow from a copy of its outline in its own fill, before the connectors', () => {
+    const xml = write(describedCardDiagram());
+    const shadow = shapeXmlNamed(xml, 'Shadow: API');
+    expect(shadow).toContain('<a:outerShdw blurRad="0"');
+    expect(shadow).toContain('dir="2700000"');
+    expect(shadow).toContain('<a:ln><a:noFill/></a:ln>');
+    expect(xml.indexOf('name="Shadow: API"')).toBeLessThan(xml.indexOf('<p:cxnSp>'));
+    const node = shapeXmlNamed(xml, 'Node: API');
+    expect(node).not.toContain('outerShdw');
+    expect(fillOf(shadow)).toBe(fillOf(node));
+  });
+
+  it('casts shadows before the lifelines, which the page draws over them', () => {
+    const xml = write(
+      describedCardDiagram({
+        lines: [
+          {
+            role: 'lifeline',
+            node: 'api',
+            points: [
+              { x: 200, y: 400 },
+              { x: 200, y: 900 },
+            ],
+            color: '#555c6a',
+            width: 2,
+            dashed: true,
+            opacity: 1,
+          },
+        ],
+      }),
+    );
+    expect(xml.indexOf('name="Shadow: API"')).toBeLessThan(xml.indexOf('name="Line: lifeline"'));
+  });
+
+  it('flattens a translucent or dimmed node with a shadow onto its backdrop, groups included', () => {
+    const base = describedCardDiagram();
+    const group = {
+      id: 'zone',
+      box: { x: 50, y: 250, width: 400, height: 300 },
+      radius: 0,
+      paint: { fill: '#e7e7e3', stroke: '#161920', strokeWidth: 1, dashed: false, opacity: 1 },
+      label: null,
+      parent: null,
+    };
+    const nodes = base.nodes.map((node) =>
+      node.id === 'api'
+        ? {
+            ...node,
+            group: 'zone',
+            paint: { ...node.paint, fill: '#2d4ae01f', opacity: 0.5 },
+          }
+        : node,
+    );
+    const xml = write({ ...base, groups: [group], nodes });
+    const flat = over(withOpacity('#2d4ae01f', 0.5), over('#e7e7e3', '#fcfcfd'));
+    const node = shapeXmlNamed(xml, 'Node: API');
+    expect(fillOf(node)).toBe(fillOf(shapeXmlNamed(xml, 'Shadow: API')));
+    expect(fillOf(node)).toContain(flat.slice(1).toUpperCase());
+    expect(fillOf(node)).not.toContain('<a:alpha');
+  });
+
+  it('keeps the shadow colour at the shadow opacity once, on an opaque copy', () => {
+    const base = describedCardDiagram();
+    const nodes = base.nodes.map((node) =>
+      node.id === 'api' && node.shadow !== undefined && node.shadow !== null
+        ? { ...node, shadow: { ...node.shadow, opacity: 0.5 } }
+        : node,
+    );
+    const shadow = shapeXmlNamed(write({ ...base, nodes }), 'Shadow: API');
+    // 0.5 is written as the nearest byte, 128 / 255.
+    expect(shadow).toMatch(/<a:outerShdw [^>]*><a:schemeClr val="tx1"><a:alpha val="50196"\/>/);
+    expect(fillOf(shadow)).not.toContain('<a:alpha');
+  });
+
+  it('puts the shadow of a node that casts it itself on its own shape', () => {
+    const base = describedDiagram({ edges: [] });
+    const band = describedNode(
+      'band',
+      { x: 100, y: 300, width: 400, height: 80 },
+      {
+        shadow: { layers: [{ x: 0, y: 6, blur: 10, color: '#0000002e' }], fill: null, opacity: 1 },
+      },
+    );
+    const xml = write({ ...base, nodes: [band] });
+    expect(xml).not.toContain('name="Shadow:');
+    expect(shapeXmlNamed(xml, 'Node: BAND')).toContain('<a:outerShdw');
+  });
+
+  it('draws an accent stripe clipped to the outline, under a second copy of the line', () => {
+    const xml = write(describedCardDiagram());
+    const order = ['Node: API', 'Accent: API', 'Outline: API'].map((name) =>
+      xml.indexOf(`name="${name}"`),
+    );
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(order[0]).toBeGreaterThan(-1);
+    const outline = shapeXmlNamed(xml, 'Outline: API');
+    expect(outline).toMatch(/<\/a:xfrm><a:custGeom>.*<\/a:custGeom><a:noFill\/><a:ln w="12700">/);
+
+    // The gate's hexagon slants in by 20px over its 50px half height, so a stripe 8px deep along
+    // its top runs from 616.8px to 783.2px at the stripe's foot.
+    const stripe = shapeXmlNamed(xml, 'Accent: GATE');
+    expect(stripe).toContain(`<a:off x="${pxToEmu(616.8)}" y="${pxToEmu(700)}"/>`);
+    expect(stripe).toContain(`<a:ext cx="${pxToEmu(166.4)}" cy="${pxToEmu(8)}"/>`);
+    const points = [...stripe.matchAll(/<a:pt x="(\d+)" y="(\d+)"\/>/g)].map(([, x, y]) => [
+      Number(x),
+      Number(y),
+    ]);
+    expect(points).toEqual([
+      [0, pxToEmu(8)],
+      [pxToEmu(3.2), 0],
+      [pxToEmu(163.2), 0],
+      [pxToEmu(166.4), pxToEmu(8)],
+    ]);
+    expect(stripe).toContain('<a:ln><a:noFill/></a:ln>');
+    expect(stripe).not.toContain('<a:cubicBezTo>');
+  });
+
+  it('writes a diagram without cards exactly as before cards existed', () => {
+    const plain = describedDiagram({
+      nodes: [
+        describedNode('api', { x: 100, y: 300, width: 200, height: 100 }),
+        describedNode('db', { x: 600, y: 300, width: 200, height: 100 }),
+      ],
+      edges: [
+        describedEdge('api', 'db', [
+          { x: 300, y: 350 },
+          { x: 600, y: 350 },
+        ]),
+      ],
+      summary: 'Two nodes.',
+    });
+    expect(write(plain)).toMatchInlineSnapshot(
+      `"<p:cxnSp><p:nvCxnSpPr><p:cNvPr descr="Two nodes." id="4" name="Connector: API → DB"/><p:cNvCxnSpPr><a:stCxn id="2" idx="3"/><a:endCxn id="3" idx="1"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="1905000" y="2222500"/><a:ext cx="1905000" cy="0"/></a:xfrm><a:prstGeom prst="straightConnector1"><a:avLst/></a:prstGeom><a:noFill/><a:ln w="12700"><a:solidFill><a:schemeClr val="tx2"/></a:solidFill><a:prstDash val="solid"/><a:round/><a:tailEnd type="triangle" w="lg" len="lg"/></a:ln></p:spPr></p:cxnSp><p:sp><p:nvSpPr><p:cNvPr id="2" name="Node: API"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="635000" y="1905000"/><a:ext cx="1270000" cy="635000"/></a:xfrm><a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val 12000"/></a:avLst></a:prstGeom><a:solidFill><a:schemeClr val="bg2"/></a:solidFill><a:ln w="12700"><a:solidFill><a:srgbClr val="D9DCE4"/></a:solidFill><a:prstDash val="solid"/><a:round/></a:ln></p:spPr><p:txBody><a:bodyPr wrap="square" lIns="3082" tIns="163102" rIns="3082" bIns="0" rtlCol="0" anchor="t" anchorCtr="0"><a:noAutofit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"><a:lnSpc><a:spcPts val="1700"/></a:lnSpc></a:pPr><a:r><a:rPr sz="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:latin typeface="+mn-lt"/></a:rPr><a:t>API</a:t></a:r><a:endParaRPr sz="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:latin typeface="+mn-lt"/></a:endParaRPr></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="3" name="Node: DB"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="3810000" y="1905000"/><a:ext cx="1270000" cy="635000"/></a:xfrm><a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val 12000"/></a:avLst></a:prstGeom><a:solidFill><a:schemeClr val="bg2"/></a:solidFill><a:ln w="12700"><a:solidFill><a:srgbClr val="D9DCE4"/></a:solidFill><a:prstDash val="solid"/><a:round/></a:ln></p:spPr><p:txBody><a:bodyPr wrap="square" lIns="3082" tIns="163102" rIns="3082" bIns="0" rtlCol="0" anchor="t" anchorCtr="0"><a:noAutofit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"><a:lnSpc><a:spcPts val="1700"/></a:lnSpc></a:pPr><a:r><a:rPr sz="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:latin typeface="+mn-lt"/></a:rPr><a:t>DB</a:t></a:r><a:endParaRPr sz="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:latin typeface="+mn-lt"/></a:endParaRPr></a:p></p:txBody></p:sp>"`,
+    );
+  });
+
+  it('ends connectors in the brand arrowhead', () => {
+    expect(write(describedCardDiagram())).toContain('<a:tailEnd type="oval" w="med" len="med"/>');
+    const base = describedDiagram();
+    const open = write({ ...base, edges: base.edges.map((edge) => ({ ...edge, arrow: 'open' })) });
+    expect(open).toContain('<a:tailEnd type="arrow" w="lg" len="lg"/>');
+    expect(write()).toContain('<a:tailEnd type="triangle" w="lg" len="lg"/>');
+  });
 });
 
 describe('withOpacity', () => {
@@ -159,6 +331,11 @@ describe('decodeDiagramDescription', () => {
     const decoded = decodeDiagramDescription(JSON.stringify(describedDiagram()));
     expect(typeof decoded).toBe('object');
     expect(asDecodedDescription(describedDiagram()).kind).toBe('flow');
+  });
+
+  it('keeps the card, shadow, accent and arrowhead fields', () => {
+    const decoded = decodeDiagramDescription(JSON.stringify(describedCardDiagram()));
+    expect(decoded).toEqual(describedCardDiagram());
   });
 
   it('says why a description cannot be read', () => {
