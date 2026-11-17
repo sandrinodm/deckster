@@ -25,6 +25,11 @@ export type MdxContext = {
      * The brand's icon set and the stroke width it draws icons with.
      */
     icons: { set: string; strokeWidth: number };
+
+    /**
+     * The names of the brand's image treatments, `plain` (which every brand has) among them.
+     */
+    treatments: readonly string[];
   };
 };
 

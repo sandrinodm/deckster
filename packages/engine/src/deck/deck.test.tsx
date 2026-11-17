@@ -142,6 +142,16 @@ async function stepCountsWhenReady(ready: Promise<void>): Promise<(number | unde
 }
 
 /**
+ * Each stage slide's id and the transition it names in `data-transition`.
+ */
+function stageTransitions(): (string | null)[][] {
+  return [...document.querySelectorAll('section[data-slide-state]')].map((section) => [
+    section.getAttribute('data-slide-id'),
+    section.getAttribute('data-transition'),
+  ]);
+}
+
+/**
  * The deck under test, unmounted after each test.
  */
 let mounted: MountedDeck | undefined;
@@ -221,6 +231,54 @@ describe('Deck navigation', () => {
     expect(document.querySelector('[data-slide-id="title"]')?.getAttribute('data-direction')).toBe(
       'backward',
     );
+  });
+
+  it('gives each stage slide the transition of the move that brings it on screen', () => {
+    const pushed = mdxSlide('pushed', () => <Step at={1}>pushed 1</Step>, {
+      frontmatter: { layout: 'default', transition: 'push' },
+    });
+    mounted = renderDeck(
+      manifestOf(stepsSlide('a', []), pushed, stepsSlide('c', []), stepsSlide('d', [])),
+    );
+    expect(stageTransitions()).toEqual([
+      ['a', null],
+      ['pushed', 'push'],
+    ]);
+    press('ArrowRight');
+    expect(stageTransitions()).toEqual([
+      ['a', 'push'],
+      ['pushed', 'push'],
+      ['c', null],
+    ]);
+    press('ArrowRight');
+    expect(stageTransitions(), 'a step keeps the move between slides').toEqual([
+      ['a', 'push'],
+      ['pushed', 'push'],
+      ['c', null],
+    ]);
+    press('ArrowRight');
+    press('ArrowLeft');
+    expect(stageTransitions(), 'back from c plays the pair pushed and c').toEqual([
+      ['a', 'push'],
+      ['pushed', null],
+      ['c', null],
+    ]);
+    press('End');
+    expect(stageTransitions(), 'a jump cuts').toEqual([
+      ['c', null],
+      ['d', 'none'],
+    ]);
+  });
+
+  it('names no transition in static mode', () => {
+    const pushed = mdxSlide('pushed', () => null, {
+      frontmatter: { layout: 'default', transition: 'push' },
+    });
+    mounted = renderDeck(manifestOf(stepsSlide('a', []), pushed), { isStatic: true });
+    expect(stageTransitions()).toEqual([
+      ['a', null],
+      ['pushed', null],
+    ]);
   });
 
   it('lists each slide budget in seconds', () => {

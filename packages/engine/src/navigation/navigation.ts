@@ -66,6 +66,13 @@ export type NavigationState = {
   direction: Direction;
 
   /**
+   * The slide the deck left on its last move between slides, `undefined` before the first. A move
+   * between steps of one slide keeps it, so the slide transition the stage is showing does not
+   * change under it.
+   */
+  previousSlide: number | undefined;
+
+  /**
    * `next` and `prev` moves made while the slide on screen had not reported its step count, applied
    * in order as soon as it does. Without the wait, a `next` would treat an unmounted slide as
    * having one step and skip its steps.
@@ -122,6 +129,7 @@ export function createNavigationState(
     finalCounts,
     position: clampPosition(position, slideCount, stepCounts, finalCounts),
     direction: 'none',
+    previousSlide: undefined,
     queued: [],
   };
 }
@@ -339,7 +347,9 @@ function moveTo(state: NavigationState, target: Position): NavigationState {
     return state;
   }
 
-  return { ...state, position, direction: isBefore(from, position) ? 'forward' : 'backward' };
+  const direction = isBefore(from, position) ? 'forward' : 'backward';
+  const previousSlide = position.slide === from.slide ? state.previousSlide : from.slide;
+  return { ...state, position, direction, previousSlide };
 }
 
 /**

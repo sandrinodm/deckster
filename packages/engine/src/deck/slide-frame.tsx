@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import type { SlideEntry } from '#contract/manifest.ts';
+import type { TransitionKind } from '#contract/transition.ts';
 import type { Direction } from '#navigation/navigation.ts';
 
 import { DEFAULT_SURFACE } from '#contract/slide-defaults.ts';
@@ -57,6 +58,12 @@ type SlideFrameProps = {
   direction: Direction;
 
   /**
+   * The slide transition this stage slide moves with, from `stageTransition`. `undefined` leaves it
+   * to the brand's transition; a `SlideView` and static mode never pass one.
+   */
+  transition?: TransitionKind | undefined;
+
+  /**
    * Whether this copy tells the deck how many steps the slide has: slides on the stage and
    * non-inert `SlideView`s do, inert views (thumbnails, previews) never do, so a copy that shows
    * the slide differently (an app's poster instead of the running app) cannot change the count.
@@ -79,6 +86,7 @@ export const SlideFrame = memo(function SlideFrame({
   isActive,
   state,
   direction,
+  transition,
   reportsSteps,
 }: SlideFrameProps): ReactNode {
   const { reportStepCount, readiness } = useDeckRuntime('A slide');
@@ -138,6 +146,7 @@ export const SlideFrame = memo(function SlideFrame({
       data-slide-id={entry.id}
       data-slide-index={index}
       {...placementAttributes(state, direction, isActive)}
+      data-transition={state === undefined ? undefined : transition}
       data-surface={frontmatter.surface ?? DEFAULT_SURFACE}>
       <SlideContext value={slide}>
         <SlideErrorBoundary
@@ -156,9 +165,9 @@ export const SlideFrame = memo(function SlideFrame({
 
 /**
  * The data attributes that say where a slide is mounted. Stage slides carry `data-slide-active`,
- * `data-slide-state` (`past`, `current`, `future`) and `data-direction` for transitions;
- * `SlideView` copies carry `data-slide-view` instead, so tools that look for the slide on screen
- * never pick a thumbnail.
+ * `data-slide-state` (`past`, `current`, `future`) and `data-direction` for transitions (and
+ * `data-transition` when the move names its own); `SlideView` copies carry `data-slide-view`
+ * instead, so tools that look for the slide on screen never pick a thumbnail.
  *
  * @param state - The stage slide's state, or `undefined` in a `SlideView`.
  * @param direction - Which way the deck moved last.

@@ -94,3 +94,21 @@
   font-size: 32px;
   white-space: pre-wrap;
 }
+
+/*
+ * Morphs. A morph is a view transition scoped to the canvas: the named elements fly in their own
+ * groups while the slides run their own transition in the live page, so the canvas's old picture
+ * is not drawn and its new one is the page itself. The outgoing slide's copy of each element is
+ * hidden for as long as the morph plays.
+ */
+.deck-canvas::view-transition-old(root) {
+  display: none;
+}
+
+.deck-canvas::view-transition-new(root) {
+  animation: none;
+}
+
+[data-morph-away] {
+  visibility: hidden;
+}

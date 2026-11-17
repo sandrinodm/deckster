@@ -3,8 +3,14 @@ import { Effect, Schema } from 'effect';
 import { deckCommand } from '#contract/deck-command.ts';
 import { KebabName } from '#contract/kebab-name.ts';
 import { BUDGET_PATTERN, DEFAULT_LAYOUT } from '#contract/slide-defaults.ts';
+import { TRANSITION_KIND_LIST, TRANSITION_KINDS } from '#contract/transition.ts';
 
 export { budgetSeconds, DEFAULT_LAYOUT, DEFAULT_SURFACE } from '#contract/slide-defaults.ts';
+export {
+  TRANSITION_KIND_LIST,
+  TRANSITION_KINDS,
+  type TransitionKind,
+} from '#contract/transition.ts';
 
 /**
  * The roles a slide's background image may be tinted with: colors every brand surface has.
@@ -61,9 +67,10 @@ export type SlideBackground = typeof SlideBackground.Type;
 
 /**
  * The frontmatter every slide accepts, whether it comes from an MDX `---` block or a TSX `export
- * const frontmatter`. Decoding fills in `layout` with {@link DEFAULT_LAYOUT}. The layout a slide
- * names adds its own fields (its contract's `schema`); keys that neither define are rejected by the
- * build, so a misspelled key never passes silently.
+ * const frontmatter`. Decoding fills in `layout` with {@link DEFAULT_LAYOUT}. `transition` replaces
+ * the brand's slide transition for the move between this slide and the one before it, both ways
+ * (see `stageTransitions`). The layout a slide names adds its own fields (its contract's `schema`);
+ * keys that neither define are rejected by the build, so a misspelled key never passes silently.
  */
 export const SlideFrontmatter = Schema.Struct({
   layout: KebabName('layout name').pipe(
@@ -79,6 +86,7 @@ export const SlideFrontmatter = Schema.Struct({
       }),
     ),
   ),
+  transition: Schema.optionalKey(Schema.Literals(TRANSITION_KINDS)),
 });
 
 /**
@@ -126,4 +134,11 @@ export const SLIDE_FRONTMATTER_HINTS = {
    * Fix for a budget that is not minutes and seconds.
    */
   budget: 'Write the speaking time as minutes and seconds, for example `budget: 90s` or `1m30s`.',
+
+  /**
+   * Fix for a transition that is not one of the kinds.
+   */
+  transition:
+    `Name a transition kind: ${TRANSITION_KIND_LIST}, for example \`transition: push\`. It ` +
+    "replaces the brand's transition for the move onto this slide and back.",
 } satisfies Record<keyof SlideFrontmatterInput, string>;

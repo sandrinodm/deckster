@@ -204,6 +204,19 @@ describe('navigate', () => {
     expect(navigate(forward, { type: 'prev' }).direction).toBe('backward');
   });
 
+  it('records the slide the last move between slides left, through moves between steps', () => {
+    const state = deckWithSteps([2, 2, 1]);
+    expect(state.previousSlide).toBeUndefined();
+    const stepped = navigate(state, { type: 'next' });
+    expect(stepped.previousSlide).toBeUndefined();
+    const crossed = navigate(stepped, { type: 'next' });
+    expect(crossed.previousSlide).toBe(0);
+    expect(navigate(crossed, { type: 'next' }).previousSlide).toBe(0);
+    const jumped = navigate(crossed, { type: 'goto', position: { slide: 0, step: 0 } });
+    expect(jumped.previousSlide).toBe(1);
+    expect(navigate(jumped, { type: 'last' }).previousSlide).toBe(0);
+  });
+
   it('records step counts without moving when the current step still fits', () => {
     const state = deckWithSteps([4], 0, 2);
     const shrunk = navigate(state, { type: 'step-count', slide: 0, count: 3 });

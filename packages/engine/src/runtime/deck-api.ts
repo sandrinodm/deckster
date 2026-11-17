@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
 
-import type { DeckControls } from '#deck/deck-context.ts';
+import type { DeckControls, MoveActions } from '#deck/deck-context.ts';
 import type { SlideSummary } from '#deck/slide-summary.ts';
 import type { Position } from '#navigation/navigation.ts';
 import type { ReadinessRegistry } from '#readiness/readiness-registry.ts';
@@ -11,7 +11,7 @@ import { waitUntilReady } from '#runtime/ready.ts';
 /**
  * The deck's automation API on `window.__deck`, used by Playwright, export, lint and screenshots.
  * Moves apply synchronously: once `goto` returns, the new slide is rendered; await `ready()` before
- * capturing it.
+ * capturing it. They never morph, and a morph on its way when one is made finishes at once.
  */
 export type DeckApi = {
   /**
@@ -75,22 +75,53 @@ declare global {
 }
 
 /**
+ * What {@link useDeckApi} reads to publish the API: the deck's controls, moves and readiness.
+ */
+export type DeckApiInput = {
+  /**
+   * The deck's current controls; the API always reads the latest ones.
+   */
+  controls: DeckControls;
+
+  /**
+   * The moves without morphs, which `goto`, `next` and `prev` apply synchronously.
+   */
+  immediate: MoveActions;
+
+  /**
+   * Finishes a morph on its way, before a move of the API applies.
+   */
+  settle: () => void;
+
+  /**
+   * The deck's root element, searched for images by `ready()`.
+   */
+  rootRef: RefObject<HTMLElement | null>;
+
+  /**
+   * The holds `ready()` waits for.
+   */
+  readiness: ReadinessRegistry;
+
+  /**
+   * Whether a requested step waits for its slide to settle, which `ready()` waits for too.
+   */
+  stepPending: boolean;
+};
+
+/**
  * Publishes the deck's controls as `window.__deck` while the deck is mounted.
  *
- * @param controls - The deck's current controls; the API always reads the latest ones.
- * @param rootRef - The deck's root element, searched for images by `ready()`.
- * @param readiness - The holds `ready()` waits for.
- * @param stepPending - Whether a requested step waits for its slide to settle, which `ready()`
- *   waits for too.
+ * @param input - The controls, the immediate moves, the deck's root and its readiness.
  */
-export function useDeckApi(
-  controls: DeckControls,
-  rootRef: RefObject<HTMLElement | null>,
-  readiness: ReadinessRegistry,
-  stepPending: boolean,
-): void {
+export function useDeckApi(input: DeckApiInput): void {
+  const { controls, immediate, settle, rootRef, readiness, stepPending } = input;
   const read = useEffectEvent(() => controls);
   const isPending = useEffectEvent(() => stepPending);
+  const settledMoves = useEffectEvent(() => {
+    settle();
+    return immediate;
+  });
 
   useEffect(() => {
     const api: DeckApi = {
@@ -103,9 +134,18 @@ export function useDeckApi(
       get isStatic() {
         return read().isStatic;
       },
-      goto: (slide, step) => flushSync(() => read().goto(slide, step)),
-      next: () => flushSync(() => read().next()),
-      prev: () => flushSync(() => read().prev()),
+      goto: (slide, step) => {
+        const actions = settledMoves();
+        flushSync(() => actions.goto(slide, step));
+      },
+      next: () => {
+        const actions = settledMoves();
+        flushSync(() => actions.next());
+      },
+      prev: () => {
+        const actions = settledMoves();
+        flushSync(() => actions.prev());
+      },
       ready: () => {
         const root = rootRef.current;
         if (root === null) {

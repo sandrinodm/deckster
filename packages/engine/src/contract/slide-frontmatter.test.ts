@@ -1,7 +1,11 @@
 import { Schema } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 
-import { SlideFrontmatter } from '#contract/slide-frontmatter.ts';
+import {
+  SLIDE_FRONTMATTER_HINTS,
+  SlideFrontmatter,
+  TRANSITION_KINDS,
+} from '#contract/slide-frontmatter.ts';
 
 /**
  * Decodes frontmatter as the build does, refusing unknown keys, or gives the failure message.
@@ -41,6 +45,21 @@ describe('SlideFrontmatter background', () => {
       '',
     ]) {
       expect(typeof decode({ background }), JSON.stringify(background)).toBe('string');
+    }
+  });
+});
+
+describe('SlideFrontmatter transition', () => {
+  it('takes every transition kind the brand schema takes', () => {
+    for (const transition of TRANSITION_KINDS) {
+      expect(decode({ transition })).toEqual({ layout: 'default', transition });
+    }
+  });
+
+  it('refuses a kind it does not know, and the hint names every kind', () => {
+    expect(typeof decode({ transition: 'dissolve' })).toBe('string');
+    for (const kind of TRANSITION_KINDS) {
+      expect(SLIDE_FRONTMATTER_HINTS.transition).toContain(`"${kind}"`);
     }
   });
 });

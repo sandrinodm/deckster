@@ -5,7 +5,15 @@ import type { SlideSummary } from '#deck/slide-summary.ts';
 import type { Position } from '#navigation/navigation.ts';
 
 /**
- * The deck's state and controls, for chrome, overlays and plugins.
+ * The moves that change the slide or step on screen. The deck's controls send them through a morph
+ * where one applies, and `window.__deck` sends them at once.
+ */
+export type MoveActions = Pick<DeckControls, 'next' | 'prev' | 'first' | 'last' | 'goto'>;
+
+/**
+ * The deck's state and controls, for chrome, overlays and plugins. A move between two neighbouring
+ * slides that share a morph applies one frame later, when the morph's view transition starts; every
+ * other move applies with the next render.
  */
 export type DeckControls = {
   /**

@@ -23,6 +23,7 @@ export type {
   SlideModule,
 } from '#contract/manifest.ts';
 export type { SlideFrontmatter, SlideFrontmatterInput } from '#contract/slide-frontmatter.ts';
+export type { TransitionKind } from '#contract/transition.ts';
 export { BODY_SLOT, slotTag } from '#contract/slots.ts';
 export { Deck, type DeckProps } from '#deck/deck.tsx';
 export { useDeck, type DeckControls } from '#deck/deck-context.ts';
@@ -40,6 +41,7 @@ export {
   type LayoutSlots,
 } from '#layouts/layout.ts';
 export { useLayouts } from '#layouts/use-layouts.ts';
+export { MORPH_ATTRIBUTE } from '#morph/morph-elements.ts';
 export { INTERACTIVE_ATTRIBUTE, isInteractiveTarget } from '#navigation/interactive-target.ts';
 export type { Direction, Position } from '#navigation/navigation.ts';
 export { Notes, type NotesProps } from '#notes/notes.tsx';

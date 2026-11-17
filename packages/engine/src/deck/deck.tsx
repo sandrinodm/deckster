@@ -13,13 +13,15 @@ import type { DeckPlugin } from '#plugins/deck-plugin.ts';
 import type { SlideState } from '#steps/slide-context.ts';
 
 import { Canvas } from '#canvas/canvas.tsx';
-import { DeckContext, type DeckControls } from '#deck/deck-context.ts';
+import { DeckContext, type DeckControls, type MoveActions } from '#deck/deck-context.ts';
 import { DeckRuntimeContext, type DeckRuntimeValue } from '#deck/deck-runtime.ts';
 import { SlideFrame } from '#deck/slide-frame.tsx';
 import { resolveSlideIndex, summarizeSlides } from '#deck/slide-summary.ts';
+import { stageTransition } from '#deck/stage-transitions.ts';
 import { useHashSync } from '#deck/use-hash-sync.ts';
 import { useKeyboardNavigation } from '#deck/use-keyboard-navigation.ts';
 import { usePointerNavigation } from '#deck/use-pointer-navigation.ts';
+import { useMorphMoves } from '#morph/use-morph-moves.ts';
 import { parseHash } from '#navigation/hash.ts';
 import {
   createNavigationState,
@@ -92,18 +94,27 @@ export function Deck({ manifest, plugins = NO_PLUGINS, isStatic = false }: DeckP
     () => ({ manifest, runtime, isStatic, readiness, reportStepCount }),
     [manifest, runtime, isStatic, readiness, reportStepCount],
   );
-  const controls = useDeckControls({ manifest, slideIds, state, position, dispatch, isStatic });
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const { move, settle } = useMorphMoves({ dispatch, state, rootRef, isStatic });
+  const controls = useDeckControls({ manifest, slideIds, state, position, move, isStatic });
+  const immediate = useMemo(() => moveActions(slideIds, dispatch), [slideIds, dispatch]);
   useHashSync(position, slideIds, dispatch);
-  useKeyboardNavigation(controls, runtime.keyHandlers, dispatch);
+  useKeyboardNavigation(controls, runtime.keyHandlers, move);
   usePointerNavigation(stageRef, {
     enabled: manifest.mouseNavigation ?? true,
     controls,
     pointerHandlers: runtime.pointerHandlers,
-    dispatch,
+    dispatch: move,
   });
-  useDeckApi(controls, rootRef, readiness, isStepPending(state));
+  useDeckApi({
+    controls,
+    immediate,
+    settle,
+    rootRef,
+    readiness,
+    stepPending: isStepPending(state),
+  });
 
   return (
     <StaticModeContext value={isStatic}>
@@ -171,10 +182,17 @@ type MountedSlidesProps = {
 };
 
 /**
- * The current slide and its neighbours, or every slide in static mode.
+ * The current slide and its neighbours, or every slide in static mode, each with the transition it
+ * moves with (none in static mode, where nothing moves).
  */
 function MountedSlides({ manifest, state, isStatic }: MountedSlidesProps) {
   const current = state.position.slide;
+  const stageInput = {
+    current,
+    previousSlide: state.previousSlide,
+    transitionOf: (index: number) =>
+      manifest.slides[index]?.module.slideMeta.frontmatter.transition,
+  };
   return manifest.slides.map((entry, index) => {
     if (!isStatic && Math.abs(index - current) > MOUNTED_NEIGHBOURS) {
       return null;
@@ -189,6 +207,7 @@ function MountedSlides({ manifest, state, isStatic }: MountedSlidesProps) {
         isActive={index === current}
         state={slideState(index, current)}
         direction={state.direction}
+        transition={isStatic ? undefined : stageTransition(index, stageInput)}
         reportsSteps
       />
     );
@@ -229,9 +248,9 @@ type DeckControlsInput = {
   position: Position;
 
   /**
-   * Sends navigation actions.
+   * Sends navigation actions, as morphs where a move between slides has one.
    */
-  dispatch: Dispatch<NavigationAction>;
+  move: Dispatch<NavigationAction>;
 
   /**
    * Whether the deck runs in static mode.
@@ -243,27 +262,15 @@ type DeckControlsInput = {
  * The deck's state and controls, memoized so consumers re-render only when something they read
  * changes.
  *
- * @param input - The deck, its navigation state and the dispatcher.
+ * @param input - The deck, its navigation state and the moves that change it.
  */
 function useDeckControls(input: DeckControlsInput): DeckControls {
-  const { manifest, slideIds, state, position, dispatch, isStatic } = input;
+  const { manifest, slideIds, state, position, move, isStatic } = input;
   const slides = useMemo(
     () => summarizeSlides(manifest, state.stepCounts),
     [manifest, state.stepCounts],
   );
-  const actions = useMemo(
-    () => ({
-      next: () => dispatch({ type: 'next' }),
-      prev: () => dispatch({ type: 'prev' }),
-      first: () => dispatch({ type: 'first' }),
-      last: () => dispatch({ type: 'last' }),
-      goto: (slide: number | string, step = 0) => {
-        const target = { slide: resolveSlideIndex(slideIds, slide), step };
-        dispatch({ type: 'goto', position: target });
-      },
-    }),
-    [slideIds, dispatch],
-  );
+  const actions = useMemo(() => moveActions(slideIds, move), [slideIds, move]);
   return useMemo(
     () => ({
       manifest,
@@ -275,6 +282,26 @@ function useDeckControls(input: DeckControlsInput): DeckControls {
     }),
     [manifest, slides, isStatic, state.stepCounts, position, actions],
   );
+}
+
+/**
+ * The deck's moves, sent through `send`: the raw dispatcher for `window.__deck`, which applies them
+ * at once, or the morphing one for keys, clicks and the deck's controls.
+ *
+ * @param slideIds - Slide ids in manifest order, for resolving `goto` by id.
+ * @param send - Where the actions go.
+ */
+function moveActions(slideIds: readonly string[], send: Dispatch<NavigationAction>): MoveActions {
+  return {
+    next: () => send({ type: 'next' }),
+    prev: () => send({ type: 'prev' }),
+    first: () => send({ type: 'first' }),
+    last: () => send({ type: 'last' }),
+    goto: (slide: number | string, step = 0) => {
+      const target = { slide: resolveSlideIndex(slideIds, slide), step };
+      send({ type: 'goto', position: target });
+    },
+  };
 }
 
 /**
