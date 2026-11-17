@@ -6,7 +6,11 @@ import { Effect } from 'effect';
 
 import type { ElementSnapshot, SlideRule } from '#lint/types.ts';
 
-import { CARD_FIXTURE_BRAND, fixtureBrandTokens } from '#lint/fixture-brands.fixture.ts';
+import {
+  CARD_FIXTURE_BRAND,
+  FIXTURE_BRANDS,
+  fixtureBrandTokens,
+} from '#lint/fixture-brands.fixture.ts';
 import { diagramBadgeOverlapRule } from '#lint/rules/diagram-badge-overlap.ts';
 import { diagramCardMissingRule } from '#lint/rules/diagram-card-missing.ts';
 import { diagramEdgeOverlapRule } from '#lint/rules/diagram-edge-overlap.ts';
@@ -275,6 +279,15 @@ layer(NodeServices.layer)('diagram lint rules', (it) => {
             'brand.',
         );
         expect(violations[0]?.selector).toBe(orders.selector);
+        const plain = yield* fixtureBrandTokens(FIXTURE_BRANDS['weak-accent'] ?? {});
+        expect(
+          diagramCardMissingRule
+            .check(slideRuleInput(plain, { elements: [root({}), band, bandTitle] }))
+            .map((violation) => violation.fix),
+        ).toEqual([
+          'Did you mean "tint"? Change the `card` in decks/test/slides/s.mdx to one of the ' +
+            'standard cards: default, outline, solid, tint, raised, which every brand has.',
+        ]);
         expect(diagramCardMissingRule.severity).toBe('warning');
         expect(messages(diagramCardMissingRule, tokens, [root({}), fine])).toEqual([]);
       }),

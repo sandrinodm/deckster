@@ -955,7 +955,7 @@ const CARDS: DiagramCardGuide = {
    * What a card leaves alone.
    */
   rules: [
-    'States still win over the card: highlighted, error and success recolour the outline and ' +
+    'States still win over the card: highlighted, error and success recolor the outline and ' +
       'show the halo, muted and a focus dim the node.',
     "On <Layers> the items follow the stack's `card`; the bands keep the stack's own look unless " +
       'a <Layer> names a card.',
