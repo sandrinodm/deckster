@@ -13,7 +13,7 @@ The tables list the 41 rules `deck lint --help` prints in 0.3.0, plus `schema` a
 
 | Rule | Severity | Fix |
 | --- | --- | --- |
-| `schema` | error | Deck config, brand, frontmatter or MDX problem from the build; the message names the field. A slide file that `deck.config.ts` does not list is a `schema` warning: list it or delete it. |
+| `schema` | error | Deck config, frontmatter or MDX problem from the build; the message names the field. A slide file that `deck.config.ts` does not list is a `schema` warning: list it or delete it. |
 | `brand` | error or warning | A problem in the brand, reported once under the brand's file: an error when the brand does not load, such as a contrast failure; a warning for one that does not stop it, such as a waived contrast pair. See [check a brand](/brands/check-a-brand/). |
 | `render-error` | error | A slide or the page threw. Fix the code; `deck dev` shows the stack. |
 
@@ -33,7 +33,7 @@ The tables list the 41 rules `deck lint --help` prints in 0.3.0, plus `schema` a
 | Rule | Severity | Fix |
 | --- | --- | --- |
 | `contrast` | error | Use a text role of the surface that passes, or another surface. |
-| `off-brand` | error | Use role classes (`text-fg`, `bg-surface`), `font-display`/`font-body`/`font-mono`, `type-*` steps and brand spacing steps (`p-sm`, `gap-lg`) instead of hard-coded values. |
+| `off-brand` | error or warning | Colours and font families that are not brand tokens are errors; type sizes off the scale and Tailwind numeric spacing are warnings. Use role classes (`text-fg`, `bg-surface`), `font-display`/`font-body`/`font-mono`, `type-*` steps and brand spacing steps (`p-sm`, `gap-lg`) instead of hard-coded values. |
 
 ## Media and apps
 
@@ -93,7 +93,7 @@ The compiler that turns slide files into the deck reports a few more problems, e
 
 | Rule | Severity | What it means |
 | --- | --- | --- |
-| `media-missing` | error | An `<Image>`, `<Video>`, `<Lottie>` or poster path that does not exist. |
+| `media-missing` | error | An `<Image>`, `<Video>`, `<Lottie>`, `<Svg>`, poster or frontmatter file path that does not exist. |
 | `media-gif` | warning | A GIF that could not be converted to video. |
 | `code-unknown-language` | warning | A code block in a language the highlighter does not know, shown as plain text. |
 | `code-step-range` | warning | A highlight step names lines the code block does not have. |

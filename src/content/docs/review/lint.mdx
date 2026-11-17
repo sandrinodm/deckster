@@ -54,7 +54,7 @@ The last line counts everything: `<deck>: N errors, N warnings in N slides (N st
 
 **Errors fail the run, warnings do not.** `deck lint` exits with 1 when there is at least one error, and with 0 when there are only warnings. Bad arguments, an unknown deck or a browser that will not start also exit with 1.
 
-Lint runs in three passes. First the deck config, the brand and every slide file go through the same checks as `deck build`; a problem there is a `schema` finding, and the rendered checks are skipped because the deck cannot render:
+Lint runs in three passes. First the deck config, the brand and every slide file go through the same checks as `deck build`; a problem there is a `schema` finding (a `brand` finding when it is in the brand), and the rendered checks are skipped because the deck cannot render:
 
 ```console
 $ deck lint launch-review
