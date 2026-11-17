@@ -455,6 +455,51 @@
                   },
                   "packet": {
                     "type": "string"
+                  },
+                  "cards": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "fill": {
+                          "type": "string"
+                        },
+                        "border": {
+                          "type": "string"
+                        },
+                        "text": {
+                          "type": "string"
+                        },
+                        "subtext": {
+                          "type": "string"
+                        },
+                        "icon": {
+                          "type": "object",
+                          "properties": {
+                            "color": {
+                              "type": "string"
+                            },
+                            "fill": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "accent": {
+                          "type": "object",
+                          "properties": {
+                            "color": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false
+                        }
+                      },
+                      "additionalProperties": false
+                    }
                   }
                 },
                 "additionalProperties": false
@@ -3159,6 +3204,224 @@
         },
         "packet": {
           "type": "string"
+        },
+        "edges": {
+          "type": "object",
+          "properties": {
+            "stroke": {
+              "type": "string",
+              "enum": [
+                "hairline",
+                "regular",
+                "bold"
+              ]
+            },
+            "corners": {
+              "type": "string",
+              "enum": [
+                "round",
+                "sharp"
+              ]
+            },
+            "arrow": {
+              "type": "string",
+              "enum": [
+                "triangle",
+                "open",
+                "dot"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "groups": {
+          "type": "object",
+          "properties": {
+            "stroke": {
+              "type": "string",
+              "enum": [
+                "none",
+                "hairline",
+                "regular",
+                "bold"
+              ]
+            },
+            "dashed": {
+              "type": "boolean"
+            },
+            "radius": {
+              "type": "string",
+              "enum": [
+                "none",
+                "sm",
+                "md",
+                "lg",
+                "xl"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "labels": {
+          "type": "object",
+          "properties": {
+            "style": {
+              "type": "string",
+              "enum": [
+                "plain",
+                "chip"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "caption",
+                "label"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "kinds": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "cards": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "border": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string",
+                "enum": [
+                  "hairline",
+                  "regular",
+                  "bold"
+                ]
+              },
+              "radius": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "sm",
+                  "md",
+                  "lg",
+                  "xl"
+                ]
+              },
+              "shadow": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "sm",
+                  "md",
+                  "lg"
+                ]
+              },
+              "shape": {
+                "type": "string",
+                "enum": [
+                  "kind",
+                  "box",
+                  "pill"
+                ]
+              },
+              "text": {
+                "type": "string"
+              },
+              "subtext": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "object",
+                "properties": {
+                  "style": {
+                    "type": "string",
+                    "enum": [
+                      "chip",
+                      "solid",
+                      "plain",
+                      "none"
+                    ]
+                  },
+                  "color": {
+                    "type": "string"
+                  },
+                  "fill": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "accent": {
+                "type": "object",
+                "properties": {
+                  "side": {
+                    "type": "string",
+                    "enum": [
+                      "left",
+                      "top",
+                      "right",
+                      "bottom"
+                    ]
+                  },
+                  "color": {
+                    "type": "string"
+                  },
+                  "width": {
+                    "type": "string",
+                    "enum": [
+                      "hairline",
+                      "regular",
+                      "bold"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "title": {
+                "type": "object",
+                "properties": {
+                  "family": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "tracking": {
+                    "type": "number",
+                    "minimum": -0.1,
+                    "maximum": 0.5
+                  },
+                  "case": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "upper"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false

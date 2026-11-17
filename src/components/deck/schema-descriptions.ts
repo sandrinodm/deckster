@@ -3,7 +3,10 @@
  * Schemas (src/data/brand-schema.json, deck-config.json) carry types, ranges and required flags
  * only, so what each field does is written here, by hand, from deckster's code at v0.3.0
  * (commit 4e0b186): packages/brand/src/schema/*.ts and resolve/*.ts for the brand,
- * packages/engine/src/contract/deck-config.ts for the deck config.
+ * packages/engine/src/contract/deck-config.ts for the deck config. The diagram look and cards
+ * (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` and `color.surfaces.<name>.diagram.cards`)
+ * are new in 0.4.0 and were written from commit 6c27269: schema/diagram-schema.ts and
+ * resolve/resolve-diagram.ts.
  *
  * Keys are the row paths exactly as flattenSchema in format.ts writes them
  * (`color.surfaces.<name>.background[type=image].fit`). A row with no entry shows an empty
@@ -78,6 +81,63 @@ const DIAGRAM: Record<string, string> = {
   highlight: "The fill of a highlighted node; derived from `accent`.",
   "highlight-text": "Text on a highlighted node, at 4.5:1 on its fill.",
   packet: "Packets that travel along edges; derived from `accent`.",
+};
+
+/**
+ * The colour fields of a card a surface may recolour (schema/diagram-schema.ts SurfaceCardColors,
+ * resolve/resolve-diagram.ts writtenCardColors), at 6c27269.
+ */
+const SURFACE_CARD: Record<string, string> = {
+  fill: "The card's `fill` on this surface.",
+  border: "The card's `border` on this surface.",
+  text: "The card's title colour on this surface.",
+  subtext: "The card's subtitle colour on this surface.",
+  icon: "The card's icon colours on this surface.",
+  "icon.color": "The icon glyph's colour on this surface.",
+  "icon.fill": "The tile colour of a `solid` icon on this surface.",
+  accent: "The card's accent stripe on this surface.",
+  "accent.color": "The stripe's colour on this surface.",
+};
+
+/**
+ * A card (schema/diagram-schema.ts DiagramCard), with what fills each field in when it is left out
+ * (resolve/resolve-diagram.ts STANDARD_LOOKS, BASE_GEOMETRY, STANDARD_GEOMETRY, cardTokens), at
+ * 6c27269.
+ */
+const CARD: Record<string, Entry> = {
+  fill:
+    "A role (`surface`), a role with an opacity in percent (`accent/12`), a palette reference, a colour, or `none`. A role follows the slide's surface. Left out: the diagram `node` colour, `none` for `outline`, `accent` for `solid`, `accent/12` for `tint`, `surface` for `raised`.",
+  border:
+    "The outline colour, written as `fill` is. Left out: the diagram `node-border` colour, `none` for `solid`, `accent` for `tint`.",
+  stroke:
+    "The outline width, from `shape.stroke`. Left out: the brand's `default` card's, else `regular`; the standard `raised` keeps `hairline`.",
+  radius: "The corner radius, from `shape.radius`, or `none`. Left out: the brand's `default` card's, else `md`.",
+  shadow: {
+    text: "One of the brand's shadows, as the slide's surface draws it, or `none`; inset layers are left out. Not taken from the `default` card. The standard `raised` has `md`.",
+    default: "none",
+  },
+  shape: {
+    text: "`kind` keeps the node kind's shape (a cylinder for a database), `box` draws a rectangle, `pill` a rectangle with round ends.",
+    default: "kind",
+  },
+  text: "The title colour. Left out, it is derived to reach 4.5:1 on the card's fill on every surface; a colour written here is checked against that.",
+  subtext: "The subtitle colour, derived and checked as `text` is.",
+  icon: "How the node's icon is drawn.",
+  "icon.style":
+    "`chip` a bordered tile, `solid` a filled tile, `plain` the glyph alone, `none` no icon. Left out: `chip`, `plain` for `solid`, `solid` for `tint`.",
+  "icon.color": "The glyph's colour. Left out, it is derived to reach 3:1 on what it sits on.",
+  "icon.fill": { text: "The tile colour of a `solid` icon.", default: "accent" },
+  accent:
+    "A stripe along one side of the node, clipped to its outline and drawn over the fill, under the outline. Writing `accent`, even `{}`, draws it.",
+  "accent.side": { text: "The side the stripe runs along.", default: "left" },
+  "accent.color": { text: "The stripe's colour, written as `fill` is.", default: "accent" },
+  "accent.width": { text: "The stripe's depth, from `shape.stroke`.", default: "bold" },
+  title:
+    "How the node title is set; its size stays the brand's `small` step. Each field left out comes from the brand's `default` card, else the `title` type step.",
+  "title.family": "A family role: `display`, `body` or `mono`.",
+  "title.weight": "A font weight from 1 to 1000.",
+  "title.tracking": "Letter spacing in em.",
+  "title.case": { text: "`upper` sets the title in capitals.", default: "none" },
 };
 
 /** DataPalettes (schema/color-schema.ts). */
@@ -170,8 +230,11 @@ const BRAND: Record<string, Entry> = {
   ...prefixed(`${SURFACE}.data`, DATA),
   [`${SURFACE}.code`]: "Code colours on this surface; they win over the top-level `code`.",
   ...prefixed(`${SURFACE}.code`, CODE),
-  [`${SURFACE}.diagram`]: "Diagram colours on this surface; they win over the top-level `diagram`.",
+  [`${SURFACE}.diagram`]: "Diagram colours and card colours on this surface; they win over the top-level `diagram`.",
   ...prefixed(`${SURFACE}.diagram`, DIAGRAM),
+  [`${SURFACE}.diagram.cards`]:
+    "Recolours cards on this surface, by card name: colour fields only, each winning over the card's own here. The card must exist, standard or the brand's own.",
+  ...prefixed(`${SURFACE}.diagram.cards.<name>`, SURFACE_CARD),
   [`${SURFACE}.shadow`]: "Shadows for this surface (`sm`, `md`, `lg`), such as deeper ones on a dark background.",
   [`${SURFACE}.shadow.<name>`]: "`\"none\"`, or the shadow's layers, top first.",
   ...prefixed(`${SURFACE}.shadow.<name>[]`, SHADOW_LAYER),
@@ -333,8 +396,28 @@ const BRAND: Record<string, Entry> = {
   ...prefixed("code", CODE),
 
   // diagram
-  diagram: "Diagram colours on every surface. Left out, they are derived from each surface's roles.",
+  diagram:
+    "Diagram colours, edges, groups, edge labels and cards. Left out, the colours are derived from each surface's roles and the rest uses the defaults below.",
   ...prefixed("diagram", DIAGRAM),
+  "diagram.edges": "How edges are drawn.",
+  "diagram.edges.stroke": { text: "The line width, from `shape.stroke`.", default: "regular" },
+  "diagram.edges.corners": { text: "`round` bends with the brand's `lg` radius; `sharp` bends square.", default: "round" },
+  "diagram.edges.arrow": { text: "A filled `triangle`, an `open` chevron or a `dot`.", default: "triangle" },
+  "diagram.groups": "How group outlines are drawn.",
+  "diagram.groups.stroke": { text: "The outline width, from `shape.stroke`, or `none` for no outline.", default: "hairline" },
+  "diagram.groups.dashed": { text: "Draws the outline dashed.", default: false },
+  "diagram.groups.radius": { text: "The corner radius, from `shape.radius`, or `none`.", default: "lg" },
+  "diagram.labels": "How edge labels are set.",
+  "diagram.labels.style": { text: "`plain` text on a knock-out, or a bordered `chip`.", default: "plain" },
+  "diagram.labels.type": {
+    text: "`caption` sets labels in the caption step; `label` in the brand's `label` step, with its family, case and tracking.",
+    default: "caption",
+  },
+  "diagram.kinds":
+    "The card a node kind uses when neither the node nor its diagram names one, such as `{ external: 'outline' }`. Keys are node kinds, not aliases (`database`, not `db`); values are cards the brand has.",
+  "diagram.cards":
+    "Named node styles, at most 12. `default`, `outline`, `solid`, `tint` and `raised` exist in every brand: an entry with one of those names restyles it field by field, any other kebab-case name adds a card of the brand's own, which starts from the standard `default` look.",
+  ...prefixed("diagram.cards.<name>", CARD),
 
   // charts (resolve/resolve-charts.ts CHART_DEFAULTS)
   charts: "Gridlines, axes, chart text, number formatting, big numbers and tables.",
