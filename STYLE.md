@@ -19,8 +19,8 @@ what to tell their agent.
 
 ## Ground truth: v0.4.0, run it
 
-- The pages describe `@deckster/cli` **0.4.0** as published on npm. The code is the release
-  commit `c018637` ("chore(cli): release v0.4.0"), merged to `main` and tagged `v0.4.0`. Read
+- The pages describe `@deckster/cli` **0.4.0** as published on npm. The code is the tag
+  `v0.4.0`, on commit `50e5d19` on `main` (the merge of the release pull request). Read
   files at the tag (`git -C ../2026-11-13-presentation show v0.4.0:<path>`), because `main` and
   the working tree move on after a release. Pages written before 0.4.0 were checked against 0.3.0
   (commit `4e0b186`); a statement that names 0.3.0 says which version was measured.
@@ -47,7 +47,7 @@ what to tell their agent.
   "Install the browser with `npx playwright@1.65.0 install chromium`." 0.4.0 pins the same
   Playwright, 1.65.0.
 - **What an npm workspace has and the repository does not, or the other way round.** Confirmed by
-  running 0.3.0 (the `deck new` files and the brand set-up again with the 0.4.0 release commit):
+  running 0.3.0, and again with 0.4.0 from npm:
   - `deck new <deck>` writes only `decks/<deck>/deck.config.ts` and `decks/<deck>/slides/title.mdx`
     (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deck types` writes the
     `tsconfig.json`.
@@ -63,7 +63,7 @@ what to tell their agent.
     brands.
 - `src/data/*.json` was generated from the repository. `cli.json` carries the help as the npm CLI
   prints it (checked against `deck <cmd> --help` from 0.3.0 for all 19 commands; the 0.4.0 data
-  was read from the CLI packed at the release commit), including the
+  was read from the CLI packed at the release commit, which is what npm publishes), including the
   "See docs/agent.md" and "See docs/present.md" lines the CLI prints in `dev` and `present`; those
   files are not in the npm package, so never send readers to them. Still paste help you quote from
   the installed CLI, as for every output block.
