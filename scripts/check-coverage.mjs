@@ -10,14 +10,16 @@
  *
  * The component demo page (project/component-demo.mdx) doesn't count: it shows one of each so the
  * build exercises them, and would otherwise hide a missing entry per catalog. A reference to a
- * name that isn't in the data is reported too, though the build already fails on it. Tags inside
- * fenced code blocks and MDX comments don't count.
+ * name that isn't in the data is reported too, though the build already fails on it. Only tags the
+ * page renders count: the pages are parsed as MDX (src/components/deck/mdx-source.ts), so a tag in
+ * a code span, a fenced block or an MDX comment is text. The name may be a string (`of="BarChart"`)
+ * or a string-literal expression (`of={"BarChart"}`); any other expression is reported.
  */
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
+import { componentUses, literalValue, where } from "../src/components/deck/mdx-source.ts";
 
 const SITE_ROOT = path.resolve(import.meta.dirname, "..");
-const DOCS = path.join(SITE_ROOT, "src/content/docs");
 const DATA = path.join(SITE_ROOT, "src/data");
 const IGNORED = new Set(["project/component-demo.mdx"]);
 
@@ -31,40 +33,25 @@ const REQUIRED = [
   { what: "diagram component", tag: "PropsTable", attr: "of", names: read("diagrams").components.map((c) => c.name) },
   { what: "CLI command", tag: "CliCommand", attr: "name", names: read("cli").commands.map((c) => c.name) },
 ];
-
-function pages(dir) {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) return pages(full);
-    return /\.mdx?$/.test(entry.name) ? [full] : [];
-  });
-}
-
-/**
- * The MDX that renders: without fenced code blocks and `{/* … *\/}` comments, where a tag is
- * text (an example, or a page brief) and documents nothing.
- */
-function authored(source) {
-  return source
-    .replace(/^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ {0,3}\1[`~]*[ \t]*$/gm, "")
-    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, "");
-}
+const ATTR_OF = new Map(REQUIRED.map(({ tag, attr }) => [tag, attr]));
 
 /** tag -> name -> pages that reference it */
 const found = new Map();
-for (const file of pages(DOCS)) {
-  const relative = path.relative(DOCS, file).split(path.sep).join("/");
-  if (IGNORED.has(relative)) continue;
-  const source = authored(readFileSync(file, "utf8"));
-  for (const { tag, attr } of REQUIRED) {
-    const pattern = new RegExp(`<${tag}\\b[^>]*?\\b${attr}=(?:"([^"]+)"|'([^']+)'|\\{\\s*["'\`]([^"'\`]+)["'\`]\\s*\\})`, "g");
-    for (const match of source.matchAll(pattern)) {
-      const name = match[1] ?? match[2] ?? match[3];
-      if (!found.has(tag)) found.set(tag, new Map());
-      const byName = found.get(tag);
-      byName.set(name, [...(byName.get(name) ?? []), relative]);
-    }
+/** Tags whose name isn't a literal, so no name can be read. */
+const unreadable = [];
+for (const use of componentUses()) {
+  if (IGNORED.has(use.page) || !ATTR_OF.has(use.name)) continue;
+  const written = use.attributes.get(ATTR_OF.get(use.name));
+  if (written === undefined) continue; // `<PropsTable shared>` names no entry.
+  const name =
+    written.kind === "string" ? written.value : written.kind === "expression" ? literalValue(written.source) : undefined;
+  if (typeof name !== "string") {
+    unreadable.push(`<${use.name}> in ${where(use)}: ${ATTR_OF.get(use.name)} is not a string`);
+    continue;
   }
+  if (!found.has(use.name)) found.set(use.name, new Map());
+  const byName = found.get(use.name);
+  byName.set(name, [...(byName.get(name) ?? []), use.page]);
 }
 
 const missing = [];
@@ -83,7 +70,7 @@ for (const [tag, byName] of found) {
   }
 }
 
-if (missing.length === 0 && unknown.length === 0) {
+if (missing.length === 0 && unknown.length === 0 && unreadable.length === 0) {
   const total = REQUIRED.reduce((sum, r) => sum + r.names.length, 0);
   console.log(`Reference coverage: all ${total} layouts, components, charts, diagram components and commands are documented.`);
 } else {
@@ -93,6 +80,9 @@ if (missing.length === 0 && unknown.length === 0) {
   }
   if (unknown.length > 0) {
     console.error(`References to names that aren't in src/data:\n  ${unknown.join("\n  ")}`);
+  }
+  if (unreadable.length > 0) {
+    console.error(`References whose name can't be read:\n  ${unreadable.join("\n  ")}`);
   }
   process.exitCode = 1;
 }

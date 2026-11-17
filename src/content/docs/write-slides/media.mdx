@@ -5,7 +5,19 @@ sidebar:
   order: 5
 ---
 
-Add photos, screenshots, video cut into steps, small animations and icons to a slide, and put a picture behind a whole slide. Every media path is relative to the slide file, and the brand decides how pictures are treated, so the same slide fits every brand.
+Add photos, screenshots, video cut into steps, small animations and icons to a slide, and put a picture behind a whole slide. The brand decides how pictures are treated, so the same slide fits every brand.
+
+## Where a path points
+
+Every file path a slide names, in `src`, `poster`, `posters`, `fallback`, a Markdown image or `background:`, starts from one of three places, decided by how it begins:
+
+| Written as | Starts from |
+| --- | --- |
+| `assets/harbour.png` (bare) | The deck folder. |
+| `/harbour.png` | The deck's `public/` folder. The file is served as it is, not imported. |
+| `./harbour.png` or `../assets/harbour.png` | The folder of the slide file, so `../` from `slides/` reaches the deck folder. |
+
+The file, with links followed, must be inside the deck folder (inside `public/` for a `/` path) and be of the prop's kind; anything else fails the build. A path to a file that does not exist does not stop the build: `deck lint` reports it as `media-missing` and names the path it looked for. A web address (`https://...`) is left as it is.
 
 ## Add an image
 
@@ -15,7 +27,7 @@ A Markdown image alone in its paragraph becomes an `<Image>`. Write `<Image>` wh
 
 | Prop | What it does |
 | --- | --- |
-| `src`, `alt` | The file, relative to the slide, and what it shows (`alt=""` only for decoration). Both required. |
+| `src`, `alt` | The file ([where a path points](#where-a-path-points)) and what it shows (`alt=""` only for decoration). Both required. |
 | `treatment` | A treatment from the brand's imagery, such as its duotone. `plain`, which every brand has, shows the image as it is: use it for screenshots and maps. Default: the slide's treatment, else the brand's. |
 | `fit` | `cover` (default) crops to fill the frame; `contain` shows all of it. |
 | `focal` | The point cropping keeps in view, such as `focal="top"` or `focal={[50, 30]}` (percent across and down). Default: the centre. |

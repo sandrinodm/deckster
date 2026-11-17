@@ -31,6 +31,7 @@
     "@astrojs/language-server": "2.16.13",
     "@tailwindcss/vite": "^4.1.4",
     "pagefind": "^1.5.2",
+    "satteri": "0.10.5",
     "tailwindcss": "^4.1.4",
     "typescript": "^5.8.3"
   }

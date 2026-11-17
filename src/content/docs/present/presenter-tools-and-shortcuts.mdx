@@ -67,12 +67,13 @@ It shows the slide number; the timer with Start (then Pause) and Reset, and the 
 
 ## How pacing works
 
-The timer starts when you press Start. Pacing compares it with each slide's `budget` (in the slide's frontmatter, such as `budget: 30s`):
+The timer starts when you press Start. Pacing compares it with each slide's `budget` (in the slide's frontmatter, such as `budget: 30s`), so it needs at least one slide with a budget:
 
 - **Without a `duration`** in `deck.config.ts`, the budgets stand as written, and the second figure reads Budgets left.
 - **With a `duration`**, the slides without a budget share the time the budgets leave over equally, and then every budget is scaled so they add up to the duration exactly. A 20-minute talk whose budgets add up to 10 minutes plans each slide at twice its budget. The second figure reads Talk left.
+- **Without any budget**, there is no plan, with or without a `duration`: a duration alone is not spread over the slides. The label reads No budgets, and This slide and Schedule show a dash. With a `duration`, Talk left still counts it down.
 
-The label at the top right says Not started until you press Start, then On pace while the timer is inside the current slide's planned window, or Ahead or Behind with the minutes and seconds. This slide counts down the current slide's budget from the moment it came on screen; Schedule shows how far ahead (positive) or behind (negative) you are. With no budgets and no duration, the label reads No budgets.
+Once there is a plan, the label at the top right says Not started until you press Start, then On pace while the timer is inside the current slide's planned window, or Ahead or Behind with the minutes and seconds. This slide counts down the current slide's budget from the moment it came on screen, and shows a dash on a slide that has none when there is no `duration`; Schedule shows how far ahead (positive) or behind (negative) you are.
 
 ## Two windows, one position
 

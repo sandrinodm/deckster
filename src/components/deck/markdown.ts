@@ -5,12 +5,16 @@
  *
  * They run in Node outside Vite, so they read src/data with fs (not import.meta.glob) and know
  * no optimised image URLs: stills become their alt text and a link to the slide in the built deck.
- * Each renderer gets the MDX attributes as strings (`step={0}` arrives as "0").
+ * Nimbus hands each renderer the MDX attributes as strings: a string as written, an expression as
+ * its source (`step={0}` arrives as "0", `of={"BarChart"}` as "\"BarChart\""). So the renderers get
+ * attributes normalised first (a string-literal expression becomes its string), and the build
+ * fails on a deck component prop the Markdown can't read (checkWrittenProps).
  */
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { budgetText, describeFieldMd, firstSentence, flattenSchema, prettyExample, sectionRows, type SchemaRow } from "./format";
+import { componentUses, literalValue, where } from "./mdx-source";
 import { describeRows, type SchemaOf } from "./schema-descriptions";
 
 type Attrs = Record<string, string | boolean>;
@@ -27,7 +31,7 @@ function data(name: string): any {
 
 /** A hash of src/data, so Nimbus regenerates the Markdown when the data changes. */
 function revision(): string {
-  const hash = createHash("sha256").update("deck-components-md-3");
+  const hash = createHash("sha256").update("deck-components-md-4");
   try {
     for (const file of readdirSync(DATA_DIR).filter((f) => f.endsWith(".json")).sort()) {
       hash.update(file).update(readFileSync(path.join(DATA_DIR, file)));
@@ -374,8 +378,58 @@ const RENDERERS: Record<string, (context: Context) => string> = {
   Diagram: diagram,
 };
 
-/** `markdown.componentMap` for the Nimbus integration. */
+/**
+ * An attribute as the renderers read it: a string-literal expression (`"BarChart"`, `'x'`) as its
+ * string. Numbers and booleans stay as Nimbus passes them ("0", "true"). checkWrittenProps makes
+ * sure a quoted value can only have come from an expression.
+ */
+export function normaliseAttrs(attrs: Attrs): Attrs {
+  return Object.fromEntries(
+    Object.entries(attrs).map(([key, value]) => {
+      if (typeof value !== "string" || !/^["'`]/.test(value)) return [key, value];
+      const literal = literalValue(value);
+      return [key, typeof literal === "string" ? literal : value];
+    }),
+  );
+}
+
+/**
+ * Fails the build when a page passes a deck component a prop the Markdown twin can't read the way
+ * the HTML page does: an expression that isn't a literal (`{deck}`, `{"a" + "b"}`, `{[1, 2]}`), a
+ * spread, or a string written with its own quotes (`alt='"Ship it"'`), which would read as a
+ * string-literal expression.
+ *
+ * @throws Error naming every such prop with its page and line.
+ */
+export function checkWrittenProps(uses = componentUses()): void {
+  const problems: string[] = [];
+  for (const use of uses) {
+    if (!(use.name in RENDERERS)) continue;
+    for (const spread of use.spreads) problems.push(`<${use.name}> in ${where(use)}: the spread {${spread}}`);
+    for (const [name, written] of use.attributes) {
+      if (written.kind === "expression" && literalValue(written.source) === undefined) {
+        problems.push(`<${use.name}> in ${where(use)}: ${name}={${written.source}} is not a literal`);
+      } else if (written.kind === "string" && /^["'`]/.test(written.value) && literalValue(written.value) !== undefined) {
+        problems.push(`<${use.name}> in ${where(use)}: ${name} is a string wrapped in its own quotes`);
+      }
+    }
+  }
+  if (problems.length > 0) {
+    throw new Error(
+      `Deck component props the Markdown twins can't read (src/components/deck/markdown.ts):\n  ${problems.join("\n  ")}\n` +
+        'Pass each prop as a string (deck="hello"), a number (step={0}), a boolean or a string literal (of={"BarChart"}).',
+    );
+  }
+}
+
+/** `markdown.componentMap` for the Nimbus integration. Checks the pages' props first. */
 export function deckMarkdownComponents(): Record<string, Transform> {
+  checkWrittenProps();
   const rev = revision();
-  return Object.fromEntries(Object.entries(RENDERERS).map(([name, render]) => [name, { revision: rev, render }]));
+  return Object.fromEntries(
+    Object.entries(RENDERERS).map(([name, render]) => [
+      name,
+      { revision: rev, render: (context: Context) => render({ ...context, attrs: normaliseAttrs(context.attrs) }) },
+    ]),
+  );
 }

@@ -39,12 +39,15 @@ export function restoreScrollRoot(): void {
     { capture: true, passive: true },
   );
 
+  // On Back, Forward and reload the entry's own offset wins, also for a URL with a fragment: the
+  // reader had scrolled on from the anchor. A fresh navigation never restores, so a link to a
+  // fragment still lands on it. A saved 0 counts too, or a fragment would pull the page down.
   const restore = () => {
     const root = scrollRoot();
-    if (root === document.scrollingElement || location.hash) return;
+    if (root === document.scrollingElement) return;
     try {
-      const saved = Number(sessionStorage.getItem(key()));
-      if (saved > 0) root.scrollTop = saved;
+      const saved = sessionStorage.getItem(key());
+      if (saved !== null && Number.isFinite(Number(saved))) root.scrollTop = Number(saved);
     } catch {}
   };
 
@@ -55,9 +58,12 @@ export function restoreScrollRoot(): void {
     navigating = true;
   });
   document.addEventListener("astro:page-load", () => {
-    if (returning) restore();
+    const restoring = returning;
+    if (restoring) restore();
     returning = false;
     requestAnimationFrame(() => {
+      // Again after the browser's own scroll to the fragment, which can come a frame later.
+      if (restoring) restore();
       navigating = false;
     });
   });

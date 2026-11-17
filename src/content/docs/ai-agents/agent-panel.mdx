@@ -99,6 +99,10 @@ Each turn ends with a footer:
 - the time, the tokens and, for Claude, the cost;
 - **Undo** and **Redo**.
 
+<UiShot name="agent-turn" alt="The agent panel beside the hello deck's title slide, now headed 'Hello, deck', after the prompt 'Make the title friendlier': a list of six steps (two reads, a search, an edit and two lint checks), the agent's answer, the diff of slides/title.mdx with two lines removed and two added, a 'Lint clean' line, and a footer with the time, the tokens, the cost and an Undo button." />
+
+This is a recorded example turn, replayed for the screenshot: the steps, the answer and the figures in its footer were recorded once, not measured in a live run, so read them as an example of the layout, not as what a turn takes or costs.
+
 When lint finds new errors, one automatic follow-up turn, labelled Auto-fix, tries to fix them; there is never a second. Undo refuses, and names the file, when the file changed after the turn. A file over 5 MB is marked as too large to undo and stays as it is.
 
 If you edit a slide by hand while a turn runs and the agent changes the same file, your version stays and the footer says "Kept your edit of" that file.

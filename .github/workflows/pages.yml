@@ -1,8 +1,17 @@
-# Checks the site; it publishes nothing. The site is deployed by main's
+# Checks the site; it publishes nothing. The site is to be deployed by main's
 # .github/workflows/deploy.yml, run by hand from the Actions tab: it checks
 # out the tip of this branch, syncs the stills and decks from main (src/data
 # is published as committed), builds the site and publishes it to GitHub
 # Pages. A change here goes live on the next run of that workflow.
+#
+# NOT YET WORKING. This workflow and that deploy need three things deckster's
+# main does not have yet: the docs scripts (scripts/docs-*.ts), the ?embed
+# mode DeckEmbed loads, and the deploy.yml described above. All three exist
+# only as uncommitted work in the product repository today. At main's current
+# commit (4e0b186, "release v0.3.0") there are no docs scripts, so this
+# workflow fails at its first sync; and main's deploy.yml publishes the deck
+# gallery (`deck build --all`), never this site. Both start working once that
+# work is committed on main; until then nothing deploys this branch.
 #
 # The site is built from generated inputs: src/data (committed), the slide
 # stills in src/assets/shots and the built decks in public/decks (neither
@@ -16,8 +25,11 @@
 # main is today. When that check fails, sync the data against the ref and
 # commit it with the pages it changes.
 #
-# Until deckster's scripts/docs-*.ts are committed on main, the sync finds no
-# docs scripts in the checkout and this workflow fails.
+# The stills include the deck present windows (Electron, which needs a display:
+# Xvfb here) and a deck export --verify picture (LibreOffice in Docker). The
+# sync runs with DECKSTER_SHOTS_STRICT=1, so a shot skipped for a missing
+# prerequisite fails it, and sync.mjs refuses UI shots that lack a name a page
+# uses either way.
 name: Docs site
 on:
   push:
@@ -33,7 +45,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # A cold build of the LibreOffice image for the export-verify shot takes
+    # several minutes.
+    timeout-minutes: 60
     permissions:
       contents: read
     env:
@@ -43,7 +57,9 @@ jobs:
       # The deckster ref the site is built from: a branch, tag or commit.
       # It stays main, not the v0.3.0 tag the pages document (4e0b186): the
       # docs scripts (scripts/docs-*.ts) and the ?embed mode DeckEmbed loads
-      # are newer than the tag, and a checkout of v0.3.0 has neither. The data
+      # are newer than the tag, and a checkout of v0.3.0 has neither. Today
+      # main has neither too (its HEAD is 4e0b186; both are uncommitted work),
+      # so this job fails until they are committed on main. The data
       # check below fails as soon as main's catalogs differ from the committed
       # src/data, so the reference can't drift past the release unnoticed.
       # Move this to a tag once a release carries the docs scripts and ?embed.
@@ -86,6 +102,22 @@ jobs:
       - name: Install the browser
         working-directory: .deckster-main
         run: pnpm exec playwright install chromium --with-deps
+      # The present-audience and present-presenter shots run deckster's desktop
+      # shell: Electron's binary (not part of pnpm install), the GTK, NSS, GBM
+      # and audio libraries it links, and Xvfb, because Electron needs a display
+      # even for hidden windows. Playwright starts it without the sandbox.
+      - name: Install Electron and a virtual display
+        working-directory: .deckster-main
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0t64 libnss3 libgbm1 libasound2t64
+          pnpm --filter @deckster/shell exec install-electron
+      # The export-verify shot runs deck export --verify, which renders the PPTX
+      # with LibreOffice in Docker (the runner has Docker). Building the image
+      # here keeps its time and errors out of the sync step.
+      - name: Prepare export verification
+        working-directory: .deckster-main
+        run: pnpm --filter @deckster/export prepare:verify
 
       # Regenerates src/data and fails when it differs from the committed
       # files (meta.json's commit aside), so the reference tables never drift
@@ -104,9 +136,12 @@ jobs:
 
       # Runs deckster's docs scripts with Node 26 into scratch folders, then
       # installs src/assets/shots and public/decks. Before the first check:
-      # public/decks turns on link checking for /decks/ links.
+      # public/decks turns on link checking for /decks/ links. Under Xvfb, so
+      # Electron can start; strict, so a skipped UI shot fails the step.
       - name: Generate stills and decks
-        run: npm run sync -- --shots --decks
+        env:
+          DECKSTER_SHOTS_STRICT: "1"
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' npm run sync -- --shots --decks
 
       # Back to Node 24 for the site.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

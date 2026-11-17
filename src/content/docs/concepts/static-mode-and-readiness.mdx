@@ -23,7 +23,7 @@ Content that moves or runs live is replaced by a picture of it:
 
 - A `<Video>` shows its poster. A video with cues shows the poster of the part the step has reached, when it has one per part.
 - An `<AppFrame>` shows its `poster`, never the running app. A `<Live>` widget shows its `poster` when it has one. Without one, the widget itself renders, which suits only a widget with no timers, fetches or randomness.
-- A `<CodeMove>` shows its last state, and a `<Terminal>` the whole session up to the current step.
+- A `<CodeMove>` shows the version of the current step, without animating to it, and a `<Terminal>` the whole session up to the current step. A capture at the slide's last step, which `deck shot` without `--steps` and the exports make, shows the version of that step; to capture an earlier version, capture that step.
 
 This still of a slide with a cued video shows the poster of its last part, not a frame of the video:
 

@@ -1,12 +1,19 @@
 # deckster documentation site
 
 This orphan branch (`docs-site`) holds the source of the deckster documentation site. It is
-built with [Nimbus](https://nimbus-docs.com/) (Astro) and never merges into `main`. It is
+built with [Nimbus](https://nimbus-docs.com/) (Astro) and never merges into `main`. It is to be
 published to <https://sandrinodm.github.io/deckster/> by `main`'s `.github/workflows/deploy.yml`,
 run by hand from the Actions tab: that workflow checks out the tip of this branch, generates the
 slide stills and builds the example decks from `main`, builds the site and publishes it.
 `src/data` is published as committed here. `.github/workflows/pages.yml` on this branch only
 checks; it publishes nothing, so a change here goes live on the next run of `deploy.yml`.
+
+**Not working yet.** That deploy workflow, the docs scripts it and the sync run
+(`scripts/docs-*.ts`) and the embed mode `<DeckEmbed>` loads (`?embed`) exist only as uncommitted
+work in the product repository. At `main`'s current commit (`4e0b186`, the v0.3.0 release)
+`deploy.yml` publishes the deck gallery (`deck build --all`), never this site, and `pages.yml`
+here fails at its first sync because the checkout has no docs scripts. Both work once that work is
+committed on `main`; until then nothing deploys this branch.
 
 ## Work on it
 
@@ -47,9 +54,11 @@ site would serve in the page's `index.mdx`, and `npm run check:coverage` while a
 component, chart or command has no reference entry. CI runs both before the build.
 
 `.github/workflows/pages.yml` runs on every push and pull request to `docs-site`. It checks out
-deckster at `DECKSTER_REF`, regenerates `src/data` and fails if it differs from the committed
-files, syncs the stills and decks, then runs the same three steps. It does not deploy (see the
-top of this file), and it fails until deckster's `scripts/docs-*.ts` are committed on that ref.
+deckster at `DECKSTER_REF` (`main`), regenerates `src/data` and fails if it differs from the
+committed files, syncs the stills and decks under a virtual display (Xvfb, for the Electron
+windows of `deck present`) with `DECKSTER_SHOTS_STRICT=1`, then runs the same three steps. It does
+not deploy (see the top of this file), and it fails until deckster's docs scripts, embed mode and
+deploy workflow are committed on that ref.
 
 `AGENT.md` has the conventions for coding agents working on this branch: deckster-specific
 rules first, then the Nimbus guide.

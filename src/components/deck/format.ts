@@ -296,7 +296,9 @@ export function schemaType(schema: Schema): string {
     case "boolean":
       return "boolean";
     case "array": {
-      const items = (schema.items ?? (schema.prefixItems as Schema[] | undefined)?.[0] ?? {}) as Schema;
+      const tuple = tupleType(schema);
+      if (tuple !== undefined) return tuple;
+      const items = (schema.items ?? {}) as Schema;
       const inner = schemaType(items);
       const count =
         schema.minItems !== undefined && schema.minItems === schema.maxItems
@@ -318,6 +320,29 @@ export function schemaType(schema: Schema): string {
     default:
       return schema.type === undefined ? "any" : String(schema.type);
   }
+}
+
+/**
+ * An array whose positions have schemas of their own (`prefixItems`) as a tuple, each position with
+ * its own constraints: `[number (0 to 1), number (-5 to 5), ...]`. A position past `minItems` is
+ * optional (`?`), and further items after the positions read `...T[]`. `undefined` when the array
+ * has no `prefixItems`, or when every position repeats `items` (`[string, ...string[]]` with at
+ * least 1 item reads better as `string[] (at least 1)`).
+ */
+function tupleType(schema: Schema): string | undefined {
+  const positions = schema.prefixItems as Schema[] | undefined;
+  if (!Array.isArray(positions) || positions.length === 0) return undefined;
+  const rest = schema.items as Schema | false | undefined;
+  if (rest && typeof rest === "object" && positions.every((p) => JSON.stringify(p) === JSON.stringify(rest))) return undefined;
+  const min = typeof schema.minItems === "number" ? schema.minItems : 0;
+  const parts = positions.map((p, i) => `${schemaType(p)}${i >= min ? "?" : ""}`);
+  // Without `items: false` or a `maxItems` at the number of positions, more items may follow.
+  const closed = rest === false || (typeof schema.maxItems === "number" && schema.maxItems <= positions.length);
+  if (!closed) {
+    const tail = rest && typeof rest === "object" ? schemaType(rest) : "any";
+    parts.push(`...${/[ |]/.test(tail) ? `(${tail})` : tail}[]`);
+  }
+  return `[${parts.join(", ")}]`;
 }
 
 /** Whether a schema gets rows of its own below its row: an object, or a list, map or union of them. */
@@ -367,6 +392,13 @@ function children(schema: Schema, path: string, rows: SchemaRow[]): void {
     return;
   }
   if (schema.type === "array") {
+    // A tuple's positions are described in its type; one with fields of its own would need rows.
+    if (((schema.prefixItems as Schema[] | undefined) ?? []).some(hasChildren)) {
+      throw new SchemaShapeError(
+        `has a tuple position with fields of its own at ${path}, which the schema tables don't render. ` +
+          "Teach flattenSchema in src/components/deck/format.ts about it.",
+      );
+    }
     const items = (schema.items ?? {}) as Schema;
     children(items, `${path}[]`, rows);
     return;
