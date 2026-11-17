@@ -2,6 +2,7 @@ import type {
   BrandTokens,
   ChartTokens,
   DataTokens,
+  DiagramTokens,
   FamilyTokens,
   GradientTokens,
   Hex,
@@ -36,12 +37,14 @@ import {
 import { resolveSubstitute } from '#resolve/font-substitutes.ts';
 import { ownValue } from '#resolve/own-value.ts';
 import { resolveCharts, surfaceChartColors } from '#resolve/resolve-charts.ts';
+import { resolveDiagram, surfaceDiagramCards } from '#resolve/resolve-diagram.ts';
 import { resolveGradient } from '#resolve/resolve-gradient.ts';
 import { NO_SHADOW, resolveShadows } from '#resolve/resolve-shadow.ts';
 import { resolveSurfaceColors, type SurfaceColors } from '#resolve/surface-colors.ts';
 import { deriveTextColors } from '#resolve/text-colors.ts';
 import { DEFAULT_SURFACE } from '#schema/color-schema.ts';
 import { withPlainTreatment } from '#schema/identity-schema.ts';
+import { DIAGRAM_TOKENS, type DiagramToken } from '#schema/theme-schema.ts';
 import { GENERIC_FAMILIES, TYPE_STEPS, type TypeStep } from '#schema/typography-schema.ts';
 
 /**
@@ -76,9 +79,9 @@ const FAMILY_KEYWORDS = new Set([
 /**
  * Turns a decoded brand into tokens: references resolved to hex, surfaces merged over the base
  * roles, gradients compiled to CSS and described as data, code and diagram themes and chart colors
- * derived per surface, data palettes fitted to each surface's chart plate, defaults filled in. Bad
- * references are recorded on the resolver and replaced by a placeholder, so one pass reports every
- * problem.
+ * derived per surface, diagram cards resolved for the brand and per surface, data palettes fitted
+ * to each surface's chart plate, defaults filled in. Bad references are recorded on the resolver
+ * and replaced by a placeholder, so one pass reports every problem.
  *
  * @param brand - The decoded brand, with its required surfaces completed.
  * @param colors - A resolver over the brand's palette.
@@ -88,18 +91,20 @@ export function buildTokens(brand: Brand, colors: ColorResolver): BrandTokens {
   const data = resolveData(brand, colors);
   const shape = resolveShape(brand, colors);
   const charts = resolveCharts(brand.charts, shape);
+  const typography = {
+    families: mapEntries(brand.typography.families, resolveFamily),
+    scale: resolveScale(brand.typography.scale),
+  };
+  const diagram = resolveDiagram(brand.diagram, shape, typography);
   return {
     name: brand.name,
     label: brand.label,
     palette: mapEntries(brand.color.palette, (scale, scaleName) =>
       mapEntries(scale, (color, step) => colors.hex(color, `color.palette.${scaleName}.${step}`)),
     ),
-    surfaces: resolveSurfaces({ brand, colors, gradients, data, shape, charts }),
+    surfaces: resolveSurfaces({ brand, colors, gradients, data, shape, charts, diagram }),
     gradients,
-    typography: {
-      families: mapEntries(brand.typography.families, resolveFamily),
-      scale: resolveScale(brand.typography.scale),
-    },
+    typography,
     shape,
     spacing: brand.spacing,
     logo: brand.logo,
@@ -117,6 +122,7 @@ export function buildTokens(brand: Brand, colors: ColorResolver): BrandTokens {
     motion: resolveMotion(brand.motion),
     data,
     charts,
+    diagram,
   };
 }
 
@@ -218,6 +224,11 @@ type SurfacesInput = {
    * The brand's chart styles, resolved.
    */
   charts: ChartTokens;
+
+  /**
+   * The brand's diagram look and card geometry, resolved.
+   */
+  diagram: DiagramTokens;
 };
 
 /**
@@ -231,8 +242,9 @@ function resolveSurfaces(input: SurfacesInput): Record<string, SurfaceTokens> {
 
 /**
  * Resolves one surface: its roles and paint (see `resolveSurfaceColors`), logo, chart plate and
- * palettes, chart colors, shadows, and code and diagram themes derived from the roles with the
- * brand's overrides on top, the surface's own overrides winning over the brand-wide ones.
+ * palettes, chart colors, shadows, code and diagram themes derived from the roles with the brand's
+ * overrides on top (the surface's own overrides winning over the brand-wide ones), and the diagram
+ * cards' colors and shadows on it.
  *
  * @param input - The brand's resolved parts.
  * @param name - The surface name.
@@ -243,7 +255,14 @@ function resolveSurface(input: SurfacesInput, name: string): SurfaceTokens {
   const surface = resolveSurfaceColors({ brand, name, spec, colors, gradients });
   const path = `color.surfaces.${name}`;
   const data = surfaceData(input, name, surface);
-  const shadows = resolveShadows(spec.shadow ?? {}, `${path}.shadow`, colors);
+  const shadow = {
+    ...shape.shadow,
+    ...resolveShadows(spec.shadow ?? {}, `${path}.shadow`, colors),
+  };
+  const diagram = deriveDiagramTheme(surface, {
+    ...themeOverrides(diagramColors(brand.diagram), 'diagram', colors),
+    ...themeOverrides(diagramColors(spec.diagram), `${path}.diagram`, colors),
+  });
   return {
     ...surface,
     scheme: isDarkBackground(surface.roles.bg) ? 'dark' : 'light',
@@ -253,14 +272,40 @@ function resolveSurface(input: SurfacesInput, name: string): SurfaceTokens {
       ...themeOverrides(brand.code, 'code', colors),
       ...themeOverrides(spec.code, `${path}.code`, colors),
     }),
-    diagram: deriveDiagramTheme(surface, {
-      ...themeOverrides(brand.diagram, 'diagram', colors),
-      ...themeOverrides(spec.diagram, `${path}.diagram`, colors),
+    diagram,
+    diagramCards: surfaceDiagramCards({
+      diagram: brand.diagram,
+      surfaceName: name,
+      recolors: spec.diagram?.cards,
+      tokens: input.diagram,
+      surface,
+      theme: diagram,
+      shadows: shadow,
+      colors,
     }),
     data,
     charts: surfaceChartColors(charts, surface, data.plate),
-    shadow: { ...shape.shadow, ...shadows } satisfies Record<ShadowName, ShadowTokens>,
+    shadow: shadow satisfies Record<ShadowName, ShadowTokens>,
   };
+}
+
+/**
+ * The nine theme colors of a brand's or a surface's `diagram` section, without its other keys.
+ *
+ * @param diagram - The section as written, or `undefined` for none.
+ */
+function diagramColors(
+  diagram: Readonly<Partial<Record<DiagramToken, string>>> | undefined,
+): Partial<Record<DiagramToken, string>> | undefined {
+  if (diagram === undefined) {
+    return undefined;
+  }
+
+  const entries = DIAGRAM_TOKENS.flatMap((token) => {
+    const color = diagram[token];
+    return color === undefined ? [] : [[token, color] as const];
+  });
+  return Object.fromEntries(entries);
 }
 
 /**

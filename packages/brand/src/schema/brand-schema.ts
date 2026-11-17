@@ -2,12 +2,13 @@ import { Schema } from 'effect';
 
 import { BrandCharts } from '#schema/charts-schema.ts';
 import { BrandColor } from '#schema/color-schema.ts';
+import { BrandDiagram } from '#schema/diagram-schema.ts';
 import { BrandGradients } from '#schema/gradient-schema.ts';
 import { BrandIcons, BrandImagery, BrandLogo } from '#schema/identity-schema.ts';
 import { BrandChrome, BrandMotion } from '#schema/presentation-schema.ts';
 import { KebabName } from '#schema/primitives.ts';
 import { BrandShape, BrandSpacing } from '#schema/shape-schema.ts';
-import { BrandCode, BrandDiagram } from '#schema/theme-schema.ts';
+import { BrandCode } from '#schema/theme-schema.ts';
 import { BrandTypography } from '#schema/typography-schema.ts';
 
 /**
@@ -18,7 +19,8 @@ export const DEFAULT_BRAND = 'default';
 /**
  * Everything a brand defines, as validated from `brands/<name>/brand.ts`. `name` must match the
  * folder name. `code` and `diagram` are optional overrides; without them both themes are derived
- * from each surface's roles. `charts` is optional too and defaults from the roles and type scale.
+ * from each surface's roles, and `diagram` also sets the look of edges, groups and labels and the
+ * brand's node cards. `charts` is optional too and defaults from the roles and type scale.
  */
 export const Brand = Schema.Struct({
   name: KebabName('brand name', 'acme'),

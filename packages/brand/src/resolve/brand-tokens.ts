@@ -9,6 +9,15 @@ import type {
   TableEmphasis,
 } from '#schema/charts-schema.ts';
 import type { Role } from '#schema/color-schema.ts';
+import type {
+  CardAccentSide,
+  CardIconStyle,
+  CardShape,
+  EdgeArrow,
+  EdgeCorners,
+  LabelStyle,
+  LabelType,
+} from '#schema/diagram-schema.ts';
 import type { TransitionKind } from '#schema/presentation-schema.ts';
 import type { Corner } from '#schema/primitives.ts';
 import type { ShadowName } from '#schema/shape-schema.ts';
@@ -101,6 +110,13 @@ export type BrandTokens = {
    * in each surface's `charts`.
    */
   charts: ChartTokens;
+
+  /**
+   * The diagram look that does not change between surfaces: edges, groups, edge labels, the card
+   * each node kind uses and every card's geometry and title type. Card colors and shadows are per
+   * surface, in each surface's `diagramCards`; the theme colors are in each surface's `diagram`.
+   */
+  diagram: DiagramTokens;
 };
 
 /**
@@ -169,6 +185,12 @@ export type SurfaceTokens = {
    * The colors of diagram nodes, edges and labels on this surface.
    */
   diagram: Readonly<Record<DiagramToken, Hex>>;
+
+  /**
+   * The colors and shadow of every diagram card on this surface, by card name: the standard cards
+   * and the brand's own, in the order of `diagram.cards` on the brand's tokens.
+   */
+  diagramCards: Readonly<Record<string, CardSurfaceTokens>>;
 
   /**
    * Chart palettes for this surface and the plate charts draw behind themselves: the brand's
@@ -927,4 +949,156 @@ export type ChartLineTokens = {
    * The line style.
    */
   dash: LineDash;
+};
+
+/**
+ * The diagram look shared by every surface, with names turned into canvas pixels.
+ */
+export type DiagramTokens = {
+  /**
+   * Edges: line width in canvas pixels, how bends are drawn and the arrowhead.
+   */
+  edges: { stroke: number; corners: EdgeCorners; arrow: EdgeArrow };
+
+  /**
+   * Group boxes: outline width in canvas pixels (0 for none), whether the outline is dashed and the
+   * corner radius in canvas pixels.
+   */
+  groups: { stroke: number; dashed: boolean; radius: number };
+
+  /**
+   * Edge labels: plain text on a knock-out or a bordered chip, set in the `caption` or the `label`
+   * type step.
+   */
+  labels: { style: LabelStyle; type: LabelType };
+
+  /**
+   * The card a node kind uses when neither the node nor its diagram names one, for the kinds the
+   * brand maps; every value is a key of `cards`.
+   */
+  kinds: Readonly<Record<string, string>>;
+
+  /**
+   * Every card the brand has, standard cards first, then the brand's own in the order it writes
+   * them.
+   */
+  cards: Readonly<Record<string, CardTokens>>;
+};
+
+/**
+ * A card's geometry and title type, the same on every surface.
+ */
+export type CardTokens = {
+  /**
+   * Outline width in canvas pixels.
+   */
+  stroke: number;
+
+  /**
+   * Corner radius in canvas pixels.
+   */
+  radius: number;
+
+  /**
+   * The outline drawn: the node kind's own shape, a box or a pill.
+   */
+  shape: CardShape;
+
+  /**
+   * The brand shadow the card casts, by name, or `none`; each surface's `diagramCards` has it
+   * resolved.
+   */
+  shadow: ShadowName | 'none';
+
+  /**
+   * How the icon is drawn.
+   */
+  icon: CardIconStyle;
+
+  /**
+   * The accent stripe: its side (`none` when the card has no stripe) and its width in canvas
+   * pixels.
+   */
+  accent: { side: CardAccentSide | 'none'; width: number };
+
+  /**
+   * Whether the brand wrote any of the card's title fields, on the card or on its `default` card,
+   * which every card inherits its title from. When false the title fields are the `title` step's.
+   */
+  titleOwn: boolean;
+
+  /**
+   * How the title is set: the family role and its `font-family` stack, weight, tracking in em and
+   * case. The size is the `small` step's.
+   */
+  title: {
+    family: FamilyRole;
+    stack: string;
+    weight: number;
+    tracking: number;
+    case: 'none' | 'upper';
+  };
+};
+
+/**
+ * A card's colors and shadow on one surface. A color is hex, translucent where the card asks for an
+ * opacity. A fill or border of `null` is drawn as none (a card written with `none`).
+ */
+export type CardSurfaceTokens = {
+  /**
+   * Whether the card takes this surface's diagram `node` color as its fill because neither the card
+   * nor this surface's recoloring of it writes a fill: true for the `default` card and the brand's
+   * own cards without a `fill`, false for any card with a fill, even one whose hex equals the
+   * `node` color.
+   */
+  nodeFill: boolean;
+
+  /**
+   * The fill, painted over the slide.
+   */
+  fill: Hex | null;
+
+  /**
+   * The outline color.
+   */
+  border: Hex | null;
+
+  /**
+   * The title color, readable on the fill painted over the surface's backdrop.
+   */
+  text: Hex;
+
+  /**
+   * The subtitle color.
+   */
+  subtext: Hex;
+
+  /**
+   * The icon glyph color, readable on whatever the icon style puts under it.
+   */
+  iconColor: Hex;
+
+  /**
+   * The tile color of a `solid` icon.
+   */
+  iconFill: Hex;
+
+  /**
+   * The color of a shape's detail lines (a cylinder's lid, a function's lines) and a chip icon's
+   * tile border: the border on this surface, or the subtitle color for a card without one, which
+   * reads on the fill. For a card with the diagram `node` look it is the `node-border` color.
+   */
+  detail: Hex;
+
+  /**
+   * The accent stripe color.
+   */
+  accent: Hex;
+
+  /**
+   * The card's shadow on this surface: its outer layers (inset layers dropped), a CSS `filter`
+   * value with one `drop-shadow()` per layer, spread dropped, and a CSS `box-shadow` value with the
+   * same layers, spread kept; each `none` for a card without a shadow.
+   */
+  shadow: { layers: readonly ShadowLayerTokens[]; filter: string; boxShadow: string };
 };

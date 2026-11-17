@@ -1,6 +1,9 @@
 import type {
   BrandTokens,
+  CardSurfaceTokens,
   DataTokens,
+  DiagramTokens,
+  Hex,
   SurfaceTokens,
   TypeStepTokens,
 } from '#resolve/brand-tokens.ts';
@@ -16,7 +19,26 @@ import {
 } from '#compile/css-syntax.ts';
 import { brandVariables as v, cssVar } from '#compile/variable-names.ts';
 import { DEFAULT_SURFACE } from '#schema/color-schema.ts';
+import {
+  CARD_ACCENT_SIDES,
+  CARD_ICON_STYLES,
+  CARD_SHAPES,
+  EDGE_ARROWS,
+  EDGE_CORNERS,
+  LABEL_STYLES,
+  LABEL_TYPES,
+} from '#schema/diagram-schema.ts';
 import { FAMILY_ROLES, TYPE_STEPS } from '#schema/typography-schema.ts';
+
+/**
+ * The accent stripe sides a card variable may hold: a side, or `none` for no stripe.
+ */
+const ACCENT_SIDES = ['none', ...CARD_ACCENT_SIDES] as const;
+
+/**
+ * The values a boolean card variable may hold.
+ */
+const BOOLEANS = ['true', 'false'] as const;
 
 /**
  * A property and its value, before the rule writer checks both.
@@ -26,7 +48,7 @@ type Declaration = readonly [property: string, value: string];
 /**
  * Compiles tokens to CSS custom properties. Brand-wide tokens (palette, gradients, type, radii,
  * strokes, spacing, motion, chart line widths) sit on `[data-brand="<name>"]`; each surface's
- * roles, code, diagram, data and chart colors, chart plate and shadows sit on
+ * roles, code, diagram, diagram card, data and chart colors, chart plate and shadows sit on
  * `[data-surface="<surface>"]` inside it, together with the surface's paint, text color and body
  * font. The deck root also carries the default surface's values, so chrome outside any slide still
  * has them.
@@ -63,8 +85,8 @@ function surfaceRule(brand: string, surface: SurfaceTokens): string {
 }
 
 /**
- * The declarations a surface sets: its color scheme, roles, text colors, paint, code, diagram, data
- * and chart colors, chart plate and shadows.
+ * The declarations a surface sets: its color scheme, roles, text colors, paint, code and diagram
+ * colors, every diagram card's colors and shadow, data and chart colors, chart plate and shadows.
  *
  * @param surface - The resolved surface, or `undefined` for a brand without one, which sets none.
  */
@@ -80,6 +102,9 @@ function surfaceVariables(surface: SurfaceTokens | undefined): Declaration[] {
     [v.background, surface.background],
     ...colorDeclarations(surface.code, v.code),
     ...colorDeclarations(surface.diagram, v.diagram),
+    ...Object.entries(surface.diagramCards).flatMap(([name, card]) =>
+      cardSurfaceDeclarations(cssName(name), card),
+    ),
     ...dataDeclarations(surface.data),
     [v.plate, cssColor(surface.data.plate)],
     ...colorDeclarations(surface.charts, v.chart),
@@ -105,7 +130,8 @@ function colorDeclarations(
 
 /**
  * The brand-wide declarations: palette, gradients, font stacks, type steps, radii and strokes,
- * spacing, motion, chart line widths, icon stroke and logo height.
+ * spacing, motion, chart line widths, the diagram look and card geometry, icon stroke and logo
+ * height.
  *
  * @param tokens - Resolved brand tokens.
  */
@@ -127,6 +153,7 @@ function brandDeclarations(tokens: BrandTokens): Declaration[] {
     [v.chartWidth('grid'), cssPx(tokens.charts.grid.stroke)],
     [v.chartWidth('axis'), cssPx(tokens.charts.axis.stroke)],
     [v.chartWidth('rule'), cssPx(tokens.charts.table.rule)],
+    ...diagramDeclarations(tokens.diagram),
     [v.iconStroke, cssNumber(tokens.icons.strokeWidth)],
     [v.logoHeight, cssPx(tokens.logo.placement.height)],
   ];
@@ -220,6 +247,94 @@ function motionDeclarations(tokens: BrandTokens): Declaration[] {
     [v.transitionDuration, `${cssNumber(transition.duration)}ms`],
     [v.transitionEasing, cubicBezier(transition.easing)],
   ];
+}
+
+/**
+ * The diagram look and every card's geometry and title type: the card names, the card of each
+ * mapped kind, edge, group and label styles, then each card's stroke, radius, shape, icon style,
+ * accent stripe and title settings.
+ *
+ * @param diagram - The brand's resolved diagram look.
+ */
+function diagramDeclarations(diagram: DiagramTokens): Declaration[] {
+  const { edges, groups, labels } = diagram;
+  return [
+    [v.diagramCards, Object.keys(diagram.cards).map(cssName).join(' ')],
+    ...Object.entries(diagram.kinds).map(([kind, card]): Declaration => [
+      v.diagramKind(cssName(kind)),
+      cssName(card),
+    ]),
+    [v.diagramLook('edge-stroke'), cssPx(edges.stroke)],
+    [v.diagramLook('edge-corners'), keyword(edges.corners, EDGE_CORNERS)],
+    [v.diagramLook('edge-arrow'), keyword(edges.arrow, EDGE_ARROWS)],
+    [v.diagramLook('group-stroke'), cssPx(groups.stroke)],
+    [v.diagramLook('group-dashed'), groups.dashed ? 'true' : 'false'],
+    [v.diagramLook('group-radius'), cssPx(groups.radius)],
+    [v.diagramLook('label-style'), keyword(labels.style, LABEL_STYLES)],
+    [v.diagramLook('label-type'), keyword(labels.type, LABEL_TYPES)],
+    ...Object.entries(diagram.cards).flatMap(([name, card]): Declaration[] => {
+      const c = cssName(name);
+      return [
+        [v.card(c, 'stroke'), cssPx(card.stroke)],
+        [v.card(c, 'radius'), cssPx(card.radius)],
+        [v.card(c, 'shape'), keyword(card.shape, CARD_SHAPES)],
+        [v.card(c, 'icon'), keyword(card.icon, CARD_ICON_STYLES)],
+        [v.card(c, 'accent-side'), keyword(card.accent.side, ACCENT_SIDES)],
+        [v.card(c, 'accent-width'), cssPx(card.accent.width)],
+        [v.card(c, 'title-family'), card.title.stack],
+        [v.card(c, 'title-weight'), cssNumber(card.title.weight)],
+        [v.card(c, 'title-tracking'), `${cssNumber(card.title.tracking)}em`],
+        [v.card(c, 'title-case'), card.title.case === 'upper' ? 'uppercase' : 'none'],
+        [v.card(c, 'title-own'), keyword(String(card.titleOwn), BOOLEANS)],
+      ];
+    }),
+  ];
+}
+
+/**
+ * One card's colors and shadow on a surface; a fill or border of `none` is `transparent`.
+ *
+ * @param name - The card name, checked as a CSS name part.
+ * @param card - The card's colors and shadow on the surface.
+ */
+function cardSurfaceDeclarations(name: string, card: CardSurfaceTokens): Declaration[] {
+  return [
+    [v.card(name, 'node-fill'), keyword(String(card.nodeFill), BOOLEANS)],
+    [v.card(name, 'fill'), paint(card.fill)],
+    [v.card(name, 'border'), paint(card.border)],
+    [v.card(name, 'text'), cssColor(card.text)],
+    [v.card(name, 'subtext'), cssColor(card.subtext)],
+    [v.card(name, 'icon-color'), cssColor(card.iconColor)],
+    [v.card(name, 'icon-fill'), cssColor(card.iconFill)],
+    [v.card(name, 'accent'), cssColor(card.accent)],
+    [v.card(name, 'shadow'), card.shadow.filter],
+    [v.card(name, 'box-shadow'), card.shadow.boxShadow],
+    [v.card(name, 'detail'), cssColor(card.detail)],
+  ];
+}
+
+/**
+ * A card fill or border: a checked hex color, or `transparent` for none.
+ *
+ * @param color - The color, or `null` for none.
+ */
+function paint(color: Hex | null): string {
+  return color === null ? 'transparent' : cssColor(color);
+}
+
+/**
+ * A keyword value, checked against the keywords the property allows.
+ *
+ * @param value - The keyword.
+ * @param allowed - Every keyword the property allows.
+ * @throws TypeError for anything else, which tokens that passed the schema never hold.
+ */
+function keyword(value: string, allowed: readonly string[]): string {
+  if (!allowed.includes(value)) {
+    throw new TypeError(`"${value}" is not one of ${allowed.join(', ')}.`);
+  }
+
+  return value;
 }
 
 /**

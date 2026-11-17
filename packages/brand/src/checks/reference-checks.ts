@@ -5,6 +5,7 @@ import type { BrandProblem } from '#validate/brand-error.ts';
 
 import { ROLE_PAIRS } from '#checks/contrast-checks.ts';
 import { TEXT_CONTRAST } from '#checks/contrast-thresholds.ts';
+import { checkDiagramNames } from '#checks/diagram-checks.ts';
 import { ROLE_NAMES } from '#schema/color-schema.ts';
 import { PLAIN_TREATMENT, withPlainTreatment } from '#schema/identity-schema.ts';
 import {
@@ -58,8 +59,9 @@ const LOGO_VARIANT = 'logo variant';
 /**
  * Checks that the names a brand uses refer to things it defines: required surfaces, gradients and
  * logo variants named by surfaces, defaults, the transition's easing and duration, and font weights
- * the font sources can supply. Also catches palette names that collide with Tailwind class names
- * and chrome elements placed in the same corner.
+ * the font sources can supply, and the kinds, cards and families the `diagram` section names. Also
+ * catches palette names that collide with Tailwind class names and chrome elements placed in the
+ * same corner.
  *
  * @param brand - The decoded brand.
  * @returns Every problem found; empty when all references resolve.
@@ -73,6 +75,7 @@ export function checkReferences(brand: Brand): BrandProblem[] {
     ...checkChromeCorners(brand),
     ...checkDataLengths(brand),
     ...checkWaivers(brand),
+    ...checkDiagramNames(brand),
   ];
 }
 
@@ -291,8 +294,8 @@ function checkPaletteNames(brand: Brand): BrandProblem[] {
 }
 
 /**
- * Checks each family's fallback list and font source, and that every type step's weight and style
- * is one its family loads.
+ * Checks each family's fallback list and font source, and that every type step's weight and style,
+ * and every diagram card's title weight, is one its family loads.
  *
  * @param brand - The decoded brand.
  */
@@ -302,10 +305,47 @@ function checkFamilies(brand: Brand): BrandProblem[] {
   const weights = TYPE_STEPS.flatMap((step) => {
     const spec = scale[step];
     const family = families[spec.family];
-    return checkWeight(family, spec.weight, spec.style ?? 'normal', step);
+    return checkWeight(family, {
+      weight: spec.weight,
+      style: spec.style ?? 'normal',
+      path: `typography.scale.${step}.weight`,
+    });
   });
   const sources = FAMILY_ROLES.flatMap((role) => checkSourceShape(role, families[role]));
-  return [...fallbacks, ...sources, ...weights];
+  return [...fallbacks, ...sources, ...weights, ...checkCardTitleWeights(brand)];
+}
+
+/**
+ * Each diagram card's title weight must be one its title family loads, after the card inherits its
+ * title from the brand's `default` card and the `title` step. A card whose own entry writes neither
+ * a title family nor a weight sets the title its `default` card (or the `title` step) does, which
+ * is checked there; a title family that does not exist is reported by the diagram name checks.
+ *
+ * @param brand - The decoded brand.
+ */
+function checkCardTitleWeights(brand: Brand): BrandProblem[] {
+  const cards = brand.diagram?.cards ?? {};
+  const inherited = cards['default']?.title ?? {};
+  const step = brand.typography.scale.title;
+  return Object.entries(cards).flatMap(([name, card]) => {
+    const own = card.title ?? {};
+    if (own.family === undefined && own.weight === undefined) {
+      return [];
+    }
+
+    const title = { ...inherited, ...own };
+    const role = FAMILY_ROLES.find((candidate) => candidate === (title.family ?? step.family));
+    if (role === undefined) {
+      return [];
+    }
+
+    const field = own.weight === undefined ? 'family' : 'weight';
+    return checkWeight(brand.typography.families[role], {
+      weight: title.weight ?? step.weight,
+      style: 'normal',
+      path: `diagram.cards.${name}.title.${field}`,
+    });
+  });
 }
 
 /**
@@ -379,14 +419,16 @@ function checkSourceShape(role: string, family: FontFamily): BrandProblem[] {
 }
 
 /**
- * A type step's weight and style must be loadable, or the browser fakes bold and italic.
+ * A weight and style set in a family must be loadable, or the browser fakes bold and italic.
+ *
+ * @param family - The family the text is set in.
+ * @param set - The weight and style, and the field to report a problem at.
  */
 function checkWeight(
   family: FontFamily,
-  weight: number,
-  style: 'normal' | 'italic',
-  step: string,
+  set: { weight: number; style: 'normal' | 'italic'; path: string },
 ): BrandProblem[] {
+  const { weight, style } = set;
   const available = availableFaces(family);
   if (available === undefined) {
     return [];
@@ -401,7 +443,7 @@ function checkWeight(
 
   return [
     {
-      path: `typography.scale.${step}.weight`,
+      path: set.path,
       message:
         `Weight ${weight} (${style}) is not loaded for ${family.family}, so the browser would ` +
         'fake it.',

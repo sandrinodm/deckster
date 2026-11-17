@@ -78,6 +78,21 @@ Type: display 168px, headline 84px, title 56px, lead 38px, body 34px, small 26px
   spacing scale with slide margins and a 12-column grid, logo variants and their placement, an
   Iconify icon set, image treatments, chrome (page number, footer, progress, logo) and motion
   (easings, durations, slide transition).
+- **Diagrams.** The optional `diagram` section overrides the diagram theme's colors, sets the
+  look of edges (`stroke`, `corners`, `arrow`), groups (`stroke`, `dashed`, `radius`) and edge
+  labels (`style: 'plain' | 'chip'`, and `type: 'caption' | 'label'`, the type step they are set
+  in), maps node kinds to cards (`kinds: { database: 'tint' }`) and defines `cards`: named node
+  styles with a fill, border, stroke, radius, shadow, shape, icon, accent stripe and title type.
+  The five standard cards (`STANDARD_CARDS`: `default`, `outline`,
+  `solid`, `tint`, `raised`) exist in every brand, derived from its roles when it does not write
+  them, so a deck that names only those renders in any brand; a brand writes at most
+  `MAX_DIAGRAM_CARDS` (12) entries. Card colors are roles with an optional opacity
+  (`accent/12`), which follow the slide's surface, or palette steps and literals. A title or icon
+  color the brand does not write is derived to read on the card's fill. Every card takes its
+  stroke, radius and title type from the brand's `default` card unless the card or its standard
+  look sets them; paint and shape are not inherited. A surface recolors a card under
+  `color.surfaces.<name>.diagram.cards.<card>` (colors only), for a fixed fill that does not work
+  on that surface.
 - **Motion the kit reads.** The easings and durations are open records, but the kit's entrance,
   step reveals, chart builds and count-ups read `standard`, `emphasized` and `exit`
   (`MOTION_EASING_NAMES`) and `fast`, `base` and `slow` (`MOTION_DURATION_NAMES`). A brand should
@@ -93,9 +108,9 @@ with its field and a fix:
 
 1. The schema: types, ranges, unknown fields (with the nearest valid name).
 2. References: palette steps, gradients, surfaces, logo variants, font weights, waivers, opaque
-   backgrounds.
+   backgrounds, and the diagram section's node kinds, card names, card roles and title families.
 3. Quality: WCAG contrast of the role pairs on every surface (`TEXT_CONTRAST` 4.5,
-   `GRAPHIC_CONTRAST` 3), and data palettes on each surface's chart plate and under color-vision
+   `GRAPHIC_CONTRAST` 3) and of the colors a diagram card writes on its fill, and data palettes on each surface's chart plate and under color-vision
    deficiencies.
 
 A brand that fails does not load: `deck dev`, `build`, `shot` and `lint` stop with the brand file,

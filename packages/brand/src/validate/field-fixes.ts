@@ -18,6 +18,30 @@ const COLOR_FIX =
 const PIXELS_FIX = 'Write a number of canvas pixels (the canvas is 1920x1080), for example `24`.';
 
 /**
+ * The fix for any field that takes a stroke width name.
+ */
+const STROKE_FIX = 'Name a stroke width from `shape.stroke`: "hairline", "regular" or "bold".';
+
+/**
+ * The fix for any diagram field that takes a radius name.
+ */
+const RADIUS_FIX = 'Name a radius from `shape.radius`, "sm", "md", "lg" or "xl", or "none".';
+
+/**
+ * The fix for a card color.
+ */
+const CARD_COLOR_FIX =
+  'Name a role such as "fg" or "accent/12", or write a palette reference such as "ink.900/20" ' +
+  'or a color such as "#1f2937"; leave it out to derive a readable one.';
+
+/**
+ * The fix for a card fill or border.
+ */
+const CARD_PAINT_FIX =
+  'Name a role such as "surface" or "accent/12", write a palette reference or a color, or ' +
+  '"none" to draw none.';
+
+/**
  * How to fix a field, by path pattern. `*` matches any one segment; the longest pattern that
  * matches the start of a problem's path wins, so specific fixes override general ones.
  */
@@ -100,7 +124,57 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
    * A surface's diagram theme overrides.
    */
   'color.surfaces.*.diagram':
-    'Override diagram theme colors for this surface only, such as `{ packet: "cobalt.300" }`.',
+    'Override diagram theme colors for this surface only, such as `{ packet: "cobalt.300" }`, ' +
+    'or recolor cards under `cards`.',
+
+  /**
+   * The cards a surface recolors.
+   */
+  'color.surfaces.*.diagram.cards':
+    'Name cards the brand has and give their colors on this surface, for example ' +
+    '`cards: { volt: { fill: "ink.950", text: "volt.400" } }`.',
+
+  /**
+   * One card a surface recolors.
+   */
+  'color.surfaces.*.diagram.cards.*':
+    'Set any of fill, border, text, subtext, icon { color, fill } and accent { color }; ' +
+    "a surface changes only a card's colors.",
+
+  /**
+   * A recolored card's fill.
+   */
+  'color.surfaces.*.diagram.cards.*.fill': CARD_PAINT_FIX,
+
+  /**
+   * A recolored card's outline color.
+   */
+  'color.surfaces.*.diagram.cards.*.border': CARD_PAINT_FIX,
+
+  /**
+   * A recolored card's title color.
+   */
+  'color.surfaces.*.diagram.cards.*.text': CARD_COLOR_FIX,
+
+  /**
+   * A recolored card's subtitle color.
+   */
+  'color.surfaces.*.diagram.cards.*.subtext': CARD_COLOR_FIX,
+
+  /**
+   * A recolored card's icon or accent colors.
+   */
+  'color.surfaces.*.diagram.cards.*.*.color': CARD_COLOR_FIX,
+
+  /**
+   * A recolored card's solid icon tile color.
+   */
+  'color.surfaces.*.diagram.cards.*.icon.fill': CARD_COLOR_FIX,
+
+  /**
+   * A surface's diagram theme color.
+   */
+  'color.surfaces.*.diagram.*': COLOR_FIX,
 
   /**
    * A surface's shadow overrides.
@@ -408,14 +482,208 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
   'code.*': COLOR_FIX,
 
   /**
-   * The diagram theme overrides.
+   * The diagram section.
    */
-  diagram: 'Override diagram theme colors, or leave `diagram` out to derive them from the roles.',
+  diagram:
+    'Override diagram theme colors, set edges, groups, labels, kinds and cards, or leave ' +
+    '`diagram` out to derive everything from the roles.',
 
   /**
    * One diagram theme color.
    */
   'diagram.*': COLOR_FIX,
+
+  /**
+   * The edge look.
+   */
+  'diagram.edges':
+    'Write { stroke: "regular", corners: "round", arrow: "triangle" }, each optional.',
+
+  /**
+   * An edge's stroke width.
+   */
+  'diagram.edges.stroke': STROKE_FIX,
+
+  /**
+   * How edges bend.
+   */
+  'diagram.edges.corners': 'Use "round" or "sharp".',
+
+  /**
+   * The arrowhead.
+   */
+  'diagram.edges.arrow': 'Use "triangle", "open" or "dot".',
+
+  /**
+   * The group look.
+   */
+  'diagram.groups': 'Write { stroke: "hairline", dashed: false, radius: "lg" }, each optional.',
+
+  /**
+   * A group's outline width.
+   */
+  'diagram.groups.stroke': 'Use "none", "hairline", "regular" or "bold".',
+
+  /**
+   * Whether group outlines are dashed.
+   */
+  'diagram.groups.dashed': 'Write `true` or `false`.',
+
+  /**
+   * A group's corner radius.
+   */
+  'diagram.groups.radius': RADIUS_FIX,
+
+  /**
+   * The edge label look.
+   */
+  'diagram.labels': 'Write { style: "plain" | "chip", type: "caption" | "label" }, each optional.',
+
+  /**
+   * The edge label type step.
+   */
+  'diagram.labels.type':
+    'Use "caption" (today) or "label" (the brand\'s label step: its family, case and tracking).',
+
+  /**
+   * The edge label style.
+   */
+  'diagram.labels.style': 'Use "plain" (text on a knock-out) or "chip" (a bordered chip).',
+
+  /**
+   * The card each node kind uses.
+   */
+  'diagram.kinds':
+    'Map node kinds to card names, for example `kinds: { database: "tint", external: "outline" }`.',
+
+  /**
+   * One kind's card.
+   */
+  'diagram.kinds.*':
+    'Name a card in kebab-case: a standard card (default, outline, solid, tint, raised) or one ' +
+    'under `diagram.cards`.',
+
+  /**
+   * The brand's cards.
+   */
+  'diagram.cards':
+    'Name each card in kebab-case, for example ' +
+    '`cards: { spotlight: { fill: "accent", text: "accent-fg" } }`.',
+
+  /**
+   * One card.
+   */
+  'diagram.cards.*':
+    'Set any of fill, border, stroke, radius, shadow, shape, text, subtext, icon, accent and ' +
+    'title; leave a field out to keep the standard look.',
+
+  /**
+   * A card's fill.
+   */
+  'diagram.cards.*.fill': CARD_PAINT_FIX,
+
+  /**
+   * A card's outline color.
+   */
+  'diagram.cards.*.border': CARD_PAINT_FIX,
+
+  /**
+   * A card's outline width.
+   */
+  'diagram.cards.*.stroke': STROKE_FIX,
+
+  /**
+   * A card's corner radius.
+   */
+  'diagram.cards.*.radius': RADIUS_FIX,
+
+  /**
+   * A card's shadow.
+   */
+  'diagram.cards.*.shadow': 'Name one of the brand\'s shadows, "sm", "md" or "lg", or "none".',
+
+  /**
+   * A card's outline shape.
+   */
+  'diagram.cards.*.shape': 'Use "kind" (the node kind\'s own shape), "box" or "pill".',
+
+  /**
+   * A card's title color.
+   */
+  'diagram.cards.*.text': CARD_COLOR_FIX,
+
+  /**
+   * A card's subtitle color.
+   */
+  'diagram.cards.*.subtext': CARD_COLOR_FIX,
+
+  /**
+   * A card's icon.
+   */
+  'diagram.cards.*.icon':
+    'Write { style: "chip" | "solid" | "plain" | "none", color, fill }, each optional.',
+
+  /**
+   * A card's icon style.
+   */
+  'diagram.cards.*.icon.style': 'Use "chip", "solid", "plain" or "none".',
+
+  /**
+   * A card's icon glyph color.
+   */
+  'diagram.cards.*.icon.color': CARD_COLOR_FIX,
+
+  /**
+   * A card's solid icon tile color.
+   */
+  'diagram.cards.*.icon.fill': CARD_COLOR_FIX,
+
+  /**
+   * A card's accent stripe.
+   */
+  'diagram.cards.*.accent':
+    'Write { side: "left" | "top" | "right" | "bottom", color, width }, each optional.',
+
+  /**
+   * The side of a card's accent stripe.
+   */
+  'diagram.cards.*.accent.side': 'Use "left", "top", "right" or "bottom".',
+
+  /**
+   * A card's accent stripe color.
+   */
+  'diagram.cards.*.accent.color': CARD_COLOR_FIX,
+
+  /**
+   * A card's accent stripe width.
+   */
+  'diagram.cards.*.accent.width': STROKE_FIX,
+
+  /**
+   * How a card sets its title.
+   */
+  'diagram.cards.*.title':
+    'Write { family: "mono", weight: 600, tracking: 0.04, case: "upper" }, each optional.',
+
+  /**
+   * A card title's family role.
+   */
+  'diagram.cards.*.title.family': 'Name a family role: "display", "body" or "mono".',
+
+  /**
+   * A card title's weight.
+   */
+  'diagram.cards.*.title.weight': 'Write a font weight from 1 to 1000, for example `weight: 600`.',
+
+  /**
+   * A card title's letter spacing.
+   */
+  'diagram.cards.*.title.tracking': 'Write tracking in em, for example `tracking: 0.04`.',
+
+  /**
+   * A card title's case.
+   */
+  'diagram.cards.*.title.case': 'Use "none" or "upper".',
 };
 
 /**

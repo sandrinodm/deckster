@@ -17,6 +17,22 @@ const MISSING_KEY_MESSAGE = 'Missing key';
 const EXCESS_PROPERTY_MESSAGE = 'Expected no excess property';
 
 /**
+ * The diagram look keys only the brand-wide `diagram` section takes.
+ */
+const SURFACE_LOOK_KEYS = new Set(['edges', 'groups', 'labels', 'kinds']);
+
+/**
+ * Path segments to a field of a surface's `diagram`: `color.surfaces.<name>.diagram.<field>`.
+ */
+const SURFACE_DIAGRAM_FIELD_DEPTH = 5;
+
+/**
+ * Path segments to a field of a card a surface recolors, or more for a nested field:
+ * `color.surfaces.<name>.diagram.cards.<card>.<field>`.
+ */
+const SURFACE_CARD_FIELD_DEPTH = 7;
+
+/**
  * Flattens a schema issue into one entry per field, each with its path and message.
  */
 const formatIssues = SchemaIssue.makeFormatterStandardSchemaV1();
@@ -95,7 +111,7 @@ function issueProblem(keys: readonly PropertyKey[], message: string, input: unkn
   }
 
   if (message === EXCESS_PROPERTY_MESSAGE) {
-    return unknownFieldProblem(keys, input);
+    return misplacedFieldProblem(keys) ?? unknownFieldProblem(keys, input);
   }
 
   return {
@@ -103,6 +119,48 @@ function issueProblem(keys: readonly PropertyKey[], message: string, input: unkn
     message: `${message}, got ${describeValue(valueAt(input, keys))}.`,
     fix: fixFor(keys),
   };
+}
+
+/**
+ * The problem for a diagram field written on a surface that only the brand-wide `diagram` section
+ * takes: the look keys (`edges`, `groups`, `labels`, `kinds`) and a card's non-color fields. A
+ * close field name would be the wrong fix, so this wins over the unknown-field suggestion.
+ *
+ * @param keys - The path to the unknown field.
+ * @returns The problem, or `undefined` for any other unknown field.
+ */
+function misplacedFieldProblem(keys: readonly PropertyKey[]): BrandProblem | undefined {
+  const [color, surfaces, surface, diagram, field, card] = keys.map(String);
+  const cardField = keys
+    .slice(SURFACE_CARD_FIELD_DEPTH - 1)
+    .map(String)
+    .join('.');
+  if (color !== 'color' || surfaces !== 'surfaces' || diagram !== 'diagram') {
+    return undefined;
+  }
+
+  const path = formatPath(keys);
+  if (keys.length === SURFACE_DIAGRAM_FIELD_DEPTH && SURFACE_LOOK_KEYS.has(field ?? '')) {
+    return {
+      path,
+      message: `\`${field}\` sets the diagram look on every surface, so a surface cannot set it.`,
+      fix: `Move it to the brand's top-level \`diagram.${field}\`.`,
+    };
+  }
+
+  if (keys.length >= SURFACE_CARD_FIELD_DEPTH && field === 'cards') {
+    return {
+      path,
+      message:
+        `A surface changes only a card's colors, and \`${cardField}\` is not one; the ` +
+        `${surface} surface cannot set it.`,
+      fix:
+        `Set it on the card itself, \`diagram.cards.${card}.${cardField}\`, or recolor the ` +
+        'card here with fill, border, text, subtext, icon { color, fill } or accent { color }.',
+    };
+  }
+
+  return undefined;
 }
 
 /**
