@@ -46,7 +46,7 @@ The scripts enforce the mechanical part, and every refusal is reported (`warning
 | `scripts/` | Always: these do the extraction. Each has `--help`. `scripts/tests/` holds their safety tests (`python3 -I -m unittest discover -s $SKILL_DIR/scripts/tests`); run them after changing a script. |
 | `references/source-types.md` | Before extracting: what each source type gives, what it cannot, and how to get a better source. |
 | `references/extraction-format.md` | When you need a field from `extraction.json` that the digest does not show. |
-| `references/synthesis.md` | At step 4: roles, surfaces, type scale, fonts, shape, motion, logo, layout archetypes. |
+| `references/synthesis.md` | At step 4: roles, surfaces, type scale, fonts, shape, diagrams, motion, logo, layout archetypes. |
 | `references/dataviz.md` | At step 5: chart style, data palettes, colour-vision and contrast checks. |
 | `references/brand-draft-format.md` | At step 4: the neutral `brand-draft.json` you write. |
 | `references/brand-schema.md` | At step 7: the real `brand.ts` schema, what the framework derives and checks, substitute fonts, and how the draft maps onto it. |
@@ -118,6 +118,7 @@ While looking, write down:
 
 - What kind of page each one is (title, section, content, split, stats, quote, chart, table, image, closing...) and which pages share a structure.
 - Where the logo sits and on which backgrounds, and whether there is a footer, page number or progress element.
+- If there are diagrams: how a box is drawn (fill, outline, corners, shadow, icon), which boxes are drawn differently and why (a highlighted step, databases, third parties), how connectors end and bend, and how their labels sit.
 - The feel in a few plain words (for example "dense and corporate", "airy editorial", "loud startup"). It guides every judgement call later, including motion, which static sources cannot show.
 - Anything the extraction missed or got wrong. Trust your eyes over a heuristic, and trust an exact extracted value over your eyes.
 
@@ -131,7 +132,7 @@ Write `$WORK/brand-draft.json` following `references/brand-draft-format.md`, usi
 2. **Surfaces.** One per distinct background treatment the source really uses (default, inverse, accent, gradient), each with its own foreground roles read from the pages that use it.
 3. **Gradients.** Use declared stops (OOXML, CSS, PDF shading) over pixel estimates.
 4. **Typography.** Families by role, each with its kind (`category`: sans, serif or mono, which picks the system substitute used by PowerPoint export), a scale in canvas pixels with nothing under 20, and a sourcing decision for every family (`brand_tools.py fonts "<family>"`).
-5. **Shape, spacing, logo, icons, imagery, chrome, motion.**
+5. **Shape, spacing, logo, icons, imagery, chrome, motion**, and the diagram look when the source has diagrams: its boxes become `diagram.cards` (the plain box restyles `default`, which also carries the radius, outline weight and title type every card shares; highlighted boxes restyle the standard `solid`, `tint`, `outline` or `raised`), recurring kinds go in `diagram.kinds`, and connectors and labels in `edges`, `groups` and `labels` (`references/synthesis.md`, Diagrams).
 6. **Layout archetypes.** Map each kind of source page to a layout from `deck layouts <deck> --json` (any deck in the workspace; for the catalog alone, `deck new` a throwaway deck first. Read it: the set is growing, so never assume a layout exists) and note where the source does something no layout offers.
 7. **Provenance and confidence** for every group of values.
 
@@ -205,7 +206,7 @@ Give `compare.py` literal file names on both sides of each `source:brand` pair (
 2. Typeface, weight and relative size of headline against body. Does the specimen's title fill about the same share of the slide as the source's?
 3. Density and margins: does it have the same amount of air?
 4. Accent usage: same places, same amount.
-5. Shape language: corner radii, rules, card treatment, shadows. Check resolved shadow opacity against the source, not just the hue and blur.
+5. Shape language: corner radii, rules, card treatment, shadows. Check resolved shadow opacity against the source, not just the hue and blur. If the source has diagrams, add a `diagram` slide to the specimen (`references/brand-schema.md`, Rendering the brand) with a few nodes on `card="solid"`, `card="tint"` and the brand's own cards, and compare boxes, connectors, arrowheads and labels with a source diagram; `deck brand <name>` lists each card as resolved.
 6. Charts and numbers: series colours and their order, highlight against context, gridline weight and dash, number formatting, table emphasis.
 7. Logo: right variant on each assigned surface, placement, size and negative space. Check for background-coloured patches inside logos, especially on gradients; do not treat an invented reversed variant as extracted. Page number and footer.
 8. The surfaces the framework derived (if the draft left any out): do they belong to this brand?

@@ -13,6 +13,7 @@ How to turn `extraction.json`, `analysis.json` and what you saw on the pages int
 - [Typography](#typography)
 - [Fonts: identifying, sourcing, substituting](#fonts-identifying-sourcing-substituting)
 - [Shape and spacing](#shape-and-spacing)
+- [Diagrams](#diagrams)
 - [Logo, icons, imagery, chrome](#logo-icons-imagery-chrome)
 - [Motion](#motion)
 - [Layout archetypes](#layout-archetypes)
@@ -145,6 +146,51 @@ Rules that keep this honest:
 - **Margins.** Left edge of the title block and top edge of the first element, as canvas pixels: `bbox x * 1920`, `bbox y * 1080`. Use the most common value across content pages. PPTX placeholders give this exactly.
 - **Grid.** If text and visuals align to visible columns (two halves, thirds), record that. The kit has a 12-column grid; you only need margin and gutter.
 - **Density.** A one-line note: how much of a typical content slide is empty. It tells layout authors more than numbers do.
+
+## Diagrams
+
+Only when the source has diagrams: architecture boxes, flows, org charts, process steps. Without them, leave the look out and the framework derives it from the roles and `shape`. Read it off the page images; extracted shapes rarely say which box is a node.
+
+- **Boxes become cards.** A card is a node style: `fill` and `border` (a role such as `surface`, a role with an opacity such as `accent/12`, a palette reference, a hex, or `none`), `stroke` (`hairline`, `regular`, `bold`), `radius` (`none`, `sm` to `xl`), `shadow` (`none`, `sm`, `md`, `lg`: the brand's shadows), `shape` (`kind`, `box`, `pill`), `icon.style` (`chip` bordered tile, `solid` filled tile, `plain` glyph, `none`), an `accent` stripe (`side`, `color`, `width`) and `title` (`family` role, `weight`, `tracking`, `case: upper`). Prefer roles to hexes: a role follows the slide's surface, so the card also works on the inverse surface.
+- **The plain box restyles `default`.** Most boxes in a source share one look; that is the `default` card. A highlighted box (filled in the brand colour, outlined in the accent, lifted with a shadow) restyles `solid`, `tint`, `outline` or `raised`, whichever is closest: decks name those five, so they must look like this brand. Add a card of the brand's own only for a treatment none of the five can carry (a sticky note, a box with a coloured edge), at most twelve entries in all.
+- **Write shared geometry once, on `default`.** Every card takes its `stroke`, `radius` and `title` from the brand's `default` card unless the card sets its own (the standard `raised` keeps its hairline). So write the source's corner radius, outline weight and box title type on `default`, and on another card only where it differs. Paint (`fill`, `border`, `shadow`, `icon`, `accent`) and `shape` are not inherited: each card keeps its own standard look for those.
+- **Kinds.** When the source draws one kind of thing the same way every time (databases tinted, third parties dashed or outlined), map it: `kinds: { "database": "tint" }`. The kinds are the kit's (`deck diagrams --json`, `nodeKinds`).
+- **Lines and labels.** `edges.stroke`, `edges.corners` (`round` or `sharp` bends), `edges.arrow` (`triangle`, `open` chevron, `dot`); `groups.stroke` (or `none`), `groups.dashed`, `groups.radius`; `labels.style` (`plain` text, or `chip` for labels in a bordered box) and `labels.type` (`caption`, the default, or `label` when connector labels are set like the source's small uppercase labels: the brand's `label` step).
+- **Text colours.** Leave `text`, `subtext` and `icon.color` out unless the source is clear: the framework derives them to read on the card's fill on every surface. A colour you write is checked for contrast on every surface, and so is a fill that no text colour reads on (a translucent fill over a mid-tone gradient can fail; `deck brand check` names the card, the surface and the ratio, and suggests recolouring the card on that surface).
+- **Recolour a card on one surface** when a fixed fill (a palette step or a hex) fails there or looks wrong, such as a pale sticky note on the dark inverse surface: `color.surfaces.<name>.diagram.cards.<card>` takes the colour fields only (`fill`, `border`, `text`, `subtext`, `icon.color`, `icon.fill`, `accent.color`) and wins on that surface. The card must exist.
+
+A worked example. The source's architecture slides draw white boxes with a thin grey outline, 4 px corners, a faint shadow and the box name in mono uppercase, icons without a tile, databases tinted in the brand colour with no outline, external services as outlines, one featured box filled in the brand colour, sticky-note callouts on paper with an edge in the accent colour (on dark slides the note takes the surface colour instead), straight elbow connectors with open arrowheads, dashed boundary boxes and connector labels in small bordered chips set like the eyebrows. In the draft:
+
+```json
+"diagram": {
+  "edges": { "stroke": "regular", "corners": "sharp", "arrow": "open" },
+  "groups": { "stroke": "hairline", "dashed": true, "radius": "sm" },
+  "labels": { "style": "chip", "type": "label" },
+  "kinds": { "database": "tint", "external": "outline" },
+  "cards": {
+    "default": {
+      "fill": "surface", "stroke": "hairline", "radius": "sm", "shadow": "sm", "icon": { "style": "plain" },
+      "title": { "family": "mono", "case": "upper", "tracking": 0.04 }
+    },
+    "outline": { "icon": { "style": "plain" } },
+    "solid": { "shadow": "md" },
+    "tint": { "border": "none" },
+    "raised": { "shadow": "lg", "icon": { "style": "plain" } },
+    "callout": {
+      "fill": "paper.base", "border": "none", "shadow": "sm",
+      "icon": { "style": "plain" }, "accent": { "side": "left", "width": "bold" }
+    }
+  }
+}
+```
+
+and on the inverse surface, next to its roles:
+
+```json
+"inverse": { "bg": "#0F1B2D", "...": "...", "diagram": { "cards": { "callout": { "fill": "surface" } } } }
+```
+
+`deck brand <name>` then lists the look and every card with its colours on the default surface; check it against the source before you shoot.
 
 ## Logo, icons, imagery, chrome
 

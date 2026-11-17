@@ -83,6 +83,30 @@ theme, `@font-face` rules and code colors. A brand that fails contrast between r
 data palette cannot be told apart with a color-vision deficiency, does not load: the error names
 the pair and the fix. Switching a deck to another brand is one line in `deck.config.ts`.
 
+A brand also sets how diagrams look (`diagram`): the edges (line weight, round or sharp bends,
+arrowheads), the group outlines, edge labels as plain text or chips, and named **cards**. A card
+is a node style: fill, border, corner radius, shadow, shape, icon tile, an accent stripe along one
+side, and the title's family, weight and case. Its colors are usually roles, so a card follows the
+surface the slide is on (a palette step or a literal stays the same on every surface), and text the
+brand does not color itself is moved in lightness until it reads on the card's fill. Where a
+fixed color does not work on one surface (a pale fill on the inverse surface), the surface
+recolors the card (`color.surfaces.<name>.diagram.cards`, colors only).
+
+Five cards exist in every brand: `default` (the plain node), `outline`, `solid`, `tint` and
+`raised`. A brand that does not write them gets them derived from its roles and shape; a brand may
+restyle them and add its own. Every card takes its line weight, corner radius and title type from
+the brand's `default` card unless the card has its own (the standard `raised` keeps its hairline),
+so a brand writes those once. The standard names keep a deck portable: a slide that marks its key
+node `card="solid"` renders in every brand, each in its own way. A brand's own names are for a
+deck that belongs to that brand.
+
+A node takes, in order, its own `card`, its diagram's `card`, the card the brand maps its kind to
+(`diagram.kinds`, such as databases as `tint`), then `default`. States win over the card:
+highlighted, error and success still recolor the outline, and muted nodes and a focus still dim. A
+name the brand does not have does not fail the build, because a deck may be rendered in another
+brand: the next card in the order applies, and `deck lint` reports it (`diagram-card-missing`)
+with the brand's cards and the closest name.
+
 ## Layouts and budgets
 
 Each layout publishes a contract: its frontmatter fields, its slots, and a content budget.
