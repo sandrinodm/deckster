@@ -4,8 +4,8 @@ import { defineDeck } from '@deckster/engine/config';
  * Surface background layers and the slide's own `background:`, rendered in the CLI's `layered`
  * fixture brand: a tinted photo with a corner mark, an untinted busy photo (its text fails contrast
  * on purpose), a dotted pattern, a faint mark under a glow, each form of the override, the image
- * layout on a layered surface and a chart on a photo. `backdrop-probes.test.ts` lints and shoots
- * it.
+ * layout on a layered surface, a chart on a photo and a centred cover over a bright mark in the
+ * middle of the slide. `backdrop-probes.test.ts` lints and shoots it.
  */
 export default defineDeck({
   title: 'Backdrop probes fixture',
@@ -22,5 +22,6 @@ export default defineDeck({
     'image-on-photo',
     'chart-on-photo',
     'override-path',
+    'centred-cover',
   ],
 });

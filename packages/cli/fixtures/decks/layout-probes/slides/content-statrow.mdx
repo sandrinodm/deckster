@@ -1,0 +1,18 @@
+---
+layout: content
+title: Every number moved the right way this year
+width: full
+---
+
+A drop sells for more, costs less, and the rider who brings it stays longer.
+
+<StatRow
+  stats={[
+    { value: 3.1, from: 2.9, label: 'price a drop', format: { style: 'currency', currency: 'EUR', digits: 2 } },
+    { value: 2.34, from: 3.4, better: 'down', label: 'cost a drop', format: { style: 'currency', currency: 'EUR', digits: 2 } },
+    { value: 24.5, delta: '+41.5 pts', tone: 'positive', trend: 'up', unit: '%', label: 'gross margin', highlight: true },
+    { value: 4, from: 7.1, better: 'down', unit: '%', label: 'riders leaving a month' },
+  ]}
+/>
+
+<Notes>Probe: a number figure in running text, which has no height to give a filling figure: it must be as tall as its stats, with no overflow.</Notes>

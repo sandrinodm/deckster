@@ -23,7 +23,18 @@ const EXPORT_TIMEOUT_MS = 240_000;
 /**
  * The number of slides the exemplars deck lists.
  */
-const EXEMPLAR_SLIDES = 16;
+const EXEMPLAR_SLIDES = 26;
+
+/**
+ * The exemplars slide whose cover photo fills the slide, by its 1-based number. The PPTX export
+ * rasterises two elements on it, the scrims below, and on no other exemplar slide.
+ */
+const FULL_BLEED_COVER = 17;
+
+/**
+ * The scrims the full-bleed cover draws: one behind the logo, one behind the text block.
+ */
+const FULL_BLEED_COVER_SCRIMS = 2;
 
 /**
  * Export options writing to a fresh temporary folder.
@@ -199,7 +210,10 @@ layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deck export on the exemplars deck
         expect(runText(parts['ppt/notesSlides/notesSlide1.xml'] ?? '')).toContain(
           'Thank the chair.',
         );
-        expect(result.pptx?.slides.every((slide) => slide.counts.rasterised === 0)).toBe(true);
+        const pictured = (result.pptx?.slides ?? [])
+          .filter((slide) => slide.counts.rasterised > 0)
+          .map((slide) => [slide.slide, slide.counts.rasterised]);
+        expect(pictured).toEqual([[FULL_BLEED_COVER, FULL_BLEED_COVER_SCRIMS]]);
       }),
     EXPORT_TIMEOUT_MS,
   );

@@ -187,9 +187,10 @@ const DARK_ROLES = {
 /**
  * A brand whose surfaces paint background layers, built on {@link WIDE_SANS}'s colors with Arial:
  * `photo`, a photo of grass under a dark tint with a mark in the bottom left corner; `raw-photo`, a
- * busy checkered photo with no tint, so text over it fails contrast; `dots`, a dotted pattern; and
- * `marked`, a large faint mark bleeding off the bottom left corner under a soft glow. Its files are
- * in `fixtures/brand-files/layered/`.
+ * busy checkered photo with no tint, so text over it fails contrast; `dots`, a dotted pattern;
+ * `marked`, a large faint mark bleeding off the bottom left corner under a soft glow; and `ringed`,
+ * a bright mark in the middle of a dark slide, where only centred text stands. Its files are in
+ * `fixtures/brand-files/layered/`.
  */
 const LAYERED = {
   ...WEAK_ACCENT,
@@ -245,6 +246,18 @@ const LAYERED = {
             width: 520,
             offset: { x: -180, y: 200 },
             opacity: 0.12,
+          },
+        ],
+      },
+      ringed: {
+        ...DARK_ROLES,
+        background: [
+          {
+            type: 'placed',
+            file: 'backgrounds/mark.svg',
+            aspect: 1,
+            anchor: 'center',
+            width: 600,
           },
         ],
       },

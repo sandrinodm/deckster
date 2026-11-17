@@ -54,7 +54,7 @@ A deck is just a plain folder (`decks/<name>/`) with `deck.config.ts` and `slide
 ## Highlights
 
 - **MDX & TSX slides**: Write declarative slides with `<Step at={n}>` reveals and `<Notes>` speaker notes, or drop into TSX for interactive React demos.
-- **Typed layouts & brands**: 23 built-in layouts and data-driven `brand.ts` themes (`--brand <name>`). Slides stay free of raw colors and pixel positioning.
+- **Typed layouts & brands**: 32 built-in layouts and data-driven `brand.ts` themes (`--brand <name>`). Slides stay free of raw colors and pixel positioning.
 - **Visual linting (`deck lint`)**: Renders every step of every slide in headless Chromium to catch overflow, truncated text, contrast failures (including over photos), off-brand values, and pacing issues.
 - **PDF & editable PPTX export**: Vector PDFs with bookmarks and embedded fonts, plus hybrid/native PowerPoint decks with masters, editable text, native charts/diagrams, notes, and step animations.
 - **Visual diffing (`deck diff`)**: Pixel-by-pixel slide comparison against a git ref or saved baseline, with an HTML report and PR summary.

@@ -234,8 +234,7 @@ function bodyMdx(
   }
 
   if (accepts.length === 1 && accepts[0] === 'code') {
-    // The code block's bar (its language) counts as a line of the slot.
-    return codeMdx((budget.maxLines ?? CODE_LINES) - 1);
+    return codeMdx(budget.maxLines ?? CODE_LINES);
   }
 
   const heading = contract.name === 'default' ? DEFAULT_HEADING_WORDS : 0;

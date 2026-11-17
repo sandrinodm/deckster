@@ -3,8 +3,9 @@ import { defineDeck } from '@deckster/engine/config';
 /**
  * Layouts fed the cases a review found broken: bright and busy photos under text, cards, steps and
  * timelines of every count, logo walls, teams with long names, tables both ways, closings with long
- * addresses. Shoot it in default and nocturne (and the CLI's `wide-sans` fixture brand) and look at
- * the images after changing a layout; `layout-probes.test.ts` lints it.
+ * addresses, number figures and a chart in running text. Shoot it in default and nocturne (and the
+ * CLI's `wide-sans` fixture brand) and look at the images after changing a layout;
+ * `layout-probes.test.ts` lints it.
  */
 export default defineDeck({
   title: 'Layout probes fixture',
@@ -39,5 +40,8 @@ export default defineDeck({
     'quote-marks',
     'closing-long',
     'agenda-7',
+    'content-statrow',
+    'content-bar',
+    'default-statrow',
   ],
 });

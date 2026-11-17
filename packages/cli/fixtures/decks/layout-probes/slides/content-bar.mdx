@@ -1,0 +1,21 @@
+---
+layout: content
+title: A rider makes nearly twice the stops of a van
+width: full
+---
+
+Stops made per hour on the road, centre of town.
+
+<BarChart
+  data={[
+    { way: 'Rider', stops: 9.4 },
+    { way: 'Van courier', stops: 5.8 },
+    { way: 'Own van', stops: 5.1 },
+  ]}
+  x="way"
+  y="stops"
+  highlight="Rider"
+  caption="Stops an hour, October 2026"
+/>
+
+<Notes>Probe: a drawn chart in running text takes the height the region has left under the sentence, with no overflow.</Notes>

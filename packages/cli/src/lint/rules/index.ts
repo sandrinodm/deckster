@@ -27,6 +27,7 @@ import { diagramSmallTextRule } from '#lint/rules/diagram-small-text.ts';
 import { diagramTooDenseRule } from '#lint/rules/diagram-too-dense.ts';
 import { diagramUnlabeledEdgeRule } from '#lint/rules/diagram-unlabeled-edge.ts';
 import { exportMissingPosterRule } from '#lint/rules/export-missing-poster.ts';
+import { fewBuildsRule } from '#lint/rules/few-builds.ts';
 import { layoutRepetitionRule } from '#lint/rules/layout-repetition.ts';
 import { lowResImageRule } from '#lint/rules/low-res-image.ts';
 import { minFontSizeRule } from '#lint/rules/min-font-size.ts';
@@ -85,6 +86,7 @@ export const LINT_RULES: readonly LintRule[] = [
   missingNotesRule,
   loadErrorRule,
   layoutRepetitionRule,
+  fewBuildsRule,
   timeBudgetRule,
   openCommentsRule,
 ];

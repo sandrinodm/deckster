@@ -387,7 +387,9 @@ export type SlotSnapshot = {
   bullets: number;
 
   /**
-   * Rendered lines of text: distinct line positions of the slot's text.
+   * Lines: the lines of code each code block or terminal holds (`data-code-lines`, blank lines
+   * included, its title bar and line numbers left out), plus the distinct line positions of the
+   * slot's other text.
    */
   lines: number;
 

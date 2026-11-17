@@ -70,6 +70,8 @@ describe('the backdrop probes', () => {
         Effect.gen(function* () {
           const report = yield* lintDeck({ deck: PROBE_DECK, brand: undefined });
           const errors = report.findings.filter((finding) => finding.severity === 'error');
+          // centred-cover passes only because a centred cover fades the bright mark out of the
+          // middle of the slide, behind its text.
           expect([...new Set(errors.map((finding) => `${finding.slide} ${finding.rule}`))]).toEqual(
             ['raw-photo-content contrast'],
           );
@@ -95,6 +97,8 @@ describe('the backdrop probes', () => {
             expect(yield* layersOn(8)).toEqual([]);
             // override-path: the string form.
             expect(yield* layersOn(10)).toEqual(['image@slide']);
+            // centred-cover: the mark is still drawn, only faded out behind the text.
+            expect(yield* layersOn(11)).toEqual(['placed@0']);
           }),
         ),
       ).pipe(Effect.provide(NodeServices.layer)),

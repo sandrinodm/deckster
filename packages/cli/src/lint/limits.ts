@@ -55,3 +55,15 @@ export const MIN_IMAGE_RESOLUTION_RATIO = 0.95;
  * How many slides in a row with the same layout and surface `layout-repetition` reports.
  */
 export const REPEATED_LAYOUT_RUN = 3;
+
+/**
+ * The fewest chart, diagram and code slides a deck has before `few-builds` looks at how many of
+ * them build in steps; a shorter deck may well show its few figures whole.
+ */
+export const FEW_BUILDS_MIN_EVIDENCE_SLIDES = 4;
+
+/**
+ * The share of a deck's chart, diagram and code slides that should build in steps, as a fraction
+ * from 0 to 1; `few-builds` reports a deck below it.
+ */
+export const FEW_BUILDS_MIN_SHARE = 0.25;

@@ -38,6 +38,12 @@ export const BUILD_WARNING_SEVERITY: Readonly<Record<string, LintFinding['severi
    * A `<Cmd>` or `<Out>` tone the terminal does not have.
    */
   'terminal-tone': 'warning',
+
+  /**
+   * An image treatment the brand does not have, so the picture is drawn as it is. A warning, as
+   * treatment names differ between brands and a deck may be linted in another one.
+   */
+  'treatment-unknown': 'warning',
 };
 
 /**

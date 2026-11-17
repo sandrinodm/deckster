@@ -90,6 +90,8 @@ export function collectElements(): CollectedPage {
   const HEX_BLUE_OFFSET = 4;
   const PHOTO_TAGS = new Set(['img', 'video', 'canvas', 'picture']);
   const overMediaAttribute = 'data-deck-lint-over-media';
+  const codeLinesAttribute = 'data-code-lines';
+  const codeLinesSelector = '[data-code-lines]';
 
   /**
    * Rounds canvas pixels to hundredths, so snapshots stay readable.
@@ -868,16 +870,27 @@ export function collectElements(): CollectedPage {
   };
 
   /**
-   * Counts the words, list items and rendered lines of one slot. Lines are the distinct vertical
-   * positions of the slot's text, so wrapped text counts every line it takes.
+   * Counts the words, list items and lines of one slot. A code block or terminal says how many
+   * lines of code it holds (`data-code-lines`), which is what a layout's `maxLines` budgets: its
+   * title bar and line numbers are not code, and a blank line counts whether or not it shows a
+   * number. Any other text counts its distinct vertical positions, so wrapped text counts every
+   * line it takes.
    *
    * @param element - The slot's `.deck-slot` wrapper.
    */
   const measureSlot = (element: Element): SlotSnapshot => {
     const boxes: Box[] = [];
+    const codeLines = Array.from(element.querySelectorAll(codeLinesSelector)).reduce(
+      (sum, block) => sum + (Number(block.getAttribute(codeLinesAttribute)) || 0),
+      0,
+    );
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
     for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
-      if ((node.textContent ?? '').trim() === '') {
+      const enclosingCode = node.parentElement?.closest(codeLinesSelector) ?? null;
+      if (
+        (node.textContent ?? '').trim() === '' ||
+        (enclosingCode !== null && element.contains(enclosingCode))
+      ) {
         continue;
       }
 
@@ -894,7 +907,7 @@ export function collectElements(): CollectedPage {
       name: element.getAttribute('data-slot') ?? '',
       words: countWords(element.textContent ?? ''),
       bullets: element.querySelectorAll('li').length,
-      lines: countLines(boxes, SLOT_LINE_TOLERANCE_PX),
+      lines: codeLines + countLines(boxes, SLOT_LINE_TOLERANCE_PX),
       kinds: contentKinds(element),
     };
   };

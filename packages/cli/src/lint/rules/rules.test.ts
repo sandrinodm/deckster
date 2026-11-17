@@ -13,6 +13,7 @@ import { canvasOverflowRule } from '#lint/rules/canvas-overflow.ts';
 import { containerOverflowRule } from '#lint/rules/container-overflow.ts';
 import { contentBudgetRule } from '#lint/rules/content-budget.ts';
 import { contrastRule } from '#lint/rules/contrast.ts';
+import { fewBuildsRule } from '#lint/rules/few-builds.ts';
 import { layoutRepetitionRule } from '#lint/rules/layout-repetition.ts';
 import { lowResImageRule } from '#lint/rules/low-res-image.ts';
 import { minFontSizeRule } from '#lint/rules/min-font-size.ts';
@@ -443,6 +444,33 @@ layer(NodeServices.layer)('lint rules', (it) => {
           message: '3 slides in a row use the default layout on the default surface: s2, s3, s4.',
         }),
       ]);
+    }),
+  );
+
+  it.effect('few-builds reports a deck whose chart, diagram and code slides rarely build', () =>
+    Effect.gen(function* () {
+      const tokens = yield* testBrandTokens('default');
+      const figures = (stepCounts: readonly number[]) =>
+        deckInput(tokens, [
+          { layout: 'title' },
+          ...stepCounts.map((stepCount, index) => ({
+            layout: index % 2 === 0 ? 'chart' : 'diagram',
+            stepCount,
+          })),
+          { layout: 'content', stepCount: 3 },
+        ]);
+      expect(fewBuildsRule.check(figures([1, 1, 1]))).toEqual([]);
+      expect(fewBuildsRule.check(figures([3, 1, 1, 1]))).toEqual([]);
+      expect(fewBuildsRule.check(figures([3, 1, 1, 1, 1]))).toEqual([
+        expect.objectContaining({
+          slide: null,
+          message:
+            '1 of 5 chart, diagram and code slides build in steps; these show everything at ' +
+            'once: s3, s4, s5, s6.',
+        }),
+      ]);
+      const threeOfFourteen = [3, 4, 6, ...Array.from({ length: 11 }, () => 1)];
+      expect(fewBuildsRule.check(figures(threeOfFourteen))).toHaveLength(1);
     }),
   );
 
