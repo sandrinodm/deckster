@@ -1,0 +1,235 @@
+/*
+ * The proof layout. The safe area is one grid of twelve columns: the header, the quote region and
+ * the footnote stacked in the left seven, and the metric stack in the right four, on an accent panel
+ * the frame draws from the seam (the middle of the gutter after the seventh column) to the top,
+ * right and bottom edges of the slide.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='proof'] {
+    --kit-proof-seam: calc(
+      var(--brand-margin-x) + 7 * (var(--kit-column) + var(--kit-gutter)) - var(--kit-gutter) / 2
+    );
+    --kit-proof-gap: var(--brand-space-xl);
+    --kit-proof-lead-scale: 0.8;
+    --kit-proof-scale: 0.48;
+    --kit-proof-portrait: calc(2.2 * var(--brand-type-title-size));
+
+    isolation: isolate;
+  }
+
+  .kit-frame[data-layout='proof']:not([data-level='0']) {
+    --kit-proof-gap: var(--brand-space-lg);
+  }
+
+  /* A single metric has the panel to itself and stands larger. */
+  .kit-frame[data-layout='proof'][data-count='1'] {
+    --kit-proof-lead-scale: 1;
+  }
+
+  .kit-frame[data-layout='proof'][data-level='2'] {
+    --kit-proof-lead-scale: 0.68;
+    --kit-proof-scale: 0.4;
+  }
+
+  /* The safe area stands over the panel, which the frame draws after it. */
+  .kit-frame[data-layout='proof'] > .kit-safe {
+    z-index: 1;
+  }
+
+  .kit-proof-panel {
+    position: absolute;
+    inset: 0 0 0 var(--kit-proof-seam);
+  }
+
+  .kit-proof {
+    display: grid;
+    height: 100%;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    column-gap: var(--kit-gutter);
+  }
+
+  .kit-proof-head {
+    grid-column: 1 / span 7;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .kit-proof-region {
+    grid-column: 1 / span 7;
+    grid-row: 2;
+    padding-top: var(--kit-title-gap);
+  }
+
+  .kit-proof-quote {
+    margin: 0;
+  }
+
+  .kit-proof-words {
+    max-width: 100%;
+  }
+
+  /*
+   * The person: the portrait (or an accent rule) beside the name and role, then the customer's
+   * logo after a hairline, all centred on one line.
+   */
+  .kit-proof-person {
+    display: flex;
+    align-items: center;
+    gap: var(--brand-space-md);
+    margin-top: var(--brand-space-xl);
+  }
+
+  .kit-proof-rule {
+    flex: none;
+    width: 2.4em;
+    height: var(--brand-stroke-regular);
+    background: var(--brand-color-accent);
+    font-size: var(--brand-type-lead-size);
+  }
+
+  .kit-proof-portrait {
+    flex: none;
+    width: var(--kit-proof-portrait);
+    height: var(--kit-proof-portrait);
+    border-radius: var(--kit-media-radius, 0);
+  }
+
+  .kit-proof-who {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-2xs);
+    min-width: 0;
+  }
+
+  .kit-proof-name {
+    color: var(--brand-color-heading);
+    text-wrap: balance;
+  }
+
+  .kit-proof-role {
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  /* The logo stands after a hairline, small: about the height of the name and role together. */
+  .kit-proof-logo {
+    --kit-mark-size: calc(2.8 * var(--brand-type-title-size));
+    --kit-mark-height: calc(1.4 * var(--brand-type-title-size));
+    --kit-mark-tone: var(--brand-color-fg);
+    --kit-mark-max-width: calc(2 * var(--kit-column) + var(--kit-gutter));
+
+    flex: none;
+    align-self: stretch;
+    align-items: center;
+    padding-inline-start: var(--brand-space-md);
+    border-inline-start: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-frame[data-layout='proof'] .kit-footnote {
+    grid-column: 1 / span 7;
+    grid-row: 3;
+  }
+
+  /* The panel's column: the metrics stand a little above the middle of its height. */
+  .kit-proof-side {
+    grid-column: 9 / -1;
+    grid-row: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-proof-side::before,
+  .kit-proof-side::after {
+    content: '';
+    flex: 2 1 0;
+  }
+
+  .kit-proof-side::after {
+    flex-grow: 3;
+  }
+
+  .kit-proof-stack {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: var(--kit-proof-gap);
+    min-width: 0;
+  }
+
+  .kit-proof-metric {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .kit-proof-metric[data-lead='false'] {
+    padding-top: var(--kit-proof-gap);
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-proof-timeframe {
+    margin-bottom: var(--brand-space-md);
+    color: var(--brand-color-fg);
+  }
+
+  .kit-proof-change {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* After the lead, the figure before stands on the baseline in front of the figure after. */
+  .kit-proof-metric[data-lead='false'] .kit-proof-change {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--brand-space-sm);
+  }
+
+  .kit-proof-from {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--brand-space-xs);
+    color: var(--brand-color-fg);
+    white-space: nowrap;
+  }
+
+  .kit-proof-arrow {
+    flex: none;
+    width: 0.9em;
+    height: 0.9em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: calc(var(--brand-icon-stroke) * 1.1);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .kit-proof-figure {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .kit-frame[data-layout='proof'] .kit-proof-value {
+    --kit-scale: var(--kit-proof-scale);
+
+    line-height: 1;
+    padding-bottom: 0.06em;
+    color: var(--brand-color-heading);
+  }
+
+  .kit-frame[data-layout='proof'] .kit-proof-metric[data-lead='true'] .kit-proof-value {
+    --kit-scale: var(--kit-proof-lead-scale);
+  }
+
+  .kit-proof-label {
+    margin-top: var(--brand-space-xs);
+    color: var(--brand-color-fg);
+    text-wrap: balance;
+  }
+}

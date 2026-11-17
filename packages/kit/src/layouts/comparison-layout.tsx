@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 
 import { defineLayout, useStatic, type LayoutProps } from '@deckster/engine';
+import { Fragment } from 'react';
 
 import type {
   comparisonLayoutContract,
@@ -226,7 +227,8 @@ function badgeOf(option: ComparisonOptionEntry, badge: string): string {
  */
 function inColumn(motion: ColumnMotion, column: number, key: string, part: ReactNode): ReactNode {
   if (!motion.reveal) {
-    return part;
+    // The part is one of a list either way, so it takes the same key without a step around it.
+    return <Fragment key={key}>{part}</Fragment>;
   }
 
   return (

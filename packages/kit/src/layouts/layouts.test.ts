@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import catalog from '#catalog.ts';
 import { contentLayoutContract } from '#layouts/content-layout.contract.ts';
-import { sectionLayoutContract } from '#layouts/section-layout.contract.ts';
+import { sectionLayoutContract, sectionProblems } from '#layouts/section-layout.contract.ts';
 import { splitLayoutContract } from '#layouts/split-layout.contract.ts';
 import { statementLayoutContract } from '#layouts/statement-layout.contract.ts';
 import { statsLayoutContract } from '#layouts/stats-layout.contract.ts';
@@ -273,5 +273,59 @@ describe('stats limits', () => {
         stats: [{ ...TWO_STATS[0], tones: 'positive' }, TWO_STATS[1]],
       }),
     ).toThrow('Expected no excess property');
+  });
+});
+
+describe('display layout options', () => {
+  it('set the cover, divider and statement from the left unless a slide centres them', () => {
+    for (const contract of [titleLayoutContract, sectionLayoutContract, statementLayoutContract]) {
+      expect(decode(contract, {}), contract.name).toMatchObject({ align: 'left' });
+      expect(decode(contract, { align: 'center' }), contract.name).toMatchObject({
+        align: 'center',
+      });
+      expect(() => decode(contract, { align: 'right' }), contract.name).toThrow(
+        'Expected "left" | "center"',
+      );
+    }
+  });
+
+  it('mark a statement’s emphasis with an underline only when the slide asks for it', () => {
+    expect(decode(statementLayoutContract, {})).not.toHaveProperty('emphasis');
+    expect(decode(statementLayoutContract, { emphasis: 'underline' })).toMatchObject({
+      emphasis: 'underline',
+    });
+    expect(() => decode(statementLayoutContract, { emphasis: 'bold' })).toThrow(
+      'Expected "underline"',
+    );
+  });
+
+  it('set a divider’s number on the top line unless the slide asks for the large numeral', () => {
+    expect(decode(sectionLayoutContract, { number: 2 })).not.toHaveProperty('numeral');
+    expect(decode(sectionLayoutContract, { number: 2, numeral: 'large' })).toMatchObject({
+      numeral: 'large',
+    });
+    expect(() => decode(sectionLayoutContract, { numeral: 'huge' })).toThrow(
+      'Expected "small" | "large"',
+    );
+  });
+
+  it('report a large numeral on a divider that has no number', () => {
+    expect(sectionProblems({ numeral: 'large' })).toEqual([
+      expect.objectContaining({ path: 'numeral' }),
+    ]);
+    expect(sectionProblems({ numeral: 'large', number: 'IV' })).toEqual([]);
+    expect(sectionProblems({})).toEqual([]);
+  });
+
+  it('hold the summary of a divider beside a photo to fewer words, on a variant', () => {
+    const variant = sectionLayoutContract.variants?.find((entry) => entry.name === 'with media');
+    expect(variant?.budget.body?.maxWords).toBe(14);
+  });
+
+  it('take a photo on a divider, as on the cover', () => {
+    expect(sectionLayoutContract.slots['media']?.accepts).toEqual(['image']);
+    expect(decode(sectionLayoutContract, { treatment: 'plain' })).toMatchObject({
+      treatment: 'plain',
+    });
   });
 });

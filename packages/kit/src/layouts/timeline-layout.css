@@ -1,6 +1,7 @@
 /*
  * The timeline layout: the kit's timeline across the twelve columns, filling the region under the
- * header, its text a step larger than inside a diagram slide.
+ * header (a roomy one stands in it at its own height), its text a step larger than inside a diagram
+ * slide.
  */
 @layer theme, base, components, utilities;
 
@@ -81,5 +82,236 @@
   .kit-frame[data-layout='timeline'] .kit-timeline-text {
     gap: var(--brand-space-sm);
     padding-top: var(--brand-space-lg);
+  }
+}
+
+/*
+ * A roomy timeline, for milestones that leave the region room. The fill is as tall as the timeline
+ * (the timeline is in the flow, not laid over the fill), so the layout can measure it against the
+ * region, and it stands a little above the middle of the region like other sparse content. The
+ * date is set at the body size (the small size with five) over a dot about the title size on a
+ * line of the bold stroke, with more air around them; the title takes the lead size and the detail
+ * the body size. At the large levels the date takes the title's voice at the title size (the lead
+ * size with five), the title of three or four milestones the title size and, with three, the detail
+ * the lead size.
+ */
+@layer components {
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-region::before,
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-region::after {
+    content: '';
+    flex: 2 1 0;
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-region::after {
+    flex-grow: 3;
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-fill {
+    flex: none;
+    container-type: inline-size;
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-diagram {
+    height: auto;
+  }
+
+  /* Words are never broken at a roomy level: a word wider than its milestone widens the column
+     instead, the timeline overflows the region and the layout steps down. */
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline {
+    --kit-timeline-dot: calc(0.8 * var(--brand-type-title-size));
+    --kit-timeline-date: var(--brand-type-body-size);
+    --kit-timeline-date-leading: var(--brand-type-label-line-height);
+    --kit-timeline-date-gap: var(--brand-space-lg);
+
+    position: relative;
+    inset: auto;
+    grid-template-columns: repeat(var(--kit-timeline-count), minmax(min-content, 1fr));
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-item {
+    grid-template-columns: minmax(min-content, 1fr);
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true']
+    :is(.kit-timeline-title, .kit-timeline-detail) {
+    overflow-wrap: normal;
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'][data-count='3'] .kit-timeline {
+    --kit-timeline-dot: calc(1.1 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'][data-count='4'] .kit-timeline {
+    --kit-timeline-dot: calc(0.95 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'][data-large='false'][data-count='5']
+    .kit-timeline {
+    --kit-timeline-date: var(--brand-type-small-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-date {
+    --kit-step-size: var(--kit-timeline-date);
+
+    padding-bottom: var(--kit-timeline-date-gap);
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-axis {
+    top: calc(
+      var(--kit-timeline-date) * var(--kit-timeline-date-leading) + var(--kit-timeline-date-gap) +
+        var(--kit-timeline-dot) / 2
+    );
+    height: var(--brand-stroke-bold);
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-dot {
+    border-width: var(--brand-stroke-bold);
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-text {
+    gap: var(--brand-space-sm);
+    padding-top: var(--brand-space-xl);
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-title {
+    --kit-step-size: var(--brand-type-lead-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-roomy='true'] .kit-timeline-detail {
+    --kit-step-size: var(--brand-type-body-size);
+  }
+
+  /*
+   * At the large levels the dates carry the timeline: set in the title's voice at the title size (the
+   * lead size with five) in the heading color, figures a roadmap reads by, over the milestones.
+   */
+  .kit-frame[data-layout='timeline'][data-large='true'] .kit-timeline {
+    --kit-timeline-date: var(--brand-type-title-size);
+    --kit-timeline-date-leading: var(--brand-type-title-line-height);
+    --kit-timeline-date-gap: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='timeline'][data-large='true'][data-count='5'] .kit-timeline {
+    --kit-timeline-date: var(--brand-type-lead-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-large='true'] .kit-timeline-date {
+    --kit-step-family: var(--brand-type-title-family);
+    --kit-step-line-height: var(--brand-type-title-line-height);
+    --kit-step-tracking: var(--brand-type-title-tracking);
+    --kit-step-weight: var(--brand-type-title-weight);
+    --kit-step-style: var(--brand-type-title-style);
+    --kit-step-case: var(--brand-type-title-case);
+    --kit-step-features: var(--brand-type-title-features);
+    --kit-step-axes: var(--brand-type-title-axes);
+
+    color: var(--brand-color-heading);
+    white-space: nowrap;
+  }
+
+  /* A date still to come reads like its title, in the label color. */
+  .kit-frame[data-layout='timeline'][data-large='true']
+    .kit-timeline-item:is([data-state='future'], [data-state='muted'])
+    .kit-timeline-date {
+    color: var(--brand-diagram-label);
+  }
+
+  .kit-frame[data-layout='timeline'][data-large='true']:is([data-count='3'], [data-count='4'])
+    .kit-timeline-title {
+    --kit-step-size: var(--brand-type-title-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-large='true'][data-count='3'] .kit-timeline-detail {
+    --kit-step-size: var(--brand-type-lead-size);
+  }
+}
+
+/*
+ * At its two largest levels the timeline is the subject of the slide, the way a board of columns
+ * or the ask's figure is: the title and detail of each milestone stand on a panel of the surface's
+ * raised color under its dot, the panels of a row as tall as the tallest and the current
+ * milestone's edged in the accent, which gives the row the weight that centred lines of text alone
+ * do not have. At the largest the dates also take the headline size (the title size with five),
+ * the dots grow and four milestones set the detail at the lead size.
+ */
+@layer components {
+  .kit-frame[data-layout='timeline'][data-xl='true'] .kit-timeline {
+    --kit-timeline-date: var(--brand-type-headline-size);
+    --kit-timeline-date-gap: var(--brand-space-sm);
+  }
+
+  /* Dates this large keep clear of each other: a row whose dates would touch is too wide at this
+     level and takes the next. */
+  .kit-frame[data-layout='timeline'][data-xl='true'] .kit-timeline-date {
+    padding-inline: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='timeline'][data-xl='true'][data-count='3'] .kit-timeline {
+    --kit-timeline-dot: calc(1.3 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='timeline'][data-xl='true'][data-count='4'] .kit-timeline {
+    --kit-timeline-dot: calc(1.1 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='timeline'][data-xl='true'][data-count='5'] .kit-timeline {
+    --kit-timeline-dot: calc(0.95 * var(--brand-type-title-size));
+    --kit-timeline-date: var(--brand-type-title-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-panels='true'] .kit-timeline-item {
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .kit-frame[data-layout='timeline'][data-panels='true'] .kit-timeline-text {
+    justify-self: stretch;
+    align-self: stretch;
+    margin-top: var(--brand-space-lg);
+    padding: var(--brand-space-lg) var(--brand-space-md);
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-lg);
+    background: var(--brand-color-surface);
+  }
+
+  /* Five panels are narrow: less padding keeps their lines as long as without panels. */
+  .kit-frame[data-layout='timeline'][data-panels='true'][data-count='5'] .kit-timeline-text {
+    padding: var(--brand-space-md) var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='timeline'][data-panels='true']
+    .kit-timeline-item[data-state='current']
+    .kit-timeline-text {
+    border-color: var(--brand-diagram-highlight);
+  }
+
+  .kit-frame[data-layout='timeline'][data-xl='true'][data-count='4'] .kit-timeline-detail {
+    --kit-step-size: var(--brand-type-lead-size);
+  }
+}
+
+/*
+ * A snug timeline, the last roomy level: the roomy date, dot and heavier line over the title and
+ * detail at their usual sizes, for milestones that miss the roomy level by a little.
+ */
+@layer components {
+  .kit-frame[data-layout='timeline'][data-snug='true'] .kit-timeline-text {
+    padding-top: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='timeline'][data-snug='true'] .kit-timeline-title {
+    --kit-step-size: var(--brand-type-small-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-snug='true'] .kit-timeline-detail {
+    --kit-step-size: var(--brand-type-small-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-snug='true']:is([data-count='3'], [data-count='4'])
+    .kit-timeline-title {
+    --kit-step-size: var(--brand-type-lead-size);
+  }
+
+  .kit-frame[data-layout='timeline'][data-snug='true'][data-count='3'] .kit-timeline-detail {
+    --kit-step-size: var(--brand-type-body-size);
   }
 }

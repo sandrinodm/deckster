@@ -1,6 +1,7 @@
 /*
  * The section layout: the part number on the top line; eyebrow, title and the summary's two
- * reserved lines standing on the bottom line.
+ * reserved lines standing on the bottom line. Its options keep that block where it is or move it
+ * as a whole, so the dividers of one deck set their titles at one height whatever their summaries.
  */
 @layer theme, base, components, utilities;
 
@@ -33,5 +34,115 @@
 
   .kit-section-summary p {
     color: inherit;
+  }
+
+  /*
+   * The large numeral: the part number in the display face at nine tenths of the slide's height,
+   * in the surface's own tone (the color cards sit on), standing on the right edge of the grid and
+   * running off the bottom of the slide. It is decoration behind the text, which stays readable on
+   * it as on a card; the number itself is in the eyebrow or the outline.
+   */
+  .kit-frame[data-layout='section'][data-numeral='large'] > .kit-safe {
+    z-index: 1;
+  }
+
+  .kit-section-numeral {
+    position: absolute;
+    right: -0.05em;
+    bottom: -0.2em;
+    z-index: 0;
+    margin: 0;
+    font-family: var(--brand-type-display-family);
+    font-size: calc(var(--kit-canvas-height));
+    font-style: var(--brand-type-display-style);
+    font-weight: var(--brand-type-display-weight);
+    font-feature-settings: var(--brand-type-display-features);
+    font-variation-settings: var(--brand-type-display-axes);
+    line-height: 1;
+    letter-spacing: var(--brand-type-display-tracking);
+    text-transform: var(--brand-type-display-case);
+    white-space: nowrap;
+    color: var(--brand-color-surface);
+    pointer-events: none;
+  }
+
+  /* Three characters (`Q3A`, `XII`) set a size smaller, so the numeral keeps to the slide's width. */
+  .kit-section-numeral[data-chars='3'] {
+    font-size: calc(0.62 * var(--kit-canvas-height));
+    bottom: -0.15em;
+  }
+
+  /*
+   * Centred: the number, eyebrow, title and summary stack on the slide's centre line, the block a
+   * little above the middle; the summary keeps its two reserved lines, so a title stays at one
+   * height. The large numeral stands centred behind the block.
+   */
+  .kit-frame[data-layout='section'][data-align='center'] > .kit-safe {
+    align-items: center;
+    text-align: center;
+  }
+
+  .kit-frame[data-layout='section'][data-align='center'] > .kit-safe::before,
+  .kit-frame[data-layout='section'][data-align='center'] > .kit-safe::after {
+    content: '';
+    flex: 2 1 0;
+  }
+
+  .kit-frame[data-layout='section'][data-align='center'] > .kit-safe::after {
+    flex-grow: 3;
+  }
+
+  .kit-frame[data-layout='section'][data-align='center'] .kit-section-number {
+    margin-bottom: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='section'][data-align='center'] .kit-section-main {
+    align-items: center;
+    margin-top: 0;
+  }
+
+  /* Centred by its box, not by `translate`, which the slide entrance animates. */
+  .kit-frame[data-layout='section'][data-align='center'] .kit-section-numeral {
+    top: 50%;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    margin-top: -0.5lh;
+    text-align: center;
+  }
+
+  /*
+   * With a photo: it fills the right five columns to the slide edges, and the text keeps to the
+   * seven on the left, the large numeral standing on their right edge, behind the text.
+   */
+  .kit-frame[data-layout='section'][data-media='true'] .kit-section-main {
+    width: calc(var(--kit-canvas-width) * 7 / 12 - 2 * var(--brand-margin-x));
+  }
+
+  .kit-frame[data-layout='section'][data-media='true'] .kit-section-numeral {
+    right: calc(var(--kit-canvas-width) * 5 / 12 + var(--brand-margin-x));
+  }
+
+  .kit-section-media {
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    z-index: 2;
+    width: calc(var(--kit-canvas-width) * 5 / 12);
+  }
+
+  .kit-section-frame {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .kit-section-frame > .deck-slot > :is(img, video, svg) {
+    display: block;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }

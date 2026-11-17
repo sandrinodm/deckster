@@ -1,0 +1,50 @@
+/*
+ * What the display layouts (title, section, statement) share when `align: center` centres them:
+ * the eyebrow is centred too, between two rules, the second a mirror of the one before it; and the
+ * middle of the slide is cleared of the surface's background art.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame:is(
+      [data-layout='title'],
+      [data-layout='section'],
+      [data-layout='statement']
+    )[data-align='center']
+    .kit-eyebrow {
+    justify-content: center;
+  }
+
+  .kit-frame:is(
+      [data-layout='title'],
+      [data-layout='section'],
+      [data-layout='statement']
+    )[data-align='center']
+    .kit-eyebrow:not(:empty)::after {
+    content: '';
+    flex: none;
+    width: 1.4em;
+    height: var(--brand-stroke-bold);
+    margin-top: calc(0.5lh - var(--brand-stroke-bold) / 2);
+    background: currentColor;
+  }
+
+  /*
+   * A brand holds its text colors to its surface colors and gradients, and places its art (contour
+   * lines, marks) where text set from the left does not stand. A centred block crosses the middle
+   * of the slide instead, so when every layer of the surface is placed art, the layers fade out from
+   * the edges toward the middle, behind the block, and the gradient stays whole. The mask is an
+   * alpha stencil, so its black only says "keep". Any other layer stays whole: a pattern tiles the
+   * whole slide, where the brand already holds text over it, and a photo ground (a surface image,
+   * or the slide's own `background:`) is kept readable by its tint, so a hole would show the color
+   * under it.
+   */
+  .kit-frame:is(
+      [data-layout='title'],
+      [data-layout='section'],
+      [data-layout='statement']
+    )[data-align='center']
+    > .kit-backdrop:not(:has([data-backdrop-layer]:not([data-backdrop-kind='placed']))) {
+    mask-image: radial-gradient(closest-side, transparent 60%, #000);
+  }
+}

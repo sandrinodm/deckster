@@ -12,20 +12,29 @@ import { DIAGRAM_COMPONENTS } from '#diagrams/diagram-components.ts';
 import { MarkdownTable } from '#foundation/markdown-table.tsx';
 import { Icon } from '#icons/icon.tsx';
 import { agendaLayout } from '#layouts/agenda-layout.tsx';
+import { askLayout } from '#layouts/ask-layout.tsx';
+import { bentoLayout } from '#layouts/bento-layout.tsx';
 import { bioLayout } from '#layouts/bio-layout.tsx';
 import { cardsLayout } from '#layouts/cards-layout.tsx';
 import { chartLayout } from '#layouts/chart-layout.tsx';
 import { closingLayout } from '#layouts/closing-layout.tsx';
 import { codeLayout } from '#layouts/code-layout.tsx';
+import { columnsLayout } from '#layouts/columns-layout.tsx';
 import { comparisonLayout } from '#layouts/comparison-layout.tsx';
 import { contentLayout } from '#layouts/content-layout.tsx';
 import { defaultLayout } from '#layouts/default-layout.tsx';
 import { demoLayout } from '#layouts/demo-layout.tsx';
 import { diagramLayout } from '#layouts/diagram-layout.tsx';
+import { equationLayout } from '#layouts/equation-layout.tsx';
+import { galleryLayout } from '#layouts/gallery-layout.tsx';
 import { imageLayout } from '#layouts/image-layout.tsx';
 import { logosLayout } from '#layouts/logos-layout.tsx';
+import { matrixLayout } from '#layouts/matrix-layout.tsx';
+import { proofLayout } from '#layouts/proof-layout.tsx';
 import { quoteLayout } from '#layouts/quote-layout.tsx';
+import { screenLayout } from '#layouts/screen-layout.tsx';
 import { sectionLayout } from '#layouts/section-layout.tsx';
+import { shiftLayout } from '#layouts/shift-layout.tsx';
 import { splitLayout } from '#layouts/split-layout.tsx';
 import { statementLayout } from '#layouts/statement-layout.tsx';
 import { statsLayout } from '#layouts/stats-layout.tsx';
@@ -42,6 +51,7 @@ import { QR } from '#links/qr.tsx';
 import { Image } from '#media/image.tsx';
 import { Lottie } from '#media/lottie.tsx';
 import { Video } from '#media/video.tsx';
+import { Morph } from '#motion/morph.tsx';
 import { Step } from '#motion/step.tsx';
 import '#apps/apps.css';
 import '#code/code.css';
@@ -72,27 +82,37 @@ export default definePlugin({
     contentLayout,
     splitLayout,
     statsLayout,
+    equationLayout,
     chartLayout,
     diagramLayout,
     codeLayout,
     demoLayout,
     agendaLayout,
     quoteLayout,
+    proofLayout,
     imageLayout,
+    galleryLayout,
+    screenLayout,
     cardsLayout,
+    columnsLayout,
+    bentoLayout,
     stepsLayout,
     comparisonLayout,
+    matrixLayout,
+    shiftLayout,
     timelineLayout,
     tableLayout,
     logosLayout,
     teamLayout,
     bioLayout,
+    askLayout,
     closingLayout,
   ],
   components: {
     a: Link,
     table: MarkdownTable,
     Step,
+    Morph,
     Button,
     Download,
     LinkCard,

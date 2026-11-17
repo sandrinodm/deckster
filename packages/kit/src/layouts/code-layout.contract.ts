@@ -17,7 +17,7 @@ export const codeLayoutContract = defineLayoutContract({
   description:
     'A title that states what the code shows, then a large code area: a fenced block, a ' +
     '<CodeMove> that animates between versions, or a <Terminal> session. Fill <Aside> with up to ' +
-    'three short notes to set them beside the code. Keep code to about 12 lines and 60 columns ' +
+    'three short notes to set them beside the code. Keep code to at most 11 lines and 60 columns ' +
     'beside notes (90 without); longer lines step the font down to the brand minimum and then ' +
     'overflow, which `deck lint` reports. In a <Terminal> each <Cmd> adds one step (the first at ' +
     "the Terminal's `at`, default 1, so step 0 shows only the prompt and cursor); a fence with " +
@@ -30,7 +30,7 @@ export const codeLayoutContract = defineLayoutContract({
       description:
         'One code block: a fence with options (```ts title="app.ts" {2-4|7}), a <CodeMove> ' +
         'with a fence per version, or a <Terminal> (one step per <Cmd>, its <Out> lines following; ' +
-        'step 0 shows only the prompt and cursor). About 12 lines, 60 columns beside notes or ' +
+        'step 0 shows only the prompt and cursor). At most 11 lines, 60 columns beside notes or ' +
         '90 without. Set the takeaway in `title:` (one line).',
       required: true,
       accepts: ['code'],

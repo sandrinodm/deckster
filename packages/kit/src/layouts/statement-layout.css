@@ -69,4 +69,70 @@
   .kit-statement-attribution p {
     margin: 0;
   }
+
+  /*
+   * Centred: the eyebrow sits between two rules on the top line, and the statement, its marks and
+   * the attribution are centred under it. The opening mark still hangs before the first word.
+   */
+  .kit-frame[data-layout='statement'][data-align='center'] .kit-statement {
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .kit-frame[data-layout='statement'][data-align='center'] .kit-statement-attribution {
+    justify-content: center;
+  }
+
+  /*
+   * Emphasis: the words the author marks with `*...*` or `**...**` carry the claim. They stay
+   * upright and at the statement's weight, set in the accent over a heavy rule in the accent. The
+   * rule carries the mark where the accent is the text color, as on most brands' accent surface.
+   */
+  .kit-frame[data-layout='statement'][data-emphasis] .kit-statement-text :is(em, strong) {
+    font-style: inherit;
+    font-weight: inherit;
+  }
+
+  .kit-frame[data-layout='statement'][data-emphasis='underline']
+    .kit-statement-text
+    :is(em, strong) {
+    color: var(--brand-color-accent-text);
+    text-decoration-line: underline;
+    text-decoration-color: var(--brand-color-accent);
+    text-decoration-thickness: 0.09em;
+    text-underline-offset: 0.1em;
+    text-decoration-skip-ink: none;
+  }
+}
+
+/*
+ * Giant: a few words across most of the slide, at the size the layout fits them to. The text takes
+ * all twelve columns, set tighter than the display style (closer tracking, leading under one) as
+ * large type wants, with balanced lines. Words never break: a word too wide for the slide must step
+ * the size down, so the layout can see it.
+ */
+@layer components {
+  .kit-frame[data-layout='statement'][data-size='giant'] .kit-statement {
+    max-width: none;
+  }
+
+  .kit-frame[data-layout='statement'][data-size='giant'] .kit-statement-text {
+    padding-bottom: 0.06em;
+    line-height: min(var(--brand-type-display-line-height), 0.94);
+    letter-spacing: min(var(--brand-type-display-tracking), -0.025em);
+    overflow-wrap: normal;
+    text-wrap: balance;
+  }
+
+  .kit-frame[data-layout='statement'][data-size='giant'] .kit-statement-text p {
+    overflow-wrap: normal;
+  }
+
+  /* The rule under emphasised words scales with the type, but less, so it stays a rule. */
+  .kit-frame[data-layout='statement'][data-size='giant'][data-emphasis='underline']
+    .kit-statement-text
+    :is(em, strong) {
+    text-decoration-thickness: 0.05em;
+    text-underline-offset: 0.08em;
+  }
 }

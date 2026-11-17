@@ -57,7 +57,9 @@
     object-position: var(--kit-focal);
   }
 
-  .kit-image-frame > .deck-slot > figure img {
+  /* A kit <Image> or <Video> (a Markdown image becomes an <Image>) is cropped around the slide's
+     focal point too, unless it names its own. */
+  .kit-image-frame > .deck-slot > figure :is(img, video) {
     width: 100%;
     height: 100%;
     object-fit: cover;

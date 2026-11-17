@@ -48,4 +48,24 @@
   .kit-default-body img {
     border-radius: var(--brand-radius-lg);
   }
+
+  /*
+   * A drawn chart (bars, lines, a donut) takes the height the slide has left under the heading:
+   * the column, otherwise as tall as its content and centred, grows to the safe area, and the chart
+   * fills what the text leaves. Sized to its content, a plot would get no height at all. Number
+   * figures are as tall as their figures (see prose.css) and stay centred with the text.
+   */
+  .kit-default-body:has(
+    .kit-chart[data-sizing='fill']:not(
+        [data-chart='big-number'],
+        [data-chart='stat-row'],
+        [data-chart='comparison'],
+        [data-chart='progress'],
+        [data-chart='table']
+      )
+  ) {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+  }
 }

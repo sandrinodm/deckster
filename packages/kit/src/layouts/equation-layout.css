@@ -1,0 +1,177 @@
+/*
+ * The equation layout. The safe area holds the header, the row and the footnote. The row is a grid
+ * of its own: its figure and gap tracks stand in the first eight columns, and its last track holds
+ * the result, inset into the accent panel the frame draws from the seam (the middle of the gutter
+ * after the eighth column) to the right and bottom edges of the slide, its top a gap below the
+ * header (anchored to it, so a two-line title moves it down). The row sits a little above the
+ * middle of the panel, every figure and sign on one baseline.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* The frame is its own stacking context, so the safe area's place above the panel stays in it. */
+  .kit-frame[data-layout='equation'] {
+    --kit-equation-gap: var(--brand-space-xl);
+    --kit-equation-inset: var(--brand-space-xl);
+    --kit-equation-seam: calc(
+      var(--brand-margin-x) + 8 * (var(--kit-column) + var(--kit-gutter)) - var(--kit-gutter) / 2
+    );
+    --kit-equation-result: calc(
+      4 * var(--kit-column) + 3 * var(--kit-gutter) - var(--kit-equation-inset)
+    );
+    --kit-equation-term: 0.6;
+
+    isolation: isolate;
+  }
+
+  /* More terms share the eight columns, so each figure starts smaller. */
+  .kit-frame[data-layout='equation'][data-count='3'] {
+    --kit-equation-term: 0.5;
+  }
+
+  .kit-frame[data-layout='equation'][data-count='4'] {
+    --kit-equation-term: 0.42;
+  }
+
+  /* The safe area stands over the panel, which the frame draws after it. */
+  .kit-frame[data-layout='equation'] > .kit-safe {
+    z-index: 1;
+  }
+
+  /* The free height is shared 2:3 above and below the row, as in an optical region. */
+  .kit-equation {
+    display: grid;
+    height: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto var(--kit-equation-gap) minmax(0, 2fr) auto minmax(0, 3fr) auto;
+  }
+
+  .kit-equation-head {
+    grid-row: 1;
+    min-width: 0;
+    anchor-name: --kit-equation-head;
+  }
+
+  .kit-equation-context {
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  .kit-equation-panel {
+    position: absolute;
+    top: calc(anchor(--kit-equation-head bottom) + var(--kit-equation-gap));
+    right: 0;
+    bottom: 0;
+    left: var(--kit-equation-seam);
+  }
+
+  /*
+   * The row: a track per figure, as wide as the figure; between each pair, and before the equals
+   * sign, a gap track sharing the room left in the eight columns equally, with the sign centred in
+   * it; then a gutter and the panel's inset, and the result's track. The figures sit on the first
+   * row and the labels on the second.
+   */
+  .kit-equation-row {
+    --kit-equation-gap-track: minmax(auto, 1fr);
+    --kit-equation-rest: calc(var(--kit-gutter) + var(--kit-equation-inset));
+
+    grid-row: 4;
+    display: grid;
+    grid-template-rows: auto auto;
+    min-width: 0;
+  }
+
+  .kit-frame[data-layout='equation'][data-count='2'] .kit-equation-row {
+    grid-template-columns:
+      auto repeat(1, var(--kit-equation-gap-track) auto) var(--kit-equation-gap-track)
+      var(--kit-equation-rest) var(--kit-equation-result);
+  }
+
+  .kit-frame[data-layout='equation'][data-count='3'] .kit-equation-row {
+    grid-template-columns:
+      auto repeat(2, var(--kit-equation-gap-track) auto) var(--kit-equation-gap-track)
+      var(--kit-equation-rest) var(--kit-equation-result);
+  }
+
+  .kit-frame[data-layout='equation'][data-count='4'] .kit-equation-row {
+    grid-template-columns:
+      auto repeat(3, var(--kit-equation-gap-track) auto) var(--kit-equation-gap-track)
+      var(--kit-equation-rest) var(--kit-equation-result);
+  }
+
+  /* A step's wrapper gives its term's figure, sign and label to the row's grid. */
+  .kit-equation-row > .kit-step,
+  .kit-equation-result {
+    display: contents;
+  }
+
+  /*
+   * A figure keeps its full width as its track's minimum, so a row too wide for its columns widens
+   * the grid past its box and the layout steps the row down, rather than figures running into each
+   * other.
+   */
+  .kit-equation-figure {
+    grid-row: 1;
+    align-self: last baseline;
+  }
+
+  .kit-frame[data-layout='equation'] .kit-equation-figure .kit-stat-value {
+    --kit-scale: calc(var(--kit-equation-term) * var(--kit-equation-fit, 1));
+
+    padding-bottom: 0;
+    line-height: 1;
+    color: var(--brand-color-heading);
+  }
+
+  .kit-frame[data-layout='equation'] .kit-equation-figure .kit-equation-total {
+    --kit-scale: var(--kit-equation-fit, 1);
+  }
+
+  /*
+   * A sign is set in the figures' face at seven tenths of the terms' size, in the muted color,
+   * centred in its gap track and raised from the baseline so it centres on the figures' numerals
+   * rather than standing on their foot like a digit. Its padding is the smallest gap the row allows
+   * on either side of it, and shrinks with the row, so a crowded row keeps its figures large enough
+   * to read; a row that needs less steps down instead.
+   */
+  .kit-equation-sign {
+    --kit-scale: calc(var(--kit-equation-term) * 0.7 * var(--kit-equation-fit, 1));
+
+    grid-row: 1;
+    align-self: last baseline;
+    justify-self: center;
+    position: relative;
+    bottom: 0.1em;
+    padding-inline: calc(var(--brand-space-lg) * var(--kit-equation-fit, 1));
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--brand-color-muted);
+  }
+
+  .kit-equation-sign[data-equals='true'] {
+    color: var(--brand-color-heading);
+  }
+
+  /* A label takes no part in sizing the tracks, so the figures alone set the row's rhythm. */
+  .kit-equation-label {
+    grid-row: 2;
+    min-width: 0;
+    contain: inline-size;
+    margin-top: var(--brand-space-sm);
+    padding-inline-end: var(--kit-gutter);
+    color: var(--brand-color-fg);
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+  }
+
+  .kit-equation-label[data-result] {
+    max-width: 20em;
+    padding-inline-end: 0;
+  }
+
+  .kit-frame[data-layout='equation'] .kit-footnote {
+    grid-row: 6;
+    max-width: calc(8 * var(--kit-column) + 7 * var(--kit-gutter));
+    margin-top: 0;
+  }
+}

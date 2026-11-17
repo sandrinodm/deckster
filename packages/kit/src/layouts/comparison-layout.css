@@ -121,9 +121,11 @@
     fill: var(--brand-color-positive-text);
   }
 
-  /* In the recommended column the diamond sits centered in the panel's inset instead. */
+  /* In the recommended column the diamond hangs in the same place, the middle of the gutter
+     before the column, just outside the panel: the panel's inset is too narrow to hold it clear of
+     the value. */
   .kit-comparison-value[data-recommended='true'] .kit-comparison-winner {
-    left: calc(var(--brand-space-sm) / 2 - var(--kit-winner-size) / 2);
+    left: calc(var(--kit-gutter) / -2 - var(--kit-winner-size) / 2);
   }
 
   /*

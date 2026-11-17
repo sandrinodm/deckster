@@ -25,15 +25,23 @@ import { teamLayoutContract } from '#layouts/team-layout.contract.ts';
 const LATER = [
   'agenda',
   'quote',
+  'proof',
   'image',
+  'gallery',
+  'screen',
   'cards',
+  'columns',
+  'bento',
   'steps',
   'comparison',
+  'matrix',
+  'shift',
   'timeline',
   'table',
   'logos',
   'team',
   'bio',
+  'ask',
   'closing',
 ] as const;
 
@@ -141,10 +149,11 @@ describe('layout fields', () => {
     ).toEqual([]);
   });
 
-  it('take a team of three to eight with a focal point as a CSS position', () => {
+  it('take a team of two to eight with a focal point as a CSS position', () => {
     const member = { name: 'Dana Okafor', role: 'Programme lead' };
     const three = [member, member, member];
-    expect(() => decode(teamLayoutContract, { members: [member, member] })).toThrow('at least 3');
+    expect(() => decode(teamLayoutContract, { members: [member] })).toThrow('at least 2');
+    expect(() => decode(teamLayoutContract, { members: [member, member] })).not.toThrow();
     expect(() =>
       decode(teamLayoutContract, { members: [{ ...member, focal: 'center 30%' }, member, member] }),
     ).not.toThrow();

@@ -102,6 +102,12 @@
     max-height: 100%;
   }
 
+  /* An <Image> with a stated ratio is the largest box of that ratio the frame holds, centred in it,
+     rather than the whole frame (a caption under it takes room of its own). */
+  .kit-split-frame .kit-image[data-ratio] {
+    width: min(100%, 100cqh * var(--kit-image-ratio));
+  }
+
   .kit-split-caption {
     color: var(--brand-color-muted);
     text-wrap: balance;

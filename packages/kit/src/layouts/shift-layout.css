@@ -1,0 +1,202 @@
+/*
+ * The shift layout. The safe area is one grid of twelve columns: the header across the top, the old
+ * state in the left five columns under it and the new state in the right six, on an accent panel
+ * the frame draws from the seam (the middle of the gutter after the fifth column) to the right and
+ * bottom edges of the slide, its top a gap below the header (anchored to it, so a two-line title
+ * moves it down). The states share the lede and text rows through a subgrid, and stand on the
+ * bottom line, above the footnote's row.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* The frame is its own stacking context, so the safe area's place above the panel stays in it. */
+  .kit-frame[data-layout='shift'] {
+    --kit-shift-gap: var(--brand-space-xl);
+    --kit-shift-room: var(--brand-space-lg);
+    --kit-shift-seam: calc(
+      var(--brand-margin-x) + 5 * (var(--kit-column) + var(--kit-gutter)) - var(--kit-gutter) / 2
+    );
+    --kit-shift-arrow: calc(1.6 * var(--brand-type-title-size));
+
+    isolation: isolate;
+  }
+
+  /* A slide that does not fit closes the gap above the panel and the room above the states. */
+  .kit-frame[data-layout='shift']:not([data-level='0']) {
+    --kit-shift-gap: var(--brand-space-lg);
+    --kit-shift-room: 0px;
+  }
+
+  /* The safe area stands over the panel, which the frame draws after it. */
+  .kit-frame[data-layout='shift'] > .kit-safe {
+    z-index: 1;
+  }
+
+  .kit-shift {
+    display: grid;
+    height: 100%;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    grid-template-rows: auto var(--kit-shift-gap) minmax(var(--kit-shift-room), 1fr) auto auto auto;
+    column-gap: var(--kit-gutter);
+  }
+
+  .kit-shift-head {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-width: 0;
+    anchor-name: --kit-shift-head;
+  }
+
+  .kit-shift-context {
+    max-width: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  .kit-shift-panel {
+    position: absolute;
+    top: calc(anchor(--kit-shift-head bottom) + var(--kit-shift-gap));
+    right: 0;
+    bottom: 0;
+    left: var(--kit-shift-seam);
+  }
+
+  .kit-shift-state {
+    grid-row: 4 / span 2;
+    display: grid;
+    grid-template-rows: subgrid;
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  /* The old state keeps clear of the half of the arrow that stands in its column. */
+  .kit-shift-state[data-side='from'] {
+    grid-column: 1 / span 5;
+    padding-inline-end: calc(var(--kit-shift-arrow) / 2 - var(--kit-gutter) / 2);
+  }
+
+  /* The new state paints the panel's own color, so it reads as part of it. */
+  .kit-shift-state[data-side='to'] {
+    grid-column: 7 / -1;
+  }
+
+  .kit-shift-lede {
+    display: flex;
+    flex-direction: column;
+    align-self: end;
+    min-width: 0;
+  }
+
+  .kit-shift-label {
+    margin: 0 0 var(--brand-space-sm);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-shift-state[data-side='to'] .kit-shift-label {
+    color: var(--brand-color-fg);
+  }
+
+  .kit-shift-figure {
+    min-width: 0;
+  }
+
+  .kit-frame[data-layout='shift'] .kit-shift-value {
+    --kit-scale: 0.5;
+
+    width: auto;
+    line-height: 1;
+    padding-bottom: var(--brand-space-sm);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-frame[data-layout='shift'] .kit-shift-state[data-side='to'] .kit-shift-value {
+    --kit-scale: 0.72;
+
+    color: var(--brand-color-heading);
+  }
+
+  .kit-frame[data-layout='shift']:not([data-level='0']) .kit-shift-value {
+    --kit-scale: 0.4;
+  }
+
+  .kit-frame[data-layout='shift']:not([data-level='0'])
+    .kit-shift-state[data-side='to']
+    .kit-shift-value {
+    --kit-scale: 0.56;
+  }
+
+  .kit-frame[data-layout='shift'][data-level='2'] .kit-shift-value {
+    --kit-scale: 0.34;
+
+    padding-bottom: var(--brand-space-xs);
+  }
+
+  .kit-frame[data-layout='shift'][data-level='2']
+    .kit-shift-state[data-side='to']
+    .kit-shift-value {
+    --kit-scale: 0.46;
+  }
+
+  .kit-shift-title {
+    margin: 0;
+  }
+
+  .kit-shift-state[data-side='from'] .kit-shift-title {
+    color: var(--brand-color-fg);
+  }
+
+  .kit-shift-text {
+    margin: var(--brand-space-sm) 0 0;
+    max-width: 26em;
+    color: var(--brand-color-muted);
+    text-wrap: pretty;
+  }
+
+  .kit-shift-text:empty {
+    margin: 0;
+  }
+
+  .kit-shift-state[data-side='to'] .kit-shift-text {
+    color: var(--brand-color-fg);
+  }
+
+  /*
+   * The arrow on the seam: a disc in the slide's own color, cut half into the panel, with the
+   * arrow in the accent, standing level with the headings.
+   */
+  .kit-shift-arrow {
+    grid-column: 6;
+    grid-row: 4;
+    align-self: end;
+    display: grid;
+    place-items: center;
+    width: var(--kit-shift-arrow);
+    height: var(--kit-shift-arrow);
+    margin-bottom: calc(
+      (
+          var(--brand-type-headline-size) * var(--brand-type-headline-line-height) -
+            var(--kit-shift-arrow)
+        ) /
+        2
+    );
+    margin-left: calc(-1 * var(--kit-gutter) / 2 - var(--kit-shift-arrow) / 2);
+    border-radius: 50%;
+    background: var(--brand-color-bg);
+    color: var(--brand-color-accent);
+  }
+
+  .kit-shift-arrow-icon {
+    width: 50%;
+    height: 50%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: calc(var(--brand-icon-stroke) * 1.1);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .kit-frame[data-layout='shift'] .kit-footnote {
+    grid-column: 1 / span 5;
+    grid-row: 6;
+    margin-top: 0;
+  }
+}

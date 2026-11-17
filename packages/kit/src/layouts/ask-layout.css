@@ -1,0 +1,225 @@
+/*
+ * The ask layout. The safe area is one grid of twelve columns: the lead (header and amount) in the
+ * first five, over an accent panel the frame draws from the top, left and bottom edges of the slide
+ * to the seam (the middle of the gutter after the fifth column), and the plan (context, milestones
+ * and use of funds) in the last six, from the title line down to the bottom line.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  /* The frame is its own stacking context, so the safe area's place above the panel stays in it. */
+  .kit-frame[data-layout='ask'] {
+    --kit-ask-seam: calc(
+      var(--brand-margin-x) + 5 * (var(--kit-column) + var(--kit-gutter)) - var(--kit-gutter) / 2
+    );
+    --kit-ask-row-space: var(--brand-space-lg);
+    --kit-ask-block-space: var(--brand-space-lg);
+
+    isolation: isolate;
+  }
+
+  .kit-frame[data-layout='ask'][data-level='1'],
+  .kit-frame[data-layout='ask'][data-level='2'] {
+    --kit-ask-row-space: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='ask'][data-level='3'],
+  .kit-frame[data-layout='ask'][data-level='4'] {
+    --kit-ask-row-space: var(--brand-space-sm);
+    --kit-ask-block-space: var(--brand-space-md);
+  }
+
+  /* The safe area stands over the panel, which the frame draws after it. */
+  .kit-frame[data-layout='ask'] > .kit-safe {
+    z-index: 1;
+  }
+
+  .kit-ask-panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--kit-ask-seam);
+  }
+
+  .kit-ask {
+    display: grid;
+    height: 100%;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    column-gap: var(--kit-gutter);
+  }
+
+  /* A step's wrapper leaves its content to the column or list it stands in. */
+  .kit-ask-lead > .kit-step,
+  .kit-ask-plan > .kit-step,
+  .kit-ask-milestones > .kit-step {
+    display: contents;
+  }
+
+  /* The lead keeps a gap clear of the seam; it wears the panel's surface, so its roles match it. */
+  .kit-ask-lead {
+    grid-column: 1 / span 5;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding-inline-end: var(--brand-space-md);
+  }
+
+  .kit-ask-figure {
+    margin-top: auto;
+    min-width: 0;
+  }
+
+  .kit-ask-label {
+    margin-bottom: var(--brand-space-sm);
+    color: var(--brand-color-fg);
+    overflow-wrap: break-word;
+  }
+
+  .kit-frame[data-layout='ask'] .kit-ask-amount.kit-stat-value {
+    --kit-scale: 1.25;
+
+    padding-bottom: 0;
+    line-height: 1;
+    color: var(--brand-color-heading);
+  }
+
+  .kit-ask-plan {
+    grid-column: 7 / -1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    padding-top: calc(var(--kit-eyebrow-row) + var(--kit-eyebrow-gap));
+  }
+
+  .kit-ask-context {
+    margin-bottom: var(--kit-ask-block-space);
+    color: var(--brand-color-muted);
+    text-wrap: pretty;
+  }
+
+  /* The milestones share three columns, so every number and every date stand in one line. */
+  .kit-ask-milestones {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: var(--brand-space-lg);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-ask-milestone {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: baseline;
+    padding-block: var(--kit-ask-row-space);
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-ask-milestones > :last-child,
+  .kit-ask-milestones > :last-child > .kit-ask-milestone {
+    border-bottom: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-ask-milestones > .kit-step:last-child {
+    border-bottom: none;
+  }
+
+  .kit-ask-number {
+    color: var(--brand-color-accent-text);
+  }
+
+  .kit-ask-text {
+    margin: 0;
+    color: var(--brand-color-fg);
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+  }
+
+  .kit-ask-date {
+    margin: 0;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--brand-color-heading);
+  }
+
+  /*
+   * The use of funds stands on the bottom line, level with the amount. It clips what its labels
+   * spill while they are tried under their segments, so that trial never makes the plan step down;
+   * the labels it settles on never spill.
+   */
+  .kit-ask-funds {
+    margin-top: auto;
+    padding-top: var(--kit-ask-block-space);
+    overflow: clip;
+  }
+
+  /*
+   * The bar and the labels under it are rows of the allocations, each as wide as its share; the gap
+   * between segments is a transparent border inside the segment, so the shares still add up to the
+   * bar's width.
+   */
+  .kit-ask-bar,
+  .kit-ask-allocations {
+    display: flex;
+  }
+
+  .kit-ask-bar {
+    height: var(--brand-space-xs);
+  }
+
+  .kit-ask-segment {
+    flex: 0 0 var(--kit-ask-share);
+    border-inline-end: var(--brand-space-2xs) solid transparent;
+    background: var(--brand-color-accent);
+    background-clip: padding-box;
+  }
+
+  .kit-ask-segment:last-child {
+    border-inline-end: none;
+  }
+
+  /*
+   * Under their segments the labels keep at least their longest word's width and have room for two
+   * lines, so a label that does not fit its segment widens the list or overflows its height, and
+   * the layout sets the labels in equal columns instead.
+   */
+  .kit-ask-allocations {
+    margin: var(--brand-space-sm) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-ask-allocations[data-placement='segments'] {
+    height: calc(
+      var(--brand-type-title-size) * var(--brand-type-title-line-height) + 2 *
+        var(--brand-type-small-size) * var(--brand-type-small-line-height)
+    );
+  }
+
+  .kit-ask-allocation {
+    display: flex;
+    flex: 0 0 var(--kit-ask-share);
+    flex-direction: column;
+    padding-inline-end: var(--brand-space-sm);
+  }
+
+  .kit-ask-allocations[data-placement='equal'] > .kit-ask-allocation {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline-end: var(--brand-space-xs);
+  }
+
+  .kit-ask-share {
+    color: var(--brand-color-heading);
+    white-space: nowrap;
+  }
+
+  .kit-ask-fund {
+    color: var(--brand-color-muted);
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+  }
+}

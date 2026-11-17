@@ -25,7 +25,7 @@ describe('the code layout contract', () => {
   });
 
   it('says when to use it, with the line and column guidance', () => {
-    expect(codeLayoutContract.description).toContain('12 lines');
+    expect(codeLayoutContract.description).toContain('11 lines');
     expect(codeLayoutContract.description).toContain('60 columns');
   });
 

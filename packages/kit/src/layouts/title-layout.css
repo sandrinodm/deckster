@@ -86,4 +86,69 @@
     height: 100%;
     object-fit: cover;
   }
+
+  /*
+   * Centred, on a type-only cover: the logo on the top line, the text block midway between it and
+   * the byline row, every line centred; the eyebrow sits between two rules, and the byline and
+   * date keep the ends of the rule under the block.
+   */
+  .kit-frame[data-layout='title'][data-align='center'] .kit-cover-logo {
+    justify-content: center;
+  }
+
+  .kit-frame[data-layout='title'][data-align='center'] .kit-cover-main {
+    align-items: center;
+    margin-block: auto;
+    text-align: center;
+  }
+
+  /*
+   * The photo across the whole slide (`picture: full`): the logo and the text block each carry a
+   * dark scrim of their own (the image layout's, at its strengths), grown from their corner of the
+   * slide and sized to the block, and the text over it is light whatever the surface. The text keeps
+   * to seven columns, as beside a photo.
+   */
+  .kit-frame[data-layout='title'][data-picture='full'] {
+    --kit-scrim-ink: 0 0 0;
+    --kit-scrim-under-text: 0.58;
+    --kit-scrim-edge: 0.62;
+    --kit-photo-text: #fff;
+  }
+
+  .kit-frame[data-layout='title'][data-picture='full'] > .kit-safe {
+    z-index: 1;
+  }
+
+  .kit-frame[data-layout='title'][data-picture='full'] .kit-cover-text {
+    --brand-color-fg: var(--kit-photo-text);
+    --brand-color-heading: var(--kit-photo-text);
+    --brand-color-muted: var(--kit-photo-text);
+    --brand-color-accent: var(--kit-photo-text);
+    --brand-color-accent-text: var(--kit-photo-text);
+    --brand-color-border: var(--kit-photo-text);
+
+    color: var(--kit-photo-text);
+  }
+
+  /* Above the text block, whose scrim reaches up behind the logo. */
+  .kit-frame[data-layout='title'][data-picture='full'] .kit-cover-logo {
+    position: relative;
+    z-index: 1;
+    align-self: flex-start;
+    isolation: isolate;
+  }
+
+  .kit-cover-band {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+    isolation: isolate;
+  }
+
+  .kit-frame[data-layout='title'][data-picture='full'] .kit-cover-media {
+    left: 0;
+    width: auto;
+    z-index: 0;
+  }
 }

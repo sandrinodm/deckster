@@ -36,4 +36,59 @@
   .kit-content-aside h3 {
     color: var(--brand-color-heading);
   }
+
+  /*
+   * A drawn chart in the body (bars, lines, a donut) takes the height the region has left under the
+   * text before it: the body grows to fill the region, which sizing to the content cannot give a
+   * plot, and the chart fills what the text leaves. The text then stays at the body step, since the
+   * body is full. Number figures are as tall as their figures (see prose.css) and keep the optical
+   * placement.
+   */
+  .kit-region
+    > .kit-content:has(
+      .kit-chart[data-sizing='fill']:not(
+          [data-chart='big-number'],
+          [data-chart='stat-row'],
+          [data-chart='comparison'],
+          [data-chart='progress'],
+          [data-chart='table']
+        )
+    ) {
+    flex: 1 1 auto;
+  }
+
+  .kit-region:has(
+      > .kit-content
+        .kit-chart[data-sizing='fill']:not(
+          [data-chart='big-number'],
+          [data-chart='stat-row'],
+          [data-chart='comparison'],
+          [data-chart='progress'],
+          [data-chart='table']
+        )
+    )::before,
+  .kit-region:has(
+      > .kit-content
+        .kit-chart[data-sizing='fill']:not(
+          [data-chart='big-number'],
+          [data-chart='stat-row'],
+          [data-chart='comparison'],
+          [data-chart='progress'],
+          [data-chart='table']
+        )
+    )::after {
+    content: none;
+  }
+
+  .kit-content-main:has(
+    .kit-chart[data-sizing='fill']:not(
+        [data-chart='big-number'],
+        [data-chart='stat-row'],
+        [data-chart='comparison'],
+        [data-chart='progress'],
+        [data-chart='table']
+      )
+  ) {
+    align-self: stretch;
+  }
 }

@@ -1,0 +1,347 @@
+/*
+ * The screen layout: the header across the top, then one grid of twelve columns down to the bottom
+ * line, with the framed screen in a stage and the gutter beside it. The stage is a size container:
+ * the frame takes the largest width at which the picture, at its own proportions, and the frame's
+ * chrome fit both its width and its height. Chrome that scales with the device (a phone's bezel, a
+ * laptop's lid and base) is written as a share of the display's width; chrome that keeps its size
+ * (the browser bar) in pixels.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='screen'] {
+    --kit-badge: calc(2 * var(--brand-type-label-size));
+  }
+
+  .kit-screen-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-screen {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    column-gap: var(--kit-gutter);
+    height: 100%;
+  }
+
+  /*
+   * The stage holds the device in the brand's default surface (`.kit-screen-surface`, which draws
+   * no box). The device's rim and shadows are set here, from the slide's own surface: the rim in
+   * its text color draws the edge of a dark device on a dark slide, and the shadow is the one the
+   * slide's surface casts.
+   */
+  .kit-screen-stage {
+    --kit-screen-rim: color-mix(in oklab, var(--brand-color-fg) 24%, transparent);
+    --kit-screen-shadow: var(--brand-shadow-lg);
+    --kit-screen-shadow-near: var(--brand-shadow-md);
+
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: flex-start;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
+    container-type: size;
+  }
+
+  /*
+   * With a gutter the screen stands on the title's left edge, in as many columns as it covers
+   * (`--kit-screen-span`, which the layout measures; eight for a wide screen and four for a phone
+   * until it has), and the gutter takes the rest of the row, its text level with the frame's top.
+   */
+  .kit-screen {
+    --kit-screen-span: 8;
+  }
+
+  .kit-frame[data-layout='screen'][data-frame='phone'] .kit-screen {
+    --kit-screen-span: 4;
+  }
+
+  .kit-frame[data-layout='screen'][data-aside='true'] .kit-screen-stage {
+    grid-column: 1 / span var(--kit-screen-span);
+    justify-content: flex-start;
+  }
+
+  .kit-screen-aside {
+    display: flex;
+    grid-column: calc(var(--kit-screen-span) + 1) / -1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* Beside a phone, which fills the height, the labels are centred on it and kept to a measure. */
+  .kit-frame[data-layout='screen'][data-frame='phone'] .kit-screen-aside {
+    justify-content: center;
+  }
+
+  .kit-frame[data-layout='screen'][data-frame='phone'] .kit-screen-aside-content {
+    max-width: calc(6 * var(--kit-column) + 5 * var(--kit-gutter));
+  }
+
+  .kit-screen-aside-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-lg);
+    min-width: 0;
+  }
+
+  .kit-screen-context {
+    max-width: 30em;
+    color: var(--brand-color-muted);
+    text-wrap: pretty;
+  }
+
+  /*
+   * The frame. `--kit-screen-w` is the display's width: the smaller of the widths the stage's width
+   * and its height allow once the frame's chrome is taken off, the chrome being `pw` and `ph`
+   * pixels plus `fw` and `fh` times the display's width across and down.
+   */
+  .kit-screen-device {
+    --kit-screen-pw: 0px;
+    --kit-screen-ph: 0px;
+    --kit-screen-fw: 0;
+    --kit-screen-fh: 0;
+    --kit-screen-w: min(
+      calc((100cqw - var(--kit-screen-pw)) / (1 + var(--kit-screen-fw))),
+      calc((100cqh - var(--kit-screen-ph)) / (1 / var(--kit-screen-ratio) + var(--kit-screen-fh)))
+    );
+    /*
+     * The device stands in the brand's default surface, so its hardware is the brand's darkest
+     * neutral on every slide: the default text color in a light brand, the default background in a
+     * dark one. A laptop's base is a lighter metal, the border color or the muted one.
+     */
+    --kit-screen-body: light-dark(var(--brand-color-fg), var(--brand-color-bg));
+    --kit-screen-metal: light-dark(var(--brand-color-border), var(--brand-color-muted));
+    --kit-screen-detail: light-dark(var(--brand-color-muted), var(--brand-color-border));
+
+    position: relative;
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .kit-screen-display {
+    position: relative;
+    flex: none;
+    width: var(--kit-screen-w);
+    aspect-ratio: var(--kit-screen-ratio);
+  }
+
+  .kit-screen-image {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* The browser: the kit's app chrome, raised off the slide. */
+  .kit-screen-device[data-frame='browser'] {
+    --kit-screen-pw: calc(2 * var(--brand-stroke-regular));
+    --kit-screen-ph: calc(
+      var(--brand-space-xl) + var(--brand-space-xs) + 2 * var(--brand-stroke-regular)
+    );
+  }
+
+  /* The window is as wide as the picture and its border, however long the address is. */
+  .kit-screen-device[data-frame='browser'] .kit-app-window {
+    flex: none;
+    width: calc(var(--kit-screen-w) + var(--kit-screen-pw));
+    box-shadow: var(--kit-screen-shadow);
+  }
+
+  .kit-screen-device[data-frame='browser'] .kit-app-address:has(.kit-app-address-text:empty) {
+    visibility: hidden;
+  }
+
+  /*
+   * The phone: a bezel of 4.5% of the screen's width all round, the screen's corners at 12% and the
+   * body's following them out.
+   */
+  .kit-screen-device[data-frame='phone'] {
+    --kit-screen-fw: 0.09;
+    --kit-screen-fh: 0.09;
+
+    padding: calc(var(--kit-screen-w) * 0.045);
+    border-radius: calc(var(--kit-screen-w) * 0.165);
+    background: var(--kit-screen-body);
+    box-shadow:
+      0 0 0 var(--brand-stroke-hairline) var(--kit-screen-rim),
+      var(--kit-screen-shadow);
+  }
+
+  .kit-screen-device[data-frame='phone'] .kit-screen-image {
+    border-radius: calc(var(--kit-screen-w) * 0.12);
+  }
+
+  /*
+   * The laptop: a lid with a thin bezel (2.5% at the sides, more above for the camera and below),
+   * on a base 6% wider each side with a notch to open it by.
+   */
+  .kit-screen-device[data-frame='laptop'] {
+    --kit-screen-fw: 0.17;
+    --kit-screen-fh: 0.115;
+  }
+
+  .kit-screen-lid {
+    position: relative;
+    padding: calc(var(--kit-screen-w) * 0.035) calc(var(--kit-screen-w) * 0.025)
+      calc(var(--kit-screen-w) * 0.045);
+    border-radius: calc(var(--kit-screen-w) * 0.03) calc(var(--kit-screen-w) * 0.03) 0 0;
+    background: var(--kit-screen-body);
+    box-shadow:
+      0 0 0 var(--brand-stroke-hairline) var(--kit-screen-rim),
+      var(--kit-screen-shadow-near);
+  }
+
+  .kit-screen-camera {
+    position: absolute;
+    top: calc(var(--kit-screen-w) * 0.0135);
+    left: calc(50% - var(--kit-screen-w) * 0.004);
+    width: calc(var(--kit-screen-w) * 0.008);
+    height: calc(var(--kit-screen-w) * 0.008);
+    border-radius: 50%;
+    background: var(--kit-screen-detail);
+  }
+
+  .kit-screen-base {
+    position: relative;
+    width: calc(var(--kit-screen-w) * 1.17);
+    height: calc(var(--kit-screen-w) * 0.035);
+    border-radius: 0 0 calc(var(--kit-screen-w) * 0.04) calc(var(--kit-screen-w) * 0.04) / 0 0
+      calc(var(--kit-screen-w) * 0.03) calc(var(--kit-screen-w) * 0.03);
+    background: var(--kit-screen-metal);
+    box-shadow: var(--kit-screen-shadow);
+  }
+
+  .kit-screen-notch {
+    position: absolute;
+    top: 0;
+    left: calc(50% - var(--kit-screen-w) * 0.08);
+    width: calc(var(--kit-screen-w) * 0.16);
+    height: calc(var(--kit-screen-w) * 0.012);
+    border-radius: 0 0 calc(var(--kit-screen-w) * 0.012) calc(var(--kit-screen-w) * 0.012);
+    background: var(--kit-screen-detail);
+  }
+
+  /* No frame: the picture alone, in the brand's corners, raised off the slide. */
+  .kit-screen-device[data-frame='none'] .kit-screen-display {
+    border-radius: var(--brand-radius-lg);
+    box-shadow: var(--kit-screen-shadow);
+  }
+
+  .kit-screen-device[data-frame='none'] .kit-screen-image {
+    border-radius: var(--brand-radius-lg);
+  }
+
+  /*
+   * The numbered badge a callout shows on the picture and before its label, in the brand's default
+   * surface whatever the slide's, so the two read as one mark: the accent with its own text color,
+   * ringed in the surface's background so it stands off an interface or a dark slide, round, or as
+   * square as the brand's corners are.
+   */
+  .kit-screen-surface,
+  .kit-screen-markers,
+  .kit-screen-badge-surface {
+    display: contents;
+  }
+
+  .kit-screen-badge {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--kit-badge);
+    height: var(--kit-badge);
+    border: var(--brand-stroke-bold) solid var(--brand-color-bg);
+    border-radius: min(50%, calc(2 * var(--brand-radius-xl)));
+    background: var(--brand-color-accent);
+    color: var(--brand-color-accent-fg);
+    font-family: var(--brand-type-label-family);
+    font-size: var(--brand-type-label-size);
+    font-weight: var(--brand-type-label-weight);
+    line-height: 1;
+  }
+
+  /*
+   * A marker is centred on its point and kept inside the picture, raised off the interface under
+   * it. The placed box is what a step reveals; the badge in it is what recedes.
+   */
+  .kit-screen-marker {
+    position: absolute;
+    top: clamp(
+      0px,
+      calc(var(--kit-callout-y) * 1% - var(--kit-badge) / 2),
+      calc(100% - var(--kit-badge))
+    );
+    left: clamp(
+      0px,
+      calc(var(--kit-callout-x) * 1% - var(--kit-badge) / 2),
+      calc(100% - var(--kit-badge))
+    );
+    display: flex;
+    width: var(--kit-badge);
+    height: var(--kit-badge);
+  }
+
+  .kit-screen-marker > .kit-screen-badge {
+    box-shadow: var(--kit-screen-shadow-near);
+  }
+
+  /* A callout the deck has moved past keeps its number in the muted role on a plain badge. */
+  .kit-step[data-focus='recede'] .kit-screen-badge {
+    border-color: var(--brand-color-border);
+    background: var(--brand-color-bg);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-step[data-focus][data-motion='on'] .kit-screen-badge {
+    transition:
+      color var(--brand-duration-base) var(--brand-ease-standard),
+      background-color var(--brand-duration-base) var(--brand-ease-standard),
+      border-color var(--brand-duration-base) var(--brand-ease-standard);
+  }
+
+  .kit-screen-legend {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-screen-legend-item {
+    margin: 0;
+    padding: 0;
+  }
+
+  .kit-screen-callout {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--brand-space-md);
+    align-items: start;
+  }
+
+  /*
+   * The badge's cell is at least a line of the label's type high and centres the badge in it, and
+   * the label drops by half of what the badge is taller than its line, so the label's first line
+   * and the badge share a centre at every type step.
+   */
+  .kit-screen-mark {
+    display: flex;
+    align-items: center;
+    min-height: 1lh;
+  }
+
+  /* The label takes the frame's text color, so a receded step eases it to muted with its badge. */
+  .kit-screen-label {
+    margin: max(0px, (var(--kit-badge) - 1lh) / 2) 0 0;
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+  }
+}

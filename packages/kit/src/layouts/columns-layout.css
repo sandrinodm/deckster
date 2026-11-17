@@ -1,0 +1,157 @@
+/*
+ * The columns layout: a board of equal panels under the header, down to the bottom line. The heads
+ * and items of every column share the rows of one grid (each panel is a subgrid), so headings end
+ * level and the n-th items start level across the board; the last row takes the height left, so
+ * every panel reaches the foot of the board whatever its number of items.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='columns'] {
+    --kit-lane-pad: var(--brand-space-md);
+    --kit-lane-item-pad: var(--brand-space-sm);
+    --kit-lane-head-pad: var(--brand-space-md);
+  }
+
+  /* Compact columns, for a board that does not fit at the small size: tighter rows and heads. */
+  .kit-frame[data-layout='columns'][data-compact='true'] {
+    --kit-lane-pad: var(--brand-space-sm);
+    --kit-lane-item-pad: var(--brand-space-xs);
+    --kit-lane-head-pad: var(--brand-space-sm);
+  }
+
+  .kit-columns-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-columns {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-board-columns, 3), minmax(0, 1fr));
+    grid-template-rows: auto auto repeat(var(--kit-board-rows, 1), auto) minmax(0, 1fr);
+    column-gap: var(--kit-gutter);
+    height: 100%;
+  }
+
+  /* A column is the board's grid item, revealed or not: a step wrapper has `display: contents`. */
+  .kit-lane {
+    display: grid;
+    grid-row: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: subgrid;
+    min-width: 0;
+    padding: var(--kit-lane-pad) var(--kit-lane-pad) var(--kit-lane-item-pad);
+    position: relative;
+    isolation: isolate;
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-lg);
+    background: var(--brand-color-bg);
+    overflow-wrap: break-word;
+  }
+
+  /*
+   * A panel is the surface's raised color laid over its background color, so it stays opaque where
+   * the raised color is translucent: a picture or pattern behind the slide never shows through
+   * under the text.
+   */
+  .kit-lane::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--brand-color-surface);
+  }
+
+  /* The current column wears the accent surface, which paints its own background and roles. */
+  .kit-lane[data-surface] {
+    border-color: transparent;
+    background: var(--brand-background, var(--brand-color-bg));
+  }
+
+  .kit-lane[data-surface]::before {
+    content: none;
+  }
+
+  /* The head: the tag on the left of the top line and the count of items on its right. */
+  .kit-lane-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--brand-space-sm);
+    min-width: 0;
+    margin: 0;
+  }
+
+  /*
+   * The tag is a chip in the accent, its text in the accent's own text color, so it keeps its
+   * contrast on any panel, a translucent one over a surface's picture too. An empty tag keeps its
+   * place in the line, so the count stays on the right.
+   */
+  .kit-lane-note {
+    min-width: 0;
+  }
+
+  /*
+   * The chip is inline, so its padding paints around the label without making the line taller:
+   * the head keeps the height it has without a tag, and a full board still fits.
+   */
+  .kit-lane-chip {
+    display: inline;
+    padding: var(--brand-space-2xs) var(--brand-space-xs);
+    box-decoration-break: clone;
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-accent);
+    color: var(--brand-color-accent-fg);
+  }
+
+  /*
+   * The count is set in the small step and the text color, so it keeps large text's contrast on any
+   * panel, where the muted color at the label size may not; set solid, it keeps the head's height.
+   */
+  .kit-lane-count {
+    flex: none;
+    line-height: 1;
+    color: var(--brand-color-fg);
+  }
+
+  /* The heading stands on the rule that closes the head, level across the board. */
+  .kit-lane-title {
+    align-self: end;
+    margin: 0;
+    padding: var(--brand-space-2xs) 0 var(--kit-lane-head-pad);
+    border-bottom: var(--brand-stroke-regular) solid var(--brand-color-border);
+  }
+
+  .kit-lane[data-surface] .kit-lane-title {
+    border-bottom-color: var(--brand-color-heading);
+  }
+
+  .kit-frame[data-layout='columns'][data-count='4'] .kit-lane-title {
+    --kit-scale: 0.88;
+  }
+
+  .kit-frame[data-layout='columns'][data-compact='true'] .kit-lane-title {
+    --kit-scale: 0.8;
+  }
+
+  .kit-lane-items {
+    display: contents;
+  }
+
+  /* Items sit on the board's rows, a hairline between them, so the rows read across the board. */
+  .kit-lane-item {
+    margin: 0;
+    padding: var(--kit-lane-item-pad) 0;
+    color: var(--brand-color-fg);
+    list-style: none;
+    text-wrap: pretty;
+  }
+
+  .kit-lane-item + .kit-lane-item {
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-lane-item:first-child {
+    padding-top: var(--kit-lane-head-pad);
+  }
+}

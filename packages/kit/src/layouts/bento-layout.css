@@ -1,0 +1,234 @@
+/*
+ * The bento layout: one grid over the safe area, twelve columns by two rows. The title cell takes
+ * the left five columns of the top row and the lead tile the right seven; the other tiles share the
+ * bottom row, the first under the title cell. The grid is as tall as its region, down to the bottom
+ * line, three fifths of it for the top row; a row grows past its share only when its text needs
+ * more, which the layout's fit level sees and steps down.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='bento'] {
+    --kit-bento-gap: var(--kit-gutter);
+    --kit-bento-pad: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='bento'][data-compact='true'] {
+    --kit-bento-pad: var(--brand-space-md);
+  }
+
+  .kit-bento {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    grid-template-rows: minmax(min-content, 3fr) minmax(min-content, 2fr);
+    gap: var(--kit-bento-gap) var(--kit-gutter);
+    height: 100%;
+  }
+
+  .kit-bento-head {
+    grid-column: 1 / span 5;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding-bottom: var(--brand-space-sm);
+  }
+
+  .kit-bento-head .kit-header > .kit-title {
+    max-width: none;
+    overflow-wrap: break-word;
+  }
+
+  /* The line of context stands on the cell's foot, level with the lead's label. */
+  .kit-bento-context {
+    margin-top: auto;
+    padding-top: var(--brand-space-md);
+    color: var(--brand-color-muted);
+  }
+
+  /*
+   * The cells: the lead beside the title cell, the second tile under the title cell, and the rest
+   * under the lead, sharing its seven columns (four and three), or with five tiles four equal
+   * tiles across the bottom row.
+   */
+  .kit-bento-tile[data-index='0'] {
+    grid-column: 6 / -1;
+    grid-row: 1;
+  }
+
+  .kit-bento-tile[data-index='1'] {
+    grid-column: 1 / span 5;
+    grid-row: 2;
+  }
+
+  .kit-bento-tile[data-index='2'] {
+    grid-column: 6 / -1;
+    grid-row: 2;
+  }
+
+  .kit-frame[data-layout='bento'][data-count='4'] .kit-bento-tile[data-index='2'] {
+    grid-column: 6 / span 4;
+  }
+
+  .kit-bento-tile[data-index='3'] {
+    grid-column: 10 / -1;
+    grid-row: 2;
+  }
+
+  .kit-frame[data-layout='bento'][data-count='5'] .kit-bento-tile:not([data-index='0']) {
+    grid-column: span 3;
+    grid-row: 2;
+  }
+
+  /*
+   * A tile is a panel in the raised color, its content standing on the tile's foot; the icon of a
+   * text tile stays at the top. It is an inline-size container, so a figure sizes to its width.
+   */
+  .kit-bento-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-width: 0;
+    padding: var(--kit-bento-pad);
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-lg);
+    background: var(--brand-color-surface);
+    container-type: inline-size;
+    overflow-wrap: break-word;
+  }
+
+  /* The lead wears the accent surface, which paints its own background and roles. */
+  .kit-bento-tile[data-size='lead'][data-surface] {
+    border-color: transparent;
+    background: var(--brand-background, var(--brand-color-bg));
+  }
+
+  .kit-bento-tile[data-kind='picture'] {
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .kit-bento-picture {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--brand-radius-lg);
+  }
+
+  .kit-bento-figure {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-xs);
+    min-width: 0;
+  }
+
+  /*
+   * A figure takes the largest size at which its characters fit the tile's width, up to the stat
+   * size (twice it on the lead), so `38%` and `$1,234.5` both fill their tile without leaving it.
+   */
+  .kit-frame[data-layout='bento'] .kit-bento-value {
+    --kit-value-max: 0.6;
+    --kit-glyph: 0.62;
+
+    font-size: min(
+      calc(var(--brand-type-stat-size) * var(--kit-value-max)),
+      calc(100cqi / (var(--kit-value-chars, 4) * var(--kit-glyph)))
+    );
+    line-height: 1;
+    padding-bottom: 0.04em;
+    color: var(--brand-color-heading);
+  }
+
+  .kit-frame[data-layout='bento'] .kit-bento-tile[data-size='lead'] .kit-bento-value {
+    --kit-value-max: 1.6;
+  }
+
+  .kit-bento-label {
+    max-width: 22em;
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+  }
+
+  .kit-bento-tile[data-size='lead'] .kit-bento-label {
+    color: var(--brand-color-fg);
+  }
+
+  /*
+   * A small text tile sets its icon beside the heading, so the tile stays short; the lead sets it
+   * large in its top corner, over the free space above its text.
+   */
+  .kit-bento-tile[data-size='small'] .kit-bento-note:has(> .kit-bento-icon-tile) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--brand-space-md);
+  }
+
+  /* In a tile too narrow to give the heading a line beside the icon, the icon stands above it. */
+  @container (width < 440px) {
+    .kit-bento-tile[data-size='small'] .kit-bento-note:has(> .kit-bento-icon-tile) {
+      display: flex;
+      flex-direction: column;
+      row-gap: var(--brand-space-sm);
+    }
+  }
+
+  .kit-bento-icon-tile {
+    display: grid;
+    place-items: center;
+    width: calc(1.25 * var(--brand-type-title-size));
+    height: calc(1.25 * var(--brand-type-title-size));
+    border-radius: var(--brand-radius-md);
+    background: var(--brand-color-accent);
+  }
+
+  .kit-bento-tile[data-size='lead'] .kit-bento-icon-tile {
+    position: absolute;
+    top: var(--kit-bento-pad);
+    left: var(--kit-bento-pad);
+    width: calc(2 * var(--brand-type-title-size));
+    height: calc(2 * var(--brand-type-title-size));
+  }
+
+  .kit-bento-tile[data-size='lead']:has(.kit-bento-icon-tile) {
+    display: flex;
+    padding-top: calc(2 * var(--kit-bento-pad) + 2 * var(--brand-type-title-size));
+  }
+
+  .kit-bento-icon {
+    width: 56%;
+    height: 56%;
+    color: var(--brand-color-accent-fg);
+  }
+
+  .kit-bento-icon [stroke-width],
+  .kit-bento-icon[stroke-width] {
+    stroke-width: var(--brand-icon-stroke);
+  }
+
+  .kit-bento-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-xs);
+    min-width: 0;
+  }
+
+  .kit-bento-title {
+    margin: 0;
+  }
+
+  .kit-frame[data-layout='bento'][data-compact='true'] .kit-bento-title {
+    --kit-scale: 0.82;
+  }
+
+  .kit-bento-body {
+    margin: 0;
+    color: var(--brand-color-muted);
+    text-wrap: pretty;
+  }
+
+  .kit-bento-tile[data-size='lead'] .kit-bento-body {
+    max-width: 24em;
+    color: var(--brand-color-fg);
+  }
+}

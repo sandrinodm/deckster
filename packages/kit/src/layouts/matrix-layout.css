@@ -1,0 +1,279 @@
+/*
+ * The matrix layout: two columns over the safe area, the title column on the left and on the right
+ * a square plot five grid columns wide (with their gutters), or less where the slide is too short
+ * for that square and the rows of the vertical axis's labels above and below it. Inside the plot the two axes cross at the centre; dots are placed from their positions
+ * with an inset of the ring's radius, so a dot at 0 or 100 stays inside the plot, and the names,
+ * the horizontal axis's end labels and the captions stand where the layout's planner put them, in
+ * pixels from the plot's corner.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='matrix'] {
+    --kit-matrix-end-row: calc(var(--brand-type-label-size) * var(--brand-type-label-line-height));
+    --kit-matrix-end-gap: var(--brand-space-sm);
+    --kit-matrix-dot: calc(0.42 * var(--brand-type-title-size));
+    --kit-matrix-ring: calc(1.1 * var(--brand-type-title-size));
+    --kit-matrix-core: calc(0.5 * var(--brand-type-title-size));
+    --kit-matrix-inset: calc(var(--kit-matrix-ring) / 2);
+    --kit-matrix-pad: var(--brand-space-sm);
+    --kit-matrix-gap: var(--brand-space-xs);
+  }
+
+  /* The title column takes what the plot leaves: about seven grid columns. */
+  .kit-matrix {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--brand-space-xl);
+  }
+
+  .kit-matrix-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-matrix-text .kit-header > .kit-title {
+    max-width: none;
+  }
+
+  /*
+   * The plot and the labels of the vertical axis above and below it: a square five grid columns
+   * wide (with their gutters), smaller only where the region less those rows is shorter.
+   */
+  .kit-matrix-figure {
+    --kit-matrix-side: min(
+      calc(100cqh - 2 * (var(--kit-matrix-end-row) + var(--kit-matrix-end-gap))),
+      calc(100cqw - 7 * var(--kit-column) - 6 * var(--kit-gutter))
+    );
+
+    display: grid;
+    grid-template-columns: var(--kit-matrix-side);
+    grid-template-rows: var(--kit-matrix-end-row) var(--kit-matrix-side) var(--kit-matrix-end-row);
+    row-gap: var(--kit-matrix-end-gap);
+    align-content: center;
+    margin: 0;
+  }
+
+  .kit-matrix-end {
+    min-width: 0;
+    margin: 0;
+    color: var(--brand-color-fg);
+  }
+
+  /* The vertical axis's labels, centred on it above and below the plot, on one line. */
+  .kit-matrix-end[data-axis='y'] {
+    grid-column: 1;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .kit-matrix-end[data-axis='y'][data-end='high'] {
+    grid-row: 1;
+  }
+
+  .kit-matrix-end[data-axis='y'][data-end='low'] {
+    grid-row: 3;
+  }
+
+  /* The horizontal axis's labels, inside the plot at the ends of the axis line. */
+  .kit-matrix-end[data-axis='x'] {
+    position: absolute;
+    width: max-content;
+    max-width: calc(40% - var(--kit-matrix-pad));
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  .kit-matrix-end[data-axis='x'][data-end='high'] {
+    text-align: right;
+  }
+
+  .kit-matrix-plot {
+    position: relative;
+    grid-row: 2;
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  /* The subject's quadrant, in the surface's raised color, under everything else. */
+  .kit-matrix-tint {
+    position: absolute;
+    background: var(--brand-color-surface);
+  }
+
+  .kit-matrix-tint[data-quadrant^='top'] {
+    top: 0;
+    bottom: 50%;
+  }
+
+  .kit-matrix-tint[data-quadrant^='bottom'] {
+    top: 50%;
+    bottom: 0;
+  }
+
+  .kit-matrix-tint[data-quadrant$='left'] {
+    right: 50%;
+    left: 0;
+  }
+
+  .kit-matrix-tint[data-quadrant$='right'] {
+    right: 0;
+    left: 50%;
+  }
+
+  /*
+   * The axes, crossing at the centre and running to the plot's edges: thin lines in the muted text
+   * color, which every surface keeps legible, where the border color fades on some.
+   */
+  .kit-matrix-line {
+    --kit-matrix-stroke: var(--brand-stroke-hairline);
+
+    position: absolute;
+    background: var(--brand-color-muted);
+  }
+
+  .kit-matrix-line[data-axis='x'] {
+    top: calc(50% - var(--kit-matrix-stroke) / 2);
+    right: 0;
+    left: 0;
+    height: var(--kit-matrix-stroke);
+  }
+
+  .kit-matrix-line[data-axis='y'] {
+    top: 0;
+    bottom: 0;
+    left: calc(50% - var(--kit-matrix-stroke) / 2);
+    width: var(--kit-matrix-stroke);
+  }
+
+  /*
+   * A caption sits quietly in its quadrant, in its outer corner unless a dot stands there; the
+   * layout's planner places it. It keeps the width of its text, up to a little under half the plot,
+   * wherever it stands, and aligns to the plot's nearer side.
+   */
+  .kit-matrix-caption {
+    position: absolute;
+    width: max-content;
+    max-width: calc(50% - 3 * var(--kit-matrix-pad));
+    margin: 0;
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  .kit-matrix-caption[data-corner$='right'] {
+    text-align: right;
+  }
+
+  .kit-matrix-caption[data-tinted='true'] {
+    color: var(--brand-color-accent-text);
+  }
+
+  /*
+   * The items stand on layers as large as the plot, the other items on one and the subject on
+   * another, so a reveal fades a whole layer in; within a layer each item's parts are placed
+   * against the plot.
+   */
+  .kit-matrix-layer {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-matrix-item {
+    display: contents;
+  }
+
+  /*
+   * A dot is centred on its position with negative margins, which layout geometry sees, so the
+   * planner measures its centre where it is drawn.
+   */
+  .kit-matrix-dot {
+    --kit-matrix-size: var(--kit-matrix-dot);
+
+    position: absolute;
+    top: calc(
+      var(--kit-matrix-inset) + (100 - var(--kit-y)) * (100% - 2 * var(--kit-matrix-inset)) / 100
+    );
+    left: calc(var(--kit-matrix-inset) + var(--kit-x) * (100% - 2 * var(--kit-matrix-inset)) / 100);
+    width: var(--kit-matrix-size);
+    height: var(--kit-matrix-size);
+    margin: calc(var(--kit-matrix-size) / -2) 0 0 calc(var(--kit-matrix-size) / -2);
+    border-radius: 50%;
+    background: var(--brand-color-muted);
+  }
+
+  /* The subject: a dot in the accent inside a ring in the accent. */
+  .kit-matrix-item[data-us='true'] .kit-matrix-dot {
+    --kit-matrix-size: var(--kit-matrix-ring);
+
+    display: grid;
+    place-items: center;
+    border: var(--brand-stroke-bold) solid var(--brand-color-accent);
+    background: transparent;
+  }
+
+  .kit-matrix-core {
+    width: var(--kit-matrix-core);
+    height: var(--kit-matrix-core);
+    border-radius: 50%;
+    background: var(--brand-color-accent);
+  }
+
+  /*
+   * A name keeps the width of its text, wherever the planner puts it, up to seven ems: a long name
+   * takes two short lines, which find room on a full plot more easily than one long one.
+   */
+  .kit-matrix-name {
+    position: absolute;
+    width: max-content;
+    max-width: 7em;
+    color: var(--brand-color-muted);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+
+  .kit-matrix-name:is([data-side='left'], [data-side='top-left'], [data-side='bottom-left']) {
+    text-align: right;
+  }
+
+  .kit-matrix-name:is([data-side='top'], [data-side='bottom']) {
+    text-align: center;
+  }
+
+  .kit-matrix-item[data-us='true'] .kit-matrix-name {
+    --kit-scale: 0.62;
+
+    max-width: 7em;
+    color: var(--brand-color-heading);
+  }
+
+  /* The note under the title, after a short rule in the accent. */
+  .kit-matrix-note {
+    margin-top: var(--kit-title-gap);
+    max-width: 24em;
+    color: var(--brand-color-fg);
+  }
+
+  .kit-matrix-note::before {
+    content: '';
+    display: block;
+    width: 2.4em;
+    height: var(--brand-stroke-bold);
+    margin-bottom: var(--brand-space-md);
+    background: var(--brand-color-accent);
+  }
+
+  .kit-matrix-note p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  .kit-matrix-note p + p {
+    margin-top: 0.6em;
+  }
+}

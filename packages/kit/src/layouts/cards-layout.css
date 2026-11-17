@@ -113,3 +113,131 @@
     margin-top: var(--brand-space-xs);
   }
 }
+
+/*
+ * Roomy cards, for a row whose content leaves room. The icon stands on a larger tile at the card's
+ * top and the title (at the full title size, the headline size at the largest levels with up to
+ * three cards) and the text stand on its foot, with a gap row between them that takes what the
+ * content leaves, so the card is composed top and bottom rather than filled from the top. The gap
+ * has a floor, so content that cannot leave the card that much air overflows the region at a level
+ * and the layout steps down; and a ceiling of about one tile and a quarter, so a card with little
+ * in it (a title and no text, a line of text under a short title) does not become a large, mostly
+ * empty panel: the row is then shorter than the region and stands in its middle. The grid is as
+ * tall as the region, so a row that needs more than it overflows the grid, which the layout
+ * measures. The tile's size is `--kit-card-tile`, set per level below.
+ */
+@layer components {
+  .kit-frame[data-layout='cards'][data-roomy='true'] {
+    --kit-card-tile: calc(2.25 * var(--brand-type-title-size));
+    --kit-card-gap-floor: var(--brand-space-xl);
+  }
+
+  .kit-frame[data-layout='cards'][data-roomy='true'][data-count='4'] {
+    --kit-card-tile: calc(2 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='cards'][data-large='true'] {
+    --kit-card-tile: calc(2.75 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='cards'][data-large='true'][data-count='4'] {
+    --kit-card-tile: calc(2.25 * var(--brand-type-title-size));
+  }
+
+  /*
+   * Words are never broken at a roomy level: a word wider than its card widens the card's column
+   * instead, the row overflows the region and the layout steps down, where a long word may break.
+   */
+  .kit-frame[data-layout='cards'][data-roomy='true'] .kit-cards {
+    height: 100%;
+    grid-template-columns: repeat(var(--kit-card-count, 3), minmax(min-content, 1fr));
+    grid-template-rows:
+      auto minmax(var(--kit-card-gap-floor), calc(1.25 * var(--kit-card-tile)))
+      auto auto;
+    align-content: safe center;
+  }
+
+  .kit-frame[data-layout='cards'][data-roomy='true'] .kit-card {
+    grid-template-columns: minmax(min-content, 1fr);
+  }
+
+  .kit-frame[data-layout='cards'][data-roomy='true'] :is(.kit-card-title, .kit-card-body) {
+    overflow-wrap: normal;
+  }
+
+  .kit-frame[data-layout='cards'][data-roomy='true'] .kit-card {
+    padding: var(--brand-space-xl) var(--brand-space-lg) var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='cards'][data-roomy='true'] .kit-card-icon-tile {
+    width: var(--kit-card-tile);
+    height: var(--kit-card-tile);
+    margin-bottom: 0;
+  }
+
+  /* Titles end level, so a one-line title sits on its text like a two-line one does. */
+  .kit-frame[data-layout='cards'][data-roomy='true'] .kit-card-title {
+    --kit-scale: 1;
+
+    grid-row: 3;
+    align-self: end;
+  }
+
+  .kit-frame[data-layout='cards'][data-roomy='true'] .kit-card-body {
+    grid-row: 4;
+    margin-top: var(--brand-space-md);
+  }
+}
+
+/*
+ * Snug cards, the last roomy level: composed top and bottom like the others, with the title at the
+ * full title size, but with the tile (four keep the roomy tile, which their narrow cards still have
+ * room for), padding and a lower gap floor of the usual card. A row that misses the roomy levels by a
+ * little takes it rather than falling back to cards as tall as their content.
+ */
+@layer components {
+  .kit-frame[data-layout='cards'][data-snug='true'] {
+    --kit-card-tile: calc(1.75 * var(--brand-type-title-size));
+    --kit-card-gap-floor: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='cards'][data-snug='true'][data-count='4'] {
+    --kit-card-tile: calc(2 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='cards'][data-snug='true'] .kit-card {
+    padding: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='cards'][data-snug='true'][data-count='4'] .kit-card {
+    padding: var(--brand-space-md) var(--brand-space-md) var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='cards'][data-snug='true'] .kit-card-body {
+    margin-top: var(--brand-space-sm);
+  }
+}
+
+/*
+ * Cards without icons have nothing to stand at the top, so the gap row closes and the row is as
+ * tall as its titles and text, in the middle of the region, at the roomy levels' larger type.
+ */
+@layer components {
+  .kit-frame[data-layout='cards'][data-roomy='true'][data-icons='false'] .kit-cards {
+    grid-template-rows: auto 0 auto auto;
+  }
+}
+
+/*
+ * Cards with a title and no text carry their weight in the tile: at the largest levels it grows
+ * again, so a row of short titles reads as a set of marks rather than of mostly empty panels.
+ */
+@layer components {
+  .kit-frame[data-layout='cards'][data-large='true'][data-text='false'] {
+    --kit-card-tile: calc(3.25 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='cards'][data-large='true'][data-text='false'][data-count='4'] {
+    --kit-card-tile: calc(2.75 * var(--brand-type-title-size));
+  }
+}

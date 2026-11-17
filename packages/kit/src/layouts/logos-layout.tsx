@@ -1,5 +1,6 @@
 import type { BrandTokens } from '@deckster/brand';
 
+import { PLAIN_TREATMENT } from '@deckster/brand';
 import { useBrand } from '@deckster/brand/runtime';
 import { defineLayout, useReadyHold, useStatic, type LayoutProps } from '@deckster/engine';
 import { useId, useState, type CSSProperties, type ReactNode } from 'react';
@@ -120,12 +121,6 @@ const RGBA_CHANNELS = 4;
 const NON_WORD = /\W/gu;
 
 /**
- * The treatment name that draws logos in color as their files do: no brand has a treatment of this
- * name, and an unknown name draws the picture as it is.
- */
-const UNTREATED = 'as-drawn';
-
-/**
  * The entrance order of the logos; the header and context come before.
  */
 const LOGOS_ORDER = 2;
@@ -172,7 +167,7 @@ function LogosLayout({ frontmatter, slots }: LayoutProps<typeof logosLayoutContr
         <TreatedMedia
           className="kit-logos"
           rounded={false}
-          treatment={frontmatter.treatment ?? UNTREATED}>
+          treatment={frontmatter.treatment ?? PLAIN_TREATMENT}>
           <ul className="kit-logos-grid" style={style} {...enterProps(LOGOS_ORDER, isStatic)}>
             {logos.map((logo, index) => (
               <li key={index} className="kit-logo-cell">

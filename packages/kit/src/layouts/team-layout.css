@@ -2,7 +2,9 @@
  * The team layout. A row of three or four: equal columns, each portrait as tall as the region
  * leaves above the name and role, but never taller than 4:5. A grid of five or six: three columns
  * of cards in two rows, a square portrait beside the name. A roster of seven or eight: two columns
- * of four rows, a smaller square beside one line of name and one of role.
+ * of four rows, a smaller square beside one line of name and one of role. Founders (two, or up to
+ * four with an edge or past organisations): the name, role, edge and marks on rows every person
+ * shares, two beside their portraits and three or four under them.
  */
 @layer theme, base, components, utilities;
 
@@ -103,25 +105,29 @@
   }
 
   /* Cards and roster rows: a square portrait beside the name, centred on it. */
-  .kit-frame[data-layout='team']:not([data-arrangement='row']) .kit-team-member {
+  .kit-frame[data-layout='team']:is([data-arrangement='grid'], [data-arrangement='roster'])
+    .kit-team-member {
     flex-direction: row;
     align-items: center;
     gap: var(--brand-space-md);
   }
 
-  .kit-frame[data-layout='team']:not([data-arrangement='row']) .kit-team-portrait {
+  .kit-frame[data-layout='team']:is([data-arrangement='grid'], [data-arrangement='roster'])
+    .kit-team-portrait {
     flex: none;
     width: auto;
     height: min(100%, var(--kit-portrait-max));
     aspect-ratio: 1;
   }
 
-  .kit-frame[data-layout='team']:not([data-arrangement='row']) .kit-team-text {
+  .kit-frame[data-layout='team']:is([data-arrangement='grid'], [data-arrangement='roster'])
+    .kit-team-text {
     flex: 1 1 0;
     padding-top: 0;
   }
 
-  .kit-frame[data-layout='team']:not([data-arrangement='row']) .kit-team-name {
+  .kit-frame[data-layout='team']:is([data-arrangement='grid'], [data-arrangement='roster'])
+    .kit-team-name {
     --kit-scale: 0.68;
   }
 
@@ -143,5 +149,149 @@
 
   .kit-frame[data-layout='team'][data-arrangement='roster'] .kit-team-name {
     --kit-scale: 0.6;
+  }
+
+  /*
+   * Founders: the portrait, the name, the role, the edge and the marks each take a row every person
+   * shares, so a name or an edge that wraps keeps the lines of the others level. An empty edge or
+   * row of marks keeps its row.
+   */
+  .kit-frame[data-layout='team'][data-arrangement='founders'] {
+    --kit-mark-size: calc(1.6 * var(--brand-type-title-size));
+    --kit-mark-height: calc(0.9 * var(--brand-type-title-size));
+  }
+
+  /*
+   * The portrait row keeps a least height, so lines that would squeeze it to a strip overflow the
+   * region instead, and the layout steps down to a smaller level first.
+   */
+  .kit-frame[data-layout='team'][data-arrangement='founders'] .kit-team {
+    grid-template-rows: minmax(calc(3 * var(--brand-type-title-size)), 1fr) auto auto auto auto;
+    row-gap: 0;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-level='1'] .kit-team-name {
+    --kit-scale: 0.84;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-level='2'] .kit-team-name {
+    --kit-scale: 0.72;
+  }
+
+  /*
+   * At the smallest level the portrait gives up its least height: lines at every limit, under a
+   * two-line title and a line of context, leave it only what remains.
+   */
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-level='2'] .kit-team {
+    grid-template-rows: minmax(0, 1fr) auto auto auto auto;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'] .kit-team-member {
+    display: grid;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'] .kit-team-text {
+    display: contents;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'] .kit-team-name {
+    padding-top: var(--kit-team-text-gap);
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'] .kit-team-role {
+    padding-top: var(--brand-space-2xs);
+  }
+
+  .kit-team-edge {
+    margin: 0;
+    padding-top: var(--brand-space-sm);
+    color: var(--brand-color-fg);
+    text-wrap: pretty;
+  }
+
+  /* The marks stand on one baseline under the edge, small and in the muted tone. */
+  .kit-team-past {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--brand-space-md);
+    min-width: 0;
+    padding-top: var(--brand-space-md);
+  }
+
+  .kit-team-past:empty {
+    padding-top: 0;
+  }
+
+  /* Three wide marks in a narrow column share it: each shrinks in proportion, on the same foot. */
+  .kit-team-mark {
+    flex: 0 1 auto;
+  }
+
+  .kit-team-mark .kit-mono-mark-image {
+    max-width: 100%;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='4'] {
+    --kit-mark-size: calc(1.35 * var(--brand-type-title-size));
+    --kit-mark-height: calc(0.8 * var(--brand-type-title-size));
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='4'] .kit-team-past {
+    gap: var(--brand-space-sm);
+  }
+
+  /*
+   * Two founders: each takes half the row, a portrait three columns wide and as tall as the region
+   * allows up to 2:3, and the lines in the other three, standing on the portrait's foot.
+   */
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] {
+    --kit-member-span: 6;
+  }
+
+  /* The first row is only the room above the lines, beside the portrait, so it needs no height. */
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] .kit-team {
+    flex: none;
+    grid-template-rows: minmax(0, 1fr) auto auto auto auto;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] .kit-team-member {
+    grid-template-columns: subgrid;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] .kit-team-portrait {
+    grid-column: 1 / span 3;
+    grid-row: 1 / -1;
+    width: 100%;
+    height: min(100cqh, 1.5 * (3 * var(--kit-column) + 2 * var(--kit-gutter)));
+    max-height: none;
+    aspect-ratio: auto;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] .kit-team-text > * {
+    grid-column: 4 / span 3;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] .kit-team-name {
+    grid-row: 2;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] .kit-team-role {
+    grid-row: 3;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] .kit-team-edge {
+    grid-row: 4;
+  }
+
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-count='2'] .kit-team-past {
+    grid-row: 5;
+  }
+
+  /* At the smallest level the marks are smaller too, after the sizes set for each count. */
+  .kit-frame[data-layout='team'][data-arrangement='founders'][data-level='2'] {
+    --kit-mark-size: calc(1.2 * var(--brand-type-title-size));
+    --kit-mark-height: calc(0.7 * var(--brand-type-title-size));
   }
 }
