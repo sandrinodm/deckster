@@ -16,6 +16,7 @@ This is the documentation site for [deckster](https://github.com/sandrinodm/deck
 - **Look:** light theme only, black, white and one vermilion (`--deck-*` in `src/styles/globals.css`). Vermilion is 3.3:1 on white: use it for marks, never for text.
 - **Before you hand off:** `npx @cloudflare/nimbus-docs check`, `npm run build`, then `check` again (link checking needs the build). Preview the build with `npm run preview` at <http://localhost:4321/deckster/>.
 - Commit to `docs-site`, never to `main`; the branches share no history.
+- **Starter files merged by hand.** `nimbus.json` records the starter at `templates-v0.8.3`, but `Header.astro`, `toc.client.ts`, `BaseLayout.astro` and `DocsLayout.astro` were merged by hand up to `templates-v0.9.0` (Nimbus 0.20.0), and no command records a hand merge. So `outdated` keeps listing them as `hand-merge`, and `diff <file>` shows this site's edits mixed in with upstream's. For the next upgrade, merge in three ways against the upstream starter (`git show <tag>:template/<path>` in `github.com/cloudflare/nimbus`), from `templates-v0.9.0` to the new tag. `ThemeToggle.astro` shows as `deleted`, and that is intended: the site is light only. Leave it out. The local edits to keep: the brand header and logo, no theme script or toggle, `nb-app`/`nb-scroll-root`/`nb-brand-surface` with `src/lib/scroll-root.ts` (the TOC's bottom detection reads it), `codeBadges()`, and the per-page `socialImageAlt` passed to `NimbusHead`. The registry Switch is restyled to ink at the end of `globals.css`.
 
 ## Deck components
 

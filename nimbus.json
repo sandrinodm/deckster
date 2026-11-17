@@ -1,8 +1,31 @@
 {
   "$schema": "https://nimbus-docs.com/schema/nimbus.json",
   "version": "0.8.3",
-  "lastReviewedNimbusVersion": "0.19.3",
+  "lastReviewedNimbusVersion": "0.20.0",
   "templatesTag": "templates-v0.8.3",
+  "templatesTagByFile": {
+    "src/components/AgentDirective.astro": "templates-v0.9.0",
+    "src/components/ui/banner/Banner.astro": "templates-v0.9.0",
+    "src/components/ui/banner/banner.client.ts": "templates-v0.9.0",
+    "src/components/ui/button/Button.astro": "templates-v0.9.0",
+    "src/components/ui/button/variants.ts": "templates-v0.9.0",
+    "src/components/ui/dialog/dialog.client.ts": "templates-v0.9.0",
+    "src/components/ui/image-zoom/ImageZoom.astro": "templates-v0.9.0",
+    "src/components/ui/page-actions/page-actions.client.ts": "templates-v0.9.0",
+    "src/components/ui/page-actions/PageActions.astro": "templates-v0.9.0",
+    "src/components/ui/pagination/Pagination.astro": "templates-v0.9.0",
+    "src/components/ui/pagination/pagination.client.ts": "templates-v0.9.0",
+    "src/components/ui/pagination/PaginationLink.astro": "templates-v0.9.0",
+    "src/components/ui/search/providers/pagefind.ts": "templates-v0.9.0",
+    "src/components/ui/search/search-trigger.client.ts": "templates-v0.9.0",
+    "src/components/ui/search/search.client.ts": "templates-v0.9.0",
+    "src/components/ui/search/SearchDialog.astro": "templates-v0.9.0",
+    "src/components/ui/search/SearchTrigger.astro": "templates-v0.9.0",
+    "src/components/ui/sidebar/sidebar.client.ts": "templates-v0.9.0",
+    "src/components/ui/sidebar/SidebarFilter.astro": "templates-v0.9.0",
+    "src/components/ui/steps/Steps.astro": "templates-v0.9.0",
+    "src/components/ui/toc/TOC.astro": "templates-v0.9.0"
+  },
   "variant": "starter",
   "site": {
     "template": "docs",
@@ -19,7 +42,7 @@
     {
       "slug": "cn",
       "type": "registry:lib",
-      "version": "0.19.4",
+      "version": "0.20.0",
       "source": "https://nimbus-docs.com/registry",
       "hash": "sha256:7c54894573a1398333b41a63838db5de40ba05ad3fdb71048414baf912bb0070",
       "files": [
@@ -64,7 +87,7 @@
     {
       "slug": "layer-card",
       "type": "registry:ui",
-      "version": "0.19.4",
+      "version": "0.20.0",
       "source": "https://nimbus-docs.com/registry",
       "hash": "sha256:ff1f8173d09b8523284fb8777be508b71a7519553a3960e340387426c3d24b1f",
       "files": [
@@ -83,17 +106,17 @@
     {
       "slug": "code-group",
       "type": "registry:ui",
-      "version": "0.19.4",
+      "version": "0.20.0",
       "source": "https://nimbus-docs.com/registry",
-      "hash": "sha256:5854b00d48fbb8617d9c4a62f8320461751981bf2f77b78ccd5f8267ff167ce7",
+      "hash": "sha256:550bf7fdc3040b622023750e21ab9ec528ab11a646071e3d4fd46ad264ee86cc",
       "files": [
         "src/components/ui/code-group/CodeGroup.astro",
         "src/components/ui/code-group/code-group.client.ts",
         "src/components/ui/code-group/index.ts"
       ],
       "fileHashes": {
-        "src/components/ui/code-group/CodeGroup.astro": "sha256:f5cc6bd8970cb9d0d5e2d7b5abe6ac5d6bf5060fe932a578a10cf4346b01a0d4",
-        "src/components/ui/code-group/code-group.client.ts": "sha256:ce4298471fdc046c8928994f6b18376d4ae806d67d16be4121c22904ea7554eb",
+        "src/components/ui/code-group/CodeGroup.astro": "sha256:7c3ac83e2cd206a1fd57a80a3d8e1551455de547902aa366e345c2b9729faec1",
+        "src/components/ui/code-group/code-group.client.ts": "sha256:a98cac76a28ed0a2c9f7281d0514ea89f597bdce5fd07698a7220fa295c2d9d1",
         "src/components/ui/code-group/index.ts": "sha256:e45a6215bbbd860bb57bc0f23eedf5a31159e2ff1692ebb44f1ef1327b403443"
       }
     },
@@ -137,6 +160,55 @@
         "src/components/ui/accordion/AccordionGroup.astro": "sha256:8b62323b4b179d19bd13e8960c27ada56ae930a7d6cdd98e377f5a5607c074b1",
         "src/components/ui/accordion/AccordionTrigger.astro": "sha256:dc859732eea291f324a8cae6df32d01c9eec84708ad7ef824fa5382c983e7d5c",
         "src/components/ui/accordion/index.ts": "sha256:036a27604302efba68cf416815ba7536c093834201069964b3c673021972beb9"
+      }
+    },
+    {
+      "slug": "variants",
+      "type": "registry:lib",
+      "version": "0.20.0",
+      "source": "https://nimbus-docs.com/registry",
+      "hash": "sha256:365f84131a9c99f3a9b5ce68b006f748f3c6574b53962fb25b554c1b86f40b2b",
+      "files": [
+        "src/lib/variants.ts"
+      ],
+      "fileHashes": {
+        "src/lib/variants.ts": "sha256:6cfabfb4cb2c40af237e5974a16f300863353e6963a4f8518767f998c6b30435"
+      }
+    },
+    {
+      "slug": "switch",
+      "type": "registry:ui",
+      "version": "0.20.0",
+      "source": "https://nimbus-docs.com/registry",
+      "hash": "sha256:ec3464b54159e7019d2743ff4830973e1f2b2bb846818308a1d562d945700c59",
+      "files": [
+        "src/components/ui/switch/Switch.astro",
+        "src/components/ui/switch/index.ts",
+        "src/components/ui/switch/switch.client.ts"
+      ],
+      "fileHashes": {
+        "src/components/ui/switch/Switch.astro": "sha256:274be0ae12736f15e8a4d4f01069ec1b3931240e2fb2749b502bf247a2c740bb",
+        "src/components/ui/switch/index.ts": "sha256:d4fcb16b821b1198eaf69ef4196d09571e09bc3416ce12ff768cdd758e2b2538",
+        "src/components/ui/switch/switch.client.ts": "sha256:a5c1a7475905e5e06f0d3f5f5d142c8e935ecbc53377d7d01adae14bb1d8d66d"
+      }
+    },
+    {
+      "slug": "shortcuts",
+      "type": "registry:lib",
+      "version": "0.20.0",
+      "source": "https://nimbus-docs.com/registry",
+      "hash": "sha256:363e496bcc575d18c4215cdd6de0d97ef5e1e34bda592469517869ee5bd8e2e6",
+      "files": [
+        "src/components/ui/shortcuts/ShortcutsToggle.astro",
+        "src/components/ui/shortcuts/index.ts",
+        "src/components/ui/shortcuts/shortcuts-toggle.client.ts",
+        "src/lib/shortcuts.ts"
+      ],
+      "fileHashes": {
+        "src/components/ui/shortcuts/ShortcutsToggle.astro": "sha256:b2ac1ca0b166b1c0e3534b23c085038f0b67fd272d0d6738e1bd1b51a53f269a",
+        "src/components/ui/shortcuts/index.ts": "sha256:366fbceb73e92cbc48ca0f161951ef62b4a540c5b25030f782e5e7d96b013e8a",
+        "src/components/ui/shortcuts/shortcuts-toggle.client.ts": "sha256:c8609962ae5d3788f3e3aedb6d7f79247458ab0a365b0ef6aa6f4994fc073e36",
+        "src/lib/shortcuts.ts": "sha256:7a502a499ddf408b7c047511efef2b71f251fc73670512aa66c0ce4605930969"
       }
     }
   ]

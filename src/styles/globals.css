@@ -824,3 +824,15 @@ body:not(:has([data-mobile-sidebar])) [data-menu-btn] {
 		--nb-header-height: 0px;
 	}
 }
+
+/* The registry's Switch (the search dialog's single-key shortcuts switch) is
+   blue when on; here it is ink, with the site's focus ring. Unlayered, so it
+   wins over the component's Tailwind utilities without editing the registry
+   file. */
+[data-nb-switch]:focus-visible {
+	outline-color: var(--nb-ring);
+}
+[data-nb-switch][aria-checked="true"] > span:first-child {
+	background-color: var(--deck-ink);
+	--tw-ring-color: var(--deck-ink);
+}

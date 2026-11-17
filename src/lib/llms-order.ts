@@ -5,9 +5,10 @@
  * read the same structure people see in the rail.
  *
  * The order comes from astro.config.ts (`sidebar.items`, a label and a folder per section) and each
- * page's `sidebar.order`. Each route wraps Nimbus's own GET and rewrites the body it returns.
+ * page's `sidebar.order`. Each route passes one of these as the factory's `body` option, so the
+ * ETag Nimbus sends is over the reordered text.
  */
-import type { APIContext, APIRoute } from "astro";
+import type { APIContext } from "astro";
 import { getCollection } from "astro:content";
 import { config } from "virtual:nimbus/config";
 
@@ -62,11 +63,6 @@ function sortLists(body: string, key: (line: string) => [number, number, string]
   return out.join("\n");
 }
 
-async function rewrite(res: Response, change: (body: string) => Promise<string>): Promise<Response> {
-  if (!res.ok) return res;
-  return new Response(await change(await res.text()), { status: res.status, headers: res.headers });
-}
-
 function siteRoot(context: APIContext): string {
   return new URL(import.meta.env.BASE_URL, context.site ?? context.url).href.replace(/\/$/, "");
 }
@@ -74,71 +70,62 @@ function siteRoot(context: APIContext): string {
 const LINK = /^- \[([^\]]*)\]\(([^)]+)\)/;
 
 /** /llms.txt: section labels from the sidebar, sections in sidebar order. */
-export function orderedLlms(GET: APIRoute): APIRoute {
-  return async (context) =>
-    rewrite(await GET(context), async (body) => {
-      const site = siteRoot(context);
-      const byDir = new Map(sections().map((s, i) => [s.directory, { ...s, i }]));
-      const relabelled = body
-        .split("\n")
-        .map((line) => {
-          const m = LINK.exec(line);
-          const section = m && /\/llms\.txt$/.test(m[2]!) ? byDir.get(pathOf(m[2]!, site)) : undefined;
-          return section ? line.replace(LINK, `- [${section.label}](${m![2]})`) : line;
-        })
-        .join("\n");
-      return sortLists(relabelled, (line) => {
-        const m = LINK.exec(line);
-        if (!m) return undefined;
-        const path = pathOf(m[2]!, site);
-        if (path === "index") return [-1, 0, ""];
-        const section = byDir.get(path);
-        return section ? [section.i, 0, ""] : undefined;
-      });
-    });
+export async function orderedLlms(body: string, context: APIContext): Promise<string> {
+  const site = siteRoot(context);
+  const byDir = new Map(sections().map((s, i) => [s.directory, { ...s, i }]));
+  const relabelled = body
+    .split("\n")
+    .map((line) => {
+      const m = LINK.exec(line);
+      const section = m && /\/llms\.txt$/.test(m[2]!) ? byDir.get(pathOf(m[2]!, site)) : undefined;
+      return section ? line.replace(LINK, `- [${section.label}](${m![2]})`) : line;
+    })
+    .join("\n");
+  return sortLists(relabelled, (line) => {
+    const m = LINK.exec(line);
+    if (!m) return undefined;
+    const path = pathOf(m[2]!, site);
+    if (path === "index") return [-1, 0, ""];
+    const section = byDir.get(path);
+    return section ? [section.i, 0, ""] : undefined;
+  });
 }
 
 /** /<section>/llms.txt: the sidebar's label as the heading, pages in sidebar order. */
-export function orderedSectionLlms(GET: APIRoute): APIRoute {
-  return async (context) =>
-    rewrite(await GET(context), async (body) => {
-      const site = siteRoot(context);
-      const keys = await pageKeys();
-      const section = sections().find((s) => s.directory === String(context.params.section ?? ""));
-      const titled = section ? body.replace(/^# .*$/m, `# ${section.label}`) : body;
-      return sortLists(titled, (line) => {
-        const m = LINK.exec(line);
-        return m ? keys.get(pathOf(m[2]!, site)) : undefined;
-      });
-    });
+export async function orderedSectionLlms(body: string, context: APIContext): Promise<string> {
+  const site = siteRoot(context);
+  const keys = await pageKeys();
+  const section = sections().find((s) => s.directory === String(context.params.section ?? ""));
+  const titled = section ? body.replace(/^# .*$/m, `# ${section.label}`) : body;
+  return sortLists(titled, (line) => {
+    const m = LINK.exec(line);
+    return m ? keys.get(pathOf(m[2]!, site)) : undefined;
+  });
 }
 
 /** /llms-full.txt: the pages in sidebar order. Each page starts `# Title`, `> description`, `Source: <url> · …`. */
-export function orderedLlmsFull(GET: APIRoute): APIRoute {
-  return async (context) =>
-    rewrite(await GET(context), async (body) => {
-      const site = siteRoot(context);
-      const keys = await pageKeys();
-      const lines = body.split("\n");
-      // A page block starts at the `# ` line two lines above its `Source:` line.
-      const starts: { at: number; path: string }[] = [];
-      lines.forEach((line, i) => {
-        const m = /^Source: (\S+) · Markdown: /.exec(line);
-        if (m && i >= 4 && lines[i - 4]!.startsWith("# ") && lines[i - 2]!.startsWith("> ")) starts.push({ at: i - 4, path: pathOf(m[1]!, site) });
-      });
-      if (starts.length === 0) return body;
-      const head = lines.slice(0, starts[0]!.at);
-      const blocks = starts.map((s, n) => ({ ...s, n, lines: lines.slice(s.at, starts[n + 1]?.at ?? lines.length) }));
-      // The last block runs to the end of the file; keep the file's own ending.
-      const last = blocks[blocks.length - 1]!.lines;
-      const trailing: string[] = [];
-      while (last.length > 0 && last[last.length - 1] === "") trailing.unshift(last.pop()!);
-      for (const b of blocks) {
-        if (b.lines[b.lines.length - 1] !== "") b.lines.push("");
-      }
-      blocks.sort((a, b) => compare(keys.get(a.path), keys.get(b.path)) || a.n - b.n);
-      const joined = blocks.flatMap((b) => b.lines);
-      while (joined.length > 0 && joined[joined.length - 1] === "") joined.pop();
-      return [...head, ...joined, ...trailing].join("\n");
-    });
+export async function orderedLlmsFull(body: string, context: APIContext): Promise<string> {
+  const site = siteRoot(context);
+  const keys = await pageKeys();
+  const lines = body.split("\n");
+  // A page block starts at the `# ` line two lines above its `Source:` line.
+  const starts: { at: number; path: string }[] = [];
+  lines.forEach((line, i) => {
+    const m = /^Source: (\S+) · Markdown: /.exec(line);
+    if (m && i >= 4 && lines[i - 4]!.startsWith("# ") && lines[i - 2]!.startsWith("> ")) starts.push({ at: i - 4, path: pathOf(m[1]!, site) });
+  });
+  if (starts.length === 0) return body;
+  const head = lines.slice(0, starts[0]!.at);
+  const blocks = starts.map((s, n) => ({ ...s, n, lines: lines.slice(s.at, starts[n + 1]?.at ?? lines.length) }));
+  // The last block runs to the end of the file; keep the file's own ending.
+  const last = blocks[blocks.length - 1]!.lines;
+  const trailing: string[] = [];
+  while (last.length > 0 && last[last.length - 1] === "") trailing.unshift(last.pop()!);
+  for (const b of blocks) {
+    if (b.lines[b.lines.length - 1] !== "") b.lines.push("");
+  }
+  blocks.sort((a, b) => compare(keys.get(a.path), keys.get(b.path)) || a.n - b.n);
+  const joined = blocks.flatMap((b) => b.lines);
+  while (joined.length > 0 && joined[joined.length - 1] === "") joined.pop();
+  return [...head, ...joined, ...trailing].join("\n");
 }

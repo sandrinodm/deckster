@@ -19,7 +19,7 @@ const nimbusConfig = defineNimbusConfig({
   // Pages live on the docs-site branch of the main repository. Nimbus
   // replaces `{path}` with the file's repo path (`src/content/docs/….mdx`).
   editPattern: "https://github.com/sandrinodm/deckster/edit/docs-site/{path}",
-  // No site-wide socialImageAlt: BaseLayout writes og:image:alt per page
+  // No site-wide socialImageAlt: BaseLayout passes one per page to NimbusHead
   // ("<title> — deckster docs"), since each page has its own card.
   // Origin-root discovery files (/.well-known/*) can't be served from a
   // project page under /deckster, so leave them out.
