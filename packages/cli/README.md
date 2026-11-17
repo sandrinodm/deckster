@@ -16,6 +16,12 @@
 </p>
 
 <p align="center">
+  <a href="https://sandrinodm.github.io/deckster/"><strong>Documentation</strong></a> ·
+  <a href="https://sandrinodm.github.io/deckster/get-started/quickstart/">Quickstart</a> ·
+  <a href="https://sandrinodm.github.io/deckster/reference/cli/">CLI reference</a>
+</p>
+
+<p align="center">
   <img src="https://raw.githubusercontent.com/sandrinodm/deckster/main/assets/brand/hero.png" alt="deckster hero — a black card box printed deckster with slide cards" width="760" />
 </p>
 
@@ -103,11 +109,14 @@ Run `deck --help` for all commands, or `deck <command> --help` for full flags.
 
 ## Documentation & Links
 
+- [Documentation](https://sandrinodm.github.io/deckster/)
+- [CLI reference](https://sandrinodm.github.io/deckster/reference/cli/)
+- [Presenting](https://sandrinodm.github.io/deckster/present/deck-present-and-displays/)
+- [Agent panel](https://sandrinodm.github.io/deckster/ai-agents/agent-panel/) and
+  [MCP tools](https://sandrinodm.github.io/deckster/ai-agents/mcp-tools/)
+- [Build and host](https://sandrinodm.github.io/deckster/export-and-publish/build-and-host/)
 - [deckster Repository](https://github.com/sandrinodm/deckster)
 - [Design & Architecture](https://github.com/sandrinodm/deckster/blob/main/docs/design.md)
-- [Presenter Guide](https://github.com/sandrinodm/deckster/blob/main/docs/present.md)
-- [Agent Panel & MCP Guide](https://github.com/sandrinodm/deckster/blob/main/docs/agent.md)
-- [Deployment Guide](https://github.com/sandrinodm/deckster/blob/main/docs/deploy.md)
 - [Contributing](https://github.com/sandrinodm/deckster/blob/main/CONTRIBUTING.md)
 
 ## License
