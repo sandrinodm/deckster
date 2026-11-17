@@ -44,7 +44,7 @@ The same `<Flow>` in each published brand shows the edges, labels and `default` 
 
 <BrandGrid slide="lint-path" />
 
-`deck brand <name>` prints the look and every card with its colours on the `default` surface. With Kinetic copied into the workspace, as in [use a brand](/brands/use-a-brand/):
+`deck brand <name>` prints the look and every card with its colours on the `default` surface. With Kinetic copied into the workspace from the repository's `main` branch, as in [use a brand](/brands/use-a-brand/) (a copy from the `v0.3.0` tag has no diagram section):
 
 ```console
 $ deck brand kinetic
@@ -74,7 +74,7 @@ Three things do come from your `default` card: `stroke`, `radius` and `title` (f
 
 Colours are a role (`surface`), a role with an opacity in percent (`accent/12`), a palette reference (`volt.400`), a colour literal, or `none` for a fill or border. A role follows the surface the slide is on; a palette reference or a literal stays the same on every surface. Leave `text`, `subtext` and `icon.color` out and they are derived to read on the card's fill on every surface. A colour you write is checked instead: text at 4.5:1, the icon glyph at 3:1.
 
-An `accent` stripe runs along one side of the node, clipped to its outline. On a box it is a straight band; on a hexagon, a diamond or a cylinder it follows the shape's edge, and a stripe on the top of a cylinder fills its lid. Give the card `shape: 'box'` for a straight stripe on every kind.
+An `accent` stripe runs along one side of the node, clipped to its outline. On a rectangle it is a straight band. A shape that takes room at that side gets a stripe as deep as that room: on a hexagon (`gateway`) it fills the pointed end, on a diamond (`decision`) a wide wedge, and a `top` stripe on a cylinder (`database`) fills its lid. Give the card `shape: 'box'` for a straight band on every kind.
 
 ## Give your brand a diagram look
 
