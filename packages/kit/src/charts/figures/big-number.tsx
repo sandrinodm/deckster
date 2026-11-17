@@ -147,7 +147,8 @@ export const BIG_NUMBER_PROPS = propNames<BigNumberProps>()([
 /**
  * One number that says it all, as large as the region allows (never smaller than the brand's stat
  * size), with what it counts under it and the comparison that gives it meaning. When the message is
- * a single value, this beats any chart.
+ * a single value, this beats any chart. A plain figure counts up to its value when the live deck
+ * moves forward onto the slide, or onto its step with `at` (see `StatValue`).
  *
  * ```mdx
  * <BigNumber value={3} unit="days" label="from signup to a live workspace" from={14}

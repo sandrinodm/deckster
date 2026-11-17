@@ -2,20 +2,31 @@ import type { CategoricalData } from '#charts/data/rows.ts';
 import type { SceneItem, SceneLayer } from '#charts/frame/scene.ts';
 
 /**
+ * What each step of a chart's `reveal` adds: one series, or one category. The props type, the prop
+ * check and the catalog all read this list, so they name the same values.
+ */
+export const REVEAL_BY = ['series', 'categories'] as const;
+
+/**
+ * One of {@link REVEAL_BY}.
+ */
+export type RevealBy = (typeof REVEAL_BY)[number];
+
+/**
  * How a chart builds its marks in steps: one series per step, or one category per step, starting at
  * step 1 or at `from`. Series with their own `at` keep it.
  */
 export type RevealOption =
-  | 'series'
-  | 'categories'
+  | RevealBy
   | {
       /**
        * What each step adds.
        */
-      by: 'series' | 'categories';
+      by: RevealBy;
 
       /**
-       * The step the first one appears at.
+       * The step the first one appears at: a whole number of 1 or more, since step 0 is the slide
+       * before any step.
        */
       from: number;
     };

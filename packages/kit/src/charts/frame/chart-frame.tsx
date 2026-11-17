@@ -8,6 +8,7 @@ import { CHART_SPEC_ATTRIBUTE } from '#charts/chart-spec.ts';
 import { useReveal } from '#charts/frame/chart-step.tsx';
 import { useChartHost, type PlotSize } from '#charts/frame/use-chart-host.ts';
 import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import { RevealContext } from '#motion/still-motion.ts';
 import '#charts/charts.css';
 
 /**
@@ -249,7 +250,12 @@ export function ChartFrame({
         ref={plotRef}
         className="kit-chart-plot"
         style={plotHeight === undefined ? undefined : { height: plotHeight }}>
-        {drawing?.plot}
+        {/* With `at`, the figures inside (stats that count up) play when the chart is revealed. */}
+        {at === undefined ? (
+          drawing?.plot
+        ) : (
+          <RevealContext value={reveal}>{drawing?.plot}</RevealContext>
+        )}
       </div>
       {source === undefined ? null : (
         <p className="kit-chart-source kit-type-caption">{smartPunctuation(source)}</p>

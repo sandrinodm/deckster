@@ -1,3 +1,5 @@
+import { DEFAULT_STEP_EFFECT, STEP_EFFECTS } from '#motion/step-effects.ts';
+
 /**
  * One prop of a component, as `deck components --json` prints it.
  */
@@ -198,7 +200,7 @@ export const COMPONENT_INFOS = [
     useWhen:
       'A block of code in a slide; a fence (```ts title="a.ts" {2-4|7} lineNumbers diff /word/) is the usual way to write one.',
     avoid:
-      'More than about 12 lines or 60 columns beside notes (90 without): cut it or split the slide.',
+      'More than 11 lines, or 60 columns beside notes (90 without): cut it or split the slide.',
     props: props({
       code: prop('string', false, null, 'The source; a literal is highlighted at build time.'),
       children: prop('string', false, null, "The source as the tag's child, instead of `code`."),
@@ -359,12 +361,19 @@ export const COMPONENT_INFOS = [
       treatment: prop(
         'string',
         false,
-        'the brand default',
-        "A treatment from the brand's imagery.",
+        "the slide's treatment, else the brand default",
+        "A treatment from the brand's imagery; `plain`, which every brand has, shows the image " +
+          'as it is (a screenshot, a map). An unknown name is a treatment-unknown warning.',
       ),
       fit: FIT_PROP,
       focal: FOCAL_PROP,
-      ratio: RATIO_PROP,
+      ratio: prop(
+        'number',
+        false,
+        null,
+        "The frame's width over height. The figure keeps that shape (a media frame fits the " +
+          'largest such box), so corners, a tint and a <Morph> hold it.',
+      ),
       caption: prop('ReactNode', false, null, 'A caption under the image.'),
     }),
     example: '<Image src="../assets/street.jpg" alt="A street under maple trees" focal="top" />',
@@ -373,7 +382,8 @@ export const COMPONENT_INFOS = [
     name: 'Video',
     kind: 'media',
     useWhen:
-      'Motion: plays on its slide, pauses when the deck leaves, and can be cut into parts by steps.',
+      'Motion: plays on its slide, pauses when the deck leaves, and can be cut into parts by ' +
+      'steps. Inside a <Step> it starts from the top when the step reveals it.',
     avoid: 'Sound the room must hear without a caption. Use WebM, not MP4.',
     props: props({
       src: prop('string', true, null, 'The video file (WebM).'),
@@ -410,7 +420,9 @@ export const COMPONENT_INFOS = [
   {
     name: 'Lottie',
     kind: 'media',
-    useWhen: 'A small vector animation, such as a check mark drawing itself.',
+    useWhen:
+      'A small vector animation, such as a check mark drawing itself. Inside a <Step> it plays ' +
+      'when the step reveals it, so the room sees it draw.',
     avoid: 'Long or busy animations; they pull the eye from the speaker.',
     props: props({
       src: prop('string', true, null, 'The Lottie JSON file.'),
@@ -561,8 +573,16 @@ export const COMPONENT_INFOS = [
   {
     name: 'Step',
     kind: 'motion',
-    useWhen: 'Reveal part of a slide at a later step; it keeps its space while hidden.',
-    avoid: 'Revealing every bullet one by one; reveal what the speaker builds on.',
+    useWhen:
+      'Segment an explanation: reveal the part the speaker is about to talk about at a later ' +
+      'step; it keeps its space while hidden. Give each step of a run you walk through (points, ' +
+      'cards) `focus`, so the one just revealed is at full strength and earlier ones recede to ' +
+      'the muted color: that signals where to look.',
+    avoid:
+      'Revealing every bullet one by one by habit, or for experts, who read faster than you ' +
+      'reveal: reveal what the speaker builds on. Do not mix effects for variety; keep the ' +
+      'default and pick another only when it carries meaning (wipe for a line read left to ' +
+      'right, scale for a card that arrives). Charts and diagrams take their own `at`.',
     props: props({
       at: prop(
         'number',
@@ -570,9 +590,67 @@ export const COMPONENT_INFOS = [
         null,
         'The step that reveals the children, an integer of 1 or more; a bare <Step> is refused.',
       ),
+      effect: prop(
+        STEP_EFFECTS.map((effect) => `'${effect}'`).join(' | '),
+        false,
+        DEFAULT_STEP_EFFECT,
+        'How the content comes in: rise (fade and rise), fade, scale (fade in from slightly ' +
+          'smaller, growing from the middle of the text or picture, wherever it is aligned), ' +
+          'blur (fade in from out of focus) or wipe (uncovered from the start edge across the ' +
+          'content, list markers fading in with it). Each acts on the blocks directly inside the ' +
+          'step: write the content on its own lines with blank lines inside the <Step>. Words ' +
+          'inside a sentence fade, blur or wipe, but cannot rise or scale, which only fade there. ' +
+          "Blur keeps the treatment of the kit's <Image>, <Video> and <Lottie>; a raw element " +
+          'whose own `style` sets a filter keeps that filter and is not blurred. ' +
+          "Durations and easings are the brand's. " +
+          'Static mode and exports show the end state, reduced motion turns every effect into a ' +
+          'fade, and a PPTX export into a fade on click.',
+      ),
+      focus: prop(
+        'boolean',
+        false,
+        false,
+        "Recede the content to the brand's muted color once a later step of the slide is " +
+          'reached, so the latest step stands out. It changes color, never opacity, so receded ' +
+          'text keeps its contrast. Static mode and exports show every revealed step at full ' +
+          'strength.',
+      ),
       children: CHILDREN('The content to reveal.'),
     }),
-    example: '<Step at={1}>\n\n- The second point\n\n</Step>',
+    example:
+      '<Step at={1} focus>\n\n- **Eastgate:** 14 residents\n\n</Step>\n\n' +
+      '<Step at={2} focus>\n\n- **Riverside:** 2 residents\n\n</Step>\n\n' +
+      '<Step at={3} effect="wipe">\n\nSeven times the shade for each tree.\n\n</Step>',
+  },
+  {
+    name: 'Morph',
+    kind: 'motion',
+    useWhen:
+      'Carry one element across two consecutive slides: the photo that moves from one side to ' +
+      'the other, the logo that shrinks into a corner, an icon or a short heading that changes ' +
+      'place. Wrap it in a <Morph> with the same id on both slides and it flies to its new place ' +
+      'and size instead of cross-fading with the rest.',
+    avoid:
+      'Morphing everything: one or two elements per move keep the eye on what carries over. ' +
+      'Morphs play only between neighbouring slides; give each id once per slide. The box of ' +
+      'the wrapped element flies, so a chart or number figure that fills its whole region flies ' +
+      'as that region; morph something whose box is its own size. For a reveal within one slide ' +
+      'use <Step>.',
+    props: props({
+      id: prop(
+        'string',
+        true,
+        null,
+        'The name shared with the matching <Morph> on the neighbouring slide; unique on the ' +
+          'slide. It flies over the brand transition while the slides run their own. Static ' +
+          'mode, exports and reduced motion show no morph.',
+      ),
+      children: CHILDREN(
+        'What flies: one element, such as a picture, a logo, an icon or a heading. Only the ' +
+          'first element flies; the wrapper itself has no box.',
+      ),
+    }),
+    example: '<Morph id="logo">\n  <Icon name="trees" role="accent" />\n</Morph>',
   },
   {
     name: 'Notes',

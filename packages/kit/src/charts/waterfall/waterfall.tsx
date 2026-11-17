@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 
+import type { CategoricalData } from '#charts/data/rows.ts';
 import type { ResolvedFormat } from '#charts/format/number-format.ts';
 import type { ChartDrawing, ChartFacts, DrawInput } from '#charts/frame/chart-frame.tsx';
 import type { ChartProps } from '#charts/frame/chart-props.ts';
 import type { ChartTheme } from '#charts/frame/chart-theme.ts';
-import type { SceneItem } from '#charts/frame/scene.ts';
+import type { RevealOption } from '#charts/frame/reveal.ts';
+import type { SceneItem, SceneLayer } from '#charts/frame/scene.ts';
 import type { Box } from '#charts/layout/label-placement.ts';
 import type { TextStyle } from '#charts/layout/text-measure.ts';
 import type { BandScale } from '#charts/scale/band-scale.ts';
@@ -14,6 +16,7 @@ import { annotationLayers } from '#charts/frame/annotation-items.ts';
 import { ChartFrame, frameProps } from '#charts/frame/chart-frame.tsx';
 import { hasUnit, readCategorical } from '#charts/frame/chart-input.ts';
 import { checkProps, propNames } from '#charts/frame/check-props.ts';
+import { revealLayers } from '#charts/frame/reveal.ts';
 import { drawScene } from '#charts/frame/scene-svg.tsx';
 import { barPath } from '#charts/frame/scene.ts';
 import { buildSpec, listNames } from '#charts/frame/spec-builder.ts';
@@ -74,6 +77,12 @@ export type WaterfallProps = Omit<ChartProps, 'labels' | 'legend'> & {
    * Which way is good news, for the color of rises and falls: `up` (the default) or `down` (costs).
    */
   better?: 'up' | 'down';
+
+  /**
+   * Build the changes in steps between the totals, which show from the start: `categories` brings
+   * in one change per step, `series` all of them at once.
+   */
+  reveal?: RevealOption;
 };
 
 /**
@@ -129,13 +138,16 @@ export const WATERFALL_PROPS = propNames<WaterfallProps>()([
   'y',
   'totals',
   'better',
+  'reveal',
 ]);
 
 /**
  * A waterfall for how a total builds up or breaks down: totals stand on the baseline in the lead
  * data color, each change floats from the running total in the positive or negative color (by
  * whether it is good news), connectors carry the level from bar to bar, and every bar is labeled
- * with its signed change or its total.
+ * with its signed change or its total. With `reveal` the totals show from the start and the changes
+ * build between them, so the audience sees where the bridge starts and ends before how it gets
+ * there.
  *
  * ```mdx
  * <Waterfall data={bridge} x="step" y="cost" totals={['2025', '2026']} better="down"
@@ -151,6 +163,72 @@ export function Waterfall(props: WaterfallProps): ReactNode {
       draw={(input) => drawWaterfall(props, input)}
     />
   );
+}
+
+/**
+ * A mark or label of a waterfall and the change it comes in with under `reveal`.
+ */
+export type WaterfallMark = {
+  /**
+   * The scene item.
+   */
+  item: SceneItem;
+
+  /**
+   * The change's place among the changes (0 for the first), or `undefined` for what shows from the
+   * start: the totals, their labels and the step names.
+   */
+  change: number | undefined;
+};
+
+/**
+ * Each step's place among the changes, `undefined` for a total, so a build numbers the changes one
+ * after another however many totals stand between them.
+ *
+ * @param steps - The steps, in order.
+ */
+export function changeOrder(steps: readonly Step[]): (number | undefined)[] {
+  let changesSoFar = 0;
+  return steps.map((entry) => {
+    if (entry.total) {
+      return undefined;
+    }
+
+    const place = changesSoFar;
+    changesSoFar += 1;
+    return place;
+  });
+}
+
+/**
+ * The waterfall's marks in step layers: all of them from the start without `reveal`. With it, the
+ * totals and step names show from the start and the changes build by `reveal`, counted by their
+ * place among the changes, so `categories` brings in one change per step.
+ *
+ * @param reveal - The `reveal` the slide passed.
+ * @param data - The chart's data.
+ * @param marks - The marks and labels in paint order, with their changes.
+ */
+export function waterfallLayers(
+  reveal: RevealOption | undefined,
+  data: CategoricalData,
+  marks: readonly WaterfallMark[],
+): SceneLayer[] {
+  if (reveal === undefined) {
+    return [{ at: undefined, items: marks.map((mark) => mark.item) }];
+  }
+
+  const series = data.series[0]?.key ?? '';
+  const built = revealLayers({
+    reveal,
+    data,
+    items: marks.flatMap((mark) =>
+      mark.change === undefined ? [] : [{ item: mark.item, series, index: mark.change }],
+    ),
+  });
+
+  const always = marks.filter((mark) => mark.change === undefined).map((mark) => mark.item);
+  return [{ at: undefined, items: always }, ...built];
 }
 
 /**
@@ -215,7 +293,7 @@ function drawWaterfall(props: WaterfallProps, input: DrawInput): ChartDrawing {
     maxBandwidth: MAX_BAR,
   });
   const better = props.better ?? 'up';
-  const { items, labels } = waterfallMarks(steps, {
+  const marks = waterfallMarks(steps, {
     theme,
     bands,
     y,
@@ -313,7 +391,7 @@ function drawWaterfall(props: WaterfallProps, input: DrawInput): ChartDrawing {
         layers: [
           { at: undefined, items: [baseline] },
           ...notes.back,
-          { at: undefined, items: [...items, ...labels] },
+          ...waterfallLayers(props.reveal, data, marks),
           ...notes.front,
         ],
         highlightAt: highlight.at,
@@ -386,15 +464,13 @@ type WaterfallMarkOptions = {
 };
 
 /**
- * Draws the step bars and connectors before their value/category labels, preserving paint order.
+ * Lays out the step bars, their connectors and their labels in paint order: the bars and connectors
+ * first, then the labels, each with the change it comes in with under `reveal`.
  *
  * @param steps - The running totals in category order.
  * @param options - The measured geometry, styles and formatters.
  */
-function waterfallMarks(
-  steps: readonly Step[],
-  options: WaterfallMarkOptions,
-): { items: SceneItem[]; labels: SceneItem[] } {
+function waterfallMarks(steps: readonly Step[], options: WaterfallMarkOptions): WaterfallMark[] {
   const {
     theme,
     bands,
@@ -409,9 +485,11 @@ function waterfallMarks(
     writeChange,
   } = options;
   const axisStyle = theme.text.axis;
-  const items: SceneItem[] = [];
-  const labels: SceneItem[] = [];
+  const order = changeOrder(steps);
+  const items: WaterfallMark[] = [];
+  const labels: WaterfallMark[] = [];
   for (const [index, entry] of steps.entries()) {
+    const change = order[index];
     const x = bands.at(entry.label);
     const top = y(Math.max(entry.from, entry.to));
     const bottom = y(Math.min(entry.from, entry.to));
@@ -419,7 +497,7 @@ function waterfallMarks(
     const own = stepColor(entry, better, theme);
     const strong = isStrong(entry, index, highlight);
     const box = { x, y: top, width: bands.bandwidth, height: Math.max(1, bottom - top) };
-    items.push({
+    const bar: SceneItem = {
       kind: 'path',
       d: barPath(box, upward ? 'top' : 'bottom', entry.total ? theme.barRadius : 0),
       fill: strong ? own : theme.context,
@@ -427,11 +505,13 @@ function waterfallMarks(
       anim: upward ? 'rise' : 'drop',
       order: index,
       mark: true,
-    });
+    };
+    items.push({ item: bar, change });
+
     const next = steps[index + 1];
     if (next !== undefined) {
       const level = y(entry.to);
-      items.push({
+      const connector: SceneItem = {
         kind: 'line',
         x1: x + bands.bandwidth,
         y1: level,
@@ -441,11 +521,12 @@ function waterfallMarks(
         width: theme.axis.width,
         anim: 'fade',
         lag: true,
-      });
+      };
+      items.push({ item: connector, change: laterChange(change, order[index + 1]) });
     }
 
     const text = stepText(entry, write, writeChange);
-    labels.push({
+    const value: SceneItem = {
       kind: 'text',
       x: x + bands.bandwidth / 2,
       y: top - theme.space.sm - valueHeight / 2,
@@ -458,9 +539,13 @@ function waterfallMarks(
       anim: 'fade',
       lag: true,
       order: index,
-    });
+    };
+    labels.push({ item: value, change });
+
     const label = wrapped[index] ?? { lines: [entry.label], cut: false };
-    labels.push({
+    // The name shows from the start, as a category axis does, so each column is there before its
+    // change builds.
+    const name: SceneItem = {
       kind: 'text',
       x: x + bands.bandwidth / 2,
       y: plot.y + plot.height + theme.space.sm + lineHeight(axisStyle) / 2,
@@ -470,10 +555,26 @@ function waterfallMarks(
       color: entry.total ? theme.colors.value : theme.colors.label,
       anchor: 'middle',
       ...(entry.total ? { weight: EMPHASIS_WEIGHT } : {}),
-    });
+    };
+    labels.push({ item: name, change: undefined });
   }
 
-  return { items, labels };
+  return [...items, ...labels];
+}
+
+/**
+ * The change a connector between two steps comes in with: the later of the two, since it carries
+ * the level from one bar to the next and means nothing until both are there.
+ *
+ * @param before - The change of the step it leaves, `undefined` for a total.
+ * @param after - The change of the step it reaches, `undefined` for a total.
+ */
+function laterChange(before: number | undefined, after: number | undefined): number | undefined {
+  if (before === undefined) {
+    return after;
+  }
+
+  return after === undefined ? before : Math.max(before, after);
 }
 
 /**

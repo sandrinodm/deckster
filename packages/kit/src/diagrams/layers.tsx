@@ -47,8 +47,10 @@ export type LayersProps = {
 
 /**
  * A stacked architecture: bands from top (closest to the user) to bottom, each with its name on the
- * left and its building blocks as chips with their kind's icon. Reveal bands by step with `at`; the
- * band of the current step is picked out in the accent.
+ * left and its building blocks as chips with their kind's icon. Reveal bands by step with `at`;
+ * while the stack is being built, the band its step just added is picked out in the accent. Once
+ * the last band is in, the build is over and only the bands the author marked (`state`) stand out,
+ * so a stack built top down does not end with its bottom band lit.
  *
  * ```mdx
  * <Layers title="The Parcelwise platform">
@@ -66,6 +68,7 @@ export function Layers({ id, title, height, children }: LayersProps): ReactNode 
   const size = useElementSize(root);
   useReadyHold(size === undefined);
   const shown = layers.filter((layer) => layer.at === undefined || layer.at <= step);
+  const lastAt = lastLayerStep(layers);
   const summary = [
     `${count(shown.length, 'layer')}, top to bottom.`,
     ...shown.map((layer) => `${layer.title}: ${layer.items.map((item) => item.title).join(', ')}.`),
@@ -96,7 +99,7 @@ export function Layers({ id, title, height, children }: LayersProps): ReactNode 
             key={`${layer.title}-${index}`}
             className="kit-layer"
             data-diagram-part="layer"
-            data-state={layer.at === step ? 'highlighted' : (layer.state ?? 'default')}
+            data-state={layerState(layer, step, lastAt)}
             data-visible={String(layer.at === undefined || layer.at <= step)}>
             <header className="kit-layer-head">
               <span className="kit-layer-title kit-type-small">
@@ -134,6 +137,40 @@ export function Layers({ id, title, height, children }: LayersProps): ReactNode 
       </div>
     </DiagramFrame>
   );
+}
+
+/**
+ * The last step a band of the stack comes in at.
+ *
+ * @param layers - The bands.
+ * @returns The largest `at`; `undefined` when no band has one.
+ */
+export function lastLayerStep(layers: readonly Pick<LayerProps, 'at'>[]): number | undefined {
+  const steps = layers.flatMap((layer) => (layer.at === undefined ? [] : [layer.at]));
+  return steps.length === 0 ? undefined : Math.max(...steps);
+}
+
+/**
+ * How a band is drawn at a step: picked out when its step just added it and more bands are still to
+ * come, else in the state its author gave it. The build's highlight says which band the speaker is
+ * on; once the stack is whole, only the author's own emphasis shows.
+ *
+ * @param layer - The band's step and state.
+ * @param step - The step on screen.
+ * @param lastAt - The step the last band comes in at.
+ * @returns The band's `data-state`.
+ */
+export function layerState(
+  layer: Pick<LayerProps, 'at' | 'state'>,
+  step: number,
+  lastAt: number | undefined,
+): string {
+  const building = lastAt !== undefined && step < lastAt;
+  if (building && layer.at === step) {
+    return 'highlighted';
+  }
+
+  return layer.state ?? 'default';
 }
 
 /**

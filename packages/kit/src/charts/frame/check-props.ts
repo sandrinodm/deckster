@@ -1,9 +1,16 @@
-import { CHART_INFOS, chartPropNames } from '#charts/chart-catalog.ts';
+import { CHART_INFOS, CHART_TYPES, chartPropNames } from '#charts/chart-catalog.ts';
+import { REVEAL_BY } from '#charts/frame/reveal.ts';
 
 /**
  * One typo is allowed for every this many letters of an unknown prop name.
  */
 const LETTERS_PER_TYPO = 3;
+
+/**
+ * How many leading letters a misspelt `reveal` value must share with a real one for the check to
+ * suggest it, as in `category` for `categories`.
+ */
+const REVEAL_PREFIX_LETTERS = 3;
 
 /**
  * Names authors reach for that a chart calls something else, with the prop they mean.
@@ -152,7 +159,9 @@ const SYNONYMS: Readonly<Record<string, readonly string[]>> = {
  *
  * @param name - The component's tag, as the catalog names it.
  * @param props - The props the slide passed.
- * @throws Error naming the unknown prop, the prop it most likely means, and the chart's props.
+ * @throws Error naming the unknown prop, the prop it most likely means, and the chart's props; for
+ *   a `reveal` the chart cannot build, what is wrong with it and how to write it; or, for an `at`
+ *   that is not a step, where it is written and what to write instead.
  */
 export function checkProps(name: string, props: object): void {
   const info = CHART_INFOS.find((entry) => entry.name === name);
@@ -160,8 +169,14 @@ export function checkProps(name: string, props: object): void {
     return;
   }
 
+  checkSteps(name, props);
+
   const known = chartPropNames(info);
-  for (const key of Object.keys(props)) {
+  for (const [key, value] of Object.entries(props)) {
+    if (key === 'reveal' && known.includes(key) && value !== undefined) {
+      checkReveal(name, value);
+    }
+
     if (known.includes(key) || key === 'children' || key.startsWith('data-')) {
       continue;
     }
@@ -173,6 +188,33 @@ export function checkProps(name: string, props: object): void {
         '`deck charts --json` describes each one.',
     );
   }
+}
+
+/**
+ * Fails when a chart's `reveal` is not one it can build. Left unchecked, a `from` below 1 reaches
+ * the step registry as a step of 0 and fails there as a `<Step at>` the slide never wrote, a
+ * missing `from` puts every mark at a step that is not a number, and a misspelt `by` quietly builds
+ * by category. The object's fields are the ones the catalog lists under `types.RevealOption`.
+ *
+ * @param chart - The component's tag.
+ * @param reveal - The `reveal` the slide passed.
+ * @throws Error quoting the `reveal` as written, what is wrong with it and how to write it.
+ */
+export function checkReveal(chart: string, reveal: unknown): void {
+  const written = `\`${revealSource(reveal)}\` on ${chart}`;
+  const forms =
+    `Write ${REVEAL_BY.map((by) => `\`reveal="${by}"\``).join(' or ')} to build from step 1, ` +
+    'or `reveal={{ by: "categories", from: 2 }}` to start at a later step.';
+  if (typeof reveal === 'string') {
+    checkRevealBy(written, reveal, forms);
+    return;
+  }
+
+  if (typeof reveal !== 'object' || reveal === null || Array.isArray(reveal)) {
+    throw new Error(`${written} is not a way to build a chart. ${forms}`);
+  }
+
+  checkRevealObject(written, reveal, forms);
 }
 
 /**
@@ -240,4 +282,169 @@ export function propNames<Props>(): <const Names extends readonly (keyof Props &
   names: Names & ([Exclude<keyof Props & string, Names[number]>] extends [never] ? unknown : never),
 ) => Names {
   return (names) => names;
+}
+
+/**
+ * Fails when an `at` on the chart, a series, the highlight or an annotation is not a step. Left
+ * unchecked, the value reaches the step registry and fails there as a `<Step at>` the slide never
+ * wrote, which sends the author looking for a step that is not on the page.
+ *
+ * @param chart - The component's tag.
+ * @param props - The props the slide passed.
+ * @throws Error naming the `at` as written, what it belongs to, and how to write it.
+ */
+function checkSteps(chart: string, props: object): void {
+  const { at, y, highlight, annotations } = props as {
+    at?: unknown;
+    y?: unknown;
+    highlight?: unknown;
+    annotations?: unknown;
+  };
+  checkStep(at, `on ${chart}`, 'the whole chart');
+  for (const series of Array.isArray(y) ? y : [y]) {
+    if (isRecord(series)) {
+      const field = typeof series['field'] === 'string' ? ` "${series['field']}"` : '';
+      checkStep(series['at'], `on the series${field} of ${chart}`, 'the series');
+    }
+  }
+
+  if (isRecord(highlight)) {
+    checkStep(highlight['at'], `in the \`highlight\` of ${chart}`, 'the highlight');
+  }
+
+  if (Array.isArray(annotations)) {
+    for (const [index, note] of annotations.entries()) {
+      if (isRecord(note)) {
+        const type = typeof note['type'] === 'string' ? ` (${note['type']})` : '';
+        const where = `on annotation ${index + 1}${type} of ${chart}`;
+        checkStep(note['at'], where, 'the annotation');
+      }
+    }
+  }
+}
+
+/**
+ * Fails when one `at` is given and is not a whole number of 1 or more.
+ *
+ * @param at - The value written, `undefined` when there is none.
+ * @param where - Where it is written, as a phrase: `on the series "a" of BarChart`.
+ * @param what - What it reveals: `the series`, `the highlight`.
+ * @throws Error quoting the value and where it is written, saying what step 0 is and what to write.
+ */
+function checkStep(at: unknown, where: string, what: string): void {
+  if (at === undefined || (typeof at === 'number' && Number.isInteger(at) && at >= 1)) {
+    return;
+  }
+
+  const written = typeof at === 'number' ? String(at) : JSON.stringify(at);
+  const always =
+    what === 'the highlight'
+      ? 'Leave `at` out to highlight from the start'
+      : `Leave \`at\` out to show ${what} from the start`;
+  throw new Error(
+    `\`at: ${written}\` ${where} is not a step: \`at\` is the step ${what} comes in at, a whole ` +
+      'number of 1 or more, and step 0 is the slide before any step. ' +
+      `${always}, or write \`at: 1\` for the first step.`,
+  );
+}
+
+/**
+ * Whether a value is a plain object whose fields can be read.
+ *
+ * @param value - Any value.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * A `reveal` as a slide writes it, for messages: `reveal="series"` or `reveal={{ by: "categories",
+ * from: 0 }}`.
+ *
+ * @param reveal - The value the slide passed.
+ */
+function revealSource(reveal: unknown): string {
+  if (typeof reveal === 'string') {
+    return `reveal=${JSON.stringify(reveal)}`;
+  }
+
+  if (typeof reveal === 'object' && reveal !== null && !Array.isArray(reveal)) {
+    // Numbers print as written: `JSON.stringify` would turn `NaN` into `null`.
+    const fields = Object.entries(reveal).map(
+      ([key, value]) =>
+        `${key}: ${typeof value === 'number' ? String(value) : JSON.stringify(value)}`,
+    );
+    return `reveal={{ ${fields.join(', ')} }}`;
+  }
+
+  return `reveal={${JSON.stringify(reveal) ?? String(reveal)}}`;
+}
+
+/**
+ * Fails when the object form of a `reveal` names a field the catalog does not list, or its `by` or
+ * `from` cannot build. The fields are the ones the catalog lists under `types.RevealOption`.
+ *
+ * @param written - The `reveal` as written and the chart, for the message.
+ * @param reveal - The object the slide passed.
+ * @param forms - How to write a `reveal`, for the message.
+ * @throws Error naming the field, the value or the missing `from`, and how to write it.
+ */
+function checkRevealObject(written: string, reveal: object, forms: string): void {
+  const fields = Object.keys(CHART_TYPES['RevealOption'] ?? {});
+  for (const key of Object.keys(reveal)) {
+    if (!fields.includes(key)) {
+      const guess = closestProp(key, fields);
+      const hint = guess === undefined ? '.' : `; did you mean \`${guess}\`?`;
+      throw new Error(
+        `${written}: \`${key}\` is not a field of \`reveal\`${hint} Its fields are: ` +
+          `${fields.join(', ')}, described under \`types.RevealOption\` in \`deck charts --json\`.`,
+      );
+    }
+  }
+
+  const { by, from } = reveal as { by?: unknown; from?: unknown };
+  checkRevealBy(written, by, forms);
+  const what = by === 'series' ? 'series' : 'category';
+  if (from === undefined) {
+    throw new Error(
+      `${written} has no \`from\`. Write \`reveal="${String(by)}"\` to bring the first ${what} ` +
+        `in at step 1, or add \`from\` with the step it comes in at, 1 or more.`,
+    );
+  }
+
+  if (typeof from !== 'number' || !Number.isInteger(from) || from < 1) {
+    throw new Error(
+      `${written}: \`from\` is the step the first ${what} comes in at, a whole number of 1 or ` +
+        'more; step 0 is the slide before any step, which shows the axes and the caption. ' +
+        `Write \`reveal="${String(by)}"\` to bring the first ${what} in at step 1, or a larger ` +
+        '`from` to start later.',
+    );
+  }
+}
+
+/**
+ * Fails when a `reveal` names something to build by that is not in {@link REVEAL_BY}.
+ *
+ * @param written - The `reveal` as written and the chart, for the message.
+ * @param by - The string form, or the object's `by`.
+ * @param forms - How to write a `reveal`, for the message.
+ * @throws Error naming the value, the closest one there is, and how to write a `reveal`.
+ */
+function checkRevealBy(written: string, by: unknown, forms: string): void {
+  if (typeof by === 'string' && (REVEAL_BY as readonly string[]).includes(by)) {
+    return;
+  }
+
+  // The two values start with different letters, so a misspelling keeps the first few letters
+  // of the one it means (`category`, `Serie`).
+  const start =
+    typeof by === 'string' ? by.slice(0, REVEAL_PREFIX_LETTERS).toLowerCase() : undefined;
+  const guess =
+    start === undefined ? undefined : REVEAL_BY.find((value) => value.startsWith(start));
+  const hint = guess === undefined ? '' : ` Did you mean "${guess}"?`;
+  const named = by === undefined ? 'does not say what to build by' : 'cannot build by that';
+  throw new Error(
+    `${written} ${named}: a chart builds by ` +
+      `${REVEAL_BY.map((value) => `"${value}"`).join(' or ')}.${hint} ${forms}`,
+  );
 }

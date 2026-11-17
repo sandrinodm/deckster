@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 
 import { CHART_LIMITS } from '#charts/chart-catalog.ts';
+import { comparisonBarScale } from '#charts/figures/comparison.tsx';
 import { exactDigits } from '#charts/figures/data-table.tsx';
 import { deltaFrom, figureFormat, figureText } from '#charts/figures/figure-format.ts';
 import { bestColumns, figureOf, Pictogram, planPictogram } from '#charts/figures/pictogram.tsx';
@@ -137,5 +138,33 @@ describe('StatRow stats', () => {
       new RegExp(`StatRow.*${limit}`, 'su'),
     );
     expect(() => StatRow({ stats: Array.from({ length: limit }, () => stat) })).not.toThrow();
+  });
+});
+
+describe('comparisonBarScale', () => {
+  it('draws two positive values from zero at the start edge, to the larger', () => {
+    const scale = comparisonBarScale(14, 2.5);
+    expect(scale.zero).toBe(0);
+    expect(scale.start(14)).toBe(0);
+    expect(scale.length(14)).toBe(1);
+    expect(scale.length(2.5)).toBeCloseTo(2.5 / 14);
+  });
+
+  it('draws a negative value from the zero line towards the start edge', () => {
+    const scale = comparisonBarScale(-0.5, 0.76);
+    const span = 1.26;
+    expect(scale.zero).toBeCloseTo(0.5 / span);
+    // The loss ends at zero and the gain starts there: they never overlap.
+    expect(scale.start(-0.5)).toBe(0);
+    expect(scale.start(-0.5) + scale.length(-0.5)).toBeCloseTo(scale.zero);
+    expect(scale.start(0.76)).toBeCloseTo(scale.zero);
+    expect(scale.start(0.76) + scale.length(0.76)).toBeCloseTo(1);
+  });
+
+  it('puts zero at the end edge when both values are negative', () => {
+    const scale = comparisonBarScale(-4, -1);
+    expect(scale.zero).toBe(1);
+    expect(scale.start(-1) + scale.length(-1)).toBe(1);
+    expect(scale.length(-4)).toBe(1);
   });
 });

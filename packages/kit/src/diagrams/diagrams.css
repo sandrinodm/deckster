@@ -619,8 +619,14 @@
     text-wrap: balance;
   }
 
-  .kit-timeline-item[data-state='future'] .kit-timeline-title {
+  /* A tentative (muted) milestone reads like one still to come, wherever it sits, and its dashed
+     dot tells it apart from a planned one. */
+  .kit-timeline-item:is([data-state='future'], [data-state='muted']) .kit-timeline-title {
     color: var(--brand-diagram-label);
+  }
+
+  .kit-timeline-item[data-state='muted'] .kit-timeline-dot {
+    border-style: dashed;
   }
 
   /* Layers: bands top to bottom, the name on the left, the building blocks as chips. */

@@ -1,4 +1,4 @@
-import type { NotesProps, StepProps } from '@deckster/engine';
+import type { NotesProps } from '@deckster/engine';
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vite-plus/test';
@@ -17,12 +17,15 @@ import type { QRProps } from '#links/qr.tsx';
 import type { ImageProps } from '#media/image.tsx';
 import type { LottieProps } from '#media/lottie.tsx';
 import type { VideoProps } from '#media/video.tsx';
+import type { MorphProps } from '#motion/morph.tsx';
+import type { KitStepProps } from '#motion/step.tsx';
 
 import { CHART_COMPONENTS } from '#charts/chart-components.ts';
 import { checkComponentProps, propsProblem } from '#components/check-component-props.ts';
 import { COMPONENT_INFOS, componentCatalog } from '#components/component-catalog.ts';
 import { DIAGRAM_COMPONENTS } from '#diagrams/diagram-components.ts';
 import { Download } from '#links/download.tsx';
+import { Step } from '#motion/step.tsx';
 import kit from '#runtime.ts';
 
 /**
@@ -72,7 +75,8 @@ const AGREE: Record<string, true> = {
   QR: true satisfies Agrees<QRProps, 'QR'>,
   Live: true satisfies Agrees<LiveProps, 'Live'>,
   AppFrame: true satisfies Agrees<AppFrameProps, 'AppFrame'>,
-  Step: true satisfies Agrees<StepProps, 'Step'>,
+  Step: true satisfies Agrees<KitStepProps, 'Step'>,
+  Morph: true satisfies Agrees<MorphProps, 'Morph'>,
   Notes: true satisfies Agrees<NotesProps, 'Notes'>,
 };
 
@@ -159,5 +163,15 @@ describe('checking the props of a component', () => {
     );
     expect(propsProblem({ name: 'Step', given: ['at'], checkRequired: true })).toBeUndefined();
     expect(() => checkComponentProps('Step', { children: 'Always' })).toThrow(/needs `at`/);
+  });
+
+  it('takes a <Step> effect and focus, and refuses an effect it does not have', () => {
+    expect(
+      propsProblem({ name: 'Step', given: ['at', 'effect', 'focus'], checkRequired: true }),
+    ).toBeUndefined();
+    const props = { at: 1, effect: 'wpie', children: 'x' } as unknown as KitStepProps;
+    expect(() => renderToStaticMarkup(<Step {...props} />)).toThrow(
+      /"wpie" is not an effect of <Step>\. Use one of rise, fade, scale, blur, wipe/,
+    );
   });
 });

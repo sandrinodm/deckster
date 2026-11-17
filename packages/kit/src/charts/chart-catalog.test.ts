@@ -11,6 +11,7 @@ import { PICTOGRAM_PROPS } from '#charts/figures/pictogram.tsx';
 import { PROGRESS_PROPS } from '#charts/figures/progress.tsx';
 import { STAT_ROW_PROPS } from '#charts/figures/stat-row.tsx';
 import { checkProps, closestProp } from '#charts/frame/check-props.ts';
+import { REVEAL_BY } from '#charts/frame/reveal.ts';
 import { FUNNEL_PROPS } from '#charts/funnel/funnel.tsx';
 import { HEATMAP_PROPS } from '#charts/heatmap/heatmap.tsx';
 import { AREA_CHART_PROPS, LINE_CHART_PROPS } from '#charts/line/line-chart.tsx';
@@ -79,11 +80,33 @@ describe('the chart catalog', () => {
         'Annotation.reference',
         'Annotation.range',
         'Annotation.bracket',
+        'RevealOption',
       ]),
     );
     const bar = catalog.charts.find((info) => info.name === 'BarChart');
     expect(bar?.limits['categories']).toBe(CHART_LIMITS.categories.bar);
     expect(catalog.charts.every((info) => info.nulls.length > 0)).toBe(true);
+  });
+
+  it('documents both forms of `reveal`, with the values the prop check takes', () => {
+    const catalog = chartCatalog();
+    const object = catalog.types['RevealOption'];
+    expect(Object.keys(object ?? {})).toEqual(['by', 'from']);
+    for (const by of REVEAL_BY) {
+      expect(object?.['by']?.type).toContain(`"${by}"`);
+    }
+
+    const takes = catalog.charts.filter((info) => chartPropNames(info).includes('reveal'));
+    expect(takes.map((info) => info.name).toSorted()).toEqual(
+      ['AreaChart', 'BarChart', 'Funnel', 'LineChart', 'Waterfall'].toSorted(),
+    );
+    for (const info of takes) {
+      const reveal = info.props['reveal'];
+      expect(reveal?.type, info.name).toContain('RevealOption');
+      for (const by of REVEAL_BY) {
+        expect(reveal?.type, info.name).toContain(`"${by}"`);
+      }
+    }
   });
 });
 

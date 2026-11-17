@@ -1,6 +1,6 @@
 # @deckster/kit
 
-The layouts and components every deckster deck gets: 23 brand-aware layouts, plus code, media,
+The layouts and components every deckster deck gets: 32 brand-aware layouts, plus code, media,
 link, chart, diagram and mini-app components, and the build-time MDX extension and Vite plugins
 behind them.
 
@@ -69,39 +69,39 @@ title       surface gradient  title <= 36
 
 ## Exports
 
-| Import                              | Runs in | What it is                                                                                                                                                                                  | Used by                                  |
-| ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `@deckster/kit`                     | browser | Components for TSX slides: `Step`, `Code`, `CodeMove`, `CodeStep`, `Terminal`, `Cmd`, `Out`, `Image`, `Video`, `Lottie`, `Icon`, `Button`, `Download`, `LinkCard`, `QR`, `AppFrame`, `Live` | slides                                   |
-| `@deckster/kit/diagrams`            | browser | Diagram components and parts for TSX slides (`Flow`, `Node`, `Edge`, `Packet`, ...)                                                                                                         | slides                                   |
-| `@deckster/kit/runtime`             | browser | The runtime plugin: registers every layout, every MDX component and the page chrome                                                                                                         | `@deckster/vite-plugin`                  |
-| `@deckster/kit/catalog`             | Node    | The layout contracts, loaded by the build and `deck layouts`                                                                                                                                | `@deckster/vite-plugin`, `@deckster/cli` |
-| `@deckster/kit/mdx`                 | Node    | The MDX extension: Shiki highlighting, media and icon resolution, prop checks, diagram checks and layout, typographic punctuation                                                           | `@deckster/vite-plugin`                  |
-| `@deckster/kit/vite`                | Node    | `kitVitePlugins()` (icons through `unplugin-icons`, CSV imports for charts) and `KIT_SCAN_ENTRY`                                                                                            | `@deckster/vite-plugin`                  |
-| `@deckster/kit/chart-catalog`       | Node    | What `deck charts` prints and the numbers the `chart-*` lint rules use (`CHART_LIMITS`)                                                                                                     | `@deckster/cli`                          |
-| `@deckster/kit/diagram-catalog`     | Node    | What `deck diagrams` prints, with the limits the `diagram-*` rules share                                                                                                                    | `@deckster/cli`                          |
-| `@deckster/kit/component-catalog`   | Node    | What `deck components` prints                                                                                                                                                               | `@deckster/cli`                          |
-| `@deckster/kit/chart-spec`          | both    | `ChartSpec`, the versioned JSON every chart writes to `data-chart-spec`                                                                                                                     | `@deckster/export`                       |
-| `@deckster/kit/diagram-description` | both    | The versioned JSON every diagram writes to `data-diagram-description`                                                                                                                       | `@deckster/export`                       |
-| `@deckster/kit/limit-cases`         | Node    | Each layout filled to its limits, for the budget stress test                                                                                                                                | `@deckster/cli` tests                    |
-| `@deckster/kit/icon-sets`           | Node    | `iconSetNames(set)`: the names an installed Iconify set has                                                                                                                                 | `deck icons`                             |
+| Import                              | Runs in | What it is                                                                                                                                                                                           | Used by                                  |
+| ----------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `@deckster/kit`                     | browser | Components for TSX slides: `Step`, `Morph`, `Code`, `CodeMove`, `CodeStep`, `Terminal`, `Cmd`, `Out`, `Image`, `Video`, `Lottie`, `Icon`, `Button`, `Download`, `LinkCard`, `QR`, `AppFrame`, `Live` | slides                                   |
+| `@deckster/kit/diagrams`            | browser | Diagram components and parts for TSX slides (`Flow`, `Node`, `Edge`, `Packet`, ...)                                                                                                                  | slides                                   |
+| `@deckster/kit/runtime`             | browser | The runtime plugin: registers every layout, every MDX component and the page chrome                                                                                                                  | `@deckster/vite-plugin`                  |
+| `@deckster/kit/catalog`             | Node    | The layout contracts, loaded by the build and `deck layouts`                                                                                                                                         | `@deckster/vite-plugin`, `@deckster/cli` |
+| `@deckster/kit/mdx`                 | Node    | The MDX extension: Shiki highlighting, media and icon resolution, prop checks, diagram checks and layout, typographic punctuation                                                                    | `@deckster/vite-plugin`                  |
+| `@deckster/kit/vite`                | Node    | `kitVitePlugins()` (icons through `unplugin-icons`, CSV imports for charts) and `KIT_SCAN_ENTRY`                                                                                                     | `@deckster/vite-plugin`                  |
+| `@deckster/kit/chart-catalog`       | Node    | What `deck charts` prints and the numbers the `chart-*` lint rules use (`CHART_LIMITS`)                                                                                                              | `@deckster/cli`                          |
+| `@deckster/kit/diagram-catalog`     | Node    | What `deck diagrams` prints, with the limits the `diagram-*` rules share                                                                                                                             | `@deckster/cli`                          |
+| `@deckster/kit/component-catalog`   | Node    | What `deck components` prints                                                                                                                                                                        | `@deckster/cli`                          |
+| `@deckster/kit/chart-spec`          | both    | `ChartSpec`, the versioned JSON every chart writes to `data-chart-spec`                                                                                                                              | `@deckster/export`                       |
+| `@deckster/kit/diagram-description` | both    | The versioned JSON every diagram writes to `data-diagram-description`                                                                                                                                | `@deckster/export`                       |
+| `@deckster/kit/limit-cases`         | Node    | Each layout filled to its limits, for the budget stress test                                                                                                                                         | `@deckster/cli` tests                    |
+| `@deckster/kit/icon-sets`           | Node    | `iconSetNames(set)`: the names an installed Iconify set has                                                                                                                                          | `deck icons`                             |
 
 Inside the package, imports use `#` paths (`#foundation/slide-parts.tsx`), as everywhere in the
 workspace.
 
 ## Source layout
 
-| Folder                                | Contents                                                                                                                                                                     |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/foundation`                      | What every layout builds on: `Frame`, `Region`, `SlideHeader`, `Footnote`, `Portrait`, `TreatedMedia`, `useFitLevel`, `useDensity`, the `kit-prose` and `kit-type-*` classes |
-| `src/layouts`                         | One contract, one component and one stylesheet per layout, plus `limit-cases.ts`                                                                                             |
-| `src/charts`                          | Chart and figure components, each a pure planner drawn by `SceneSvg` inside `ChartFrame`                                                                                     |
-| `src/diagrams`                        | Diagram components, loaded lazily through `lazy-diagrams.tsx`, and their remark plugins                                                                                      |
-| `src/code`                            | `Code`, `CodeMove`, `CodeStep`, `Terminal`, Shiki themes with `--brand-code-*` colors                                                                                        |
-| `src/media`, `src/icons`, `src/links` | `Image`, `Video`, `Lottie`, `Icon`, `Link`, `Button`, `Download`, `LinkCard`, `QR`                                                                                           |
-| `src/apps`                            | `AppFrame` and `Live`, which host mini apps over `@deckster/app-bridge`                                                                                                      |
-| `src/chrome`, `src/motion`            | The page chrome the brand describes, and the entrance motion and animated `Step`                                                                                             |
-| `src/mdx`                             | The remark plugins behind `@deckster/kit/mdx` and path resolution (`deck-path.ts`)                                                                                           |
-| `src/components`                      | The component catalog and `checkComponentProps`                                                                                                                              |
+| Folder                                | Contents                                                                                                                                                                                                       |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/foundation`                      | What every layout builds on: `Frame`, `Region`, `SlideHeader`, `Footnote`, `Portrait`, `TreatedMedia`, `FrontmatterPicture`, `MonoMark`, `useFitLevel`, `useDensity`, the `kit-prose` and `kit-type-*` classes |
+| `src/layouts`                         | One contract, one component and one stylesheet per layout, plus `limit-cases.ts`                                                                                                                               |
+| `src/charts`                          | Chart and figure components, each a pure planner drawn by `SceneSvg` inside `ChartFrame`                                                                                                                       |
+| `src/diagrams`                        | Diagram components, loaded lazily through `lazy-diagrams.tsx`, and their remark plugins                                                                                                                        |
+| `src/code`                            | `Code`, `CodeMove`, `CodeStep`, `Terminal`, Shiki themes with `--brand-code-*` colors                                                                                                                          |
+| `src/media`, `src/icons`, `src/links` | `Image`, `Video`, `Lottie`, `Icon`, `Link`, `Button`, `Download`, `LinkCard`, `QR`                                                                                                                             |
+| `src/apps`                            | `AppFrame` and `Live`, which host mini apps over `@deckster/app-bridge`                                                                                                                                        |
+| `src/chrome`, `src/motion`            | The page chrome the brand describes, and the motion: the slide transitions, `Morph`, the slide entrance, the animated `Step` (its `effect`s and `focus`) and the count-up of stat figures                      |
+| `src/mdx`                             | The remark plugins behind `@deckster/kit/mdx` and path resolution (`deck-path.ts`)                                                                                                                             |
+| `src/components`                      | The component catalog and `checkComponentProps`                                                                                                                                                                |
 
 ## Rules for changing the kit
 
@@ -121,8 +121,8 @@ the design decisions behind them.
 - Every value comes from brand custom properties and every measurement from layout geometry,
   never from transformed boxes. Layouts that fit content to the room pick a level with
   `useFitLevel` and keep it in React state, never by editing the DOM.
-- Text over a photo belongs to the `image` layout, on a scrim. Do not place text over a picture
-  by hand.
+- Text over a photo belongs to the `image` layout, on a scrim, or to the cover with
+  `picture: full`, which uses the same scrim. Do not place text over a picture by hand.
 - Each chart, diagram and component has a catalog entry, and tests hold the registered
   components, their props types and the catalogs to each other (`chart-forms.test.ts`,
   `chart-catalog.test.ts`, `diagram-catalog.test.ts`, `component-catalog.test.tsx`). Adding a
@@ -130,6 +130,13 @@ the design decisions behind them.
   does not list.
 - Charts and diagrams write `data-chart-spec` and `data-diagram-description`. `@deckster/export`
   reads them to draw native PPTX shapes, so add fields; do not rename or remove them.
+- Motion takes every duration and easing from the brand's motion tokens (`--brand-duration-*`,
+  `--brand-ease-*`, only the names `MOTION_DURATION_NAMES` and `MOTION_EASING_NAMES` in
+  `@deckster/brand` guarantee; `src/motion/motion-tokens.test.ts` holds the kit to them). It
+  shows its end state, with nothing receded or counting, in static mode, in `SlideView` copies
+  (`useStillMotion`) and, apart from fades and colors, for reduced motion. Hidden content keeps
+  its space and leaves the accessibility tree; a counting number keeps its final value in the
+  layout and in the accessibility tree.
 - Components and everything else that runs in the browser are plain React. Effect appears only
   in Node-side code: the remark plugins and the contracts' frontmatter `Schema`.
 
@@ -163,8 +170,9 @@ Much of the kit is tested from other packages, against real decks:
 | `src/lint/layout-probes.test.ts`                                       | `packages/cli`             | lints `packages/cli/fixtures/decks/layout-probes`, the cases reviews found broken      |
 | `charts.e2e.ts`, `diagrams.e2e.ts`, `components.e2e.ts`, `apps.e2e.ts` | `packages/vite-plugin/e2e` | the `data-stories`, `diagrams-demo`, `components` and `apps-demo` fixture decks        |
 
-The test decks in [`decks`](../../decks/README.md) show each layout and component in use. After
-changing a layout, lint and shoot its deck in both brands with `pnpm deck`:
+The test decks in [`decks`](../../decks/README.md) show each layout and component in use, and
+the [`lookbook`](../../decks/lookbook/README.md) shows all of them in one talk. After changing a
+layout, lint and shoot its deck in both brands with `pnpm deck`:
 
 ```sh
 pnpm --dir ../.. deck lint layouts

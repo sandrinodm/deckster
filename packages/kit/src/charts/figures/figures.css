@@ -216,8 +216,15 @@
   }
 
   .kit-compare-track {
+    position: relative;
     height: var(--brand-space-md);
     margin-top: var(--brand-space-sm);
+  }
+
+  /* Drawn when a value is below zero: both tracks share it, so a loss reads as one. */
+  .kit-compare-zero {
+    position: absolute;
+    inset-block: calc(-1 * var(--brand-space-xs));
   }
 
   .kit-compare-bar {

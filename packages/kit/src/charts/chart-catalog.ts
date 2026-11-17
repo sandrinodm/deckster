@@ -1,6 +1,7 @@
 import type { ChartKind, NativeChartType } from '#charts/chart-spec.ts';
 
 import { CHART_SPEC_ATTRIBUTE, CHART_SPEC_VERSION } from '#charts/chart-spec.ts';
+import { REVEAL_BY } from '#charts/frame/reveal.ts';
 
 /**
  * The kinds of message a figure is chosen for, from "what am I saying" in the presentation skill's
@@ -132,7 +133,7 @@ export type ChartCatalog = {
 
   /**
    * The fields of the objects props take: `RowStat`, `ProgressItem`, `TableColumn`, `SeriesInput`,
-   * `FormatOptions`, the object form of `highlight` and each `Annotation` type.
+   * `FormatOptions`, the object forms of `highlight` and `reveal`, and each `Annotation` type.
    */
   types: Readonly<Record<string, Readonly<Record<string, ChartPropInfo>>>>;
 
@@ -389,11 +390,17 @@ const FIELD_PROPS = {
 } as const;
 
 /**
+ * The values `reveal` builds by, as a TypeScript union of string literals.
+ */
+const REVEAL_BY_TYPE = REVEAL_BY.map((by) => `"${by}"`).join(' | ');
+
+/**
  * The step reveal option.
  */
 const REVEAL_PROP = prop(
-  '"series" | "categories" | { by, from }',
-  'Build the marks in steps, one series or one category per step, from step 1 or `from`.',
+  `${REVEAL_BY_TYPE} | RevealOption`,
+  'Build the marks in steps, one series or one category per step. A string starts at step 1; ' +
+    'the object form (see `types.RevealOption`) starts at `from`, a later step.',
 );
 
 /**
@@ -548,6 +555,21 @@ export const CHART_TYPES: Readonly<Record<string, Readonly<Record<string, ChartP
   },
 
   /**
+   * The object form of `reveal` on the categorical charts, for a build that starts after step 1.
+   */
+  RevealOption: {
+    by: prop(REVEAL_BY_TYPE, 'What each step adds: one series, or one category, in data order.', {
+      required: true,
+    }),
+    from: prop(
+      'number',
+      'The step the first one comes in at, a whole number of 1 or more (step 0 is the slide ' +
+        'before any step); each next one comes a step later. Series with their own `at` keep it.',
+      { required: true },
+    ),
+  },
+
+  /**
    * A callout annotation.
    */
   'Annotation.callout': {
@@ -690,7 +712,9 @@ export const CHART_INFOS: readonly ChartInfo[] = [
     useWhen: 'Two values, before and after or A against B, where the difference is the message.',
     messages: ['comparison', 'change between two points'],
     avoid: 'Several items changing between two points: use Slope.',
-    data: 'No rows: `from` and `to`, each { value, label }.',
+    data:
+      'No rows: `from` and `to`, each { value, label }. A value below zero is drawn from a zero ' +
+      'line both bars share, towards the start edge, so a loss never reads as a gain.',
     nulls: 'No rows; both values are required.',
     shared: [...FRAME, 'format', 'unit'],
     props: {
@@ -973,6 +997,12 @@ export const CHART_INFOS: readonly ChartInfo[] = [
           'never the totals.',
         { default: 'up' },
       ),
+      reveal: prop(
+        `${REVEAL_BY_TYPE} | RevealOption`,
+        'Build the bridge in steps: the totals and the step names show from the start, then ' +
+          '`"categories"` brings in one change per step and `"series"` all of them at once. A ' +
+          'string starts at step 1; the object form (see `types.RevealOption`) starts at `from`.',
+      ),
     },
     limits: { categories: CHART_LIMITS.categories.waterfall ?? 10 },
     example:
@@ -995,7 +1025,16 @@ export const CHART_INFOS: readonly ChartInfo[] = [
       'A stage with no count draws an outlined "no data" slot, and the shares ' +
       'into and out of it are "—".',
     shared: [...FRAME, 'data', 'highlight', 'format', 'unit'],
-    props: { x: FIELD_PROPS.x, y: prop('string', 'The count field.') },
+    props: {
+      x: FIELD_PROPS.x,
+      y: prop('string', 'The count field.'),
+      reveal: prop(
+        `${REVEAL_BY_TYPE} | RevealOption`,
+        'Build the funnel in steps: `"categories"` brings in one stage per step with the share ' +
+          'that carried on into it, `"series"` the whole funnel at once. A string starts at step ' +
+          '1; the object form (see `types.RevealOption`) starts at `from`.',
+      ),
+    },
     limits: { categories: CHART_LIMITS.categories.funnel ?? 7 },
     example: '<Funnel data={journey} x="stage" y="people" highlight="Opened an article" />',
     accessibility: "The summary gives every stage's count and the share that carried on.",
@@ -1172,7 +1211,9 @@ export function chartCatalog(): ChartCatalog {
         'zoom and say where the axis starts.',
       steps:
         '`at` on a chart, on a series in `y`, on `highlight` and on each ' +
-        'annotation reveals it at a step; `reveal` builds by series or category. ' +
+        'annotation reveals it at a step, from step 1 (step 0 is the slide before any step); ' +
+        '`reveal` builds by series or category, and on a Waterfall builds the changes between ' +
+        'totals that show from the start. ' +
         'The last step is the complete chart, which static mode and export show.',
       data: SHARED_PROPS.data.description,
       nulls:

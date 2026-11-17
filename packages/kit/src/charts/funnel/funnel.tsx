@@ -6,6 +6,7 @@ import type { ResolvedFormat } from '#charts/format/number-format.ts';
 import type { ChartDrawing, ChartFacts, DrawInput } from '#charts/frame/chart-frame.tsx';
 import type { ChartProps } from '#charts/frame/chart-props.ts';
 import type { ChartTheme } from '#charts/frame/chart-theme.ts';
+import type { OwnedItem, RevealOption } from '#charts/frame/reveal.ts';
 import type { SceneItem } from '#charts/frame/scene.ts';
 import type { Box } from '#charts/layout/label-placement.ts';
 import type { Measure, TextStyle } from '#charts/layout/text-measure.ts';
@@ -15,6 +16,7 @@ import { ChartFrame, frameProps } from '#charts/frame/chart-frame.tsx';
 import { readCategorical } from '#charts/frame/chart-input.ts';
 import { checkProps, propNames } from '#charts/frame/check-props.ts';
 import { textOn } from '#charts/frame/plot-parts.ts';
+import { revealLayers } from '#charts/frame/reveal.ts';
 import { drawScene } from '#charts/frame/scene-svg.tsx';
 import { barPath } from '#charts/frame/scene.ts';
 import { buildSpec } from '#charts/frame/spec-builder.ts';
@@ -81,6 +83,12 @@ export type FunnelProps = Omit<ChartProps, 'annotations' | 'labels' | 'legend'> 
    * The field with each stage's count; the first number field when left out.
    */
   y?: string;
+
+  /**
+   * Build the funnel in steps: `categories` brings in one stage per step, with the share that
+   * carried on into it; `series` brings in the whole funnel at once.
+   */
+  reveal?: RevealOption;
 };
 
 /**
@@ -98,6 +106,7 @@ export const FUNNEL_PROPS = propNames<FunnelProps>()([
   'unit',
   'x',
   'y',
+  'reveal',
 ]);
 
 /**
@@ -297,10 +306,16 @@ export function drawFunnel(props: FunnelProps, input: DrawInput): ChartDrawing {
     valueStyle,
     axisStyle,
   };
-  const items: SceneItem[] = [];
+
+  const series = data.series[0]?.key ?? '';
+  const items: OwnedItem[] = [];
   for (const [index, stage] of data.categories.entries()) {
-    pushAll(items, stageItems(stage, index, layout));
-    pushAll(items, conversionItems(index, layout));
+    // A stage comes in whole, its name with it, and the share that carried on into it comes too.
+    const parts = [...stageItems(stage, index, layout), ...conversionItems(index, layout)];
+    pushAll(
+      items,
+      parts.map((item) => ({ item, series, index })),
+    );
   }
 
   return drawScene(
@@ -308,7 +323,7 @@ export function drawFunnel(props: FunnelProps, input: DrawInput): ChartDrawing {
       scene: {
         width: size.width,
         height: size.height,
-        layers: [{ at: undefined, items }],
+        layers: revealLayers({ reveal: props.reveal, data, items }),
         highlightAt: highlight.at,
       },
       spec: funnelSpec(props, layout),

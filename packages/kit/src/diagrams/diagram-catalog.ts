@@ -642,7 +642,10 @@ const TEXTS: Readonly<Record<DiagramComponentName, ComponentText>> = {
    * `<Layer>`.
    */
   Layer: {
-    useWhen: 'One band of a <Layers> stack; it is picked out while its `at` step is current.',
+    useWhen:
+      'One band of a <Layers> stack. While the stack is built, the band its `at` step adds is ' +
+      'picked out; once the last band is in, only bands with `state` stand out, so mark the ' +
+      'band the stack is about with `state="highlighted"`.',
     example:
       '<Layer title="Data" subtitle="Data team" at={4}>\n  <Item kind="database" ' +
       'title="Postgres" />\n</Layer>',

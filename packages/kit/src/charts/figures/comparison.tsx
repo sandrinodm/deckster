@@ -95,7 +95,9 @@ export const COMPARISON_PROPS = propNames<ComparisonProps>()([
 /**
  * Two values side by side, before and after or A against B, with the difference between them as the
  * message: the first muted, the second in the accent, the change in the positive or negative color
- * between them, and a bar under each drawn to scale from zero so the sizes stay honest.
+ * between them, and a bar under each drawn to scale from zero so the sizes stay honest. When a
+ * value is below zero both bars share a zero line and the negative one runs from it towards the
+ * start edge, so a loss against a gain reads as one.
  *
  * ```mdx
  * <Comparison from={{ value: 14, label: 'Median first response, 2025' }}
@@ -111,6 +113,45 @@ export function Comparison(props: ComparisonProps): ReactNode {
       draw={(input) => drawComparison(props, input)}
     />
   );
+}
+
+/**
+ * Where the two values' bars sit on a track that spans from the smaller of zero and the values to
+ * the larger, as shares of the track's width from its start edge.
+ */
+export type ComparisonBarScale = {
+  /**
+   * Where the zero line sits: 0 when no value is below zero, 1 when none is above it.
+   */
+  zero: number;
+
+  /**
+   * Where a value's bar starts: at zero for a value above it, at the value for one below it.
+   */
+  start: (value: number) => number;
+
+  /**
+   * How long a value's bar is.
+   */
+  length: (value: number) => number;
+};
+
+/**
+ * The scale both bars of a comparison share, so their lengths compare honestly: from zero to the
+ * larger value when both are positive, and across a zero line when one is negative.
+ *
+ * @param from - The first value.
+ * @param to - The second value.
+ */
+export function comparisonBarScale(from: number, to: number): ComparisonBarScale {
+  const low = Math.min(0, from, to);
+  const high = Math.max(0, from, to);
+  const span = Math.max(high - low, Number.EPSILON);
+  return {
+    zero: (0 - low) / span,
+    start: (value) => (Math.min(0, value) - low) / span,
+    length: (value) => Math.abs(value) / span,
+  };
 }
 
 /**
@@ -132,13 +173,33 @@ function drawComparison(props: ComparisonProps, input: DrawInput): ChartDrawing 
     relative: props.relative ?? defaultRelative(format),
   });
   const largest = Math.max(Math.abs(props.from.value), Math.abs(props.to.value), Number.EPSILON);
+  const scale = comparisonBarScale(props.from.value, props.to.value);
   /**
-   * A bar to scale from zero, as wide as its share of the larger value.
+   * A bar to scale from the zero line: a negative value runs from zero towards the start edge, so a
+   * loss never reads as a gain of the same size.
    */
   const bar = (value: number, color: string): CSSProperties => ({
-    width: `${(Math.abs(value) / largest) * PERCENT_WHOLE}%`,
+    marginInlineStart: `${scale.start(value) * PERCENT_WHOLE}%`,
+    width: `${scale.length(value) * PERCENT_WHOLE}%`,
     background: color,
   });
+  /**
+   * The zero line on a track, drawn only when a value is below zero, so the bars show which side of
+   * it each value is on.
+   */
+  const zero =
+    scale.zero === 0 ? null : (
+      <div
+        className="kit-compare-zero"
+        style={{
+          insetInlineStart: `${scale.zero * PERCENT_WHOLE}%`,
+          width: theme.axis.width,
+          // Centred on zero, whichever way the text runs.
+          marginInlineStart: -theme.axis.width / 2,
+          background: theme.colors.axis,
+        }}
+      />
+    );
   const lead = theme.categorical[0] ?? theme.colors.accent;
   const plot = (
     <FitGroup className="kit-compare">
@@ -147,6 +208,7 @@ function drawComparison(props: ComparisonProps, input: DrawInput): ChartDrawing 
         <StatValue value={from} />
         <div className="kit-compare-track">
           <div className="kit-compare-bar" style={bar(props.from.value, theme.context)} />
+          {zero}
         </div>
       </div>
       <div className="kit-compare-change">
@@ -177,6 +239,7 @@ function drawComparison(props: ComparisonProps, input: DrawInput): ChartDrawing 
         <StatValue value={to} />
         <div className="kit-compare-track">
           <div className="kit-compare-bar" style={bar(props.to.value, lead)} />
+          {zero}
         </div>
       </div>
     </FitGroup>

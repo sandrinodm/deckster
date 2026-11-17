@@ -72,3 +72,43 @@ describe('drawFunnel', () => {
     expect(spec.series[0]?.labels).toEqual(['48K', '31.2K', '900']);
   });
 });
+
+/**
+ * The scene a drawing's plot draws, read from the props of its SVG element.
+ */
+function sceneOf(plot: unknown): { layers: { at: number | undefined; items: unknown[] }[] } {
+  return (plot as { props: { scene: { layers: { at: number | undefined; items: unknown[] }[] } } })
+    .props.scene;
+}
+
+describe('drawFunnel with reveal', () => {
+  const rows = [
+    { stage: 'Signed up', merchants: 1480 },
+    { stage: 'Connected', merchants: 910 },
+    { stage: 'First drop', merchants: 640 },
+  ];
+
+  it('draws every stage from the start without `reveal`', () => {
+    const { plot } = drawFunnel({ data: rows, x: 'stage', y: 'merchants' }, INPUT);
+    expect(sceneOf(plot).layers.map((layer) => layer.at)).toEqual([undefined]);
+  });
+
+  it('brings in one stage per step, from `from`, with the share into it', () => {
+    const { plot } = drawFunnel(
+      { data: rows, x: 'stage', y: 'merchants', reveal: { by: 'categories', from: 2 } },
+      INPUT,
+    );
+    const layers = sceneOf(plot).layers;
+    expect(layers.map((layer) => layer.at)).toEqual([2, 3, 4]);
+    // A later stage carries its share text beside its own name, bar and count.
+    expect(layers[1]?.items.length).toBeGreaterThan(layers[0]?.items.length ?? 0);
+  });
+
+  it('brings in the whole funnel at once by series', () => {
+    const { plot } = drawFunnel(
+      { data: rows, x: 'stage', y: 'merchants', reveal: 'series' },
+      INPUT,
+    );
+    expect(sceneOf(plot).layers.map((layer) => layer.at)).toEqual([1]);
+  });
+});
