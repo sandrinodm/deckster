@@ -1,9 +1,8 @@
 # Style sheet for the deckster docs
 
 One page every writer follows. `AGENT.md` has the site's rules (links, images, generated files);
-this page has the writing rules. The site is to go live when `main`'s `.github/workflows/deploy.yml`
-is run by hand: it builds this branch with fresh stills and decks and publishes it. That workflow is
-not on `main` yet (see `AGENT.md`), so nothing is deployed today.
+this page has the writing rules. The site goes live when `main`'s `.github/workflows/deploy.yml`
+is run by hand: it builds this branch with fresh stills and decks and publishes it.
 `.github/workflows/pages.yml` here only checks. The pages were written from briefs, `{/* BRIEF … */}` comments
 that said what each page covers; review removed them all, because the site serves each page's
 MDX source at `/<page>/index.mdx`. Don't add one back: `npm run check:briefs` fails the CI
@@ -12,37 +11,43 @@ page covers and this page decides how it is written; list any conflict in your r
 
 ## The reader
 
-Someone who installed `@deckster/cli` 0.3.0 from npm (`npm install --global @deckster/cli`, Node
+Someone who installed `@deckster/cli` 0.4.0 from npm (`npm install --global @deckster/cli`, Node
 26 or later) and works in a folder of their own with `decks/` and maybe `brands/`. They have never
 seen the deckster repository, and often they are directing an AI agent (Claude Code, Codex) that
 writes the slides while they review. Write for that person: what to type, what they will see,
 what to tell their agent.
 
-## Ground truth: v0.3.0, run it
+## Ground truth: v0.4.0, run it
 
-- The pages describe `@deckster/cli` **0.3.0** as published on npm. The code is commit `4e0b186`
-  on `main` ("release v0.3.0"), tagged `v0.3.0` on the remote. Read files at that commit
-  (`git -C ../2026-11-13-presentation show 4e0b186:<path>`), because the working tree also holds
-  newer, uncommitted work.
-- **Every command and every output block on a page was run by you against 0.3.0.** Install it
+- The pages describe `@deckster/cli` **0.4.0** as published on npm. The code is the release
+  commit `c018637` ("chore(cli): release v0.4.0"), merged to `main` and tagged `v0.4.0`. Read
+  files at the tag (`git -C ../2026-11-13-presentation show v0.4.0:<path>`), because `main` and
+  the working tree move on after a release. Pages written before 0.4.0 were checked against 0.3.0
+  (commit `4e0b186`); a statement that names 0.3.0 says which version was measured.
+- **Every command and every output block on a page was run by you against 0.4.0.** Install it
   once in a scratch folder and run it from a fresh workspace:
 
   ```sh
-  npm install --prefix "$TMPDIR/deck-0.3.0" @deckster/cli@0.3.0
+  npm install --prefix "$TMPDIR/deck-0.4.0" @deckster/cli@0.4.0
   mkdir -p "$TMPDIR/talks" && cd "$TMPDIR/talks"
   export DECK_ROOT="$PWD"                      # the CLI climbs to the nearest folder with decks/
-  export PATH="$TMPDIR/deck-0.3.0/node_modules/.bin:$PATH"
-  deck --version                               # 0.3.0
+  export PATH="$TMPDIR/deck-0.4.0/node_modules/.bin:$PATH"
+  deck --version                               # 0.4.0
   ```
+
+  Before a release is on npm, run the CLI that `npm run sync -- --data` packs from the checkout
+  instead (`node ../2026-11-13-presentation/packages/cli/dist/deck.js`, through a small wrapper
+  script named `deck`), and say so in your report.
 
   An agent's shell keeps no state between calls: repeat the `cd`, `DECK_ROOT` and `PATH` lines in
   every command.
 
   Chromium for `lint`, `shot`, `diff` and `export`: `npx playwright@1.65.0 install chromium`.
   Confirmed: with no Chromium, 0.3.0 prints "Could not start Chromium: ..." and then
-  "Install the browser with `npx playwright@1.65.0 install chromium`."
+  "Install the browser with `npx playwright@1.65.0 install chromium`." 0.4.0 pins the same
+  Playwright, 1.65.0.
 - **What an npm workspace has and the repository does not, or the other way round.** Confirmed by
-  running 0.3.0:
+  running 0.3.0 (the `deck new` files and the brand set-up again with the 0.4.0 release commit):
   - `deck new <deck>` writes only `decks/<deck>/deck.config.ts` and `decks/<deck>/slides/title.mdx`
     (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deck types` writes the
     `tsconfig.json`.
@@ -57,8 +62,9 @@ what to tell their agent.
     only `default`. The site's `icons.json` lists the 776 names shared by all five published
     brands.
 - `src/data/*.json` was generated from the repository. `cli.json` carries the help as the npm CLI
-  prints it (checked against `deck <cmd> --help` from 0.3.0 for all 19 commands), including the
-  "See docs/agent.md" and "See docs/present.md" lines 0.3.0 prints in `dev` and `present`; those
+  prints it (checked against `deck <cmd> --help` from 0.3.0 for all 19 commands; the 0.4.0 data
+  was read from the CLI packed at the release commit), including the
+  "See docs/agent.md" and "See docs/present.md" lines the CLI prints in `dev` and `present`; those
   files are not in the npm package, so never send readers to them. Still paste help you quote from
   the installed CLI, as for every output block.
 - **Stale sources: never copy these.** `SECURITY.md`'s supported-versions table (says 0.1.x);
@@ -101,14 +107,14 @@ what to tell their agent.
 ## Code and output
 
 - Commands in `sh` fences; command plus output in `console` fences with a `$ ` prompt. Paste
-  output exactly as 0.3.0 printed it. Cut long output with a line `...` and say so in prose. Run
+  output exactly as 0.4.0 printed it. Cut long output with a line `...` and say so in prose. Run
   from inside the workspace, so no `Using the workspace ...` line or scratch path appears; call
   the workspace `talks` and the example deck by a plain name such as `launch-review`.
 - Slide source goes in `mdx` or `tsx` fences. Deck components (`<Notes>`, `<Step>`, `<Flow>`,
   ...) never appear as live tags on a page: the site has its own `Step`, `Steps`, `LinkCard` and
   `Aside`, and the rest are not registered. Inline, write them in backticks: `<Notes>`.
 - Prefer real source: show a slide from a published deck (`slides.json` has every slide's source)
-  over an invented one. If you invent one, lint it with 0.3.0 first.
+  over an invented one. If you invent one, lint it with 0.4.0 first.
 
 ## Site components
 
@@ -130,7 +136,7 @@ heading you write above them.
 | `<BrandGrid slide />` | One slide in all five brands | Only `cover`, `review-rounds`, `lint-path` |
 | `<UiShot name alt />` | The product UI in `deck dev` (showcase deck, 1440x900), the `deck present` windows, and one each of a `deck diff` report, a lint fix, a build gallery and a verify picture | Only `sidebar`, `overview`, `help`, `presenter`, `comments`, `comment-list`, `tools`, `tools-detail` (the tool buttons up close, 1120x400), `agent-panel`, `present-audience`, `present-presenter`, `diff-report` (the hello deck's report, staged: never call it a real change), `lint-before` and `lint-after` (a scratch slide, 1920x1080), `build-gallery`, `export-verify` (hello's title slide in LibreOffice; the CLI's one-row picture rearranged into two rows, 1920x1160: say so), `agent-turn` (a replayed fake-provider turn relabelled "Claude": caption it as a recorded example, never quote its figures; it is on `/ai-agents/agent-panel/`) |
 | `<Diagram name alt />` | One of the six explanatory SVGs, on concept pages and where a brief names one | `build-pipeline`, `step-model`, `brand-resolution`, `agent-turn`, `export-pipeline`, `review-loop`; one per page |
-| `<FrontmatterReference />`, `<SchemaReference of section? />`, `<ChartTypes of? />`, `<DiagramKinds part? />` | The slide frontmatter keys; every field of `brand.ts` (`of="brand"`, one `section` per table) or `deck.config.ts` (`of="deck-config"`); the chart prop types (`Highlight`, `Annotation.*`, ...); diagram node kinds, states and edge options | Types, allowed values, ranges and required. `SchemaReference` also shows a one-line description and default per field from `src/components/deck/schema-descriptions.ts`; the others have none. Write formats, patterns and how fields work together in prose from the code |
+| `<FrontmatterReference />`, `<SchemaReference of section? />`, `<ChartTypes of? />`, `<DiagramKinds part? />` | The slide frontmatter keys; every field of `brand.ts` (`of="brand"`, one `section` per table) or `deck.config.ts` (`of="deck-config"`); the chart prop types (`Highlight`, `Annotation.*`, ...); diagram node kinds, states, edge options and the cards guide | Types, allowed values, ranges and required. `SchemaReference` also shows a one-line description and default per field from `src/components/deck/schema-descriptions.ts`; the others have none. Write formats, patterns and how fields work together in prose from the code |
 | `<LayoutReference name />`, `<LayoutIndex />`, `<PropsTable of />` (and `<PropsTable shared />` once on charts and diagrams), `<CatalogIndex kind />`, `<CliCommand name />`, `<IconGrid />`, `<BrandTokens name />` | Reference pages and, sparingly, one entry quoted on a guide. Each layout's `<LayoutReference>` is on its own page, `/reference/layouts/<name>/`; `<LayoutIndex />` is on `/reference/layouts/` | Names exactly as in the JSON |
 
 A still or filmstrip the page needs and the table does not have: do not fake it with another
@@ -158,12 +164,16 @@ has its own page, once per page. A layout links to its own page, `/reference/lay
 anchor on `/reference/layouts/`. Only the nine published decks and five published brands may
 appear on any page, in examples or screenshots.
 
-## Newer than v0.3.0
+## New in v0.4.0, and newer than the release
 
-One feature: `?embed` (embed mode, in the working tree, not in 0.3.0). Mention it only where a
-brief says so, inside `<Aside type="note" title="Not in v0.3.0">`, in one or two sentences. Every
-other behaviour you describe must be in 0.3.0; if the working tree differs from commit `4e0b186`,
-describe the commit and report the difference.
+Two features are new in 0.4.0: embed mode (`?embed`) and diagram looks and cards
+(`diagram.edges`, `groups`, `labels`, `kinds`, `cards` in `brand.ts`, `card="..."` on diagram
+parts, `diagram-card-missing`). A page that describes one says it needs 0.4.0: an
+`<Aside type="note" title="New in v0.4.0">` on the page that owns it, or "New in 0.4.0." in a
+table row. Every other behaviour you describe must be in 0.4.0. Something on `main` that is newer
+than the release is left out, or, where a brief asks for it, mentioned in one or two sentences
+inside `<Aside type="note" title="Not in v0.4.0">`; if `main` or the working tree differs from
+the release, describe the release and report the difference.
 
 ## Your report
 

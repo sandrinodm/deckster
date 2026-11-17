@@ -78,13 +78,40 @@ export type LayoutEntry = {
 
 export type CliCommandEntry = { name: string; summary: string; usage: string[]; help: string };
 
+/** A card's geometry and title type, from brands.json `tokens.diagram.cards` (canvas px). */
+export type BrandCard = {
+  stroke: number;
+  radius: number;
+  shape: string;
+  shadow: string;
+  icon: string;
+  accent: { side: string; width: number };
+  title: { family: string; weight: number; tracking: number; case: string };
+};
+
+/** A card's colours on one surface, from brands.json `tokens.surfaces.<name>.diagramCards`. */
+export type BrandCardColors = { fill: string | null; border: string | null; text: string; subtext: string; accent: string };
+
+/** The brand's diagram look, from brands.json `tokens.diagram`. */
+export type BrandDiagram = {
+  edges: { stroke: number; corners: string; arrow: string };
+  groups: { stroke: number; dashed: boolean; radius: number };
+  labels: { style: string; type: string };
+  kinds: Record<string, string>;
+  cards: Record<string, BrandCard>;
+};
+
 export type BrandEntry = {
   name: string;
   label: string;
   description: string;
   tokens: {
     palette: Record<string, Record<string, string>>;
-    surfaces: Record<string, { name: string; roles: Record<string, string>; scheme: string }>;
+    surfaces: Record<
+      string,
+      { name: string; roles: Record<string, string>; scheme: string; diagramCards?: Record<string, BrandCardColors> }
+    >;
+    diagram?: BrandDiagram;
     typography: {
       families: Record<string, { family: string; stack: string; source?: { kind: string; package?: string } }>;
       scale: Record<
@@ -562,23 +589,32 @@ export type NodeKind = {
 
 export type EdgeOption = { name: string; useWhen: string; example: string };
 
+/** diagrams.json `cards`: how a node picks its card, the five standard cards and the rules. */
+export type CardGuide = {
+  resolution: string;
+  standard: Record<string, string>;
+  custom: string;
+  rules: string[];
+};
+
 export function diagramParts(): {
   nodeKinds: NodeKind[];
   states: string[];
   stateSynonyms: Record<string, string>;
   edgeOptions: EdgeOption[];
+  cards: CardGuide;
 } {
   return dataFile("diagrams");
 }
 
-export const DIAGRAM_PARTS = ["kinds", "states", "edges"] as const;
+export const DIAGRAM_PARTS = ["kinds", "states", "edges", "cards"] as const;
 
 export type DiagramPart = (typeof DIAGRAM_PARTS)[number];
 
 export function checkDiagramPart(c: Caller, part: string | undefined): DiagramPart[] {
   if (part === undefined) return [...DIAGRAM_PARTS];
   if (!(DIAGRAM_PARTS as readonly string[]).includes(part)) {
-    fail(c, "part", `must be one of ${DIAGRAM_PARTS.join(", ")}, or left out for all three.${didYouMean(part, DIAGRAM_PARTS)}`);
+    fail(c, "part", `must be one of ${DIAGRAM_PARTS.join(", ")}, or left out for all four.${didYouMean(part, DIAGRAM_PARTS)}`);
   }
   return [part as DiagramPart];
 }

@@ -1,12 +1,14 @@
 ---
 /**
- * BrandTokens — one published brand's palette, surfaces and type, from src/data/brands.json
- * (`deck brand <name>`).
+ * BrandTokens — one published brand's palette, surfaces, type and diagram look (edges, groups,
+ * edge labels, kinds and every card with its colours on the default surface), from
+ * src/data/brands.json (`deck brand <name>`).
  *
  *   <BrandTokens name="default" />
  */
 import "./deck.css";
-import { caller, findBrand, inline } from "./data";
+import { caller, findBrand, inline, withBase } from "./data";
+import { cardCells, diagramLookLines, STANDARD_CARDS } from "./format";
 
 interface Props {
   name: string;
@@ -21,6 +23,9 @@ const surfaceList = Object.entries(surfaces);
 const families = Object.entries(typography.families);
 const scale = Object.entries(typography.scale);
 const SURFACE_ROLES = ["bg", "fg", "heading", "muted", "accent", "border"];
+const diagram = brand.tokens.diagram;
+const onDefault = surfaces.default;
+const cards = diagram ? Object.entries(diagram.cards) : [];
 ---
 
 <section class="dk-ref dk-brand" aria-label={`The ${brand.label} brand`}>
@@ -98,4 +103,32 @@ const SURFACE_ROLES = ["bg", "fg", "heading", "muted", "accent", "border"];
       </tbody>
     </table>
   </div>
+
+  {diagram && onDefault && (
+    <Fragment>
+      <h3 class="dk-label">Diagrams</h3>
+      <p class="dk-prose" set:html={diagramLookLines(diagram).map(inline).join(" ")} />
+      <div class="nb-table-scroll">
+        <table aria-label={`The ${brand.label} brand's diagram cards on the default surface`}>
+          <thead><tr><th>Card</th><th>Fill</th><th>Border</th><th>Look</th><th>Title</th></tr></thead>
+          <tbody>
+            {cards.map(([name, card]) => {
+              const colors = onDefault.diagramCards?.[name];
+              const cells = cardCells(card, colors?.border ?? null);
+              return (
+                <tr>
+                  <td data-nowrap><code>{name}</code>{!STANDARD_CARDS.includes(name) && <span class="dk-path-names">the brand's own</span>}</td>
+                  <td data-mono data-nowrap>{colors?.fill ? <Fragment><i class="dk-dot" style={`background:${colors.fill}`}></i>{colors.fill}</Fragment> : "none"}</td>
+                  <td data-mono data-nowrap>{colors?.border && <i class="dk-dot" style={`background:${colors.border}`}></i>}{cells.border}</td>
+                  <td>{cells.look}</td>
+                  <td>{cells.title}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p class="dk-caption"><span>Colours on the <code>default</code> surface, sizes in px on the 1920×1080 canvas. A slide picks a card with <code>card="..."</code>; see <a href={withBase("/brands/diagram-look-and-cards/")}>diagram look and cards</a>.</span></p>
+    </Fragment>
+  )}
 </section>

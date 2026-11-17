@@ -2,7 +2,7 @@
 title: "Import a brand"
 description: "Recreate an existing look from slides, a website or guidelines."
 sidebar:
-  order: 5
+  order: 6
 ---
 
 The `brand-import` skill teaches a coding agent, such as Claude Code or Codex, to recreate an existing look as a deckster brand. You give it a PowerPoint template, a PDF, a Google Slides link, a website, brand guidelines or screenshots. You get back a draft `brands/<name>/brand.ts` that passes `deck brand check`, pictures that compare the brand with the source, and a short list of questions only you can answer. To install the skill, see [skills](/ai-agents/skills/).
@@ -29,9 +29,9 @@ If it isn't obvious, the agent first asks what the brand is called (that becomes
 ## What the agent does
 
 1. **Extracts values with scripts.** `extract_pptx.py`, `extract_pdf.py`, `fetch_gslides.py`, `extract_web.py` and `extract_images.py` read exact colours, fonts, sizes, gradients, logos and chart styles into a work folder outside your workspace. `brand_tools.py analyze` then proposes roles, surfaces and a type scale.
-2. **Looks at the pages** and drafts the brand, recording each value's source and confidence. The numbers alone don't say which colour is the accent.
+2. **Looks at the pages** and drafts the brand, recording each value's source and confidence. The numbers alone don't say which colour is the accent. When the source has diagrams, the agent also notes how a box is drawn, which boxes are drawn differently and why, and how connectors end, bend and carry their labels. That becomes the brand's [diagram look and cards](/brands/diagram-look-and-cards/): the plain box restyles the `default` card, a highlighted box restyles the closest standard card, and a card of the brand's own is added only for a treatment none of the five carries.
 3. **Writes and checks `brand.ts`.** `emit_brand.py` writes `brands/<name>/brand.ts`, the logos and `import-notes.json`, and prints the `npm install` command for any Fontsource packages. The agent runs `deck brand check <name> --json` and fixes the draft until the check passes.
-4. **Renders a specimen deck.** `make_specimen.py` creates `decks/zz-<name>-specimen`: one slide per layout, slides on the `inverse`, `accent` and `gradient` surfaces, and charts, big numbers and a table. The agent lints and shoots it, puts source pages and slides side by side with `compare.py`, and fixes the draft again, usually two or three times.
+4. **Renders a specimen deck.** `make_specimen.py` creates `decks/zz-<name>-specimen`: one slide per layout, slides on the `inverse`, `accent` and `gradient` surfaces, and charts, big numbers and a table. The agent lints and shoots it, puts source pages and slides side by side with `compare.py`, and fixes the draft again, usually two or three times. For a source with diagrams it adds a `diagram` slide with nodes on the standard and the brand's own cards, and compares the boxes, connectors, arrowheads and labels with a source diagram.
 
 The `zz-` prefix marks the specimen as scratch, so `deck build --out` leaves it out of the site. The agent deletes it after you've seen the comparison, unless you want to keep it.
 

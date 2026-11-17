@@ -18,18 +18,15 @@ The deck writes the number back: open `#/steps/1` and the address bar shows `#/2
 
 ## Query parameters
 
-Version 0.3.0 reads two:
+Version 0.4.0 reads three:
 
 | Parameter | Does |
 | --- | --- |
 | `?static` | Static mode: every slide mounts, and motion, video and live demos show their final state. `?static=1` and `?static=true` also turn it on; `?static=0`, `false` or `no` leave it off. `deck shot`, `deck lint` and the exports open pages this way. See [static mode and readiness](/concepts/static-mode-and-readiness/). |
 | `?presenter` | Opens the page as the presenter window, with notes and timer, instead of the audience window. In a browser, `p` opens this URL at the current position. |
+| `?embed` | New in 0.4.0. Embed mode, for a deck shown in an iframe on another page: the slides and the brand's chrome without the presenter tools, overlays or plugin key and click handlers, and a small control with previous and next buttons, the slide count and an "Open full deck" link that opens the same position without `?embed` in a new tab. Takes the same values as `?static`. |
 
 They combine with the hash: `http://localhost:5173/?static#/steps/2`.
-
-<Aside type="note" title="Not in v0.3.0">
-`?embed`, for a deck shown in an iframe on another page (no presenter tools, a small previous and next control instead), is not in any release yet, 0.3.0 included.
-</Aside>
 
 ## `window.__deck`
 

@@ -483,3 +483,59 @@ export function sectionRows(rows: SchemaRow[], section: string | undefined): Sch
   if (section === undefined) return rows;
   return rows.filter((r) => r.path === section || r.path.startsWith(`${section}.`) || r.path.startsWith(`${section}[`));
 }
+
+// ---------------------------------------------------------------- brand diagram look and cards
+
+/** The cards every brand has (STANDARD_CARDS in deckster's packages/brand), in their order. */
+export const STANDARD_CARDS = ["default", "outline", "solid", "tint", "raised"];
+
+type DiagramLook = {
+  edges: { stroke: number; corners: string; arrow: string };
+  groups: { stroke: number; dashed: boolean; radius: number };
+  labels: { style: string; type: string };
+  kinds: Record<string, string>;
+};
+
+/**
+ * A brand's diagram look as the lines `deck brand <name>` prints before its cards: edges, groups,
+ * edge labels and the card each mapped kind uses. Sizes are canvas px.
+ */
+export function diagramLookLines(look: DiagramLook): string[] {
+  const { edges, groups, labels, kinds } = look;
+  const mapped = Object.entries(kinds).map(([kind, card]) => `\`${kind}\` uses \`${card}\``);
+  return [
+    `Edges: ${edges.stroke} px, ${edges.corners} corners, \`${edges.arrow}\` arrowheads.`,
+    `Groups: ${groups.stroke === 0 ? "no outline" : `${groups.stroke} px${groups.dashed ? ", dashed" : ""}`}, radius ${groups.radius} px.`,
+    `Edge labels: \`${labels.style}\`, in the \`${labels.type}\` step.`,
+    `Kinds: ${mapped.length > 0 ? mapped.join(", ") : "none mapped"}.`,
+  ];
+}
+
+type CardGeometry = {
+  stroke: number;
+  radius: number;
+  shape: string;
+  shadow: string;
+  icon: string;
+  accent: { side: string; width: number };
+  title: { family: string; weight: number; case: string };
+};
+
+/**
+ * A card's border, look (radius, shape, shadow, icon, stripe, in the words `deck brand` uses) and
+ * title type as table cells, sizes in canvas px.
+ */
+export function cardCells(card: CardGeometry, border: string | null): { border: string; look: string; title: string } {
+  const look = [
+    `radius ${card.radius} px`,
+    ...(card.shape === "kind" ? [] : [`${card.shape} shape`]),
+    ...(card.shadow === "none" ? [] : [`${card.shadow} shadow`]),
+    `${card.icon} icon`,
+    ...(card.accent.side === "none" ? [] : [`${card.accent.side} stripe ${card.accent.width} px`]),
+  ];
+  return {
+    border: border === null ? "none" : `${border} ${card.stroke} px`,
+    look: look.join(", "),
+    title: `${card.title.family} ${card.title.weight}${card.title.case === "upper" ? " upper" : ""}`,
+  };
+}

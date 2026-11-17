@@ -29,6 +29,8 @@ A colour matches however the file writes it (`#F60`, `#ff6600`, `rgb(255 102 0)`
 
 `fg`, `heading`, `muted`, `accent`, `positive`, `negative`, `bg`, `surface`, `border`, `node`, `node-border`, `node-text`, `group`, `edge`, `label`, `highlight`, `packet`.
 
+`<Svg>` takes no `card`: the brand's [cards](/data-and-diagrams/flow-diagrams/#pick-a-card) style the nodes the kit draws, and an imported drawing keeps its own shapes in the colours `recolor` gives them.
+
 An unknown role fails the build, and a colour in `recolor` that the drawing never uses is a warning. A colour you leave out keeps its value, and `deck lint` reports it as off-brand:
 
 ```console

@@ -94,6 +94,12 @@
       "default": null,
       "description": "An icon from the brand's set by name (resolved at build time in MDX), \"none\" to drop the kind's icon, or in TSX an icon component (`import Rocket from '~icons/lucide/rocket'`)."
     },
+    "card": {
+      "type": "string",
+      "required": false,
+      "default": null,
+      "description": "The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). Without one: the diagram's `card`, else the card the brand maps its kind to, else `default`; a name the brand lacks is skipped."
+    },
     "count": {
       "type": "number",
       "required": false,
@@ -218,6 +224,12 @@
             "up"
           ]
         },
+        "card": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). A node's own `card` wins."
+        },
         "children": {
           "type": "ReactNode",
           "required": false,
@@ -256,6 +268,12 @@
         "height"
       ],
       "props": {
+        "card": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). A node's own `card` wins."
+        },
         "children": {
           "type": "ReactNode",
           "required": false,
@@ -307,6 +325,12 @@
         "height"
       ],
       "props": {
+        "card": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The card (a node style the brand defines) for all its items: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own. An item's own `card` wins; the bands keep the stack's look unless a <Layer> names a card."
+        },
         "children": {
           "type": "ReactNode",
           "required": false,
@@ -345,6 +369,12 @@
           "default": false,
           "description": "Keep a packet circling while the slide is on screen."
         },
+        "card": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). A node's own `card` wins."
+        },
         "children": {
           "type": "ReactNode",
           "required": false,
@@ -378,6 +408,12 @@
             "down",
             "right"
           ]
+        },
+        "card": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). A node's own `card` wins."
         },
         "children": {
           "type": "ReactNode",
@@ -449,6 +485,7 @@
         "state",
         "at",
         "icon",
+        "card",
         "col",
         "row",
         "colSpan",
@@ -908,7 +945,8 @@
       "example": "<Actor id=\"api\" kind=\"service\" title=\"Payments API\" />",
       "shared": [
         "kind",
-        "icon"
+        "icon",
+        "card"
       ],
       "props": {
         "id": {
@@ -1049,6 +1087,12 @@
           "default": null,
           "description": "What it does or who owns it."
         },
+        "card": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The card its band is drawn with: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own; without one the band keeps the stack's look (a tint with a bold left edge)."
+        },
         "children": {
           "type": "ReactNode",
           "required": false,
@@ -1068,7 +1112,8 @@
       "shared": [
         "kind",
         "icon",
-        "state"
+        "state",
+        "card"
       ],
       "props": {
         "title": {
@@ -1389,6 +1434,22 @@
       "description": "Travel from `to` back to `from`."
     }
   },
+  "cards": {
+    "resolution": "A node's card is, in order: its own `card`; its diagram's `card`; the card the brand maps its kind to (`diagram.kinds` in brand.ts); `default`. A name the brand does not have is skipped (the next in that order applies) and the node carries `data-card-missing` with the name asked for; every node carries `data-card` with the card it uses.",
+    "standard": {
+      "default": "The brand's node: its node fill and border, the icon in a bordered tile.",
+      "outline": "No fill, the node border only.",
+      "solid": "Filled in the accent, no border, text in the accent foreground.",
+      "tint": "The accent at a low opacity with an accent border and a filled icon tile.",
+      "raised": "The surface fill, a hairline border and the brand's medium shadow."
+    },
+    "custom": "Every brand has the five standard cards and may restyle them or define more of its own (`deck brand <name>` lists them). Stick to the standard names for a deck that should look right in any brand.",
+    "rules": [
+      "States still win over the card: highlighted, error and success recolor the outline and show the halo, muted and a focus dim the node.",
+      "On <Layers> the items follow the stack's `card`; the bands keep the stack's own look unless a <Layer> names a card.",
+      "Pick a card for a reason (a role, a group of nodes that belong together), not per node at random: one or two cards on a slide besides the default."
+    ]
+  },
   "animation": [
     {
       "name": "Packet",
@@ -1491,6 +1552,7 @@
     "Place nodes on grid cells (col, row); never pixels. The diagram scales to its region and text stays at brand sizes.",
     "Keep a slide to about 12 nodes and 16 edges and 5 columns by 3 rows; `deck lint` warns above that (diagram-too-dense) and reports nodes that overlap.",
     "One accent: let a journey, a highlight or a state carry the point; everything else stays in the quiet colors.",
+    "Nodes, actors, items and layers take `card` (a node style the brand defines: `default`, `outline`, `solid`, `tint`, `raised` or one of the brand's own, listed by `deck brand <name>`); a diagram's `card` sets it for all its nodes. Without one a node takes the card the brand maps its kind to, else `default`; a name the brand lacks is skipped. States still win over the card (`cards` in --json has the details).",
     "Static mode and exports show each step as a still: packets frozen partway along with a tail that shows their direction.",
     "Every diagram puts a JSON description in `data-diagram-description` for native exports (`@deckster/kit/diagram-description`).",
     "Designer-made motion no diagram expresses (an illustrated loop, a product animation) is a <Lottie> from After Effects; see the media components."

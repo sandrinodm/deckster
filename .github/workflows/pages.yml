@@ -1,17 +1,8 @@
-# Checks the site; it publishes nothing. The site is to be deployed by main's
+# Checks the site; it publishes nothing. The site is deployed by main's
 # .github/workflows/deploy.yml, run by hand from the Actions tab: it checks
 # out the tip of this branch, syncs the stills and decks from main (src/data
 # is published as committed), builds the site and publishes it to GitHub
 # Pages. A change here goes live on the next run of that workflow.
-#
-# NOT YET WORKING. This workflow and that deploy need three things deckster's
-# main does not have yet: the docs scripts (scripts/docs/), the ?embed
-# mode DeckEmbed loads, and the deploy.yml described above. All three exist
-# only as uncommitted work in the product repository today. At main's current
-# commit (4e0b186, "release v0.3.0") there are no docs scripts, so this
-# workflow fails at its first sync; and main's deploy.yml publishes the deck
-# gallery (`deck build --all`), never this site. Both start working once that
-# work is committed on main; until then nothing deploys this branch.
 #
 # The site is built from generated inputs: src/data (committed), the slide
 # stills in src/assets/shots and the built decks in public/decks (neither
@@ -55,14 +46,12 @@ jobs:
       # .gitignore and tsconfig.json's exclude so the site never reads it.
       DECKSTER_REPO: ${{ github.workspace }}/.deckster-main
       # The deckster ref the site is built from: a branch, tag or commit.
-      # It stays main, not the v0.3.0 tag the pages document (4e0b186): the
-      # docs scripts (scripts/docs/) and the ?embed mode DeckEmbed loads
-      # are newer than the tag, and a checkout of v0.3.0 has neither. Today
-      # main has neither too (its HEAD is 4e0b186; both are uncommitted work),
-      # so this job fails until they are committed on main. The data
-      # check below fails as soon as main's catalogs differ from the committed
-      # src/data, so the reference can't drift past the release unnoticed.
-      # Move this to a tag once a release carries the docs scripts and ?embed.
+      # It is main, not the v0.4.0 tag the pages document. v0.4.0 is the first
+      # release with the docs scripts (scripts/docs/) and the ?embed mode
+      # DeckEmbed loads, so this could move to the tag once it exists. The
+      # data check below fails as soon as main's catalogs differ from the
+      # committed src/data, so the reference can't drift past the release
+      # unnoticed.
       DECKSTER_REF: main
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

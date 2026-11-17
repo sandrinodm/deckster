@@ -41,6 +41,8 @@ Every slide is laid out on a 1920 by 1080 canvas scaled to the window, and type 
 
 `<Flow>` places nodes by column and row, because agents are reliable with grid cells and unreliable with pixel coordinates. Every diagram is drawn by the kit, with no Mermaid tier: a diagram the kit draws takes the brand's colours and type, reveals by step, and can be checked by `deck lint`. See [flow diagrams](/data-and-diagrams/flow-diagrams/).
 
+A brand also styles its diagrams, down to named node styles called cards. Five card names exist in every brand, so a slide that marks its key node `card="solid"` renders in any brand, each in its own way. A name a brand lacks falls back to another card instead of failing the build, because a deck may be rendered in another brand, and `deck lint` reports it. See [diagram look and cards](/brands/diagram-look-and-cards/).
+
 ## Charts that lead with a highlight
 
 Every chart takes a `highlight`, what matters, and mutes the rest; the slide title states the takeaway and the chart supports it. Labels sit on the marks instead of in a legend where they can. Each chart is planned from its rows into shapes and text without a browser, which is also what lets an export write it as a native PowerPoint chart. See [highlights and annotations](/data-and-diagrams/highlights-and-annotations/).

@@ -26,9 +26,9 @@ Twelve top-level fields are required: `name`, `label`, `color`, `gradients`, `ty
 
 ## How to read the tables
 
-Each section below is generated from the schema: path, type with its limits, and a **required** tag when the object it sits in needs it. The description, and the default of an optional field the brand fills in when you leave it out, are written by hand from the code of 0.3.0; a field whose name says it all has none. The rows are grouped under their first two path segments (`color.surfaces`), and each row shows its path from there (`.<name>.bg`). The forms of a field that takes several (`[type=placed]` below) are folded: open one to see its fields. In a path, `<name>` stands for a key you choose (`color.surfaces.<name>` is any surface name) or for one of several keys with the same fields, listed under the row (`typography.scale.<name>` is one row for all eleven type steps). `[]` is an item of a list, and `[type=image]` is one form of a field that takes several, picked by its `type`. The prose under each table explains how its fields work together.
+Each section below is generated from the schema: path, type with its limits, and a **required** tag when the object it sits in needs it. The description, and the default of an optional field the brand fills in when you leave it out, are written by hand from the code of 0.4.0; a field whose name says it all has none. The rows are grouped under their first two path segments (`color.surfaces`), and each row shows its path from there (`.<name>.bg`). The forms of a field that takes several (`[type=placed]` below) are folded: open one to see its fields. In a path, `<name>` stands for a key you choose (`color.surfaces.<name>` is any surface name) or for one of several keys with the same fields, listed under the row (`typography.scale.<name>` is one row for all eleven type steps). `[]` is an item of a list, and `[type=image]` is one form of a field that takes several, picked by its `type`. The prose under each table explains how its fields work together.
 
-Colours, wherever the type says so, are a hex literal (`#1f2937`), an `oklch(...)` literal, or a palette reference: `<palette>.<step>`, with an optional opacity in percent (`ink.900`, `ink.900/12`). Sizes are canvas pixels, on the 1920 by 1080 slide, from 0 to 1920.
+Colours, wherever the type says so, are a hex literal (`#1f2937`), an `oklch(...)` literal, or a palette reference: `<palette>.<step>`, with an optional opacity in percent (`ink.900`, `ink.900/12`). A diagram card's colours also take a role, with an optional opacity (`surface`, `accent/12`), and its `fill` and `border` take `none`. Sizes are canvas pixels, on the 1920 by 1080 slide, from 0 to 1920.
 
 ## color
 
@@ -36,7 +36,7 @@ Colours, wherever the type says so, are a hex literal (`#1f2937`), an `oklch(...
 
 `palette` holds your colour scales; everything else references them. `roles` sets the ten colours every surface has (`ROLE_NAMES`): `bg`, `surface`, `fg`, `heading`, `muted`, `accent`, `accent-fg`, `border`, `positive` and `negative`. `heading` is optional and defaults to `fg`. Layouts and components use only these roles, never palette steps.
 
-Every brand has the surfaces `default`, `inverse`, `accent` and `gradient` (`REQUIRED_SURFACES`), so a slide's `surface:` works in every brand; one you leave out of `surfaces`, or define without roles, is derived from the base roles. You may add more. A surface overrides roles on top of the base `roles`. A surface may also name a `gradient`, paint `background` layers (at most six: `image`, `placed`, `pattern` or `gradient`), pick a `logo` variant, and replace the data palettes, `code` and `diagram` colours and `shadow` on that surface. A surface with an image or pattern layer must set its own `bg`, the colour contrast is checked against. `data.plate`, the panel charts draw behind themselves, defaults to `bg` on a solid surface whose text reaches 10:1 on it, else a deeper shade of the surface's background.
+Every brand has the surfaces `default`, `inverse`, `accent` and `gradient` (`REQUIRED_SURFACES`), so a slide's `surface:` works in every brand; one you leave out of `surfaces`, or define without roles, is derived from the base roles. You may add more. A surface overrides roles on top of the base `roles`. A surface may also name a `gradient`, paint `background` layers (at most six: `image`, `placed`, `pattern` or `gradient`), pick a `logo` variant, and replace the data palettes, `code` and `diagram` colours, the colours of diagram cards (`diagram.cards`) and `shadow` on that surface. A surface with an image or pattern layer must set its own `bg`, the colour contrast is checked against. `data.plate`, the panel charts draw behind themselves, defaults to `bg` on a solid surface whose text reaches 10:1 on it, else a deeper shade of the surface's background.
 
 `data` holds the chart palettes: `categorical` for unordered series, `sequential` from low to high, `diverging` through a neutral midpoint, and `context`, the muted colour for everything not highlighted. `waivers` accept a contrast shortfall for one role pair, with a `reason`: the pair then needs only 3:1, and a pass below 4.5:1 becomes a warning. How these fit together is on [palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/).
 
@@ -108,7 +108,9 @@ Optional. Colours of the code theme, by token. Leave the section out and the the
 
 <SchemaReference of="brand" section="diagram" />
 
-Optional. Colours of diagram nodes, groups, edges, labels, highlights and packets, derived and overridden the same way as `code`. Text stays readable on the node and highlight fills.
+Optional. The nine colours (`node` to `packet`) colour diagram nodes, groups, edges, labels, highlights and packets, derived and overridden the same way as `code`; text stays readable on the node and highlight fills.
+
+The rest is the brand's diagram look, new in 0.4.0: `edges`, `groups` and `labels` set how lines, group outlines and edge labels are drawn, `kinds` maps a node kind to a card, and `cards` restyles the five standard cards (`default`, `outline`, `solid`, `tint`, `raised`) and adds the brand's own, at most twelve entries. Every card takes `stroke`, `radius` and each `title` field from the brand's `default` card unless it sets its own (the standard `raised` keeps its hairline); its paint, shadow, icon, stripe and shape come from its own standard look, or the standard `default` look for a card of the brand's own. Text, subtitle and icon colours left out are derived to read on the card's fill on every surface. A surface recolours a card under `color.surfaces.<name>.diagram.cards`. How the parts work together, with an example, is on [diagram look and cards](/brands/diagram-look-and-cards/).
 
 ## charts
 
@@ -136,6 +138,6 @@ After the schema, the checks follow palette references, gradient, surface and lo
 
 ## Resolved tokens
 
-What the schema becomes once a brand loads: the `default` brand's palette, surfaces and type scale, with every reference and derivation resolved. `deck brand default --json` prints the full set.
+What the schema becomes once a brand loads: the `default` brand's palette, surfaces, type scale and diagram cards, with every reference and derivation resolved. `deck brand default --json` prints the full set.
 
 <BrandTokens name="default" />

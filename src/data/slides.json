@@ -1140,8 +1140,16 @@
           "source": "---\nlayout: diagram\ntitle: Flock sends nine drops in ten to a bike\neyebrow: Routing\nbudget: 1m\n---\n\n<Tree title=\"How Flock routes a waiting drop: a bike when one can take it in time, else a partner van, else the next day\">\n  <Node id=\"bike-fit\" kind=\"decision\" title=\"Fits a bike?\">\n    <Node id=\"bike\" kind=\"node\" icon=\"bike\" title=\"Bike loop\" subtitle=\"93% of drops\" state=\"highlighted\" />\n    <Node id=\"van-fit\" kind=\"decision\" title=\"Van in time?\" at={1}>\n      <Node id=\"van\" kind=\"node\" icon=\"truck\" title=\"Partner van\" subtitle=\"5% of drops\" at={1} />\n      <Node id=\"nextday\" kind=\"node\" icon=\"calendar-clock\" title=\"Next day\" subtitle=\"2%, if they agree\" at={1} />\n    </Node>\n  </Node>\n</Tree>\n\n<Notes>\n`diagram` with a `<Tree>` and a branch revealed at a step; use it for a decision with a main road and exceptions.\nFlock asks one question of every waiting drop: can a bike take it? Under 25 kilos, with a rider who can make the window. Then it goes on a bike loop: 93% of drops. [click] The rest: if a partner van can make the window, the van takes it, 5%; if not, we offer the recipient the next day, 2%.\n</Notes>\n"
         },
         {
-          "id": "diagram-timeline",
+          "id": "diagram-cards",
           "number": 92,
+          "title": "Three kinds of partner, and one door into Wrenhaul",
+          "layout": "diagram",
+          "file": "decks/lookbook/slides/diagram-cards.mdx",
+          "source": "---\nlayout: diagram\ntitle: Three kinds of partner, and one door into Wrenhaul\neyebrow: Open Network\nbudget: 45s\n---\n\n<Flow title=\"Shop platforms, tills and parcel carriers, drawn as outlines, all book through Open Network, the one solid card, into the drops store, Flock and the Rider app\">\n  <Node id=\"platforms\" kind=\"external\" icon=\"shopping-bag\" title=\"Shop platforms\" card=\"outline\" col={1} row={1} />\n  <Node id=\"tills\" kind=\"external\" icon=\"receipt\" title=\"Tills\" card=\"outline\" col={1} row={2} />\n  <Node id=\"carriers\" kind=\"external\" icon=\"truck\" title=\"Parcel carriers\" card=\"outline\" col={1} row={3} />\n  <Node id=\"api\" kind=\"gateway\" title=\"Open Network\" subtitle=\"One API\" card=\"solid\" col={2} row={2} />\n  <Node id=\"drops\" kind=\"database\" title=\"Drops store\" col={3} row={2} at={1} />\n  <Node id=\"flock\" kind=\"function\" title=\"Flock\" subtitle=\"Batching\" col={4} row={2} at={1} />\n  <Node id=\"rider\" kind=\"mobile\" icon=\"bike\" title=\"Rider app\" col={5} row={2} at={1} />\n  <Edge from=\"platforms\" to=\"api\" />\n  <Edge from=\"tills\" to=\"api\" label=\"POST /v1/drops\" />\n  <Edge from=\"carriers\" to=\"api\" />\n  <Edge from=\"api\" to=\"drops\" at={1} />\n  <Edge from=\"drops\" to=\"flock\" at={1} />\n  <Edge from=\"flock\" to=\"rider\" at={1} />\n</Flow>\n\n<Notes>\n`diagram` with a `<Flow>` whose nodes pick a `card` by name: `solid` for the one that matters, `outline` for systems you do not run; use it when the point is which box is yours, and keep to the standard card names so the slide works in any brand.\nToday any shop platform, any till and any parcel carrier can book a Wrenhaul drop, and they all come through the same door: Open Network, one API. The outlines are theirs; the solid card is ours. [click] Behind that door nothing changes: the drop lands in the drops store, Flock batches it, and a rider sees it on the Rider app.\n</Notes>\n"
+        },
+        {
+          "id": "diagram-timeline",
+          "number": 93,
           "title": "Open Network went from beta to launch in 12 weeks",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-timeline.mdx",
@@ -1149,7 +1157,7 @@
         },
         {
           "id": "diagram-svg",
-          "number": 93,
+          "number": 94,
           "title": "Three loops cover the Old Town from one hub",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-svg.mdx",
@@ -1157,7 +1165,7 @@
         },
         {
           "id": "demo-appframe",
-          "number": 94,
+          "number": 95,
           "title": "Watch Flock build a loop",
           "layout": "demo",
           "file": "decks/lookbook/slides/demo-appframe.mdx",
@@ -1165,7 +1173,7 @@
         },
         {
           "id": "demo-live",
-          "number": 95,
+          "number": 96,
           "title": "Price your own drops",
           "layout": "demo",
           "file": "decks/lookbook/slides/demo-live.tsx",
@@ -1173,7 +1181,7 @@
         },
         {
           "id": "part-product",
-          "number": 96,
+          "number": 97,
           "title": "Show the product",
           "layout": "section",
           "file": "decks/lookbook/slides/part-product.mdx",
@@ -1181,7 +1189,7 @@
         },
         {
           "id": "screen-dispatch",
-          "number": 97,
+          "number": 98,
           "title": "A hub lead runs the whole day from one map",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-dispatch.mdx",
@@ -1189,7 +1197,7 @@
         },
         {
           "id": "split-phones",
-          "number": 98,
+          "number": 99,
           "title": "One loop, seen from saddle and door",
           "layout": "split",
           "file": "decks/lookbook/slides/split-phones.mdx",
@@ -1197,7 +1205,7 @@
         },
         {
           "id": "screen-rider",
-          "number": 99,
+          "number": 100,
           "title": "The rider never has to think about the route",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-rider.mdx",
@@ -1205,7 +1213,7 @@
         },
         {
           "id": "morph-dispatch-overview",
-          "number": 100,
+          "number": 101,
           "title": "Dispatch shows every loop at once",
           "layout": "split",
           "file": "decks/lookbook/slides/morph-dispatch-overview.mdx",
@@ -1213,7 +1221,7 @@
         },
         {
           "id": "morph-dispatch-detail",
-          "number": 101,
+          "number": 102,
           "title": "A window turns amber before it is missed",
           "layout": "split",
           "file": "decks/lookbook/slides/morph-dispatch-detail.mdx",
@@ -1221,7 +1229,7 @@
         },
         {
           "id": "screen-insights",
-          "number": 102,
+          "number": 103,
           "title": "Merchants see their cost per drop every week",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-insights.mdx",
@@ -1229,7 +1237,7 @@
         },
         {
           "id": "gallery-screens",
-          "number": 103,
+          "number": 104,
           "title": "Four screens run on one stream of events",
           "layout": "gallery",
           "file": "decks/lookbook/slides/gallery-screens.mdx",
@@ -1237,7 +1245,7 @@
         },
         {
           "id": "screen-console",
-          "number": 104,
+          "number": 105,
           "title": "Developers test a drop before they ship",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-console.mdx",
@@ -1245,7 +1253,7 @@
         },
         {
           "id": "split-video",
-          "number": 105,
+          "number": 106,
           "title": "The launch film opens in light alone",
           "layout": "split",
           "file": "decks/lookbook/slides/split-video.mdx",
@@ -1253,7 +1261,7 @@
         },
         {
           "id": "gallery-places",
-          "number": 106,
+          "number": 107,
           "title": "Booked at 08:42, at the door at 09:21",
           "layout": "gallery",
           "file": "decks/lookbook/slides/gallery-places.mdx",
@@ -1261,7 +1269,7 @@
         },
         {
           "id": "part-people",
-          "number": 107,
+          "number": 108,
           "title": "People and proof",
           "layout": "section",
           "file": "decks/lookbook/slides/part-people.mdx",
@@ -1269,7 +1277,7 @@
         },
         {
           "id": "team-founders",
-          "number": 108,
+          "number": 109,
           "title": "Each founder has run one part of this before",
           "layout": "team",
           "file": "decks/lookbook/slides/team-founders.mdx",
@@ -1277,7 +1285,7 @@
         },
         {
           "id": "logos-customers",
-          "number": 109,
+          "number": 110,
           "title": "Five of our merchants, from warm bread to blood samples",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-customers.mdx",
@@ -1285,7 +1293,7 @@
         },
         {
           "id": "proof-pantry-lane",
-          "number": 110,
+          "number": 111,
           "title": "Pantry Lane takes 63% more same-day orders",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-pantry-lane.mdx",
@@ -1293,7 +1301,7 @@
         },
         {
           "id": "team-row",
-          "number": 111,
+          "number": 112,
           "title": "Four people build what riders, hubs and partners use",
           "layout": "team",
           "file": "decks/lookbook/slides/team-row.mdx",
@@ -1301,7 +1309,7 @@
         },
         {
           "id": "logos-color",
-          "number": 112,
+          "number": 113,
           "title": "Eight kinds of shop already send drops",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-color.mdx",
@@ -1309,7 +1317,7 @@
         },
         {
           "id": "proof-st-brenna",
-          "number": 113,
+          "number": 114,
           "title": "Samples reach the lab in 31 minutes, not 74",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-st-brenna.mdx",
@@ -1317,7 +1325,7 @@
         },
         {
           "id": "team-grid",
-          "number": 114,
+          "number": 115,
           "title": "Six leads run the company day to day",
           "layout": "team",
           "file": "decks/lookbook/slides/team-grid.mdx",
@@ -1325,7 +1333,7 @@
         },
         {
           "id": "logos-wall",
-          "number": 115,
+          "number": 116,
           "title": "Fourteen organisations stand behind the launch",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-wall.mdx",
@@ -1333,7 +1341,7 @@
         },
         {
           "id": "proof-brightloaf",
-          "number": 116,
+          "number": 117,
           "title": "Brightloaf delivers 93% of its bread warm",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-brightloaf.mdx",
@@ -1341,7 +1349,7 @@
         },
         {
           "id": "team-roster",
-          "number": 117,
+          "number": 118,
           "title": "Eight people opened the first six cities",
           "layout": "team",
           "file": "decks/lookbook/slides/team-roster.mdx",
@@ -1349,7 +1357,7 @@
         },
         {
           "id": "part-ahead",
-          "number": 118,
+          "number": 119,
           "title": "Plan ahead and ask",
           "layout": "section",
           "file": "decks/lookbook/slides/part-ahead.mdx",
@@ -1357,7 +1365,7 @@
         },
         {
           "id": "timeline-history",
-          "number": 119,
+          "number": 120,
           "title": "Four years from one hub to six cities",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-history.mdx",
@@ -1365,7 +1373,7 @@
         },
         {
           "id": "columns-roadmap",
-          "number": 120,
+          "number": 121,
           "title": "We finish the network before we widen it",
           "layout": "columns",
           "file": "decks/lookbook/slides/columns-roadmap.mdx",
@@ -1373,7 +1381,7 @@
         },
         {
           "id": "timeline-roadmap",
-          "number": 121,
+          "number": 122,
           "title": "Eighteen months from today's launch to break-even",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-roadmap.mdx",
@@ -1381,7 +1389,7 @@
         },
         {
           "id": "ask-series-a",
-          "number": 122,
+          "number": 123,
           "title": "Fund four new cities, then break-even",
           "layout": "ask",
           "file": "decks/lookbook/slides/ask-series-a.mdx",
@@ -1389,7 +1397,7 @@
         },
         {
           "id": "columns-four",
-          "number": 123,
+          "number": 124,
           "title": "Four cities and six hubs open between April and June",
           "layout": "columns",
           "file": "decks/lookbook/slides/columns-four.mdx",
@@ -1397,7 +1405,7 @@
         },
         {
           "id": "timeline-slipped",
-          "number": 124,
+          "number": 125,
           "title": "One opening slipped, and we said so",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-slipped.mdx",
@@ -1405,7 +1413,7 @@
         },
         {
           "id": "ask-pilot",
-          "number": 125,
+          "number": 126,
           "title": "Approve Saltby's first hub this month",
           "layout": "ask",
           "file": "decks/lookbook/slides/ask-pilot.mdx",
@@ -1413,7 +1421,7 @@
         },
         {
           "id": "part-motion",
-          "number": 126,
+          "number": 127,
           "title": "Motion",
           "layout": "section",
           "file": "decks/lookbook/slides/part-motion.mdx",
@@ -1421,7 +1429,7 @@
         },
         {
           "id": "motion-rise",
-          "number": 127,
+          "number": 128,
           "title": "Rise: each entry of the log rises into place",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-rise.mdx",
@@ -1429,7 +1437,7 @@
         },
         {
           "id": "motion-fade",
-          "number": 128,
+          "number": 129,
           "title": "Fade: each message appears where it stands",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-fade.mdx",
@@ -1437,7 +1445,7 @@
         },
         {
           "id": "motion-scale",
-          "number": 129,
+          "number": 130,
           "title": "Scale: each beat grows a step closer",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-scale.mdx",
@@ -1445,7 +1453,7 @@
         },
         {
           "id": "motion-blur",
-          "number": 130,
+          "number": 131,
           "title": "Blur: the arrival time comes into focus",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-blur.mdx",
@@ -1453,7 +1461,7 @@
         },
         {
           "id": "motion-wipe",
-          "number": 131,
+          "number": 132,
           "title": "Wipe: each leg is drawn from shop to door",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-wipe.mdx",
@@ -1461,7 +1469,7 @@
         },
         {
           "id": "motion-focus",
-          "number": 132,
+          "number": 133,
           "title": "Focus: only the latest status is lit",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-focus.mdx",
@@ -1469,7 +1477,7 @@
         },
         {
           "id": "part-close",
-          "number": 133,
+          "number": 134,
           "title": "Close",
           "layout": "section",
           "file": "decks/lookbook/slides/part-close.mdx",
@@ -1477,7 +1485,7 @@
         },
         {
           "id": "content-links",
-          "number": 134,
+          "number": 135,
           "title": "Everything you need to ship a drop today",
           "layout": "content",
           "file": "decks/lookbook/slides/content-links.mdx",
@@ -1485,7 +1493,7 @@
         },
         {
           "id": "split-qr",
-          "number": 135,
+          "number": 136,
           "title": "Book a test drop from your phone, now",
           "layout": "split",
           "file": "decks/lookbook/slides/split-qr.mdx",
@@ -1493,7 +1501,7 @@
         },
         {
           "id": "closing-ask",
-          "number": 136,
+          "number": 137,
           "title": "Send us your first drop this week",
           "layout": "closing",
           "file": "decks/lookbook/slides/closing-ask.mdx",
@@ -1501,7 +1509,7 @@
         },
         {
           "id": "closing-questions",
-          "number": 137,
+          "number": 138,
           "title": "What should we deliver next?",
           "layout": "closing",
           "file": "decks/lookbook/slides/closing-questions.mdx",
@@ -2502,6 +2510,22 @@
           "layout": "diagram",
           "file": "decks/diagrams-demo/slides/deploy-gates.tsx",
           "source": "import type { ReactNode } from 'react';\n\nimport { Notes } from '@deckster/engine';\nimport { Edge, Flow, Journey, Node, State } from '@deckster/kit/diagrams';\n\n/**\n * Read by the build without running the slide, so it must stay a literal.\n */\nexport const frontmatter = {\n  layout: 'diagram',\n  surface: 'inverse',\n  title: 'Every deploy passes the same three gates, defined once in code',\n  eyebrow: 'Written in TSX',\n  budget: '1m',\n};\n\n/**\n * The gates between a merge and production, as the pipeline config lists them.\n */\nconst GATES = [\n  { id: 'tests', kind: 'function', title: 'Tests', subtitle: 'Unit and contract' },\n  { id: 'canary', kind: 'service', title: 'Canary', subtitle: '5% of traffic, 20 min' },\n  { id: 'approval', kind: 'user', title: 'Approval', subtitle: 'On-call engineer' },\n] as const;\n\n/**\n * The deploy pipeline drawn from the same list the pipeline runs: a TSX slide maps the data to\n * nodes and edges with no grid cells, so the automatic layout places them (ELK loads for this slide\n * only), and the kind icons resolve at run time.\n */\nexport default function DeployGates(): ReactNode {\n  const ids = ['merge', ...GATES.map((gate) => gate.id), 'production'];\n  return (\n    <>\n      <Flow title=\"A merge passing tests, a canary and an approval before production\">\n        <Node id=\"merge\" kind=\"document\" title=\"Merge\" subtitle=\"main branch\" />\n        {GATES.map((gate) => (\n          <Node\n            key={gate.id}\n            id={gate.id}\n            kind={gate.kind}\n            title={gate.title}\n            subtitle={gate.subtitle}\n          />\n        ))}\n        <Node id=\"production\" kind=\"cloud\" title=\"Production\" subtitle=\"3 regions\" />\n        {ids.slice(1).map((id, index) => (\n          <Edge key={id} from={ids[index] ?? 'merge'} to={id} />\n        ))}\n        <Journey at={1} path={ids} />\n        <State node=\"canary\" at={2} until={3} is=\"highlighted\" badge=\"Watching errors\" />\n      </Flow>\n      <Notes>\n        This slide is TSX: the gates come from the same list the pipeline config uses, so the\n        picture cannot drift from the pipeline. Walk the release through one gate per click.\n      </Notes>\n    </>\n  );\n}\n"
+        },
+        {
+          "id": "money-path",
+          "number": 14,
+          "title": "Payments is the one service that moves money, so it gets the second review",
+          "layout": "diagram",
+          "file": "decks/diagrams-demo/slides/money-path.mdx",
+          "source": "---\nlayout: diagram\ntitle: Payments is the one service that moves money, so it gets the second review\neyebrow: Cards\nbudget: 1m\nsurface: inverse\n---\n\n<Flow title=\"The checkout path, with the payments service marked and the outside providers drawn as outlines\">\n  <Node id=\"web\" kind=\"client\" title=\"Web app\" col={1} row={2} />\n  <Node id=\"checkout\" kind=\"service\" title=\"Checkout\" col={2} row={2} />\n  <Node id=\"payments\" kind=\"service\" title=\"Payments\" subtitle=\"Two reviewers\" card=\"solid\" col={3} row={2} />\n  <Node id=\"ledger\" kind=\"database\" title=\"Ledger\" col={4} row={2} />\n  <Node id=\"fraud\" kind=\"external\" title=\"Fraud score\" card=\"outline\" col={3} row={1} />\n  <Node id=\"network\" kind=\"external\" title=\"Card network\" card=\"outline\" col={4} row={1} />\n  <Node id=\"email\" kind=\"external\" title=\"Email provider\" card=\"outline\" col={3} row={3} />\n  <Edge from=\"web\" to=\"checkout\" />\n  <Edge from=\"checkout\" to=\"payments\" label=\"Charge\" />\n  <Edge from=\"payments\" to=\"ledger\" />\n  <Edge from=\"payments\" to=\"fraud\" />\n  <Edge from=\"payments\" to=\"network\" />\n  <Edge from=\"checkout\" to=\"email\" label=\"Receipt\" async />\n</Flow>\n\n<Notes>\nEvery node here is a service or a store, but only one of them can charge a card twice. That one sits on the solid card, and its pull requests need two reviewers. The three outside providers are outlines: we call them, we do not run them. The cards are standard names, so the slide says the same thing in any brand.\n</Notes>\n"
+        },
+        {
+          "id": "card-reference",
+          "number": 15,
+          "title": "Five standard cards, and each one means something on a slide",
+          "layout": "diagram",
+          "file": "decks/diagrams-demo/slides/card-reference.mdx",
+          "source": "---\nlayout: diagram\ntitle: Five standard cards, and each one means something on a slide\neyebrow: Cards\nbudget: 45s\n---\n\n<Flow title=\"The five standard cards side by side, each on the same service node\">\n  <Node id=\"default\" kind=\"service\" title=\"default\" subtitle=\"Most nodes\" card=\"default\" col={1} row={1} />\n  <Node id=\"outline\" kind=\"service\" title=\"outline\" subtitle=\"Outside our system\" card=\"outline\" col={2} row={1} />\n  <Node id=\"solid\" kind=\"service\" title=\"solid\" subtitle=\"The one that matters\" card=\"solid\" col={3} row={1} />\n  <Node id=\"tint\" kind=\"service\" title=\"tint\" subtitle=\"Belongs together\" card=\"tint\" col={4} row={1} />\n  <Node id=\"raised\" kind=\"service\" title=\"raised\" subtitle=\"Looked at closely\" card=\"raised\" col={5} row={1} />\n</Flow>\n\n<Notes>\nThis is the reference for the card prop. Every brand has these five names and draws them in its own way, so a deck that uses only these names moves between brands without edits. Use one or two of them on a slide besides the default, and pick each for a reason.\n</Notes>\n"
         }
       ]
     },

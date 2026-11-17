@@ -5,7 +5,7 @@ sidebar:
   order: 6
 ---
 
-Use this page to look up the props of a diagram component or one of the parts that goes inside it, and the node kinds, states and edge options a `<Flow>` takes. To learn how to draw one, start at [flow diagrams](/data-and-diagrams/flow-diagrams/), [sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/) or [SVG](/data-and-diagrams/svg/).
+Use this page to look up the props of a diagram component or one of the parts that goes inside it, and the node kinds, states, edge options and cards a `<Flow>` takes. To learn how to draw one, start at [flow diagrams](/data-and-diagrams/flow-diagrams/), [sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/) or [SVG](/data-and-diagrams/svg/).
 
 <CatalogIndex kind="diagrams" />
 
@@ -15,7 +15,9 @@ Seven components are diagrams: you put one on a slide. The other thirteen are pa
 
 `<Timeline>` here is the diagram; the `timeline` layout has [its own page](/reference/layouts/timeline/).
 
-A node's `kind` sets its shape and icon (`service`, `database`, `queue` and so on, each with aliases), its `state` takes one of five values (`default`, `highlighted`, `muted`, `error`, `success`; words that mean the same are accepted), and `<Edge>` takes options such as a dashed line, a route style or an arrow at both ends. All three are listed under [node kinds, states and edges](#node-kinds-states-and-edges) at the end of this page.
+A node's `kind` sets its shape and icon (`service`, `database`, `queue` and so on, each with aliases), its `state` takes one of five values (`default`, `highlighted`, `muted`, `error`, `success`; words that mean the same are accepted), `<Edge>` takes options such as a dashed line, a route style or an arrow at both ends, and `card` picks the node style the brand defines. All four are listed under [node kinds, states, edges and cards](#node-kinds-states-edges-and-cards) at the end of this page.
+
+`card` is a shared prop of `<Node>`, `<Actor>` and `<Item>`, and its own prop on `<Flow>`, `<SequenceDiagram>`, `<Layers>`, `<Layer>`, `<Cycle>` and `<Tree>`; `<Timeline>`, `<Milestone>` and `<Svg>` take none. The names a slide may use depend on the brand: `deck brand <name>` lists them, and the five standard ones exist in every brand.
 
 ## Limits
 
@@ -114,6 +116,6 @@ Several diagram components and parts take these props, with the same meaning in 
 
 <PropsTable of="Svg" />
 
-## Node kinds, states and edges
+## Node kinds, states, edges and cards
 
 <DiagramKinds />
