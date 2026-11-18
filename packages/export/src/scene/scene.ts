@@ -508,6 +508,12 @@ export type SceneNodeBase = {
    * locked, and are never taken for the slide's background.
    */
   backdrop?: true;
+
+  /**
+   * Set, with `backdrop`, on the nodes of the slide's own `background:` image and its tint. The
+   * other backdrop nodes are the layers of the surface or of a brand layout's art.
+   */
+  slideImage?: true;
 };
 
 /**

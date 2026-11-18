@@ -1,0 +1,119 @@
+/*
+ * Brand layouts: each region is a box at the pixels its layout gives on the full canvas. A box is
+ * a size container, so text steps down to fit it and media fills it. Text is aligned across the
+ * box by `data-align` and placed down it by `data-anchor`; `safe` anchoring keeps text that is too
+ * tall growing downward, where the fit and `deck lint` see it, instead of off the box's top.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-brand-canvas {
+    position: absolute;
+    inset: 0;
+  }
+
+  .kit-brand-region {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-brand-region[data-align='center'] {
+    text-align: center;
+  }
+
+  .kit-brand-region[data-align='end'] {
+    text-align: end;
+  }
+
+  .kit-brand-region[data-anchor='center'] > .kit-region {
+    justify-content: safe center;
+  }
+
+  .kit-brand-region[data-anchor='end'] > .kit-region {
+    justify-content: safe flex-end;
+  }
+
+  .kit-brand-title,
+  .kit-brand-text {
+    max-width: none;
+    margin: 0;
+  }
+
+  /* The heading and prose styles set their own colors, so a role color goes on the text itself. */
+  .kit-brand-region[data-colored] .kit-brand-title,
+  .kit-brand-region[data-colored] .kit-brand-text {
+    color: var(--kit-brand-color);
+  }
+
+  .kit-brand-text > :first-child {
+    margin-top: 0;
+  }
+
+  .kit-brand-text > :last-child {
+    margin-bottom: 0;
+  }
+
+  .kit-brand-frame,
+  .kit-brand-content {
+    display: grid;
+    flex: 1 1 0;
+    place-items: center;
+    width: 100%;
+    min-height: 0;
+    container-type: size;
+  }
+
+  /* Other content sits where the region's alignment and anchor say, not always in the middle. */
+  .kit-brand-content {
+    place-items: start;
+  }
+
+  .kit-brand-region[data-anchor='center'] .kit-brand-content {
+    align-items: center;
+  }
+
+  .kit-brand-region[data-anchor='end'] .kit-brand-content {
+    align-items: end;
+  }
+
+  .kit-brand-region[data-align='center'] .kit-brand-content {
+    justify-items: center;
+  }
+
+  .kit-brand-region[data-align='end'] .kit-brand-content {
+    justify-items: end;
+  }
+
+  .kit-brand-fit {
+    display: contents;
+  }
+
+  /*
+   * Photos and videos alone in a media box fill it, cropped (`cover`) or whole (`contain`), with
+   * the treatment's corners; anything else is centred in it and may fill it with `height: 100%`.
+   */
+  .kit-brand-frame:has(.deck-slot > :is(img, video)):not(:has(.deck-slot > :not(img, video))) {
+    place-items: stretch;
+  }
+
+  .kit-brand-frame .deck-slot > :is(img, video) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border-radius: var(--kit-media-radius, 0);
+    object-fit: cover;
+  }
+
+  .kit-brand-frame [data-fit='contain'] .deck-slot > :is(img, video) {
+    object-fit: contain;
+  }
+
+  .kit-brand-frame .deck-slot > :is(img, svg) {
+    max-width: 100%;
+    max-height: 100%;
+  }
+}

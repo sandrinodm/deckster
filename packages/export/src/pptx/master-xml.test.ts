@@ -28,6 +28,8 @@ function brand(): BrandTokens {
 function layout(): LayoutSpec {
   return {
     name: 'content',
+    label: null,
+    art: null,
     type: 'content',
     placeholders: [
       {

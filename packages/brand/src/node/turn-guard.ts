@@ -772,7 +772,9 @@ export const beginTurnGuard = Effect.fn('beginTurnGuard')(function* (
 function isGatedCodeFile(relative: string, target: GuardTarget): boolean {
   return (
     relative === `decks/${target.deck}/deck.config.ts` ||
-    (target.brand !== undefined && relative === `brands/${target.brand}/brand.ts`)
+    (target.brand !== undefined &&
+      (relative === `brands/${target.brand}/brand.ts` ||
+        relative === `brands/${target.brand}/layouts.ts`))
   );
 }
 

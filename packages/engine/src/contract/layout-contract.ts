@@ -223,9 +223,9 @@ export type LayoutExample = {
 
 /**
  * The PowerPoint placeholders `deck export --pptx` can fill: the slide title (`ctrTitle` on a title
- * slide), the subtitle under it, and the body text.
+ * slide), the subtitle under it, the body text, and a picture (the slot's first image).
  */
-export const PPTX_PLACEHOLDER_KINDS = ['title', 'subtitle', 'body'] as const;
+export const PPTX_PLACEHOLDER_KINDS = ['title', 'subtitle', 'body', 'picture'] as const;
 
 /**
  * One of {@link PPTX_PLACEHOLDER_KINDS}.

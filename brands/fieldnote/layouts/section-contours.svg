@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <!-- Section divider art: survey contour lines rising off the bottom right, and a rule under the title. -->
+  <g fill="none" stroke="#fffdf8" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke-width="2" opacity="0.28" transform="translate(1560 250) scale(1 -1)">
+      <path d="M-560 280 C-520 120 -380 20 -200 -10 C-20 -40 140 -120 260 -60 C380 0 430 140 420 320"/>
+      <path d="M-470 280 C-440 160 -330 80 -190 52 C-50 24 90 -40 190 8 C290 56 330 160 320 320"/>
+      <path d="M-380 300 C-360 200 -280 140 -170 116 C-60 92 40 40 120 76 C200 112 230 190 220 320"/>
+      <path d="M-290 320 C-280 250 -230 200 -150 180 C-70 160 -10 124 50 148 C110 172 130 230 120 320"/>
+      <path d="M-200 330 C-196 290 -170 262 -120 250 C-70 238 -40 216 -4 230 C32 244 40 280 36 330"/>
+    </g>
+    <line x1="144" y1="842" x2="1180" y2="842" stroke-width="2" opacity="0.7"/>
+    <line x1="144" y1="852" x2="1180" y2="852" stroke-width="1" opacity="0.4"/>
+    <circle cx="1180" cy="842" r="7" stroke-width="2" opacity="0.8"/>
+  </g>
+</svg>

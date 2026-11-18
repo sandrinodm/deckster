@@ -47,6 +47,13 @@
     animation: kit-chrome-out var(--brand-transition-duration) var(--brand-transition-easing) both;
   }
 
+  .kit-chrome-page-box {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .kit-chrome-corner {
     position: absolute;
     display: flex;

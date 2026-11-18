@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <!-- Two-column art on paper: a rule under the title and a column divider with a terracotta pip. -->
+  <g fill="none" stroke-linecap="round">
+    <line x1="144" y1="292" x2="1776" y2="292" stroke="#40382e" stroke-width="2" opacity="0.7"/>
+    <line x1="144" y1="302" x2="1776" y2="302" stroke="#40382e" stroke-width="1" opacity="0.4"/>
+    <line x1="960" y1="350" x2="960" y2="900" stroke="#cdbfa5" stroke-width="2"/>
+    <circle cx="960" cy="350" r="7" fill="#c0603a" stroke="none"/>
+  </g>
+</svg>

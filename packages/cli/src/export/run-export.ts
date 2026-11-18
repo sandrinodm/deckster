@@ -3,6 +3,7 @@ import type { FileSystem, Scope } from 'effect';
 
 import {
   dryRunReport,
+  layoutArtCount,
   systemFontsStyle,
   type AssembledPdf,
   type DryRunReport,
@@ -196,7 +197,10 @@ const exportFromPage = Effect.fn('exportFromPage')(function* (
   const pdfFile = fileFor(options, 'pdf', base);
   const wantsPdf = options.formats.has('pdf') && !options.dryRun;
   const wantsPptx = options.formats.has('pptx') || options.dryRun || options.verify;
-  const catalog = yield* loadLayoutCatalog();
+  const catalog = yield* loadLayoutCatalog(undefined, {
+    brand: opened.brand.tokens,
+    layoutsFile: opened.brand.layoutsFile,
+  });
   const contracts = [...catalog.values()].map((layout) => layout.contract);
   // The PPTX is measured before the PDF is printed, which sets the slides in the static font
   // instances; a PDF alone measures the slides only to know which instances to cut.
@@ -215,6 +219,12 @@ const exportFromPage = Effect.fn('exportFromPage')(function* (
             layout: entry.target.slide.layout,
             step: entry.target.stepLabel,
             plan: entry.input.plan,
+            layoutArt: layoutArtCount(
+              entry.input,
+              capture.captured.map((other) => other.input),
+              opened.brand.tokens,
+              options.mode,
+            ),
           })),
         );
   if (options.dryRun || capture === null || !wantsPptx) {

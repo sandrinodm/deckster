@@ -30,8 +30,18 @@ export {
   nodeHookArguments,
   playwrightInstallCommand,
 } from '#node/framework-root.ts';
+export {
+  findLayoutInBrands,
+  resetLayoutCache,
+  type LayoutInBrand,
+} from '#node/find-layout-in-brands.ts';
 export { resolveFontFiles, type ResolvedFonts } from '#node/font-files.ts';
-export { loadBrand, type LoadedBrand } from '#node/load-brand.ts';
+export {
+  loadBrand,
+  type BrandRead,
+  type LoadBrandOptions,
+  type LoadedBrand,
+} from '#node/load-brand.ts';
 export {
   gatedLoad,
   holdCode,

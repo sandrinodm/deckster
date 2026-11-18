@@ -15,13 +15,19 @@ import {
   listBrands,
   type BrandLocation,
 } from '#node/brand-paths.ts';
-import { gatedLoad, isCodeHeld, rememberLoaded } from '#node/code-gate.ts';
+import { forgetLoaded, gatedLoad, isCodeHeld, rememberLoaded } from '#node/code-gate.ts';
 import { resolveFontFiles } from '#node/font-files.ts';
 import { FRAMEWORK_ROOT } from '#node/framework-root.ts';
-import { BRAND_CALLEE } from '#node/static-module.ts';
+import {
+  BRAND_CALLEE,
+  LAYOUTS_CALLEE,
+  readStaticModule,
+  type StaticCallee,
+} from '#node/static-module.ts';
 import { recoverTurnsForBrand } from '#node/turn-guard.ts';
-import { resolveBrand } from '#resolve/resolve-brand.ts';
+import { resolveBrand, type LayoutsSource } from '#resolve/resolve-brand.ts';
 import { DEFAULT_BRAND } from '#schema/brand-schema.ts';
+import { LAYOUTS_FILE } from '#schema/layout-schema.ts';
 import { isSafeName, SAFE_NAME_RULE } from '#schema/safe-name.ts';
 import { brandError, type BrandError, type BrandProblem } from '#validate/brand-error.ts';
 import { pickFrom } from '#validate/suggest.ts';
@@ -33,9 +39,128 @@ const SHAPE_FIX =
   'Export the brand as `export default defineBrand({ ... })` from "@deckster/brand".';
 
 /**
+ * The fix for a layouts file whose default export is missing or cannot be read.
+ */
+const LAYOUTS_SHAPE_FIX =
+  'Export the layouts as `export default defineBrandLayouts([ ... ])` from "@deckster/brand".';
+
+/**
  * The summary of every failure to import a brand file.
  */
 const UNREADABLE_SUMMARY = 'Could not read the brand';
+
+/**
+ * The summary of every failure to import a layouts file.
+ */
+const UNREADABLE_LAYOUTS_SUMMARY = 'Could not read the layouts';
+
+/**
+ * What differs between reading `brand.ts` and `layouts.ts`: the one function the file may call, the
+ * messages, and the shape of its default export.
+ */
+type ModuleKind = {
+  /**
+   * The function the default export may be wrapped in.
+   */
+  callee: StaticCallee;
+
+  /**
+   * The summary of a failure to read the file.
+   */
+  summary: string;
+
+  /**
+   * The fix for a file with no usable default export.
+   */
+  shapeFix: string;
+
+  /**
+   * What the file holds, for messages: `the brand` or `the layouts`.
+   */
+  noun: string;
+
+  /**
+   * Whether a default export has the right shape.
+   */
+  accepts: (value: unknown) => boolean;
+};
+
+/**
+ * Reading `brand.ts`.
+ */
+const BRAND_MODULE: ModuleKind = {
+  /**
+   * The function a brand file wraps its literal in.
+   */
+  callee: BRAND_CALLEE,
+
+  /**
+   * The summary of a failure to read the brand file.
+   */
+  summary: UNREADABLE_SUMMARY,
+
+  /**
+   * The fix for a brand file with no usable default export.
+   */
+  shapeFix: SHAPE_FIX,
+
+  /**
+   * What the file holds.
+   */
+  noun: 'the brand',
+
+  /**
+   * A brand is an object.
+   */
+  accepts: Predicate.isObject,
+};
+
+/**
+ * Reading `layouts.ts`, whose default export is a list.
+ */
+const LAYOUTS_MODULE: ModuleKind = {
+  /**
+   * The function a layouts file wraps its list in.
+   */
+  callee: LAYOUTS_CALLEE,
+
+  /**
+   * The summary of a failure to read the layouts file.
+   */
+  summary: UNREADABLE_LAYOUTS_SUMMARY,
+
+  /**
+   * The fix for a layouts file with no usable default export.
+   */
+  shapeFix: LAYOUTS_SHAPE_FIX,
+
+  /**
+   * What the file holds.
+   */
+  noun: 'the layouts',
+
+  /**
+   * The layouts are a list.
+   */
+  accepts: Array.isArray,
+};
+
+/**
+ * How {@link loadBrand} reads a brand file: `import` runs it, as a brand in the workspace is run;
+ * `data` reads it as a plain data literal without running it, and fails when it is more than that,
+ * for a brand fetched from elsewhere that has not been installed yet.
+ */
+export type BrandRead = 'import' | 'data';
+
+/**
+ * Options for {@link loadBrand}.
+ */
+export type LoadBrandOptions = {
+  /**
+   * How to read the brand file; `import` by default.
+   */
+  read?: BrandRead;
+};
 
 /**
  * A brand that passed every check, compiled and ready to serve.
@@ -73,6 +198,11 @@ export type LoadedBrand = {
   backgroundFiles: Readonly<Record<string, string>>;
 
   /**
+   * The absolute path of the brand's `layouts.ts`, or `undefined` when it has none.
+   */
+  layoutsFile: string | undefined;
+
+  /**
    * Findings that do not stop the build, such as waived contrast or fonts with no files.
    */
   warnings: readonly BrandProblem[];
@@ -85,13 +215,16 @@ export type LoadedBrand = {
  *
  * @param workspaceRoot - The absolute workspace root (the folder with `brands/`).
  * @param name - The brand folder name.
+ * @param options - How to read the brand file.
  * @throws BrandError in the error channel, naming the brand file, each problem's field and its fix:
- *   a brand that does not exist (with the brands that do), fails to import, fails validation, has a
- *   `name` that differs from its folder, or names fonts or logo files that cannot be found.
+ *   a brand that does not exist (with the brands that do), fails to import (or, read as data, is
+ *   more than a data literal), fails validation, has a `name` that differs from its folder, or
+ *   names fonts or logo files that cannot be found.
  */
 export const loadBrand = Effect.fn('loadBrand')(function* (
   workspaceRoot: string,
   name: string,
+  options: LoadBrandOptions = {},
 ): Effect.fn.Return<LoadedBrand, BrandError, FileSystem.FileSystem> {
   const location = yield* locateBrand(workspaceRoot, name);
   yield* assertExists(workspaceRoot, location);
@@ -110,11 +243,14 @@ export const loadBrand = Effect.fn('loadBrand')(function* (
     );
   }
 
-  const exported = yield* importBrand(location);
-  const resolved = yield* resolveBrand(exported, {
-    source: location.displayPath,
-    file: location.file,
-  });
+  const read = options.read ?? 'import';
+  const exported = yield* importModule(location, read, BRAND_MODULE);
+  const layouts = yield* importLayouts(location, read);
+  const resolved = yield* resolveBrand(
+    exported,
+    { source: location.displayPath, file: location.file },
+    layouts?.source,
+  );
   const { tokens } = resolved;
   const fonts = yield* resolveFontFiles(tokens.typography, location);
   const logos = yield* resolveLogoFiles(tokens, location);
@@ -125,8 +261,14 @@ export const loadBrand = Effect.fn('loadBrand')(function* (
     ...logos.problems,
     ...backgrounds.problems,
   ];
-  if (problems.length > 0) {
-    return yield* failure(location, 'The brand cannot be loaded', problems);
+  const layoutProblems = problems.filter(inLayouts);
+  const brandProblems = problems.filter((problem) => !inLayouts(problem));
+  if (brandProblems.length > 0) {
+    return yield* failure(location, 'The brand cannot be loaded', brandProblems);
+  }
+
+  if (layoutProblems.length > 0 && layouts !== undefined) {
+    return yield* failure(layouts.location, 'The layouts cannot be loaded', layoutProblems);
   }
 
   const compiled = yield* Effect.try({
@@ -150,6 +292,7 @@ export const loadBrand = Effect.fn('loadBrand')(function* (
     compiled,
     logoFiles: logos.files,
     backgroundFiles: backgrounds.files,
+    layoutsFile: layouts?.location.file,
     warnings: [...resolved.warnings, ...fonts.warnings, ...backgrounds.warnings],
   };
 });
@@ -236,26 +379,35 @@ const availableBrands = Effect.fn('availableBrands')(function* (
 });
 
 /**
- * Imports the brand file and returns its default export, which must be an object.
+ * Imports a brand's `brand.ts` or `layouts.ts`, or reads it as data, and returns its default
+ * export, which must have the shape of the kind of file.
  *
- * @param location - The brand to import.
+ * @param location - The file to import; `location.file` is the file itself.
+ * @param read - Whether to import the file or read it as a data literal.
+ * @param kind - Which file it is.
  */
-const importBrand = Effect.fn('importBrand')(function* (
+const importModule = Effect.fn('importModule')(function* (
   location: BrandLocation,
+  read: BrandRead,
+  kind: ModuleKind,
 ): Effect.fn.Return<object, BrandError, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
   const text = yield* fs
     .readFileString(location.file)
     .pipe(
       Effect.mapError((error) =>
-        failure(location, UNREADABLE_SUMMARY, [
-          { path: '', message: error.message, fix: `Fix that error. ${SHAPE_FIX}` },
+        failure(location, kind.summary, [
+          { path: '', message: error.message, fix: `Fix that error. ${kind.shapeFix}` },
         ]),
       ),
     );
-  const gate = gatedLoad(location.file, text, BRAND_CALLEE);
+  if (read === 'data') {
+    return yield* readModuleData(location, text, kind);
+  }
+
+  const gate = gatedLoad(location.file, text, kind.callee);
   if (gate.kind === 'held') {
-    return yield* failure(location, UNREADABLE_SUMMARY, [
+    return yield* failure(location, kind.summary, [
       {
         path: '',
         message:
@@ -271,25 +423,159 @@ const importBrand = Effect.fn('importBrand')(function* (
     : Effect.tryPromise({
         try: (): Promise<unknown> => import(/* @vite-ignore */ url),
         catch: (error) =>
-          failure(location, UNREADABLE_SUMMARY, [
+          failure(location, kind.summary, [
             {
               path: '',
               message:
                 'Importing it failed: ' + (error instanceof Error ? error.message : String(error)),
-              fix: `Fix that error. ${SHAPE_FIX}`,
+              fix: `Fix that error. ${kind.shapeFix}`,
             },
           ]),
       });
   const exported = Predicate.isObjectOrArray(module) ? Reflect.get(module, 'default') : undefined;
-  if (!Predicate.isObject(exported)) {
-    return yield* failure(location, UNREADABLE_SUMMARY, [
-      { path: '', message: 'The file has no default export with the brand.', fix: SHAPE_FIX },
-    ]);
+  if (!kind.accepts(exported)) {
+    return yield* noDefaultExport(location, kind);
   }
 
   rememberLoaded(location.file, exported);
   return exported;
 });
+
+/**
+ * Reads a brand's `brand.ts` or `layouts.ts` as a data literal, without running it.
+ *
+ * @param location - The file's location.
+ * @param text - The file's content.
+ * @param kind - Which file it is.
+ * @throws BrandError in the error channel when the file is more than `export default <callee>(...)`
+ *   around a literal, or the literal has the wrong shape.
+ */
+const readModuleData = Effect.fn('readModuleData')(function* (
+  location: BrandLocation,
+  text: string,
+  kind: ModuleKind,
+): Effect.fn.Return<object, BrandError> {
+  const read = readStaticModule(text, kind.callee);
+  if (!read.ok) {
+    return yield* failure(location, kind.summary, [
+      {
+        path: '',
+        message: `${capitalized(kind.noun)} is read as data without running it, so it must be plain data. ${read.reason}`,
+        fix:
+          `Write ${kind.noun} as \`export default ${kind.callee.name}(...)\` around a plain ` +
+          'literal: no variables, function calls, spreads or imports besides ' +
+          `${kind.callee.name}.`,
+      },
+    ]);
+  }
+
+  if (!kind.accepts(read.value) || typeof read.value !== 'object' || read.value === null) {
+    return yield* noDefaultExport(location, kind);
+  }
+
+  return read.value;
+});
+
+/**
+ * The failure for a file whose default export is missing or has the wrong shape.
+ *
+ * @param location - The file's location.
+ * @param kind - Which file it is.
+ */
+function noDefaultExport(location: BrandLocation, kind: ModuleKind): BrandError {
+  return failure(location, kind.summary, [
+    {
+      path: '',
+      message: `The file has no default export with ${kind.noun}.`,
+      fix: kind.shapeFix,
+    },
+  ]);
+}
+
+/**
+ * A text with its first letter in upper case.
+ *
+ * @param text - Any text.
+ */
+function capitalized(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * A brand's `layouts.ts`: where it is and what it exports.
+ */
+type ImportedLayouts = {
+  /**
+   * Where the layouts file is, shaped like a brand location so errors can name it.
+   */
+  location: BrandLocation;
+
+  /**
+   * What {@link resolveBrand} takes for the layouts.
+   */
+  source: LayoutsSource;
+};
+
+/**
+ * Imports the brand's `layouts.ts` when it has one.
+ *
+ * @param location - The brand.
+ * @param read - Whether to import the file or read it as a data literal.
+ * @returns The layouts file, or `undefined` when the brand has none.
+ */
+const importLayouts = Effect.fn('importLayouts')(function* (
+  location: BrandLocation,
+  read: BrandRead,
+): Effect.fn.Return<ImportedLayouts | undefined, BrandError, FileSystem.FileSystem> {
+  const file = path.join(location.dir, LAYOUTS_FILE);
+  if (!(yield* fileExists(file))) {
+    forgetLoaded(file);
+    return undefined;
+  }
+
+  const layoutsLocation: BrandLocation = {
+    ...location,
+    file,
+    displayPath: `${BRANDS_DIR}/${location.name}/${LAYOUTS_FILE}`,
+  };
+  if (yield* isUnvouchedNewFile(layoutsLocation)) {
+    return undefined;
+  }
+
+  const input = yield* importModule(layoutsLocation, read, LAYOUTS_MODULE);
+  return {
+    location: layoutsLocation,
+    source: { input, source: layoutsLocation.displayPath, file },
+  };
+});
+
+/**
+ * Whether a layouts file appeared during an agent turn and nothing vouches for it: the turn guard
+ * vouches for what the turn found, so a file it made is not loaded until the turn ends, and the
+ * brand loads without it instead of failing.
+ *
+ * @param location - The layouts file's location.
+ */
+const isUnvouchedNewFile = Effect.fn('isUnvouchedNewFile')(function* (
+  location: BrandLocation,
+): Effect.fn.Return<boolean, never, FileSystem.FileSystem> {
+  if (!isCodeHeld(location.file)) {
+    return false;
+  }
+
+  const fs = yield* FileSystem.FileSystem;
+  const text = yield* fs.readFileString(location.file).pipe(Effect.orElseSucceed(() => ''));
+  return gatedLoad(location.file, text, LAYOUTS_CALLEE).kind === 'held';
+});
+
+/**
+ * Whether a problem is about a layout, by its path.
+ *
+ * @param problem - A problem found while loading.
+ */
+function inLayouts(problem: BrandProblem): boolean {
+  return problem.path.startsWith('layouts[');
+}
 
 /**
  * The brand file's URL with its modification time, which makes Node import an edited brand again.

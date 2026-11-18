@@ -1,11 +1,19 @@
+import type { BrandTokens } from '@deckster/brand';
 import type { AnyLayoutContract } from '@deckster/engine/layout';
 
 import engineCatalog from '@deckster/engine/catalog';
+import { brandLayoutCatalog, checkBrandLayouts } from '@deckster/kit/catalog';
 import { Effect, Predicate } from 'effect';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { invalidLayoutCatalog, type DeckBuildError, type FileRef, type Problem } from '#errors.ts';
+import {
+  invalidBrandLayouts,
+  invalidLayoutCatalog,
+  type DeckBuildError,
+  type FileRef,
+  type Problem,
+} from '#errors.ts';
 import { checkContract } from '#layouts/check-contract.ts';
 
 /**
@@ -26,6 +34,12 @@ export type CatalogLayout = {
    * The package that provides it, such as `@deckster/kit`.
    */
   source: string;
+
+  /**
+   * The kit layout a brand layout falls back to; set only for layouts whose source is
+   * `brand:<name>`.
+   */
+  fallback?: string;
 };
 
 /**
@@ -34,19 +48,43 @@ export type CatalogLayout = {
 export type LayoutCatalogIndex = ReadonlyMap<string, CatalogLayout>;
 
 /**
+ * Options for {@link loadLayoutCatalog}.
+ */
+export type LayoutCatalogOptions = {
+  /**
+   * The deck's brand. Its `layouts` are checked against the other catalogs and appended after them,
+   * with the source `brand:<name>`. Without it, only the catalogs load.
+   */
+  brand?: BrandTokens;
+
+  /**
+   * The absolute path of the brand's `layouts.ts`, so an error names the file; defaults to the
+   * conventional `brands/<name>/layouts.ts`, relative.
+   */
+  layoutsFile?: string | undefined;
+};
+
+/**
  * Loads the engine's layout catalog and then each catalog module in order, in Node. A later
  * catalog's layout replaces an earlier one of the same name, as the runtime plugins' components do;
  * the replaced layout keeps its place in the order. Each module's default export must be a
  * `defineLayoutCatalog(...)` whose contracts pass the build's checks.
  *
+ * With a brand that has layouts, they are checked against the loaded layouts (a clash with a layout
+ * of the catalog, an unknown fallback, bindings the fallback lacks) and appended last, so a brand
+ * layout never replaces another.
+ *
  * @param specifiers - Catalog modules: bare specifiers resolve from this package, absolute paths
  *   are used as they are.
+ * @param options - The deck's brand, whose layouts join the catalog.
  * @returns The layouts by name.
  * @throws DeckBuildError in the error channel naming the catalog file, for a module that does not
- *   load or does not export a catalog, and for every problem with its contracts.
+ *   load or does not export a catalog, and for every problem with its contracts; naming the brand's
+ *   `layouts.ts` for a brand layout that does not fit its fallback.
  */
 export const loadLayoutCatalog = Effect.fn('loadLayoutCatalog')(function* (
   specifiers: readonly string[] = DEFAULT_LAYOUT_CATALOGS,
+  options: LayoutCatalogOptions = {},
 ): Effect.fn.Return<LayoutCatalogIndex, DeckBuildError> {
   const layouts = new Map<string, CatalogLayout>();
   const catalogs = [
@@ -56,6 +94,26 @@ export const loadLayoutCatalog = Effect.fn('loadLayoutCatalog')(function* (
   for (const { ref, exported } of catalogs) {
     for (const layout of yield* readCatalog(exported, ref)) {
       layouts.set(layout.contract.name, layout);
+    }
+  }
+
+  const { brand } = options;
+  if (brand !== undefined && brand.layouts.length > 0) {
+    const ref = brandLayoutsRef(brand, options.layoutsFile);
+    const base = [...layouts.values()].map((layout) => layout.contract);
+    const { errors } = checkBrandLayouts(brand.layouts, base);
+    if (errors.length > 0) {
+      return yield* invalidBrandLayouts(
+        ref,
+        errors.map(({ path: field, message, fix }) => ({ message: `${field}: ${message}`, fix })),
+      );
+    }
+
+    const exported = brandLayoutCatalog(brand, base) as unknown;
+    const fallbacks = new Map(brand.layouts.map((layout) => [layout.name, layout.fallback]));
+    for (const layout of yield* readCatalog(exported, ref)) {
+      const fallback = fallbacks.get(layout.contract.name);
+      layouts.set(layout.contract.name, fallback === undefined ? layout : { ...layout, fallback });
     }
   }
 
@@ -132,4 +190,15 @@ function catalogRef(specifier: string): FileRef {
     ? specifier
     : fileURLToPath(import.meta.resolve(specifier));
   return { file, displayPath: specifier };
+}
+
+/**
+ * The brand's `layouts.ts`, for messages.
+ *
+ * @param brand - The brand.
+ * @param file - The absolute path of its `layouts.ts`, when known.
+ */
+function brandLayoutsRef(brand: BrandTokens, file: string | undefined): FileRef {
+  const displayPath = `brands/${brand.name}/layouts.ts`;
+  return { file: file ?? displayPath, displayPath };
 }

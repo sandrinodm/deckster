@@ -78,6 +78,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
   const PERCENT = 100;
   const FULL_BLEED_TOLERANCE_PX = 2;
   const BACKDROP_SELECTOR = '[data-backdrop]';
+  const SLIDE_IMAGE_SELECTOR = '[data-backdrop-layer="slide"]';
   const SAME_BOX_TOLERANCE_PX = 3;
   // An inline element's background (a code chip, a highlight) paints under the text of the
   // paragraph it sits in, which is recorded at the paragraph's index plus a quarter.
@@ -2270,6 +2271,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
     const rect = toRect(bounds);
     const layer = paintLayer(element);
     const inBackdrop = element.closest(BACKDROP_SELECTOR) !== null;
+    const inSlideImage = inBackdrop && element.closest(SLIDE_IMAGE_SELECTOR) !== null;
     const base = {
       id,
       parent,
@@ -2282,6 +2284,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
       step: stepOf(element),
       replacedAt: replacedAtOf(element),
       ...(inBackdrop ? { backdrop: true as const } : {}),
+      ...(inSlideImage ? { slideImage: true as const } : {}),
     };
     const chartSpec = element.getAttribute(CHART_ATTRIBUTE);
     const diagramSpec = element.getAttribute(DIAGRAM_ATTRIBUTE);

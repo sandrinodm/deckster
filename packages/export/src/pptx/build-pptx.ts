@@ -5,6 +5,7 @@ import { Effect } from 'effect';
 
 import type { OpcPackage } from '#ooxml/opc-package.ts';
 import type { PptxDeckInput, PptxSlideInput } from '#pptx/deck-input.ts';
+import type { LayoutSource } from '#pptx/layout-art.ts';
 import type { LayoutSpec, MasterSpec } from '#pptx/layout-specs.ts';
 import type { IdAllocator } from '#pptx/shape-xml.ts';
 import type { TextContext } from '#pptx/text-xml.ts';
@@ -25,7 +26,7 @@ import {
 import { embedMedia } from '#pptx/media.ts';
 import { CONTENT_TYPE, PML_NAMESPACES, REL } from '#pptx/namespaces.ts';
 import { backdropFallbackXml, grainXml } from '#pptx/shape-xml.ts';
-import { slideXml, type SlideWriteResult } from '#pptx/slide-xml.ts';
+import { layoutArtXml, slideXml, type SlideWriteResult } from '#pptx/slide-xml.ts';
 import { surfaceThemes, themeXml } from '#pptx/theme.ts';
 import { CANVAS_HEIGHT_PX, CANVAS_WIDTH_PX, EMU_PER_INCH, SLIDE_SIZE_EMU } from '#units.ts';
 
@@ -83,6 +84,12 @@ const VIEW_GRID_SPACING_EMU = 76_200;
  * The fractional seconds of an ISO timestamp, which the document properties leave out.
  */
 const FRACTIONAL_SECONDS = /\.\d{3}Z$/;
+
+/**
+ * The `Application` the document properties name, which the brand importer reads to recognise a
+ * deckster export.
+ */
+export const APPLICATION_NAME = 'deckster';
 
 /**
  * Notes page size in EMU: portrait letter, as PowerPoint writes it.
@@ -365,16 +372,7 @@ function writeMaster(
   const pictureId =
     picture !== null && theme.texture === 'picture' ? embedMedia(pkg, path, picture) : null;
   const nextId = idsAfter(MASTER_SHAPE_IDS);
-  const canvas = masterCanvas(input);
-  const fallback =
-    picture !== null && theme.texture !== 'picture' && theme.background.kind !== 'solid'
-      ? backdropFallbackXml(canvas, nextId(), embedMedia(pkg, path, picture))
-      : '';
-  const tile = texture?.grain ?? null;
-  const grain =
-    tile !== null && theme.texture === 'grain'
-      ? grainXml(canvas, nextId(), embedMedia(pkg, path, tile.data), tile.size)
-      : '';
+  const background = masterBackdropShapes(pkg, input, theme, path, nextId);
   const chrome = chromeXml(pkg, path, spec.chrome, nextId, context, input.brand.label);
   const slideNumber =
     spec.slideNumber === null ? '' : slideNumberPlaceholderXml(spec.slideNumber, nextId(), context);
@@ -386,12 +384,46 @@ function writeMaster(
       input.brand,
       masterBackground(theme, pictureId),
       layouts,
-      fallback + grain + chrome + slideNumber,
+      background + chrome + slideNumber,
       input.lang,
     ),
     CONTENT_TYPE.slideMaster,
   );
   return { spec, path, id: masterId, layouts };
+}
+
+/**
+ * The shapes a master draws over its background: the picture fallback of a native gradient and the
+ * grain tiled over it, in `hybrid` mode.
+ *
+ * @param pkg - The package.
+ * @param input - The deck.
+ * @param theme - The master's theme.
+ * @param ownerPath - The part the shapes go in: the master, or a layout that hides the master's
+ *   shapes and draws them itself.
+ * @param nextId - The part's shape id allocator.
+ * @returns The shapes' markup, empty for a surface without texture.
+ */
+function masterBackdropShapes(
+  pkg: OpcPackage,
+  input: PptxDeckInput,
+  theme: SurfaceTheme,
+  ownerPath: string,
+  nextId: IdAllocator,
+): string {
+  const texture = input.mode === 'hybrid' ? input.surfaceTextures.get(theme.surface) : undefined;
+  const picture = texture?.picture ?? null;
+  const canvas = masterCanvas(input);
+  const fallback =
+    picture !== null && theme.texture !== 'picture' && theme.background.kind !== 'solid'
+      ? backdropFallbackXml(canvas, nextId(), embedMedia(pkg, ownerPath, picture))
+      : '';
+  const tile = texture?.grain ?? null;
+  const grain =
+    tile !== null && theme.texture === 'grain'
+      ? grainXml(canvas, nextId(), embedMedia(pkg, ownerPath, tile.data), tile.size)
+      : '';
+  return fallback + grain;
 }
 
 /**
@@ -453,7 +485,10 @@ function writeMasterLayouts(
     ids.layouts += 1;
     const layoutPath = `ppt/slideLayouts/slideLayout${ids.layouts}.xml`;
     const nextId = idsAfter(LAYOUT_SHAPE_IDS);
-    const own = layoutOwnXml(pkg, input, layout, layoutPath, nextId, context);
+    const backdrop =
+      layout.art === null ? '' : masterBackdropShapes(pkg, input, spec.theme, layoutPath, nextId);
+    const art = backdrop + layoutArtShapes(pkg, input, spec, layout, layoutPath, nextId);
+    const own = art + layoutOwnXml(pkg, input, layout, layoutPath, nextId, context);
     const inherited =
       layout.chrome === null && spec.slideNumber !== null
         ? slideNumberPlaceholderXml(spec.slideNumber, nextId(), context)
@@ -473,6 +508,45 @@ function writeMasterLayouts(
       rId: pkg.relate(masterPath, REL.slideLayout, layoutPath),
     };
   });
+}
+
+/**
+ * The art a brand layout draws once for all its slides, as the first shapes of its layout part.
+ *
+ * @param pkg - The package.
+ * @param input - The deck.
+ * @param spec - The master's spec.
+ * @param layout - The layout's spec.
+ * @param layoutPath - The layout part's path.
+ * @param nextId - The layout's shape id allocator.
+ * @returns The shapes' markup, empty for a layout without art.
+ */
+function layoutArtShapes(
+  pkg: OpcPackage,
+  input: PptxDeckInput,
+  spec: MasterSpec,
+  layout: LayoutSpec,
+  layoutPath: string,
+  nextId: IdAllocator,
+): string {
+  if (layout.art === null) {
+    return '';
+  }
+
+  const options = {
+    mode: input.mode,
+    brand: input.brand,
+    theme: spec.theme,
+    placeholders: undefined,
+    contract: undefined,
+    animate: false,
+    outlineFonts: null,
+    slideNumber: 0,
+    resolveSlide: () => null,
+    slideIds: input.slideIds,
+    ...(input.fonts === null ? {} : { font: input.fonts.resolve }),
+  };
+  return layoutArtXml(pkg, layoutPath, layout.art, options, nextId);
 }
 
 /**
@@ -580,6 +654,21 @@ function slideNumberSpecOf(place: SlidePlace): MasterSpec['slideNumber'] {
 }
 
 /**
+ * What the slide's layout part draws, when the layout has art: the art, and the chrome the layout
+ * draws itself.
+ *
+ * @param place - Where the slide goes and what it builds on.
+ */
+function layoutSourceOf(place: SlidePlace): LayoutSource | undefined {
+  const spec = place.layout?.spec;
+  if (spec === undefined || spec.art === null) {
+    return undefined;
+  }
+
+  return { art: spec.art, chrome: spec.chrome ?? [] };
+}
+
+/**
  * Resolves a deck slide index to the part of its first exported slide, for slide links. A slide
  * that was not exported links nowhere.
  *
@@ -615,6 +704,7 @@ function writeSlideBody(
     brand: input.brand,
     theme,
     placeholders: place.layout?.spec,
+    layoutSource: layoutSourceOf(place),
     contract: input.layouts.find((contract) => contract.name === (place.layout?.spec.name ?? '')),
     animate: input.animate,
     outlineFonts: input.outlineFonts,
@@ -883,6 +973,21 @@ function presentationXml(
 }
 
 /**
+ * A version in the `XX.YYYY` form Office's `AppVersion` takes: the major version, then the minor
+ * and patch versions as two digits each (`0.5.2` is `0.0502`).
+ *
+ * @param version - A `major.minor.patch` version; missing or malformed parts count as zero.
+ */
+export function appVersionOf(version: string): string {
+  const [major, minor, patch] = version.split('.').map((part) => Number.parseInt(part, 10) || 0);
+  /**
+   * A version part as two digits.
+   */
+  const pad = (value: number | undefined): string => String(value ?? 0).padStart(2, '0');
+  return `${major ?? 0}.${pad(minor)}${pad(patch)}`;
+}
+
+/**
  * Writes the core and extended document properties: title, language, application and dates.
  *
  * @param pkg - The package.
@@ -916,7 +1021,8 @@ function writeDocumentProperties(pkg: OpcPackage, input: PptxDeckInput): void {
         xmlns: 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties',
         'xmlns:vt': 'http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes',
       },
-      el('Application', {}, 'deck'),
+      el('Application', {}, APPLICATION_NAME),
+      input.appVersion === undefined ? '' : el('AppVersion', {}, appVersionOf(input.appVersion)),
       el('Slides', {}, String(input.slides.length)),
       el('PresentationFormat', {}, 'Widescreen'),
     );

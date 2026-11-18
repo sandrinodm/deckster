@@ -40,6 +40,26 @@ frontmatter. The dark surfaces show the `reversed` logo.
   brand's own `note` card is an ochre slip with a terracotta rule down its left side, for the one
   node a slide annotates.
 
+## Layouts
+
+[`layouts.ts`](layouts.ts) brings four layouts, the ones a research group's template would carry.
+Each is data: boxes on the 1920x1080 canvas over a drawing in [`layouts/`](layouts), in the
+palette. A deck on another brand renders a slide that names one of them with its fallback.
+
+| Layout              | Label                 | Falls back to | Default surface | What it is                                                                                                                                  |
+| ------------------- | --------------------- | ------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fieldnote-cover`   | Fieldnote cover       | `title`       | `inverse`       | Notebook margin rule and a sprig mark; eyebrow, title, subtitle, byline and date. Paper art on the default surface. No logo or page number. |
+| `fieldnote-section` | Fieldnote section     | `section`     | `accent`        | A part number set large, the title low on the left over contour lines, a one-line summary.                                                  |
+| `fieldnote-photo`   | Fieldnote photo right | `image`       | `default`       | Text on the left, a picture that bleeds off the right and bottom edges; the page number moves to the foot of the text column.               |
+| `fieldnote-columns` | Fieldnote two columns | `content`     | `default`       | Title under an eyebrow, then a main column and an `<Aside>` split by a hairline. Forest art on the inverse surface.                         |
+
+```sh
+pnpm deck layouts brand-layouts --summary   # the four first, then the kit's
+pnpm deck brand check fieldnote
+```
+
+[`decks/brand-layouts`](../../decks/brand-layouts) uses all four.
+
 ```sh
 pnpm deck brand check fieldnote   # "fieldnote: is valid (0 errors, 0 warnings)."
 pnpm deck shot hello --brand fieldnote

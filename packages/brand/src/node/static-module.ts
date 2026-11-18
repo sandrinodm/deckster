@@ -96,6 +96,21 @@ export const BRAND_CALLEE: StaticCallee = {
 };
 
 /**
+ * The callee of a brand's layouts file.
+ */
+export const LAYOUTS_CALLEE: StaticCallee = {
+  /**
+   * The function.
+   */
+  name: 'defineBrandLayouts',
+
+  /**
+   * Its package.
+   */
+  from: '@deckster/brand',
+};
+
+/**
  * A parsed syntax node, as far as this module reads it.
  */
 type AstNode = Readonly<Record<string, unknown>> & {

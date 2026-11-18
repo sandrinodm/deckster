@@ -50,6 +50,12 @@ export type DryRunSlide = {
   counts: Record<PlanNote['outcome'], number>;
 
   /**
+   * How many of the counted elements are the art of a brand layout, which the layout's part draws
+   * once instead of the slide.
+   */
+  layoutArt: number;
+
+  /**
    * Every element that is a picture, simplified or dropped, with why.
    */
   findings: PlanNote[];
@@ -104,6 +110,12 @@ export type PlannedSlide = {
    * The plan.
    */
   plan: ScenePlan;
+
+  /**
+   * How many of the plan's elements are the art of a brand layout, which lives in the layout part;
+   * zero when absent.
+   */
+  layoutArt?: number;
 };
 
 /**
@@ -127,6 +139,7 @@ export function dryRunReport(mode: ExportMode, slides: readonly PlannedSlide[]):
       layout: slide.layout,
       step: slide.step,
       counts,
+      layoutArt: slide.layoutArt ?? 0,
       findings: slide.plan.notes.filter((note) => note.outcome !== 'native'),
     };
   });
@@ -145,7 +158,8 @@ export function formatDryRun(report: DryRunReport): string {
     const { native, picture, simplified, dropped } = slide.counts;
     const number = String(slide.number).padStart(SLIDE_NUMBER_WIDTH, '0');
     const counts = `${native} / ${picture} / ${simplified} / ${dropped}`;
-    lines.push(`${number} ${slide.id}${step} [${slide.layout}]: ${counts}`);
+    const art = slide.layoutArt === 0 ? '' : `, art in layout: ${slide.layoutArt}`;
+    lines.push(`${number} ${slide.id}${step} [${slide.layout}${art}]: ${counts}`);
     for (const finding of slide.findings) {
       const outcome = finding.outcome.padEnd(OUTCOME_WIDTH);
       const what = finding.what.padEnd(WHAT_WIDTH);

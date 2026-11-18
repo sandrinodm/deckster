@@ -518,6 +518,24 @@ def build_verdant(out: Path) -> None:
     shutil.rmtree(tmp)
 
 
+def build_layout_templates(out: Path) -> None:
+    """The slideless template for the brand-layouts cases (make_template.py, standard library only): a .potx with two
+    slide masters and 13 layouts (unused layouts, a picture placeholder, decoration and fixed text, custom prompts,
+    same-named layouts on both masters, a placeholder inside a group), its 4:3 copy, and a package that carries the
+    deckster export's app.xml."""
+    import importlib.util  # noqa: PLC0415
+
+    spec = importlib.util.spec_from_file_location("make_template", Path(__file__).with_name("make_template.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    tmp = out / "_layout_tmp"
+    tmp.mkdir(exist_ok=True)
+    mod.main_build(tmp)
+    for src, dst in (("template.potx", "layout-template.potx"), ("template-4x3.potx", "layout-template-4x3.potx"), ("template-deckster.pptx", "layout-template-deckster.pptx"), ("template-deckster-old.pptx", "layout-template-deckster-old.pptx")):
+        shutil.copy(tmp / src, out / dst)
+    shutil.rmtree(tmp)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, required=True)
@@ -536,6 +554,7 @@ def main() -> None:
             urllib.request.urlretrieve(f"https://cdn.jsdelivr.net/npm/@fontsource/{pkg}/LICENSE", licence)
     build_halcyon(out, fonts)
     build_verdant(out)
+    build_layout_templates(out)
     if args.fonts_cache is None:
         shutil.rmtree(fonts)
     print("fixtures written to", out)

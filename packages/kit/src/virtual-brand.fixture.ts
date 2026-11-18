@@ -11,8 +11,9 @@ export const logoUrls: Readonly<Record<string, string>> = {};
 export const backgroundUrls: Readonly<Record<string, string>> = {};
 
 /**
- * Empty tokens; reading any of them in a test is a mistake the test should surface.
+ * Empty tokens, with no brand layouts; reading any other token in a test is a mistake the test
+ * should surface.
  */
-const tokens = {};
+const tokens = { layouts: [] };
 
 export default tokens;

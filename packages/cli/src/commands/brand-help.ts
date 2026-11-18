@@ -23,8 +23,14 @@ Prints a brand's resolved tokens, or validates a brand without rendering a deck.
                            diagramCards holds each card's colors and shadow there, after any
                            recoloring the surface writes, with nodeFill (the fill is that
                            surface's diagram node color). Colors are hex, sizes canvas px.
+                           It also prints the number and names of the brand's own layouts
+                           (brands/<name>/layouts.ts). With --json, layouts has each
+                           layout with its defaults filled in.
   deck brand check <name>  Loads and validates brands/<name> and prints every error and warning
-                           with its field and fix. Exits with 1 when it has errors.
+                           with its field and fix. This includes its layouts: each must name a
+                           kit or engine layout as its fallback, bind only slots and fields that
+                           layout has, bind every one it requires, and not clash with a kit
+                           layout's name. Exits with 1 when it has errors.
 
 Options:
   --json        For check: { brand, file, ok, errors, warnings }, each problem { path, message,

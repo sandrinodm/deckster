@@ -8,6 +8,9 @@ Usage:
   uv run extract_pptx.py <deck.pptx> --out <dir>
       [--no-render] [--pdf <already-exported.pdf>] [--soffice "<command>"] [--renderer auto|soffice|keynote|none]
 
+Reads .pptx, .potx (template), .potm and .pptm (macro-enabled; the macros are never read or run). Every slide
+layout under every slide master is extracted, used or not, and rendered as a probe (see render_layouts).
+
 The OOXML parse uses only the standard library. Rendering slides to PNG needs one of:
   - LibreOffice (`soffice` on PATH, or --soffice "docker run ... soffice") plus poppler's `pdftoppm`
   - a PDF you exported yourself from PowerPoint, Keynote or Google Slides (--pdf)
@@ -15,7 +18,9 @@ The OOXML parse uses only the standard library. Rendering slides to PNG needs on
 
 Writes:
   <out>/extraction.json
-  <out>/pages/page-NNN.png, <out>/pages/contact-sheet.png   (when rendering is available)
+  <out>/pages/page-NNN.png, <out>/pages/contact-sheet.png   (when rendering is available and the file has slides)
+  <out>/layouts/<key>.svg|png, ref-<key>.png, *-sheet.png    one art SVG (placeholders and background removed), one art
+                                                             preview and one filled reference render per slide layout
   <out>/assets/media/                                        every file from ppt/media
   <out>/source.pdf                                           the intermediate PDF, when one was made
 """
@@ -39,6 +44,7 @@ from xml.etree import ElementTree as ET
 sys.path.insert(0, str(Path(__file__).parent))
 import _common as C  # noqa: E402
 import _filesafe as F  # noqa: E402
+import _layout_probe as LP  # noqa: E402
 
 # Where external relationships point in the copy a renderer opens: a URL no renderer fetches.
 OFFLINE_TARGET = "about:blank"
@@ -253,23 +259,102 @@ class Ctx:
         return out
 
 
+NV_TAGS = ("nvSpPr", "nvPicPr", "nvGraphicFramePr", "nvCxnSpPr")
+SHAPE_TAGS = ("sp", "pic", "graphicFrame", "cxnSp")
+
+
 def xfrm_of(el: ET.Element) -> dict | None:
-    x = el.find(".//a:xfrm", NS)
+    """The element's own offset and size in EMU. Only its direct transform counts: a group's children
+    have transforms of their own, in the group's child coordinates."""
+    x = el.find("p:spPr/a:xfrm", NS)
     if x is None:
-        x = el.find("p:xfrm", NS)
+        x = el.find("p:xfrm", NS)  # graphicFrame
+    if x is None:
+        x = el.find("p:grpSpPr/a:xfrm", NS)
     if x is None:
         return None
     off, ext = x.find("a:off", NS), x.find("a:ext", NS)
     if off is None or ext is None:
         return None
-    return {"x": int(off.get("x")), "y": int(off.get("y")), "w": int(ext.get("cx")), "h": int(ext.get("cy"))}
+    out = {"x": int(off.get("x")), "y": int(off.get("y")), "w": int(ext.get("cx")), "h": int(ext.get("cy"))}
+    if x.get("rot"):
+        out["rot"] = int(x.get("rot")) / 60000
+    return out
+
+
+def _nv_of(el: ET.Element) -> ET.Element | None:
+    for tag in NV_TAGS:
+        nv = el.find(f"p:{tag}", NS)
+        if nv is not None:
+            return nv
+    return None
 
 
 def ph_of(el: ET.Element) -> dict | None:
-    ph = el.find(".//p:nvPr/p:ph", NS)
+    """The placeholder an element declares: type, idx and the attributes a layout needs. `type` follows
+    the deck's convention (a missing type with an idx is a body); `type_declared` and `idx_declared`
+    keep what the file said."""
+    nv = _nv_of(el)
+    ph = nv.find("p:nvPr/p:ph", NS) if nv is not None else None
     if ph is None:
         return None
-    return {"type": ph.get("type", "body" if ph.get("idx") else "obj"), "idx": ph.get("idx", "0")}
+    cnv = nv.find("p:cNvPr", NS)
+    return {"type": ph.get("type", "body" if ph.get("idx") else "obj"), "idx": ph.get("idx", "0"),
+            "type_declared": ph.get("type"), "idx_declared": ph.get("idx"),
+            "name": cnv.get("name") if cnv is not None else None, "sz": ph.get("sz"), "orient": ph.get("orient"),
+            "has_custom_prompt": ph.get("hasCustomPrompt") in ("1", "true")}
+
+
+def iter_shapes(tree: ET.Element | None) -> list[dict]:
+    """Every shape under a shape tree, groups flattened, in drawing order: {el, tag, xfrm (slide
+    coordinates, after the groups' transforms), groups (names of the enclosing groups), z}."""
+    out: list[dict] = []
+    _walk_shapes(tree, (1.0, 0.0, 1.0, 0.0), (), out)
+    for z, item in enumerate(out):
+        item["z"] = z
+    return out
+
+
+def _walk_shapes(tree: ET.Element | None, tf: tuple[float, float, float, float], groups: tuple[str, ...], out: list[dict]) -> None:
+    """`tf` is (sx, tx, sy, ty): child coordinates to slide coordinates."""
+    if tree is None:
+        return
+    for el in tree:
+        tag = el.tag.replace(P, "")
+        if tag == "grpSp":
+            g = el.find("p:grpSpPr/a:xfrm", NS)
+            ntf = tf
+            if g is not None:
+                off, ext, co, ce = (g.find(f"a:{k}", NS) for k in ("off", "ext", "chOff", "chExt"))
+                if None not in (off, ext, co, ce) and int(ce.get("cx")) and int(ce.get("cy")):
+                    sx, sy = int(ext.get("cx")) / int(ce.get("cx")), int(ext.get("cy")) / int(ce.get("cy"))
+                    local = (sx, int(off.get("x")) - int(co.get("x")) * sx, sy, int(off.get("y")) - int(co.get("y")) * sy)
+                    ntf = (tf[0] * local[0], tf[0] * local[1] + tf[1], tf[2] * local[2], tf[2] * local[3] + tf[3])
+            cnv = el.find("p:nvGrpSpPr/p:cNvPr", NS)
+            _walk_shapes(el, ntf, groups + ((cnv.get("name") if cnv is not None else None) or "group",), out)
+        elif tag in SHAPE_TAGS:
+            x = xfrm_of(el)
+            if x is not None and groups:
+                x = {**x, "x": round(tf[0] * x["x"] + tf[1]), "y": round(tf[2] * x["y"] + tf[3]), "w": round(tf[0] * x["w"]), "h": round(tf[2] * x["h"])}
+            out.append({"el": el, "tag": tag, "xfrm": x, "groups": list(groups)})
+
+
+def body_props(el: ET.Element) -> dict:
+    """Vertical anchor, insets and autofit of a shape's text body, as written (none means inherit)."""
+    bp = el.find("p:txBody/a:bodyPr", NS)
+    if bp is None:
+        return {}
+    out = {k: bp.get(k) for k in ("anchor", "lIns", "tIns", "rIns", "bIns", "wrap", "vert") if bp.get(k) is not None}
+    for tag in ("normAutofit", "spAutoFit", "noAutofit"):
+        if bp.find(f"a:{tag}", NS) is not None:
+            out["autofit"] = tag
+    return out
+
+
+def prompt_text(el: ET.Element) -> str:
+    """The text a placeholder shows on the layout, paragraphs joined by newlines."""
+    paras = ["".join(t.text or "" for t in p.findall(".//a:t", NS)) for p in el.findall("p:txBody/a:p", NS)]
+    return "\n".join(p for p in paras if p.strip())
 
 
 def level_styles(node: ET.Element | None, ctx: Ctx) -> dict[int, dict]:
@@ -538,6 +623,43 @@ def _static_svg(data: bytes) -> bytes:
         return EMPTY_SVG
 
 
+DOCKER_HINT = ('LibreOffice (soffice) was not found. Install it, or pass --soffice with a container that has it, for example the image '
+               '`deck export --verify` builds from packages/export/docker/libreoffice (find it with `docker images | grep deck-export-libreoffice`): '
+               '--soffice "docker run --rm --network none --entrypoint soffice -v {dir}:/work <that image>". Docker is optional; any LibreOffice works.')
+
+
+def soffice_command(soffice_cmd: str | None) -> list[str] | None:
+    """The LibreOffice command to run: the --soffice override, else `soffice` or `libreoffice` on PATH,
+    else the macOS app. None when there is none."""
+    if soffice_cmd:
+        return shlex.split(soffice_cmd)
+    exe = shutil.which("soffice") or shutil.which("libreoffice")
+    mac = Path("/Applications/LibreOffice.app/Contents/MacOS/soffice")
+    exe = exe or (str(mac) if mac.exists() else None)
+    return [exe] if exe else None
+
+
+def convert_to_pdf(src: Path, soffice_cmd: str | None, warnings: list[str], what: str = "LibreOffice render") -> Path | None:
+    """Converts the presentation `src` (an offline copy, already safe to open) to a PDF next to it with
+    LibreOffice and returns the PDF, or None after adding a warning. `--soffice` values with `{dir}` are
+    container wrappers: the directory is mounted at /work and the file is converted there."""
+    cmd = soffice_command(soffice_cmd)
+    if cmd is None:
+        return None
+    work = src.parent
+    run = [*cmd, "--headless", "--convert-to", "pdf", "--outdir", str(work), str(src)]
+    if soffice_cmd and "{dir}" in soffice_cmd:
+        # Container wrappers: '{dir}' is replaced by the host work directory, and soffice runs on /work inside.
+        run = shlex.split(soffice_cmd.replace("{dir}", str(work.resolve()))) + ["--headless", "--convert-to", "pdf", "--outdir", "/work", f"/work/{src.name}"]
+    try:
+        subprocess.run(run, check=True, capture_output=True, timeout=300)
+    except Exception as exc:  # noqa: BLE001
+        warnings.append(f"{what} failed: {str(exc)[-600:]}" + (f" | stderr: {str(getattr(exc, 'stderr', '') or '')[-400:]}" if getattr(exc, "stderr", None) else ""))
+        return None
+    pdf = src.with_suffix(".pdf")
+    return pdf if pdf.exists() else None
+
+
 def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: Path | None, width: int, warnings: list[str]) -> list[Path]:
     pages_dir = out / "pages"
     pages_dir.mkdir(parents=True, exist_ok=True)
@@ -545,31 +667,24 @@ def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: P
     if pdf is not None:
         shutil.copy(pdf, out / "source.pdf")
     if made_pdf is None and renderer in ("auto", "soffice"):
-        cmd = shlex.split(soffice_cmd) if soffice_cmd else None
-        if cmd is None:
-            exe = shutil.which("soffice") or shutil.which("libreoffice")
-            mac = Path("/Applications/LibreOffice.app/Contents/MacOS/soffice")
-            exe = exe or (str(mac) if mac.exists() else None)
-            cmd = [exe] if exe else None
-        if cmd:
+        if soffice_command(soffice_cmd):
             work = out / "_render"
             work.mkdir(exist_ok=True)
             src = work / "deck.pptx"
-            run = [*cmd, "--headless", "--convert-to", "pdf", "--outdir", str(work), str(src)]
-            if soffice_cmd and "{dir}" in soffice_cmd:
-                # Container wrappers: '{dir}' is replaced by the host work directory, and soffice runs on /work inside.
-                run = shlex.split(soffice_cmd.replace("{dir}", str(work.resolve()))) + ["--headless", "--convert-to", "pdf", "--outdir", "/work", "/work/deck.pptx"]
             try:
                 # A deck refused here (case-twin parts, packages nested too deep) is never handed to the renderer.
-                if offline_copy(pptx, src):
+                if offline_copy(pptx, work / "raw.pptx"):
                     warnings.append("External links and embedded objects were disabled for rendering; linked pictures render blank.")
-                subprocess.run(run, check=True, capture_output=True, timeout=300)
-                if (work / "deck.pdf").exists():
+                LP.to_presentation(work / "raw.pptx", src)  # a template or macro-enabled deck opens as a plain presentation, macros dropped
+                made = convert_to_pdf(src, soffice_cmd, warnings)
+                if made is not None:
                     made_pdf = out / "source.pdf"
-                    shutil.move(work / "deck.pdf", made_pdf)
+                    shutil.move(made, made_pdf)
             except Exception as exc:  # noqa: BLE001
-                warnings.append(f"LibreOffice render failed: {str(exc)[-600:]}" + (f" | stderr: {str(getattr(exc, 'stderr', '') or '')[-400:]}" if getattr(exc, "stderr", None) else ""))
+                warnings.append(f"LibreOffice render failed: {str(exc)[-600:]}")
             shutil.rmtree(work, ignore_errors=True)
+        else:
+            warnings.append(DOCKER_HINT)
     if made_pdf is None and renderer == "keynote" and sys.platform == "darwin":
         target = out / "source.pdf"
         try:
@@ -578,7 +693,7 @@ def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: P
         except Exception as exc:  # noqa: BLE001
             warnings.append(f"Keynote render failed: {str(exc)[:200]}")
     if made_pdf is None:
-        warnings.append("No slide images. Install LibreOffice (or pass --soffice), export a PDF from the presentation app and pass --pdf, "
+        warnings.append("No slide images. Install LibreOffice (or pass --soffice, see the earlier warning), export a PDF from the presentation app and pass --pdf, "
                         "or use --renderer keynote on macOS. Synthesis without page images is unreliable.")
         return []
     images: list[Path] = []
@@ -607,6 +722,137 @@ def render(pptx: Path, out: Path, renderer: str, soffice_cmd: str | None, pdf: P
         except ImportError:
             warnings.append("A PDF was produced but neither pdftoppm (poppler) nor PyMuPDF is available to rasterise it. Run extract_pdf.py on source.pdf.")
     return images
+
+
+def generator_of(pkg: Pkg) -> dict:
+    """What made the package, from docProps/app.xml. A package the deckster export wrote says `Application: deckster` (older exports: `deck`)
+    (older exports: `deck` with no AppVersion; the version guard is only for that name) and is decisive whatever the AppVersion; PowerPoint, Keynote and Google Slides write other names. Its layouts are the
+    kit's, so the importer takes none of them."""
+    root = pkg.xml("docProps/app.xml")
+    app = version = None
+    if root is not None:
+        for el in root:
+            tag = el.tag.rsplit("}", 1)[-1]
+            if tag == "Application":
+                app = (el.text or "").strip() or None
+            elif tag == "AppVersion":
+                version = (el.text or "").strip() or None
+    return {"application": app, "app_version": version, "deckster": (app or "").strip().lower() == "deckster" or ((app or "").strip().lower() == "deck" and version is None)}
+
+
+def render_layouts(pptx: Path, out: Path, layouts: list[dict], soffice_cmd: str | None, width: int, warnings: list[str]) -> dict:
+    """The layout probe. Renders a copy of the template with one slide per slide layout, twice:
+
+    - `art`: slides with no shapes, so a page shows only the layout's and master's decoration. Each page goes to
+      `layouts/<key>.svg` (pdftocairo, leading full-page rectangles stripped, text outlined in the renderer's
+      font) and `layouts/<key>.png` (what the art looks like on its background).
+    - `filled`: placeholders with the template's prompt or sample text, `layouts/ref-<key>.png`: the reference the
+      specimen is compared with.
+
+    Sets `art` on each layout dict and returns {contact_sheet, reference_sheet, count}. Needs LibreOffice and
+    poppler; without them it adds a warning and returns {}."""
+    if not layouts:
+        return {}
+    if soffice_command(soffice_cmd) is None:
+        warnings.append(DOCKER_HINT + " Without it the layouts have no art and no reference renders.")
+        return {}
+    if not (shutil.which("pdftoppm") and shutil.which("pdftocairo")):
+        warnings.append("Layout art needs poppler (pdftoppm and pdftocairo). Install it, or the layouts have no art and no reference renders.")
+        return {}
+    work = out / "_probe"
+    shutil.rmtree(work, ignore_errors=True)
+    work.mkdir(parents=True)
+    dest = out / "layouts"
+    shutil.rmtree(dest, ignore_errors=True)
+    dest.mkdir(parents=True)
+    pdfs: dict[str, Path] = {}
+    try:
+        raw, base = work / "raw.pptx", work / "base.pptx"
+        offline_copy(pptx, raw)
+        for note in LP.to_presentation(raw, base):
+            if "VBA" in note:
+                warnings.append("The file carries macros. They were dropped from the render copy and never read or run.")
+        raw.unlink()
+        removed = 0
+        for variant in ("art", "filled"):
+            probe = work / f"{variant}.pptx"
+            made = LP.build_probe(base, probe, layouts, variant)
+            removed += made["group_placeholders_removed"] if variant == "art" else 0
+            pdf = convert_to_pdf(probe, soffice_cmd, warnings, f"Layout {variant} render")
+            if pdf is None:
+                warnings.append(f"The layout {variant} render produced no PDF; layouts have no {'art' if variant == 'art' else 'reference renders'}.")
+                continue
+            pdfs[variant] = pdf
+    except (LP.ProbeError, F.Refused, zipfile.BadZipFile, OSError) as exc:
+        warnings.append(f"The layout probe could not be built: {str(exc)[:300]}")
+        shutil.rmtree(work, ignore_errors=True)
+        return {}
+    if removed:
+        warnings.append(f"{removed} placeholder(s) nested in groups on layouts are not drawn by PowerPoint; they were removed from the probe and are listed in layouts[].placeholders[].in_group.")
+
+    def rasterise(pdf: Path, prefix: str) -> list[Path]:
+        try:
+            subprocess.run(["pdftoppm", "-png", "-l", str(F.MAX_RENDER_PAGES), "-scale-to-x", str(width), "-scale-to-y", "-1", str(pdf), str(work / prefix)],
+                           check=True, capture_output=True, timeout=900)
+        except (subprocess.SubprocessError, OSError) as exc:
+            warnings.append(f"pdftoppm failed on the layout {prefix} render ({str(getattr(exc, 'stderr', '') or exc)[-200:]}); the layouts have no {'art preview' if prefix == 'art' else 'reference renders'}.")
+            return []
+        return sorted(work.glob(f"{prefix}-*.png"), key=lambda f: int(re.search(r"(\d+)\.png$", f.name).group(1)))
+
+    art_pngs = rasterise(pdfs["art"], "art") if "art" in pdfs else []
+    ref_pngs = rasterise(pdfs["filled"], "ref") if "filled" in pdfs else []
+    for name, pngs in (("art", art_pngs), ("reference", ref_pngs)):
+        if pngs and len(pngs) != len(layouts):
+            warnings.append(f"The layout {name} render has {len(pngs)} pages for {len(layouts)} layouts; layouts past the shorter list have none.")
+    labels_art, labels_ref, thumbs_art, thumbs_ref = [], [], [], []
+    for i, lo in enumerate(layouts):
+        key = lo["file_key"]
+        art: dict = {"svg": None, "has_art": False, "background": None, "png": None, "reference": None}
+        if i < len(art_pngs):
+            png = dest / f"{key}.png"
+            shutil.move(art_pngs[i], png)
+            art["png"] = str(png.relative_to(out))
+            thumbs_art.append(png)
+            labels_art.append(f"{lo['key']} {lo['name'] or ''}")
+        if "art" in pdfs:
+            svg_tmp = work / f"{key}.svg"
+            try:
+                subprocess.run(["pdftocairo", "-svg", "-f", str(i + 1), "-l", str(i + 1), str(pdfs["art"]), str(svg_tmp)], check=True, capture_output=True, timeout=120)
+                info = LP.strip_svg(svg_tmp, dest / f"{key}.svg")
+                art.update({"svg": f"layouts/{key}.svg", "has_art": info["has_art"], "background": info["background"], "page_fill": info["page_fill"], "page_size_pt": [info["width"], info["height"]]})
+                if art.get("png"):
+                    try:  # the page's mean colour: the polarity of a gradient or photo background
+                        from PIL import Image  # noqa: PLC0415
+
+                        with Image.open(out / art["png"]) as im:
+                            art["mean_color"] = C.rgb_to_hex(*im.convert("RGB").resize((1, 1), Image.BILINEAR).getpixel((0, 0)))
+                    except Exception:  # noqa: BLE001
+                        pass
+                if info["background"]:
+                    LP.add_background(dest / f"{key}.svg", dest / f"{key}-bg.svg", info["background"])
+                    art["svg_with_background"] = f"layouts/{key}-bg.svg"
+                if not info["has_art"]:
+                    (dest / f"{key}.svg").unlink()
+                    art["svg"] = None
+            except (subprocess.SubprocessError, OSError, ET.ParseError, ValueError) as exc:
+                warnings.append(f"layout {lo['key']}: the art SVG could not be made ({str(exc)[:160]})")
+        if i < len(ref_pngs):
+            ref = dest / f"ref-{key}.png"
+            shutil.move(ref_pngs[i], ref)
+            art["reference"] = str(ref.relative_to(out))
+            thumbs_ref.append(ref)
+            labels_ref.append(f"{lo['key']} {lo['name'] or ''}" + (" (unused)" if lo.get("unused") else ""))
+        lo["art"] = art
+    result: dict = {"count": len(layouts), "contact_sheet": None, "reference_sheet": None}
+    if thumbs_art:
+        result["contact_sheet"] = str(C.contact_sheet(thumbs_art, dest / "art-sheet.png", labels=labels_art).relative_to(out))
+    if thumbs_ref:
+        result["reference_sheet"] = str(C.contact_sheet(thumbs_ref, dest / "reference-sheet.png", labels=labels_ref).relative_to(out))
+    if any(lo["art"]["has_art"] and lo.get("fixed_text") for lo in layouts):
+        warnings.append("Some layouts draw fixed text (a stamp, a footer line). In the art SVG it is outlined in the renderer's font, so it cannot follow the brand's fonts; "
+                        "see layouts[].fixed_text and recreate it as live text if it should.")
+    shutil.rmtree(work, ignore_errors=True)
+    return result
 
 
 def parse_chart(pkg: Pkg, part: str, ctx: Ctx) -> dict:
@@ -819,8 +1065,11 @@ def main() -> None:
     ap.add_argument("--soffice", default=None, help='command used instead of soffice, e.g. "docker run --rm -v {dir}:/work IMAGE soffice"')
     ap.add_argument("--pdf", type=Path, default=None, help="a PDF export of the same deck, used for the page images")
     ap.add_argument("--render-width", type=int, default=1920)
-    ap.add_argument("--source-type", default="pptx")
+    ap.add_argument("--source-type", default=None, help="pptx (default; potx, potm and pptm by extension) or gslides")
+    ap.add_argument("--layout-width", type=int, default=960, help="width in pixels of the layout renders")
     args = ap.parse_args()
+    if args.source_type is None:
+        args.source_type = {".potx": "potx", ".potm": "potx", ".pptm": "pptx"}.get(args.pptx.suffix.lower(), "pptx")
 
     pkg = Pkg(args.pptx)
     out = args.out
@@ -830,7 +1079,12 @@ def main() -> None:
     pres_part = "ppt/presentation.xml"
     pres = pkg.xml(pres_part)
     if pres is None:
-        sys.exit("Not a PPTX: ppt/presentation.xml is missing (a .ppt or .key file must be converted first).")
+        sys.exit("Not a PPTX or POTX: ppt/presentation.xml is missing (a .ppt or .key file must be converted first).")
+    generator = generator_of(pkg)
+    if generator["deckster"]:
+        warnings.append("This package was written by the deckster export (docProps/app.xml says Application: deckster or deck). Its layouts are the kit's own, so no layouts are imported from it.")
+    if any(posixpath.basename(n).lower().startswith("vbaproject") for n in pkg.names):
+        warnings.append("The file carries a VBA project (macros). It is never read, run or rendered.")
     sz = pres.find("p:sldSz", NS)
     SW, SH = int(sz.get("cx")), int(sz.get("cy"))
     to_canvas = 1080 / (SH / 12700)  # pt -> canvas px at 1080 high
@@ -906,11 +1160,18 @@ def main() -> None:
         return None
 
     def placeholders(root: ET.Element) -> dict[tuple, dict]:
-        out_ph = {}
-        for sp in root.findall("p:cSld/p:spTree/p:sp", NS) + root.findall("p:cSld/p:spTree/p:pic", NS):
-            ph = ph_of(sp)
-            if ph:
-                out_ph[(ph["type"], ph["idx"])] = {"el": sp, "xfrm": xfrm_of(sp), **ph}
+        """Every placeholder of a master or layout, groups included, keyed (type, idx); a repeated key gets a counter."""
+        out_ph: dict[tuple, dict] = {}
+        for item in iter_shapes(root.find("p:cSld/p:spTree", NS)):
+            ph = ph_of(item["el"])
+            if not ph:
+                continue
+            key: tuple = (ph["type"], ph["idx"])
+            n = 1
+            while key in out_ph:
+                n += 1
+                key = (ph["type"], ph["idx"], n)
+            out_ph[key] = {"el": item["el"], "xfrm": item["xfrm"], "tag": item["tag"], "in_group": item["groups"], "z": item["z"], **ph}
         return out_ph
 
     def pictures(root: ET.Element, part: str, where: str, label: str) -> list[dict]:
@@ -929,7 +1190,51 @@ def main() -> None:
             pics.append({"media": rel["target"], "bbox": box})
         return pics
 
-    for mpart in master_parts:
+    def decor(root: ET.Element, part: str, ctx: Ctx, origin: str) -> tuple[list[dict], list[dict]]:
+        """The shapes of a master or layout that are not placeholders, in drawing order, and the text fixed in them
+        (a "Confidential" stamp). Fill and line keep their theme references. Groups are flattened; `groups` names them."""
+        shapes, texts = [], []
+        rels = pkg.rels(part)
+        for item in iter_shapes(root.find("p:cSld/p:spTree", NS)):
+            el, tag = item["el"], item["tag"]
+            if ph_of(el):
+                continue
+            nv = _nv_of(el)
+            cnv = nv.find("p:cNvPr", NS) if nv is not None else None
+            sppr = el.find("p:spPr", NS)
+            geom = sppr.find("a:prstGeom", NS) if sppr is not None else None
+            entry: dict = {"kind": tag, "name": cnv.get("name") if cnv is not None else None, "z": item["z"], "bbox": nbox(item["xfrm"]),
+                           "geometry": geom.get("prst") if geom is not None else ("custom" if sppr is not None and sppr.find("a:custGeom", NS) is not None else None),
+                           "fill": ctx.fill(sppr), "line": ctx.line(sppr), "from": origin}
+            if item["xfrm"] and item["xfrm"].get("rot"):
+                entry["rotation_deg"] = item["xfrm"]["rot"]
+            if item["groups"]:
+                entry["groups"] = item["groups"]
+            if tag == "pic":
+                blip = el.find("p:blipFill/a:blip", NS)
+                rel = rels.get(blip.get(f"{R}embed")) if blip is not None else None
+                entry["media"] = rel["target"] if rel else None
+            if tag == "graphicFrame":
+                gd = el.find("a:graphic/a:graphicData", NS)
+                entry["frame"] = (gd.get("uri") or "").rsplit("/", 1)[-1] if gd is not None else None
+            body = el.find("p:txBody", NS)
+            if body is not None:
+                lst = level_styles(body.find("a:lstStyle", NS), ctx)
+                for para in body.findall("a:p", NS):
+                    runs = [(r, (r.find("a:t", NS).text or "") if r.find("a:t", NS) is not None else "") for r in para.findall("a:r", NS)]
+                    text = "".join(t for _, t in runs).strip()
+                    if not text:
+                        continue
+                    own = run_props(runs[0][0].find("a:rPr", NS), ctx)
+                    base = lst.get(1, {})
+                    texts.append({"text": text[:200], "family": own.get("family") or base.get("family") or ctx.fonts.get("minor"),
+                                  "size_pt": own.get("size_pt") or base.get("size_pt"), "bold": own.get("bold", base.get("bold")),
+                                  "color": own.get("color") or base.get("color"), "bbox": nbox(item["xfrm"]), "shape": entry["name"], "from": origin})
+                entry["text"] = " / ".join(t["text"] for t in texts if t["shape"] == entry["name"])[:200] or None
+            shapes.append(entry)
+        return shapes, texts
+
+    for mno, mpart in enumerate(master_parts, 1):
         root = pkg.xml(mpart)
         cm = root.find("p:clrMap", NS)
         clrmap = {k: v for k, v in cm.attrib.items()} if cm is not None else dict(DEFAULT_CLRMAP)
@@ -942,11 +1247,14 @@ def main() -> None:
         phs = placeholders(root)
         info = {"part": mpart, "ctx": ctx, "styles": styles, "phs": phs, "bg": bg_of(root, ctx, mpart)}
         master_info[mpart] = info
+        m_decor, m_texts = decor(root, mpart, ctx, "master")
+        info["decor"], info["fixed_text"] = m_decor, m_texts
         masters_out.append({
-            "part": mpart, "background": info["bg"], "color_map": clrmap,
-            "text_styles": {k: {f"lvl{lv}": {kk: vv for kk, vv in st.items() if vv is not None} for lv, st in v.items() if lv <= 3} for k, v in styles.items()},
+            "part": mpart, "index": mno, "background": info["bg"], "color_map": clrmap, "theme_name": own_names.get("colors"),
+            "text_styles": {k: {f"lvl{lv}": {kk: vv for kk, vv in st.items() if vv is not None} for lv, st in v.items() if lv <= 5} for k, v in styles.items()},
             "placeholders": [{"type": p["type"], "idx": p["idx"], "bbox": nbox(p["xfrm"])} for p in phs.values()],
             "pictures": pictures(root, mpart, "masters", posixpath.basename(mpart)),
+            "shapes": m_decor, "fixed_text": m_texts,
         })
         if info["bg"] and info["bg"].get("kind") == "gradient":
             gradients.append({**info["bg"], "where": f"master:{posixpath.basename(mpart)}"})
@@ -955,22 +1263,39 @@ def main() -> None:
             lroot = pkg.xml(lpart)
             lphs = placeholders(lroot)
             name = lroot.find("p:cSld", NS).get("name")
-            lbg = bg_of(lroot, ctx, lpart)
-            layout_info[lpart] = {"part": lpart, "master": mpart, "phs": lphs, "bg": lbg, "name": name, "type": lroot.get("type"), "used_by": []}
+            # A layout may remap the master's colours for itself (an inverted section header); its own
+            # background, decoration and text resolve through that map, and so do the slides that use it.
+            lovr = lroot.find("p:clrMapOvr/a:overrideClrMapping", NS)
+            lctx = Ctx(ctx.theme_colors, ctx.fonts, dict(lovr.attrib)) if lovr is not None else ctx
+            lbg = bg_of(lroot, lctx, lpart)
+            key = f"m{mno}/{posixpath.splitext(posixpath.basename(lpart))[0]}"
+            # The master's text styles resolve their colours through the colour map, so a layout that overrides the map needs them again.
+            l_styles = styles if lctx is ctx else {k: level_styles(tx.find(f"p:{k}", NS) if tx is not None else None, lctx) for k in ("titleStyle", "bodyStyle", "otherStyle")}
+            layout_info[lpart] = {"part": lpart, "key": key, "master": mpart, "phs": lphs, "bg": lbg, "name": name, "type": lroot.get("type"), "used_by": [], "ctx": lctx, "root": lroot, "styles": l_styles}
+            mph_all = list(phs.values())
             for ph in lphs.values():
                 if ph["xfrm"] is None:
-                    mph = phs.get((ph["type"], ph["idx"])) or next((m for m in phs.values() if m["type"] == ph["type"]), None)
+                    mph = phs.get((ph["type"], ph["idx"])) or next((m for m in mph_all if m["type"] == ph["type"]), None)
+                    if mph is None and ph["type"] == "ctrTitle":
+                        mph = next((m for m in mph_all if m["type"] == "title"), None)
+                    if mph is None and ph["type"] in ("subTitle", "obj"):
+                        mph = next((m for m in mph_all if m["type"] == "body"), None)
                     ph["xfrm"] = mph["xfrm"] if mph else None
                     ph["geometry_from"] = "master"
             if lbg and lbg.get("kind") == "gradient":
-                gradients.append({**lbg, "where": f"layout:{name}"})
-            layouts_out.append({
-                "name": name, "type": lroot.get("type"), "part": lpart, "master": mpart, "background": lbg,
-                "placeholders": [{"type": p["type"], "idx": p["idx"], "bbox": nbox(p["xfrm"]),
-                                  "text_style": level_styles(p["el"].find("p:txBody/a:lstStyle", NS), ctx).get(1)} for p in lphs.values()],
-                "pictures": pictures(lroot, lpart, "layouts", name),
-                "show_master_shapes": lroot.get("showMasterSp", "1") in ("1", "true"),
-            })
+                gradients.append({**lbg, "where": f"layout:{key}"})
+            l_decor, l_texts = decor(lroot, lpart, lctx, "layout")
+            show_master = lroot.get("showMasterSp", "1") in ("1", "true")
+            entry = {
+                "key": key, "file_key": key.replace("/", "-"), "name": name, "type": lroot.get("type"), "part": lpart, "master": mpart, "master_index": mno,
+                "background": lbg, "color_map_override": dict(lovr.attrib) if lovr is not None else None,
+                "placeholders": [],  # filled below, once inherited text styles can be resolved
+                "shapes": l_decor, "fixed_text": l_texts + (m_texts if show_master else []),
+                "pictures": pictures(lroot, lpart, "layouts", key),
+                "show_master_shapes": show_master,
+            }
+            layout_info[lpart]["entry"] = entry
+            layouts_out.append(entry)
 
     # ---- slides
     slide_parts = [pres_rels[s.get(f"{R}id")]["target"] for s in pres.findall("p:sldIdLst/p:sldId", NS)]
@@ -985,7 +1310,7 @@ def main() -> None:
             kind = "titleStyle" if ph["type"] in ("title", "ctrTitle") else "bodyStyle" if ph["type"] in ("body", "subTitle", "obj") or ph["type"].startswith("half") else "otherStyle"
         else:
             kind = "otherStyle"
-        chain.append(minfo["styles"][kind].get(level, {}))
+        chain.append((linfo.get("styles") or minfo["styles"])[kind].get(level, {}))
         if ph:
             mph = minfo["phs"].get((ph["type"], ph["idx"])) or next((m for m in minfo["phs"].values() if m["type"] == ph["type"]), None)
             if mph is None and ph["type"] in ("ctrTitle",):
@@ -1003,13 +1328,35 @@ def main() -> None:
             eff.update({k: v for k, v in st.items() if v is not None})
         return eff
 
+    # ---- layout placeholders: attributes, prompt text and the text style each level inherits
+    for lpart, linfo_ in layout_info.items():
+        minfo_ = master_info[linfo_["master"]]
+        placeholders_out = []
+        for ph in linfo_["phs"].values():
+            mph = minfo_["phs"].get((ph["type"], ph["idx"])) or next((m for m in minfo_["phs"].values() if m["type"] == ph["type"]), None)
+            props = {**(body_props(mph["el"]) if mph is not None else {}), **body_props(ph["el"])}
+            levels = {}
+            for lv in range(1, 6):
+                st = {k: v for k, v in effective_style(ph, lv, linfo_, minfo_, linfo_["ctx"], {}).items() if v is not None}
+                if st.get("size_pt"):
+                    st["size_canvas_px"] = round(st["size_pt"] * to_canvas, 1)
+                levels[f"lvl{lv}"] = st
+            placeholders_out.append({
+                "type": ph["type"], "idx": ph["idx"], "type_declared": ph["type_declared"], "idx_declared": ph["idx_declared"], "name": ph["name"],
+                "sz": ph["sz"], "orient": ph["orient"], "kind": ph["tag"], "in_group": ph["in_group"], "z": ph["z"],
+                "has_custom_prompt": ph["has_custom_prompt"], "prompt": prompt_text(ph["el"]) if ph["has_custom_prompt"] else None,
+                "bbox": nbox(ph["xfrm"]), "geometry_from": ph.get("geometry_from", "layout"),
+                "body": props, "text_style": levels["lvl1"], "text_styles": levels,
+            })
+        linfo_["entry"]["placeholders"] = placeholders_out
+
     for sno, spart in enumerate(slide_parts, 1):
         root = pkg.xml(spart)
         lpart = pkg.rel_of_type(spart, "slideLayout")
-        linfo = layout_info.get(lpart) or {"phs": {}, "bg": None, "name": None, "type": None, "master": master_parts[0], "used_by": []}
+        linfo = layout_info.get(lpart) or {"phs": {}, "bg": None, "name": None, "type": None, "key": None, "master": master_parts[0], "used_by": []}
         linfo["used_by"].append(sno)
         minfo = master_info[linfo["master"]]
-        ctx: Ctx = minfo["ctx"]
+        ctx: Ctx = linfo.get("ctx") or minfo["ctx"]  # the layout's colour map, which may override the master's
         ovr = root.find("p:clrMapOvr/a:overrideClrMapping", NS)
         if ovr is not None:
             ctx = Ctx(minfo["ctx"].theme_colors, minfo["ctx"].fonts, dict(ovr.attrib))
@@ -1168,7 +1515,7 @@ def main() -> None:
         if tree is not None:
             walk(tree)
         pages.append({
-            "index": sno, "image": None, "layout": {"name": linfo["name"], "type": linfo["type"]}, "background": {**(bg or {"kind": "unknown"}), "from": bg_from},
+            "index": sno, "image": None, "layout": {"name": linfo["name"], "type": linfo["type"], "key": linfo.get("key")}, "background": {**(bg or {"kind": "unknown"}), "from": bg_from},
             "text_blocks": sorted(blocks, key=lambda b: -b["size_pt"])[:14], "shapes": shapes_out[:30], "images": pics_out,
             "charts": sum(1 for c in charts_out if c["page"] == sno), "tables": sum(1 for t in tables_out if t["page"] == sno),
             "text_chars": slide_chars, "hidden": root.get("show") == "0",
@@ -1182,6 +1529,8 @@ def main() -> None:
                             "Text that looks off-centre in the page images is an accident of that, not a brand choice.".format(max(b[0] + b[2] for b in boxes)))
     for lo in layouts_out:
         lo["used_by"] = layout_info[lo["part"]]["used_by"]
+        lo["unused"] = not lo["used_by"]
+    # Most used first; layouts no slide uses keep their template order, so a slideless template reads top to bottom.
     layouts_out.sort(key=lambda l: -len(l["used_by"]))
 
     # ---- big numbers: numeric runs that are much larger than the body size
@@ -1268,7 +1617,9 @@ def main() -> None:
 
     # ---- render
     images: list[Path] = []
-    if not args.no_render and args.renderer != "none":
+    layout_renders: dict = {}
+    rendering = not args.no_render and args.renderer != "none"
+    if rendering and slide_parts:
         images = render(args.pptx, out, args.renderer, args.soffice, args.pdf, args.render_width, warnings)
         visible = [p for p in pages if not p["hidden"]]
         target = visible if len(images) == len(visible) else pages
@@ -1283,8 +1634,19 @@ def main() -> None:
                 warnings.append(f"page {pg['index']}: image analysis failed ({exc})")
         if images:
             C.contact_sheet(images, out / "pages/contact-sheet.png", labels=[f"{p['index']}: {p['layout']['name'] or ''} {','.join(p['layout_hints'])}" for p in target[: len(images)]])
+    elif rendering:
+        warnings.append("The file has no slides, so there are no pages to render. The layout renders in layouts/ (reference-sheet.png) stand in for page images.")
     else:
         warnings.append("Rendering was skipped: there are no page images to look at.")
+    if rendering and layouts_out and not generator["deckster"]:
+        if args.pdf is not None and not args.soffice:
+            warnings.append("--pdf was given, so LibreOffice is not run and the layout probe was skipped: the layouts have no art and no reference renders. "
+                            "Pass --soffice (a LibreOffice, or a container that has it) as well to render them.")
+        else:
+            layout_renders = render_layouts(args.pptx, out, layouts_out, args.soffice, args.layout_width, warnings)
+    if not slide_parts and rendering and not layout_renders.get("reference_sheet"):
+        warnings.append("No page images and no layout renders: there is nothing to look at. A template has no slides, so a PDF export would not show its layouts: "
+                        "install LibreOffice (or pass --soffice with a container that has it) and poppler, then run again.")
 
     # ---- font availability (matters for render fidelity)
     installed = None
@@ -1308,7 +1670,9 @@ def main() -> None:
     for dc in declared_colors:
         dc["used"] = dc["name"] in used_refs or (dc["name"].startswith("accent") and dc["hex"] in used_hexes)
     declared_fonts = [{"role": k, "family": v, "origin": f"theme:{k}Font"} for k, v in theme_fonts.items()]
-    if declared_colors and not any(dc["used"] for dc in declared_colors if dc["name"].startswith("accent")):
+    # A template has no slides to reference anything, and its decoration may use the accents: judge only a deck with slides.
+    deco_refs = {(sh.get("fill") or {}).get("ref") for lo in layouts_out for sh in lo.get("shapes", [])} | {(sh.get("line") or {}).get("ref") for lo in layouts_out for sh in lo.get("shapes", [])}
+    if slide_parts and declared_colors and not any(dc["used"] or dc["name"] in deco_refs for dc in declared_colors if dc["name"].startswith("accent")):
         warnings.append("No slide references a theme accent colour. The theme is probably a leftover default: build the palette from observed usage and the page images.")
     theme_font_chars = sum(fu["chars"] for fam, fu in font_uses.items() if fam in theme_fonts.values())
     if total_chars and theme_font_chars / total_chars < 0.3:
@@ -1353,14 +1717,15 @@ def main() -> None:
     for lo in layouts_out:
         if lo["background"] and lo["background"].get("kind") == "gradient":
             for e in grads_out.values():
-                if any(w == f"layout:{lo['name']}" for w in e["where"]):
+                if any(w == f"layout:{lo['key']}" for w in e["where"]):
                     e.setdefault("pages", []).extend(lo["used_by"])
 
     data = {
         "source": {"type": args.source_type, "path": str(args.pptx.resolve()), "page_count": n_slides,
                    "page_size": {"width": SW, "height": SH, "unit": "emu", "width_pt": SW / 12700, "height_pt": SH / 12700}, "aspect": round(SW / SH, 4),
                    "canvas_scale": {"note": "size_canvas_px = size_pt * 1080 / slide height in pt", "factor": round(to_canvas, 4)},
-                   "theme_names": scheme_names, "office_default_theme": bool(office_default)},
+                   "theme_names": scheme_names, "office_default_theme": bool(office_default), "generator": generator,
+                   "is_template": args.pptx.suffix.lower() in (".potx", ".potm"), "extension": args.pptx.suffix.lower()},
         "tool": {"script": "extract_pptx.py"},
         "declared": {"colors": declared_colors, "fonts": declared_fonts,
                      # One entry per slide master. More than one distinct theme means the deck has a master per surface:
@@ -1374,12 +1739,14 @@ def main() -> None:
         "masters": masters_out,
         "layouts": layouts_out,
         "assets": {"images": assets_images, "embedded_fonts": embedded_fonts,
-                   "contact_sheet": "pages/contact-sheet.png" if images else None, "source_pdf": "source.pdf" if (out / "source.pdf").exists() else None},
+                   "contact_sheet": "pages/contact-sheet.png" if images else layout_renders.get("reference_sheet"),
+                   "layout_renders": layout_renders or None, "source_pdf": "source.pdf" if (out / "source.pdf").exists() else None},
         "dataviz": {"charts": charts_out, "tables": tables_out, "big_numbers": big_numbers},
         "warnings": warnings,
     }
     path = C.write_extraction(out, data)
     print(C.summarize(data))
+    print(f"layouts: {len(layouts_out)} ({sum(1 for l in layouts_out if l['unused'])} unused), art for {sum(1 for l in layouts_out if (l.get('art') or {}).get('has_art'))}")
     print("layouts used:", ", ".join(f"{l['name']}×{len(l['used_by'])}" for l in layouts_out if l["used_by"]))
     print("wrote", path)
 

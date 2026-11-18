@@ -1,6 +1,6 @@
 import { Predicate } from 'effect';
 
-import type { LayoutInfo } from '#layouts/list-layouts.ts';
+import { BRAND_SOURCE_PREFIX, type LayoutInfo } from '#layouts/list-layouts.ts';
 
 /**
  * The first complete sentence, including its terminal punctuation.
@@ -70,6 +70,16 @@ export type LayoutSummary = {
    * The name a slide gives in `layout:`.
    */
   name: string;
+
+  /**
+   * The package that supplies the layout, or `brand:<name>` for the deck's brand.
+   */
+  source: string;
+
+  /**
+   * For a brand layout, the kit layout it falls back to; `null` otherwise.
+   */
+  fallback: string | null;
 
   /**
    * The first sentence of the layout's description.
@@ -149,6 +159,8 @@ export function summarizeLayout(layout: LayoutInfo): LayoutSummary {
 
   return {
     name: layout.name,
+    source: layout.source,
+    fallback: layout.fallback,
     description: firstSentence(layout.description),
     surface: layout.surface,
     titleMaxChars: layout.title?.maxChars ?? null,
@@ -181,12 +193,46 @@ function summarizeSlot(
 }
 
 /**
- * The aligned plain listing of the summaries: a line per layout with its name, default surface,
- * title limit and item lists, then its description and its slots.
+ * Puts the brand's layouts before the rest, each group keeping its order.
+ *
+ * @param summaries - The layouts in catalog order.
+ */
+export function brandFirst<T extends { source: string }>(summaries: readonly T[]): T[] {
+  const brand = summaries.filter((summary) => summary.source.startsWith(BRAND_SOURCE_PREFIX));
+  return [...brand, ...summaries.filter((summary) => !brand.includes(summary))];
+}
+
+/**
+ * The plain listing of the summaries. A brand's layouts come first under a heading that names the
+ * brand, then the other layouts under their own heading; with no brand layouts there are no
+ * headings.
  *
  * @param summaries - The layouts to print.
  */
 export function formatSummaries(summaries: readonly LayoutSummary[]): string {
+  const ordered = brandFirst(summaries);
+  const brandLayouts = ordered.filter((summary) => summary.source.startsWith(BRAND_SOURCE_PREFIX));
+  const [first] = brandLayouts;
+  if (first === undefined) {
+    return formatGroup(summaries);
+  }
+
+  const others = ordered.slice(brandLayouts.length);
+  const brandName = first.source.slice(BRAND_SOURCE_PREFIX.length);
+  return [
+    `Layouts from the ${brandName} brand (prefer these):`,
+    formatGroup(brandLayouts),
+    ...(others.length === 0 ? [] : ['', 'Other layouts:', formatGroup(others)]),
+  ].join('\n');
+}
+
+/**
+ * The aligned plain listing of one group: a line per layout with its name, default surface, title
+ * limit and item lists, then its description and its slots.
+ *
+ * @param summaries - The layouts to print.
+ */
+function formatGroup(summaries: readonly LayoutSummary[]): string {
   const width = Math.max(0, ...summaries.map((summary) => summary.name.length));
   const surfaceWidth = Math.max(0, ...summaries.map((summary) => (summary.surface ?? '-').length));
   return summaries
@@ -202,6 +248,9 @@ export function formatSummaries(summaries: readonly LayoutSummary[]): string {
       return [
         `${summary.name.padEnd(width)}  ${facts.join('  ')}`,
         `${' '.repeat(width)}  ${summary.description}`,
+        ...(summary.fallback === null
+          ? []
+          : [`${' '.repeat(width)}  falls back to: ${summary.fallback}`]),
         `${' '.repeat(width)}  slots: ${Object.entries(summary.slots).map(formatSlot).join('; ')}`,
       ].join('\n');
     })

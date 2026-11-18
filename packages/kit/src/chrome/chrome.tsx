@@ -116,9 +116,12 @@ export function Chrome(): ReactNode {
               surface={layer.surface}
             />
           ))}
+          {layer.plan.pageBox === undefined || layer.plan.pageText === '' ? null : (
+            <PageNumberBox box={layer.plan.pageBox} text={layer.plan.pageText} />
+          )}
         </div>
       ))}
-      {progress.show ? (
+      {progress.show && look.plan.progressShown ? (
         <div
           className="kit-chrome-progress"
           data-edge={progress.edge}
@@ -126,6 +129,35 @@ export function Chrome(): ReactNode {
         />
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Props of {@link PageNumberBox}.
+ */
+type PageNumberBoxProps = {
+  /**
+   * The box the brand layout gives the page number: x, y, width and height in canvas pixels.
+   */
+  box: readonly [number, number, number, number];
+
+  /**
+   * The formatted page number.
+   */
+  text: string;
+};
+
+/**
+ * The page number in a box on the canvas, centred in it, for a brand layout that places it.
+ */
+function PageNumberBox({ box, text }: PageNumberBoxProps): ReactNode {
+  const [left, top, width, height] = box;
+  return (
+    <span
+      className="kit-chrome-text kit-chrome-page-box kit-type-label kit-numeric"
+      style={{ left, top, width, height }}>
+      {text}
+    </span>
   );
 }
 
@@ -141,8 +173,16 @@ function useChromeLook(): ChromeLook {
   const entry = deck.manifest.slides[index];
   const frontmatter = entry?.module.slideMeta.frontmatter ?? { layout: 'default' };
   const slots = entry?.module.slideMeta.slots ?? [];
+  const own = brand.layouts.find((layout) => layout.name === frontmatter.layout);
+  // A brand layout's media boxes cover the corners they reach; other layouts name whole edges.
   const bleed: readonly BleedSide[] =
-    layouts.get(frontmatter.layout)?.bleed?.({ frontmatter, slots }) ?? [];
+    own === undefined
+      ? (layouts.get(frontmatter.layout)?.bleed?.({ frontmatter, slots }) ?? [])
+      : [];
+  const mediaBoxes = own?.regions
+    .filter((region) => region.kind === 'media')
+    .map((region) => region.box);
+  const layoutChrome = own?.chrome;
   const plan = planChrome({
     chrome: brand.chrome,
     logoCorner: brand.logo.placement.corner,
@@ -150,12 +190,14 @@ function useChromeLook(): ChromeLook {
     hidden: deck.slides.map((slide) => slide.hidden),
     frontmatter,
     bleed,
+    ...(layoutChrome === undefined ? {} : { layoutChrome }),
+    ...(mediaBoxes === undefined ? {} : { mediaBoxes }),
   });
   const surface = frontmatter.surface ?? DEFAULT_SURFACE;
   return {
     surface,
     plan,
-    key: `${surface}|${JSON.stringify(plan.corners)}`,
+    key: `${surface}|${JSON.stringify(plan.corners)}|${plan.pageBox?.join(',') ?? ''}`,
     detail: plan.pageText,
   };
 }

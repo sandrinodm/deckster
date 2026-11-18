@@ -63,6 +63,7 @@ export {
 export { planChart, plotSvg } from '#plan/chart-policy.ts';
 export type { ChartPlan } from '#pptx/chart-model.ts';
 export { buildPptx, type PptxResult, type PptxSlideReport } from '#pptx/build-pptx.ts';
+export { layoutArtCount } from '#pptx/layout-art.ts';
 export type {
   EmbeddedFile,
   EmbeddedFont,

@@ -230,6 +230,11 @@ const PROMPTS: Readonly<Record<PptxPlaceholderKind, string>> = {
    * The body.
    */
   body: 'Click to edit text',
+
+  /**
+   * The picture.
+   */
+  picture: 'Click icon to add picture',
 };
 
 /**
@@ -564,9 +569,9 @@ function placeholderShape(
 }
 
 /**
- * A slide layout: named after the deck layout, typed for PowerPoint, with its placeholders where
- * the deck draws them in the style the deck sets them in, and its own chrome when it differs from
- * the master's (then the master's shapes are hidden on it).
+ * A slide layout: named after the deck layout (or a brand layout's label), typed for PowerPoint,
+ * with its placeholders where the deck draws them in the style the deck sets them in, and its own
+ * chrome when it differs from the master's (then the master's shapes are hidden on it).
  *
  * @param spec - The layout.
  * @param theme - The master's theme.
@@ -597,7 +602,7 @@ export function layoutXml(spec: LayoutSpec, theme: SurfaceTheme, shapes = ''): s
       },
       el(
         'p:cSld',
-        { name: spec.name },
+        { name: spec.label ?? spec.name },
         el('p:spTree', {}, SHAPE_TREE_ROOT, shapes, ...placeholders),
       ),
       el('p:clrMapOvr', {}, el('a:masterClrMapping')),

@@ -55,6 +55,11 @@ const MAX_NESTING = 64;
 const ALIAS_NAME_PATTERN = /\): (\S+)$/;
 
 /**
+ * The start of the `source` of a layout that comes from a brand's `layouts.ts`.
+ */
+const BRAND_SOURCE_PREFIX = 'brand:';
+
+/**
  * What frontmatter is called in messages.
  */
 const WHAT = 'frontmatter';
@@ -166,7 +171,8 @@ export const validateFrontmatter = Effect.fn('validateFrontmatter')(function* (
     hints: slideHintsFor(layout.contract),
     what: WHAT,
     ref,
-    unknownKeyFix: (key) => layoutsWithField(key, catalog),
+    unknownKeyFix: (key) =>
+      brandLayoutFieldFix(key, layout, catalog) ?? layoutsWithField(key, catalog),
   });
   const problems = [
     ...checkTitle(frontmatter.title, layout),
@@ -279,6 +285,39 @@ function unknownLayoutProblem(name: string, catalog: LayoutCatalogIndex): Proble
     message: `layout: There is no "${name}" layout.`,
     fix: `${list} Run \`${deckCommand()} layouts\` to see what each layout is for.`,
   };
+}
+
+/**
+ * The fix for a field a brand layout does not bind though the kit layout it falls back to has it:
+ * accept it in the brand's `layouts.ts`. `undefined` for any other layout or field.
+ *
+ * @param key - The unknown field.
+ * @param layout - The slide's layout.
+ * @param catalog - Every layout.
+ */
+function brandLayoutFieldFix(
+  key: string,
+  layout: CatalogLayout,
+  catalog: LayoutCatalogIndex,
+): string | undefined {
+  const brandName = layout.source.startsWith(BRAND_SOURCE_PREFIX)
+    ? layout.source.slice(BRAND_SOURCE_PREFIX.length)
+    : undefined;
+  const fallback = layout.fallback === undefined ? undefined : catalog.get(layout.fallback);
+  if (brandName === undefined || fallback === undefined) {
+    return undefined;
+  }
+
+  if (!Object.hasOwn(fallback.contract.schema.fields, key)) {
+    return undefined;
+  }
+
+  return (
+    `The ${layout.contract.name} brand layout does not accept "${key}", though ` +
+    `${fallback.contract.name}, which it falls back to, does. Accept it in ` +
+    `brands/${brandName}/layouts.ts: add \`fields: ['${key}']\` to the layout, or bind it ` +
+    `with a region \`{ bind: { field: '${key}' }, box: [...] }\`. Or remove it from the slide.`
+  );
 }
 
 /**

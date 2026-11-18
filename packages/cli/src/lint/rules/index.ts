@@ -3,6 +3,7 @@ import type { LintRule } from '#lint/types.ts';
 import { appExternalSrcRule } from '#lint/rules/app-external-src.ts';
 import { appMissingPosterRule } from '#lint/rules/app-missing-poster.ts';
 import { appMissingRule } from '#lint/rules/app-missing.ts';
+import { brandLayoutFallbackRule } from '#lint/rules/brand-layout-fallback.ts';
 import { brokenImageRule } from '#lint/rules/broken-image.ts';
 import { canvasOverflowRule } from '#lint/rules/canvas-overflow.ts';
 import { chartEmptyRule } from '#lint/rules/chart-empty.ts';
@@ -88,6 +89,7 @@ export const LINT_RULES: readonly LintRule[] = [
   missingNotesRule,
   loadErrorRule,
   layoutRepetitionRule,
+  brandLayoutFallbackRule,
   fewBuildsRule,
   timeBudgetRule,
   openCommentsRule,

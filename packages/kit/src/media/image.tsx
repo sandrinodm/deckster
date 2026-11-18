@@ -77,9 +77,10 @@ export type ImageProps = {
  */
 export function Image(props: ImageProps): ReactNode {
   checkComponentProps('Image', props);
-  const { src, alt, treatment, fit = 'cover', focal, ratio, caption } = props;
+  const { src, alt, treatment, focal, ratio, caption } = props;
   const { brand } = useBrand();
   const frame = useMediaFrame();
+  const fit = props.fit ?? frame?.fit ?? 'cover';
   const name = treatment ?? frame?.treatment ?? brand.imagery.default;
   const plan = planTreatment(brand.imagery.treatments[name]);
   const filterId = `kit-duotone-${useId().replaceAll(NON_WORD, '')}`;

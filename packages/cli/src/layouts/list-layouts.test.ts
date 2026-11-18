@@ -1,9 +1,10 @@
 import { FRAMEWORK_ROOT } from '@deckster/brand/node';
+import { loadLayoutCatalog } from '@deckster/vite-plugin';
 import { NodeFileSystem } from '@effect/platform-node';
 import { describe, expect, it, layer } from '@effect/vitest';
 import { Effect } from 'effect';
 
-import { exampleMdx, listLayouts } from '#layouts/list-layouts.ts';
+import { describeCatalog, exampleMdx, listLayouts } from '#layouts/list-layouts.ts';
 
 layer(NodeFileSystem.layer)('listLayouts', (it) => {
   it.effect('prints the full contract of every layout the hello deck can use', () =>
@@ -64,6 +65,30 @@ layer(NodeFileSystem.layer)('listLayouts', (it) => {
       }),
   );
 
+  it.effect('adds the fallback and label of a brand layout and leaves them null for the rest', () =>
+    Effect.gen(function* () {
+      const base = (yield* loadLayoutCatalog()).get('default');
+      if (base === undefined) {
+        return expect.fail('The catalog has no default layout.');
+      }
+
+      const catalog = new Map([
+        ['default', base],
+        [
+          'acme-cover',
+          { contract: { ...base.contract, name: 'acme-cover' }, source: 'brand:acme' },
+        ],
+      ]);
+      const info = describeCatalog(catalog, {
+        layouts: [{ name: 'acme-cover', fallback: 'title', label: 'Cover' }] as never,
+      });
+      expect(info.layouts.map((layout) => [layout.source, layout.fallback, layout.label])).toEqual([
+        ['@deckster/kit', null, null],
+        ['brand:acme', 'title', 'Cover'],
+      ]);
+    }),
+  );
+
   it.effect('names the deck that does not exist', () =>
     Effect.gen(function* () {
       const error = yield* Effect.flip(listLayouts(FRAMEWORK_ROOT, 'nope'));
@@ -111,5 +136,12 @@ describe('exampleMdx', () => {
         '',
       ].join('\n'),
     );
+  });
+
+  it('quotes strings YAML would read back as a number, a boolean or null', () => {
+    const mdx = exampleMdx({ layout: 'columns', note: '2028', flag: 'true', none: 'null' }, '', []);
+    expect(mdx).toContain('note: "2028"');
+    expect(mdx).toContain('flag: "true"');
+    expect(mdx).toContain('none: "null"');
   });
 });

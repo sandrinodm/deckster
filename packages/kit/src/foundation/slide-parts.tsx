@@ -1,3 +1,5 @@
+import type { BackgroundLayerTokens } from '@deckster/brand';
+
 import { useCallback, useRef, type ReactNode, type Ref } from 'react';
 
 import { Backdrop } from '#foundation/backdrop.tsx';
@@ -52,6 +54,11 @@ type FrameProps = {
   backdrop?: boolean;
 
   /**
+   * Background layers to draw instead of the surface's own, for a layout with artwork of its own.
+   */
+  layers?: readonly BackgroundLayerTokens[] | undefined;
+
+  /**
    * The layout's regions, laid out inside the safe area.
    */
   children?: ReactNode;
@@ -72,11 +79,12 @@ export function Frame({
   variant,
   bleed,
   backdrop = true,
+  layers,
   children,
 }: FrameProps): ReactNode {
   return (
     <div className="kit-frame" data-layout={layout} {...variant}>
-      {backdrop ? <Backdrop /> : null}
+      {backdrop ? <Backdrop layers={layers} /> : null}
       <div className={className === undefined ? 'kit-safe' : `kit-safe ${className}`}>
         {children}
       </div>

@@ -34,6 +34,7 @@ import {
   type SlideNotReadyError,
 } from '#cli-error.ts';
 import { planFonts, pptxFonts } from '#export/export-fonts.ts';
+import { cliVersion } from '#version.ts';
 
 /**
  * Video formats PowerPoint plays on Windows and macOS; others (WebM) stay posters.
@@ -383,8 +384,10 @@ export const buildDeckPptx = Effect.fn('buildDeckPptx')(function* (
   contracts: readonly AnyLayoutContract[],
   options: ExportOptions,
   slides: readonly PptxSlideInput[],
-): Effect.fn.Return<PptxResult, CliError> {
+): Effect.fn.Return<PptxResult, CliError, FileSystem.FileSystem> {
+  const appVersion = yield* cliVersion();
   return yield* buildPptx({
+    ...(appVersion === 'unknown' ? {} : { appVersion }),
     title: opened.deck.config.title ?? options.deck,
     brand: opened.brand.tokens,
     mode: options.mode,

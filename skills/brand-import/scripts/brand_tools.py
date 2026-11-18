@@ -25,14 +25,19 @@
   uv run brand_tools.py fonts "Helvetica Neue" "Gotham" [--offline]
       Availability on Fontsource, licence, and open alternatives for each family.
 
-  uv run brand_tools.py check-draft brand-draft.json
-      Structural and contrast checks on a brand draft before the specimen is rendered.
+  uv run brand_tools.py check-draft brand-draft.json [--catalog catalog.json] [--workspace .]
+      Structural and contrast checks on a brand draft before the specimen is rendered. Layout specs in layouts[]
+      are checked against the layout catalog (`deck layouts <deck> --json`): names, fallbacks, bindings, boxes.
+
+  uv run brand_tools.py propose-layouts <out>/extraction.json --draft brand-draft.json [--catalog catalog.json] [--aspect-rule stretch]
+      One brand layout spec per layout of a template (used or not), written into the draft's layouts[] for review.
 """
 from __future__ import annotations
 
 import argparse
 import json
 import math
+import os
 import re
 import sys
 import urllib.parse
@@ -42,6 +47,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import _common as C  # noqa: E402
+import _layouts as L  # noqa: E402
 
 # Thresholds copied from the brand compiler (`deck brand check`). If they change there, change them here.
 TEXT_CONTRAST, GRAPHIC_CONTRAST = 4.5, 3.0
@@ -671,7 +677,12 @@ def analyze(path: Path, offline: bool) -> dict:
                       "label": next((b["label"] for b in big if b.get("label")), None), "examples": [b["text"] for b in big[:6]]}
 
     hints = Counter(h for pg in pages for h in pg.get("layout_hints", []))
-    layouts_used = [{"name": l["name"], "type": l.get("type"), "slides": l["used_by"], "placeholders": [p["type"] for p in l.get("placeholders", [])]} for l in ex.get("layouts", []) if l.get("used_by")]
+    # Every layout, used or not: a template has layouts no slide uses, and they are brand layouts too.
+    layouts_all = [{"key": l.get("key"), "name": l.get("name") or "", "type": l.get("type"), "master": l.get("master_index"), "slides": l.get("used_by", []), "unused": not l.get("used_by"),
+                    "placeholders": [p["type"] for p in l.get("placeholders", []) if p["type"] not in ("sldNum", "dt", "ftr")],
+                    "has_art": bool((l.get("art") or {}).get("has_art")), "background": (l.get("art") or {}).get("background"), "fixed_text": [t["text"] for t in l.get("fixed_text", [])][:4]}
+                   for l in ex.get("layouts", [])]
+    layouts_used = [l for l in layouts_all if not l["unused"]]
 
     out = {
         "analysis": "brand-analysis/1", "source_type": src,
@@ -682,7 +693,8 @@ def analyze(path: Path, offline: bool) -> dict:
         "shapes": obs.get("shapes"), "motion": obs.get("motion"),
         "dataviz": {"charts": chart_summary, "numbers": number_summary, "ooxml_number_formats": ooxml_formats, "stat_style": stat_style,
                     "tables": [{k: t.get(k) for k in ("page", "rows", "cols", "header", "body", "banded_guess", "style_flags")} for t in dv.get("tables", [])][:4]},
-        "layout": {"hint_counts": dict(hints), "source_layouts_used": layouts_used,
+        "layout": {"hint_counts": dict(hints), "source_layouts_used": layouts_used, "source_layouts": layouts_all,
+                   "source_generator": (ex.get("source") or {}).get("generator"),
                    "logo_candidates": [a for a in (ex.get("assets", {}).get("chrome") or ex.get("assets", {}).get("logos") or ex.get("assets", {}).get("images") or [])
                                        if a.get("logo_candidate_score", a.get("score", 0)) >= 0.5][:4]},
         "warnings": ex.get("warnings", []),
@@ -746,7 +758,13 @@ def digest(a: dict) -> str:
         L.append(f"NUMBER FORMAT: {dv['numbers']}" + (f"; chart format codes {dv['ooxml_number_formats']}" if dv["ooxml_number_formats"] else ""))
     lay = a["layout"]
     if lay["source_layouts_used"]:
-        L.append("SOURCE LAYOUTS: " + ", ".join(f"{l['name']}×{len(l['slides'])}" for l in lay["source_layouts_used"]))
+        L.append("SOURCE LAYOUTS USED: " + ", ".join(f"{l['name']}×{len(l['slides'])}" for l in lay["source_layouts_used"]))
+    if lay.get("source_layouts"):
+        unused = [l for l in lay["source_layouts"] if l["unused"]]
+        L.append(f"TEMPLATE LAYOUTS: {len(lay['source_layouts'])} ({len(unused)} unused), {sum(1 for l in lay['source_layouts'] if l['has_art'])} with art"
+                 + ("; made by the deckster export: none are imported" if (lay.get("source_generator") or {}).get("deckster") else "; `brand_tools.py propose-layouts` turns them into brand layouts"))
+        for l in lay["source_layouts"][:40]:
+            L.append(f"  {l['key'] or '-':<20} {(l['name'] or '')[:34]:<34} {l['type'] or '-':<10} {','.join(l['placeholders']) or 'no placeholders'}{'  unused' if l['unused'] else ''}{'  art' if l['has_art'] else ''}")
     if lay["hint_counts"]:
         L.append(f"LAYOUT HINTS: {lay['hint_counts']}")
     for w in a["warnings"]:
@@ -757,7 +775,7 @@ def digest(a: dict) -> str:
 # --------------------------------------------------------------------------- draft checks
 
 
-def check_draft(path: Path) -> tuple[list[str], list[str]]:
+def check_draft(path: Path, catalog_path: Path | None = None, workspace: Path | None = None) -> tuple[list[str], list[str]]:
     """A fast pre-check that mirrors the brand compiler's rules (`deck brand check`). The compiler
     itself (`deck brand check <name>` on the emitted brand.ts) is the authority."""
     d = json.loads(path.read_text())
@@ -870,7 +888,63 @@ def check_draft(path: Path) -> tuple[list[str], list[str]]:
         warns.append("review list is empty: there is always at least a font licence or a low-confidence guess to hand to a human")
     if not d.get("layouts"):
         warns.append("layouts is empty: record which source pages map to which layout archetype")
+    else:
+        specs = [e for e in d["layouts"] if L.is_spec(e)]
+        notes_only = [e for e in d["layouts"] if not L.is_spec(e)]
+        if specs:
+            catalog = None
+            try:
+                catalog = L.load_catalog(catalog_path, workspace)
+            except (RuntimeError, OSError, ValueError, KeyError) as exc:
+                warns.append(f"layouts: not checked against the layout catalog ({exc}); run `deck layouts <deck> --json > catalog.json` and pass --catalog")
+            lerrors, lwarns = L.check_specs(d["layouts"], catalog, set(surfaces), path.resolve().parent)
+            errors += [f"layouts: {m}" for m in lerrors]
+            warns += [f"layouts: {m}" for m in lwarns]
+            kept = [e for e in specs if e.get("keep", True)]
+            warns.append(f"layouts: {len(kept)} of {len(specs)} layout specs are kept for the brand ({len(specs) - len(kept)} dropped with keep: false)") if len(kept) != len(specs) else None
+        if notes_only and not specs:
+            warns.append("layouts holds notes only (archetype / maps_to): the brand gets no layouts of its own. A template's layouts come from `brand_tools.py propose-layouts`")
     return errors, warns
+
+
+def propose_layouts_cmd(args) -> None:
+    """Writes layout specs for every layout of the extraction into the draft's layouts[]."""
+    ex = json.loads(args.extraction.read_text(encoding="utf-8"))
+    draft = json.loads(args.draft.read_text(encoding="utf-8"))
+    try:
+        catalog = L.load_catalog(args.catalog, args.workspace)
+    except (RuntimeError, OSError, ValueError, KeyError) as exc:
+        sys.exit(f"propose-layouts needs the layout catalog: {exc}")
+    # Art paths in the draft are relative to the draft's folder.
+    rel = os.path.relpath(args.extraction.resolve().parent, args.draft.resolve().parent)
+    for lo in ex.get("layouts", []):
+        art = lo.get("art") or {}
+        for k in ("svg", "svg_with_background"):
+            if art.get(k):
+                art[k] = (Path(rel) / art[k]).as_posix()
+    specs, notes = L.propose(ex, catalog, draft, draft.get("name") or "brand", args.aspect_rule)
+    for n in notes:
+        print("note:", n)
+    for sp in specs:
+        fb = sp["fallback"] or "NO FALLBACK"
+        print(f"  {sp['key']:<20} {sp['name']:<28} -> {fb:<10} surface {sp['surface']:<8} {len(sp['regions'])} regions{' +art' if sp.get('background') else ''}{'  unused' if sp['unused'] else ''}{'' if sp['keep'] else '  keep: false'}")
+        for n in sp["notes"]:
+            print("      -", n)
+    print(f"{len(specs)} layout specs ({sum(1 for s_ in specs if s_['keep'])} kept)")
+    if args.print_only or not specs:
+        return
+    old = [e for e in draft.get("layouts", []) if not L.is_spec(e)]
+    existing = [e for e in draft.get("layouts", []) if L.is_spec(e)]
+    if args.replace:
+        draft["layouts"] = old + specs
+        message = "specs regenerated (--replace); your notes kept"
+    else:
+        have = {e.get("key") for e in existing}
+        added = [sp for sp in specs if sp["key"] not in have]
+        draft["layouts"] = old + existing + added
+        message = f"{len(existing)} existing specs kept as they are (your edits stay), {len(added)} new ones added; --replace regenerates all"
+    args.draft.write_text(json.dumps(draft, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print("wrote", args.draft, f"(layouts[]: {message})")
 
 
 def main() -> None:
@@ -901,6 +975,16 @@ def main() -> None:
     f.add_argument("--offline", action="store_true")
     cd = sub.add_parser("check-draft")
     cd.add_argument("draft", type=Path)
+    cd.add_argument("--catalog", type=Path, default=None, help="`deck layouts <deck> --json` saved to a file; by default it is run in --workspace")
+    cd.add_argument("--workspace", type=Path, default=Path("."))
+    pl = sub.add_parser("propose-layouts", help="turn every layout of a template extraction into a brand layout spec")
+    pl.add_argument("extraction", type=Path)
+    pl.add_argument("--draft", type=Path, required=True, help="the brand-draft.json: its name, surfaces and type scale are used, and its layouts[] is updated")
+    pl.add_argument("--catalog", type=Path, default=None, help="`deck layouts <deck> --json` saved to a file; by default it is run in --workspace")
+    pl.add_argument("--workspace", type=Path, default=Path("."))
+    pl.add_argument("--aspect-rule", choices=("auto", "uniform", "stretch"), default="auto", help="for a non-16:9 source: uniform (default) or stretch for layouts with no art")
+    pl.add_argument("--print-only", action="store_true", help="print the proposal without changing the draft")
+    pl.add_argument("--replace", action="store_true", help="regenerate every spec, discarding your edits; by default specs already in the draft (by key) are kept as they are")
     args = ap.parse_args()
 
     if args.cmd == "analyze":
@@ -939,8 +1023,10 @@ def main() -> None:
                           "contrast_on_bg": contrasts, "cvd": rep_}, indent=2, ensure_ascii=False))
     elif args.cmd == "fonts":
         print(json.dumps([font_report(x, args.offline) for x in args.families], indent=2, ensure_ascii=False))
+    elif args.cmd == "propose-layouts":
+        propose_layouts_cmd(args)
     elif args.cmd == "check-draft":
-        errors, warns = check_draft(args.draft)
+        errors, warns = check_draft(args.draft, args.catalog, args.workspace)
         for e in errors:
             print("ERROR  ", e)
         for w in warns:

@@ -5,18 +5,20 @@ import { deckCommand } from '@deckster/engine/command';
 import { DEFAULT_LAYOUT } from '@deckster/engine/frontmatter';
 import {
   appendSlideId,
+  deckBrandName,
   findDeck,
-  loadLayoutCatalog,
+  loadDeck,
   slideListProblem,
   SLIDES_DIR,
   type DeckBuildError,
   type LayoutCatalogIndex,
 } from '@deckster/vite-plugin';
-import { Effect, FileSystem } from 'effect';
+import { Console, Effect, FileSystem, Result } from 'effect';
 import path from 'node:path';
 
 import { cliError, fileSystemError, type CliError, type FileSystemError } from '#cli-error.ts';
 import { exampleMdx } from '#layouts/list-layouts.ts';
+import { loadBrandCatalog } from '#layouts/load-brand-catalog.ts';
 import { assertKebabName } from '#scaffold/names.ts';
 import { slideTitle } from '#scaffold/templates.ts';
 
@@ -64,11 +66,25 @@ export const addSlide = Effect.fn('addSlide')(function* (
 ): Effect.fn.Return<string[], CliError | DeckBuildError | FileSystemError, FileSystem.FileSystem> {
   const id = yield* assertKebabName('slide id', options.id);
   const deck = yield* findDeck(options.workspaceRoot, options.deck);
-  const contract = yield* chooseLayout(
-    yield* loadLayoutCatalog(),
-    options.layout ?? DEFAULT_LAYOUT,
-    deck.id,
+  // A deck that does not load fully (a listed slide without a file, say) still gets its slide
+  // added, against the config's brand when the config reads; the problem is reported only when
+  // the layout asked for is one that the brand's layouts might have supplied.
+  const loaded = yield* Effect.result(loadDeck(options.workspaceRoot, deck));
+  const configured = Result.isSuccess(loaded) ? loaded.success.config.brand : undefined;
+  const { catalog, warning } = yield* loadBrandCatalog(
+    options.workspaceRoot,
+    deckBrandName({}, configured),
   );
+  if (warning !== undefined) {
+    yield* Console.error(`warning: ${warning}`);
+  }
+
+  const wanted = options.layout ?? DEFAULT_LAYOUT;
+  if (Result.isFailure(loaded) && !catalog.has(wanted)) {
+    return yield* loaded.failure;
+  }
+
+  const contract = yield* chooseLayout(catalog, wanted, deck.id);
   const slideFile = path.join(deck.slidesDir, `${id}.mdx`);
   const taken = yield* existingSlideFiles(deck.slidesDir, id);
   const [existing] = taken;

@@ -6,7 +6,7 @@
 slides on each non-default surface, and the chart and number components.
 
 Usage:
-  python3 make_specimen.py <brand> [--deck <name>] [--replace]
+  python3 make_specimen.py <brand> [--deck <name>] [--replace] [--map-out <file>]
 
 Run it from the workspace folder (the one with decks/ and brands/), after `deck brand check <brand>`
 passes. It uses only the installed `deck` command: `deck new`, `deck layouts --json` and `deck new slide`. The deck is called `zz-<brand>-specimen` by default (the
@@ -14,6 +14,11 @@ passes. It uses only the installed `deck` command: `deck new`, `deck layouts --j
 
   deck lint <deck>               what the brand's sizes and spacing break
   deck shot <deck>               a PNG per slide in .deck/shots/<deck>/
+
+A brand that came from a template (brands/<brand>/layouts.ts) gets one slide per brand layout, first, named
+`brand-<layout>`; a layout with art for a second surface (a light and a dark master) gets another slide on that
+surface. `--map-out` writes which slide shows which layout (and which source layout it is compared with), for
+compare.py --layouts. `DECK_CMD` replaces the `deck` command (for example `pnpm deck` in a framework checkout).
 
 The content is the framework's own example text, so it differs from the source's; judge treatment,
 not wording. Lint may warn about repeated layouts and the layout slides' topic-style titles:
@@ -23,7 +28,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -55,16 +62,23 @@ FIGURES = (
 )
 
 
+def deck_command() -> list[str]:
+    return shlex.split(os.environ.get("DECK_CMD") or "deck")
+
+
 def deck(*args: str) -> str:
-    run = subprocess.run(["deck", *args], capture_output=True, text=True)
+    run = subprocess.run([*deck_command(), *args], capture_output=True, text=True)
     if run.returncode != 0:
-        sys.exit(f"`deck {' '.join(args)}` failed:\n{run.stdout}{run.stderr}")
+        out = run.stdout + run.stderr
+        hint = "\nThe deck is a workspace package: run `npm install` (or `pnpm install`) in the workspace so it is linked, then run this again with --replace." if "Cannot find package" in out else ""
+        sys.exit(f"`deck {' '.join(args)}` failed:\n{out}{hint}")
     return run.stdout
 
 
 def deck_json(*args: str) -> dict:
     out = deck(*args, "--json")
-    return json.loads(out[out.index("{"):])
+    start = out.index("\n{") + 1 if "\n{" in out else out.index("{")
+    return json.loads(out[start:])
 
 
 def kebab(text: str) -> str:
@@ -76,8 +90,9 @@ def main() -> None:
     ap.add_argument("brand")
     ap.add_argument("--deck", help="deck folder name (default zz-<brand>-specimen)")
     ap.add_argument("--replace", action="store_true", help="delete and rebuild the deck if it exists")
+    ap.add_argument("--map-out", help="write which slide shows which brand layout to this JSON file")
     args = ap.parse_args()
-    if shutil.which("deck") is None:
+    if shutil.which(deck_command()[0]) is None:
         sys.exit("`deck` is not on PATH. Install it with: npm install --global @deckster/cli (Node 26 or newer).")
     name = args.deck or f"zz-{kebab(args.brand)}-specimen"
     folder = Path("decks") / name
@@ -86,17 +101,39 @@ def main() -> None:
             sys.exit(f"{folder} already exists. Pass --replace to rebuild it.")
         shutil.rmtree(folder)
 
+    ap_map = args.map_out
     deck("new", name, "--brand", args.brand, "--title", f"{args.brand} specimen")
     layouts = deck_json("layouts", name)["layouts"]
     added: list[str] = []
+    mapping: list[dict] = []
+    own = [lay for lay in layouts if str(lay.get("source", "")) == f"brand:{args.brand}"]
+    notes_file = Path("brands") / args.brand / "import-notes.json"
+    imported = {}
+    if notes_file.is_file():
+        for entry in (json.loads(notes_file.read_text(encoding="utf-8")).get("layouts") or []):
+            if isinstance(entry, dict) and entry.get("name"):
+                imported[entry["name"]] = entry
 
     def add_slide(slide_id: str, layout: str) -> Path:
         deck("new", "slide", name, slide_id, "--layout", layout)
         added.append(slide_id)
         return folder / "slides" / f"{slide_id}.mdx"
 
+    for lay in own:
+        entry = imported.get(lay["name"], {})
+        slide_id = f"brand-{lay['name']}"
+        add_slide(slide_id, lay["name"])
+        mapping.append({"layout": lay["name"], "surface": None, "slide": slide_id, "keys": entry.get("keys") or [], "sources": entry.get("sources") or [], "surface_default": entry.get("surface")})
+        for art in entry.get("art") or []:
+            m = re.match(rf"layouts/{re.escape(lay['name'])}-([a-z0-9-]+?)(?:-\d+)?\.\w+$", art)
+            surface = m.group(1) if m else None
+            if surface and surface != entry.get("surface"):
+                other = f"{slide_id}-{surface}"
+                path = add_slide(other, lay["name"])
+                path.write_text(path.read_text().replace(f"layout: {lay['name']}\n", f"layout: {lay['name']}\nsurface: {surface}\n", 1))
+                mapping.append({"layout": lay["name"], "surface": surface, "slide": other, "keys": entry.get("keys") or [], "sources": entry.get("sources") or [], "surface_default": entry.get("surface")})
     for layout in layouts:
-        if layout["name"] != "title":  # `deck new` already wrote the cover
+        if layout["name"] != "title" and layout not in own:  # `deck new` already wrote the cover
             add_slide(f"layout-{layout['name']}", layout["name"])
     for surface in SURFACES:
         path = add_slide(f"content-{surface}", "content")
@@ -106,7 +143,10 @@ def main() -> None:
         path = add_slide(slide_id, "chart")
         path.write_text(f"---\nlayout: chart\ntitle: {title}\n---\n\n{body}\n\n<Notes>Specimen.</Notes>\n")
 
-    print(f"Built {folder} with {len(added) + 1} slides.")
+    if ap_map:
+        Path(ap_map).write_text(json.dumps({"deck": name, "brand": args.brand, "slides": mapping}, indent=2) + "\n", encoding="utf-8")
+        print("wrote", ap_map)
+    print(f"Built {folder} with {len(added) + 1} slides ({len(mapping)} on the brand's own layouts).")
     print(f"Next: deck lint {name}; deck shot {name}")
 
 

@@ -253,3 +253,36 @@ describe('validateFrontmatter with a layout title contract and nested fields', (
     expect(() => Effect.runSync(check({ layout: 'figures', title: 'Two', items }))).not.toThrow();
   });
 });
+
+describe('validateFrontmatter on a brand layout', () => {
+  const brandLayout = defineLayoutContract({
+    name: 'brand-split',
+    description: 'A brand layout.',
+    schema: Schema.Struct({}),
+    slots: { left: { description: 'Left.', accepts: ['bullets'] } },
+    budget: {},
+    example: { frontmatter: {}, body: '<Left>\n- a\n</Left>\n' },
+  });
+  const catalog = new Map(TEST_CATALOG).set('brand-split', {
+    contract: brandLayout,
+    source: 'brand:demo',
+    fallback: 'split',
+  });
+
+  it('tells the author to accept a field its fallback has in the brand’s layouts.ts', () => {
+    const error = failure(
+      validateFrontmatter({ layout: 'brand-split', ratio: '2:1' }, catalog, REF),
+    );
+    const [problem] = error.problems;
+    expect(problem?.message).toBe('"ratio" is not a frontmatter field.');
+    expect(problem?.fix).toContain("fields: ['ratio']");
+    expect(problem?.fix).toContain('brands/demo/layouts.ts');
+  });
+
+  it('keeps the usual fix for a field the fallback lacks too', () => {
+    const error = failure(
+      validateFrontmatter({ layout: 'brand-split', colour: 'red' }, catalog, REF),
+    );
+    expect(error.problems[0]?.fix).not.toContain('layouts.ts');
+  });
+});

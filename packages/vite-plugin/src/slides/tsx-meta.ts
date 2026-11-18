@@ -59,7 +59,27 @@ type AstNode = {
    * The node's offset in the source, in UTF-16 code units.
    */
   start: number;
+
+  /**
+   * The offset just after the node, in UTF-16 code units.
+   */
+  end: number;
   [key: string]: unknown;
+};
+
+/**
+ * A stretch of source, as offsets in UTF-16 code units.
+ */
+export type SourceSpan = {
+  /**
+   * The offset of the first character.
+   */
+  start: number;
+
+  /**
+   * The offset just after the last character.
+   */
+  end: number;
 };
 
 /**
@@ -70,6 +90,12 @@ export type TsxMeta = {
    * The `export const frontmatter` object literal, or `{}` when the slide has none.
    */
   frontmatter: unknown;
+
+  /**
+   * Where the `layout` value of the frontmatter literal sits in the source, or `undefined` when the
+   * slide names no layout.
+   */
+  layoutSpan: SourceSpan | undefined;
 
   /**
    * The text of every `<Notes>` element, normalized as MDX notes are, joined by blank lines.
@@ -106,16 +132,24 @@ export function readTsxMeta(code: string, ref: FileRef): TsxMeta {
   const program: unknown = parseAst(code, { lang: 'tsx' });
   const context: Context = { code, ref, notes: notesNames(program) };
   if (!isNode(program)) {
-    return { frontmatter: {}, notes: '', heading: undefined, candidates: [] };
+    return {
+      frontmatter: {},
+      layoutSpan: undefined,
+      notes: '',
+      heading: undefined,
+      candidates: [],
+    };
   }
 
   let frontmatter: unknown = {};
+  let layoutSpan: SourceSpan | undefined;
   let heading: string | undefined;
   const notes: string[] = [];
   visit(program, context, (node) => {
     const exported = exportedConstant(node);
     if (exported?.name === FRONTMATTER_EXPORT) {
       frontmatter = evaluateLiteral(exported.init, context);
+      layoutSpan = layoutValueSpan(exported.init);
     }
 
     if (isNotesElement(node, context)) {
@@ -131,6 +165,7 @@ export function readTsxMeta(code: string, ref: FileRef): TsxMeta {
 
   return {
     frontmatter,
+    layoutSpan,
     notes: notes.filter((text) => text !== '').join(NOTES_SEPARATOR),
     heading,
     candidates: slideExports.candidates,
@@ -306,6 +341,32 @@ function exportProblems(name: string, declared: boolean, line: number): Problem[
   }
 
   return [];
+}
+
+/**
+ * Where the value of the `layout` property sits in a frontmatter literal, through `satisfies`, `as`
+ * and parentheses.
+ *
+ * @param node - The frontmatter expression.
+ * @returns The value's span, or `undefined` when the literal has no plain `layout` property.
+ */
+function layoutValueSpan(node: AstNode): SourceSpan | undefined {
+  if (WRAPPER_EXPRESSIONS.has(node.type) && isNode(node.expression)) {
+    return layoutValueSpan(node.expression);
+  }
+
+  const properties = node.type === 'ObjectExpression' ? node.properties : undefined;
+  if (!Array.isArray(properties)) {
+    return undefined;
+  }
+
+  for (const property of properties) {
+    if (isNode(property) && propertyKey(property) === 'layout' && isNode(property.value)) {
+      return { start: property.value.start, end: property.value.end };
+    }
+  }
+
+  return undefined;
 }
 
 /**

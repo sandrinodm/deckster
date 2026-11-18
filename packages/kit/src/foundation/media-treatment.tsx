@@ -35,6 +35,11 @@ type TreatedMediaProps = {
   rounded?: boolean;
 
   /**
+   * How an `Image` or `Video` inside that names no `fit` fills the frame; `cover` when left out.
+   */
+  fit?: 'cover' | 'contain';
+
+  /**
    * The media: photos and videos placed directly in it get the treatment; components keep their own
    * look.
    */
@@ -52,6 +57,7 @@ export function TreatedMedia({
   className,
   treatment,
   rounded = true,
+  fit,
   children,
 }: TreatedMediaProps): ReactNode {
   const { brand } = useBrand();
@@ -70,7 +76,7 @@ export function TreatedMedia({
       data-treatment={name}
       data-tint={plan.tint !== undefined}
       style={style}>
-      <MediaFrameContext value={{ treatment: name, rounded }}>{children}</MediaFrameContext>
+      <MediaFrameContext value={{ treatment: name, rounded, fit }}>{children}</MediaFrameContext>
       {plan.duotone === undefined ? null : <DuotoneFilter id={filterId} plan={plan.duotone} />}
     </div>
   );

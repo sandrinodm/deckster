@@ -222,7 +222,8 @@ Goal: say which kit layouts the source uses, how each is treated, and where the 
 2. **Map each cluster to a layout the framework has.** Run `deck layouts <deck> --json` and use its names and descriptions; the set is growing, so do not assume one exists. A cluster with no match gets `maps_to: null` and a note describing the structure. Chart pages map to the `chart` layout (or to `split` beside text) holding a chart component.
 3. **For each archetype record**: source pages, the surface it uses, alignment (left or centred), where the title sits, and what is distinctive (an eyebrow above every headline, rules between bullets, numbers in cards, a coloured bar under the title).
 4. **Decide `override_needed`.** True only when the difference is structural and typical of the brand (titles always bottom-left on a full-bleed gradient; section numbers set huge behind the title). Colour, type and spacing differences are tokens, not overrides.
-5. Archetypes the source does not have need no entry. The kit's defaults, themed by the tokens, cover them.
+5. **A template's own layouts** are not archetypes: `brand_tools.py propose-layouts` turns every layout of a `.potx`/`.pptx` into a brand layout spec (`references/brand-draft-format.md`, Layout specs). Keep the archetype notes for the kit layouts the brand's pages map to; the specs carry the layouts the brand brings.
+6. Archetypes the source does not have need no entry. The kit's defaults, themed by the tokens, cover them.
 
 Recognising archetypes from an image, quickly:
 

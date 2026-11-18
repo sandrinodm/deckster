@@ -166,7 +166,9 @@ export function Video(props: VideoProps): ReactNode {
  * The poster alone: what static mode, screenshots and exports show. The slide's `ready()` waits for
  * it to decode.
  */
-function Poster({ poster, alt, fit = 'cover', focal }: VideoProps): ReactNode {
+function Poster({ poster, alt, fit: ownFit, focal }: VideoProps): ReactNode {
+  const frame = useMediaFrame();
+  const fit = ownFit ?? frame?.fit ?? 'cover';
   const ref = useRef<HTMLImageElement | null>(null);
   const [loaded, setLoaded] = useState(false);
   useReadyHold(!loaded);
@@ -220,6 +222,7 @@ function Player(props: PlayerProps): ReactNode {
   const { src, poster, alt, segment, loop = false, muted = true, autoPlay = true } = props;
   const { isActive } = useSlide();
   const held = useHeldByStep();
+  const frame = useMediaFrame();
   // Inside a `<Step>` the video waits for its step, so it starts from the top as it appears.
   const playing = isActive && !held;
   const ref = useRef<HTMLVideoElement | null>(null);
@@ -271,7 +274,7 @@ function Player(props: PlayerProps): ReactNode {
       playsInline
       preload="metadata"
       style={{
-        objectFit: props.fit ?? 'cover',
+        objectFit: props.fit ?? frame?.fit ?? 'cover',
         ...focalStyle(props.focal),
       }}
     />

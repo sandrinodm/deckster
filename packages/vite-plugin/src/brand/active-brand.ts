@@ -1,8 +1,9 @@
 import type { Rollup, ViteDevServer } from 'vite';
 
-import { describeProblem } from '@deckster/brand';
+import { describeProblem, LAYOUTS_FILE } from '@deckster/brand';
 import { BRANDS_DIR, onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
 import { Effect } from 'effect';
+import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 import type { DeckLocation } from '#decks/deck-paths.ts';
@@ -116,6 +117,14 @@ export function brandModuleSource(
 ): string {
   const { id, brand, deck, pluginFiles } = input;
   context.addWatchFile(brand.location.file);
+  if (brand.layoutsFile !== undefined) {
+    context.addWatchFile(brand.layoutsFile);
+  }
+
+  for (const file of Object.values(brand.backgroundFiles)) {
+    context.addWatchFile(file);
+  }
+
   if (id === RESOLVED_BRAND_ID) {
     for (const warning of brand.warnings) {
       context.warn(`${brand.location.displayPath}: ${describeProblem(warning)} ${warning.fix}`);
@@ -152,9 +161,10 @@ export function watchBrand(
     environment.moduleGraph.invalidateAll();
     environment.hot.send({ type: 'full-reload' });
   };
-  server.watcher.on('all', (_event, file) => {
+  server.watcher.on('all', (event, file) => {
     const isConfigChange = file === input.deck.configFile;
-    if (isConfigChange || isActiveBrandFile(brandsDir, file, input.brand.name())) {
+    const isActive = isActiveBrandFile(brandsDir, file, input.brand.name());
+    if (isConfigChange || isActive || affectsFallbacks(brandsDir, event, file)) {
       reload();
     }
   });
@@ -169,6 +179,44 @@ export function watchBrand(
     }
   });
   server.httpServer?.once('close', stop);
+}
+
+/**
+ * Whether a change can alter which layouts other brands define, and so how slides fall back: a
+ * brand's `layouts.ts` changing, or a brand folder appearing or disappearing.
+ *
+ * @param brandsDir - The absolute `brands/` folder.
+ * @param event - The watcher's event name, such as `change` or `unlinkDir`.
+ * @param file - An absolute path the watcher reported.
+ */
+export function affectsFallbacks(brandsDir: string, event: string, file: string): boolean {
+  const relative = path.relative(brandsDir, file);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    return false;
+  }
+
+  const [, ...rest] = relative.split(path.sep);
+  const isBrandFolder = rest.length === 0 && (event === 'addDir' || event === 'unlinkDir');
+  const isLayoutsFile = rest.length === 1 && rest[0] === LAYOUTS_FILE;
+  return isBrandFolder || isLayoutsFile;
+}
+
+/**
+ * The `layouts.ts` of every brand in the workspace that has one, for a build to watch: another
+ * brand's layouts decide how a slide on a layout the active brand lacks renders.
+ *
+ * @param workspaceRoot - The absolute workspace root.
+ */
+export function brandLayoutsFiles(workspaceRoot: string): string[] {
+  const brandsDir = path.join(workspaceRoot, BRANDS_DIR);
+  try {
+    return readdirSync(brandsDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(brandsDir, entry.name, LAYOUTS_FILE))
+      .filter((file) => existsSync(file));
+  } catch {
+    return [];
+  }
 }
 
 /**

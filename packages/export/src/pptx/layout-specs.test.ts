@@ -1,8 +1,9 @@
-import type { BrandTokens } from '@deckster/brand';
+import type { BrandLayoutTokens, BrandTokens } from '@deckster/brand';
 import type { AnyLayoutContract } from '@deckster/engine/layout';
 
 import { describe, expect, it } from 'vite-plus/test';
 
+import { slideInput } from '#pptx/deck.fixture.ts';
 import { masterSpecs, matchesSource, placeholderRefs } from '#pptx/layout-specs.ts';
 import { surfaceThemeFixture } from '#pptx/theme.fixture.ts';
 import { line, paragraph, textNode } from '#scene/scene.fixture.ts';
@@ -12,6 +13,7 @@ import { line, paragraph, textNode } from '#scene/scene.fixture.ts';
  */
 function brand(): BrandTokens {
   return {
+    layouts: [],
     spacing: { margin: { x: 128, y: 112 }, scale: { lg: 40 } },
     typography: {
       scale: { headline: { size: 80, lineHeight: 1.02 } },
@@ -59,6 +61,47 @@ describe('placeholder mapping', () => {
       type: 'title',
       idx: undefined,
     });
+  });
+
+  it('types a picture placeholder pic and numbers it after the text placeholders', () => {
+    const refs = placeholderRefs('content', ['title', 'body', 'picture']);
+    expect(refs.get('picture')).toEqual({ type: 'pic', idx: 2 });
+  });
+
+  it('places a brand layout placeholders at its region boxes and names it after its label', () => {
+    const layout = {
+      name: 'brand-photo',
+      label: 'Brand photo',
+      title: { box: [10, 20, 300, 100] },
+      regions: [
+        { bind: { slot: 'body' }, kind: 'text', box: [10, 200, 300, 400] },
+        { bind: { slot: 'media' }, kind: 'media', box: [400, 0, 500, 600] },
+      ],
+      layers: {},
+    } as unknown as BrandLayoutTokens;
+    const contract = {
+      name: 'brand-photo',
+      pptx: {
+        type: 'content',
+        placeholders: [
+          { kind: 'title', from: { selector: '.kit-brand-title' } },
+          { kind: 'body', from: { slot: 'body' } },
+          { kind: 'picture', from: { slot: 'media' } },
+        ],
+      },
+    } as unknown as AnyLayoutContract;
+    const slide = slideInput(0, [], { layout: 'brand-photo' });
+    const [master] = masterSpecs(
+      { layouts: [contract], slides: [slide], brand: { ...brand(), layouts: [layout] } },
+      { themes: [surfaceThemeFixture()], font: undefined },
+    );
+    const spec = master?.layouts[0];
+    expect(spec?.label).toBe('Brand photo');
+    expect(spec?.placeholders.map((placeholder) => placeholder.rect)).toEqual([
+      { x: 10, y: 20, width: 300, height: 100 },
+      { x: 10, y: 200, width: 300, height: 400 },
+      { x: 400, y: 0, width: 500, height: 600 },
+    ]);
   });
 
   it('matches frames by slot and by selector', () => {

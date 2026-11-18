@@ -1,4 +1,5 @@
 import { definePlugin } from '@deckster/engine';
+import tokens from 'virtual:deck/brand';
 
 import { AppFrame } from '#apps/app-frame.tsx';
 import { Live } from '#apps/live.tsx';
@@ -17,6 +18,7 @@ import { askLayout } from '#layouts/ask-layout.tsx';
 import { beforeAfterLayout } from '#layouts/before-after-layout.tsx';
 import { bentoLayout } from '#layouts/bento-layout.tsx';
 import { bioLayout } from '#layouts/bio-layout.tsx';
+import { brandLayoutDefinitions } from '#layouts/brand-layout.tsx';
 import { cardsLayout } from '#layouts/cards-layout.tsx';
 import { chartLayout } from '#layouts/chart-layout.tsx';
 import { closingLayout } from '#layouts/closing-layout.tsx';
@@ -89,7 +91,8 @@ import '#motion/motion.css';
  * new tab) and tables (`table`, which the table layout treats from the slide's frontmatter), the
  * link components (`Button`, `Download`, `LinkCard`, `QR`), the code components (`Code`,
  * `CodeMove`, `CodeStep`, `Terminal`, `Cmd`, `Out`), the media components (`Image`, `Video`,
- * `Lottie`), `Icon` and the page chrome the brand describes. Each layout's contract is in
+ * `Lottie`), `Icon` and the page chrome the brand describes. It ends with the active brand's own
+ * layouts (`layouts.ts`), each drawn by the generic `BrandLayout`. Each layout's contract is in
  * `catalog.ts`, which the build loads in Node.
  */
 export default definePlugin({
@@ -147,6 +150,7 @@ export default definePlugin({
     askLayout,
     sourcesLayout,
     closingLayout,
+    ...brandLayoutDefinitions(tokens.layouts),
   ],
   components: {
     a: Link,

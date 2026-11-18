@@ -1,3 +1,4 @@
+import type { BrandTokens } from '@deckster/brand';
 import type {
   AnyLayoutContract,
   ContentBudget,
@@ -10,14 +11,17 @@ import { SlideFrontmatter } from '@deckster/engine/frontmatter';
 import { combineBudgets } from '@deckster/engine/layout';
 import { BODY_SLOT, slotTag } from '@deckster/engine/slots';
 import {
+  deckBrandName,
   findDeck,
   loadDeck,
-  loadLayoutCatalog,
   type CatalogLayout,
   type DeckBuildError,
   type LayoutCatalogIndex,
 } from '@deckster/vite-plugin';
 import { Effect, Predicate, Result, Schema, type FileSystem } from 'effect';
+import { parse as parseYaml } from 'yaml';
+
+import { loadBrandCatalog } from '#layouts/load-brand-catalog.ts';
 
 /**
  * What `body` is when a layout's contract does not describe it.
@@ -48,6 +52,11 @@ const DEFAULT_BODY_SLOT: SlotInfo = {
  * A frontmatter string YAML reads back as the same string without quotes.
  */
 const PLAIN_YAML_PATTERN = /^[\w ./-]+$/;
+
+/**
+ * What a layout's `source` starts with when the deck's brand supplies it.
+ */
+export const BRAND_SOURCE_PREFIX = 'brand:';
 
 /**
  * A JSON Schema object, as `deck layouts --json` prints it.
@@ -115,9 +124,22 @@ export type LayoutInfo = {
   name: string;
 
   /**
-   * The package that supplies the layout, such as `@deckster/kit`.
+   * The package that supplies the layout, such as `@deckster/kit`, or `brand:<name>` for a layout
+   * the deck's brand brings in its `layouts.ts`.
    */
   source: string;
+
+  /**
+   * For a brand layout, the kit layout a slide on it falls back to when the deck moves to a brand
+   * without it; `null` for every other layout.
+   */
+  fallback: string | null;
+
+  /**
+   * For a brand layout, its name in the source template; `null` when it has none or the layout is
+   * not a brand's.
+   */
+  label: string | null;
 
   /**
    * When to use it.
@@ -209,6 +231,12 @@ export type LayoutCatalogInfo = {
    * Every layout, in catalog order.
    */
   layouts: LayoutInfo[];
+
+  /**
+   * What the brand's layouts are missing for, such as a brand that does not load; empty when
+   * nothing is wrong.
+   */
+  warnings: string[];
 };
 
 /**
@@ -218,16 +246,26 @@ export type LayoutCatalogInfo = {
  *
  * @param workspaceRoot - The workspace that contains the deck.
  * @param deckId - The deck folder name.
+ * @param brandOverride - A brand folder that replaces the deck config's `brand`, as `--brand` does.
  * @returns The common frontmatter fields and the layouts, in catalog order.
  * @throws DeckBuildError in the error channel when the deck does not exist, its config is invalid,
- *   or a layout catalog fails to load.
+ *   or a layout catalog or the brand's layouts fail to load; BrandError when the brand does not
+ *   load.
  */
 export const listLayouts = Effect.fn('listLayouts')(function* (
   workspaceRoot: string,
   deckId: string,
+  brandOverride?: string,
 ): Effect.fn.Return<LayoutCatalogInfo, DeckBuildError, FileSystem.FileSystem> {
-  yield* loadDeck(workspaceRoot, yield* findDeck(workspaceRoot, deckId));
-  return describeCatalog(yield* loadLayoutCatalog());
+  const deck = yield* loadDeck(workspaceRoot, yield* findDeck(workspaceRoot, deckId));
+  const { catalog, brand, warning } = yield* loadBrandCatalog(
+    workspaceRoot,
+    deckBrandName(deck.config, brandOverride),
+  );
+  return {
+    ...describeCatalog(catalog, brand?.tokens),
+    warnings: warning === undefined ? [] : [warning],
+  };
 });
 
 /**
@@ -235,10 +273,19 @@ export const listLayouts = Effect.fn('listLayouts')(function* (
  *
  * @param catalog - The layouts by name.
  */
-export function describeCatalog(catalog: LayoutCatalogIndex): LayoutCatalogInfo {
+export function describeCatalog(
+  catalog: LayoutCatalogIndex,
+  brand?: Pick<BrandTokens, 'layouts'>,
+): LayoutCatalogInfo {
   return {
     slideFrontmatter: jsonSchemaOf(SlideFrontmatter),
-    layouts: [...catalog.values()].map(describeLayout),
+    warnings: [],
+    layouts: [...catalog.values()].map((layout) =>
+      describeLayout(
+        layout,
+        brand?.layouts.find((entry) => entry.name === layout.contract.name),
+      ),
+    ),
   };
 }
 
@@ -246,13 +293,19 @@ export function describeCatalog(catalog: LayoutCatalogIndex): LayoutCatalogInfo 
  * The printable form of one layout.
  *
  * @param layout - The layout and its source.
+ * @param brandLayout - The brand's spec of the layout, when the layout comes from the brand.
  */
-function describeLayout({ contract, source }: CatalogLayout): LayoutInfo {
+function describeLayout(
+  { contract, source }: CatalogLayout,
+  brandLayout: BrandTokens['layouts'][number] | undefined,
+): LayoutInfo {
   const frontmatter = { layout: contract.name, ...contract.example.frontmatter };
   const fields = describeFields(contract);
   return {
     name: contract.name,
     source,
+    fallback: source.startsWith(BRAND_SOURCE_PREFIX) ? (brandLayout?.fallback ?? null) : null,
+    label: source.startsWith(BRAND_SOURCE_PREFIX) ? (brandLayout?.label ?? null) : null,
     description: contract.description,
     frontmatter: withDefaults(jsonSchemaOf(contract.schema), fields),
     fields,
@@ -470,12 +523,15 @@ function isEmptyCollection(value: unknown): boolean {
 }
 
 /**
- * A scalar as YAML: plain strings as they are, everything else as JSON (which YAML reads).
+ * A scalar as YAML: plain strings as they are, everything else as JSON (which YAML reads). A string
+ * such as `2028` or `true` is quoted, because YAML would read it back as a number or a boolean.
  *
  * @param value - A frontmatter value.
  */
 function yamlScalar(value: unknown): string {
-  return typeof value === 'string' && PLAIN_YAML_PATTERN.test(value)
+  return typeof value === 'string' &&
+    PLAIN_YAML_PATTERN.test(value) &&
+    parseYaml(`- ${value}`)?.[0] === value
     ? value
     : JSON.stringify(value);
 }

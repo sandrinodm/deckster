@@ -24,6 +24,18 @@ const TEXT_SELECTOR = 'kit-chrome-text';
 const POSITION_STEP_PX = 2;
 
 /**
+ * Page numbers are compared by their centre in steps this many canvas pixels wide, so `9` and `10`
+ * count as the same place however the number is aligned in its box.
+ */
+const PAGE_POSITION_STEP_PX = 48;
+
+/**
+ * Matches a text that is only a page number, `6` or `6 / 9`, which is a page number even when the
+ * deck slide number differs from the number shown (a hidden slide before it).
+ */
+const PAGE_NUMBER_TEXT = /^\s*\d+(?:\s*\/\s*\d+)?\s*$/;
+
+/**
  * Matches a run of digits, which the page number's text has in common with other numbers.
  */
 const DIGIT_RUN = /\d+/g;
@@ -78,7 +90,10 @@ export function chromeShapes(slide: PptxSlideInput, items: readonly PlanItem[]):
     }
 
     const text = textOf(node);
-    const kind = new RegExp(`(^|\\D)${number}(?!\\d)`).test(text) ? 'page' : 'footer';
+    const kind =
+      new RegExp(`(^|\\D)${number}(?!\\d)`).test(text) || PAGE_NUMBER_TEXT.test(text)
+        ? 'page'
+        : 'footer';
     const color = node.paragraphs[0]?.lines[0]?.runs[0]?.style.color ?? '';
     const shown = kind === 'page' ? text.replace(DIGIT_RUN, '#') : text;
     return [{ kind, node, key: keyOf(kind, node, `${shown}|${color}`), slide }];
@@ -137,6 +152,28 @@ export function commonChrome(sets: readonly (readonly ChromeShape[])[]): ChromeS
 }
 
 /**
+ * The chrome most slides of a set draw, counting a set with none as a look of its own: what a
+ * layout draws, when its slides hide the page chrome the layout then hides too. Ties go to the
+ * earliest slide.
+ *
+ * @param sets - Each slide's chrome, in order.
+ * @returns The most common set, or an empty one for no slides.
+ */
+export function modalChrome(sets: readonly (readonly ChromeShape[])[]): ChromeShape[] {
+  let best: readonly ChromeShape[] = [];
+  let bestCount = 0;
+  for (const candidate of sets) {
+    const count = sets.filter((other) => sameChrome(other, candidate)).length;
+    if (count > bestCount) {
+      best = candidate;
+      bestCount = count;
+    }
+  }
+
+  return [...best];
+}
+
+/**
  * The text of a frame.
  *
  * @param node - The frame.
@@ -157,6 +194,11 @@ function textOf(node: TextNode): string {
  * @param look - Its source or text and color.
  */
 function keyOf(kind: string, node: SceneNode, look: string): string {
+  if (kind === 'page') {
+    const centre = [node.rect.x + node.rect.width / 2, node.rect.y + node.rect.height / 2];
+    return `page|${centre.map((value) => Math.round(value / PAGE_POSITION_STEP_PX)).join(',')}|${look}`;
+  }
+
   const box = [node.rect.x, node.rect.y, node.rect.width, node.rect.height].map((value) =>
     Math.round(value / POSITION_STEP_PX),
   );

@@ -460,6 +460,21 @@ export type StepSnapshot = {
 };
 
 /**
+ * A layout from another brand that a slide renders without.
+ */
+export type BrandFallback = {
+  /**
+   * The layout the slide's source names.
+   */
+  sourceLayout: string;
+
+  /**
+   * Each brand that defines it, with the kit layout it falls back to.
+   */
+  brands: readonly { brand: string; fallback: string }[];
+};
+
+/**
  * One slide as the rules see it.
  */
 export type SlideContext = {
@@ -492,6 +507,13 @@ export type SlideContext = {
    * The brand surface the slide names, `default` when it names none.
    */
   surface: string;
+
+  /**
+   * Set when the slide's source names a layout the deck's brand lacks but other brands in the
+   * workspace define, so it renders with the kit layout `layout`: the layout the source names and
+   * each brand that has it with the fallback it declares. Absent for every other slide.
+   */
+  brandFallback?: BrandFallback;
 
   /**
    * The slide's validated frontmatter.

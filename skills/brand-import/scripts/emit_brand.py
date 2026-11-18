@@ -2,7 +2,7 @@
 # requires-python = ">=3.10"
 # dependencies = []
 # ///
-"""Write `brands/<name>/` (brand.ts, import-notes.json, logos, fonts) from a brand draft.
+"""Write `brands/<name>/` (brand.ts, import-notes.json, logos, fonts, and layouts.ts with layouts/ art) from a brand draft.
 
 Usage:
   uv run emit_brand.py <brand-draft.json> --workspace <folder with decks/ and brands/> [--force] [--stand-in-fonts] [--offline]
@@ -15,6 +15,12 @@ references/brand-schema.md, and nowhere else in the skill. After writing, run:
 
 The check prints every problem with the field and the fix. Fix the DRAFT, re-emit with --force,
 check again.
+
+A draft whose layouts[] holds layout specs (references/brand-draft-format.md, from `brand_tools.py
+propose-layouts`) also gets `layouts.ts` (defineBrandLayouts, the same fixed-header data literal) and the
+art files under `layouts/`. Specs with `keep: false` are not written. A spec with no fallback, an invalid
+name or a binding the draft's own rules reject stops the run; `deck brand check` then applies the
+catalog rules to what was written.
 
 Surfaces the draft does not define (inverse, accent, gradient) are left out so the framework
 derives them. --build-surfaces builds them here instead, for the case where `brand check`
@@ -55,6 +61,7 @@ import _brand_rules as R  # noqa: E402
 import _common as C  # noqa: E402
 import _filesafe as F  # noqa: E402
 import _tsdata as T  # noqa: E402
+import _layouts as L  # noqa: E402
 
 GENERIC = ("serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui", "ui-serif", "ui-sans-serif", "ui-monospace", "ui-rounded")
 TYPE_STEPS = ("display", "headline", "title", "lead", "body", "small", "caption", "label", "stat", "quote", "code")
@@ -331,7 +338,7 @@ class DraftError(Exception):
 def main() -> None:
     try:
         run()
-    except (DraftError, R.Reject, T.NotData) as exc:
+    except (DraftError, R.Reject, T.NotData, L.LayoutError) as exc:
         sys.exit(plain(f"Nothing was written. {exc}"))
     except (KeyError, TypeError, ValueError, AttributeError, IndexError, ArithmeticError, RecursionError) as exc:
         sys.exit(plain(f"Nothing was written. The draft does not have the shape references/brand-draft-format.md describes ({type(exc).__name__}: {exc})."))
@@ -925,6 +932,9 @@ def run() -> None:
     if T.read_module(text) != brand:
         raise T.NotData("The emitted brand.ts did not read back as the value it was written from.")
 
+    # ---- the brand's own layouts (from a template's slide layouts), when the draft has layout specs
+    surface_names = set(brand.get("color", {}).get("surfaces", {})) | set(L.REQUIRED_SURFACES)
+    layouts_text, layout_assets, layout_summary = L.emit_layouts(d, base, surface_names, notes)
     review = d.get("review") if isinstance(d.get("review"), list) else []
     src = d.get("source") if isinstance(d.get("source"), dict) else {}
     import_notes = {
@@ -936,7 +946,18 @@ def run() -> None:
         "notes": notes,
         "defaulted": defaulted,
     }
+    if layout_summary:
+        import_notes["layouts"] = layout_summary
     out.mkdir(parents=True, exist_ok=True)
+    # A layouts.ts this emitter wrote earlier, and its art, are replaced; one written any other way is left alone.
+    old_layouts = out / "layouts.ts"
+    ours = old_layouts.is_file() and old_layouts.read_text(encoding="utf-8", errors="replace").startswith(T.LAYOUTS_HEADER)
+    if ours:
+        shutil.rmtree(out / "layouts", ignore_errors=True)
+        old_layouts.unlink()
+    elif layouts_text is not None and old_layouts.exists():
+        raise DraftError(f"{old_layouts} exists and was not written by this emitter. Move it away or rename the folder.")
+    assets = assets + layout_assets
     for rel, data in assets:
         dest = out / rel
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -944,9 +965,16 @@ def run() -> None:
             dest.unlink()
         dest.write_bytes(data)
     (out / "brand.ts").write_text(text, encoding="utf-8")
+    if layouts_text is not None:
+        (out / "layouts.ts").write_text(layouts_text, encoding="utf-8")
     (out / "import-notes.json").write_text(notes_json(import_notes), encoding="utf-8")
 
     print(f"wrote {out / 'brand.ts'} and import-notes.json")
+    if layouts_text is not None:
+        print(f"wrote {out / 'layouts.ts'}: {len(layout_summary) - sum(1 for s_ in layout_summary if not s_['kept'])} layouts, {len(layout_assets)} art files")
+    dropped_layouts = [s_["name"] for s_ in layout_summary if not s_["kept"]]
+    if dropped_layouts:
+        print(f"layouts left out (keep: false): {len(dropped_layouts)}")
     print("font packages:", ", ".join(f"{k}@{v}" for k, v in packages.items()) or "none")
     for n in notes:
         print("note:", plain(n))

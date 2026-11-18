@@ -1,11 +1,12 @@
 import { fileExists, listBrands } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
 import { DECK_CONFIG_HINTS, DeckConfig } from '@deckster/engine/config';
-import { DECKS_DIR, loadLayoutCatalog, type DeckBuildError } from '@deckster/vite-plugin';
-import { Effect, Result, Schema, type FileSystem } from 'effect';
+import { DECKS_DIR, type DeckBuildError } from '@deckster/vite-plugin';
+import { Console, Effect, Result, Schema, type FileSystem } from 'effect';
 import path from 'node:path';
 
 import { cliError, usageError, type CliError, type FileSystemError } from '#cli-error.ts';
+import { loadBrandCatalog } from '#layouts/load-brand-catalog.ts';
 import { assertKebabName, titleFromName } from '#scaffold/names.ts';
 import { deckFiles, DEFAULT_BRAND_NAME } from '#scaffold/templates.ts';
 import { writeFiles } from '#scaffold/write-files.ts';
@@ -73,7 +74,13 @@ export const createDeck = Effect.fn('createDeck')(function* (
   }
 
   const deckTitle = title ?? titleFromName(id);
-  const cover = (yield* loadLayoutCatalog()).get(COVER_LAYOUT)?.contract;
+  const brand = yield* chooseBrand(workspaceRoot, options.brand);
+  const { catalog, warning } = yield* loadBrandCatalog(workspaceRoot, brand);
+  if (warning !== undefined) {
+    yield* Console.error(`warning: ${warning}`);
+  }
+
+  const cover = catalog.get(COVER_LAYOUT)?.contract;
   const maxChars = cover?.title?.maxChars;
   if (maxChars !== undefined && deckTitle.length > maxChars) {
     return yield* usageError(
@@ -83,7 +90,6 @@ export const createDeck = Effect.fn('createDeck')(function* (
     );
   }
 
-  const brand = yield* chooseBrand(workspaceRoot, options.brand);
   const duration = yield* checkDuration(options.duration);
   const contents = Object.entries(
     deckFiles({
