@@ -46,13 +46,13 @@ jobs:
       # .gitignore and tsconfig.json's exclude so the site never reads it.
       DECKSTER_REPO: ${{ github.workspace }}/.deckster-main
       # The deckster ref the site is built from: a branch, tag or commit.
-      # It is main, not the v0.4.0 tag the pages document. v0.4.0 is the first
-      # release with the docs scripts (scripts/docs/) and the ?embed mode
-      # DeckEmbed loads, so this could move to the tag once it exists. The
-      # data check below fails as soon as main's catalogs differ from the
-      # committed src/data, so the reference can't drift past the release
-      # unnoticed.
-      DECKSTER_REF: main
+      # It is the tag of the release the pages document (src/data/meta.json),
+      # so the data check below compares the committed src/data with that
+      # release, and a later change on main does not fail this branch. v0.4.0
+      # is the first release with the docs scripts (scripts/docs/) and the
+      # ?embed mode DeckEmbed loads. When the pages move to a new release,
+      # change this tag, sync the data against it and commit both together.
+      DECKSTER_REF: v0.4.0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
