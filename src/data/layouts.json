@@ -1191,7 +1191,7 @@
     {
       "name": "stats",
       "source": "@deckster/kit",
-      "description": "Two to four big numbers in a row, each with what it counts and, optionally, how it changed. The title states what the numbers mean together. The row stands on one line on every stats slide; set `highlight: true` on the stat the point rests on. Use it when the point is the size of something; use a chart (or split with one) for a trend, and a table for more than four figures.",
+      "description": "Two to four big numbers in a row, each with what it counts and, optionally, how it changed. The title states what the numbers mean together. The row stands on one line on every stats slide; set `highlight: true` on the stat the point rests on. Use it when the point is the size of something; use a chart (or split with one) for a trend, and a table for more than four figures; use market for nested sizes or dashboard for related charts.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -1398,7 +1398,7 @@
     {
       "name": "equation",
       "source": "@deckster/kit",
-      "description": "A number built from its parts, written as a sum: two to four figures (`terms:`) in a row, each with a label and joined to the one before by an operator (`op: times`, `plus`, `minus` or `divide`, set as ×, +, −, ÷), then an equals sign and the `result:` set largest on an accent panel that runs to the right and bottom edges of the slide. The figures share a baseline and the operators are set quieter than the figures; `reveal: true` brings the terms in left to right, one per step, and the result last, counting up. Use it for a bottom-up market size (customers × price × frequency), a business model (bookings × take rate = revenue) or unit economics (lifetime value ÷ acquisition cost); use stats when the figures stand side by side without adding up, and a chart for a trend.",
+      "description": "A number built from its parts, written as a sum: two to four figures (`terms:`) in a row, each with a label and joined to the one before by an operator (`op: times`, `plus`, `minus` or `divide`, set as ×, +, −, ÷), then an equals sign and the `result:` set largest on an accent panel that runs to the right and bottom edges of the slide. The figures share a baseline and the operators are set quieter than the figures; `reveal: true` brings the terms in left to right, one per step, and the result last, counting up. Use it for a bottom-up market size (customers × price × frequency), a business model (bookings × take rate = revenue) or unit economics (lifetime value ÷ acquisition cost); use stats when the figures stand side by side without adding up, and a chart for a trend; use market for nested market sizes.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -1612,9 +1612,209 @@
       }
     },
     {
+      "name": "market",
+      "source": "@deckster/kit",
+      "description": "Two or three nested market sizes from `sizes:`, outermost first, each with a label, a figure and a one-line note. Bottom-aligned nested circles on the left encode the figures by area; label, figure and note stack consistently beside them. The innermost circle and figure, the part you can win, carry the accent. Very small circles keep a minimum visible diameter, a labelled share of their parent, and an explicit \"Marker enlarged\" disclosure. `labels.share` and `labels.minimum` override that wording. Close or equal scopes, and figures that cannot determine an exact area, use a typographic ladder instead. `reveal: true` introduces each size from the outside in. Use it to distinguish total, serviceable and obtainable demand, or a whole market and a reachable segment. Use equation when the audience needs to check the market arithmetic, stats for independent figures without nesting, and a chart for a longer quantitative series.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20
+                },
+                "value": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 8
+                    }
+                  ]
+                },
+                "note": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                }
+              },
+              "required": [
+                "label",
+                "value",
+                "note"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 3
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "share": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "minimum": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "share": "{share} of {parent}",
+              "minimum": "Marker enlarged"
+            }
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "sizes"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "sizes": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 3 sizes, outermost first, each with `label` (up to 20 characters), `value` (a number or a figure as shown, up to 8 characters including prefix and suffix, such as \"€3.0B\") and `note` (one line, up to 40 characters). For proportional circles use exact positive figures in the same currency or unit, largest first; compact magnitudes k, M, B and T and comma thousands separators are supported. The last size is the part you can win. Circle areas are proportional, with a labelled minimum for very small values. Close or equal scopes and other figure formats use a typographic ladder."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "share": "{share} of {parent}",
+            "minimum": "Marker enlarged"
+          },
+          "allowed": null,
+          "hint": "Optional share and minimum labels, each up to 24 characters. `share` defaults to \"{share} of {parent}\"; keep those placeholders for the exact percentage and enclosing figure. `minimum` defaults to \"Marker enlarged\" and discloses a circle held above its proportional size for visibility."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence under the title defining the market or its common unit.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "The source, date or qualification of the market figures, on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Schools are our first reachable market",
+          "eyebrow": "Annual tree care",
+          "sizes": [
+            {
+              "label": "TAM",
+              "value": "$18M",
+              "note": "All public tree care in the county"
+            },
+            {
+              "label": "SAM",
+              "value": "$4.2M",
+              "note": "Sites within reach of our crews"
+            },
+            {
+              "label": "SOM",
+              "value": "$640k",
+              "note": "School contracts we can win this year"
+            }
+          ]
+        },
+        "body": "All figures are annual contract value.\n\n<Footnote>County procurement register, 2026. Annual contract values.</Footnote>\n\n<Notes>\nStart with the county, then narrow to our crews and the schools we can serve first.\n</Notes>\n",
+        "mdx": "---\nlayout: market\ntitle: Schools are our first reachable market\neyebrow: Annual tree care\nsizes:\n  - label: TAM\n    value: \"$18M\"\n    note: All public tree care in the county\n  - label: SAM\n    value: \"$4.2M\"\n    note: Sites within reach of our crews\n  - label: SOM\n    value: \"$640k\"\n    note: School contracts we can win this year\n---\n\nAll figures are annual contract value.\n\n<Footnote>County procurement register, 2026. Annual contract values.</Footnote>\n\n<Notes>\nStart with the county, then narrow to our crews and the schools we can serve first.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "chart",
       "source": "@deckster/kit",
-      "description": "A title that states the takeaway, then one chart, big number or table filling the space under it: <BarChart>, <LineChart>, <Slope>, <Waterfall>, <BigNumber>, <Table> and the rest (`deck charts`). Fill <Aside> with the \"so what\" (a key number or a sentence) to set it in a column beside the chart; put the source in <Footnote> or the chart's `source`. Datasets may sit in the `data:` frontmatter. Use split when a chart needs a paragraph beside it, and stats for two to four plain numbers.",
+      "description": "A title that states the takeaway, then one chart, big number or table filling the space under it: <BarChart>, <LineChart>, <Slope>, <Waterfall>, <BigNumber>, <Table> and the rest (`deck charts`). Fill <Aside> with the \"so what\" (a key number or a sentence) to set it in a column beside the chart; put the source in <Footnote> or the chart's `source`. Datasets may sit in the `data:` frontmatter. Use split when a chart needs a paragraph beside it, and stats for two to four plain numbers; use dashboard for two to four related measures.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -1762,6 +1962,212 @@
         },
         "body": "<BarChart\n  data={[\n    { district: 'Riverside', canopy: 34 },\n    { district: 'Northfield', canopy: 26 },\n    { district: 'City average', canopy: 21 },\n    { district: 'Eastgate', canopy: 9 },\n  ]}\n  format=\"percent\"\n  highlight=\"Eastgate\"\n  caption=\"Share of ground under tree crowns at noon, summer 2026\"\n/>\n\n<Footnote>Source: Larkfield summer aerial survey, 2026.</Footnote>\n\n<Notes>\nPoint at Eastgate first, then at the city average: the gap is the argument.\n</Notes>\n",
         "mdx": "---\nlayout: chart\ntitle: Eastgate has a quarter of the city average shade\neyebrow: Canopy cover\n---\n\n<BarChart\n  data={[\n    { district: 'Riverside', canopy: 34 },\n    { district: 'Northfield', canopy: 26 },\n    { district: 'City average', canopy: 21 },\n    { district: 'Eastgate', canopy: 9 },\n  ]}\n  format=\"percent\"\n  highlight=\"Eastgate\"\n  caption=\"Share of ground under tree crowns at noon, summer 2026\"\n/>\n\n<Footnote>Source: Larkfield summer aerial survey, 2026.</Footnote>\n\n<Notes>\nPoint at Eastgate first, then at the city average: the gap is the argument.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "dashboard",
+      "source": "@deckster/kit",
+      "description": "Two to four small charts or number components under one takeaway title: two side by side, three in a row, or four in a two-by-two grid. List each short heading in `panels:` and put one kit chart or number component per panel in the body, in that order. Each panel's title names the measure, unit and period. With four panels, use at most two plotted charts; fill the other panels with BigNumber, Progress or Sparkline. With three or four panels omit chart captions, and keep a unit or percent/currency format on every chart. In three or four panels keep area and line chart units short or put the full unit in the panel heading. Highlight the same subject in every panel (as `highlight=\"2026\"` in both charts), or only in the panel the title is about. Put shared sources in <Footnote>. `reveal: true` keeps headings and rules visible and reveals one plot per step; the shared source stays visible throughout. A Table may have up to four data rows and three columns, in two panels only. Use chart for one detailed plot or a chart with an aside; if every panel is a number, use stats. Use separate slides for different conclusions.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "panels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                }
+              },
+              "required": [
+                "title"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "Infinity",
+                        "-Infinity",
+                        "NaN"
+                      ]
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "panels"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "panels": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 panels, each with a `title` of up to 24 characters (18 with three or four panels). Each title names the measure, unit and period. Write one direct component per heading. With four panels use at most two plotted charts and BigNumber, Progress or Sparkline for the rest."
+        },
+        "data": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "List datasets by name, each a list of rows, and name one from a chart with `data=\"name\"`: `data: { regions: [{ region: EMEA, revenue: 4.2 }] }`. Inline rows (data={[...]}) and imported JSON or CSV files work too."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once. Headings and rules stay visible; only plots reveal, with the source always visible."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Exactly one direct kit chart or number component per panel, in heading order. Each panel's title names the measure, unit and period. Use one series and at most four categories with labels up to 11 characters in two panels; with three or four panels use at most three categories and seven-character labels. LineChart and AreaChart x labels are periods of up to four characters (Mar, Q3, 2026). With three or four panels keep area and line chart units short or put the full unit in the panel heading; with three panels keep the largest value to nine characters including the unit (800 trees, 1.5K), using K or M for thousands. With four panels allow at most two plotted charts (BarChart, LineChart, AreaChart, Donut and similar); use BigNumber, Progress or Sparkline in the remaining panels. With two or four panels set Donut center=\"none\"; keep shares and labels outside the ring. A Sparkline belongs beside numbers, not as a panel's only plot. Keep number values to eight characters and number labels to 18 characters with three or four panels. Omit captions with three or four panels; in two panels captions may use up to 32 characters. Keep unit= or a percent/currency format on every chart. A Table may have up to four data rows and three columns, two panels only; keep its headers and labels to 11 characters. Use units on its columns. Avoid annotations and individual sources. Do not wrap components in prose, divs or Steps; use `reveal: true` for builds. If every panel is a number, use stats.",
+          "required": true,
+          "accepts": [
+            "chart",
+            "number",
+            "table",
+            "component"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "The shared source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "three or four panels",
+          "when": {
+            "counts": {
+              "panels": {
+                "min": 3,
+                "max": 4
+              }
+            }
+          },
+          "budget": {},
+          "fields": {
+            "panels[].title": {
+              "maxChars": 18
+            }
+          },
+          "limits": {
+            "budget": {
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "panels[].title": {
+                "maxChars": 18
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "More trees survive when neighbours water them",
+          "eyebrow": "Eastgate pilot",
+          "panels": [
+            {
+              "title": "Survival, %, 2026"
+            },
+            {
+              "title": "Warden cover, %, 2026"
+            }
+          ]
+        },
+        "body": "<BigNumber value={94} unit=\"%\" label=\"trees alive after summer\" />\n\n<Progress value={86} target={90} label=\"blocks with a warden\" caption=\"Blocks covered, %, 2026\" />\n\n<Footnote>Larkfield pilot survey, September 2026.</Footnote>\n\n<Notes>\nRead survival first, then the watering cover that supports it.\n</Notes>\n",
+        "mdx": "---\nlayout: dashboard\ntitle: More trees survive when neighbours water them\neyebrow: Eastgate pilot\npanels:\n  - title: \"Survival, %, 2026\"\n  - title: \"Warden cover, %, 2026\"\n---\n\n<BigNumber value={94} unit=\"%\" label=\"trees alive after summer\" />\n\n<Progress value={86} target={90} label=\"blocks with a warden\" caption=\"Blocks covered, %, 2026\" />\n\n<Footnote>Larkfield pilot survey, September 2026.</Footnote>\n\n<Notes>\nRead survival first, then the watering cover that supports it.\n</Notes>\n"
       },
       "pptx": {
         "type": "title-only",
@@ -2074,6 +2480,176 @@
       }
     },
     {
+      "name": "definition",
+      "source": "@deckster/kit",
+      "description": "One term defined, dictionary style, under a title that states the point. The term is set in the display style, an optional pronunciation and part of speech or category share a small line, and the body gives its meaning in one or two sentences. An optional example sentence stands apart beneath a rule. Use it to establish a shared meaning before using a specialist word, a product concept or a measure in the argument. Use statement for a claim without a term and definition, quote for someone else’s words, and content for a longer explanation. Use cards or table for a glossary of three or more terms side by side. The entry is shown as a whole and defaults to the inverse surface; sparse entries grow and longer ones step down to fit.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "term": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "pronunciation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "example": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "example": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "example": "Example"
+            }
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "term"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "term": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Name one term, up to 20 characters, for example `term: Canopy`."
+        },
+        "pronunciation": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Give the pronunciation as it should appear, including any slashes, up to 32 characters, or leave it out. IPA characters missing from the brand’s text font fall back to a substitute font in PPTX; a plain respelling such as `LOOP` or `KAN-uh-pee` is the safe choice."
+        },
+        "kind": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Name the part of speech or category, such as `kind: noun` or `kind: Service promise`, up to 24 characters, or leave it out."
+        },
+        "example": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Give one sentence that makes the meaning concrete, up to 100 characters, or leave it out."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "example": "Example"
+          },
+          "allowed": null,
+          "hint": "Write `labels.example` above the example, up to 16 characters; it defaults to \"Example\". Translate it to match the deck’s language."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": "inverse",
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "The definition in one or two sentences. Put the term in `term:`, not here.",
+          "required": true,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line, such as the scope of this definition.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 36
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Canopy measures the shade above our streets",
+          "eyebrow": "A shared vocabulary",
+          "term": "Canopy",
+          "pronunciation": "/ˈkænəpi/",
+          "kind": "noun",
+          "labels": {
+            "example": "Example"
+          },
+          "example": "A street with 30% canopy has tree crowns above three tenths of its area."
+        },
+        "body": "The layer of leaves and branches that covers the ground when viewed from above.\n\n<Footnote>Larkfield Urban Forestry Division, canopy survey.</Footnote>\n\n<Notes>\nEstablish what we measure before showing the district map.\n</Notes>\n",
+        "mdx": "---\nlayout: definition\ntitle: Canopy measures the shade above our streets\neyebrow: A shared vocabulary\nterm: Canopy\npronunciation: \"/ˈkænəpi/\"\nkind: noun\nlabels:\n  example: Example\nexample: \"A street with 30% canopy has tree crowns above three tenths of its area.\"\n---\n\nThe layer of leaves and branches that covers the ground when viewed from above.\n\n<Footnote>Larkfield Urban Forestry Division, canopy survey.</Footnote>\n\n<Notes>\nEstablish what we measure before showing the district map.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "content",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "agenda",
       "source": "@deckster/kit",
       "description": "The parts of the talk as a numbered list of three to seven items, each with an optional line of detail and a time or duration. Show it once after the cover, and again between parts with `current:` set to the part that starts (1 is the first): that item is marked and the ones before it fade, so the room sees where they are. Use it for the plan of the talk, not for points of an argument (content) or a process (steps); more than seven parts need grouping.",
@@ -2270,9 +2846,228 @@
       }
     },
     {
+      "name": "recap",
+      "source": "@deckster/kit",
+      "description": "Two to four takeaways under a title that states the point, from `points:` in the frontmatter. Each is a large numeral beside one sentence (`title`) and an optional second line of `detail`, set directly on the slide without cards or icons. The numbers are recall cues, not stages of a process. Use it at the end of a part or the talk to leave the audience with the few things to remember. `reveal: true` brings in one point per click. Use cards for parallel ideas that need icons and bodies, steps for actions that happen in order, agenda for the parts still to come, a statement for a single takeaway, and closing for the final ask and contact details.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 76
+                },
+                "detail": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 90
+                }
+              },
+              "required": [
+                "title"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "points"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "points": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 takeaways, each with `title` (one sentence, up to 76 characters, 54 with three points, 50 with four points) and optional `detail` (up to 90 characters, 60 with four points). Numbers are supplied automatically."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence framing what to remember. Put the takeaways in `points:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "three takeaways",
+          "when": {
+            "counts": {
+              "points": 3
+            }
+          },
+          "budget": {},
+          "fields": {
+            "points[].title": {
+              "maxChars": 54
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 14
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "points[].title": {
+                "maxChars": 54
+              }
+            }
+          }
+        },
+        {
+          "name": "four takeaways",
+          "when": {
+            "counts": {
+              "points": 4
+            }
+          },
+          "budget": {},
+          "fields": {
+            "points[].title": {
+              "maxChars": 50
+            },
+            "points[].detail": {
+              "maxChars": 60
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 14
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "points[].title": {
+                "maxChars": 50
+              },
+              "points[].detail": {
+                "maxChars": 60
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "Shade needs care as much as planting",
+          "eyebrow": "What to remember",
+          "points": [
+            {
+              "title": "Plant the hottest blocks first.",
+              "detail": "Rank streets by summer surface heat."
+            },
+            {
+              "title": "Give every tree room to grow.",
+              "detail": "Connect soil cells under the pavement."
+            },
+            {
+              "title": "Fund three summers of care.",
+              "detail": "Water, mulch and inspect every new tree."
+            }
+          ]
+        },
+        "body": "These are the three commitments behind the canopy programme.\n\n<Notes>\nReturn to the three commitments before asking the board for next season’s funding.\n</Notes>\n",
+        "mdx": "---\nlayout: recap\ntitle: Shade needs care as much as planting\neyebrow: What to remember\npoints:\n  - title: Plant the hottest blocks first.\n    detail: Rank streets by summer surface heat.\n  - title: Give every tree room to grow.\n    detail: Connect soil cells under the pavement.\n  - title: Fund three summers of care.\n    detail: \"Water, mulch and inspect every new tree.\"\n---\n\nThese are the three commitments behind the canopy programme.\n\n<Notes>\nReturn to the three commitments before asking the board for next season’s funding.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "quote",
       "source": "@deckster/kit",
-      "description": "A person speaking for the point: a testimonial, a resident, a user, a partner. The words are set large in the brand quote style with hanging marks; `name:` and `role:` say who said it, and `photo:` sets their portrait beside the quote (cropped to it, the face kept in view with `focal`). Keep it to one to three sentences; a longer quote steps down in size and past 36 words is cut. Use statement for the talk's own claim, and team or bio to introduce people.",
+      "description": "A person speaking for the point: a testimonial, a resident, a user, a partner. The words are set large in the brand quote style with hanging marks; `name:` and `role:` say who said it, and `photo:` sets their portrait beside the quote (cropped to it, the face kept in view with `focal`). Keep it to one to three sentences; a longer quote steps down in size and past 36 words is cut. Use statement for the talk's own claim, and team or bio to introduce people; use voices for several testimonials or conversation for an exchange.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -2398,6 +3193,389 @@
             "kind": "title",
             "from": {
               "field": "title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "voices",
+      "source": "@deckster/kit",
+      "description": "Two or three short testimonials supporting one point, set as equal columns under an assertion title. Each entry in `voices:` has a `quote`, `name` and `role`, with an optional `photo` and `focal`; without a photo the attribution uses name and role only. The words use the brand quote style fitted to their columns, with hanging marks and aligned attributions. Keep each quote to one to three lines; three voices take shorter quotes and names so the quote stays above body size and the attribution stays on the grid. `reveal: true` brings the speakers in one per step. Use it to show a shared experience across customers or stakeholders. Use quote when one person needs the whole stage, proof when a customer result needs numbers, and team when introducing people rather than their words.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "voices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "quote": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 28
+                },
+                "role": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "photo": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "focal": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+                }
+              },
+              "required": [
+                "quote",
+                "name",
+                "role"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 3
+          },
+          "treatment": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "voices"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "voices": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 3 speakers, each with a `quote` of up to 100 characters (64 with three voices), a `name` of up to 28 characters (20 with three voices) and a `role` of up to 40 characters. Omit quotation marks. Optionally add `photo` as a file in the deck folder; without it show the name and role only. Name the part of the photo to keep when it is cropped, as a CSS position: `focal: top`, `focal: center 30%` (a face in the upper third) or `focal: 40% 20%`."
+        },
+        "treatment": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Name one of the brand's image treatments, for example `treatment: plain` (every brand has it) to show a screenshot, map or chart in its own colors; `deck brand --json` lists them under imagery.treatments."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 60
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence of context. Put the testimonials in `voices:`, not here.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "The source, interview date or caveat for these testimonials.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "three voices",
+          "when": {
+            "counts": {
+              "voices": 3
+            }
+          },
+          "budget": {},
+          "fields": {
+            "voices[].quote": {
+              "maxChars": 64
+            },
+            "voices[].name": {
+              "maxChars": 20
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 14
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "voices[].quote": {
+                "maxChars": 64
+              },
+              "voices[].name": {
+                "maxChars": 20
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "Shade changes how people use their street",
+          "eyebrow": "Residents on the first summer",
+          "voices": [
+            {
+              "quote": "My mother sat outside again in August.",
+              "name": "Priya Nair",
+              "role": "Holloway tenants’ association"
+            },
+            {
+              "quote": "We walk to school under the trees now.",
+              "name": "Sam Okafor",
+              "role": "Eastgate parent"
+            }
+          ]
+        },
+        "body": "<Footnote>Resident interviews, September 2026.</Footnote>\n\n<Notes>\nRead the two experiences, then return to the shared point: people use the shade.\n</Notes>\n",
+        "mdx": "---\nlayout: voices\ntitle: Shade changes how people use their street\neyebrow: Residents on the first summer\nvoices:\n  - quote: My mother sat outside again in August.\n    name: Priya Nair\n    role: \"Holloway tenants’ association\"\n  - quote: We walk to school under the trees now.\n    name: Sam Okafor\n    role: Eastgate parent\n---\n\n<Footnote>Resident interviews, September 2026.</Footnote>\n\n<Notes>\nRead the two experiences, then return to the shared point: people use the shade.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "conversation",
+      "source": "@deckster/kit",
+      "description": "A chat transcript of two to four messages under a title that states what the exchange demonstrates. Write each turn in `messages:` with `name`, `side` (left or right) and `text`, plus an optional `role`. Left panels are neutral; right panels are our side on the lit surface (accent, or inverse on accent and gradient slides). Make the title about the right-hand replies. Speaker names and roles sit in a separate column at every size. Short exchanges grow in type to fill the region. Write each message as one paragraph; whitespace is collapsed. A speaker’s optional role appears on their first message. Speaker names and alignment identify the sides without relying on colour. `reveal: true` brings messages in one per click, keeping the final transcript in place for static slides and exports. Use it to show a customer exchange, an assistant interaction or a handover in the speakers' own words. Use quote for one person's testimony, steps for a process without dialogue, proof for a customer result with numbers, and a sequence diagram for technical messages between systems.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 18
+                },
+                "side": {
+                  "type": "string",
+                  "enum": [
+                    "left",
+                    "right"
+                  ]
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 112
+                },
+                "role": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20
+                }
+              },
+              "required": [
+                "name",
+                "side",
+                "text"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "messages"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "messages": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 messages in reading order. Each needs `name` (up to 18 characters), `side: left` or `side: right` (our side), and `text` (up to 112 characters). Write each message as one paragraph; whitespace is collapsed. Optionally add `role` (up to 20 characters), such as Customer or Assistant; shown on each speaker’s first message. Split longer exchanges across slides."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence of context under the title. Put the transcript in `messages:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line, such as whether the exchange is staged.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "A request ends with a planting date",
+          "eyebrow": "Resident services",
+          "messages": [
+            {
+              "name": "Maya",
+              "role": "Resident",
+              "side": "left",
+              "text": "Can our street get a shade tree?"
+            },
+            {
+              "name": "Dana",
+              "role": "Programme lead",
+              "side": "right",
+              "text": "Yes. We survey the pavement, then book the next planting season."
+            }
+          ]
+        },
+        "body": "The resident gets a next step in the same exchange.\n\n<Footnote>Illustrative exchange from the canopy programme.</Footnote>\n\n<Notes>\nRead the request, then the reply: the answer gives the resident something to act on.\n</Notes>\n",
+        "mdx": "---\nlayout: conversation\ntitle: A request ends with a planting date\neyebrow: Resident services\nmessages:\n  - name: Maya\n    role: Resident\n    side: left\n    text: \"Can our street get a shade tree?\"\n  - name: Dana\n    role: Programme lead\n    side: right\n    text: \"Yes. We survey the pavement, then book the next planting season.\"\n---\n\nThe resident gets a next step in the same exchange.\n\n<Footnote>Illustrative exchange from the canopy programme.</Footnote>\n\n<Notes>\nRead the request, then the reply: the answer gives the resident something to act on.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
             }
           },
           {
@@ -2872,7 +4050,7 @@
     {
       "name": "gallery",
       "source": "@deckster/kit",
-      "description": "Two to four photos or screenshots under the title, filling the slide in an asymmetric arrangement: the first picture is the lead and takes the largest frame on the left, the others share the right. Each picture, from `pictures:`, has `src` and `alt` and optionally a `caption` set under it, never over it; `fit: contain` shows a screenshot whole instead of cropping it. Defaults to the inverse surface, where screens and photos read like prints on a light table. Use it for product shots, screens of a flow, before and after photos, or a site from several sides; use split for one picture with text beside it, image for one photo across the slide, and bento when the pictures share the slide with figures.",
+      "description": "Two to four photos or screenshots under the title, filling the slide in an asymmetric arrangement: the first picture is the lead and takes the largest frame on the left, the others share the right. Each picture, from `pictures:`, has `src` and `alt` and optionally a `caption` set under it, never over it; `fit: contain` shows a screenshot whole instead of cropping it. Defaults to the inverse surface, where screens and photos read like prints on a light table. Use it for product shots, screens of a flow, or a site from several sides; use before-after for two pictures of one change, split for one picture with text beside it, image for one photo across the slide, and bento when the pictures share the slide with figures.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -3055,6 +4233,251 @@
       },
       "pptx": {
         "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "before-after",
+      "source": "@deckster/kit",
+      "description": "Two pictures side by side at the same size, labelled Before and After, under a title that states what changed. Each side has a required file and accessible description, an optional label and a one-line caption below the picture. Both pictures share `fit`: contain shows them whole (the default), cover crops them into equal frames around each side's focal point. The after label carries the accent unless `accent: none`; labels always name the sides so colour alone never carries the change. `reveal: true` brings in before first, then after. Use it for a redesign, a restoration or visual evidence of a change. Use gallery for an unpaired collection with a lead picture, screen for one interface with callouts, and shift when the change is an argument in words and figures rather than two pictures.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "before": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "minLength": 1
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20
+              },
+              "caption": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 48
+              },
+              "focal": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+              }
+            },
+            "required": [
+              "src",
+              "alt"
+            ],
+            "additionalProperties": true
+          },
+          "after": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "minLength": 1
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20
+              },
+              "caption": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 48
+              },
+              "focal": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+              }
+            },
+            "required": [
+              "src",
+              "alt"
+            ],
+            "additionalProperties": true
+          },
+          "fit": {
+            "type": "string",
+            "enum": [
+              "contain",
+              "cover"
+            ],
+            "default": "contain"
+          },
+          "accent": {
+            "type": "string",
+            "enum": [
+              "after",
+              "none"
+            ],
+            "default": "after"
+          },
+          "treatment": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "before",
+          "after"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "before": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Name the earlier picture with `src` (a file in the deck folder) and `alt` (up to 120 characters). Optionally add `label` (up to 20 characters, default \"Before\"), `caption` (one line, up to 48 characters), and `focal`. Name the part of the photo to keep when it is cropped, as a CSS position: `focal: top`, `focal: center 30%` (a face in the upper third) or `focal: 40% 20%`."
+        },
+        "after": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Name the later picture with `src` (a file in the deck folder) and `alt` (up to 120 characters). Optionally add `label` (up to 20 characters, default \"After\"), `caption` (one line, up to 48 characters), and `focal`. Name the part of the photo to keep when it is cropped, as a CSS position: `focal: top`, `focal: center 30%` (a face in the upper third) or `focal: 40% 20%`."
+        },
+        "fit": {
+          "required": false,
+          "default": "contain",
+          "allowed": [
+            "contain",
+            "cover"
+          ],
+          "hint": "Use `contain` (the default) to show both pictures whole, or `cover` to crop both to fill equal frames."
+        },
+        "accent": {
+          "required": false,
+          "default": "after",
+          "allowed": [
+            "after",
+            "none"
+          ],
+          "hint": "Use `accent: none` for neutral labels; by default the after label uses accent text, or foreground text on an accent slide."
+        },
+        "treatment": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Name one of the brand's image treatments, for example `treatment: plain` (every brand has it) to show a screenshot, map or chart in its own colors; `deck brand --json` lists them under imagery.treatments. With contain, omitted treatment defaults to plain; cover uses the brand default."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence under the title explaining what to compare between the pictures.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source, date or qualification on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "The same street now has summer shade",
+          "before": {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000'%3E%3Crect width='1600' height='1000' fill='%238fa79a'/%3E%3C/svg%3E",
+            "alt": "Harrow Road before the planting programme",
+            "caption": "Harrow Road, before planting"
+          },
+          "after": {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000'%3E%3Crect width='1600' height='1000' fill='%238fa79a'/%3E%3C/svg%3E",
+            "alt": "Harrow Road three summers after planting",
+            "caption": "Harrow Road, three summers later"
+          }
+        },
+        "body": "<Notes>Compare the same stretch of pavement before and after planting.</Notes>\n",
+        "mdx": "---\nlayout: before-after\ntitle: The same street now has summer shade\nbefore:\n  src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000'%3E%3Crect width='1600' height='1000' fill='%238fa79a'/%3E%3C/svg%3E\"\n  alt: Harrow Road before the planting programme\n  caption: \"Harrow Road, before planting\"\nafter:\n  src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000'%3E%3Crect width='1600' height='1000' fill='%238fa79a'/%3E%3C/svg%3E\"\n  alt: Harrow Road three summers after planting\n  caption: \"Harrow Road, three summers later\"\n---\n\n<Notes>Compare the same stretch of pavement before and after planting.</Notes>\n"
+      },
+      "pptx": {
+        "type": "two-content",
         "placeholders": [
           {
             "kind": "title",
@@ -3295,7 +4718,7 @@
     {
       "name": "cards",
       "source": "@deckster/kit",
-      "description": "Two to four parallel ideas of equal weight (features, pillars, options, principles), each a card with an icon from the brand set, a short title and a line or two of text, from `cards:` in the frontmatter. The cards share the row and the height under the title. Use it when the ideas are peers; use steps when they happen in order, stats when each is a number, comparison when they are alternatives measured on the same rows, and content for a list. `reveal: true` shows them one per step.",
+      "description": "Two to four parallel ideas of equal weight (pillars, options, principles), each a card with an icon from the brand set, a short title and a line or two of text, from `cards:` in the frontmatter. The cards share the row and the height under the title. Use it when the ideas are peers; use steps when they happen in order, stats when each is a number, comparison when they are alternatives measured on the same rows, and content for a list. `reveal: true` shows them one per step; use features for six to twelve capabilities, quadrants for four boxes, faq for questions and answers, or recap for takeaways.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -3493,7 +4916,7 @@
     {
       "name": "columns",
       "source": "@deckster/kit",
-      "description": "Two to four headed columns of short items, set as a board: a roadmap of now, next and later, work by status, or a plan in three parts. Each column, from `columns:`, has a `title`, an optional `note` (a short tag such as a quarter or a status) and one to four `items` of a line or two; the items line up across the columns in even rows. `current:` lights the column that matters now on the accent surface while the others stay quiet, and `reveal: true` brings the columns in one per step. Use it when each group holds several short items; use cards when each idea is one card with a line of text, steps when the groups are stages of one process, timeline when they have dates, and comparison when options are measured on the same rows.",
+      "description": "Two to four headed columns of short items, set as a board: a roadmap of now, next and later, work by status, or a plan in three parts. Each column, from `columns:`, has a `title`, an optional `note` (a short tag such as a quarter or a status) and one to four `items` of a line or two; the items line up across the columns in even rows. `current:` lights the column that matters now on the accent surface while the others stay quiet, and `reveal: true` brings the columns in one per step. Use it when each group holds several short items; use cards when each idea is one card with a line of text, steps when the groups are stages of one process, timeline when they have dates, and comparison when options are measured on the same rows; use quadrants for four boxes, status for readiness, actions for owners and deadlines, or schedule for durations.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -3701,6 +5124,582 @@
             "kind": "title",
             "from": {
               "selector": ".kit-title"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "quadrants",
+      "source": "@deckster/kit",
+      "description": "Four named lists in a full-height, ruled two-by-two grid, from `quadrants:` in reading order: top left, top right, bottom left, bottom right. Each box has a `title`, one to four short `items` as bullets and an optional `icon` from the brand set. Set `highlight: true` on at most one quadrant to give it a nested surface and an accessible highlight label; the headings and bullets identify each category without colour. `reveal: true` brings in one whole box per click. Use it for SWOT, keep/stop/start/try, or any four categories that each need their own list. Use matrix when items are positions on two axes, columns for a board of two to four lanes, cards for equal options with one sentence each, and comparison when options are measured on the same rows.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "quadrants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                },
+                "icon": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^(?:[a-z0-9-]+:)?[a-z0-9-]+$"
+                },
+                "highlight": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "title",
+                "items"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "quadrants"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "quadrants": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List exactly 4 boxes in reading order, each with `title` (up to 24 characters), `items` (1 to 4 bullets, each up to 40 characters), and optionally `icon` (a name from the brand set, such as leaf, or tabler:leaf). Give an icon to all four boxes or to none. Set `highlight: true` on at most one box to emphasize it, or omit it for equal weight."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence under the title framing the four lists. Put the lists in `quadrants:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 10
+        },
+        "footnote": {
+          "maxWords": 10
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Keep the care that makes new trees survive",
+          "eyebrow": "Season review",
+          "quadrants": [
+            {
+              "title": "Keep",
+              "items": [
+                "Three summers of watering",
+                "A named street warden"
+              ]
+            },
+            {
+              "title": "Stop",
+              "items": [
+                "Planting without a care budget"
+              ]
+            },
+            {
+              "title": "Start",
+              "items": [
+                "Weekly checks in dry spells"
+              ],
+              "highlight": true
+            },
+            {
+              "title": "Try",
+              "items": [
+                "Shared hose carts on each block"
+              ]
+            }
+          ]
+        },
+        "body": "The next planting season starts with a funded care plan.\n\n<Footnote>Programme team review of the 2026 season.</Footnote>\n\n<Notes>\nRead keep and stop first, then the two actions for the next season.\n</Notes>\n",
+        "mdx": "---\nlayout: quadrants\ntitle: Keep the care that makes new trees survive\neyebrow: Season review\nquadrants:\n  - title: Keep\n    items:\n      - Three summers of watering\n      - A named street warden\n  - title: Stop\n    items:\n      - Planting without a care budget\n  - title: Start\n    items:\n      - Weekly checks in dry spells\n    highlight: true\n  - title: Try\n    items:\n      - Shared hose carts on each block\n---\n\nThe next planting season starts with a funded care plan.\n\n<Footnote>Programme team review of the 2026 season.</Footnote>\n\n<Notes>\nRead keep and stop first, then the two actions for the next season.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "faq",
+      "source": "@deckster/kit",
+      "description": "Two to four question-and-answer pairs from `questions:`, under a title that states the point. Each `q` is the heading of its block, followed by its short `a`: one or two sentences. Two pairs sit side by side with title-sized questions and lead answers; three or four form a two-column grid in reading order, with the last cell empty for three. Use it to answer practical objections or recurring questions before a decision. Use cards for parallel claims that are not questions, comparison for alternatives measured on shared criteria, and content for one long explanation. `reveal: true` reveals one complete pair per step, question and answer together; static views and exports show every pair.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "q": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 52
+                },
+                "a": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 140
+                }
+              },
+              "required": [
+                "q",
+                "a"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "questions": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 pairs, each with `q` (a question of up to 52 characters, 44 with 3 or 4 pairs) and `a` (one or two sentences of up to 140 characters, 104 with 3 or 4 pairs). Put them in reading order, left to right then down."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once. Each step shows a complete question and its answer together."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence introducing the questions. Put the pairs in `questions:`, not here.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source, qualification or date on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "three or four questions",
+          "when": {
+            "counts": {
+              "questions": {
+                "min": 3,
+                "max": 4
+              }
+            }
+          },
+          "budget": {},
+          "fields": {
+            "questions[].q": {
+              "maxChars": 44
+            },
+            "questions[].a": {
+              "maxChars": 104
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 14
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "questions[].q": {
+                "maxChars": 44
+              },
+              "questions[].a": {
+                "maxChars": 104
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "Every tree gets three summers of care",
+          "eyebrow": "Before we plant",
+          "questions": [
+            {
+              "q": "Who waters the trees?",
+              "a": "Our crews water each tree for its first three summers."
+            },
+            {
+              "q": "What if a tree dies?",
+              "a": "We replace it in the next planting season and restart its care."
+            }
+          ]
+        },
+        "body": "<Notes>Answer the two questions residents ask most often.</Notes>\n",
+        "mdx": "---\nlayout: faq\ntitle: Every tree gets three summers of care\neyebrow: Before we plant\nquestions:\n  - q: \"Who waters the trees?\"\n    a: Our crews water each tree for its first three summers.\n  - q: \"What if a tree dies?\"\n    a: We replace it in the next planting season and restart its care.\n---\n\n<Notes>Answer the two questions residents ask most often.</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "features",
+      "source": "@deckster/kit",
+      "description": "Six to twelve capabilities in an open grid, from `features:` in the frontmatter, each with an icon from the brand set, a short `title` and an optional few-word `detail`. Six or nine items take three columns; seven, eight and ten to twelve take four. Details are supported for six to nine items; ten to twelve use icons and titles only. Icons sit above titles, or beside the text in the nine-item detailed grid. There are no panels around the items, so the grid reads as one compact inventory under a title that states the point. Use it for a product capability overview or a checklist of what a service includes. Use cards for two to four ideas that need more explanation, steps for a sequence, and comparison or table when capabilities must be measured across alternatives. `reveal: true` brings in one complete row per click, keeping its final space throughout.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "icon": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^(?:[a-z0-9-]+:)?[a-z0-9-]+$"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 22
+                },
+                "detail": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 28
+                }
+              },
+              "required": [
+                "icon",
+                "title"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 6,
+            "maxItems": 12
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "features"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "features": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 6 to 12 features, each with a required `icon` (a name in the brand icon set, such as leaf), `title` (up to 22 characters) and optional `detail` (up to 28 characters). With 9 to 12 features, titles are limited to 14 characters. Use icon names available in every brand of the deck's sets. With 10 to 12 features, omit details."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show one complete row per step, in reading order, or leave it out to show the whole grid at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence on what the capabilities have in common. Put them in `features:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "three rows",
+          "when": {
+            "counts": {
+              "features": {
+                "min": 9,
+                "max": 12
+              }
+            }
+          },
+          "budget": {},
+          "fields": {
+            "features[].title": {
+              "maxChars": 14
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 14
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "features[].title": {
+                "maxChars": 14
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "Tree care reaches beyond planting day",
+          "features": [
+            {
+              "icon": "map-pin",
+              "title": "Survey"
+            },
+            {
+              "icon": "trees",
+              "title": "Planting"
+            },
+            {
+              "icon": "droplets",
+              "title": "Watering"
+            },
+            {
+              "icon": "shield",
+              "title": "Protection"
+            },
+            {
+              "icon": "users",
+              "title": "Wardens"
+            },
+            {
+              "icon": "chart-bar",
+              "title": "Reporting"
+            }
+          ]
+        },
+        "body": "Every new tree receives the same care.\n\n<Notes>\n`features` with six capabilities; use it for a compact overview of one service.\n</Notes>\n",
+        "mdx": "---\nlayout: features\ntitle: Tree care reaches beyond planting day\nfeatures:\n  - icon: map-pin\n    title: Survey\n  - icon: trees\n    title: Planting\n  - icon: droplets\n    title: Watering\n  - icon: shield\n    title: Protection\n  - icon: users\n    title: Wardens\n  - icon: chart-bar\n    title: Reporting\n---\n\nEvery new tree receives the same care.\n\n<Notes>\n`features` with six capabilities; use it for a compact overview of one service.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
             }
           }
         ]
@@ -3951,7 +5950,7 @@
     {
       "name": "steps",
       "source": "@deckster/kit",
-      "description": "A process in order: three to five numbered steps along a line, each with a short title and a line or two on how, from `steps:` in the frontmatter. `current:` marks the step the talk is on (the line fills up to it), and `reveal: true` adds one step per click. Use it for how something is done; use timeline when the steps have dates, agenda for the parts of the talk, and cards for ideas that are not in order.",
+      "description": "A process in order: three to five numbered steps along a line, each with a short title and a line or two on how, from `steps:` in the frontmatter. `current:` marks the step the talk is on (the line fills up to it), and `reveal: true` adds one step per click. Use it for how something is done; use timeline when the steps have dates, agenda for the parts of the talk, and cards for ideas that are not in order; use actions for commitments with owners or exercise for a timed activity.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -4184,9 +6183,426 @@
       }
     },
     {
+      "name": "actions",
+      "source": "@deckster/kit",
+      "description": "Three to six next actions from `actions:`, each with a one-line `title`, an `owner` and a `due` date or period. The action takes the wide first column; owners and dates align in their own columns so the audience can scan who does what by when. The title states what happens next. `current:` marks one action in progress with a badge in the owner column and an accent band, and `reveal: true` brings the rows in one per click. Use it to close a review with accountable commitments; use steps for stages of a process without owners, columns for work grouped by horizon or status, and timeline when dates and milestones tell the story; use table when the rows carry figures or more than three columns, status for readiness across workstreams, and agenda for the order of a meeting.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "owner": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 22
+                },
+                "due": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 16
+                }
+              },
+              "required": [
+                "title",
+                "owner",
+                "due"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 3,
+            "maxItems": 6
+          },
+          "badge": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 14,
+            "default": "In progress"
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12
+              },
+              "owner": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12
+              },
+              "due": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "action": "Action",
+              "owner": "Owner",
+              "due": "Due"
+            }
+          },
+          "current": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "actions"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "actions": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 3 to 6 actions, each with `title` (what will be done, up to 40 characters), `owner` (a person or team, up to 22) and `due` (a date or period, up to 16: \"12 Dec 2026\", \"Q1 2027\"). Keep each field to one line."
+        },
+        "badge": {
+          "required": false,
+          "default": "In progress",
+          "allowed": null,
+          "hint": "The inline label on the current action, up to 14 characters; defaults to \"In progress\"."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "action": "Action",
+            "owner": "Owner",
+            "due": "Due"
+          },
+          "allowed": null,
+          "hint": "Optional column labels: `action`, `owner` and `due`, each up to 12 characters; defaults to \"Action\", \"Owner\" and \"Due\"."
+        },
+        "current": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write the number of the action in progress, from 1 to 6, such as `current: 2`, or leave it out."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence on the commitment these actions deliver. Put actions in `actions:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Planting begins in March once crews are booked",
+          "eyebrow": "Next actions",
+          "current": 2,
+          "badge": "In progress",
+          "labels": {
+            "action": "Action",
+            "owner": "Owner",
+            "due": "Due"
+          },
+          "actions": [
+            {
+              "title": "Confirm the east-side sites",
+              "owner": "Dana Okafor",
+              "due": "12 Jan 2027"
+            },
+            {
+              "title": "Book the planting crews",
+              "owner": "Field operations",
+              "due": "26 Jan 2027"
+            },
+            {
+              "title": "Open the warden sign-ups",
+              "owner": "Community team",
+              "due": "February 2027"
+            }
+          ]
+        },
+        "body": "Every action has one owner before the season begins.\n\n<Notes>\nConfirm each owner and date, then stop on booking the crews: that work is in progress.\n</Notes>\n",
+        "mdx": "---\nlayout: actions\ntitle: Planting begins in March once crews are booked\neyebrow: Next actions\ncurrent: 2\nbadge: In progress\nlabels:\n  action: Action\n  owner: Owner\n  due: Due\nactions:\n  - title: Confirm the east-side sites\n    owner: Dana Okafor\n    due: 12 Jan 2027\n  - title: Book the planting crews\n    owner: Field operations\n    due: 26 Jan 2027\n  - title: Open the warden sign-ups\n    owner: Community team\n    due: February 2027\n---\n\nEvery action has one owner before the season begins.\n\n<Notes>\nConfirm each owner and date, then stop on booking the crews: that work is in progress.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "exercise",
+      "source": "@deckster/kit",
+      "description": "A task for the audience, with a title naming what to do, a duration set as a hero figure, two to five numbered instructions and a one-line output naming what to produce. An optional groups line says who works together. Use it for a workshop activity, a short practice task or a discussion that must end with a concrete deliverable. Keep the whole brief visible while people work. Use steps instead when explaining a process rather than asking the audience to do it, and agenda for the parts of the session.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "duration": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8
+          },
+          "instructions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "minItems": 2,
+            "maxItems": 5
+          },
+          "output": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "groups": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "duration",
+          "instructions",
+          "output"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "duration": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write the timebox with its unit, up to 8 characters, such as `duration: 10 min`."
+        },
+        "instructions": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 5 instructions in order, each up to 80 characters; with 4 or 5 instructions, each is limited to 64 characters. Start each with a verb."
+        },
+        "output": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Name what people should produce, up to 60 characters, such as `output: One annotated route map`."
+        },
+        "groups": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Say who works together, up to 24 characters, such as `groups: In pairs`, or leave it out."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence of context under the title. Put the task in `instructions:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or facilitation reminder on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "four or five instructions",
+          "when": {
+            "counts": {
+              "instructions": {
+                "min": 4
+              }
+            }
+          },
+          "budget": {},
+          "fields": {
+            "instructions[]": {
+              "maxChars": 64
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 14
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "instructions[]": {
+                "maxChars": 64
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "Choose the next block to plant",
+          "duration": "10 min",
+          "groups": "In pairs",
+          "instructions": [
+            "Compare the heat maps for Eastgate and Holloway.",
+            "Choose one block and mark the space for a large tree.",
+            "Explain how you will water it through three summers."
+          ],
+          "output": "One marked map and a reason for your choice"
+        },
+        "body": "Start with the hottest streets, then check what fits below the pavement.\n\n<Notes>\nKeep the task visible while pairs work. Invite two pairs to share their maps.\n</Notes>\n",
+        "mdx": "---\nlayout: exercise\ntitle: Choose the next block to plant\nduration: 10 min\ngroups: In pairs\ninstructions:\n  - Compare the heat maps for Eastgate and Holloway.\n  - Choose one block and mark the space for a large tree.\n  - Explain how you will water it through three summers.\noutput: One marked map and a reason for your choice\n---\n\nStart with the hottest streets, then check what fits below the pavement.\n\n<Notes>\nKeep the task visible while pairs work. Invite two pairs to share their maps.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "comparison",
       "source": "@deckster/kit",
-      "description": "Two or three options side by side, measured on the same two to five rows: before and after, us and them, or the options of a decision, from `options:` and `rows:` in the frontmatter. Each row has a label and one value per option (text, or true and false for a check and a dash) and may name its `winner`, the number of the option that wins that row, which is drawn bold with a diamond. Mark the option you recommend with `recommended: true`: its column is set on a panel with an accent rule under a badge (`badge:`, \"Recommended\" by default). `reveal: true` adds one option per click. Use stats when each option is one number, a table for more than three options or five rows, and cards for ideas that are not alternatives.",
+      "description": "Two or three options side by side, measured on the same two to five rows: us and them, or the options of a decision, from `options:` and `rows:` in the frontmatter. Each row has a label and one value per option (text, or true and false for a check and a dash) and may name its `winner`, the number of the option that wins that row, which is drawn bold with a diamond. Mark the option you recommend with `recommended: true`: its column is set on a panel with an accent rule under a badge (`badge:`, \"Recommended\" by default). `reveal: true` adds one option per click. Use stats when each option is one number, a table for more than three options or five rows, and cards for ideas that are not alternatives; use pricing for plans, do-dont for behaviours, before-after for pictures of a change, or shift for a change in words.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -4455,7 +6871,7 @@
     {
       "name": "matrix",
       "source": "@deckster/kit",
-      "description": "A two-by-two map: two axes that cross at the centre, a label at each end of each axis, an optional caption in each quadrant, and three to ten items placed by judgement on a square plot, from `x:`, `y:`, `quadrants:` and `items:` in the frontmatter. The plot takes the right five columns of the slide; the title, the note and the footnote stand in the column to its left. Positions run from 0 (the low end) to 100 (the high end) and show no values, because they are qualitative. Mark the item the slide is about with `us: true`: it is set in the accent with a ring and its quadrant is tinted, while the others stay muted; names find room beside their dots by themselves, so place items at least a few units apart and keep the corners free when the quadrants have captions. The body is the note under the title: what the map means. `reveal: true` shows the axes first, then the other items, then the marked one with the note. Use it for a positioning or competition slide, or any choice framed by two trade-offs; use a chart (`<Scatter>`) when the positions are measured, and comparison when options are scored on several rows.",
+      "description": "A two-by-two map: two axes that cross at the centre, a label at each end of each axis, an optional caption in each quadrant, and three to ten items placed by judgement on a square plot, from `x:`, `y:`, `quadrants:` and `items:` in the frontmatter. The plot takes the right five columns of the slide; the title, the note and the footnote stand in the column to its left. Positions run from 0 (the low end) to 100 (the high end) and show no values, because they are qualitative. Mark the item the slide is about with `us: true`: it is set in the accent with a ring and its quadrant is tinted, while the others stay muted; names find room beside their dots by themselves, so place items at least a few units apart and keep the corners free when the quadrants have captions. The body is the note under the title: what the map means. `reveal: true` shows the axes first, then the other items, then the marked one with the note. Use it for a positioning or competition slide, or any choice framed by two trade-offs; use a chart (`<Scatter>`) when the positions are measured, and comparison when options are scored on several rows; use quadrants for four discrete boxes.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -4772,6 +7188,619 @@
       }
     },
     {
+      "name": "pricing",
+      "source": "@deckster/kit",
+      "description": "Two to four plans or tiers side by side under a title that states the point, from `plans:` in the frontmatter. Each plan is a column with its name, a one-line description, its price set as the column's hero figure with an optional period (\"per month\") beside it, and two to four short features under a rule. Mark the plan you recommend with `recommended: true`: its column is lit on the accent surface with a badge on its top edge (`badge:`, \"Recommended\" by default). `reveal: true` brings the plans in one per step. Use it when each option has its own price and its own list of what it includes; use comparison when the options are measured on the same rows, a table for more than four plans or a full feature grid, and stats when each option is one number.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "plans": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20
+                },
+                "price": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 8
+                    }
+                  ]
+                },
+                "period": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 16
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "features": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 28
+                  },
+                  "minItems": 2,
+                  "maxItems": 4
+                },
+                "recommended": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "name",
+                "price",
+                "description",
+                "features"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "badge": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20,
+            "default": "Recommended"
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "plans"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "plans": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 plans in the order of their columns, each with `name` (up to 20 characters, 16 in a row of four), `price` (a number or a figure as shown, up to 8 characters: \"€3.40\", \"Free\"), `description` (one line on who it is for, up to 40, 32 in a row of four) and `features` (2 to 4 short lines, each up to 28 characters, 22 in a row of four), and optionally `period` (up to 16: \"per month\") and `recommended: true` on the one plan you recommend."
+        },
+        "badge": {
+          "required": false,
+          "default": "Recommended",
+          "allowed": null,
+          "hint": "Write the word over the recommended plan, up to 20 characters (14 in a row of four), such as `badge: Most popular`; it defaults to \"Recommended\"."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence under the title on how to choose between the plans. Put the plans in `plans:`, not here.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line: prices before tax, from a date.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "four plans",
+          "when": {
+            "counts": {
+              "plans": 4
+            }
+          },
+          "budget": {},
+          "fields": {
+            "plans[].name": {
+              "maxChars": 16
+            },
+            "plans[].description": {
+              "maxChars": 32
+            },
+            "plans[].features[]": {
+              "maxChars": 22
+            },
+            "badge": {
+              "maxChars": 14
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 14
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "plans[].name": {
+                "maxChars": 16
+              },
+              "plans[].description": {
+                "maxChars": 32
+              },
+              "plans[].features[]": {
+                "maxChars": 22
+              },
+              "badge": {
+                "maxChars": 14
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "Most schools need the district plan",
+          "eyebrow": "Tree care contracts",
+          "badge": "Most schools",
+          "plans": [
+            {
+              "name": "Single site",
+              "price": "$900",
+              "period": "a year",
+              "description": "One school ground, up to 40 trees",
+              "features": [
+                "Two inspections a year",
+                "Storm call-outs"
+              ]
+            },
+            {
+              "name": "District",
+              "price": "$6,400",
+              "period": "a year",
+              "description": "Every school in one district",
+              "features": [
+                "Quarterly inspections",
+                "Storm call-outs",
+                "A named arborist"
+              ],
+              "recommended": true
+            },
+            {
+              "name": "City",
+              "price": "Custom",
+              "description": "Every public ground in the city",
+              "features": [
+                "Monthly inspections",
+                "Planting included",
+                "A crew on call"
+              ]
+            }
+          ]
+        },
+        "body": "Eight schools or more and the district plan costs less per site.\n\n<Footnote>Prices for the 2027 season, before sales tax.</Footnote>\n\n<Notes>\nName the district plan first: it is what most of the room needs. Then the two on either side.\n</Notes>\n",
+        "mdx": "---\nlayout: pricing\ntitle: Most schools need the district plan\neyebrow: Tree care contracts\nbadge: Most schools\nplans:\n  - name: Single site\n    price: \"$900\"\n    period: a year\n    description: \"One school ground, up to 40 trees\"\n    features:\n      - Two inspections a year\n      - Storm call-outs\n  - name: District\n    price: \"$6,400\"\n    period: a year\n    description: Every school in one district\n    features:\n      - Quarterly inspections\n      - Storm call-outs\n      - A named arborist\n    recommended: true\n  - name: City\n    price: Custom\n    description: Every public ground in the city\n    features:\n      - Monthly inspections\n      - Planting included\n      - A crew on call\n---\n\nEight schools or more and the district plan costs less per site.\n\n<Footnote>Prices for the 2027 season, before sales tax.</Footnote>\n\n<Notes>\nName the district plan first: it is what most of the room needs. Then the two on either side.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "do-dont",
+      "source": "@deckster/kit",
+      "description": "Two columns of practical examples: what to do and what to avoid, from `do:` and `dont:`. Each side lists two to four short items, with a tick or cross from the shared kit mark set and the positive or negative role. Headings and distinct marks keep the meaning clear without colour. Optional `labels.do` and `labels.dont` replace \"Do\" and \"Don't\"; `reveal: true` shows the Do column on the first step and the Don't column on the second. Use it to teach working habits, safety guidance or a writing standard through concrete examples. Use comparison when options share measured rows, shift for one change from old to new, or columns when the groups have no positive or negative meaning.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "do": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 56
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "dont": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 56
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "do": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "dont": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "do": "Do",
+              "dont": "Don't"
+            }
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "do",
+          "dont"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "do": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 examples of what to do, each up to 56 characters. Start with a concrete action. Rows line up across the two sides, so write the lists in matching order when the examples pair up."
+        },
+        "dont": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 examples of what to avoid, each up to 56 characters. The two lists may have different lengths."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "do": "Do",
+            "dont": "Don't"
+          },
+          "allowed": null,
+          "hint": "Optional headings `do` and `dont`, each up to 24 characters; defaults to \"Do\" and \"Don't\"."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the Do column on step 1 and the Don't column on step 2, or leave it out to show both together."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence under the title giving the situation these examples apply to.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Water the roots, leave the trunk clear",
+          "do": [
+            "Water slowly into the soil",
+            "Keep mulch away from the trunk"
+          ],
+          "dont": [
+            "Spray the leaves at midday",
+            "Pile fresh mulch against the bark"
+          ]
+        },
+        "body": "For every newly planted street tree in its first two summers.\n\n<Footnote>Larkfield watering wardens guide, 2027.</Footnote>\n\n<Notes>\nShow the right habit first, then the mistake it prevents.\n</Notes>\n",
+        "mdx": "---\nlayout: do-dont\ntitle: \"Water the roots, leave the trunk clear\"\ndo:\n  - Water slowly into the soil\n  - Keep mulch away from the trunk\ndont:\n  - Spray the leaves at midday\n  - Pile fresh mulch against the bark\n---\n\nFor every newly planted street tree in its first two summers.\n\n<Footnote>Larkfield watering wardens guide, 2027.</Footnote>\n\n<Notes>\nShow the right habit first, then the mistake it prevents.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "two-content",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "quiz",
+      "source": "@deckster/kit",
+      "description": "A question to the room: the title poses one specific question and `options:` gives two to four short choices, lettered A to D in order. `answer:` names the right letter. All choices show first; the next step marks the answer with an accent panel and a tick, quiets the other choices and shows the optional `explanation:` underneath. The space is reserved so nothing moves when the answer arrives. `reveal` defaults to true; set it to false for an answered recap. Short options use tiles; longer options use full-width rows. A plain export shows the answer; a per-step export (`--steps`) shows the question, then the answer. Use it to test an assumption or invite a quick knowledge check before giving the reason. Use cards for parallel ideas with no right answer, comparison for alternatives measured on shared rows, and content for an open question without fixed choices.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 72
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "answer": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          },
+          "explanation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": true
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "options",
+          "answer"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "options": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 choices, each a string of up to 72 characters. Letters A to D are added in order. Options all at most 24 characters use tiles; longer choices use rows."
+        },
+        "answer": {
+          "required": true,
+          "default": null,
+          "allowed": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "hint": "Name the right choice by its uppercase letter: `answer: B`. The letter must exist."
+        },
+        "explanation": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Give the reason in up to 100 characters; it appears with the answer."
+        },
+        "reveal": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Defaults to true: show all choices first, then the answer on step 1. Set `reveal: false` to show the answered recap immediately."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One line of context for the question; the choices belong in `options:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line, visible before the answer.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "What keeps a young street tree alive?",
+          "eyebrow": "A question for the room",
+          "options": [
+            "A taller stake",
+            "Three summers of watering",
+            "A bigger planting day"
+          ],
+          "answer": "B",
+          "explanation": "Planting starts the work; water and regular checks carry it through the first three summers.",
+          "reveal": true
+        },
+        "body": "<Notes>Ask for a show of hands, then reveal B and explain the care commitment.</Notes>\n",
+        "mdx": "---\nlayout: quiz\ntitle: \"What keeps a young street tree alive?\"\neyebrow: A question for the room\noptions:\n  - A taller stake\n  - Three summers of watering\n  - A bigger planting day\nanswer: B\nexplanation: \"Planting starts the work; water and regular checks carry it through the first three summers.\"\nreveal: true\n---\n\n<Notes>Ask for a show of hands, then reveal B and explain the care commitment.</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "shift",
       "source": "@deckster/kit",
       "description": "One change, from the way things are to the way they will be: under the title, the old state (`from:`) on the left and the new state (`to:`) on an accent panel that runs to the right and bottom edges of the slide, with an arrow on the seam between them. Each state has a heading, and optionally a label (Today, With the plan), a figure and a line of text; their rows line up across the seam so the eye compares like with like, and `reveal: true` brings in the new state on a click. Use it for the turn a talk argues for (a new process, a new cost, a new owner); use comparison when two or three options are measured on several rows, and the <Comparison> chart when the change is one number.",
@@ -4981,7 +8010,7 @@
     {
       "name": "timeline",
       "source": "@deckster/kit",
-      "description": "Three to five dated milestones along a line, in time order, from `milestones:` in the frontmatter, drawn by the kit <Timeline>: a roadmap, a history, a migration. `current:` rings the milestone we are at and fills the line up to it; a milestone can be marked done (`state: success`), slipped (`error`) or tentative (`muted`); `reveal: true` adds one milestone per click. Split a longer history over two slides. Use steps for a process without dates, and a chart for values over time.",
+      "description": "Three to five dated milestones along a line, in time order, from `milestones:` in the frontmatter, drawn by the kit <Timeline>: a roadmap, a history, a migration. `current:` rings the milestone we are at and fills the line up to it; a milestone can be marked done (`state: success`), slipped (`error`) or tentative (`muted`); `reveal: true` adds one milestone per click. Split a longer history over two slides. Use steps for a process without dates, and a chart for values over time; use schedule for lanes with durations.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -5205,9 +8234,285 @@
       }
     },
     {
+      "name": "schedule",
+      "source": "@deckster/kit",
+      "description": "A plan across time: three to six named lanes share an axis of three to eight labelled periods. Each lane has one or two duration bars, with inclusive one-based from/to period indexes and optional labels above their bars. A labelled now marker sits at the centre of its period; current marks a lane with an arrow and stronger bars. Use it to show parallel delivery, a rollout or overlapping work. Reveal lanes one per click. Use timeline for dated milestones without durations, steps for a sequence without dates, or columns for a Now / Next / Later board without a measured axis. Use table for a timetable with exact dates per row.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6
+            },
+            "minItems": 3,
+            "maxItems": 8
+          },
+          "lanes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 22
+                },
+                "bars": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 8
+                      },
+                      "to": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 8
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 16
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "to"
+                    ],
+                    "additionalProperties": true
+                  },
+                  "minItems": 1,
+                  "maxItems": 2
+                }
+              },
+              "required": [
+                "name",
+                "bars"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 3,
+            "maxItems": 6
+          },
+          "now": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "current": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "periods",
+          "lanes"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "periods": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 3 to 8 equally spaced periods in order, each up to 6 characters, or 5 with seven or eight periods: Jan, Wk 2, Q3."
+        },
+        "lanes": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 3 to 6 lanes with name (up to 22 characters) and bars (1 to 2). Each bar has from and to (inclusive period indexes, 1 to 8, within the actual axis, from <= to) and optionally label (up to 16 characters). Use at most 12 bars and bar labels combined; each optional label counts as one. Overlaps use separate tracks."
+        },
+        "now": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Set now to a period index from 1 to 8 within the actual axis to label its centre Now; omit it for no marker."
+        },
+        "current": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Set current to the number of the lane the talk is on, or the one at now, from 1 to 6 within the actual list, to mark it with an arrow and stronger bars."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence on what this plan delivers; put durations in lanes.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source, date or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "seven or eight periods",
+          "when": {
+            "counts": {
+              "periods": {
+                "min": 7
+              }
+            }
+          },
+          "budget": {},
+          "fields": {
+            "periods[]": {
+              "maxChars": 5
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 14
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "periods[]": {
+                "maxChars": 5
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "Three crews carry the planting season",
+          "periods": [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr"
+          ],
+          "current": 2,
+          "now": 2,
+          "lanes": [
+            {
+              "name": "Survey",
+              "bars": [
+                {
+                  "from": 1,
+                  "to": 2,
+                  "label": "Site visits"
+                }
+              ]
+            },
+            {
+              "name": "Planting",
+              "bars": [
+                {
+                  "from": 2,
+                  "to": 4,
+                  "label": "Eastgate"
+                }
+              ]
+            },
+            {
+              "name": "Tree care",
+              "bars": [
+                {
+                  "from": 2,
+                  "to": 4,
+                  "label": "Watering"
+                }
+              ]
+            }
+          ]
+        },
+        "body": "<Notes>Survey work overlaps the start of planting; care continues after the crews move on.</Notes>\n",
+        "mdx": "---\nlayout: schedule\ntitle: Three crews carry the planting season\nperiods:\n  - Jan\n  - Feb\n  - Mar\n  - Apr\ncurrent: 2\nnow: 2\nlanes:\n  - name: Survey\n    bars:\n      - from: 1\n        to: 2\n        label: Site visits\n  - name: Planting\n    bars:\n      - from: 2\n        to: 4\n        label: Eastgate\n  - name: Tree care\n    bars:\n      - from: 2\n        to: 4\n        label: Watering\n---\n\n<Notes>Survey work overlaps the start of planting; care continues after the crews move on.</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "table",
       "source": "@deckster/kit",
-      "description": "A title that states the takeaway over one table of exact values, written as a Markdown table or the kit <Table> (`deck charts --json` lists its props; both are set alike): a lookup, a schedule, a feature or price grid. Columns of numbers are aligned right with tabular figures, the header is set in the brand's label style, and `highlight: { row: Eastgate }` (or a column) marks what the point rests on the way the brand's charts do. A wide or long table steps down in size, never below the smallest type the brand allows; past that `deck lint` asks you to cut rows or columns. Fill <Aside> with the \"so what\" to set it beside the table. Use a chart for a pattern across many values and comparison for two or three options.",
+      "description": "A title that states the takeaway over one table of exact values, written as a Markdown table or the kit <Table> (`deck charts --json` lists its props; both are set alike): a lookup, a schedule, a feature or price grid. Columns of numbers are aligned right with tabular figures, the header is set in the brand's label style, and `highlight: { row: Eastgate }` (or a column) marks what the point rests on the way the brand's charts do. A wide or long table steps down in size, never below the smallest type the brand allows; past that `deck lint` asks you to cut rows or columns. Fill <Aside> with the \"so what\" to set it beside the table. Use a chart for a pattern across many values and comparison for two or three options; use status for readiness, risks for a risk register, actions for commitments, or schedule for durations.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -5385,6 +8690,526 @@
             "kind": "title",
             "from": {
               "selector": ".kit-title"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "status",
+      "source": "@deckster/kit",
+      "description": "A status report of three to seven workstreams from `items:`, each with a name, a labelled state, an optional owner and a one-line note explaining what changed or what needs help. The title states the overall position, and aligned rows make the exceptions easy to scan. Use it for a programme review or a launch readiness check; the pills always name their states, so colour is never the only signal. Use table for arbitrary exact values, columns to group several tasks into lanes, timeline when dates and sequence are the point, actions for commitments with owners and deadlines, or stats for one headline number. The owner column appears only when a workstream names an owner. Use `labels.name: Team` when reporting teams. `reveal: true` introduces one workstream per step.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "on-track",
+                    "at-risk",
+                    "blocked",
+                    "done"
+                  ]
+                },
+                "owner": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 17
+                },
+                "note": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                }
+              },
+              "required": [
+                "name",
+                "status",
+                "note"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 3,
+            "maxItems": 7
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "status": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "owner": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "note": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "on-track": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "at-risk": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "blocked": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "done": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "name": "Workstream",
+              "status": "Status",
+              "owner": "Owner",
+              "note": "Update",
+              "on-track": "On track",
+              "at-risk": "At risk",
+              "blocked": "Blocked",
+              "done": "Done"
+            }
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "items": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 3 to 7 workstreams, each with `name` (up to 24 characters), `status` (on-track, at-risk, blocked or done), optional `owner` (up to 17 characters), and `note` (up to 40 characters). Keep each field to one line."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "name": "Workstream",
+            "status": "Status",
+            "owner": "Owner",
+            "note": "Update",
+            "on-track": "On track",
+            "at-risk": "At risk",
+            "blocked": "Blocked",
+            "done": "Done"
+          },
+          "allowed": null,
+          "hint": "Optional replacements for `name` (Workstream), `status` (Status), `owner` (Owner), `note` (Update), `on-track` (On track), `at-risk` (At risk), `blocked` (Blocked) and `done` (Done); each is 1 to 11 characters. Omitted keys keep their English defaults. For example, `labels: { name: Team }`."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence setting the review date or scope; put the updates in `items:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "The report source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Planting is ready; watering needs cover",
+          "eyebrow": "Programme review",
+          "labels": {
+            "name": "Team",
+            "status": "Status",
+            "owner": "Owner",
+            "note": "Update",
+            "on-track": "On track",
+            "at-risk": "At risk",
+            "blocked": "Blocked",
+            "done": "Done"
+          },
+          "items": [
+            {
+              "name": "Planting",
+              "status": "done",
+              "owner": "Dana Okafor",
+              "note": "All 300 trees are in the ground."
+            },
+            {
+              "name": "Watering",
+              "status": "at-risk",
+              "owner": "Leah Chen",
+              "note": "Two summer routes still need wardens."
+            },
+            {
+              "name": "Tree mapping",
+              "status": "on-track",
+              "note": "The app rollout starts next week."
+            }
+          ]
+        },
+        "body": "Spring review of the canopy programme.\n\n<Footnote>Urban Forestry Division, March 2027.</Footnote>\n\n<Notes>\nName the watering gap first, then the completed planting and the mapping rollout.\n</Notes>\n",
+        "mdx": "---\nlayout: status\ntitle: \"Planting is ready; watering needs cover\"\neyebrow: Programme review\nlabels:\n  name: Team\n  status: Status\n  owner: Owner\n  note: Update\n  on-track: On track\n  at-risk: At risk\n  blocked: Blocked\n  done: Done\nitems:\n  - name: Planting\n    status: done\n    owner: Dana Okafor\n    note: All 300 trees are in the ground.\n  - name: Watering\n    status: at-risk\n    owner: Leah Chen\n    note: Two summer routes still need wardens.\n  - name: Tree mapping\n    status: on-track\n    note: The app rollout starts next week.\n---\n\nSpring review of the canopy programme.\n\n<Footnote>Urban Forestry Division, March 2027.</Footnote>\n\n<Notes>\nName the watering gap first, then the completed planting and the mapping rollout.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "risks",
+      "source": "@deckster/kit",
+      "description": "A risk register of three to five rows under a title that states the point. Each entry in `risks:` has a short `name`, `likelihood` and `impact` (low, medium or high), and a one-line `mitigation`. The two levels show their names and one, two or three filled marks, so meaning never depends on colour. Rows stay in the order written; `highlight: true` lights the most severe row on the accent surface and marks it with a diamond, and `reveal: true` brings rows in one per step. Use it to review what could go wrong and what you will do about it. `labels` renames the column heads and level words, for example `labels: { name: Hazard }`; use table for a longer register with owners, dates or exact scores, matrix to position items on two continuous axes, actions for commitments with owners and deadlines, and steps for the stages of a process.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                },
+                "likelihood": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "impact": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "mitigation": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 42
+                },
+                "highlight": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "name",
+                "likelihood",
+                "impact",
+                "mitigation"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 3,
+            "maxItems": 5
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "likelihood": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "impact": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "mitigation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 11
+              },
+              "low": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8
+              },
+              "medium": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8
+              },
+              "high": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8
+              },
+              "highlight": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "name": "Risk",
+              "likelihood": "Likelihood",
+              "impact": "Impact",
+              "mitigation": "Mitigation",
+              "low": "Low",
+              "medium": "Medium",
+              "high": "High",
+              "highlight": "Priority risk"
+            }
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "risks"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "risks": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 3 to 5 risks in reading order, each with `name` (up to 24 characters), `likelihood` and `impact` (each low, medium or high), and `mitigation` (one action of up to 42 characters). Optionally mark the most severe risk with `highlight: true`, on at most one row."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "name": "Risk",
+            "likelihood": "Likelihood",
+            "impact": "Impact",
+            "mitigation": "Mitigation",
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High",
+            "highlight": "Priority risk"
+          },
+          "allowed": null,
+          "hint": "Optional replacements for the column heads `name` (Risk), `likelihood` (Likelihood), `impact` (Impact) and `mitigation` (Mitigation), each 1 to 11 characters; the level words `low` (Low), `medium` (Medium) and `high` (High), each 1 to 8 characters; and `highlight` (Priority risk), the screen-reader prefix of the highlighted row, 1 to 24 characters. Omitted keys keep their English defaults. For example, `labels: { name: Hazard }`."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `reveal: true` to show the items one per step, in order, or leave it out to show them all at once."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One line of context under the title. Write the register in `risks:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source, assessment date or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 14
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Summer watering is the risk we must fund",
+          "eyebrow": "Canopy programme",
+          "labels": {
+            "name": "Risk",
+            "likelihood": "Likelihood",
+            "impact": "Impact",
+            "mitigation": "Mitigation",
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High",
+            "highlight": "Priority risk"
+          },
+          "risks": [
+            {
+              "name": "Late stock",
+              "likelihood": "low",
+              "impact": "medium",
+              "mitigation": "Reserve trees with two local nurseries"
+            },
+            {
+              "name": "Warden turnover",
+              "likelihood": "medium",
+              "impact": "low",
+              "mitigation": "Pair each new warden with a neighbour"
+            },
+            {
+              "name": "Summer drought",
+              "likelihood": "high",
+              "impact": "high",
+              "mitigation": "Fund a weekly watering crew",
+              "highlight": true
+            }
+          ]
+        },
+        "body": "Every planting district has a mitigation before the season opens.\n\n<Footnote>Assessment for the 2027 planting season.</Footnote>\n\n<Notes>\nWatering has the highest likelihood and impact. The funded crew is the decision today.\n</Notes>\n",
+        "mdx": "---\nlayout: risks\ntitle: Summer watering is the risk we must fund\neyebrow: Canopy programme\nlabels:\n  name: Risk\n  likelihood: Likelihood\n  impact: Impact\n  mitigation: Mitigation\n  low: Low\n  medium: Medium\n  high: High\n  highlight: Priority risk\nrisks:\n  - name: Late stock\n    likelihood: low\n    impact: medium\n    mitigation: Reserve trees with two local nurseries\n  - name: Warden turnover\n    likelihood: medium\n    impact: low\n    mitigation: Pair each new warden with a neighbour\n  - name: Summer drought\n    likelihood: high\n    impact: high\n    mitigation: Fund a weekly watering crew\n    highlight: true\n---\n\nEvery planting district has a mitigation before the season opens.\n\n<Footnote>Assessment for the 2027 planting season.</Footnote>\n\n<Notes>\nWatering has the highest likelihood and impact. The funded crew is the decision today.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
             }
           }
         ]
@@ -5888,7 +9713,7 @@
     {
       "name": "bio",
       "source": "@deckster/kit",
-      "description": "Introduces one person, usually the speaker: a portrait filling the left five columns, their `name:` and `role:` beside it, a few facts as a sentence or up to three bullets, and up to two `contacts:` (email, site or handle) stacked on the bottom line. Without `photo:` the portrait is a tile with their initials. Use it once, near the start; use team for three or more people and quote for someone speaking for the point. `title:` names the slide in the outline and is not shown.",
+      "description": "Introduces one person, usually the speaker: a portrait filling the left five columns, their `name:` and `role:` beside it, a few facts as a sentence or up to three bullets, and up to two `contacts:` (email, site or handle) stacked on the bottom line. Without `photo:` the portrait is a tile with their initials. Use it once, near the start; use team for three or more people and quote for someone speaking for the point. `title:` names the slide in the outline and is not shown; use persona for a user profile with goals and frustrations.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -6066,6 +9891,235 @@
             "kind": "subtitle",
             "from": {
               "selector": ".kit-bio-role"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "persona",
+      "source": "@deckster/kit",
+      "description": "A user persona grounded in research: a portrait with `name:` and `role:` on the left, a prominent quotation in their own words directly above two labelled lists, `goals:` and `frustrations:`, on the right. The title states what this person needs from the product, rather than repeating their name. Without `photo:` the portrait becomes an initials tile; `focal:` and `treatment:` work as on bio. Use it to connect a design decision to a participant’s motivations and obstacles. Use bio to introduce a speaker, quote when only their words matter, or proof to show a customer’s measured outcome. Use cards or columns for findings pooled across many participants rather than one person. Override the list headings with `labels:`.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 28
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "photo": {
+            "type": "string",
+            "minLength": 1
+          },
+          "focal": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+          },
+          "treatment": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "goals": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16
+              },
+              "frustrations": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "goals": "Goals",
+              "frustrations": "Frustrations"
+            }
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "frustrations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "role",
+          "goals",
+          "frustrations"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "name": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Name the research persona, up to 28 characters."
+        },
+        "role": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Say who they are in one line, up to 40 characters."
+        },
+        "photo": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Give a portrait as a file in the deck folder, such as `photo: assets/dana.jpg`, or leave it out for an initials tile, as on bio."
+        },
+        "focal": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Name the part of the photo to keep when it is cropped, as a CSS position: `focal: top`, `focal: center 30%` (a face in the upper third) or `focal: 40% 20%`."
+        },
+        "treatment": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Name one of the brand's image treatments, for example `treatment: plain` (every brand has it) to show a screenshot, map or chart in its own colors; `deck brand --json` lists them under imagery.treatments."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "goals": "Goals",
+            "frustrations": "Frustrations"
+          },
+          "allowed": null,
+          "hint": "Override either research heading, each up to 16 characters."
+        },
+        "goals": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 things the person wants to achieve, each up to 40 characters."
+        },
+        "frustrations": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 obstacles in the person’s day, each up to 40 characters."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "A short quotation in the person’s own words, without outer quotation marks. Leave it out if no verbatim quotation was recorded.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "The research source, interview date or a caveat about the persona.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 24
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Residents need a watering plan they can keep",
+          "eyebrow": "Resident research",
+          "name": "Nia Mensah",
+          "role": "Volunteer tree warden, Eastgate",
+          "labels": {
+            "goals": "Goals",
+            "frustrations": "Frustrations"
+          },
+          "goals": [
+            "Keep the new trees alive",
+            "Share the watering rounds"
+          ],
+          "frustrations": [
+            "Unclear watering advice",
+            "No cover during holidays"
+          ]
+        },
+        "body": "I can water on Tuesdays, but I need to know someone has the rest of the week.\n\n<Footnote>Illustrative persona based on the Eastgate watering study.</Footnote>\n\n<Notes>\nConnect the need for shared rounds to the proposed watering rota.\n</Notes>\n",
+        "mdx": "---\nlayout: persona\ntitle: Residents need a watering plan they can keep\neyebrow: Resident research\nname: Nia Mensah\nrole: \"Volunteer tree warden, Eastgate\"\nlabels:\n  goals: Goals\n  frustrations: Frustrations\ngoals:\n  - Keep the new trees alive\n  - Share the watering rounds\nfrustrations:\n  - Unclear watering advice\n  - No cover during holidays\n---\n\nI can water on Tuesdays, but I need to know someone has the rest of the week.\n\n<Footnote>Illustrative persona based on the Eastgate watering study.</Footnote>\n\n<Notes>\nConnect the need for shared rounds to the proposed watering rota.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "two-content",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
             }
           },
           {
@@ -6295,6 +10349,211 @@
       },
       "pptx": {
         "type": "two-content",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          },
+          {
+            "kind": "body",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "sources",
+      "source": "@deckster/kit",
+      "description": "Three to eight numbered references from `sources:`, each with a title and optional author, publisher, year and URL. Three or four references occupy one column; five to eight read down the left column, then down the right. Muted 01-style indexes identify citations; light lists scale up before their rows expand. Addresses are shown as short readable links while keeping their full destinations in the PDF. Use it at the close of a research talk or in an appendix so the audience can follow the evidence. Use default for a short list without citation fields, content for an explanation of the evidence, and a footnote on the relevant slide for the source of one claim. Use closing for one link with a QR code, and content with link cards for two or three links the audience should open now. All references show together, without reveal.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "author": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 36
+                },
+                "publisher": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 36
+                },
+                "year": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 9
+                },
+                "url": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 240
+                }
+              },
+              "required": [
+                "title"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 3,
+            "maxItems": 8
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "sources"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "sources": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 3 to 8 sources in citation order, each with `title` (up to 80 characters, 61 for 5 to 8 sources) and optionally `author` (up to 36, 23 in two columns), `publisher` (up to 36, 23 in two columns), `year` (text, up to 9) and `url` (a full http: or https: address, up to 240 characters). Long addresses display in shortened form at a slash, dot or hyphen boundary (64 characters in one column, 40 in two); hosts are never cut and links open their full destination."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 50
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "One sentence on what the references support. Put citations in `sources:`.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "An access date or a caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 10
+        },
+        "footnote": {
+          "maxWords": 16
+        }
+      },
+      "variants": [
+        {
+          "name": "two columns",
+          "when": {
+            "counts": {
+              "sources": {
+                "min": 5,
+                "max": 8
+              }
+            }
+          },
+          "budget": {},
+          "fields": {
+            "sources[].title": {
+              "maxChars": 61
+            },
+            "sources[].author": {
+              "maxChars": 23
+            },
+            "sources[].publisher": {
+              "maxChars": 23
+            }
+          },
+          "limits": {
+            "budget": {
+              "body": {
+                "maxWords": 10
+              },
+              "footnote": {
+                "maxWords": 16
+              }
+            },
+            "fields": {
+              "sources[].title": {
+                "maxChars": 61
+              },
+              "sources[].author": {
+                "maxChars": 23
+              },
+              "sources[].publisher": {
+                "maxChars": 23
+              }
+            }
+          }
+        }
+      ],
+      "example": {
+        "frontmatter": {
+          "title": "The canopy plan follows three local studies",
+          "eyebrow": "References",
+          "sources": [
+            {
+              "title": "Eastgate summer heat survey",
+              "author": "Dana Okafor",
+              "publisher": "Larkfield Council",
+              "year": "2026",
+              "url": "https://larkfield.example/heat"
+            },
+            {
+              "title": "Holloway Road planting trial",
+              "publisher": "Urban Forestry Division",
+              "year": "2025"
+            },
+            {
+              "title": "Street tree survival register",
+              "year": "2026"
+            }
+          ]
+        },
+        "body": "<Notes>\nKeep these references available for questions about the canopy programme.\n</Notes>\n",
+        "mdx": "---\nlayout: sources\ntitle: The canopy plan follows three local studies\neyebrow: References\nsources:\n  - title: Eastgate summer heat survey\n    author: Dana Okafor\n    publisher: Larkfield Council\n    year: 2026\n    url: \"https://larkfield.example/heat\"\n  - title: Holloway Road planting trial\n    publisher: Urban Forestry Division\n    year: 2025\n  - title: Street tree survival register\n    year: 2026\n---\n\n<Notes>\nKeep these references available for questions about the canopy programme.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
         "placeholders": [
           {
             "kind": "title",

@@ -177,7 +177,7 @@ parts, `diagram-card-missing`); their "New in v0.4.0" notes stay, because they t
 older CLI what is missing. Every other behaviour you describe must be in 0.5.0. Something on `main`
 that is newer than the release is left out, or, where a brief asks for it, mentioned in one or
 two sentences inside `<Aside type="note" title="Not in v0.5.0">`; if `main` or the working tree
-differs from the release, describe the release and report the difference.
+differs from the release, describe the release and report the difference. The one exception is the 20 layout pages (`recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`): a brief asked for them, so each carries `<Aside type="note" title="Not in v0.5.0">` right after its opening paragraph and its command output comes from the packed CLI named in `meta.json`.
 
 ## Your report
 
