@@ -15,8 +15,8 @@ type SlideChipsProps = {
 };
 
 /**
- * The small facts about a slide shown beside its thumbnail: the number of steps it reveals, its
- * speaking budget, and the badges other plugins set for it.
+ * The small facts about a slide shown beside its thumbnail: whether it is hidden, the number of
+ * steps it reveals, its speaking budget, and the badges other plugins set for it.
  */
 export function SlideChips({ slide }: SlideChipsProps): ReactNode {
   const sources = useBadgeSources();
@@ -24,6 +24,11 @@ export function SlideChips({ slide }: SlideChipsProps): ReactNode {
   const reveals = slide.stepCount === undefined ? 0 : slide.stepCount - 1;
   return (
     <span className="dp-badges">
+      {slide.hidden ? (
+        <span className="dp-chip" data-hidden="" title="Hidden: a talk skips this slide">
+          Hidden
+        </span>
+      ) : null}
       {reveals > 0 ? (
         <span className="dp-chip" title={`${reveals} reveals after the slide appears`}>
           {stepsLabel(reveals)}

@@ -22,8 +22,8 @@ match either case; a press with Ctrl, Alt or Meta never matches.
 | ---------------------------- | ----------------------------------------------------------- | -------- |
 | Right, Down, PageDown, Space | Next step or slide (handled by the engine, listed for help) | both     |
 | Left, Up, PageUp             | Previous step or slide (engine)                             | both     |
-| Home, End                    | First or last slide (engine)                                | both     |
-| `g`                          | Go to slide: type its number, then Enter                    | both     |
+| Home, End                    | First or last shown slide (engine)                          | both     |
+| `g`                          | Go to slide: type its number, then Enter (hidden ones too)  | both     |
 | `f`                          | Fullscreen                                                  | both     |
 | `b`, `w`                     | Black out or white out the screen                           | both     |
 | `l`                          | Laser pointer                                               | both     |
@@ -43,6 +43,12 @@ Press `p`, or open the deck URL with `?presenter`. The window shows the current 
 the speaker notes from `<Notes>`, a timer, the wall clock and pacing. Pacing compares the timer with
 each slide's `budget` frontmatter (`budget: 30s`), fitted to the deck config's `duration` when it
 has one (`src/presenter/pacing.ts`).
+
+A slide with `hidden: true` is skipped by next, previous, Home and End, and reached from the sidebar,
+the overview and go-to. The sidebar and the overview dim it and badge it "Hidden"; the presenter's
+header says "hidden" on it and its next-slide preview is the next shown slide; numbers shown to the
+presenter count every slide. Pacing leaves hidden slides out, so their budgets are not in the total
+and `duration` is shared between the shown slides.
 
 The two windows sync position, blackout and the laser over a `BroadcastChannel` named per deck
 (`src/sync/sync-protocol.ts`). In the presenter window, Space, the arrows and PageUp/PageDown

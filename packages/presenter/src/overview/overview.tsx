@@ -157,6 +157,7 @@ function OverviewCell({ slide, isSelected, onPick }: OverviewCellProps): ReactNo
       aria-selected={isSelected}
       aria-label={`Slide ${slide.index + 1}: ${slide.title}`}
       data-slide-index={slide.index}
+      data-hidden={slide.hidden ? '' : undefined}
       onClick={() => onPick(slide.index)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {

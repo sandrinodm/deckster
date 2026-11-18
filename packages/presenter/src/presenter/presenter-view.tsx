@@ -1,4 +1,10 @@
-import { isInteractiveTarget, SlideView, useDeck, type DeckControls } from '@deckster/engine';
+import {
+  isInteractiveTarget,
+  neighbourShownSlide,
+  SlideView,
+  useDeck,
+  type DeckControls,
+} from '@deckster/engine';
 import {
   useEffect,
   useState,
@@ -61,6 +67,7 @@ export function PresenterView(): ReactNode {
   const slideElapsedSeconds = useSlideElapsed(slide, timer.elapsedSeconds);
   const pacing = computePacing({
     budgets: deck.slides.map((entry) => entry.budget),
+    hidden: deck.slides.map((entry) => entry.hidden),
     slide,
     elapsedSeconds: timer.elapsedSeconds,
     slideElapsedSeconds,
@@ -141,6 +148,7 @@ function PresenterHeader({ deck, timer, pacing }: PresenterHeaderProps): ReactNo
         <span className="dp-p-deck">{deck.manifest.title}</span>
         <span className="dp-p-count" data-testid="slide-count">
           Slide {slide + 1} of {deck.slides.length}
+          {deck.slides[slide]?.hidden === true ? ' · hidden' : ''}
           {deck.stepCount !== undefined && deck.stepCount > 1
             ? ` · step ${step} of ${deck.stepCount - 1}`
             : ''}
@@ -446,7 +454,7 @@ function nextLabel(next: NextView | undefined): string {
 }
 
 /**
- * The next thing the audience will see.
+ * The next thing the audience will see: the next step of this slide, else the next shown slide.
  *
  * @param deck - The deck's controls.
  */
@@ -456,9 +464,10 @@ function nextView(deck: DeckControls): NextView | undefined {
     return { slide, step: step + 1, isStep: true };
   }
 
-  if (slide < deck.slides.length - 1) {
-    return { slide: slide + 1, step: 0, isStep: false };
-  }
-
-  return undefined;
+  const following = neighbourShownSlide(
+    deck.slides.map((entry) => entry.hidden),
+    slide,
+    'forward',
+  );
+  return following === undefined ? undefined : { slide: following, step: 0, isStep: false };
 }

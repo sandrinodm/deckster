@@ -199,6 +199,21 @@
   color: var(--dp-accent);
 }
 
+.dp-chip[data-hidden] {
+  border: 1px dashed var(--dp-faint);
+  background: transparent;
+}
+
+.dp-row[data-hidden] .dp-thumb,
+.dp-cell[data-hidden] .dp-thumb {
+  opacity: 0.45;
+}
+
+.dp-row[data-hidden] .dp-row-title,
+.dp-cell[data-hidden] .dp-cell-title {
+  color: var(--dp-muted);
+}
+
 .dp-thumb {
   position: relative;
   aspect-ratio: 16 / 9;
