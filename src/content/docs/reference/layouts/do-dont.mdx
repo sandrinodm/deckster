@@ -1,0 +1,57 @@
+---
+title: "do-dont"
+description: "Two columns of practical examples, what to do and what to avoid, each marked with a tick or a cross."
+sidebar:
+  order: 19
+---
+
+The `do-dont` layout sets two columns of practical examples side by side: what to do on the left, each with a tick, and what to avoid on the right, each with a cross. Use it to teach a working habit, a safety rule or a writing standard through concrete actions.
+
+<Aside type="note" title="Not in v0.5.0">
+The `do-dont` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "do-dont" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="do-dont-handover" />
+
+The lists are `do:` and `dont:` in the frontmatter, two to four short strings each, and the headings are "Do" and "Don't" because the slide sets no `labels:`. Rows line up across the two sides, so write the lists in matching order when the examples pair up. The tick and the cross differ in shape as well as colour, so the meaning does not depend on colour.
+
+<SlideShot deck="lookbook" slide="do-dont-routing" alt="Two columns on a near-black slide under the title 'Keep the promise when a drop will not fit', headed 'Keep the promise' with a tick and 'Avoid the shortcut' with a cross, each listing four rows of short examples, with a sentence under the title and a source footnote at the bottom." />
+
+Four examples a side, with `labels:` setting the headings to "Keep the promise" and "Avoid the shortcut". `reveal: true` shows the first column on step 1 and the second on step 2; the still shows the last step.
+
+## When to use it
+
+- **Each example is something to do or avoid.** Use [`comparison`](/reference/layouts/comparison/) when the options share measured rows, [`shift`](/reference/layouts/shift/) for one change from old to new, and [`columns`](/reference/layouts/columns/) when the groups have no positive or negative meaning.
+- **Two to four examples on each side.** Each takes up to 56 characters and starts best with a concrete action. The lists may differ in length; the shorter side leaves its last rows empty.
+- **Headings** default to "Do" and "Don't"; `labels.do` and `labels.dont` replace them, up to 24 characters each.
+- **The body is one sentence** of up to 14 words saying when the examples apply; a source goes in `<Footnote>`, up to 16. The title takes up to 50 characters.
+- **Show the habit before the shortcut.** With `reveal: true`, put a `[click]` cue in the notes for each column; see [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="do-dont" />
+
+## Common mistakes
+
+- **Bullets in the body.** The examples belong in `do:` and `dont:`, and the body takes text only. `deck lint` reports a list there with the `slot-content` rule:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/handover.mdx
+    error   slot-content (handover): The body slot holds a list of 2 items; the do-dont layout sets it as text.
+            Fix: Write it as a sentence, or move the points to a layout made for a list (content or split; `deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **One example on a side.** "do: Expected at least 2 examples, got a list of 1 item." A single contrast is a `shift`.
+- **An example over 56 characters.** "do[0]: Expected an example of at most 56 characters, got "Confirm who is taking t…" (76 characters)." Cut it to the action and say the reason aloud.
+- **A fifth example.** The schema stops at four a side; split the lists across two slides.
+
+## Related layouts
+
+- [`comparison`](/reference/layouts/comparison/): options measured on the same rows, such as us and them.
+- [`shift`](/reference/layouts/shift/): one change, from the way things are to the way they will be.
+- [`columns`](/reference/layouts/columns/): headed groups of short items with no right or wrong side.

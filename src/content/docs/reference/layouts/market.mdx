@@ -1,0 +1,57 @@
+---
+title: "market"
+description: "Two or three nested market sizes, outermost first, drawn as circles whose areas follow the figures, to separate a whole market from the part you can win."
+sidebar:
+  order: 32
+---
+
+The `market` layout sets two or three nested sizes of a market, outermost first, each with a label, a figure and a one-line note. Circles drawn with areas that follow the figures sit beside a list that gives every size the same stack. Use it to show total, serviceable and obtainable demand, or a whole market and the segment you can reach.
+
+<Aside type="note" title="Not in v0.5.0">
+The `market` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "market" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="market-first" />
+
+The sizes are in `sizes:`, largest first, and the last one is the part you can win: its circle and its row take the accent. On `surface: accent`, as here, that row is set on the inverse surface so it stays apart from the slide. The target is under 5% of the market it sits in, so its circle is small, its label stands on a leader line and it names its share, "1.9% of €1.0B". `reveal: true` brings the sizes in from the outside, one per step.
+
+<SlideShot deck="lookbook" slide="market-reachable" alt="A thin outlined circle for the network's 7,000 daily drops with a solid blue circle inside it at the bottom for Kestwick's 2,400, and beside them two rows, each with a label, a large figure and a one-line note." />
+
+Two sizes are enough. This slide leaves out `reveal`, so both show at once.
+
+## When to use it
+
+- **The sizes are nested.** Each one is a part of the one before. For independent figures use [`stats`](/reference/layouts/stats/), for arithmetic the audience should check use [`equation`](/reference/layouts/equation/), and for a longer series use [`chart`](/reference/layouts/chart/).
+- **Two or three sizes.** Each has a `label` of up to 20 characters, a `value` of up to 8 characters including its currency and unit (`€3.0B`, `$640k`, `7,000`) and a `note` of up to 40.
+- **The figures are exact and in one unit.** Write a number, or a figure with a currency prefix, a `k`, `M`, `B` or `T` suffix and commas for thousands. Suffixes may differ between sizes; currencies may not. A figure the layout cannot read as an exact amount is still valid, but the slide then sets the list without circles. So does a pair of sizes too close for two circles with room for labels.
+- **A very small part stays visible.** A circle under about 0.4% of the whole by area is drawn at a minimum size and labelled "Marker enlarged". `labels.minimum` and `labels.share` (default `{share} of {parent}`) change that wording.
+- **One sentence of context.** The body, up to 14 words, defines the market or its unit. The `<Footnote>` takes the source and date, up to 16 words.
+- **Name the sizes one at a time** with `reveal: true`, and put a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="market" />
+
+## Common mistakes
+
+- **Smallest size first.** A figure larger than the one before it is a `schema` error:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/market-order.mdx
+    error   schema (market-order): sizes.1.value: A nested market cannot be larger than its parent.
+            Fix: List sizes from the whole market to the smallest part within it.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **Two currencies.** `$4.2M` followed by `€640k` is a `schema` error: "sizes.1.value: Nested market figures must use the same currency or unit." The fix adds that compact magnitudes may differ.
+- **A fourth size.** The schema stops at three: "Expected at most 3 market sizes". Show the extra scope on another slide.
+
+## Related layouts
+
+- [`equation`](/reference/layouts/equation/): the arithmetic behind a market figure.
+- [`stats`](/reference/layouts/stats/): two to four figures that stand alone, without nesting.
+- [`chart`](/reference/layouts/chart/): a longer quantitative series.

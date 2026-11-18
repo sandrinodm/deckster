@@ -1,0 +1,59 @@
+---
+title: "conversation"
+description: "A chat transcript of two to four messages, with each side named, under a title that states what the exchange shows."
+sidebar:
+  order: 38
+---
+
+The `conversation` layout sets a short chat transcript of two to four messages, with each speaker named, under a title that states what the exchange shows. Use it for a customer exchange, an assistant interaction or a handover, in the speakers' own words.
+
+<Aside type="note" title="Not in v0.5.0">
+The `conversation` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "conversation" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="conversation-handover" />
+
+Each turn in `messages:` has a `name`, a `side` and the `text`. Messages on `side: left` are neutral panels. Messages on `side: right` are our side, the lit panels, and are set further right; on an `accent` surface, as here, they take the inverse surface. The optional `role` appears under a speaker's name on their first message only, which is why "Brightloaf" and "Merchant support" show once. `reveal: true` brings in one message per click, and the final transcript stays in place for static slides and exports. The title is about the right-hand replies, as the layout asks.
+
+<SlideShot deck="lookbook" slide="conversation-window" alt="Two message panels in staggered rows under the title: a pale panel on the left from Odile Ferrand asking whether the loaf can reach the door within the hour, and a blue panel set further right from Wrenhaul answering with a same-hour window. Both are in large type, with the speaker's name in a column on the left of each panel." />
+
+A short exchange grows in type to fill the room. This one has two messages, no roles and no context line, and the speaker's name stays in its own column.
+
+## When to use it
+
+- **Two to four messages.** Split a longer exchange across slides. A `name` takes up to 18 characters, a `role` up to 20 and a `text` up to 112. The title takes up to 50 characters, the body up to 14 words and the footnote up to 16.
+- **Our side on the right.** `side: right` is the side your talk speaks for, so write the title about those replies. The names and the left and right positions tell the sides apart, so colour never has to.
+- **One paragraph per message.** Whitespace in `text` is collapsed, so a line break inside a message does not start a new paragraph.
+- **Say whether it is staged.** The footnote is for "a source or caveat on the bottom line, such as whether the exchange is staged", as in "Illustrative exchange; Wrenhaul and Brightloaf Bakery are fictional."
+- **Walk through it one turn at a time** with `reveal: true`, and put a `[click]` cue for each message in the notes. See [builds](/write-slides/builds/).
+- **Use another layout when there is no dialogue.** [`quote`](/reference/layouts/quote/) holds one person's testimony, [`steps`](/reference/layouts/steps/) a process, [`proof`](/reference/layouts/proof/) a customer result with numbers, and a sequence [`diagram`](/reference/layouts/diagram/) the technical messages between systems.
+
+## Reference
+
+<LayoutReference name="conversation" />
+
+## Common mistakes
+
+- **A fifth message.** The schema stops at four:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/c-five.mdx
+    error   schema (c-five): messages: Expected at most 4 messages, got a list of 5 items.
+            Fix: List 2 to 4 messages in reading order. Each needs `name` (up to 18 characters), `side: left` or `side: right` (our side), and `text` (up to 112 characters). Write each message as one paragraph; whitespace is collapsed. Optionally add `role` (up to 20 characters), such as Customer or Assistant; shown on each speaker’s first message. Split longer exchanges across slides.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **A side that is not left or right.** `side: center` is a `schema` error: `messages[1].side: Expected "left" | "right", got "center".`
+- **Expecting the role on every message.** A speaker's `role` is shown on their first message only. Speakers are matched by `name`, so spell it the same each time.
+- **A title about the question.** The right-hand messages are the point. "A handover ends with proof at the door" names what the replies show; "A merchant asks about delivery" does not.
+
+## Related layouts
+
+- [`quote`](/reference/layouts/quote/): one person's testimony, with the whole stage.
+- [`steps`](/reference/layouts/steps/): a process with no dialogue.
+- [`proof`](/reference/layouts/proof/): a customer result with numbers.
+- [`diagram`](/reference/layouts/diagram/): a sequence diagram for technical messages between systems.

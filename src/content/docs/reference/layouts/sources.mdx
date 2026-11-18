@@ -1,0 +1,58 @@
+---
+title: "sources"
+description: "Three to eight numbered references with title, author, publisher, year and address, for the close of a research talk or an appendix."
+sidebar:
+  order: 6
+---
+
+The `sources` layout sets three to eight numbered references on one slide, so the audience can find the evidence behind a talk. Each reference has a title and, where you have them, an author, a publisher, a year and a web address. Use it at the close of a research talk or in an appendix.
+
+<Aside type="note" title="Not in v0.5.0">
+The `sources` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "sources" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="sources-evidence" />
+
+The references are in `sources:`, in the order you cite them, and each becomes a numbered row (`01`, `02`, ...). `author`, `publisher` and `year` share one line, and `url` is the link under it, shown without `https://`. The body is one sentence on what the references support, and the `<Footnote>` holds the date the links were checked.
+
+<SlideShot deck="lookbook" slide="sources-records" alt="Eight numbered references on a near-black slide, 01 to 04 down the left column and 05 to 08 down the right, each with a title and a grey line of author, publisher or year; three of them also have an underlined web address." />
+
+From five references on, the list runs down the left column and then down the right. An entry shows only the fields it has: here five of the eight have no address. The slide sets `surface: inverse`.
+
+## When to use it
+
+- **Three to eight references.** For the source of one claim, put a `<Footnote>` on the slide that makes it. For a longer bibliography, split it across slides.
+- **Keep each field short.** A `title` takes up to 80 characters, or 61 from five references on. `author` and `publisher` take up to 36, or 23 in two columns, and `year` up to 9 (`2026`, `2025–26`, `n.d.`). The slide title takes up to 50 characters, the body 10 words and the footnote 16.
+- **Give full addresses.** `url` must start with `https://` or `http://` and takes up to 240 characters. The slide shows a shorter label without the scheme or anything after `?` or `#`, cut at a slash, dot or hyphen past 64 characters (40 in two columns). The host is never cut, and the link opens the full address.
+- **Everything shows at once.** The layout has no `reveal`.
+- **Links to open now.** For two or three links the audience should open during the talk, use [`content`](/reference/layouts/content/) with link cards; [links](/write-slides/links/) shows how.
+
+## Reference
+
+<LayoutReference name="sources" />
+
+## Common mistakes
+
+- **A long title in two columns.** With five or more references every title is held to 61 characters. `deck lint` names the limit and the variant:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/src-dense.mdx
+    error   schema (src-dense): sources[0].title: The sources layout sets at most 61 characters here (two columns), got 74.
+            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **An address without a scheme.** `url: wrenhaul.example/network` is a `schema` error: "Expected a web address that starts with https:// or http://". Write `https://wrenhaul.example/network`.
+- **Nine references.** The schema stops at eight: "sources: Expected at most 8 sources, got a list of 9 items."
+- **Adding `reveal: true`.** The finding is `"reveal" is not a frontmatter field.`
+- **Citations in the body.** `content-budget` flags a body over 10 words. Put each citation in `sources:`.
+
+## Related layouts
+
+- [`default`](/reference/layouts/default/): a short list with no author, publisher, year or address.
+- [`content`](/reference/layouts/content/): a title that states the point, with an explanation of the evidence under it.
+- [`closing`](/reference/layouts/closing/): the last slide, with one link and a QR code.

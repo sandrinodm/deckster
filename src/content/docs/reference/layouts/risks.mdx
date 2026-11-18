@@ -1,0 +1,60 @@
+---
+title: "risks"
+description: "A risk register of three to five rows, each with a likelihood, an impact and a one-line mitigation."
+sidebar:
+  order: 29
+---
+
+The `risks` layout sets a register of three to five rows. Each row names a risk, rates its likelihood and its impact as low, medium or high, and says in one line what you will do about it. Use it to review what could go wrong and what the action is.
+
+<Aside type="note" title="Not in v0.5.0">
+The `risks` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "risks" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="risks-launch" />
+
+Each entry in `risks:` has a `name`, a `likelihood`, an `impact` and a `mitigation`. The two levels are printed as a word beside one, two or three filled bars, so meaning never depends on colour. `highlight: true` lights the row the title is about and marks it with a diamond; this slide is on `surface: accent`, so the row is lit on the inverse surface. `reveal: true` brings in one row per step. Rows stay in the order you write them; the layout does not sort by severity.
+
+<SlideShot deck="lookbook" slide="risks-expansion" alt="A near-black slide titled 'Density is the risk behind four new cities' with a sentence under it and a five-row register: the first row, Thin early demand, is lit in blue with a diamond, and every row shows Medium, High or Low beside one to three small bars, then a one-line action. A footnote sits below." />
+
+Five rows, the most the layout takes, with a context line and a footnote on `surface: inverse`. The highlighted row is lit in the accent here, because the slide is dark.
+
+## When to use it
+
+- **Each risk has the same two levels and one action.** Use [`table`](/reference/layouts/table/) for a longer register with owners, dates or exact scores, [`matrix`](/reference/layouts/matrix/) for two continuous axes, [`actions`](/reference/layouts/actions/) for commitments with owners and deadlines, and [`steps`](/reference/layouts/steps/) for the stages of a process.
+- **Three to five rows.** A longer register belongs on several slides. A `name` takes up to 24 characters and a `mitigation` up to 42, one action on one line. The title takes up to 50 characters.
+- **Likelihood and impact are independent.** Each is `low`, `medium` or `high`, with no other value and no score.
+- **Highlight the most severe row, one at most.** A screen reader hears its name prefixed with "Priority risk".
+- **Context and footnote are optional.** Up to 14 and 16 words; the footnote is the place for the assessment date.
+- **Rename the words** with `labels`, for example `labels: { name: Hazard }`. It changes the column heads (`name`, `likelihood`, `impact`, `mitigation`, each up to 11 characters), the level words (`low`, `medium`, `high`, up to 8) and the screen-reader prefix (`highlight`, up to 24). Keys you leave out keep their English defaults.
+- **Walk through the register** with `reveal: true`, one row per step, and a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="risks" />
+
+## Common mistakes
+
+- **A level the layout does not have.** `critical` is not a level, so the slide fails the `schema` check:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/plans.mdx
+    error   schema (plans): risks[0].likelihood: Expected "low" | "medium" | "high", got "critical".
+            Fix: List 3 to 5 risks in reading order, each with `name` (up to 24 characters), `likelihood` and `impact` (each low, medium or high), and `mitigation` (one action of up to 42 characters). Optionally mark the most severe risk with `highlight: true`, on at most one row.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **Highlighting two rows.** "risks: 2 risks are highlighted; a register highlights at most one."
+- **A label that is a phrase.** `labels.name: Hazard of the season` fails with "Expected a risk column label of at most 11 characters." Use one word.
+- **A mitigation that is a plan.** The column holds one action in 42 characters. Steps with owners and dates belong on an [`actions`](/reference/layouts/actions/) slide after this one.
+
+## Related layouts
+
+- [`table`](/reference/layouts/table/): a longer register, with owners, dates or exact scores.
+- [`matrix`](/reference/layouts/matrix/): items on two continuous axes.
+- [`actions`](/reference/layouts/actions/): commitments with an owner and a deadline.
+- [`steps`](/reference/layouts/steps/): the stages of a process.

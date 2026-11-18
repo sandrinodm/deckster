@@ -1,0 +1,57 @@
+---
+title: "pricing"
+description: "Two to four plans or tiers side by side, each with its own price and a short list of what it includes, with one plan marked as recommended."
+sidebar:
+  order: 24
+---
+
+The `pricing` layout sets two to four plans side by side, each a column with its name, a one-line description, its price as the largest figure and two to four short features. Use it when every option has its own price and its own list of what it includes, and mark the plan you want the audience to pick.
+
+<Aside type="note" title="Not in v0.5.0">
+The `pricing` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "pricing" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="pricing-plans" />
+
+The plans are in `plans:`, in the order of their columns. `recommended: true` lights the third plan on the accent surface and hangs the default "Recommended" badge from its top edge. The body says how to choose and `<Footnote>` carries the date and the tax. Names, prices and first features line up across the row.
+
+<SlideShot deck="lookbook" slide="pricing-break-even" alt="Two plan panels on a blue slide under the title 'Above 950 drops a month, the hub plan wins': Open Network at €3.10 a drop on a darker blue panel, and the Hub plan at €2.90 a drop on a near-black panel with an 'Above 950 a month' badge on its top edge, each with two features under a rule." />
+
+Two plans on `surface: accent`, with `badge: Above 950 a month` in place of "Recommended". Because the slide is already on the accent, the recommended plan is lit on the inverse surface. `reveal: true` brings in one plan per step; the still shows the last step.
+
+## When to use it
+
+- **Each option has its own price and its own list.** Use [`comparison`](/reference/layouts/comparison/) when the options are measured on the same rows, [`table`](/reference/layouts/table/) for more than four plans or a full feature grid, and [`stats`](/reference/layouts/stats/) for one number each.
+- **Two to four plans, two to four features each.** A plan has a `name` of up to 20 characters, a `price` of up to 8 characters (`€3.40`, `Free`, `Custom`) or a number, a `description` of up to 40, an optional `period` of up to 16 (`a drop`) and features of up to 28. Four plans take the "four plans" variant: 16, 32, 22 and 14 for the badge.
+- **Recommend one plan at most.** Leave `recommended` out and every plan has equal weight. `badge:` (up to 20 characters, "Recommended" by default) is drawn only on the recommended plan.
+- **Say how to choose in the body.** One sentence of up to 14 words. The title takes up to 50 characters, on one line, and the footnote up to 16 words.
+- **Bring the plans in one at a time** with `reveal: true` and a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="pricing" />
+
+## Common mistakes
+
+- **Recommending two plans.** The layout lights one column, so two is a `schema` error:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/plans.mdx
+    error   schema (plans): plans: 2 plans are recommended (Single site, District); a pricing slide recommends at most one.
+            Fix: Keep `recommended: true` on the one plan you recommend and remove it from the others.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **Adding a fourth plan without shortening the others.** The "four plans" limits apply to every plan, so a feature that fit in a row of three fails with "plans[1].features[1]: The pricing layout sets at most 22 characters here (four plans), got 25."
+- **A sentence as a price.** `$6,400 for the first year` is a `schema` error ("Expected a price of at most 8 characters"). Put the period in `period:` and the terms in a feature.
+- **A fifth feature.** "plans[1].features: Expected at most 4 features, got a list of 5 items." Move the full list to a `table` slide.
+
+## Related layouts
+
+- [`comparison`](/reference/layouts/comparison/): options measured on the same rows.
+- [`table`](/reference/layouts/table/): more than four plans, or a full feature grid.
+- [`stats`](/reference/layouts/stats/): one number per option.

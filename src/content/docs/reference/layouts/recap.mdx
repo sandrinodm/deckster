@@ -1,0 +1,59 @@
+---
+title: "recap"
+description: "Two to four takeaways, each a large numeral beside one sentence, to leave the audience with the few things to remember."
+sidebar:
+  order: 5
+---
+
+The `recap` layout sets two to four takeaways, each a large numeral beside one sentence and, optionally, a second line of detail. Use it at the end of a part or of the talk to leave the audience with the few things to remember.
+
+<Aside type="note" title="Not in v0.5.0">
+The `recap` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "recap" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="recap-launch" />
+
+The takeaways are `points:` in the frontmatter, each with a `title` that is one sentence and an optional `detail`. The numerals come from the order of the list, so don't write them; they are recall cues, not stages of a process. There are no cards or icons. This slide sets `surface: accent` and `reveal: true`, which brings in one point per step; the still shows the last step.
+
+<SlideShot deck="lookbook" slide="recap-network" alt="Two takeaways under the title 'A denser network makes every drop work harder', each a large blue numeral beside a sentence in bold type, 'Fill the hubs before opening more.' and 'Let every merchant book from their own systems.', on a white slide with no eyebrow, body or detail lines." />
+
+Two points with no `detail`, eyebrow or body are set larger: the layout tries the largest numerals and type first and steps down as the content grows.
+
+## When to use it
+
+- **The audience should carry these away.** Use it where a part or the talk ends. Use [`cards`](/reference/layouts/cards/) for parallel ideas that need icons and bodies, [`steps`](/reference/layouts/steps/) for actions that happen in order, [`agenda`](/reference/layouts/agenda/) for the parts still to come, [`statement`](/reference/layouts/statement/) for a single takeaway, and [`closing`](/reference/layouts/closing/) for the final ask and the contact details.
+- **Two to four points.** A `title` takes up to 76 characters with two points, 54 with three and 50 with four. A `detail` takes up to 90, or 60 with four points.
+- **The body is one sentence** of up to 14 words framing what to remember; a source goes in `<Footnote>`, up to 16. The title takes up to 50 characters.
+- **Return to the claims one at a time.** With `reveal: true`, put a `[click]` cue in the notes for each point; see [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="recap" />
+
+## Common mistakes
+
+- **Adding a third point without shortening the first two.** The variants apply to every point, so a sentence that was fine in a pair becomes a `schema` error:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/launch.mdx
+    error   schema (launch): points[0].title: The recap layout sets at most 54 characters here (three takeaways), got 61.
+            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **A long slide title.** The slide title takes up to 50 characters: "title: The recap layout sets at most 50 characters, got 79." Write the title as the point of the recap and leave the sentences to `points:`.
+- **Numbering the points yourself.** The layout supplies the numerals, so "1." in a `title` shows twice.
+- **A fifth point.** The schema stops at four; keep the few that matter.
+- **A process written as a recap.** The numerals do not mean order; set a sequence as [`steps`](/reference/layouts/steps/).
+
+## Related layouts
+
+- [`cards`](/reference/layouts/cards/): parallel ideas that each need an icon and a body.
+- [`steps`](/reference/layouts/steps/): numbered along a line, because the order matters.
+- [`agenda`](/reference/layouts/agenda/): the parts of the talk still to come.
+- [`statement`](/reference/layouts/statement/): one takeaway, set large on its own.
+- [`closing`](/reference/layouts/closing/): the last slide, with the one thing to do and how to follow up.

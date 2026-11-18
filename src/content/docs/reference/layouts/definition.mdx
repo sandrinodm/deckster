@@ -1,0 +1,58 @@
+---
+title: "definition"
+description: "One term defined, dictionary style, with an optional pronunciation, category and example sentence, to settle a word before you use it."
+sidebar:
+  order: 11
+---
+
+The `definition` layout sets one term as a dictionary entry under a title that states the point: the term in the display style, an optional pronunciation and category on a small line, its meaning in one or two sentences, and an optional example. Use it to settle what a specialist word, a product concept or a measure means before the argument depends on it.
+
+<Aside type="note" title="Not in v0.5.0">
+The `definition` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "definition" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="definition-loop" />
+
+The word is `term:` and the meaning is the body. `pronunciation:` and `kind:` share the small line under the term, and `example:` stands under a rule with the label "Example", which `labels.example` changes. The title says why the word matters. This slide sets `surface: default`, because the layout is set on the inverse surface unless you choose another.
+
+<SlideShot deck="lookbook" slide="definition-drop" alt="On a near-black slide, the single word 'Drop' set very large under the title 'Every figure from here counts one unit: the drop', with one line of definition below it and no other detail." />
+
+With only a `term` and a body, the entry grows to use the room. This is the default inverse surface.
+
+## When to use it
+
+- **One term.** The `term:` is up to 20 characters. For a glossary of three or more terms side by side use [`cards`](/reference/layouts/cards/) or [`table`](/reference/layouts/table/).
+- **The meaning is one or two sentences.** The body is required, text only, up to 36 words. A longer explanation belongs on [`content`](/reference/layouts/content/).
+- **Each extra is optional.** `pronunciation` takes up to 32 characters, `kind` (a part of speech such as `noun`, or a category such as `Service promise`) up to 24, and `example`, one sentence, up to 100. `labels.example` takes up to 16 characters, so translate it when the deck is not in English.
+- **Write a pronunciation as a respelling.** IPA characters that the brand's text font lacks are drawn from a substitute font in PowerPoint, and a respelling such as `LOOP` or `KAN-uh-pee` is the safe choice.
+- **The title states the point,** up to 50 characters, and the `<Footnote>`, up to 16 words, gives the source or the scope of this definition.
+- **The entry shows whole.** There is no `reveal`. A short entry is set larger, and a longer one steps down to fit.
+
+## Reference
+
+<LayoutReference name="definition" />
+
+## Common mistakes
+
+- **Bullets in the body.** The meaning is text, and `deck lint` reports a list with the `slot-content` rule:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/definition-list.mdx
+    error   slot-content (definition-list): The body slot holds a list of 2 items; the definition layout sets it as text.
+            Fix: Write it as a sentence, or move the points to a layout made for a list (content or split; `deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **A paragraph for a meaning.** Past 36 words, `content-budget` reports "The body slot holds 46 words; its layout allows 36." Cut it to the meaning and say the rest.
+- **A phrase for a term.** `term: Urban canopy cover across the district` is a `schema` error: "Expected a term of at most 20 characters, got "Urban canopy cover acro…" (38 characters)." Name the word and put the qualifier in the body.
+
+## Related layouts
+
+- [`statement`](/reference/layouts/statement/): a claim with no term to define, set large.
+- [`quote`](/reference/layouts/quote/): someone else's words.
+- [`content`](/reference/layouts/content/): a longer explanation under a title.
+- [`cards`](/reference/layouts/cards/) and [`table`](/reference/layouts/table/): a glossary of three or more terms side by side.

@@ -2,7 +2,7 @@
 title: "comparison"
 description: "Two or three options side by side, measured on the same two to five rows."
 sidebar:
-  order: 15
+  order: 23
 ---
 
 Use the `comparison` layout to set two or three options side by side and measure them on the same rows: before and after, you and a competitor, or the options of a decision. You write the options and rows in the frontmatter, mark which option wins each row, and can set the one you recommend on a panel under a badge.
@@ -23,6 +23,10 @@ Two options serve here as before and after. Each row names its `winner`, drawn b
 The title takes up to 50 characters, one line, so the rows fit under it. With three options the columns are narrower: a row `label` takes 18 characters instead of 24, a value 20 instead of 28, and an option's `summary` 24 instead of 36. More than three options or five rows is a [`table`](/reference/layouts/table/).
 
 ## Reference
+
+<Aside type="note" title="Not in v0.5.0">
+The reference below names `pricing`, `do-dont` and `before-after`, which are newer than `@deckster/cli` 0.5.0.
+</Aside>
 
 <LayoutReference name="comparison" />
 

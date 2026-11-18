@@ -1,0 +1,57 @@
+---
+title: "quiz"
+description: "A question to the room with two to four lettered choices; the next step marks the answer and shows an optional explanation."
+sidebar:
+  order: 21
+---
+
+The `quiz` layout puts one question to the room with two to four lettered choices. All the choices show first, and the next step marks the right one and shows a short explanation. Use it to test an assumption or to run a quick knowledge check before you give the reason.
+
+<Aside type="note" title="Not in v0.5.0">
+The `quiz` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "quiz" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="quiz-routing" />
+
+The title poses the question, `options:` lists the choices, lettered A to D in order, and `answer: C` names the right one. `reveal` is true by default, so the first step shows the choices alike and the second marks C with an accent panel and a tick, quiets A and B and shows `explanation:` underneath; the still shows that step. The explanation's space is reserved from the start, so nothing moves when the answer arrives.
+
+<SlideShot deck="lookbook" slide="quiz-cost" alt="Four lettered tiles A to D under the title 'What cut the most cost from each drop?' on a blue slide: tile B, Flock batching, is a dark panel with a tick, the other three are faded, and a line beneath reads 'B Flock saved €0.58 a drop; rider pay rose while total cost fell' above a source footnote." />
+
+`reveal: false` shows the answered slide at once, as a recap, so it has no build. This one has four options, a body sentence and a `<Footnote>`, on `surface: accent`; on the accent and gradient surfaces the answer panel takes the inverse colour.
+
+## When to use it
+
+- **The question has one right answer.** The title poses one specific question, up to 50 characters. Use [`cards`](/reference/layouts/cards/) for parallel ideas with no right answer, [`comparison`](/reference/layouts/comparison/) for alternatives measured on shared rows, and [`content`](/reference/layouts/content/) for an open question without fixed choices.
+- **Two to four short options.** Each option takes up to 72 characters. When every option has 24 characters or fewer they are set as tiles; if one is longer, all are set as full-width rows.
+- **The explanation is one reason**, up to 100 characters, and appears with the answer.
+- **The body and footnote show before the answer.** The body is one line of context, up to 14 words, and the footnote a source of up to 16, so neither is the place for the reason.
+- **Ask first, then click.** Put one `[click]` cue in the notes before the answer; see [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="quiz" />
+
+## Common mistakes
+
+- **An answer letter with no option.** `answer` must name a choice that exists, and `deck lint` says how many there are:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/same-hour.mdx
+    error   schema (same-hour): answer: Answer D has no option; this quiz has 2 options.
+            Fix: Set `answer` to one of A, B.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **Leaving out the answer.** "answer is required." The quiz has to know which choice to mark, even with `reveal: false`.
+- **An option over 72 characters.** "options[0]: Expected an option of at most 72 characters, got "Yes, because the same h…" (84 characters)." Put the reasoning in `explanation:`.
+- **Five options.** The schema stops at four, lettered A to D.
+
+## Related layouts
+
+- [`cards`](/reference/layouts/cards/): parallel ideas with no right answer.
+- [`comparison`](/reference/layouts/comparison/): alternatives measured on the same rows.
+- [`content`](/reference/layouts/content/): an open question without fixed choices, or one explanation.

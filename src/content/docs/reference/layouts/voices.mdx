@@ -1,0 +1,58 @@
+---
+title: "voices"
+description: "Two or three short testimonials set as equal columns, each with a name and a role, supporting one point."
+sidebar:
+  order: 45
+---
+
+The `voices` layout sets two or three short testimonials as equal columns under a title that states the one point they support. Each has a quote, a name and a role, and optionally a photo. Use it when several customers or stakeholders describe the same experience in their own words.
+
+<Aside type="note" title="Not in v0.5.0">
+The `voices` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "voices" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="voices-merchants" />
+
+Each entry in `voices:` is one column. The quote is set in the brand's quote style with a hanging quotation mark, and the name and role sit below on the same line across columns. `photo` adds a portrait beside the attribution, and `focal` keeps the face in view when it is cropped; the first photo here sets `focal: center 30%`. The `<Footnote>` gives the source and date of the interviews.
+
+<SlideShot deck="lookbook" slide="voices-network" alt="Three short quotations in white on a near-black slide, side by side under the title, each with a hanging quotation mark and followed by the speaker's name and role: a bakery owner, a pathology lead and a rider. None has a portrait." />
+
+Three voices take shorter quotes and names, and the type is smaller than with two. Without a `photo` the attribution is the name and role alone, as here. This slide also sets `surface: inverse` and `reveal: true`.
+
+## When to use it
+
+- **Two or three speakers.** One speaker belongs on [`quote`](/reference/layouts/quote/). Each entry needs `quote`, `name` and `role`.
+- **Short quotes.** A `quote` takes up to 100 characters, or 64 with three voices, and is set in at most three lines. A `name` takes up to 28 characters, or 20 with three voices, and a `role` up to 40. The title takes up to 60 characters, the body one sentence of up to 14 words and the footnote up to 16.
+- **Write the words without quotation marks.** The layout sets them. Put the source and date in the `<Footnote>`, and say there if the testimonials are illustrative.
+- **One point under the title.** The title is the claim, and the voices are the evidence for it. The body is one sentence of context; the testimonials never go in it.
+- **Bring the speakers in one at a time** with `reveal: true`, and put a `[click]` cue for each in the notes. See [builds](/write-slides/builds/).
+- **Treatments.** `treatment` applies to every portrait on the slide, and `treatment: plain` shows photos as they are.
+
+## Reference
+
+<LayoutReference name="voices" />
+
+## Common mistakes
+
+- **Bullets in the body.** The testimonials belong in `voices:`, and the body takes text only. `deck lint` reports a list with the `slot-content` rule:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/v-list.mdx
+    error   slot-content (v-list): The body slot holds a list of 2 items; the voices layout sets it as text.
+            Fix: Write it as a sentence, or move the points to a layout made for a list (content or split; `deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **A long quote in a row of three.** Adding a third voice tightens the limits for all of them: `voices[0].quote: The voices layout sets at most 64 characters here (three voices), got 72.`
+- **A single voice.** The schema reports `voices: Expected at least 2 voices, got a list of 1 item.` Use `quote` for one person.
+- **Expecting an avatar without a photo.** Without `photo`, a speaker has no portrait or initials tile; the layout shows the name and role only. [`persona`](/reference/layouts/persona/) and [`bio`](/reference/layouts/bio/) draw an initials tile instead.
+
+## Related layouts
+
+- [`quote`](/reference/layouts/quote/): one person with the whole stage.
+- [`proof`](/reference/layouts/proof/): a customer result that needs numbers.
+- [`team`](/reference/layouts/team/): people introduced for who they are, not for their words.

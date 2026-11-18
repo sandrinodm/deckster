@@ -95,6 +95,10 @@ Many parts of a slide take their own steps. They count as deck steps like any `<
 - **Video.** `cues` cut a `<Video>` into parts played one per step. See [media](/write-slides/media/).
 - **Count-ups.** A stat's number, such as a `<BigNumber>`, counts up from zero when the deck moves forward onto its slide or onto the step that reveals it. Years, small numbers and text such as `1 in 4` do not count, and nothing counts going back.
 
+<Aside type="note" title="Not in v0.5.0">
+The layouts newer than `@deckster/cli` 0.5.0 that take `reveal` are [`actions`](/reference/layouts/actions/), [`before-after`](/reference/layouts/before-after/), [`conversation`](/reference/layouts/conversation/), [`dashboard`](/reference/layouts/dashboard/), [`do-dont`](/reference/layouts/do-dont/), [`faq`](/reference/layouts/faq/), [`features`](/reference/layouts/features/), [`market`](/reference/layouts/market/), [`pricing`](/reference/layouts/pricing/), [`quadrants`](/reference/layouts/quadrants/), [`quiz`](/reference/layouts/quiz/), [`recap`](/reference/layouts/recap/), [`risks`](/reference/layouts/risks/), [`schedule`](/reference/layouts/schedule/), [`status`](/reference/layouts/status/) and [`voices`](/reference/layouts/voices/). Their pages say what each step brings in; on `quiz`, `reveal` defaults to `true` and the second step marks the answer.
+</Aside>
+
 A `cards` slide with `reveal: true` brings in one card per press. The example opens at the slide's last step, with every card in: press the left arrow to take the cards away one at a time.
 
 <SlideExample deck="lookbook" slide="cards-four-reveal" />

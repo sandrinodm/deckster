@@ -1,0 +1,58 @@
+---
+title: "status"
+description: "Three to seven workstreams, each with a named state, an optional owner and a one-line note, for a programme review or a readiness check."
+sidebar:
+  order: 50
+---
+
+The `status` layout sets three to seven workstreams in aligned rows: a name, a state, an optional owner and a one-line note on what changed or what needs help. The title states the overall position and the rows make the exceptions easy to find. Use it for a programme review or a launch readiness check.
+
+<Aside type="note" title="Not in v0.5.0">
+The `status` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "status" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="status-launch" />
+
+Each workstream in `items:` has a `name`, a `status`, an `owner` and a `note`. The state is a pill that always prints its name, so colour is never the only signal: At risk carries a triangle, Blocked a square, and Done is set back in a muted tone. The body gives the scope of the review and `<Footnote>` its date.
+
+<SlideShot deck="lookbook" slide="status-next-wave" alt="A near-black slide titled 'Sandgate needs power before the February opening' with a one-line context and five rows under the heads Workstream, Status and Update: two Done pills, one On track, one At risk with a triangle and one Blocked with a square, each with a one-line note, and a footnote below." />
+
+Five workstreams on `surface: inverse` with no owner, so the Owner column is not drawn and the notes take its width. `reveal: true` brings in one workstream per step; the still shows the last step.
+
+## When to use it
+
+- **The states are the point.** The four are `on-track`, `at-risk`, `blocked` and `done`, and any other value is refused. Use [`table`](/reference/layouts/table/) for arbitrary exact values, [`columns`](/reference/layouts/columns/) to group several tasks into lanes, [`timeline`](/reference/layouts/timeline/) when dates and sequence matter, [`actions`](/reference/layouts/actions/) for commitments with owners and deadlines, and [`stats`](/reference/layouts/stats/) for one headline number.
+- **Three to seven workstreams.** Split a longer report by programme. A `name` takes up to 24 characters, an `owner` up to 17 and a `note` up to 40, each on one line. The title takes up to 50 characters, the body 14 words and the footnote 16.
+- **Rename the words** with `labels`, for example `labels: { name: Team }` when you report teams. It changes the column heads (`name`, `status`, `owner`, `note`) and the four state words, each up to 11 characters. Keys you leave out keep their English defaults.
+- **Walk through the report** with `reveal: true`, one workstream per step, and a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="status" />
+
+## Common mistakes
+
+- **A state the layout does not have.** `complete` is not one of the four, so the slide fails the `schema` check:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/plans.mdx
+    error   schema (plans): items[0].status: Expected "on-track" | "at-risk" | "blocked" | "done", got "complete".
+            Fix: List 3 to 7 workstreams, each with `name` (up to 24 characters), `status` (on-track, at-risk, blocked or done), optional `owner` (up to 17 characters), and `note` (up to 40 characters). Keep each field to one line.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **A note that is a paragraph.** A note is one line: "items[1].note: Expected a workstream note of at most 40 characters, got "Ground work starts afte…" (67 characters)." Put the detail in `<Notes>`.
+- **Naming an owner on only some rows.** The Owner column is drawn for every row as soon as one workstream has an owner, so the others show an empty cell. Name an owner on all of them or on none.
+- **Looking for a field to highlight one row.** `status` has none; the pill marks the exceptions. [`risks`](/reference/layouts/risks/) has `highlight` and [`actions`](/reference/layouts/actions/) has `current` for that.
+
+## Related layouts
+
+- [`table`](/reference/layouts/table/): arbitrary exact values in rows and columns.
+- [`columns`](/reference/layouts/columns/): several tasks grouped into lanes.
+- [`timeline`](/reference/layouts/timeline/): dates and sequence are the point.
+- [`actions`](/reference/layouts/actions/): commitments with an owner and a deadline.
+- [`stats`](/reference/layouts/stats/): one headline number.

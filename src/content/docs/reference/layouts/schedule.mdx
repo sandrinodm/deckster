@@ -1,0 +1,61 @@
+---
+title: "schedule"
+description: "A plan across time: three to six lanes of duration bars on one axis of labelled periods, with an optional now marker."
+sidebar:
+  order: 48
+---
+
+The `schedule` layout sets a plan across time: three to six named lanes share one axis of three to eight labelled periods, and each lane has one or two bars that run from one period to another. Use it for parallel delivery, a rollout or overlapping work, where duration and overlap are the point.
+
+<Aside type="note" title="Not in v0.5.0">
+The `schedule` layout is newer than `@deckster/cli` 0.5.0. In 0.5.0, `deck lint` reports `layout: There is no "schedule" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="schedule-openings" />
+
+`periods:` labels the axis, and each bar in `lanes:` has `from` and `to`, its first and last period counted from 1, both included: Saltby's first bar, `from: 1, to: 3`, covers January to March. A `label` sits above its bar. `now: 2` draws the "Now" marker at the centre of February, and `current: 1` marks the first lane with an arrow and fills its bars with the accent.
+
+<SlideShot deck="lookbook" slide="schedule-quayside" alt="On a blue slide titled 'Quayside covers its costs by September', three lanes on an axis from February to September: a filled white bar for fit-out, then two long outlined bars for first loops and paying back the 380 thousand euros, with a vertical Now line in February." />
+
+This slide has eight periods, three lanes with one bar each and `reveal: true`, which brings the lanes in one per step. The still shows the last step. On an `accent` or `gradient` slide with `current` set, the other lanes' bars are drawn as outlines so the filled bars of the current lane stand apart, as here; when the layout shrinks to its two smallest sizes to fit a crowded slide, they stay filled.
+
+## When to use it
+
+- **The plan has durations.** Lanes are parallel streams of work, and bars show how long each runs. Without durations, see the layouts below.
+- **Equal periods.** Three to eight labels of up to 6 characters, or 5 with seven or eight periods (`Jan`, `Wk 2`, `Q3`). The layout does not read dates; `from` and `to` count periods.
+- **Three to six lanes.** Each has a `name` of up to 22 characters and one or two bars. Two bars that overlap are drawn on separate tracks, so a lane can hold overlapping work.
+- **Twelve bars and labels at most.** A bar counts one and its optional `label`, up to 16 characters, one more. Six lanes of two bars use the whole allowance, so they take no labels.
+- **Mark where you are.** `now` is a period number and `current` is a lane number. Use `current` for the lane the talk is on, or the lane at `now`.
+- **Little prose.** The body, up to 14 words, says what the plan delivers; the durations belong in the lanes. The `<Footnote>` takes a source or caveat, up to 16 words.
+- **Name the lanes one at a time** with `reveal: true`, and put a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="schedule" />
+
+## Common mistakes
+
+- **Numbers past the axis.** With three periods, `now: 5` and a bar that ends in period 4 are both `schema` errors, and so is a bar whose `from` is after its `to`:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/schedule-late.mdx
+    error   schema (schedule-late): now: Period 5 is past the 3-period axis.
+            Fix: Set now to a period index from 1 to 3, or leave it out.
+    error   schema (schedule-late): lanes[2].bars[0]: The bar must run forwards within the 3-period axis.
+            Fix: Use inclusive indexes with 1 <= from <= to <= 3.
+
+  launch-review: 2 errors, 0 warnings.
+  ```
+
+- **A `current` lane that does not exist.** With three lanes, `current: 5` is a `schema` error: "current: 5 names lane 5, but there are 3 lanes."
+- **Too many bars and labels.** Over twelve is a `schema` error: "Expected at most 12 bars and bar labels combined." Remove labels, use fewer bars or split the plan.
+
+## Related layouts
+
+- [`timeline`](/reference/layouts/timeline/): dated milestones, without durations.
+- [`steps`](/reference/layouts/steps/): a sequence in order, without dates.
+- [`columns`](/reference/layouts/columns/): a Now, Next and Later board, without a measured axis.
+- [`table`](/reference/layouts/table/): a timetable with an exact date on each row.
