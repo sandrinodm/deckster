@@ -1,20 +1,23 @@
 # @deckster/deck-layouts
 
-Test deck for every kit layout added after the first six, each in all of its variants (`agenda`,
-`team`, `quote`, `bio`, `cards`, `steps`, `comparison`, `timeline`, `table`, `logos`, `image`,
-`bento`, `shift`, `gallery`, `proof`, `columns`, `matrix`, `equation`, `ask`, `screen`,
-`closing`), told as the Larkfield Urban Forestry Division's annual review. Eighteen parts, each
-opened by a divider: one per layout, except that quote and bio share one ("Quote and bio"), as do
-columns and matrix ("Columns and matrix") and equation and ask ("Numbers"). The team part includes
-the founders form (`edge` and `previously`) on two and on four people, and the screen part shows
-the browser, phone and laptop frames. 78 slides, 120 steps, 45 minutes. Larkfield, its people and
+Test deck for every later kit layout in all of its variants (`agenda`, `team`, `quote`,
+`conversation`, `definition`, `voices`, `bio`, `persona`, `cards`, `faq`, `features`, `steps`,
+`actions`, `exercise`, `comparison`, `pricing`, `do-dont`, `quiz`, `timeline`, `schedule`, `table`,
+`risks`, `status`, `logos`, `image`, `bento`, `shift`, `gallery`, `before-after`, `proof`,
+`columns`, `matrix`, `quadrants`, `equation`, `market`, `ask`, `dashboard`, `screen`, `recap`,
+`sources`, `closing`), told as the Larkfield Urban Forestry Division's annual review. Eighteen parts
+group related layouts, each opened by a divider. People and research; cards, features and questions;
+processes, actions and exercises; comparisons, pricing, guidance and quizzes; timelines and
+schedules; tables, status and risks; galleries and before-after; boards and maps; numbers; and
+recap, sources and closing share their respective parts. The team part includes founders, and screen
+shows browser, phone and laptop frames. 124 slides, 201 steps, 71 minutes. Larkfield, its people and
 partners are fictional.
 
 Run these from the repository root:
 
 ```sh
 pnpm deck dev layouts
-pnpm deck lint layouts    # layouts: no problems in 78 slides (120 steps checked).
+pnpm deck lint layouts    # layouts: no problems in 124 slides (201 steps checked).
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures. The first six

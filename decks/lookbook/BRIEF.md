@@ -157,10 +157,23 @@ Portraits are in `assets/people/`. Founders first.
 | Aoife Brennan | Rider lead, Kestwick Old Town | The first rider Wrenhaul hired (March 2022); trains every new rider: all 310 rode their first loop behind her. Leads the launch-day ride-alongs; `aoife@wrenhaul.example`. | none: initials tile |
 | Lotte Brandsma | Head of operations, Pantry Lane Grocers | Customer, see above. | `lotte-brandsma.svg` |
 | Odile Ferrand | Owner, Brightloaf Bakery | Customer, see above. | `odile-ferrand.svg` |
+| Amara Quist | Research archetype: a recipient watching Track | Persona only; not a real customer. | `persona-recipient.svg` |
+| Sofia Lindqvist | Research archetype: a hub lead in Dispatch | Persona only; not a real customer. | persona-hub-lead.svg |
 
 Team: 64 people in the office and 310 riders, 374 in all. Contacts for closing slides:
 `ines@wrenhaul.example`, `partners@wrenhaul.example`, `wrenhaul.example/network`,
 `docs.wrenhaul.example`. Always the `.example` domain.
+
+### Launch readiness snapshot
+
+The `status-launch` review on 3 December 2026 treats Open Network as done (Tobi Adeyemi: the API
+opens today), Halyard Parcel as on track (Beatriz Lund: beta traffic feeds the live network),
+returns pick-up as at risk (Rafael Duarte: confirm the Q1 handover flow this month), and new city
+leases as blocked (Yusuf Demir: Saltby needs board approval first). These last two decisions do
+not hold up the launch. `status-next-wave` is the January 2026 review of the six funded 2026 hub
+openings (see 'The 2026 openings'): leases signed, the Hollin and Ebbsford hubs fitted out, rider
+training on track, Calder Bay's launch at risk without its trial run, and Sandgate's chargers
+blocked for want of power.
 
 ## Numbers
 
@@ -189,6 +202,7 @@ unless the row names another.
 | Riders | 310 | Staff on an hourly wage of €15.40, sick pay and a bike; 4% leave a month |
 | Market | €3.0B a year | 46 cities like ours × 21M drops a year each × €3.10 |
 | Serviceable market | €1.0B a year | Drops under 5 kg within 4 km of a hub, a third of the market |
+| Obtainable market target | €18.6M annualised | Q4 2027 goal of 500,000 monthly drops × €3.10 × 12; target run rate, not full-year revenue |
 | Series A | €14M | €8M committed by Saltglass Capital; 30 months of runway |
 
 **Use of the €14M:** new cities and hubs 45% (€6.3M), product and engineering 30% (€4.2M), riders
@@ -310,7 +324,8 @@ Track leave-with-neighbour, cold boxes for pharmacies; **Next** (2027) four new 
 second hub (Mill Green), carrier integrations; **Later** (2028) night consolidation hubs, kerb data for councils,
 bikes shared between hubs.
 
-The 2026 openings: leases for the six new hubs signed in September 2025; **Sandgate** (Calder
+The 2026 openings: leases for the six new hubs signed in September 2025; the four Hollin and
+Ebbsford hubs were fitted out in December 2025; **Sandgate** (Calder
 Bay's second hub) was to open early, in November 2025, as the city's trial run, and slipped to
 February 2026 because the unit had no power supply for the chargers; 132 riders trained in
 Kestwick in January 2026, four weeks each; all six hubs opened in February 2026.
@@ -400,6 +415,8 @@ Everything is in `decks/lookbook/assets/`; sources and licences are in `assets/C
 | `logo/wrenhaul-mono.svg` | The same in one tone (ink), for mono logo walls and dark tinting |
 | `logo/wrenhaul-mark.svg` | The wren alone, rust on transparent, square: app icon, morph subject |
 | `people/ines-kowalczyk.svg` | Ines: short dark hair, round glasses, rust jacket, sand ground |
+| `people/persona-recipient.svg` | Amara: swept dark hair, earrings, sage shirt, lilac ground; composite recipient |
+| `people/persona-hub-lead.svg` | Sofia: long dark hair, glasses, slate top, sage ground; composite hub lead |
 | `people/tobi-adeyemi.svg` | Tobi: close-cropped hair, beard, ink sweater, sage ground |
 | `people/maren-solberg.svg` | Maren: blond hair tied back, cycling jacket in sage, blue ground |
 | `people/rafael-duarte.svg` | Rafael: curly dark hair, slate shirt, peach ground |
@@ -447,3 +464,9 @@ and `gallery-places`; `what-merchants-send` on `bento-reveal`.
 | `scenes/evening-street.svg` | Evening: the street at dusk, windows and lamps lit, the rider's light on the road | The left half (dark sky and facades); dark overall, for evening slides and inverse surfaces | wide: `center`; tall: `100% 50%` / `[100, 50]`; square: `90% 50%` |
 | `scenes/van-at-the-bollards.svg` | The problem: a van stopped at the bollards and a no-vans sign at the edge of the Old Town, its driver's hand to his forehead, while Aoife rides on | The top third (sky); full-bleed text overlaps the bike, so best in `split`, `gallery` or `bento` | wide: `center`; tall: `22% 55%` / `[22, 55]` (the bike and the van's cab); square: `55% 50%` |
 | `scenes/what-merchants-send.svg` | A still life: an open Wrenhaul box holding a Brightloaf bag, a Calloway pharmacy bag, Fennick flowers and two Thimble books | The left 40% (dark ground), for `image` with `text: left` | wide: `center`; tall: `85% 50%` / `[85, 50]` |
+
+## Complete lookbook edition
+
+The kit has 52 layouts. This reference edition has 180 slides and 364 steps across twelve
+parts. Slide budgets total 122 minutes 35 seconds within a 127-minute duration (4 minutes
+25 seconds of slack). The forty-minute launch talk above selects from this complete edition.

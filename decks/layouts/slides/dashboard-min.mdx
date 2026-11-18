@@ -1,0 +1,16 @@
+---
+layout: dashboard
+title: Wardens help more trees survive
+panels:
+  - title: Survival, %, 2026
+  - title: Cover, %, Mar–Sep 2026
+budget: 25s
+---
+
+<BigNumber value="94%" label="trees alive after summer" />
+
+<LineChart data={[{ month: "Mar", cover: 48 }, { month: "Jun", cover: 64 }, { month: "Sep", cover: 86 }]} x="month" y="cover" unit="%" zero highlight={{ series: "cover" }} />
+
+<Notes>
+`dashboard` at minimum content: two panels, no eyebrow or footnote. The number and the full-height trend both support the same takeaway about keeping trees alive.
+</Notes>

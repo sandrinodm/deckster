@@ -1,0 +1,23 @@
+---
+layout: dashboard
+title: Eastgate’s pilot keeps 94% of its new trees
+eyebrow: Pilot results
+surface: inverse
+panels:
+  - title: Survival, %, Sep
+  - title: Cover, %, 2026
+  - title: Planting, 2026
+budget: 35s
+---
+
+<Donut data={[{ status: 'Alive', share: 94 }, { status: 'Lost', share: 6 }]} x="status" y="share" highlight="Alive" unit="%" />
+
+<Progress value={86} target={90} label="blocks covered" unit="%" />
+
+<BigNumber value="1,240" label="trees in 38 blocks" />
+
+<Footnote>Larkfield Urban Forestry Division, pilot survey, September 2026.</Footnote>
+
+<Notes>
+`dashboard` with three equal panels in one row. Read survival first, then the watering network, then the size of the pilot.
+</Notes>
