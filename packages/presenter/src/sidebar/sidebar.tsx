@@ -324,6 +324,7 @@ function SidebarRow(props: SidebarRowProps): ReactNode {
       aria-selected={isCurrent}
       aria-label={`Slide ${index + 1}: ${slide.title}`}
       data-slide-index={index}
+      data-hidden={slide.hidden ? '' : undefined}
       data-dragging={isDragging}
       data-drop={dropEdge(drop)}
       draggable={CAN_REORDER}

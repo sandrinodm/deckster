@@ -40,12 +40,14 @@ export type DeckApi = {
   goto: (slide: number | string, step?: number) => void;
 
   /**
-   * Shows the next step, or the next slide after the last step; does nothing at the end.
+   * Shows the next step, or the next shown slide after the last step (hidden slides are skipped);
+   * does nothing at the end.
    */
   next: () => void;
 
   /**
-   * Shows the previous step, or the previous slide at its last step; does nothing at the start.
+   * Shows the previous step, or the previous shown slide at its last step (hidden slides are
+   * skipped); does nothing at the start.
    */
   prev: () => void;
 

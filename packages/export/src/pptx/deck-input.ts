@@ -130,6 +130,12 @@ export type PptxSlideInput = {
    * The captured files.
    */
   assets: SlideAssets;
+
+  /**
+   * Whether the slide is hidden in the deck: it is written with `show="0"`, so PowerPoint skips it
+   * in a slide show. Absent means shown.
+   */
+  hidden?: boolean;
 };
 
 /**

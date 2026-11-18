@@ -134,6 +134,11 @@ export type OutlineSlide = {
    * How many characters of speaker notes the slide has.
    */
   readonly notesChars: number;
+
+  /**
+   * Whether the slide is hidden (`hidden: true`): a talk skips it, the deck keeps it.
+   */
+  readonly hidden: boolean;
 };
 
 /**

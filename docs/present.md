@@ -56,6 +56,23 @@ that file, skips it.
 - macOS in a sandbox that refuses the app bundle behind a pnpm symlink: the CLI already passes the
   real path.
 
+## Hidden slides
+
+A slide with `hidden: true` is skipped when you present, so it can wait as a backup for a question.
+Next, previous, Home and End pass over it in the audience window and in the presenter window. To
+show one, open the slide sidebar (`s`) or the overview (`o`) and select it, press `g` and type its
+number, or open a link to it. Numbers here are positions in the full slide list, hidden slides
+included, the same as in the sidebar. From the hidden slide, next and previous step through its own
+steps and then go back to the shown slides around it, so you leave a backup slide by pressing next.
+
+In the sidebar and the overview a hidden slide is dimmed and has a "Hidden" badge. The presenter
+window's header says "Slide 12 of 40 · hidden" on one, and its next-slide preview is the next shown
+slide, which is the slide the audience gets after it. Pacing leaves hidden slides out: their budgets
+are not in the planned total, and the deck's `duration` is shared between the shown slides.
+
+The audience's page number and progress bar count shown slides only, and a hidden slide shows no
+page number. A deck needs at least one shown slide.
+
 ## Testing
 
 Tests keep windows hidden: `DECK_SHELL_TEST_HIDDEN=1` forces `show: false` and skips fullscreen;

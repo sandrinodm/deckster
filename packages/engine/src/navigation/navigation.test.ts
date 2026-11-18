@@ -278,3 +278,138 @@ describe('navigate with a step count that is not final', () => {
     expect(currentPosition(settled)).toEqual({ slide: 0, step: 2 });
   });
 });
+
+/**
+ * Builds state like {@link deckWithSteps} for a deck where the `hidden` slides are skipped.
+ */
+function deckWithHidden(
+  stepCounts: readonly number[],
+  hidden: readonly number[],
+  slide = 0,
+  step = 0,
+): NavigationState {
+  const flags = stepCounts.map((_, index) => hidden.includes(index));
+  const initial = createNavigationState(stepCounts.length, undefined, flags);
+  const counted = stepCounts.reduce(
+    (state, count, index) => navigate(state, { type: 'step-count', slide: index, count }),
+    initial,
+  );
+  return navigate(counted, { type: 'goto', position: { slide, step } });
+}
+
+describe('hidden slides', () => {
+  const next = { type: 'next' } as const;
+  const prev = { type: 'prev' } as const;
+
+  it('starts on the first shown slide when no position is given', () => {
+    const state = createNavigationState(4, undefined, [true, true, false, false]);
+    expect(state.position).toEqual({ slide: 2, step: 0 });
+  });
+
+  it('starts where the position says, even on a hidden slide', () => {
+    const state = createNavigationState(3, { slide: 0, step: 0 }, [true, false, false]);
+    expect(state.position).toEqual({ slide: 0, step: 0 });
+  });
+
+  it('skips hidden slides going forward and backward', () => {
+    const state = deckWithHidden([1, 1, 1, 1], [1], 0);
+    expect(run(state, next).position).toEqual({ slide: 2, step: 0 });
+    expect(run(deckWithHidden([1, 1, 1, 1], [1], 2), prev).position.slide).toBe(0);
+  });
+
+  it('skips two hidden slides in a row', () => {
+    const forward = run(deckWithHidden([1, 1, 1, 1], [1, 2], 0), next);
+    expect(forward.position).toEqual({ slide: 3, step: 0 });
+    expect(run(forward, prev).position.slide).toBe(0);
+  });
+
+  it('does nothing past the last shown slide when the last slide is hidden', () => {
+    const state = deckWithHidden([1, 1, 1], [2], 1);
+    expect(run(state, next)).toBe(state);
+  });
+
+  it('does nothing before the first shown slide when the first slide is hidden', () => {
+    const state = deckWithHidden([1, 1, 1], [0], 1);
+    expect(run(state, prev)).toBe(state);
+  });
+
+  it('enters the previous shown slide on its last step, across a hidden slide', () => {
+    const state = deckWithHidden([3, 1, 1], [1], 2);
+    expect(run(state, prev).position).toEqual({ slide: 0, step: 2 });
+  });
+
+  it('enters the previous shown slide on its last step before its step count is known', () => {
+    const hidden = [false, true, false];
+    const initial = createNavigationState(3, { slide: 2, step: 0 }, hidden);
+    const counted = navigate(initial, { type: 'step-count', slide: 2, count: 1 });
+    const back = run(counted, prev);
+    expect(back.position).toEqual({ slide: 0, step: UNRESOLVED_LAST_STEP });
+    const settled = run(back, { type: 'step-count', slide: 0, count: 4 });
+    expect(currentPosition(settled)).toEqual({ slide: 0, step: 3 });
+  });
+
+  it('keeps queued moves working across hidden slides', () => {
+    const initial = createNavigationState(4, undefined, [false, true, false, false]);
+    const queued = run(initial, next, next);
+    expect(queued.queued).toEqual(['next', 'next']);
+    const settled = run(
+      queued,
+      { type: 'step-count', slide: 0, count: 1 },
+      { type: 'step-count', slide: 2, count: 1 },
+      { type: 'step-count', slide: 3, count: 1 },
+    );
+    expect(settled.position).toEqual({ slide: 3, step: 0 });
+    expect(settled.queued).toEqual([]);
+  });
+
+  it('queues a prev that lands on an unmounted slide before it, then a next from there', () => {
+    const initial = createNavigationState(3, { slide: 2, step: 0 }, [false, true, false]);
+    const counted = navigate(initial, { type: 'step-count', slide: 2, count: 1 });
+    const moved = run(counted, prev, next);
+    expect(moved.queued).toEqual(['next']);
+    const settled = run(moved, { type: 'step-count', slide: 0, count: 2 });
+    expect(settled.position).toEqual({ slide: 2, step: 0 });
+  });
+
+  it('lands on a hidden slide with goto and leaves it for the neighbouring shown slides', () => {
+    const state = deckWithHidden([3, 1, 1, 1], [1, 2], 0);
+    const onHidden = run(state, { type: 'goto', position: { slide: 2, step: 0 } });
+    expect(onHidden.position).toEqual({ slide: 2, step: 0 });
+    expect(run(onHidden, next).position.slide).toBe(3);
+    expect(run(onHidden, prev).position).toEqual({ slide: 0, step: 2 });
+  });
+
+  it('steps through a hidden slide that has steps before leaving it', () => {
+    const state = deckWithHidden([1, 2, 1], [1], 1);
+    expect(run(state, next).position).toEqual({ slide: 1, step: 1 });
+    expect(run(state, next, next).position.slide).toBe(2);
+  });
+
+  it('goes to the first and last shown slide with first and last', () => {
+    const state = deckWithHidden([1, 1, 2, 1], [0, 3], 2);
+    expect(run(state, { type: 'first' }).position).toEqual({ slide: 1, step: 0 });
+    expect(run(state, { type: 'last' }).position.slide).toBe(2);
+  });
+
+  it('treats no slide as hidden when every slide is hidden', () => {
+    const state = deckWithHidden([1, 1, 1], [0, 1, 2], 0);
+    expect(run(state, next).position.slide).toBe(1);
+    expect(run(state, { type: 'last' }).position.slide).toBe(2);
+    expect(createNavigationState(2, undefined, [true, true]).position.slide).toBe(0);
+  });
+
+  it('applies a changed hidden set on the next move without moving the deck', () => {
+    const state = deckWithHidden([1, 1, 1], [], 1);
+    const changed = run(state, { type: 'hidden', hidden: [false, false, true] });
+    expect(changed.position).toEqual(state.position);
+    expect(run(changed, next)).toBe(changed);
+    const shown = run(changed, { type: 'hidden', hidden: [false, true, false] });
+    expect(shown.position).toEqual({ slide: 1, step: 0 });
+    expect(run(shown, next).position.slide).toBe(2);
+  });
+
+  it('returns the same state for a hidden set that did not change', () => {
+    const state = deckWithHidden([1, 1], [1]);
+    expect(run(state, { type: 'hidden', hidden: [false, true] })).toBe(state);
+  });
+});

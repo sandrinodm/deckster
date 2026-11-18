@@ -83,6 +83,12 @@ export type PageSlide = {
   budget: number | null;
 
   /**
+   * Whether the slide is hidden (`hidden: true` in its frontmatter): a talk skips it, the page
+   * still shows it when asked.
+   */
+  hidden: boolean;
+
+  /**
    * The validated frontmatter, with defaults applied.
    */
   frontmatter: Readonly<Record<string, unknown>>;
@@ -338,6 +344,7 @@ async function readSlides(page: Page): Promise<PageSlide[]> {
       layout: slide.layout,
       notes: slide.notes,
       budget: slide.budget ?? null,
+      hidden: slide.hidden === true,
       frontmatter: slide.frontmatter,
     })),
   );

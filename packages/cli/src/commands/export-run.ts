@@ -89,6 +89,7 @@ const readOptions = Effect.fn('readOptions')(function* (
     pptx: { type: 'boolean', default: false },
     steps: { type: 'boolean', default: false },
     slides: { type: 'string' },
+    'include-hidden': { type: 'boolean', default: false },
     brand: { type: 'string' },
     out: { type: 'string' },
     notes: { type: 'boolean', default: false },
@@ -141,6 +142,7 @@ const readOptions = Effect.fn('readOptions')(function* (
     formats,
     steps: values.steps,
     slides: values.slides,
+    includeHidden: values['include-hidden'],
     notes: values.notes,
     scale,
     mode: yield* readMode(values.mode),
@@ -292,6 +294,13 @@ const printResult = Effect.fn('printResult')(function* (result: ExportResult) {
 
   for (const file of result.png ?? []) {
     yield* Console.log(file.path);
+  }
+
+  if (result.hiddenLeftOut > 0) {
+    const noun = result.hiddenLeftOut === 1 ? 'hidden slide' : 'hidden slides';
+    yield* Console.log(
+      `${result.hiddenLeftOut} ${noun} left out (add --include-hidden to export).`,
+    );
   }
 
   if (result.dryRun !== null && result.pptx === null) {

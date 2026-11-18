@@ -69,8 +69,9 @@ export type SlideBackground = typeof SlideBackground.Type;
  * The frontmatter every slide accepts, whether it comes from an MDX `---` block or a TSX `export
  * const frontmatter`. Decoding fills in `layout` with {@link DEFAULT_LAYOUT}. `transition` replaces
  * the brand's slide transition for the move between this slide and the one before it, both ways
- * (see `stageTransitions`). The layout a slide names adds its own fields (its contract's `schema`);
- * keys that neither define are rejected by the build, so a misspelled key never passes silently.
+ * (see `stageTransitions`). `hidden: true` keeps the slide in the deck and the build but a talk
+ * skips it. The layout a slide names adds its own fields (its contract's `schema`); keys that
+ * neither define are rejected by the build, so a misspelled key never passes silently.
  */
 export const SlideFrontmatter = Schema.Struct({
   layout: KebabName('layout name').pipe(
@@ -87,6 +88,7 @@ export const SlideFrontmatter = Schema.Struct({
     ),
   ),
   transition: Schema.optionalKey(Schema.Literals(TRANSITION_KINDS)),
+  hidden: Schema.optionalKey(Schema.Boolean),
 });
 
 /**
@@ -141,4 +143,9 @@ export const SLIDE_FRONTMATTER_HINTS = {
   transition:
     `Name a transition kind: ${TRANSITION_KIND_LIST}, for example \`transition: push\`. It ` +
     "replaces the brand's transition for the move onto this slide and back.",
+
+  /**
+   * Fix for a hidden flag that is not true or false.
+   */
+  hidden: 'Write `hidden: true` to skip the slide in a talk, or leave the key out.',
 } satisfies Record<keyof SlideFrontmatterInput, string>;

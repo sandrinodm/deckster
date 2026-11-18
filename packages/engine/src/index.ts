@@ -44,6 +44,14 @@ export { useLayouts } from '#layouts/use-layouts.ts';
 export { MORPH_ATTRIBUTE } from '#morph/morph-elements.ts';
 export { INTERACTIVE_ATTRIBUTE, isInteractiveTarget } from '#navigation/interactive-target.ts';
 export type { Direction, Position } from '#navigation/navigation.ts';
+export {
+  areShownNeighbours,
+  hiddenSlides,
+  neighbourShownSlide,
+  shownPageNumber,
+  shownSlideIndexes,
+  type SlideSide,
+} from '#navigation/shown-slides.ts';
 export { Notes, type NotesProps } from '#notes/notes.tsx';
 export { definePlugin, type DeckPlugin } from '#plugins/deck-plugin.ts';
 export { useReadyHold } from '#readiness/use-ready-hold.ts';

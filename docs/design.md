@@ -60,6 +60,36 @@ which every animation is at its end state. `deck shot`, `deck lint` and `deck ex
 slide through these two. That is why content that loads late must hold `ready()`, and why
 animations never run in static mode.
 
+## Hidden slides
+
+A slide with `hidden: true` in its frontmatter stays in the deck, and a talk skips it. It is for
+backup slides that answer a likely question, an appendix, or a slide parked for later, the way
+"Hide slide" works in PowerPoint and "Skip slide" in Keynote.
+
+Skipping happens in one place, the navigation reducer, so the keyboard, a clicker, the pointer, the
+embed controls and the presenter window all get it. Next and previous go to the neighbouring shown
+slide, and first and last go to the first and last shown slide. A deck opened without a hash starts
+on its first shown slide. A hidden slide is still reachable on purpose: a link or hash names it,
+the presenter's sidebar, overview and go-to open it, and `window.__deck.goto` lands on it, which is
+how `deck shot`, `deck lint` and `deck export` reach it. From a hidden slide that was reached this
+way, next and previous step through its own steps, then leave for the neighbouring shown slides.
+Whatever pairs a slide with the one before or after it (transitions, morphs, the presenter's next
+slide, lint's `layout-repetition`) uses the neighbouring shown slide, so the pair is what the
+audience sees one after the other.
+
+Two rules keep the numbers honest. The numbers an author works with stay positions in the full slide
+list: the URL hash, the sidebar's row numbers, the presenter's "Slide 12 of 40", the number typed
+into go-to, `deck shot` file names and `--slides 3,5-9`. Hiding or showing a slide then moves none
+of them, so a saved link, a review comment and a screenshot name keep pointing at the same slide.
+The numbers the audience sees count shown slides only: the brand's page number and total, the
+progress bar and the embed controls' count. A deck of 35 slides with 5 hidden ones shows pages 1 to
+30, with no gap where a hidden slide sits. A hidden slide reached directly shows no page number,
+and its progress stays where the last shown slide before it left it.
+
+Hiding is not removing. `deck build` still builds a hidden slide and a URL still opens it. To take
+a slide out of a deck, remove it from `slides` in `deck.config.ts`. A deck whose every slide is
+hidden fails the build, because a talk would have nothing to show.
+
 ## Brands
 
 A brand (`brands/<name>/brand.ts`) defines colors as palette scales and semantic roles, and named
@@ -162,6 +192,10 @@ overlay.
   `--verify` scores the result against the web slide.
 - **Steps.** A PPTX turns step reveals into click animations (`--no-animations` turns that off). A
   PDF has no animation, so `--steps` exports one page per step.
+- **Hidden slides.** The PDF, the PNGs and the PPTX leave them out, as a talk does, and the summary
+  says how many. `--include-hidden` puts them in: ordinary pages in the PDF and PNGs, and native
+  hidden slides in the PPTX, so PowerPoint skips them in a slide show. A hidden slide named in
+  `--slides` is exported either way.
 
 ## History
 

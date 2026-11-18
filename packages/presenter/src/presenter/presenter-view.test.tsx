@@ -1,4 +1,6 @@
 // @vitest-environment happy-dom
+import type { DeckManifest, SlideMeta } from '@deckster/engine';
+
 import { afterEach, describe, expect, it } from 'vite-plus/test';
 
 import {
@@ -6,9 +8,15 @@ import {
   find,
   press,
   renderPresenterDeck,
+  slide,
   type MountedPresenterDeck,
 } from '#testing/presenter-deck.fixture.tsx';
 import { uiState, updateUi } from '#ui/ui-state.ts';
+
+/**
+ * The frontmatter of a hidden test slide.
+ */
+const hiddenMeta: Partial<SlideMeta> = { frontmatter: { layout: 'default', hidden: true } };
 
 /**
  * The deck under test, unmounted after each test.
@@ -116,5 +124,63 @@ describe('PresenterView', () => {
     expect(notes.querySelector('b')).toBeNull();
     expect(notes.textContent).toContain('<b>raw</b>');
     expect(notes.querySelector('a')?.getAttribute('href')).toBe('https://example.com');
+  });
+});
+
+/**
+ * Five slides where the second and third are hidden.
+ */
+const HIDDEN_DECK: DeckManifest = {
+  id: 'presenter-hidden',
+  title: 'Presenter hidden',
+  brand: 'default',
+  slides: [
+    slide('one', () => <h1>One</h1>),
+    slide('two', () => <h1>Two</h1>, hiddenMeta),
+    slide('three', () => <h1>Three</h1>, hiddenMeta),
+    slide('four', () => <h1>Four</h1>),
+    slide('five', () => <h1>Five</h1>),
+  ],
+};
+
+/**
+ * The label of the next pane: its kind and the title of the slide it shows.
+ */
+function nextLabelText(): string {
+  return find('.dp-p-col:nth-child(2) .dp-p-label').textContent ?? '';
+}
+
+describe('PresenterView with hidden slides', () => {
+  it('previews the next shown slide, skipping two hidden ones in a row', () => {
+    mounted = renderPresenterDeck('/?presenter#/1/0', HIDDEN_DECK);
+    expect(nextLabelText()).toBe('Next slidefour');
+    press('ArrowRight');
+    expect(counter()).toBe('Slide 4 of 5');
+  });
+
+  it('shows no next slide when the rest are hidden', () => {
+    mounted = renderPresenterDeck('/?presenter#/5/0', {
+      ...HIDDEN_DECK,
+      slides: [...HIDDEN_DECK.slides.slice(0, 4), slide('five', () => <h1>Five</h1>, hiddenMeta)],
+    });
+    expect(find('[data-testid="next-slide"]').textContent).toBe('End of the deck');
+  });
+
+  it('keeps full-list numbers in the header and says so on a hidden slide', () => {
+    mounted = renderPresenterDeck('/?presenter#/3/0', HIDDEN_DECK);
+    expect(counter()).toBe('Slide 3 of 5 · hidden');
+    expect(nextLabelText()).toBe('Next slidefour');
+  });
+
+  it('plans the talk without the hidden budgets', () => {
+    mounted = renderPresenterDeck('/?presenter#/1/0', {
+      ...HIDDEN_DECK,
+      slides: [
+        slide('one', () => <h1>One</h1>, {}, '1m'),
+        slide('two', () => <h1>Two</h1>, hiddenMeta, '5m'),
+        slide('three', () => <h1>Three</h1>, {}, '1m'),
+      ],
+    });
+    expect(find('[data-testid="pacing-stats"]').textContent).toContain('Budgets left2:00');
   });
 });

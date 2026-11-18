@@ -120,9 +120,27 @@ describe('live deck tools over the fixture deck', () => {
             steps: 2,
             budgetSeconds: 30,
             notesChars: 0,
+            hidden: false,
           },
         ],
       });
+    }),
+  );
+
+  it.effect('marks a hidden slide in the outline', () =>
+    Effect.gen(function* () {
+      const deck: FakeDeck = {
+        slides: [
+          { page: pageSlide(0, 'cover'), steps: [collectedPage()] },
+          { page: pageSlide(1, 'backup', { hidden: true }), steps: [collectedPage()] },
+        ],
+      };
+      const { api } = tools(FIXTURE_WORKSPACE, 'over-budget', fakeDeckLayer(deck));
+      const outline = yield* (yield* api).deckOutline;
+      expect(outline.slides.map((slide) => [slide.id, slide.number, slide.hidden])).toEqual([
+        ['cover', 1, false],
+        ['backup', 2, true],
+      ]);
     }),
   );
 

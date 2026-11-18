@@ -42,6 +42,12 @@ export type PacingInput = {
   budgets: readonly (number | undefined)[];
 
   /**
+   * Whether each slide is hidden, in deck order. A hidden slide is skipped in a talk, so its budget
+   * is left out of the plan, the total and the schedule. Absent means no slide is hidden.
+   */
+  hidden?: readonly boolean[];
+
+  /**
    * The zero-based slide on screen.
    */
   slide: number;
@@ -79,7 +85,7 @@ export type PacingInput = {
  */
 export function computePacing(input: PacingInput): Pacing {
   const { slide, elapsedSeconds, slideElapsedSeconds, started, durationSeconds } = input;
-  const plan = planBudgets(input.budgets, durationSeconds);
+  const plan = planShownBudgets(input.budgets, input.hidden, durationSeconds);
   const hasPlan = plan.some((budget) => budget !== undefined);
   const total = durationSeconds ?? (hasPlan ? sum(plan) : undefined);
   const totalRemainingSeconds = total === undefined ? undefined : total - elapsedSeconds;
@@ -105,6 +111,29 @@ export function computePacing(input: PacingInput): Pacing {
   }
 
   return { status: 'on-pace', offsetSeconds: 0, ...base };
+}
+
+/**
+ * Plans the budgets of the shown slides only and puts the result back in deck order, with
+ * `undefined` for a hidden slide: it has no time of its own, adds nothing to the total, and the
+ * duration is shared by the slides that are shown.
+ *
+ * @param budgets - Each slide's budget in seconds, `undefined` for none.
+ * @param hidden - Whether each slide is hidden; absent when none is.
+ * @param durationSeconds - The deck's `duration`, if it has one.
+ */
+function planShownBudgets(
+  budgets: readonly (number | undefined)[],
+  hidden: readonly boolean[] | undefined,
+  durationSeconds: number | undefined,
+): readonly (number | undefined)[] {
+  if (hidden === undefined || !hidden.some(Boolean)) {
+    return planBudgets(budgets, durationSeconds);
+  }
+
+  const shown = budgets.filter((_, index) => hidden[index] !== true);
+  const planned = [...planBudgets(shown, durationSeconds)];
+  return budgets.map((_, index) => (hidden[index] === true ? undefined : planned.shift()));
 }
 
 /**

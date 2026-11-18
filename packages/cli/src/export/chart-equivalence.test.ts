@@ -118,7 +118,7 @@ layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('native charts', (it) => {
         const out = mkdtempSync(path.join(os.tmpdir(), 'deck-chart-equivalence-'));
         const options = { ...defaultExportOptions(DECK), formats: new Set(['pptx'] as const), out };
         const opened = yield* openDeck({ deck: DECK, brand: undefined, scale: 2 });
-        const targets = yield* exportTargets(opened.page, undefined, false);
+        const targets = yield* exportTargets(opened.page, undefined, false, false);
         const catalog = yield* loadLayoutCatalog();
         const contracts = [...catalog.values()].map((layout) => layout.contract);
         const capture = yield* capturePptx(opened, targets, contracts, options, true);

@@ -35,6 +35,12 @@ export type ExportOptions = {
   slides: string | undefined;
 
   /**
+   * Whether hidden slides are exported: as ordinary PDF pages and PNGs, as hidden slides in the
+   * PPTX. Without it they are left out, unless `slides` names them.
+   */
+  includeHidden: boolean;
+
+  /**
    * Whether the PDF gets speaker notes pages.
    */
   notes: boolean;
@@ -133,6 +139,7 @@ export function defaultExportOptions(deck: string): ExportOptions {
     formats: new Set<ExportFormat>(['pdf', 'pptx']),
     steps: false,
     slides: undefined,
+    includeHidden: false,
     notes: false,
     scale: 1,
     mode: 'hybrid',

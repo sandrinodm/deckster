@@ -1,3 +1,5 @@
+import { neighbourShownSlide, shownSlideIndexes } from '#navigation/shown-slides.ts';
+
 /**
  * Stands for "the last step of this slide" before the slide has registered its steps. It is
  * replaced by the real last step as soon as the slide reports its step count, so entering a slide
@@ -49,6 +51,13 @@ export type NavigationState = {
   slideCount: number;
 
   /**
+   * Per slide index, whether the slide is hidden: `next`, `prev`, `first` and `last` skip it, while
+   * `goto` still lands on it. It is set at creation and replaced by the `hidden` action when the
+   * deck's slides change. When every slide is hidden none is skipped.
+   */
+  hidden: readonly boolean[];
+
+  /**
    * Step count per slide index, `undefined` until that slide has mounted once.
    */
   stepCounts: readonly (number | undefined)[];
@@ -89,6 +98,7 @@ export type NavigationAction =
   | { type: 'first' }
   | { type: 'last' }
   | { type: 'goto'; position: Position }
+  | { type: 'hidden'; hidden: readonly boolean[] }
   | {
       type: 'step-count';
       slide: number;
@@ -109,13 +119,16 @@ export type MoveAction = Extract<NavigationAction, { type: 'next' | 'prev' | 'fi
  * Creates navigation state for a deck.
  *
  * @param slideCount - Number of slides; must be 1 or more.
- * @param position - Where to start; out-of-range slides are clamped into the deck.
+ * @param position - Where to start; out-of-range slides are clamped into the deck. Without one the
+ *   deck starts on its first shown slide.
+ * @param hidden - Per slide index, whether it is hidden; missing entries count as shown.
  * @returns State with no step counts known yet.
  * @throws RangeError when `slideCount` is less than 1.
  */
 export function createNavigationState(
   slideCount: number,
-  position: Position = { slide: 0, step: 0 },
+  position?: Position,
+  hidden: readonly boolean[] = [],
 ): NavigationState {
   if (!Number.isInteger(slideCount) || slideCount < 1) {
     throw new RangeError(`A deck needs at least one slide; got ${slideCount}.`);
@@ -123,11 +136,14 @@ export function createNavigationState(
 
   const stepCounts = Array.from({ length: slideCount }, () => undefined);
   const finalCounts = Array.from({ length: slideCount }, () => false);
+  const slideHidden = fitHidden(hidden, slideCount);
+  const start = position ?? { slide: shownSlideIndexes(slideHidden)[0] ?? 0, step: 0 };
   return {
     slideCount,
+    hidden: slideHidden,
     stepCounts,
     finalCounts,
-    position: clampPosition(position, slideCount, stepCounts, finalCounts),
+    position: clampPosition(start, slideCount, stepCounts, finalCounts),
     direction: 'none',
     previousSlide: undefined,
     queued: [],
@@ -136,13 +152,16 @@ export function createNavigationState(
 
 /**
  * Applies a navigation action. `next` and `prev` move one step from the current position and cross
- * into the neighbouring slide at the ends; `prev` enters the previous slide on its last step. Moves
- * clamp to the deck and to final step counts; a step beyond a count that is not final yet stays
- * pending until the slide settles. While the slide on screen has not reported its step count,
- * `next` (and a `prev` that needs its last step) wait in {@link NavigationState.queued} and run when
- * the `step-count` arrives; `goto`, `first` and `last` drop the waiting moves. A `next` or `prev`
- * while a step is pending gives up the pending step and moves from the step on screen, so a late
- * count never pulls the deck away from where the presenter went.
+ * into the neighbouring shown slide at the ends, skipping hidden slides; `prev` enters the previous
+ * shown slide on its last step. `first` and `last` go to the first and last shown slide, `goto`
+ * goes exactly where it is asked, hidden or not, and `hidden` replaces which slides are hidden
+ * without moving the deck (it takes effect on the next move). Moves clamp to the deck and to final
+ * step counts; a step beyond a count that is not final yet stays pending until the slide settles.
+ * While the slide on screen has not reported its step count, `next` (and a `prev` that needs its
+ * last step) wait in {@link NavigationState.queued} and run when the `step-count` arrives; `goto`,
+ * `first` and `last` drop the waiting moves. A `next` or `prev` while a step is pending gives up
+ * the pending step and moves from the step on screen, so a late count never pulls the deck away
+ * from where the presenter went.
  *
  * @param state - The current state.
  * @param action - What happened.
@@ -154,11 +173,16 @@ export function navigate(state: NavigationState, action: NavigationAction): Navi
     case 'prev':
       return stepOrQueue(state, action.type);
     case 'first':
-      return moveTo(cleared(state), { slide: 0, step: 0 });
+      return moveTo(cleared(state), { slide: shownEdge(state, 'first'), step: 0 });
     case 'last':
-      return moveTo(cleared(state), { slide: state.slideCount - 1, step: UNRESOLVED_LAST_STEP });
+      return moveTo(cleared(state), {
+        slide: shownEdge(state, 'last'),
+        step: UNRESOLVED_LAST_STEP,
+      });
     case 'goto':
       return moveTo(cleared(state), action.position);
+    case 'hidden':
+      return setHidden(state, action.hidden);
     case 'step-count':
       return runQueued(recordStepCount(state, action.slide, action.count, action.final ?? true));
   }
@@ -294,8 +318,8 @@ function cleared(state: NavigationState): NavigationState {
 }
 
 /**
- * One step forward: the next step, else the start of the next slide, else where the deck already
- * is. Only called once the slide's step count is known.
+ * One step forward: the next step, else the start of the next shown slide, else where the deck
+ * already is. Only called once the slide's step count is known.
  *
  * @param state - The navigation state.
  */
@@ -306,16 +330,17 @@ function nextPosition(state: NavigationState): Position {
     return { slide, step: step + 1 };
   }
 
-  if (slide < state.slideCount - 1) {
-    return { slide: slide + 1, step: 0 };
+  const following = neighbourShownSlide(state.hidden, slide, 'forward');
+  if (following !== undefined) {
+    return { slide: following, step: 0 };
   }
 
   return state.position;
 }
 
 /**
- * One step back: the previous step, else the previous slide at its last step, else where the deck
- * already is.
+ * One step back: the previous step, else the previous shown slide at its last step, else where the
+ * deck already is.
  *
  * @param state - The navigation state.
  */
@@ -326,11 +351,51 @@ function previousPosition(state: NavigationState): Position {
     return { slide, step: step - 1 };
   }
 
-  if (slide > 0) {
-    return { slide: slide - 1, step: UNRESOLVED_LAST_STEP };
+  const preceding = neighbourShownSlide(state.hidden, slide, 'backward');
+  if (preceding !== undefined) {
+    return { slide: preceding, step: UNRESOLVED_LAST_STEP };
   }
 
   return position;
+}
+
+/**
+ * The first or last shown slide.
+ *
+ * @param state - The navigation state.
+ * @param edge - Which end of the shown slides.
+ */
+function shownEdge(state: NavigationState, edge: 'first' | 'last'): number {
+  const shown = shownSlideIndexes(state.hidden);
+  const index = edge === 'first' ? shown.at(0) : shown.at(-1);
+  return index ?? 0;
+}
+
+/**
+ * Replaces which slides are hidden, keeping the position and the moves already waiting.
+ *
+ * @param state - The navigation state.
+ * @param hidden - Per slide index, whether it is hidden.
+ * @returns The same state object when nothing changed.
+ */
+function setHidden(state: NavigationState, hidden: readonly boolean[]): NavigationState {
+  const fitted = fitHidden(hidden, state.slideCount);
+  if (fitted.every((isHidden, index) => isHidden === state.hidden[index])) {
+    return state;
+  }
+
+  return { ...state, hidden: fitted };
+}
+
+/**
+ * The hidden flags with exactly one entry per slide: missing entries count as shown, extra ones are
+ * dropped.
+ *
+ * @param hidden - The flags as given.
+ * @param slideCount - How many slides the deck has.
+ */
+function fitHidden(hidden: readonly boolean[], slideCount: number): boolean[] {
+  return Array.from({ length: slideCount }, (_, index) => hidden[index] === true);
 }
 
 /**

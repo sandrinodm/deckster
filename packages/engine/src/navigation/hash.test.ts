@@ -32,3 +32,11 @@ describe('parseHash', () => {
     }
   });
 });
+
+describe('hidden slides', () => {
+  it('keeps full-list numbers, so a hidden slide has the same hash as when it is shown', () => {
+    expect(formatHash({ slide: 1, step: 0 })).toBe('#/2/0');
+    expect(parseHash('#/2', SLIDE_IDS)).toEqual({ slide: 1, step: 0 });
+    expect(parseHash('#/request-flow', SLIDE_IDS)).toEqual({ slide: 1, step: 0 });
+  });
+});

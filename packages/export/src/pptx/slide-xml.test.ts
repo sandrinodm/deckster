@@ -97,6 +97,21 @@ describe('slideXml', () => {
     expect(written.xml).toContain('<p:timing>');
   });
 
+  it('writes a hidden slide with show="0" and a shown slide exactly as before', () => {
+    const write = (hidden: boolean | undefined) =>
+      slideXml(
+        createPackage(),
+        'ppt/slides/slide1.xml',
+        { ...slideInput(0, [TITLE]), ...(hidden === undefined ? {} : { hidden }) },
+        options(),
+      ).xml;
+    const plain = write(undefined);
+    expect(write(true)).toMatch(/<p:sld [^>]*show="0"/);
+    expect(write(true).replace(' show="0"', '')).toBe(plain);
+    expect(plain).not.toContain('show=');
+    expect(write(false)).toBe(plain);
+  });
+
   it('keeps the master chrome off a slide whose chrome differs from its layout', () => {
     const written = slideXml(
       createPackage(),

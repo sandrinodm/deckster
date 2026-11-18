@@ -113,3 +113,35 @@ describe('clock formatting', () => {
     expect(formatRemaining(-20)).toBe('-0:20');
   });
 });
+
+describe('computePacing with hidden slides', () => {
+  it('leaves hidden slides out of the schedule window and the total', () => {
+    const hidden = [false, true, false, false];
+    const pacing = computePacing(input({ hidden, slide: 3, elapsedSeconds: 30 }));
+    expect(pacing.status).toBe('ahead');
+    expect(pacing.offsetSeconds).toBe(30);
+    expect(pacing.totalRemainingSeconds).toBe(90);
+  });
+
+  it('gives a hidden slide no budget of its own', () => {
+    const pacing = computePacing(input({ hidden: [false, true, false, false], slide: 1 }));
+    expect(pacing.slideBudgetSeconds).toBeUndefined();
+    expect(pacing.slideRemainingSeconds).toBeUndefined();
+  });
+
+  it('shares the duration between the shown slides only', () => {
+    const pacing = computePacing(
+      input({ hidden: [false, true, false, false], slide: 2, durationSeconds: 240 }),
+    );
+    expect(pacing.slideBudgetSeconds).toBe(120);
+    expect(pacing.totalRemainingSeconds).toBe(240);
+  });
+
+  it('plans as before when nothing is hidden', () => {
+    const plain = computePacing(input({ slide: 1, elapsedSeconds: 100 }));
+    const none = computePacing(
+      input({ hidden: [false, false, false, false], slide: 1, elapsedSeconds: 100 }),
+    );
+    expect(none).toEqual(plain);
+  });
+});

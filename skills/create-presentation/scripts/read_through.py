@@ -9,6 +9,8 @@ This script reads the slide files and reports on the argument instead:
   - titles that read as a topic label instead of a claim
   - speaker notes that are missing, thin, or longer than the slide's budget
   - slides without a budget, and the total against the deck's duration
+    (hidden slides, `hidden: true`, are backups: they need no budget and
+    are left out of the total, as in `deck lint`)
   - a closing slide that only says thanks
   - every [NEEDS: ...] placeholder, for the handoff
 
@@ -235,6 +237,7 @@ def load(deck: Path) -> dict:
             "title": meta.get("title", ""),
             "surface": meta.get("surface", ""),
             "budget": parse_budget(meta.get("budget", "")),
+            "hidden": str(meta.get("hidden", "")).strip().lower() == "true",
             "notes_words": spoken_words(notes_text),
             "has_notes": bool(notes_text),
             "activity": has_activity(notes_text),
@@ -260,22 +263,24 @@ def check(deck: dict) -> list:
         if not s["has_notes"]:
             add(s, "error", "No speaker notes.")
         if s["budget"] is None:
-            add(s, "warn", "No `budget` in the frontmatter, so the time budget cannot be checked.")
+            if not s["hidden"]:
+                add(s, "warn", "No `budget` in the frontmatter, so the time budget cannot be checked.")
         elif s["has_notes"]:
             fits = s["budget"] / 60 * WPM
             if s["notes_words"] > fits * 1.15:
                 add(s, "warn", f"Notes script is {s['notes_words']} words for a {s['budget']}s budget (about {int(fits)} fit). Cut the script or raise the budget.")
             elif not structural and not s["activity"] and s["budget"] >= 60 and s["notes_words"] < fits * 0.25:
                 add(s, "warn", f"Notes script is {s['notes_words']} words for a {s['budget']}s budget: the presenter has little to say. Write the talk track, or name the activity that fills the time as a bracketed cue such as [3 minutes: answers in the chat].")
-    total = sum(s["budget"] or 0 for s in slides)
+    shown = [s for s in slides if not s["hidden"]]
+    total = sum(s["budget"] or 0 for s in shown)
     if deck["duration"] is None:
         add(None, "warn", "deck.config.ts has no `duration`, so nothing checks that the talk fits its slot.")
     elif total > deck["duration"]:
         add(None, "error", f"Budgets total {total // 60}m{total % 60:02d}s, more than the deck's {deck['duration'] // 60}m.")
-    elif total > deck["duration"] * 0.96 and not any(s["activity"] for s in slides):
+    elif total > deck["duration"] * 0.96 and not any(s["activity"] for s in shown):
         add(None, "warn", f"Budgets total {total // 60}m{total % 60:02d}s of {deck['duration'] // 60}m: no slack. Fine when `duration` is only the presenting share of a longer meeting; otherwise cut.")
-    if slides and re.fullmatch(r"(thank you|thanks|questions\??|q&a|the end)[.!]?", slides[-1]["title"].strip().lower() or "thanks"):
-        add(slides[-1], "warn", "The closing slide stays up during Q&A: give it the takeaway and the next step, not thanks.")
+    if shown and re.fullmatch(r"(thank you|thanks|questions\??|q&a|the end)[.!]?", shown[-1]["title"].strip().lower() or "thanks"):
+        add(shown[-1], "warn", "The closing slide stays up during Q&A: give it the takeaway and the next step, not thanks.")
     return findings
 
 
@@ -295,7 +300,7 @@ def main() -> int:
         return 2
     findings = check(deck)
     slides = [s for s in deck["slides"] if not s.get("missing")]
-    total = sum(s["budget"] or 0 for s in slides)
+    total = sum(s["budget"] or 0 for s in slides if not s["hidden"])
     needs = [(s["id"], n) for s in slides for n in s["needs"]]
     errors = sum(1 for f in findings if f["level"] == "error")
 
@@ -308,7 +313,8 @@ def main() -> int:
     print("Read-through: do the titles alone tell the argument?")
     for n, s in enumerate(slides, 1):
         budget = f"{s['budget']}s" if s["budget"] is not None else "-"
-        print(f"  {n:>2}. [{s['layout']:<9} {budget:>5}] {s['title'] or '(no title)'}")
+        hidden = " (hidden)" if s["hidden"] else ""
+        print(f"  {n:>2}. [{s['layout']:<9} {budget:>5}] {s['title'] or '(no title)'}{hidden}")
     if findings:
         print()
         for f in findings:

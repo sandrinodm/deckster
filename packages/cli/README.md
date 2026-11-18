@@ -70,29 +70,30 @@ A deck is just a plain folder (`decks/<name>/`) with `deck.config.ts` and `slide
 
 Run `deck --help` for all commands, or `deck <command> --help` for full flags.
 
-| Command                                  | Description                                                               |
-| ---------------------------------------- | ------------------------------------------------------------------------- |
-| `deck dev [deck]`                        | Serve a deck with hot reload (`--mcp`, `--agent claude\|codex`, `--host`) |
-| `deck present [deck]`                    | Open in Electron with presenter notes, timer, and display selection       |
-| `deck build [deck]`                      | Build static site output to `decks/<deck>/dist` (`--all`, `--out <dir>`)  |
-| `deck preview [deck]`                    | Serve a built deck locally                                                |
-| `deck new <deck>`                        | Scaffold a new deck (`deck new slide ...`, `deck new app ...`)            |
-| `deck lint <deck>`                       | Validate schema, layout budgets, contrast, and overflow in Chromium       |
-| `deck shot <deck> [slide]`               | Capture 1920x1080 PNGs (`--steps`, `--scale <n>`)                         |
-| `deck diff <deck>`                       | Compare rendered slides against a git ref or `--save-baseline`            |
-| `deck export <deck>`                     | Export `--pdf`, `--pptx`, and/or `--png` (`--dry-run`, `--verify`)        |
-| `deck brand [name]`                      | Inspect resolved brand tokens and diagram cards, or `deck brand check`    |
-| `deck layouts \| icons \| charts \| ...` | Print typed catalogs (`diagrams`, `components`) for humans and agents     |
-| `deck comments <deck>`                   | List, add, resolve, reopen, and prune browser review comments             |
-| `deck types`                             | Write `tsconfig.json` and `.deck/env.d.ts` for editor type checking       |
-| `deck mcp [deck]`                        | Print Claude Code / Codex MCP config for a running `deck dev --mcp`       |
-| `deck agent doctor`                      | Verify local `claude` / `codex` CLI availability and auth                 |
+| Command                                  | Description                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------- |
+| `deck dev [deck]`                        | Serve a deck with hot reload (`--mcp`, `--agent claude\|codex`, `--host`)  |
+| `deck present [deck]`                    | Open in Electron with presenter notes, timer, and display selection        |
+| `deck build [deck]`                      | Build static site output to `decks/<deck>/dist` (`--all`, `--out <dir>`)   |
+| `deck preview [deck]`                    | Serve a built deck locally                                                 |
+| `deck new <deck>`                        | Scaffold a new deck (`deck new slide ...`, `deck new app ...`)             |
+| `deck lint <deck>`                       | Validate schema, layout budgets, contrast, and overflow in Chromium        |
+| `deck shot <deck> [slide]`               | Capture 1920x1080 PNGs, hidden slides too (`--steps`, `--scale <n>`)       |
+| `deck diff <deck>`                       | Compare rendered slides against a git ref or `--save-baseline`             |
+| `deck export <deck>`                     | Export `--pdf`, `--pptx`, and/or `--png` (`--include-hidden`, `--dry-run`) |
+| `deck brand [name]`                      | Inspect resolved brand tokens and diagram cards, or `deck brand check`     |
+| `deck layouts \| icons \| charts \| ...` | Print typed catalogs (`diagrams`, `components`) for humans and agents      |
+| `deck comments <deck>`                   | List, add, resolve, reopen, and prune browser review comments              |
+| `deck types`                             | Write `tsconfig.json` and `.deck/env.d.ts` for editor type checking        |
+| `deck mcp [deck]`                        | Print Claude Code / Codex MCP config for a running `deck dev --mcp`        |
+| `deck agent doctor`                      | Verify local `claude` / `codex` CLI availability and auth                  |
 
 ### Shared conventions
 
 - **`--brand <name>`** overrides the deck's configured brand for `dev`, `present`, `shot`, `lint`, `diff`, and `export`.
 - **`--json`** outputs structured JSON (`{ ok: false, error: { type, message } }` on failure).
 - **Workspace discovery**: `deck` uses the nearest parent directory containing `decks/` (or `DECK_ROOT`), and refuses to use `$HOME` or `/`.
+- **Hidden slides**: a slide with `hidden: true` in its frontmatter stays in the deck, and a talk skips it. `deck shot` and `deck lint` cover it (`deck shot --json` marks each file with `hidden`; `deck lint` checks it like any slide, but `time-budget`, `few-builds` and `layout-repetition` count the slides the talk shows). `deck export` leaves hidden slides out of the PDF, PNGs, and PPTX and says how many; `--include-hidden` puts them in (as native hidden slides in the PPTX), and a hidden slide named in `--slides`, or inside a range there, is exported (the summary then reports none left out). Slide numbers in `--slides`, file names, and the URL count every slide.
 - **Exit codes**: `0` on success, `1` on command/lint/diff failure, `129` on `SIGHUP`.
 
 ## Optional dependencies

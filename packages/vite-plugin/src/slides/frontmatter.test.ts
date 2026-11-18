@@ -159,7 +159,7 @@ describe('validateFrontmatter', () => {
   it('lists the known fields for an unknown key with no close match', () => {
     const error = failure(validate({ colour: 'red' }));
     expect(error.message).toContain(
-      'Fix: Remove it. Known fields: layout, title, surface, background, budget, transition.',
+      'Fix: Remove it. Known fields: layout, title, surface, background, budget, transition, hidden.',
     );
   });
 
@@ -178,6 +178,16 @@ describe('validateFrontmatter', () => {
           'for example `budget: 90s` or `1m30s`.',
       },
     ]);
+  });
+
+  it('takes hidden as a boolean and names the fix for any other value', () => {
+    expect(Effect.runSync(validate({ hidden: true })).frontmatter.hidden).toBe(true);
+    expect(Effect.runSync(validate({})).frontmatter.hidden).toBeUndefined();
+    const [problem] = failure(validate({ hidden: 'yes' })).problems;
+    expect(problem?.message).toContain('hidden: Expected');
+    expect(problem?.fix).toBe(
+      'Write `hidden: true` to skip the slide in a talk, or leave the key out.',
+    );
   });
 
   it('takes a transition kind and names the kinds for any other value', () => {

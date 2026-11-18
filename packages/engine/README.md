@@ -26,10 +26,18 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
   view transition scoped to the canvas, so `SlideView` copies never take part. Static mode, reduced
   motion, `window.__deck` moves and browsers without scoped view transitions get the plain move.
 - Keyboard: arrows, Space, PageUp and PageDown move one step (Shift+Space moves back). Home and End
-  jump to the first and last slide. Mouse: left click forward, right click back, unless the deck
+  jump to the first and last shown slide. Mouse: left click forward, right click back, unless the deck
   config sets `mouseNavigation: false`. Keys typed into a text field are ignored. Clicks on
   interactive content (buttons, links, `[data-deck-interactive]`) and Space pressed on it go to the
   element, not the deck.
+- Hidden slides: a slide with `hidden: true` in its frontmatter stays in the deck and the build, but
+  next, previous, Home and End skip it (the navigation reducer does this, so every input gets it).
+  A hash, `window.__deck.goto` and the presenter still reach it, and from there next and previous
+  step through its own steps before leaving. The deck without a hash starts on the first shown
+  slide. Numbers an author uses (the hash, `goto`, `slides` order) count every slide; the audience's
+  count in the embed controls and the kit's page number counts shown slides. `hiddenSlides`,
+  `shownSlideIndexes`, `neighbourShownSlide`, `shownPageNumber` and `areShownNeighbours` are the
+  helpers other packages use. A deck whose slides are all hidden fails the build.
 - The URL hash is `#/<slide>/<step>`, with a 1-based slide number. A hash you type or link to
   may also name the slide by id (`#/steps/2`).
 - Embed mode, for showing one slide of a built deck in an iframe on another page: add `?embed`
@@ -42,7 +50,7 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
   so keys reach it only after the reader clicks into the frame, and moves replace the history entry
   instead of adding one. The slide still scales to the frame and the hash still addresses it.
 - `window.__deck` is the automation API `deck shot`, `deck lint`, export and the browser tests use:
-  `slides`, `position`, `isStatic`, `goto`, `next`, `prev` and `ready()`.
+  `slides` (each with `id`, `stepCount` and `hidden`), `position`, `isStatic`, `goto`, `next`, `prev` and `ready()`.
 - `useReadyHold(pending)` makes `ready()` wait for content that loads late. `ready()` also waits
   for fonts and images, and rejects after 30 seconds naming the held slides.
 - `<SlideView slide step>` renders any slide inside `<Deck>` for thumbnails and presenter panes. It
@@ -55,18 +63,18 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
 
 ## Exports
 
-| Import                         | What it holds                                                                                                                                                                                                                                           |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@deckster/engine`             | `Deck`, `SlideView`, `Canvas`, `Step`, `useStep`, `useStepAt`, `Notes`, `useDeck`, `useSlide`, `useReadyHold`, `useStatic`, `defineLayout`, `definePlugin`, `useLayouts`, `isInteractiveTarget`, `MORPH_ATTRIBUTE`, and the manifest and contract types |
-| `@deckster/engine/config`      | `defineDeck` and the `DeckConfig` schema for `deck.config.ts`                                                                                                                                                                                           |
-| `@deckster/engine/frontmatter` | The `SlideFrontmatter` schema every slide accepts (`layout`, `title`, `surface`, `background`, `budget`, `transition`), its fix hints and `TRANSITION_KINDS`, the list `@deckster/brand` also validates against                                         |
-| `@deckster/engine/layout`      | `defineLayoutContract`, `defineLayoutCatalog`, and the budget and variant helpers (`slideBudget`, `matchingVariants`, `slideFieldLimits`) the build and `deck lint` use                                                                                 |
-| `@deckster/engine/catalog`     | The engine's own layout catalog (the `default` contract), loaded before any plugin's                                                                                                                                                                    |
-| `@deckster/engine/manifest`    | `DeckManifest`, `SlideEntry`, `SlideMeta`: the shape of `virtual:deck`                                                                                                                                                                                  |
-| `@deckster/engine/slots`       | `BODY_SLOT`, `slotTag` and the element names the slot compiler writes                                                                                                                                                                                   |
-| `@deckster/engine/names`       | `KebabName` and `KEBAB_CASE_PATTERN` for slide, layout and brand names                                                                                                                                                                                  |
-| `@deckster/engine/mdx`         | `defineMdxExtension` and its types, for build-time remark and rehype plugins                                                                                                                                                                            |
-| `@deckster/engine/app`         | The page entry (`main.tsx`); `@deckster/vite-plugin` serves its folder's `index.html`                                                                                                                                                                   |
+| Import                         | What it holds                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@deckster/engine`             | `Deck`, `SlideView`, `Canvas`, `Step`, `useStep`, `useStepAt`, `Notes`, `useDeck`, `useSlide`, `useReadyHold`, `useStatic`, `defineLayout`, `definePlugin`, `useLayouts`, `isInteractiveTarget`, `MORPH_ATTRIBUTE`, the shown-slide helpers (`hiddenSlides`, `shownSlideIndexes`, `neighbourShownSlide`, `shownPageNumber`, `areShownNeighbours`), and the manifest and contract types |
+| `@deckster/engine/config`      | `defineDeck` and the `DeckConfig` schema for `deck.config.ts`                                                                                                                                                                                                                                                                                                                          |
+| `@deckster/engine/frontmatter` | The `SlideFrontmatter` schema every slide accepts (`layout`, `title`, `surface`, `background`, `budget`, `transition`, `hidden`), its fix hints and `TRANSITION_KINDS`, the list `@deckster/brand` also validates against                                                                                                                                                              |
+| `@deckster/engine/layout`      | `defineLayoutContract`, `defineLayoutCatalog`, and the budget and variant helpers (`slideBudget`, `matchingVariants`, `slideFieldLimits`) the build and `deck lint` use                                                                                                                                                                                                                |
+| `@deckster/engine/catalog`     | The engine's own layout catalog (the `default` contract), loaded before any plugin's                                                                                                                                                                                                                                                                                                   |
+| `@deckster/engine/manifest`    | `DeckManifest`, `SlideEntry`, `SlideMeta`: the shape of `virtual:deck`                                                                                                                                                                                                                                                                                                                 |
+| `@deckster/engine/slots`       | `BODY_SLOT`, `slotTag` and the element names the slot compiler writes                                                                                                                                                                                                                                                                                                                  |
+| `@deckster/engine/names`       | `KebabName` and `KEBAB_CASE_PATTERN` for slide, layout and brand names                                                                                                                                                                                                                                                                                                                 |
+| `@deckster/engine/mdx`         | `defineMdxExtension` and its types, for build-time remark and rehype plugins                                                                                                                                                                                                                                                                                                           |
+| `@deckster/engine/app`         | The page entry (`main.tsx`); `@deckster/vite-plugin` serves its folder's `index.html`                                                                                                                                                                                                                                                                                                  |
 
 Every subpath except the root and `app` is safe to load in Node: no JSX and no runtime React, so
 `@deckster/vite-plugin` and the CLI import them while building and linting.

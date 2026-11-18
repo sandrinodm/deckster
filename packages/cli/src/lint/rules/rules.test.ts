@@ -480,6 +480,53 @@ layer(NodeServices.layer)('lint rules', (it) => {
     }),
   );
 
+  it.effect('layout-repetition compares the slides as a talk shows them, hidden ones skipped', () =>
+    Effect.gen(function* () {
+      const tokens = yield* testBrandTokens('default');
+      const slides = [{ surface: 'inverse' }, {}, {}, { hidden: true, surface: 'inverse' }, {}];
+      expect(layoutRepetitionRule.check(deckInput(tokens, slides))).toEqual([
+        expect.objectContaining({
+          slide: 's5',
+          message: '3 slides in a row use the default layout on the default surface: s2, s3, s5.',
+        }),
+      ]);
+      const parked = [{}, {}, { hidden: true, layout: 'stats' }, {}];
+      expect(layoutRepetitionRule.check(deckInput(tokens, parked))).toEqual([
+        expect.objectContaining({
+          slide: 's4',
+          message: '3 slides in a row use the default layout on the default surface: s1, s2, s4.',
+        }),
+      ]);
+      const split = [{}, {}, { layout: 'stats' }, {}];
+      expect(layoutRepetitionRule.check(deckInput(tokens, split))).toEqual([]);
+    }),
+  );
+
+  it.effect('few-builds leaves hidden slides out of the figures it counts', () =>
+    Effect.gen(function* () {
+      const tokens = yield* testBrandTokens('default');
+      const figure = (stepCount: number, hidden = false) => ({
+        layout: 'chart',
+        stepCount,
+        hidden,
+      });
+      const withHiddenBuilds = deckInput(tokens, [
+        figure(1),
+        figure(1),
+        figure(1),
+        figure(4, true),
+      ]);
+      expect(fewBuildsRule.check(withHiddenBuilds)).toEqual([]);
+      const withHiddenFlat = deckInput(tokens, [
+        figure(3),
+        figure(3),
+        figure(1, true),
+        figure(1, true),
+      ]);
+      expect(fewBuildsRule.check(withHiddenFlat)).toEqual([]);
+    }),
+  );
+
   it.effect('few-builds reports a deck whose chart, diagram and code slides rarely build', () =>
     Effect.gen(function* () {
       const tokens = yield* testBrandTokens('default');
@@ -517,6 +564,24 @@ layer(NodeServices.layer)('lint rules', (it) => {
         expect.objectContaining({
           message:
             "The slides' budgets add up to 2:30 (1 slide has no budget, so it is more); the talk has 2:00.",
+        }),
+      ]);
+    }),
+  );
+
+  it.effect('time-budget leaves the budgets of hidden slides out of the sum', () =>
+    Effect.gen(function* () {
+      const tokens = yield* testBrandTokens('default');
+      const slides = [
+        { budgetSeconds: 90 },
+        { budgetSeconds: 60 },
+        { budgetSeconds: 300, hidden: true },
+        { hidden: true },
+      ];
+      expect(timeBudgetRule.check(deckInput(tokens, slides, { durationSeconds: 150 }))).toEqual([]);
+      expect(timeBudgetRule.check(deckInput(tokens, slides, { durationSeconds: 120 }))).toEqual([
+        expect.objectContaining({
+          message: "The slides' budgets add up to 2:30; the talk has 2:00.",
         }),
       ]);
     }),

@@ -56,6 +56,12 @@ export type ShotOptions = {
   scale: number;
 
   /**
+   * Leave hidden slides out of a run over the whole deck, as `deck export --png` does. A run for
+   * one slide shoots it whether it is hidden or not, and so does a run without this.
+   */
+  skipHidden?: boolean;
+
+  /**
    * Render from this workspace instead of the current one, such as a checkout of an older revision;
    * leave it out for the current workspace.
    */
@@ -87,6 +93,11 @@ export type ShotFile = {
   step: number | null;
 
   /**
+   * Whether the slide is hidden in the deck (`hidden: true`); it is shot all the same.
+   */
+  hidden: boolean;
+
+  /**
    * The image width in pixels: 1920 times the scale.
    */
   width: number;
@@ -116,6 +127,11 @@ export type ShotResult = {
    * The files written, in slide and step order.
    */
   files: ShotFile[];
+
+  /**
+   * How many hidden slides `skipHidden` left out.
+   */
+  hiddenSkipped: number;
 
   /**
    * Uncaught errors the page threw while the deck loaded, before any slide was shown.
@@ -166,7 +182,9 @@ export const takeShots = Effect.fn('takeShots')(function* (
   });
   const pageErrors = yield* page.takeErrors();
   const listed = yield* manifestSlides(page.slides, deck.slides, options.deck);
-  const targets = yield* chooseSlides(listed, options.slide, options.deck);
+  const chosen = yield* chooseSlides(listed, options.slide, options.deck);
+  const skip = options.slide === undefined && options.skipHidden === true;
+  const targets = skip ? chosen.filter((slide) => !slide.hidden) : chosen;
   if (options.slide === undefined) {
     yield* removeStaleShots(options.outDir);
   }
@@ -185,6 +203,7 @@ export const takeShots = Effect.fn('takeShots')(function* (
         slide: slide.id,
         number: slide.index + 1,
         step,
+        hidden: slide.hidden,
         width: CANVAS_SIZE.width * options.scale,
         height: CANVAS_SIZE.height * options.scale,
         error,
@@ -192,7 +211,12 @@ export const takeShots = Effect.fn('takeShots')(function* (
     }
   }
 
-  return { brand: brand.tokens.name, files, pageErrors };
+  return {
+    brand: brand.tokens.name,
+    files,
+    hiddenSkipped: chosen.length - targets.length,
+    pageErrors,
+  };
 }, Effect.scoped);
 
 /**

@@ -31,7 +31,7 @@ import {
 import { writeFontFiles } from '#export/export-fonts.ts';
 import { exportPdf } from '#export/export-pdf.ts';
 import { capturePptx, playwrightPage, writePptx, type PptxCapture } from '#export/export-pptx.ts';
-import { exportTargets, selectSlides } from '#export/export-targets.ts';
+import { exportTargets, hiddenLeftOut, selectSlides } from '#export/export-targets.ts';
 import { verifyExport } from '#export/verify-export.ts';
 import { takeShots, type ShotError, type ShotFile } from '#shot/take-shots.ts';
 import { Workspace } from '#workspace.ts';
@@ -115,6 +115,12 @@ export type ExportResult = {
   verify: VerifyReport | null;
 
   /**
+   * How many hidden slides were left out because neither `--include-hidden` nor `--slides` asked
+   * for them.
+   */
+  hiddenLeftOut: number;
+
+  /**
    * Things worth knowing, such as videos that stay posters.
    */
   warnings: string[];
@@ -145,10 +151,11 @@ export const runExport = Effect.fn('runExport')(function* (options: ExportOption
   const needsPage =
     options.formats.has('pdf') || options.formats.has('pptx') || options.dryRun || options.verify;
   const rendered = needsPage ? yield* Effect.scoped(exportFromPage(options, outDir)) : null;
-  const png =
+  const renderedPng =
     options.formats.has('png') && !options.dryRun
       ? yield* exportPng(options, path.join(outDir, 'png'))
       : null;
+  const png = renderedPng?.files ?? null;
   return {
     deck: options.deck,
     brand: rendered?.brand ?? options.brand ?? '',
@@ -158,6 +165,7 @@ export const runExport = Effect.fn('runExport')(function* (options: ExportOption
     png,
     dryRun: rendered?.dryRun ?? null,
     verify: rendered?.verify ?? null,
+    hiddenLeftOut: rendered?.hiddenLeftOut ?? renderedPng?.hiddenLeftOut ?? 0,
     warnings: rendered?.warnings ?? [],
   } satisfies ExportResult;
 });
@@ -177,7 +185,13 @@ const exportFromPage = Effect.fn('exportFromPage')(function* (
     yield* useSystemFonts(opened);
   }
 
-  const targets = yield* exportTargets(opened.page, options.slides, options.steps);
+  const targets = yield* exportTargets(
+    opened.page,
+    options.slides,
+    options.steps,
+    options.includeHidden,
+  );
+  const hiddenSkipped = hiddenLeftOut(opened.page.slides, options.slides, options.includeHidden);
   const base = path.join(outDir, `${options.deck}${options.steps ? '-steps' : ''}`);
   const pdfFile = fileFor(options, 'pdf', base);
   const wantsPdf = options.formats.has('pdf') && !options.dryRun;
@@ -213,6 +227,7 @@ const exportFromPage = Effect.fn('exportFromPage')(function* (
       pptx: null,
       dryRun: options.dryRun ? dryRun : null,
       verify: null,
+      hiddenLeftOut: hiddenSkipped,
       warnings: reportedWarnings(capture, wantsPptx),
     };
   }
@@ -249,6 +264,7 @@ const exportFromPage = Effect.fn('exportFromPage')(function* (
     },
     dryRun,
     verify,
+    hiddenLeftOut: hiddenSkipped,
     warnings: capture.warnings,
   };
 });
@@ -347,7 +363,8 @@ const useSystemFonts = Effect.fn('useSystemFonts')(function* (opened: OpenedDeck
 });
 
 /**
- * Writes PNGs with `deck shot`: every slide, or each selected one.
+ * Writes PNGs with `deck shot`: every slide that is not hidden (all with `--include-hidden`), or
+ * each selected one.
  *
  * @param options - What to export.
  * @param outDir - The PNG folder.
@@ -356,7 +373,7 @@ const exportPng = Effect.fn('exportPng')(function* (
   options: ExportOptions,
   outDir: string,
 ): Effect.fn.Return<
-  ShotFile[],
+  { files: ShotFile[]; hiddenLeftOut: number },
   ShotError,
   Workspace | FileSystem.FileSystem | DeckServer | DeckBrowser | Scope.Scope
 > {
@@ -368,15 +385,16 @@ const exportPng = Effect.fn('exportPng')(function* (
       steps: options.steps,
       outDir,
       scale: options.scale,
+      skipHidden: !options.includeHidden,
     });
-    return result.files;
+    return { files: result.files, hiddenLeftOut: result.hiddenSkipped };
   }
 
   const files: ShotFile[] = [];
   const all = yield* Effect.scoped(
     Effect.gen(function* () {
       const opened = yield* openDeck({ deck: options.deck, brand: options.brand, scale: 1 });
-      return yield* selectSlides(opened.page.slides, options.slides);
+      return yield* selectSlides(opened.page.slides, options.slides, options.includeHidden);
     }),
   );
   for (const slide of all) {
@@ -391,7 +409,7 @@ const exportPng = Effect.fn('exportPng')(function* (
     files.push(...result.files);
   }
 
-  return files;
+  return { files, hiddenLeftOut: 0 };
 });
 
 /**

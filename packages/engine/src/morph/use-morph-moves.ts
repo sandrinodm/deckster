@@ -19,6 +19,7 @@ import {
   type NamedMorphs,
 } from '#morph/morph-elements.ts';
 import { navigate, type NavigationAction, type NavigationState } from '#navigation/navigation.ts';
+import { areShownNeighbours } from '#navigation/shown-slides.ts';
 
 /**
  * The media query of viewers who ask for less motion; they get the plain slide transition.
@@ -288,8 +289,8 @@ function stageCanvas(root: HTMLElement | null): HTMLElement | undefined {
 
 /**
  * The elements on the slide on screen that would morph on this move: the shown ones whose name the
- * neighbouring slide the move goes to also has. `undefined` when the move does not go to a
- * neighbour or no name is shared.
+ * neighbouring (next shown) slide the move goes to also has. `undefined` when the move does not go
+ * to a neighbour or no name is shared.
  *
  * @param canvas - The deck's canvas.
  * @param stateRef - The navigation state of the last commit.
@@ -305,7 +306,11 @@ function outgoingMorphs(
   const to = navigate(state, action).position.slide;
   const outgoingSlide = stageSlide(canvas, from);
   const incomingSlide = stageSlide(canvas, to);
-  if (Math.abs(to - from) !== 1 || outgoingSlide === undefined || incomingSlide === undefined) {
+  if (
+    !areShownNeighbours(state.hidden, from, to) ||
+    outgoingSlide === undefined ||
+    incomingSlide === undefined
+  ) {
     return undefined;
   }
 

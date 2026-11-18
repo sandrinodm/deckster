@@ -105,6 +105,54 @@ describe('takeShots with a fake browser', () => {
     }).pipe(Effect.provide(services)),
   );
 
+  it.effect('shoots hidden slides and reports them in the files', () =>
+    Effect.gen(function* () {
+      const result = yield* takeShots(yield* shotOptions({}));
+      expect(result.files.map((file) => [path.basename(file.path), file.hidden])).toEqual([
+        ['01-title.png', false],
+        ['02-steps.png', true],
+      ]);
+      expect(result.hiddenSkipped).toBe(0);
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(
+          fakeDeckLayer({
+            slides: [
+              { page: pageSlide(0, 'title'), steps: [collectedPage()] },
+              { page: pageSlide(1, 'steps', { hidden: true }), steps: [collectedPage()] },
+            ],
+          }),
+          OutDir.layer.pipe(Layer.provideMerge(NodeServices.layer)),
+          Workspace.layer,
+        ),
+      ),
+    ),
+  );
+
+  it.effect('leaves hidden slides out with skipHidden, unless the slide is asked for', () =>
+    Effect.gen(function* () {
+      const skipped = yield* takeShots(yield* shotOptions({ skipHidden: true }));
+      expect(skipped.files.map((file) => path.basename(file.path))).toEqual(['01-title.png']);
+      expect(skipped.hiddenSkipped).toBe(1);
+      const named = yield* takeShots(yield* shotOptions({ slide: 'steps', skipHidden: true }));
+      expect(named.files.map((file) => path.basename(file.path))).toEqual(['02-steps.png']);
+      expect(named.hiddenSkipped).toBe(0);
+    }).pipe(
+      Effect.provide(
+        Layer.mergeAll(
+          fakeDeckLayer({
+            slides: [
+              { page: pageSlide(0, 'title'), steps: [collectedPage()] },
+              { page: pageSlide(1, 'steps', { hidden: true }), steps: [collectedPage()] },
+            ],
+          }),
+          OutDir.layer.pipe(Layer.provideMerge(NodeServices.layer)),
+          Workspace.layer,
+        ),
+      ),
+    ),
+  );
+
   it.effect('names files from the manifest, never from ids the page reports', () =>
     Effect.gen(function* () {
       const { path: outDir } = yield* OutDir;

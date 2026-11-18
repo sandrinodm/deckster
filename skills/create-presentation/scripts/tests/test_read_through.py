@@ -151,5 +151,15 @@ export const frontmatter%s = {
         self.assertEqual(slides[2]["budget"], 45)
 
 
+    def test_a_hidden_slide_needs_no_budget_and_is_left_out_of_the_total(self):
+        hidden = SLIDE.replace("budget: 1m\n", "hidden: true\nbudget: 9m\n")
+        (self.deck / "slides" / "real-two.mdx").write_text(hidden, encoding="utf-8")
+        (self.deck / "slides" / "decoy.mdx").write_text(SLIDE.replace("budget: 1m\n", "hidden: true\n"), encoding="utf-8")
+        run, data = self.run_script(config("export default defineDeck({ title: 'x', duration: '2m', slides: ['real-one', 'real-two', 'decoy'] });\n"))
+        self.assertEqual(run.returncode, 0, run.stderr + run.stdout)
+        self.assertEqual(data["budgetTotal"], 60)
+        self.assertEqual([s["hidden"] for s in data["slides"]], [False, True, True])
+        self.assertFalse([f for f in data["findings"] if f["slide"] == "decoy" and "budget" in f["message"]])
+
 if __name__ == "__main__":
     unittest.main()

@@ -3,6 +3,11 @@ import type { ReactNode } from 'react';
 import { useDeck, type DeckControls } from '#deck/deck-context.ts';
 import { fullDeckUrl } from '#embed/embed-mode.ts';
 import { useIdle } from '#embed/use-idle.ts';
+import {
+  neighbourShownSlide,
+  shownPageNumber,
+  shownSlideIndexes,
+} from '#navigation/shown-slides.ts';
 import '#embed/embed.css';
 
 /**
@@ -12,7 +17,8 @@ export const EMBED_CONTROLS_IDLE_MS = 2000;
 
 /**
  * The small control an embedded deck shows in its bottom corner: previous and next (one step each,
- * like the arrow keys), "Slide n of N", and a link that opens the whole deck at the same position
+ * like the arrow keys), "Slide n of N" counting the shown slides (a hidden slide the deck was sent
+ * to shows "N slides" without a number), and a link that opens the whole deck at the same position
  * in a new tab. It sits outside the stage, so its clicks never reach mouse navigation, and it never
  * takes focus by itself.
  *
@@ -27,7 +33,11 @@ export function EmbedControls(): ReactNode {
   const deck = useDeck();
   const isIdle = useIdle(EMBED_CONTROLS_IDLE_MS);
   const { position, slides } = deck;
-  const current = position.slide + 1;
+  const hidden = slides.map((slide) => slide.hidden);
+  const current = shownPageNumber(hidden, position.slide);
+  const total = shownSlideIndexes(hidden).length;
+  const longCount = current === undefined ? `${total} slides` : `Slide ${current} of ${total}`;
+  const shortCount = current === undefined ? `${total}` : `${current}/${total}`;
   const isFirst = isAtStart(deck);
   const isLast = isAtEnd(deck);
   return (
@@ -50,9 +60,9 @@ export function EmbedControls(): ReactNode {
           <Chevron points="10,3 5,8 10,13" />
         </button>
         <span className="deck-embed-count" aria-live="polite">
-          <span className="deck-embed-long">{`Slide ${current} of ${slides.length}`}</span>
+          <span className="deck-embed-long">{longCount}</span>
           <span className="deck-embed-short" aria-hidden="true">
-            {`${current}/${slides.length}`}
+            {shortCount}
           </span>
         </span>
         <button
@@ -81,23 +91,32 @@ export function EmbedControls(): ReactNode {
 }
 
 /**
- * Whether the deck shows its first step of its first slide, where Previous does nothing.
+ * Whether the deck shows the first step of its first shown slide (or a hidden slide before it),
+ * where Previous does nothing.
  *
  * @param deck - The deck's controls.
  */
 function isAtStart(deck: DeckControls): boolean {
-  return deck.position.slide === 0 && deck.position.step === 0;
+  const hidden = deck.slides.map((slide) => slide.hidden);
+  return (
+    neighbourShownSlide(hidden, deck.position.slide, 'backward') === undefined &&
+    deck.position.step === 0
+  );
 }
 
 /**
- * Whether the deck shows the last step of its last slide, where Next does nothing. While the last
- * slide has not reported its steps, Next stays enabled.
+ * Whether the deck shows the last step of its last shown slide (or a hidden slide after it), where
+ * Next does nothing. While the last slide has not reported its steps, Next stays enabled.
  *
  * @param deck - The deck's controls.
  */
 function isAtEnd(deck: DeckControls): boolean {
   const { position, slides, stepCount } = deck;
-  if (position.slide !== slides.length - 1 || stepCount === undefined) {
+  const hidden = slides.map((slide) => slide.hidden);
+  if (
+    neighbourShownSlide(hidden, position.slide, 'forward') !== undefined ||
+    stepCount === undefined
+  ) {
     return false;
   }
 

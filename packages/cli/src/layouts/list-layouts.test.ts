@@ -20,6 +20,7 @@ layer(NodeFileSystem.layer)('listLayouts', (it) => {
         'background',
         'budget',
         'transition',
+        'hidden',
       ]);
       const layout = catalog.layouts.find((entry) => entry.name === 'default');
       expect(layout).toMatchObject({
