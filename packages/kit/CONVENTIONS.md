@@ -17,7 +17,10 @@ Use `Badge` and `Pill` from `#foundation/badges.tsx`, at the label type step or 
 Selected panels and full row bands use nested `data-surface`: accent normally, inverse when
 the slide is accent or gradient. Their background is
 `var(--brand-background, var(--brand-color-bg))`. Unselected market rows remain transparent
-so the slide artwork stays visible. Current schedule lanes use accent bars.
+so the slide artwork stays visible. Current schedule lanes use accent bars. On accent and gradient
+slides, where accent and muted are both close to the text colour, the other lanes' bars are muted
+outlines so the current lane's filled bar stands apart. Bars use `--brand-color-muted`, never
+`--brand-data-context`, which is fitted to the chart plate rather than the slide.
 
 ## S4: indexes
 

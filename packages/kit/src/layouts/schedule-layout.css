@@ -143,6 +143,16 @@
   .kit-schedule-lane[aria-current] .kit-schedule-bar {
     background: var(--brand-color-accent);
   }
+  .kit-frame[data-layout='schedule'][data-bars='outline']:not(
+      [data-level='dense'],
+      [data-level='compact']
+    )
+    .kit-schedule-lane:not([aria-current])
+    .kit-schedule-bar {
+    box-sizing: border-box;
+    border: var(--brand-stroke-regular) solid var(--brand-color-muted);
+    background: transparent;
+  }
   .kit-schedule-now-line {
     position: absolute;
     z-index: 2;

@@ -1,3 +1,4 @@
+import { useBrand } from '@deckster/brand/runtime';
 import { defineLayout, useStatic, type LayoutProps } from '@deckster/engine';
 import { useRef, type CSSProperties, type ReactNode } from 'react';
 
@@ -23,7 +24,9 @@ const FIRST_LANE_ORDER = 2;
 /**
  * A Gantt with aligned lane names, optional labels above each bar and a shared period grid. Bar
  * labels stay outside durations so a one-period bar remains readable on an eight-period axis. The
- * fit level is measured with every lane present, including unrevealed lanes.
+ * fit level is measured with every lane present, including unrevealed lanes. With a current lane on
+ * an accent or gradient slide, where accent and muted are both close to the text colour, the other
+ * lanes' bars are outlines so the filled bar of the current lane stands apart.
  */
 function ScheduleLayout({
   frontmatter,
@@ -31,6 +34,9 @@ function ScheduleLayout({
 }: LayoutProps<typeof scheduleLayoutContract>): ReactNode {
   const { periods, lanes, current, now, reveal } = frontmatter;
   const isStatic = useStatic();
+  const { surface } = useBrand();
+  const outlined =
+    current !== undefined && (surface.name === 'accent' || surface.name === 'gradient');
   const contextEnter = useEnter(1);
   const region = useRef<HTMLDivElement>(null);
   const grid = useRef<HTMLDivElement>(null);
@@ -53,6 +59,7 @@ function ScheduleLayout({
       variant={{
         'data-count': String(lanes.length),
         'data-level': size,
+        'data-bars': outlined ? 'outline' : undefined,
         'data-periods': String(periods.length),
       }}>
       <SlideHeader eyebrow={frontmatter.eyebrow} title={frontmatter.title} maxLines={1} />
