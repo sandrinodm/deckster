@@ -1,3 +1,4 @@
+export { BACKGROUND_EXTENSIONS, FONT_EXTENSIONS } from '#node/asset-files.ts';
 export { brandTokensJson } from '#node/brand-json.ts';
 export {
   BRAND_FILE,

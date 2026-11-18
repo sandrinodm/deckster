@@ -93,4 +93,9 @@ export {
   type FamilyRole,
   type TypeStep,
 } from '#schema/typography-schema.ts';
-export { BrandError, describeProblem, type BrandProblem } from '#validate/brand-error.ts';
+export {
+  BrandError,
+  brandError,
+  describeProblem,
+  type BrandProblem,
+} from '#validate/brand-error.ts';

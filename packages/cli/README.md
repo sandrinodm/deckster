@@ -82,6 +82,7 @@ Run `deck --help` for all commands, or `deck <command> --help` for full flags.
 | `deck diff <deck>`                       | Compare rendered slides against a git ref or `--save-baseline`             |
 | `deck export <deck>`                     | Export `--pdf`, `--pptx`, and/or `--png` (`--include-hidden`, `--dry-run`) |
 | `deck brand [name]`                      | Inspect resolved brand tokens and diagram cards, or `deck brand check`     |
+| `deck brand add <source>`                | Copy a brand folder from a git repository into `brands/<name>`             |
 | `deck layouts \| icons \| charts \| ...` | Print typed catalogs (`diagrams`, `components`) for humans and agents      |
 | `deck comments <deck>`                   | List, add, resolve, reopen, and prune browser review comments              |
 | `deck types`                             | Write `tsconfig.json` and `.deck/env.d.ts` for editor type checking        |

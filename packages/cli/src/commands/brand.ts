@@ -12,7 +12,7 @@ export const brandCommand: Command = {
   /**
    * The line `deck --help` shows for this command.
    */
-  summary: "Print a brand's resolved tokens, or check a brand",
+  summary: "Print a brand's resolved tokens, check a brand, or add one from git",
 
   /**
    * The text `deck brand --help` prints.

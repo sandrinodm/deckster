@@ -5,8 +5,10 @@ import { DEFAULT_BRAND } from '@deckster/brand';
  */
 export const HELP = `Usage: deck brand [name] [--json]
        deck brand check <name> [--json]
+       deck brand add <source> [--force] [--json]
 
-Prints a brand's resolved tokens, or validates a brand without rendering a deck.
+Prints a brand's resolved tokens, validates a brand without rendering a deck, or adds a brand
+from a git repository.
 
   deck brand [name]        A summary of brands/<name>: families, type scale, spacing, each
                            surface's roles, with the small-text color of a role that reaches only
@@ -31,8 +33,25 @@ Prints a brand's resolved tokens, or validates a brand without rendering a deck.
                            kit or engine layout as its fallback, bind only slots and fields that
                            layout has, bind every one it requires, and not clash with a kit
                            layout's name. Exits with 1 when it has errors.
+  deck brand add <source>  Copies a brand folder from a git repository into brands/<name>, named
+                           by the brand's \`name\`. <source> is gh:owner/repo/<folder>#<ref>
+                           (over https), a GitHub link (https://github.com/owner/repo/tree/<ref>/
+                           <folder>), or any https or ssh address with the folder after //, such
+                           as git@github.com:owner/repo.git//brands/acme#v2. Without #<ref>, the
+                           default branch. It runs your git, so your credential helper, SSH key
+                           and url.<base>.insteadOf rules apply. brand.ts and layouts.ts are read
+                           as data and never run; the brand is checked before anything is
+                           written, and only brand.ts, layouts.ts, images, fonts and documents
+                           are copied (no other code, symlinks or package files). Fonts are not
+                           installed: it prints the commands to run next (pnpm install in this
+                           repository, or npm install for missing fonts), then deck brand check,
+                           which checks what needs the fonts. Each git step that uses the
+                           network may take up to 2 minutes.
 
 Options:
   --json        For check: { brand, file, ok, errors, warnings }, each problem { path, message,
-                fix }. A failure prints { ok: false, error: { type, message } }.
+                fix }. For add: { ok, brand, dir, source, commit, replaced, files, written,
+                skipped: [{ path, reason }], fonts: [{ name, version, installed }], warnings,
+                next }. A failure prints { ok: false, error: { type, message } }.
+  --force       For add: replace a brand of the same name the workspace already has.
   -h, --help    Show this help.`;

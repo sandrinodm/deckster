@@ -19,6 +19,7 @@ import path from 'node:path';
 
 import { usageError } from '#cli-error.ts';
 import { EXIT_FAILED, EXIT_OK, type Command } from '#command.ts';
+import { runBrandAdd } from '#commands/brand-add-run.ts';
 import { printJson, withJsonErrors } from '#json-output.ts';
 import { count } from '#lint/format-report.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
@@ -33,6 +34,11 @@ const CHECK = 'check';
  * The start of a problem path inside `layouts.ts`.
  */
 const LAYOUTS_PATH_PREFIX = 'layouts[';
+
+/**
+ * The subcommand word that adds a brand from a git repository.
+ */
+const ADD = 'add';
 
 /**
  * What `deck brand check` found: the brand file, and its problems by severity.
@@ -72,6 +78,11 @@ export const run: Command['run'] = (argv): ReturnType<Command['run']> =>
  * @param argv - The arguments after `brand`.
  */
 const runBrand = Effect.fn('deck.brand')(function* (argv: readonly string[]) {
+  if (argv.find((argument) => !argument.startsWith('-')) === ADD) {
+    const at = argv.indexOf(ADD);
+    return yield* runBrandAdd([...argv.slice(0, at), ...argv.slice(at + 1)]);
+  }
+
   const { values, positionals } = yield* parseCommandArgs('brand', argv, {
     json: { type: 'boolean', default: false },
   });
