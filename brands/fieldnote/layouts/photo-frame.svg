@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <!-- Photo-right art: a double rule across the top of the text column and a hairline against the photo. -->
+  <g fill="none" stroke-linecap="round">
+    <g stroke="#40382e" opacity="0.7">
+      <line x1="144" y1="112" x2="952" y2="112" stroke-width="2"/>
+      <line x1="144" y1="122" x2="952" y2="122" stroke-width="1"/>
+    </g>
+    <line x1="1032" y1="0" x2="1032" y2="1080" stroke="#c0603a" stroke-width="3"/>
+    <line x1="1044" y1="0" x2="1044" y2="1080" stroke="#c0603a" stroke-width="1" opacity="0.5"/>
+    <g stroke="#c0603a" stroke-width="2">
+      <circle cx="952" cy="117" r="6"/>
+    </g>
+  </g>
+</svg>

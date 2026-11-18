@@ -213,6 +213,16 @@ export function rememberLoaded(file: string, value: unknown): void {
 }
 
 /**
+ * Forgets the default export kept for a file, because the file is gone: a file deleted during a
+ * hold and created again must not answer with the value it had before.
+ *
+ * @param file - The absolute path.
+ */
+export function forgetLoaded(file: string): void {
+  STATE.loaded.delete(path.resolve(file));
+}
+
+/**
  * Forgets everything, for tests.
  */
 export function resetCodeGate(): void {

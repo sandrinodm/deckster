@@ -126,8 +126,9 @@ fix. `deck shot` gives the agent, or you, a picture to look at.
 
 Brands are data. A brand is a typed `brand.ts` in `brands/<name>` with colours, surfaces, fonts,
 icons, motion and chart palettes; slides hold no raw colours or pixel positions. The same deck
-renders in another brand without an edit: `pnpm deck lint hello --brand nocturne`. The reasons
-behind these choices are in [docs/design.md](docs/design.md).
+renders in another brand without an edit: `pnpm deck lint hello --brand nocturne`. To use a
+brand that lives in another git repository, `pnpm deck brand add gh:<owner>/<repo>/brands/<name>`
+copies it into `brands/`. The reasons behind these choices are in [docs/design.md](docs/design.md).
 
 ## What it does
 

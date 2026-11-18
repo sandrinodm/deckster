@@ -466,7 +466,7 @@ export const deckToolsLive = Effect.fn('deckToolsLive')(function* (
   const wholeCatalog = Effect.fn('deckTools.wholeCatalog')(function* (kind: string) {
     switch (kind) {
       case 'layouts': {
-        const layouts = yield* listLayouts(root, deck);
+        const layouts = yield* listLayouts(root, deck, brand);
         return { entries: layouts.layouts, json: { deck, ...layouts } };
       }
       case 'charts': {

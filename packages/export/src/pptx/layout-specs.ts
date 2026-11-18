@@ -1,10 +1,13 @@
+import type { BrandLayoutTokens } from '@deckster/brand';
 import type {
   AnyLayoutContract,
   PptxLayoutType,
   PptxPlaceholderKind,
 } from '@deckster/engine/layout';
 
+import type { ExportMode } from '#plan/plan-scene.ts';
 import type { PptxDeckInput, PptxSlideInput } from '#pptx/deck-input.ts';
+import type { LayoutArt } from '#pptx/layout-art.ts';
 import type { FontResolver, TextContext, TextDefaults } from '#pptx/text-xml.ts';
 import type { SurfaceTheme } from '#pptx/theme.ts';
 import type { SceneRect, TextNode } from '#scene/scene.ts';
@@ -12,6 +15,7 @@ import type { SceneRect, TextNode } from '#scene/scene.ts';
 import { groupText } from '#plan/group-text.ts';
 import { chromeShapes, commonChrome, sameChrome, type ChromeShape } from '#pptx/chrome.ts';
 import { OFF_SLIDE_GAP_PX, OFF_SLIDE_HEIGHT_PX, type PlaceholderRef } from '#pptx/frame-xml.ts';
+import { brandLayoutOf, layoutSource } from '#pptx/layout-art.ts';
 import { layoutFrame, textDefaults } from '#pptx/text-xml.ts';
 import { CANVAS_HEIGHT_PX, CANVAS_WIDTH_PX } from '#units.ts';
 
@@ -47,6 +51,28 @@ const BASIC_TYPES: readonly PptxLayoutType[] = [
  * The placeholder index of the slide number on every master and layout.
  */
 export const SLIDE_NUMBER_IDX = 12;
+
+/**
+ * The placeholder type each kind but the title is written with.
+ */
+const PLACEHOLDER_TYPES: Readonly<
+  Record<Exclude<PptxPlaceholderKind, 'title'>, PlaceholderRef['type']>
+> = {
+  /**
+   * The subtitle.
+   */
+  subtitle: 'subTitle',
+
+  /**
+   * The body.
+   */
+  body: 'body',
+
+  /**
+   * The picture.
+   */
+  picture: 'pic',
+};
 
 /**
  * A placeholder on a layout: what it holds, where it sits and the text style its runs inherit.
@@ -94,14 +120,26 @@ export type SlideNumberSpec = {
 };
 
 /**
- * One layout under a master: its name, PowerPoint type, placeholders, and its chrome when it
- * differs from the master's.
+ * One layout under a master: its name, PowerPoint type, placeholders, its art and its chrome when
+ * it differs from the master's.
  */
 export type LayoutSpec = {
   /**
-   * The deck layout's name, which the PowerPoint layout is named after.
+   * The deck layout's name, which slides refer to it by.
    */
   name: string;
+
+  /**
+   * The name the PowerPoint layout shows: the label of a brand layout that has one, else `null` for
+   * the deck layout's name.
+   */
+  label: string | null;
+
+  /**
+   * The art the layout part draws once, or `null` when it has none (kit layouts, and brand layouts
+   * with no art of their own for the surface).
+   */
+  art: LayoutArt | null;
 
   /**
    * The PowerPoint layout type.
@@ -186,7 +224,7 @@ export type SpecContext = {
  * @param context - The themes and fonts.
  */
 export function masterSpecs(
-  input: Pick<PptxDeckInput, 'layouts' | 'slides' | 'brand'>,
+  input: Pick<PptxDeckInput, 'layouts' | 'slides' | 'brand'> & { mode?: ExportMode },
   context: SpecContext,
 ): MasterSpec[] {
   const contracts = withFallback(input.layouts);
@@ -258,7 +296,7 @@ export function slideChrome(slide: PptxSlideInput): ChromeShape[] {
  * @param isUsed - Whether a slide on this surface uses it.
  */
 function layoutSpec(
-  input: Pick<PptxDeckInput, 'slides' | 'brand'>,
+  input: Pick<PptxDeckInput, 'slides' | 'brand'> & { mode?: ExportMode },
   contract: AnyLayoutContract,
   theme: SurfaceTheme,
   masterChrome: readonly ChromeShape[],
@@ -268,14 +306,19 @@ function layoutSpec(
   const ownSlides = input.slides.filter(
     (slide) => slide.scene.layout === contract.name && slide.scene.surface === theme.surface,
   );
-  const reference = ownSlides[0];
-  const chrome = reference === undefined ? null : slideChrome(reference);
-  const ownChrome = chrome === null || sameChrome(chrome, masterChrome) ? null : chrome;
+  const { art, chrome } = layoutSource(ownSlides, input.brand, input.mode);
+  // The master's shapes sit under a layout's art, so a layout with art draws its chrome itself.
+  const drawsChrome = chrome !== null && (art !== null || !sameChrome(chrome, masterChrome));
+  const ownChrome = drawsChrome ? chrome : null;
   const slideNumber = ownChrome === null ? null : slideNumberSpec(ownChrome, theme, context);
+  const brandLayout = brandLayoutOf(input.brand, contract.name);
+  const label = brandLayout?.label ?? null;
   const mapping = contract.pptx;
   if (mapping === undefined) {
     return {
       name: contract.name,
+      label,
+      art,
       type: 'blank',
       placeholders: [],
       chrome: ownChrome,
@@ -294,10 +337,12 @@ function layoutSpec(
       return [];
     }
 
-    return [placeholderSpec(input, contract, placeholder, ref, theme, context)];
+    return [placeholderSpec(input, contract, placeholder, ref, theme, context, brandLayout)];
   });
   return {
     name: contract.name,
+    label,
+    art,
     type: mapping.type,
     placeholders,
     chrome: ownChrome,
@@ -317,6 +362,7 @@ function layoutSpec(
  * @param ref - The placeholder's reference on the layout.
  * @param theme - The master's theme.
  * @param context - The fonts.
+ * @param brandLayout - The brand layout the contract comes from, whose boxes place the placeholder.
  */
 function placeholderSpec(
   input: Pick<PptxDeckInput, 'slides' | 'brand'>,
@@ -325,6 +371,7 @@ function placeholderSpec(
   ref: PlaceholderRef,
   theme: SurfaceTheme,
   context: SpecContext,
+  brandLayout: BrandLayoutTokens | undefined,
 ): PlaceholderSpec {
   const measured = measuredFrame(input, contract, placeholder.kind, theme);
   const offSlide = 'field' in placeholder.from;
@@ -334,12 +381,65 @@ function placeholderSpec(
   return {
     kind: placeholder.kind,
     ref,
-    rect: layout?.rect ?? defaultRect(input, placeholder.kind, offSlide),
+    rect:
+      (brandLayout === undefined ? null : brandRect(brandLayout, placeholder)) ??
+      layout?.rect ??
+      defaultRect(input, placeholder.kind, offSlide),
     defaults:
       defaults === null || measured?.sameSurface === true
         ? defaults
         : { ...defaults, color: `#${theme.colors.dk1}` },
   };
+}
+
+/**
+ * Where a brand layout puts a placeholder: the title's box, the box of the region bound to its slot
+ * (a media region for a picture, a text region otherwise) or to its field.
+ *
+ * @param layout - The brand layout.
+ * @param placeholder - The placeholder's mapping in the layout's contract.
+ * @returns The box in canvas pixels, or `null` when the layout has no such region.
+ */
+function brandRect(layout: BrandLayoutTokens, placeholder: PlaceholderMapping): SceneRect | null {
+  const box = brandBox(layout, placeholder);
+  if (box === undefined) {
+    return null;
+  }
+
+  const [x, y, width, height] = box;
+  return { x, y, width, height };
+}
+
+/**
+ * The box a brand layout gives a placeholder.
+ *
+ * @param layout - The brand layout.
+ * @param placeholder - The placeholder's mapping.
+ */
+function brandBox(
+  layout: BrandLayoutTokens,
+  placeholder: PlaceholderMapping,
+): BrandLayoutTokens['regions'][number]['box'] | undefined {
+  if (placeholder.kind === 'title') {
+    return layout.title === false ? undefined : layout.title.box;
+  }
+
+  const { from } = placeholder;
+  const wantsMedia = placeholder.kind === 'picture';
+  const region = layout.regions.find((candidate) => {
+    if ('slot' in from) {
+      return 'slot' in candidate.bind && candidate.bind.slot === from.slot
+        ? (candidate.kind === 'media') === wantsMedia
+        : false;
+    }
+
+    return (
+      'selector' in from &&
+      'field' in candidate.bind &&
+      from.selector === `[data-region="field:${candidate.bind.field}"]`
+    );
+  });
+  return region?.box;
 }
 
 /**
@@ -472,7 +572,7 @@ export function placeholderRefs(
     if (kind === 'title') {
       refs.set(kind, { type: type === 'title' ? 'ctrTitle' : 'title', idx: undefined });
     } else {
-      refs.set(kind, { type: kind === 'subtitle' ? 'subTitle' : 'body', idx });
+      refs.set(kind, { type: PLACEHOLDER_TYPES[kind], idx });
       idx += 1;
     }
   }

@@ -3,7 +3,7 @@
 The neutral record of the synthesized brand. It exists for three reasons:
 
 - `emit_brand.py` generates `brands/<name>/brand.ts` from it, and `check-draft` reads it.
-- It keeps what `brand.ts` has no place for: provenance, confidence, the review list, and the mapping from source pages to layouts.
+- It keeps what `brand.ts` has no place for: provenance, confidence, the review list, and the mapping from source pages to layouts. When the source is a template it also holds the brand's own layouts as specs (below), which `emit_brand.py` writes to `layouts.ts`.
 - It isolates the skill from schema changes. Only `brand-schema.md` and `emit_brand.py` know how this maps onto `brand.ts`.
 
 Keep it next to the extraction, with assets referenced by paths relative to the draft file.
@@ -120,6 +120,13 @@ The example is a made-up brand. Comments are for explanation; the real file is p
     { "archetype": "chart",   "maps_to": "content", "surface": "default",  "source_pages": [7, 8, 11], "notes": "takeaway headline, chart full width" }
   ],
 
+  // A layout spec (from a template; see "Layout specs" below) goes in the same array:
+  // { "key": "m1/slideLayout2", "name": "title-and-content", "label": "Title and Content", "description": "...", "fallback": "content", "surface": "default",
+  //   "title": { "box": [154, 65, 1613, 194], "type": "headline", "align": "start" },
+  //   "regions": [ { "bind": { "slot": "body" }, "box": [154, 302, 1613, 626], "type": "body" } ],
+  //   "background": { "inverse": [ { "source": "pptx/layouts/m2-slideLayout11.svg", "fit": "cover" } ] },
+  //   "chrome": { "pageNumber": [1498, 994, 307, 54] }, "keep": true, "notes": [] }
+
   "provenance": {
     "color.roles":           { "source": "observed", "confidence": 0.9,  "evidence": "theme slots used on 22 of 24 slides" },
     "color.surfaces.inverse":{ "source": "observed", "confidence": 0.8,  "evidence": "section slides 4, 9, 15" },
@@ -163,3 +170,25 @@ The example is a made-up brand. Comments are for explanation; the real file is p
 - **`layouts[].archetype`** is your name for the kind of page (`chart` and `agenda` are fine). **`layouts[].maps_to`** is a layout name from `deck layouts --json` (read it; the set grows), or `null` with a note when the source has a kind of page no layout covers yet.
 - **`review[].severity`**: `blocker` (the brand cannot ship without it: an unlicensed font, a missing logo), `check` (a decision or a contrast failure), `fyi` (a guess the user may want to know about).
 - Unknown keys are allowed. Put anything the source has that this format lacks under a sensible name and mention it in `review`, so the schema owner hears about it.
+
+## Layout specs (`layouts[]` entries from a template)
+
+`layouts[]` takes two kinds of entry. The notes above (`archetype`, `maps_to`, `override_needed`) say how the source's pages use the kit's layouts. A **spec** is a layout the brand brings: an entry with `name` and `fallback` (or `regions`). `brand_tools.py propose-layouts <extraction.json> --draft brand-draft.json --catalog catalog.json` writes one spec per source layout, keeping your notes; the agent reviews them. `check-draft` validates the specs against the catalog (`deck layouts <deck> --json`); `emit_brand.py` writes the kept ones to `brands/<name>/layouts.ts` and copies their art to `brands/<name>/layouts/`.
+
+| Field | Meaning |
+|---|---|
+| `name` | kebab-case, unique, never a kit or engine layout's name (a clash gets the brand prefix: `acme-title`). Same-named layouts on two masters with the same geometry are one layout; with different geometry the master's name is a suffix. |
+| `label` | the name in the source template. |
+| `description` | required; one sentence on what the layout is for. Custom prompt texts from the template are appended to it. |
+| `fallback` | required: the kit layout a slide renders with on a brand that lacks this layout. `propose-layouts` picks the first kit layout that accepts the bindings (the rules of `deck brand check`: every slot and field bound exists on it, every required one is bound, a title when it requires one). `null` means none fits: `keep` is false until you choose. |
+| `surface` | the surface the layout's master or own background belongs to (the nearest surface to the rendered background). |
+| `title` | `{ box, type?, align?, anchor?, color? }`, or `false` for none. Required. |
+| `regions[]` | `{ bind: { slot } or { field }, box, kind? (text, media, content), type?, align?, anchor?, color?, fit?, treatment? }`. `box` is `[x, y, w, h]` in canvas pixels (1920x1080, inside it, at least 40). `type` is a type step and `color` a role: both only on text regions; `fit` and `treatment` only on media. At most 12. Placeholder to binding: title and ctrTitle to the title; subTitle to a free text slot (or a text field); the first body or content placeholder to `body`, further ones to the fallback's other text slots in reading order; pic to the slot that accepts images (`media`); chart, table, diagram to a slot that accepts them. A placeholder with no place on the fallback is dropped and noted. |
+| `background` | art keyed by the surface it was drawn on: `{ "inverse": [ { "source": "<svg or png next to the draft>", "fit": "cover" | "contain" } ] }`. Rendered art has fixed colours, so a light and a dark master's versions of one layout are two keys. Emitted as `image` layers in `layouts/<name>-<surface>.<ext>`. |
+| `chrome` | `{ pageNumber: [x, y, w, h] }` from the page-number placeholder; `logo: false` when the layout or its master has a picture: it is in the art, so the brand draws no second logo (the emitter drops this again if the sanitiser could not keep the picture); `pageNumber: false` / `footer: false` when the layout has no such placeholder and the brand shows one. Date placeholders have no place in the schema. `fields: [..]` lists the structured frontmatter fields (stats, items) the fallback requires: the layout takes them, a slide supplies them. Art may carry embedded PNG/JPEG pictures; other images are removed. |
+| `keep` | `false` drops the layout from `layouts.ts` (near-duplicates, unused layouts, ones with no fallback). Default true. |
+| `key`, `keys`, `sources`, `unused`, `aspect_rule`, `notes` | for the agent and the specimen: which source layouts it came from, whether no slide used it, the 4:3 rule applied, and what to look at. Not emitted (`import-notes.json` keeps them). |
+
+**Sizes.** A placeholder's size in points becomes canvas pixels (x 1920 / slide width for a 16:9 source) and then the nearest type step of the draft's `typography.scale`; a size more than 15% from every step gets no step and a note. **Other aspects** (4:3): everything scales by the same factor to the canvas height and is centred (`aspect_rule: uniform`; the art is `contain`, the bands show the surface); a layout with no art may use `stretch` (`propose-layouts --aspect-rule stretch`: boxes map proportionally on each axis, sizes scale by 1920 / width). The rule each layout got is in its notes.
+
+Text in a spec (`name`, `label`, `description`) comes from the template: the emitter writes it as capped string literals only, and names art files itself from the layout name.

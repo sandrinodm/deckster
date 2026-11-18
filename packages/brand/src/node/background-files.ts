@@ -7,6 +7,7 @@ import type { BrandProblem } from '#validate/brand-error.ts';
 import { assetProblem, BACKGROUND_EXTENSIONS } from '#node/asset-files.ts';
 import { BRANDS_DIR, type BrandLocation } from '#node/brand-paths.ts';
 import { readImageSize, type ImageSize } from '#node/image-size.ts';
+import { ALL_SURFACES_KEY } from '#resolve/layout-layers.ts';
 
 /**
  * How far a placed or tiled layer's `aspect` may be from its file's before the check warns, as a
@@ -129,12 +130,31 @@ export const resolveBackgroundFiles = Effect.fn('resolveBackgroundFiles')(functi
  * @param tokens - The resolved tokens.
  */
 function fileLayers(tokens: BrandTokens): FileLayer[] {
-  return Object.values(tokens.surfaces).flatMap((surface) =>
-    surface.layers.flatMap((layer, index) =>
-      layer.type === 'gradient'
-        ? []
-        : [{ path: `color.surfaces.${surface.name}.background[${index}]`, layer }],
+  const surfaceLayers = Object.values(tokens.surfaces).flatMap((surface) =>
+    namedLayers(surface.layers, `color.surfaces.${surface.name}.background`),
+  );
+  const layoutLayers = tokens.layouts.flatMap((layout, index) =>
+    Object.entries(layout.layers).flatMap(([surface, layers]) =>
+      namedLayers(
+        layers,
+        surface === ALL_SURFACES_KEY
+          ? `layouts[${index}].background`
+          : `layouts[${index}].background.${surface}`,
+      ),
     ),
+  );
+  return [...surfaceLayers, ...layoutLayers];
+}
+
+/**
+ * The layers of one list that name a file, with their paths.
+ *
+ * @param layers - The resolved layers.
+ * @param path - The list's path, such as `color.surfaces.photo.background`.
+ */
+function namedLayers(layers: readonly BackgroundLayerTokens[], path: string): FileLayer[] {
+  return layers.flatMap((layer, index) =>
+    layer.type === 'gradient' ? [] : [{ path: `${path}[${index}]`, layer }],
   );
 }
 

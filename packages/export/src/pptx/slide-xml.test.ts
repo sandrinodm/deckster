@@ -23,6 +23,8 @@ const TITLE = titleNode(10, 'Why Eastgate');
 function layout(): LayoutSpec {
   return {
     name: 'content',
+    label: null,
+    art: null,
     type: 'content',
     placeholders: [
       {

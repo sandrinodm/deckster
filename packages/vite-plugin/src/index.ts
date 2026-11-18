@@ -12,6 +12,7 @@ export {
   loadLayoutCatalog,
   type CatalogLayout,
   type LayoutCatalogIndex,
+  type LayoutCatalogOptions,
 } from '#layouts/load-layout-catalog.ts';
 export {
   DEFAULT_RUNTIME_PLUGINS,
@@ -25,5 +26,10 @@ export { deckViteConfig } from '#vite-config.ts';
 export { APPS_DIR, APP_ENTRY_FILE, discoverApps, type AppLocation } from '#apps/discover-apps.ts';
 export type { MdxWarning } from '#slides/compile-mdx.ts';
 export { validateFrontmatter, type ValidFrontmatter } from '#slides/frontmatter.ts';
-export { slideMetaReader, type SlideMetaReader } from '#slides/slide-meta.ts';
+export { readSlideLayout } from '#slides/read-slide-layout.ts';
+export {
+  slideMetaReader,
+  type SlideMetaOptions,
+  type SlideMetaReader,
+} from '#slides/slide-meta.ts';
 export { refuseStylesheetCode } from '#deck-css-guard.ts';

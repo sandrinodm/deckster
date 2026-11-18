@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" width="1080" height="1350">
+  <!-- An illustrated street of young plane trees, standing in for a photograph. -->
+  <rect width="1080" height="1350" fill="#e6dcc8"/>
+  <rect y="0" width="1080" height="520" fill="#f3ecdf"/>
+  <path d="M0 520 L1080 470 L1080 1350 L0 1350Z" fill="#cdbfa5"/>
+  <path d="M0 700 L1080 560 L1080 640 L0 800Z" fill="#8c7e69"/>
+  <path d="M0 880 L1080 700 L1080 720 L0 910Z" fill="#f3ecdf"/>
+  <g fill="#574d40">
+    <rect x="40" y="260" width="180" height="260"/><rect x="230" y="200" width="150" height="320"/>
+    <rect x="400" y="300" width="210" height="220"/><rect x="640" y="230" width="170" height="270"/>
+    <rect x="830" y="290" width="250" height="190"/>
+  </g>
+  <g fill="#a9bdd6" opacity="0.8">
+    <rect x="62" y="290" width="26" height="36"/><rect x="104" y="290" width="26" height="36"/><rect x="146" y="290" width="26" height="36"/>
+    <rect x="62" y="350" width="26" height="36"/><rect x="104" y="350" width="26" height="36"/><rect x="146" y="350" width="26" height="36"/>
+    <rect x="250" y="240" width="26" height="36"/><rect x="298" y="240" width="26" height="36"/>
+    <rect x="250" y="310" width="26" height="36"/><rect x="298" y="310" width="26" height="36"/>
+    <rect x="660" y="270" width="26" height="36"/><rect x="710" y="270" width="26" height="36"/><rect x="760" y="270" width="26" height="36"/>
+  </g>
+  <g>
+    <g fill="#40382e"><rect x="168" y="560" width="22" height="330"/><rect x="498" y="600" width="18" height="270"/><rect x="760" y="610" width="14" height="210"/></g>
+    <g fill="#3c7757"><ellipse cx="179" cy="470" rx="190" ry="200"/><ellipse cx="507" cy="510" rx="150" ry="160"/><ellipse cx="767" cy="540" rx="110" ry="120"/></g>
+    <g fill="#2c5e44" opacity="0.8"><ellipse cx="130" cy="500" rx="110" ry="120"/><ellipse cx="470" cy="540" rx="80" ry="90"/><ellipse cx="740" cy="565" rx="60" ry="70"/></g>
+    <g fill="#5a9472" opacity="0.8"><ellipse cx="240" cy="420" rx="90" ry="90"/><ellipse cx="545" cy="460" rx="70" ry="70"/></g>
+  </g>
+  <g fill="#c0603a"><rect x="880" y="740" width="150" height="70" rx="12"/><circle cx="915" cy="815" r="18"/><circle cx="995" cy="815" r="18"/></g>
+</svg>

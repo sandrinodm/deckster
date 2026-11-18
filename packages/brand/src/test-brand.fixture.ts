@@ -1,4 +1,5 @@
 import type { BrandInput } from '#schema/brand-schema.ts';
+import type { BrandLayoutSpecInput } from '#schema/layout-schema.ts';
 
 /**
  * A small valid brand for tests: system fonts, one gray scale and a blue accent, only the default
@@ -122,3 +123,72 @@ export function testBrand(overrides: Readonly<Record<string, unknown>> = {}): un
 
   return copy;
 }
+
+/**
+ * The art file the fixture cover layout names, relative to the brand folder.
+ */
+export const FIXTURE_ART_FILE = 'backgrounds/cover-mark.svg';
+
+/**
+ * Three layouts for tests, valid against {@link TEST_BRAND} and the kit catalog: a cover over the
+ * `title` layout with art keyed by surface, a photo over `image` with a media region, and two
+ * columns of text over `content`.
+ */
+export const TEST_LAYOUTS = [
+  {
+    name: 'fixture-cover',
+    label: 'Cover',
+    description: 'A cover with a mark, the title low on the left and a byline.',
+    fallback: 'title',
+    surface: 'inverse',
+    title: { box: [120, 380, 1100, 320], type: 'display', color: 'fg' },
+    regions: [
+      { bind: { slot: 'body' }, box: [120, 720, 900, 120], type: 'lead' },
+      { bind: { field: 'byline' }, box: [120, 880, 800, 40] },
+    ],
+    background: {
+      default: [
+        {
+          type: 'placed',
+          file: FIXTURE_ART_FILE,
+          aspect: 1,
+          anchor: 'top-right',
+          width: 240,
+        },
+      ],
+      inverse: [
+        {
+          type: 'placed',
+          file: FIXTURE_ART_FILE,
+          aspect: 1,
+          anchor: 'bottom-right',
+          width: 320,
+          opacity: 0.5,
+        },
+      ],
+    },
+    chrome: { logo: false, pageNumber: false },
+  },
+  {
+    name: 'fixture-photo',
+    description: 'A photo across the whole slide with the title and a caption over it.',
+    fallback: 'image',
+    title: { box: [120, 700, 1100, 200] },
+    regions: [
+      { bind: { slot: 'media' }, box: [0, 0, 1920, 1080], kind: 'media', treatment: 'plain' },
+      { bind: { slot: 'caption' }, box: [120, 940, 800, 60], type: 'caption', color: 'accent-fg' },
+    ],
+    layers: 'over',
+    budget: { caption: { maxWords: 10 } },
+  },
+  {
+    name: 'fixture-two-up',
+    description: 'The title across the top and two equal columns of text under it.',
+    fallback: 'content',
+    title: { box: [120, 80, 1680, 140], anchor: 'start' },
+    regions: [
+      { bind: { slot: 'body' }, box: [120, 260, 800, 640] },
+      { bind: { slot: 'aside' }, box: [1000, 260, 800, 640], align: 'end' },
+    ],
+  },
+] as const satisfies readonly BrandLayoutSpecInput[];

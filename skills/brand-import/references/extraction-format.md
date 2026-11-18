@@ -12,6 +12,7 @@ An extraction is a folder:
   pages/contact-sheet.png  all pages in one image, labelled
   assets/                  media, images, chrome (repeated-region crops), logos, charts
   source.pdf               PPTX only: the intermediate PDF, when one was made
+  layouts/                 PPTX and POTX: <key>.svg (a layout's art), <key>.png, ref-<key>.png (filled reference), art-sheet.png, reference-sheet.png; keys are m1-slideLayout2 and so on
 ```
 
 All paths inside the JSON are relative to the folder. All bounding boxes are `[x, y, w, h]` as fractions of the page, origin top-left. Colours are `#RRGGBB` upper case.
@@ -56,13 +57,24 @@ All paths inside the JSON are relative to the folder. All bounding boxes are `[x
 - `layout_hints[]`: cheap guesses (`chart`, `table`, `stats`, `big-number`, `quote`, `code`, `title-or-section-or-statement`, `split-with-image`, `full-bleed-image`). They label the contact sheet. They are prompts for looking, not classifications.
 - PPTX adds `layout: {name, type}`; web adds `url`, `fold_image`.
 
-## `layouts[]` (PPTX)
+## `layouts[]` (PPTX, POTX)
 
-`{name, type, master, background, placeholders[{type, idx, bbox, text_style}], pictures[], used_by[]}`, most used first. `type` is the OOXML layout type (`title`, `obj`, `secHead`, `twoObj`, `titleOnly`, `blank`...). `masters[]` carry `color_map`, `text_styles` (title, body, other by level) and `pictures`.
+One entry per slide layout under every master, used or not (most used first, then template order):
+
+`{key, file_key, name, type, part, master, master_index, unused, used_by[], background, color_map_override, show_master_shapes, placeholders[], shapes[], fixed_text[], pictures[], art}`
+
+- `key` is `m<master index>/slideLayout<n>`, unique; `name` is not (two masters may share one). `type` is the OOXML layout type (`title`, `obj`, `secHead`, `twoObj`, `titleOnly`, `picTx`, `blank`...). `color_map_override` is the layout's `clrMapOvr` (an inverted section header), `background` is resolved through it.
+- `placeholders[]`: `{type, idx, type_declared, idx_declared, name, sz, orient, kind (sp, pic, graphicFrame), in_group[], z, has_custom_prompt, prompt, bbox, geometry_from (layout or master), body {anchor, insets, autofit}, text_style (level 1), text_styles {lvl1..lvl5}}`. A level style is the inherited one (master text styles, master placeholder, layout placeholder): `{size_pt, size_canvas_px, family, bold, color, align, ...}`. `prompt` is the template's custom prompt text, only when `has_custom_prompt`. Footer, date and page-number placeholders (`ftr`, `dt`, `sldNum`) are listed with the rest. A placeholder inside a group has `in_group` (the group names) and a `bbox` in slide coordinates; PowerPoint does not draw it on slides.
+- `shapes[]`: the decoration, in drawing order, groups flattened: `{kind, name, z, bbox, geometry, fill, line, rotation_deg, groups, media, text, from (layout or master)}`; fill and line keep their theme references. `fixed_text[]`: `{text, family, size_pt, bold, color, bbox, from}`, text typed into the decoration (a stamp). In the art SVG that text is outlined in the renderer's font.
+- `art` (when the probe ran): `{svg, has_art, background, png, reference, page_size_pt}`. `svg` is null when nothing is drawn beyond the background; `background` is the hex the renderer drew behind the layout (the surface the layout needs); `reference` is the filled render the specimen is compared with.
+
+`masters[]` carry `index`, `color_map`, `text_styles` (title, body, other, levels 1 to 5), `placeholders`, `pictures`, `shapes` and `fixed_text`.
+
+`source.generator` is `{application, app_version, deckster}` from `docProps/app.xml`; `deckster: true` means the deckster export wrote the package and its layouts are not imported. `source.is_template` is true for `.potx` and `.potm`.
 
 ## `assets`
 
-- PPTX: `images[]` with `file`, placements, `on_masters`, `on_layouts`, `on_slides`, `logo_candidate_score`.
+- PPTX: `images[]` with `file`, placements, `on_masters`, `on_layouts`, `on_slides`, `logo_candidate_score`; `layout_renders` `{count, contact_sheet (the art), reference_sheet}`. For a template with no slides `contact_sheet` is the reference sheet.
 - PDF: `images[]` (embedded rasters) and `chrome[]`: regions repeated across pages, each with `png`, `svg`, `bbox`, `placement`, `pages`, `logo_candidate_score`.
 - Web: `logos[]` (`file`, `png`, `why`, `score`, `background`, `uses_current_color`, and `blocked` with the reason when the image was refused) and `icons[]` (favicons, likewise). SVG files here are already sanitised.
 

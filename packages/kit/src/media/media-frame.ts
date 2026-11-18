@@ -14,6 +14,11 @@ export type MediaFrame = {
    * `false` for a frame that bleeds to the slide edges, whose corners are the slide's.
    */
   rounded: boolean;
+
+  /**
+   * How pictures that name no `fit` of their own fill the frame; `cover` when left out.
+   */
+  fit?: 'cover' | 'contain' | undefined;
 };
 
 /**

@@ -27,6 +27,16 @@ HEADER = (
     "export default defineBrand("
 )
 TAIL = ");\n"
+LAYOUTS_HEADER = (
+    "import { defineBrandLayouts } from '@deckster/brand';\n"
+    "\n"
+    "/**\n"
+    " * Imported with the brand-import skill from the source template's slide layouts. The art files are in\n"
+    " * layouts/; the choices behind each layout are in import-notes.json. Regenerate it with the skill's\n"
+    " * emit_brand.py while the import is open, instead of editing it by hand.\n"
+    " */\n"
+    "export default defineBrandLayouts("
+)
 
 _BARE_KEY = re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*\Z")
 _NUMBER_KEY = re.compile(r"(?:0|[1-9][0-9]*)\Z")
@@ -154,6 +164,11 @@ def normalise(value):
 def module_text(value) -> str:
     """The whole `brand.ts` for a brand value."""
     return HEADER + ts(value) + TAIL
+
+
+def layouts_module_text(value: list) -> str:
+    """The whole `layouts.ts` for a list of layout specs."""
+    return LAYOUTS_HEADER + ts(value) + TAIL
 
 
 class _Reader:
@@ -284,19 +299,20 @@ class _Reader:
                 self.fail("something between two elements")
 
 
-def read_module(text: str):
-    """The value of a `brand.ts` written by `module_text()`, read without running it.
+def read_module(text: str, header: str = HEADER, kind: type = dict):
+    """The value of a `brand.ts` written by `module_text()` (or, with LAYOUTS_HEADER and `kind=list`, a
+    `layouts.ts` written by `layouts_module_text()`), read without running it.
 
     Raises NotData for anything else: another import, a statement, a comment that is not the fixed
     header, a call, a template string, an identifier used as a value.
     """
-    if not text.startswith(HEADER):
+    if not text.startswith(header):
         raise NotData("the file does not start with the fixed import and comment")
     reader = _Reader(text)
-    reader.pos = len(HEADER)
+    reader.pos = len(header)
     value = reader.value()
-    if not isinstance(value, dict):
-        raise NotData("the default export is not an object literal")
+    if not isinstance(value, kind):
+        raise NotData("the default export is not " + ("an object literal" if kind is dict else "an array literal"))
     if text[reader.pos:] != TAIL:
         raise NotData(f"something follows the literal at offset {reader.pos}")
     return value

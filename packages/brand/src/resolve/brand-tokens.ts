@@ -18,6 +18,7 @@ import type {
   LabelStyle,
   LabelType,
 } from '#schema/diagram-schema.ts';
+import type { LayoutBox } from '#schema/layout-schema.ts';
 import type { TransitionKind } from '#schema/presentation-schema.ts';
 import type { Corner } from '#schema/primitives.ts';
 import type { ShadowName } from '#schema/shape-schema.ts';
@@ -117,6 +118,12 @@ export type BrandTokens = {
    * surface, in each surface's `diagramCards`; the theme colors are in each surface's `diagram`.
    */
   diagram: DiagramTokens;
+
+  /**
+   * The layouts the brand brings from `layouts.ts`, with every default filled in; empty when the
+   * brand has none.
+   */
+  layouts: readonly BrandLayoutTokens[];
 };
 
 /**
@@ -1101,4 +1108,215 @@ export type CardSurfaceTokens = {
    * same layers, spread kept; each `none` for a card without a shadow.
    */
   shadow: { layers: readonly ShadowLayerTokens[]; filter: string; boxShadow: string };
+};
+
+/**
+ * What a layout region shows: a slot of the fallback layout, or a frontmatter field.
+ */
+export type BrandLayoutBinding = { slot: string } | { field: string };
+
+/**
+ * One placed region of a brand layout, with its defaults filled in.
+ */
+export type BrandLayoutRegionTokens = {
+  /**
+   * The slot or frontmatter field it shows.
+   */
+  bind: BrandLayoutBinding;
+
+  /**
+   * `[x, y, width, height]` in canvas pixels.
+   */
+  box: LayoutBox;
+
+  /**
+   * `text` by default; a field binding is always `text`.
+   */
+  kind: 'text' | 'media' | 'content';
+
+  /**
+   * The type step of a text region: `body` for a slot and `label` for a field by default; nothing
+   * for other kinds.
+   */
+  type: TypeStep | undefined;
+
+  /**
+   * Horizontal alignment of the content in the box.
+   */
+  align: 'start' | 'center' | 'end';
+
+  /**
+   * Vertical placement of the content in the box.
+   */
+  anchor: 'start' | 'center' | 'end';
+
+  /**
+   * The role color of a text region, if the layout sets one.
+   */
+  color: Role | undefined;
+
+  /**
+   * How a media region fills its box: `cover` by default; nothing for other kinds.
+   */
+  fit: 'cover' | 'contain' | undefined;
+
+  /**
+   * The image treatment of a media region, if the layout names one.
+   */
+  treatment: string | undefined;
+};
+
+/**
+ * Where the title sits and how it looks, with defaults filled in.
+ */
+export type BrandLayoutTitleTokens = {
+  /**
+   * `[x, y, width, height]` in canvas pixels.
+   */
+  box: LayoutBox;
+
+  /**
+   * The type step; `title` by default.
+   */
+  type: TypeStep;
+
+  /**
+   * Horizontal alignment.
+   */
+  align: 'start' | 'center' | 'end';
+
+  /**
+   * Vertical placement; `end` by default.
+   */
+  anchor: 'start' | 'center' | 'end';
+
+  /**
+   * The role color, if the layout sets one.
+   */
+  color: Role | undefined;
+};
+
+/**
+ * Which chrome a layout hides or moves; anything left out stays as the brand sets it.
+ */
+export type BrandLayoutChromeTokens = {
+  /**
+   * `false` hides the page number; a box places it there.
+   */
+  pageNumber?: boolean | LayoutBox;
+
+  /**
+   * `false` hides the footer.
+   */
+  footer?: boolean;
+
+  /**
+   * `false` hides the progress bar.
+   */
+  progress?: boolean;
+
+  /**
+   * `false` hides the logo, for art that carries it.
+   */
+  logo?: boolean;
+};
+
+/**
+ * How much a slot holds before the slide is too full.
+ */
+export type BrandLayoutSlotBudget = {
+  /**
+   * The most words.
+   */
+  maxWords?: number;
+
+  /**
+   * The most bullets.
+   */
+  maxBullets?: number;
+
+  /**
+   * The most lines.
+   */
+  maxLines?: number;
+};
+
+/**
+ * A layout a brand brings, decoded with every default filled in. Its `background` is resolved into
+ * `layers`.
+ */
+export type BrandLayoutTokens = {
+  /**
+   * The layout name, as a slide's `layout:` names it.
+   */
+  name: string;
+
+  /**
+   * The name in the source template, if the layout came from one.
+   */
+  label: string | undefined;
+
+  /**
+   * What the layout is for.
+   */
+  description: string;
+
+  /**
+   * The kit layout a slide on this layout is also valid on, used when another brand is active.
+   */
+  fallback: string;
+
+  /**
+   * The surface the layout uses by default, if it names one.
+   */
+  surface: string | undefined;
+
+  /**
+   * The title's place, or `false` when the layout has no title.
+   */
+  title: BrandLayoutTitleTokens | false;
+
+  /**
+   * The placed regions.
+   */
+  regions: readonly BrandLayoutRegionTokens[];
+
+  /**
+   * The layout's art as resolved layers, by surface name; `*` holds layers written for every
+   * surface. Empty when the layout has no art of its own. Read it with `layoutLayers`.
+   */
+  layers: Readonly<Record<string, readonly BackgroundLayerTokens[]>>;
+
+  /**
+   * `replace` drops the surface's own layers under the layout's; `over` keeps them underneath.
+   */
+  layersMode: 'replace' | 'over';
+
+  /**
+   * Fallback fields the layout accepts in frontmatter but does not draw, such as `treatment`; empty
+   * by default.
+   */
+  fields: readonly string[];
+
+  /**
+   * The chrome the layout hides or moves.
+   */
+  chrome: BrandLayoutChromeTokens;
+
+  /**
+   * Per-slot budgets that override the fallback's.
+   */
+  budget: Readonly<Record<string, BrandLayoutSlotBudget>>;
+
+  /**
+   * Where the layout came from in the source template, if it did.
+   */
+  source:
+    | {
+        file: string;
+        master?: number;
+        layout?: string;
+        placeholders?: Readonly<Record<string, number>>;
+      }
+    | undefined;
 };

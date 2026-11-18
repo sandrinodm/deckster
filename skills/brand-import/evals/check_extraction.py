@@ -132,6 +132,48 @@ def main() -> None:
             ok = px.get("kind") == "gradient" and C.delta_e(px["stops"][0]["hex"], V["gradient"]["stops"][0]) < 1.5 and C.delta_e(px["stops"][-1]["hex"], V["gradient"]["stops"][1]) < 1.5
             check("pptx", "rendered gradient matches declared stops", ok, px)
 
+
+    # ------------------------------------------------------------------ POTX: every layout of a slideless template
+    potx = files / "layout-template.potx"
+    if potx.is_file():
+        code, log = run("extract_pptx.py", str(potx), "--out", str(work / "potx"), *render_args)
+        check("potx", "extractor runs on a .potx", code == 0, log if code else "")
+        if code == 0:
+            ex = json.loads((work / "potx/extraction.json").read_text())
+            lays = ex["layouts"]
+            by = {l["key"]: l for l in lays}
+            check("potx", "13 layouts over 2 masters, every one listed although no slide uses it", len(lays) == 13 and {l["master_index"] for l in lays} == {1, 2} and all(l["unused"] for l in lays), len(lays))
+            check("potx", "layouts keyed by master and part, keys unique", len(by) == 13 and "m1/slideLayout2" in by and "m2/slideLayout11" in by, sorted(by)[:4])
+            names = [l["name"] for l in lays]
+            check("potx", "same-named layouts on both masters stay separate", names.count("Title Slide") == 2 and names.count("Title and Content") == 2 and names.count("Section Header") == 2, names)
+            body = next((p for p in by["m1/slideLayout2"]["placeholders"] if p["type"] == "body"), {})
+            check("potx", "Title and Content body box exact", body.get("bbox") == [0.08, 0.28, 0.84, 0.58], body.get("bbox"))
+            check("potx", "placeholder level 1 size inherited from the master (28 pt = 56 canvas px)", body.get("text_styles", {}).get("lvl1", {}).get("size_canvas_px") == 56.0 and "lvl5" in body.get("text_styles", {}), body.get("text_styles", {}).get("lvl1"))
+            check("potx", "ctrTitle size from its own list style (54 pt, anchored bottom)", next((p["text_style"].get("size_pt") for p in by["m1/slideLayout1"]["placeholders"] if p["type"] == "ctrTitle"), None) == 54.0, None)
+            grouped = [p for p in by["m1/slideLayout8"]["placeholders"] if p["in_group"]]
+            check("potx", "a placeholder inside a group is found, in the group's slide coordinates", len(grouped) == 1 and grouped[0]["bbox"] == [0.1, 0.3, 0.8, 0.54], grouped[:1])
+            prompts = [p["prompt"] for p in by["m1/slideLayout7"]["placeholders"] if p["has_custom_prompt"]]
+            check("potx", "custom prompts kept", prompts == ["Describe the key result in one sentence", "Add supporting evidence here"], prompts)
+            check("potx", "picture placeholder kept with its idx", any(p["type"] == "pic" and p["idx"] == "1" for p in by["m1/slideLayout5"]["placeholders"]))
+            sec = by["m1/slideLayout4"]
+            check("potx", "colour-map override and own background of Section Header", bool(sec["color_map_override"]) and sec["color_map_override"].get("bg1") == "dk1" and (sec["background"] or {}).get("hex") == "#0B2545", sec["background"])
+            check("potx", "decoration and fixed text of Decorated Confidential", [t["text"] for t in by["m1/slideLayout6"]["fixed_text"]] == ["Confidential"] and len(by["m1/slideLayout6"]["shapes"]) >= 5, len(by["m1/slideLayout6"]["shapes"]))
+            check("potx", "not a deckster package", ex["source"]["generator"]["deckster"] is False and ex["source"]["is_template"] is True)
+            arts = [l for l in lays if (l.get("art") or {}).get("has_art")]
+            if not (work / "potx/layouts").is_dir():
+                check("potx", "layout art rendered (probe)", None, "no renderer available")
+            else:
+                check("potx", "layout art: SVG for the 6 decorated layouts, none for the plain ones", len(arts) == 6 and all((work / "potx" / l["art"]["svg"]).is_file() for l in arts), len(arts))
+                check("potx", "a reference render per layout and a contact sheet, so the no-images rule does not block", all((l.get("art") or {}).get("reference") for l in lays) and (work / "potx/layouts/reference-sheet.png").is_file())
+                navy = by["m1/slideLayout4"]["art"]
+                check("potx", "Section Header's own navy background is kept in a variant of its art (a layout whose background no surface has)", navy.get("background") == "#0B2545" and bool(navy.get("svg_with_background")) and "#0b2545" in (work / "potx" / navy["svg_with_background"]).read_text().lower(), navy)
+                check("potx", "rendered background colour of the dark master", by["m2/slideLayout11"]["art"]["background"] == "#0E1116", by["m2/slideLayout11"]["art"]["background"])
+        for fixture in ("layout-template-deckster.pptx", "layout-template-deckster-old.pptx"):
+            code, log = run("extract_pptx.py", str(files / fixture), "--out", str(work / ("potx-" + fixture)), "--no-render")
+            if code == 0:
+                ex = json.loads((work / ("potx-" + fixture) / "extraction.json").read_text())
+                check("potx", f"a package written by the deckster export is detected ({fixture})", ex["source"]["generator"]["deckster"] is True)
+
     # ------------------------------------------------------------------ web
     code, log = run("extract_web.py", str(files / "halcyon-site/index.html"), "--out", str(work / "web"), "--font-metadata")
     check("web", "extractor runs", code == 0, log if code else "")

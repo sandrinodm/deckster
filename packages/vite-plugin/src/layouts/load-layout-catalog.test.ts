@@ -3,6 +3,8 @@ import { describe, expect, it, layer } from '@effect/vitest';
 import { Effect, FileSystem, Schema } from 'effect';
 import path from 'node:path';
 
+import { loadDeckBrand } from '#brand/load-deck-brand.ts';
+import { FIXTURE_WORKSPACE } from '#layouts/brand-workspace.fixture.ts';
 import { checkContract } from '#layouts/check-contract.ts';
 import { loadLayoutCatalog } from '#layouts/load-layout-catalog.ts';
 import { splitContract } from '#layouts/test-catalog.fixture.ts';
@@ -13,6 +15,50 @@ layer(NodeFileSystem.layer)('loadLayoutCatalog', (it) => {
       const catalog = yield* loadLayoutCatalog();
       expect(catalog.get('default')?.source).toBe('@deckster/kit');
       expect(Object.keys(catalog.get('default')?.contract.slots ?? {})).toEqual(['body']);
+    }),
+  );
+
+  it.effect('appends the brand layouts after the kit catalog, from the brand source', () =>
+    Effect.gen(function* () {
+      const { tokens, layoutsFile } = yield* loadDeckBrand(FIXTURE_WORKSPACE, 'fx-brand');
+      const catalog = yield* loadLayoutCatalog(undefined, { brand: tokens, layoutsFile });
+      const names = [...catalog.keys()];
+      expect(names.at(-1)).toBe('fx-cover');
+      expect(catalog.get('fx-cover')?.source).toBe('brand:fx-brand');
+      expect(catalog.get('title')?.source).toBe('@deckster/kit');
+      expect(Object.keys(catalog.get('fx-cover')?.contract.slots ?? {})).toEqual(['body']);
+    }),
+  );
+
+  it.effect('loads no brand layouts without a brand', () =>
+    Effect.gen(function* () {
+      const catalog = yield* loadLayoutCatalog();
+      expect(catalog.has('fx-cover')).toBe(false);
+    }),
+  );
+
+  it.effect('rejects a brand layout named like a kit layout, naming the brand file', () =>
+    Effect.gen(function* () {
+      const { tokens, layoutsFile } = yield* loadDeckBrand(FIXTURE_WORKSPACE, 'fx-brand');
+      const [cover] = tokens.layouts;
+      const clashing = { ...tokens, layouts: [{ ...cover!, name: 'title' }] };
+      const error = yield* Effect.flip(
+        loadLayoutCatalog(undefined, { brand: clashing, layoutsFile }),
+      );
+      expect(error.message).toContain('Invalid brand layouts in brands/fx-brand/layouts.ts:');
+      expect(error.id).toBe(layoutsFile);
+      expect(error.message).toContain('Fix:');
+    }),
+  );
+
+  it.effect('rejects a brand layout whose fallback is not a layout', () =>
+    Effect.gen(function* () {
+      const { tokens } = yield* loadDeckBrand(FIXTURE_WORKSPACE, 'fx-brand');
+      const [cover] = tokens.layouts;
+      const lost = { ...tokens, layouts: [{ ...cover!, fallback: 'no-such-layout' }] };
+      const error = yield* Effect.flip(loadLayoutCatalog(undefined, { brand: lost }));
+      expect(error.problems.length).toBeGreaterThan(0);
+      expect(error.message).toContain('no-such-layout');
     }),
   );
 

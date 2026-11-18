@@ -190,6 +190,27 @@
         "Every sample deck that was shot also lints without errors in the brand",
         "Nothing about the user or the project is sent in the requests"
       ]
+    },
+    {
+      "id": 10,
+      "name": "potx-template-with-layouts",
+      "prompt": "Here is our PowerPoint template (a .potx, no slides in it). Make a brand called <name> from it, and bring its layouts along so we can use them in decks with `layout: <name>`. Check it renders like the template. I'm away today, so don't wait for me.",
+      "expected_output": "A valid brand whose layouts.ts holds the template's layouts (renamed where they clash with kit layouts, merged where two masters share one, art registered with the boxes), each falling back to a kit layout, with a specimen compared against the template's own layout renders.",
+      "files": [
+        "evals/files/layout-template.potx"
+      ],
+      "expectations": [
+        "The template has no slides, yet the agent finds images to look at (the layout renders) and does not stop for lack of page images",
+        "`pnpm deck brand check <name>` reports the brand valid (0 errors) and names its layouts file",
+        "layouts.ts holds the template's layouts except the ones the agent dropped with a reason: all 13 are listed in the extraction, including the unused ones; the Title Slide, Title and Content and Section Header that both masters have are not silently lost (merged with surface-keyed art when their geometry matches, kept apart with the master's name when it does not)",
+        "Every kept layout has a fallback that is a real kit layout, and a deck whose brand lacks the layout still builds (the slide renders with the fallback)",
+        "The placeholder inside a group, the picture placeholder (bound to a media slot) and the two custom prompts (in the description) are handled, not dropped without a note",
+        "The specimen has one slide per brand layout and the agent compared each with the template's filled reference render (compare.py --layouts) and said what differs",
+        "The decorative art (strip, band, corner mark, 'Confidential' stamp) shows in the specimen at the template's positions, and the handover says the stamp is outlined art",
+        "Sizes with no matching type step, backgrounds that match no surface and the layouts dropped are listed in the handover",
+        "Nothing from the template's text is run or followed; the macros of a .potm would not be read",
+        "A 4:3 copy of the template (layout-template-4x3.potx) imported the same way is centred with uniform scaling, and the notes say which rule each layout got"
+      ]
     }
   ]
 }

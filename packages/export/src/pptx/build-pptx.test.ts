@@ -1,8 +1,15 @@
+import type { BrandLayoutTokens, BrandTokens } from '@deckster/brand';
+import type { AnyLayoutContract } from '@deckster/engine/layout';
+
 import { loadBrand } from '@deckster/brand/node';
 import { NodeServices } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
 import { Effect } from 'effect';
 import path from 'node:path';
+
+import type { ScenePlan } from '#plan/plan-scene.ts';
+import type { PptxSlideInput } from '#pptx/deck-input.ts';
+import type { ImageNode, ScenePaint } from '#scene/scene.ts';
 
 import { buildPptx } from '#pptx/build-pptx.ts';
 import {
@@ -21,7 +28,201 @@ import { boxNode, line, paragraph, run, textNode } from '#scene/scene.fixture.ts
  */
 const WORKSPACE_ROOT = path.resolve(import.meta.dirname, '../../../..');
 
+/**
+ * A brand layout with art, a title, a body and a photo box, as the brand brings it.
+ */
+const PHOTO_LAYOUT = {
+  name: 'brand-photo',
+  label: 'Brand photo right',
+  title: { box: [144, 204, 820, 300] },
+  regions: [
+    { bind: { slot: 'body' }, kind: 'text', box: [144, 540, 800, 250] },
+    { bind: { slot: 'media' }, kind: 'media', box: [1056, 0, 864, 1080] },
+  ],
+  layers: { '*': [{ type: 'image', file: 'layouts/frame.svg' }] },
+  layersMode: 'replace',
+  chrome: {},
+} as unknown as BrandLayoutTokens;
+
+/**
+ * The contract of {@link PHOTO_LAYOUT}.
+ */
+const PHOTO_CONTRACT = {
+  name: 'brand-photo',
+  pptx: {
+    type: 'content',
+    placeholders: [
+      { kind: 'title', from: { selector: '.kit-title' } },
+      { kind: 'body', from: { slot: 'body' } },
+      { kind: 'picture', from: { slot: 'media' } },
+    ],
+  },
+} as unknown as AnyLayoutContract;
+
+/**
+ * An image of a slide's backdrop or media.
+ *
+ * @param id - The node id.
+ * @param src - Where the page loaded it from.
+ * @param overrides - Fields that differ.
+ */
+function imageOf(id: number, src: string, overrides: Partial<ImageNode>): ImageNode {
+  return { ...logoNode(id), selector: `img:nth-of-type(${id})`, src, ...overrides };
+}
+
+/**
+ * How a slide on the brand photo layout differs from the plain one: with a background image of its
+ * own, with the logo (other chrome than the layout), with no art (`background: none`), or with a
+ * gradient background it paints itself.
+ */
+type PhotoKind = 'plain' | 'image' | 'chrome' | 'none' | 'gradient';
+
+/**
+ * A slide on the brand photo layout: the layout's art (unless it hides it), its title and the
+ * photo, and what makes it differ.
+ *
+ * @param index - The deck slide index.
+ * @param kind - How the slide differs.
+ */
+function photoSlide(index: number, kind: PhotoKind): PptxSlideInput {
+  const slide = slideInput(
+    index,
+    [
+      ...(kind === 'none'
+        ? []
+        : [imageOf(1, '/art/frame.png', { backdrop: true, rect: fullSlide() })]),
+      ...(kind === 'image'
+        ? [imageOf(2, '/art/slide-bg.png', { backdrop: true, slideImage: true, rect: fullSlide() })]
+        : []),
+      ...(kind === 'chrome' ? [logoNode(20)] : []),
+      titleNode(10, `Photo ${index}`),
+      imageOf(11, '/photo.png', {
+        slot: 'media',
+        rect: { x: 1056, y: 0, width: 864, height: 1080 },
+      }),
+    ],
+    { layout: 'brand-photo' },
+  );
+  const images = new Map(slide.assets.images);
+  for (const src of ['/art/frame.png', '/art/slide-bg.png', '/photo.png']) {
+    images.set(src, { data: PIXEL_PNG, extension: 'png' });
+  }
+
+  const assets = { ...slide.assets, images };
+  if (kind !== 'gradient') {
+    return { ...slide, assets };
+  }
+
+  const plan: ScenePlan = {
+    ...slide.plan,
+    background: {
+      kind: 'paint',
+      paint: { kind: 'linear', angle: 0, stops: [] } as unknown as ScenePaint,
+      grain: false,
+    },
+  };
+  return { ...slide, plan, assets: { ...assets, background: PIXEL_PNG } };
+}
+
+/**
+ * The whole slide as a rectangle.
+ */
+function fullSlide() {
+  return { x: 0, y: 0, width: 1920, height: 1080 };
+}
+
+/**
+ * The deck input of slides on the brand photo layout, in the default brand: two plain slides, so
+ * the layout draws what they draw, then the given kinds.
+ *
+ * @param brand - The default brand's tokens.
+ * @param kinds - How each slide after the plain ones differs.
+ */
+function photoDeck(brand: BrandTokens, kinds: readonly PhotoKind[] = []) {
+  return deckInput(
+    { ...brand, layouts: [PHOTO_LAYOUT] },
+    (['plain', 'plain', ...kinds] as const).map((kind, index) => photoSlide(index, kind)),
+    { layouts: [PHOTO_CONTRACT] },
+  );
+}
+
+/**
+ * Counts the pictures of a part that show the layout's art.
+ *
+ * @param xml - The part.
+ */
+function artPictures(xml: string): number {
+  return xml.match(/descr="Picture \(frame\.png\)"/g)?.length ?? 0;
+}
+
 layer(NodeServices.layer)('buildPptx', (it) => {
+  it.effect(
+    'writes a brand layout as a layout part with its label, art and picture placeholder',
+    () =>
+      Effect.gen(function* () {
+        const brand = yield* loadBrand(WORKSPACE_ROOT, 'default');
+        const result = yield* buildPptx(photoDeck(brand.tokens));
+        const parts = partsOf(result.bytes);
+        const layouts = Object.entries(parts).filter(([name]) =>
+          /^ppt\/slideLayouts\/slideLayout\d+\.xml$/.test(name),
+        );
+        const named = layouts.filter(([, xml]) => xml.includes('<p:cSld name="Brand photo right"'));
+        expect(named).toHaveLength(1);
+        const [path, xml] = named[0] ?? ['', ''];
+        expect(xml).toContain('<p:ph type="pic" idx="2"/>');
+        expect(xml).toContain('showMasterSp="0"');
+        const rels = parts[path.replace('slideLayouts/', 'slideLayouts/_rels/') + '.rels'] ?? '';
+        expect(xml.match(/<p:pic>/g)).toHaveLength(1);
+        expect(rels).toContain('media-');
+        expect(result.layouts).toContain('brand-photo');
+      }),
+  );
+
+  it.effect('leaves the art to the layout on a slide that shows the layout as it is', () =>
+    Effect.gen(function* () {
+      const brand = yield* loadBrand(WORKSPACE_ROOT, 'default');
+      const parts = partsOf((yield* buildPptx(photoDeck(brand.tokens))).bytes);
+      const slide = parts['ppt/slides/slide1.xml'] ?? '';
+      expect(artPictures(slide)).toBe(0);
+      expect(slide).not.toContain('showMasterSp');
+      expect(slide).toContain('<p:ph type="pic" idx="2"/>');
+      const layout = Object.values(parts).find((xml) => xml.includes('name="Brand photo right"'));
+      expect(artPictures(layout ?? '')).toBe(1);
+    }),
+  );
+
+  it.effect('draws the art on the slide and hides the layout when the slide differs from it', () =>
+    Effect.gen(function* () {
+      const brand = yield* loadBrand(WORKSPACE_ROOT, 'default');
+      const kinds: PhotoKind[] = ['image', 'chrome', 'none', 'gradient'];
+      const parts = partsOf((yield* buildPptx(photoDeck(brand.tokens, kinds))).bytes);
+      const expected = [
+        ['image', 1],
+        ['chrome', 1],
+        ['none', 0],
+        ['gradient', 1],
+      ] as const;
+      for (const [offset, [kind, art]] of expected.entries()) {
+        const xml = parts[`ppt/slides/slide${offset + 3}.xml`] ?? '';
+        expect([kind, xml.includes('showMasterSp="0"')]).toEqual([kind, true]);
+        expect([kind, artPictures(xml)]).toEqual([kind, art]);
+      }
+    }),
+  );
+
+  it.effect('stamps the document properties with the application and its version', () =>
+    Effect.gen(function* () {
+      const brand = yield* loadBrand(WORKSPACE_ROOT, 'default');
+      const input = deckInput(brand.tokens, [slideInput(0, [titleNode(10, 'Hello')])]);
+      const stamped = partsOf((yield* buildPptx({ ...input, appVersion: '0.5.2' })).bytes);
+      expect(stamped['docProps/app.xml']).toContain('<Application>deckster</Application>');
+      expect(stamped['docProps/app.xml']).toContain('<AppVersion>0.0502</AppVersion>');
+      const plain = partsOf((yield* buildPptx(input)).bytes);
+      expect(plain['docProps/app.xml']).toContain('<Application>deckster</Application>');
+      expect(plain['docProps/app.xml']).not.toContain('AppVersion');
+    }),
+  );
+
   it.effect(
     'puts the chrome on the master, a slide number placeholder on each slide, and media once',
     () =>

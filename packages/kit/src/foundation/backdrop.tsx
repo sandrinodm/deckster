@@ -181,17 +181,27 @@ export function placedBox(layer: Extract<BackgroundLayerTokens, { type: 'placed'
 }
 
 /**
+ * Props of {@link Backdrop}.
+ */
+type BackdropProps = {
+  /**
+   * The layers to paint instead of the slide surface's own, such as a brand layout's artwork.
+   */
+  layers?: readonly BackgroundLayerTokens[] | undefined;
+};
+
+/**
  * The background a kit layout paints behind its content: the slide surface's image, pattern and
  * gradient layers from the brand, then the slide's own `background:` image. Decorative to every
  * tool: hidden from screen readers, ignored by the overflow and text rules, though `deck lint`
  * still measures text over its pictures against their pixels. Each layer is marked
  * `data-backdrop-layer` with its index in the surface's list (`slide` for the slide's own image),
- * which exports read.
+ * which exports read. A layout with artwork of its own passes it as `layers`.
  */
-export function Backdrop(): ReactNode {
+export function Backdrop({ layers }: BackdropProps = {}): ReactNode {
   const { brand, surface } = useBrand();
   const { frontmatter, file } = useSlide();
-  const plan = planBackdrop(surface.layers, frontmatter.background, (source) =>
+  const plan = planBackdrop(layers ?? surface.layers, frontmatter.background, (source) =>
     frontmatterAsset(source, file),
   );
   if (plan.layers.length === 0 && plan.image === undefined) {

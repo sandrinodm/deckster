@@ -1,13 +1,18 @@
 import type { Plugin, Rollup, ViteDevServer } from 'vite';
 
-import { onCodeReleased } from '@deckster/brand/node';
+import { onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
 import { devSessionOf, issueDevSession } from '@deckster/comments/dev-session';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { MdxWarning } from '#slides/compile-mdx.ts';
 
-import { brandModuleSource, createActiveBrand, watchBrand } from '#brand/active-brand.ts';
+import {
+  brandLayoutsFiles,
+  brandModuleSource,
+  createActiveBrand,
+  watchBrand,
+} from '#brand/active-brand.ts';
 import {
   RESOLVED_BRAND_ID,
   resolvedBrandCssId,
@@ -34,7 +39,7 @@ import {
 import {
   transformMdxPartial,
   transformMdxSlide,
-  transformTsxSlide,
+  transformTsxSlideMapped,
 } from '#slides/transform-slide.ts';
 import {
   deckModuleCode,
@@ -205,7 +210,7 @@ export function deckPlugin(
   let serving = false;
   let location: Promise<DeckLocation> | undefined;
   let loadedDeck: Promise<LoadedDeck> | undefined;
-  let catalog: Promise<LayoutCatalogIndex> | undefined;
+  let catalog: { brand: LoadedBrand; index: Promise<LayoutCatalogIndex> } | undefined;
 
   /**
    * Finds the deck once and remembers the result, so every hook sees the same location.
@@ -229,20 +234,38 @@ export function deckPlugin(
     return loadedDeck;
   };
 
-  /**
-   * Loads the layout catalogs once.
-   */
-  const layoutCatalog = (): Promise<LayoutCatalogIndex> => {
-    catalog ??= run(loadLayoutCatalog(options.layoutCatalogs ?? DEFAULT_LAYOUT_CATALOGS));
-    return catalog;
-  };
-
   const brand = createActiveBrand({
     workspaceRoot,
     override: options.brand,
     deck: findActiveDeck,
     run,
   });
+
+  /**
+   * Loads the layout catalogs and the active brand's layouts. They are reused until the brand is
+   * read again (a switch, or an edit to its files, including `layouts.ts`), and loaded afresh then;
+   * a failed load is retried on the next call.
+   */
+  const layoutCatalog = async (): Promise<LayoutCatalogIndex> => {
+    const loaded = await brand.load();
+    if (catalog?.brand !== loaded) {
+      const index = run(
+        loadLayoutCatalog(options.layoutCatalogs ?? DEFAULT_LAYOUT_CATALOGS, {
+          brand: loaded.tokens,
+          layoutsFile: loaded.layoutsFile,
+        }),
+      );
+      const entry = { brand: loaded, index };
+      catalog = entry;
+      index.catch(() => {
+        if (catalog === entry) {
+          catalog = undefined;
+        }
+      });
+    }
+
+    return catalog.index;
+  };
 
   /**
    * The resolved id of `virtual:deck/brand.css`, a path in the deck's folder.
@@ -341,17 +364,23 @@ export function deckPlugin(
         return partial === undefined ? undefined : { code: await run(partial), map: null };
       }
 
+      for (const layoutsFile of brandLayoutsFiles(workspaceRoot)) {
+        this.addWatchFile(layoutsFile);
+      }
+
       const slide = {
         ...file,
         mdx,
         onWarning,
         layouts: await layoutCatalog(),
         brand: { name: tokens.name, surfaces: Object.keys(tokens.surfaces) },
+        fallback: { workspaceRoot, brand: tokens.name },
       };
-      const transformed = await run(
-        file.extension === 'mdx' ? transformMdxSlide(slide, development) : transformTsxSlide(slide),
-      );
-      return { code: transformed, map: null };
+      if (file.extension === 'mdx') {
+        return { code: await run(transformMdxSlide(slide, development)), map: null };
+      }
+
+      return run(transformTsxSlideMapped(slide));
     },
 
     async configureServer(server) {

@@ -21,7 +21,13 @@ export {
   type MotionDurationName,
   type MotionEasingName,
 } from '#resolve/derive-motion.ts';
-export { resolveBrand, type BrandSource, type ResolvedBrand } from '#resolve/resolve-brand.ts';
+export { layoutLayers } from '#resolve/layout-layers.ts';
+export {
+  resolveBrand,
+  type BrandSource,
+  type LayoutsSource,
+  type ResolvedBrand,
+} from '#resolve/resolve-brand.ts';
 export { TEXT_TONES, type TextTone } from '#resolve/text-colors.ts';
 export { isLargeText, typeScaleFacts, type TypeScaleFacts } from '#resolve/type-scale-facts.ts';
 export { Brand, DEFAULT_BRAND, defineBrand, type BrandInput } from '#schema/brand-schema.ts';
@@ -56,6 +62,19 @@ export {
   type LabelStyle,
   type StandardCard,
 } from '#schema/diagram-schema.ts';
+export {
+  BrandLayoutSpec,
+  BrandLayouts,
+  defineBrandLayouts,
+  LAYOUTS_FILE,
+  LAYOUT_CANVAS_HEIGHT,
+  LAYOUT_CANVAS_WIDTH,
+  MAX_BRAND_LAYOUTS,
+  MAX_LAYOUT_REGIONS,
+  MIN_BOX_SIZE_PX,
+  type BrandLayoutSpecInput,
+  type LayoutBox,
+} from '#schema/layout-schema.ts';
 export { PLAIN_TREATMENT } from '#schema/identity-schema.ts';
 export {
   CODE_TOKENS,
@@ -74,4 +93,9 @@ export {
   type FamilyRole,
   type TypeStep,
 } from '#schema/typography-schema.ts';
-export { BrandError, describeProblem, type BrandProblem } from '#validate/brand-error.ts';
+export {
+  BrandError,
+  brandError,
+  describeProblem,
+  type BrandProblem,
+} from '#validate/brand-error.ts';

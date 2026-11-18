@@ -8,6 +8,7 @@ Standard library only.
 """
 from __future__ import annotations
 
+import io
 import os
 import re
 import stat
@@ -21,6 +22,7 @@ MAX_FONT_BYTES = 30 * 1024 * 1024
 MAX_LOGO_BYTES = 10 * 1024 * 1024
 MAX_SVG_BYTES = 2 * 1024 * 1024
 MAX_SVG_ELEMENTS = 20000
+MAX_LAYOUT_ART_SVG_BYTES = 8 * 1024 * 1024  # layout art may carry embedded pictures
 MAX_SVG_DEPTH = 64
 MAX_XML_PART_BYTES = 64 * 1024 * 1024
 MAX_MEDIA_FILES = 600
@@ -186,7 +188,48 @@ def _value_ok(value: str) -> bool:
     return "url(" not in _LOCAL_URL.sub("", value).lower().replace(" ", "")
 
 
-def sanitize_svg(raw: bytes) -> tuple[bytes, list[str]]:
+# Layout art (a template layout rendered to SVG) may carry pictures: pdftocairo writes a raster as <image href="data:image/png...">.
+_IMAGE_ATTRIBUTES = {"x", "y", "width", "height", "transform", "preserveAspectRatio", "opacity", "clip-path", "mask", "id", "image-rendering"}
+_DATA_IMAGE = re.compile(r"data:image/(png|jpeg|jpg);base64,([A-Za-z0-9+/=\s]+)\Z")
+MAX_ART_IMAGE_BYTES = 4 * 1024 * 1024
+MAX_ART_IMAGE_PIXELS = 24_000_000
+
+
+def _clean_data_image(value: str) -> str | None:
+    """A `data:image/png|jpeg;base64` URI re-encoded as a clean data URI, or None. The bytes must be the format they
+    claim. With Pillow installed the picture is decoded and written again (metadata and trailing data are dropped,
+    the pixel count is capped); without it the bytes are kept only when the header and size check out."""
+    import base64  # noqa: PLC0415
+    import binascii  # noqa: PLC0415
+
+    m = _DATA_IMAGE.match(value.strip())
+    if not m or len(value) > MAX_ART_IMAGE_BYTES * 4 // 3 + 64:
+        return None
+    try:
+        data = base64.b64decode(re.sub(r"\s+", "", m.group(2)), validate=True)
+    except (binascii.Error, ValueError):
+        return None
+    kind = sniff(data)
+    if kind not in ("png", "jpg", "jpeg") or len(data) > MAX_ART_IMAGE_BYTES:
+        return None
+    try:
+        from PIL import Image  # noqa: PLC0415
+
+        with Image.open(io.BytesIO(data)) as im:
+            if im.width * im.height > MAX_ART_IMAGE_PIXELS:
+                return None
+            fmt = "PNG" if kind == "png" else "JPEG"
+            out = io.BytesIO()
+            im.convert("RGBA" if fmt == "PNG" else "RGB").save(out, fmt)
+            data, kind = out.getvalue(), "png" if fmt == "PNG" else "jpeg"
+    except ImportError:
+        kind = "png" if kind == "png" else "jpeg"
+    except Exception:  # noqa: BLE001
+        return None
+    return f"data:image/{kind};base64," + base64.b64encode(data).decode("ascii")
+
+
+def sanitize_svg(raw: bytes, allow_images: bool = False) -> tuple[bytes, list[str]]:
     """A logo SVG reduced to static drawing, and a list of what was removed.
 
     Keeps an allowlist of shapes, gradients, clips, masks, text and local `<use>`; keeps an allowlist
@@ -195,9 +238,13 @@ def sanitize_svg(raw: bytes) -> tuple[bytes, list[str]]:
     instructions and any external reference. Raises Refused when the file is not parseable as plain
     UTF-8 SVG, is too large, or has nothing left: then use the PNG crop instead and add a review
     item. The framework sanitises SVG again when it inlines one in a slide; this is the first layer.
+
+    `allow_images` (layout art only) keeps `<image>` elements whose href is an embedded PNG or JPEG data URI, after
+    checking and re-encoding it (`_clean_data_image`); any other image, and any external href, is removed.
     """
-    if len(raw) > MAX_SVG_BYTES:
-        raise Refused(f"SVG larger than {MAX_SVG_BYTES // (1024 * 1024)} MB")
+    limit = MAX_LAYOUT_ART_SVG_BYTES if allow_images else MAX_SVG_BYTES
+    if len(raw) > limit:
+        raise Refused(f"SVG larger than {limit // (1024 * 1024)} MB")
     try:
         text = raw.decode("utf-8-sig", "strict")
     except UnicodeDecodeError:
@@ -222,12 +269,22 @@ def sanitize_svg(raw: bytes) -> tuple[bytes, list[str]]:
         if count > MAX_SVG_ELEMENTS or depth > MAX_SVG_DEPTH:
             raise Refused("SVG has too many or too deeply nested elements")
         ns, name = local(el.tag)
-        if ns not in ("", SVG_NS) or name not in _SVG_ELEMENTS:
+        if ns not in ("", SVG_NS) or (name not in _SVG_ELEMENTS and not (allow_images and name == "image")):
             removed.append(f"<{name or '?'}>")
             return None
         out = ET.Element(f"{{{SVG_NS}}}{name}")
         for key, value in el.attrib.items():
             ans, aname = local(key)
+            if name == "image":
+                if aname == "href" and ans in ("", XLINK_NS):
+                    cleaned_uri = _clean_data_image(value)
+                    if cleaned_uri is None:
+                        removed.append("<image>")
+                        return None
+                    out.set("href", cleaned_uri)
+                elif ans == "" and aname in _IMAGE_ATTRIBUTES and len(value) < 2000 and _value_ok(value):
+                    out.set(aname, value)
+                continue
             if aname == "href" and ans in ("", XLINK_NS):
                 if name in _HREF_ELEMENTS and _LOCAL_REF.match(value.strip()):
                     out.set("href", value.strip())
@@ -263,7 +320,7 @@ def sanitize_svg(raw: bytes) -> tuple[bytes, list[str]]:
     cleaned = clean(root, 0)
     if cleaned is None or local(root.tag)[1] != "svg":
         raise Refused("the root element is not <svg>")
-    if not any(local(e.tag)[1] in ("path", "rect", "circle", "ellipse", "line", "polyline", "polygon", "text", "use") for e in cleaned.iter()):
+    if not any(local(e.tag)[1] in ("path", "rect", "circle", "ellipse", "line", "polyline", "polygon", "text", "use", "image") for e in cleaned.iter()):
         raise Refused("nothing drawable is left after sanitising")
     ET.register_namespace("", SVG_NS)
     body = ET.tostring(cleaned, encoding="unicode")

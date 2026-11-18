@@ -53,6 +53,14 @@ import { timelineLayoutContract } from '#layouts/timeline-layout.contract.ts';
 import { titleLayoutContract } from '#layouts/title-layout.contract.ts';
 import { voicesLayoutContract } from '#layouts/voices-layout.contract.ts';
 
+export {
+  brandLayoutCatalog,
+  brandLayoutContract,
+  checkBrandLayouts,
+  type BrandLayoutCheck,
+  type BrandLayoutProblem,
+} from '#layouts/brand-layout.contract.ts';
+
 /**
  * The contracts of every layout the kit registers, for the build and `deck layouts`, in the order a
  * deck usually uses them. It is loaded in Node, so it imports only contracts: no components, no

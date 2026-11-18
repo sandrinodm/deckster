@@ -148,6 +148,12 @@ export type PptxDeckInput = {
   title: string;
 
   /**
+   * The version of the tool writing the file as `major.minor.patch`, for `AppVersion` in the
+   * document properties; left out when absent.
+   */
+  appVersion?: string;
+
+  /**
    * The brand the deck rendered with.
    */
   brand: BrandTokens;

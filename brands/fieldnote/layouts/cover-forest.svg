@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <!-- Cover art for dark paper: margin rule, ticks and a sprig mark in paper ink and ochre. -->
+  <g stroke="#ebc66b" fill="none" stroke-linecap="round">
+    <line x1="144" y1="0" x2="144" y2="1080" stroke-width="2" opacity="0.75"/>
+    <line x1="152" y1="0" x2="152" y2="1080" stroke-width="1" opacity="0.35"/>
+    <path d="M144 120 h28 M144 240 h16 M144 360 h16 M144 480 h16 M144 600 h16 M144 720 h16 M144 840 h16 M144 960 h28" stroke-width="2" opacity="0.6"/>
+  </g>
+  <g transform="translate(1340 150) scale(1.15)" stroke="#efe6d3" stroke-width="3" opacity="0.9">
+    <g id="sprig" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M200 600 C192 500 228 400 204 300 C190 230 204 140 224 40"/><path d="M198 520 Q120 505 76 440 Q158 432 198 520Z"/><path d="M198 520 L110 462"/><path d="M208 455 Q290 440 336 372 Q250 366 208 455Z"/><path d="M208 455 L300 396"/><path d="M204 372 Q130 352 92 288 Q172 286 204 372Z"/><path d="M204 372 L120 314"/><path d="M206 300 Q282 284 322 222 Q244 218 206 300Z"/><path d="M206 300 L292 244"/><path d="M208 220 Q146 200 118 146 Q184 148 208 220Z"/><path d="M208 220 L146 168"/><path d="M214 140 Q268 126 296 78 Q236 78 214 140Z"/><path d="M214 140 L270 96"/><circle cx="224" cy="30" r="9"/></g>
+  </g>
+  <g stroke="#efe6d3" fill="none" stroke-width="1.5" opacity="0.5">
+    <line x1="1340" y1="880" x2="1780" y2="880"/>
+    <line x1="1340" y1="890" x2="1780" y2="890"/>
+  </g>
+</svg>

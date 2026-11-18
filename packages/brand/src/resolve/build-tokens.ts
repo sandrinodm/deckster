@@ -123,6 +123,7 @@ export function buildTokens(brand: Brand, colors: ColorResolver): BrandTokens {
     data,
     charts,
     diagram,
+    layouts: [],
   };
 }
 

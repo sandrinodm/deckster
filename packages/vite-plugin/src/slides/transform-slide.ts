@@ -3,7 +3,7 @@ import type { MdxPlugins } from '@deckster/engine/mdx';
 
 import { SLIDE_META_EXPORT, type SlideKind, type SlideMeta } from '@deckster/engine/manifest';
 import { BODY_SLOT, slotTag } from '@deckster/engine/slots';
-import { Effect } from 'effect';
+import { Effect, Predicate } from 'effect';
 
 import type { LayoutCatalogIndex } from '#layouts/load-layout-catalog.ts';
 
@@ -14,11 +14,13 @@ import {
   type DeckBuildError,
   type FileRef,
 } from '#errors.ts';
+import { withBrandLayoutFallback, type BrandFallback } from '#slides/brand-layout-fallback.ts';
 import { checkSurface, withLayoutSurface, type SlideBrand } from '#slides/check-surface.ts';
 import { compileMdx, type MdxWarning } from '#slides/compile-mdx.ts';
 import { readMdxFrontmatter, validateFrontmatter } from '#slides/frontmatter.ts';
+import { replaceSpan, type SpanReplacement } from '#slides/replace-span.ts';
 import { checkSlotUsage } from '#slides/slot-usage.ts';
-import { readTsxMeta } from '#slides/tsx-meta.ts';
+import { readTsxMeta, type SourceSpan } from '#slides/tsx-meta.ts';
 
 /**
  * A slide file to compile.
@@ -46,6 +48,12 @@ export type SlideSource = FileRef & {
   brand?: SlideBrand;
 
   /**
+   * Where to look for another brand's layout the catalog lacks; when given, such a slide renders
+   * with that layout's kit fallback instead of failing the build.
+   */
+  fallback?: BrandFallback;
+
+  /**
    * The plugins the deck's MDX extensions add to the compile.
    */
   mdx?: MdxPlugins;
@@ -70,6 +78,12 @@ type CheckedSlide = {
    * The validated frontmatter, the title, the notes and the filled slots.
    */
   meta: SlideMeta;
+
+  /**
+   * The slide's `layout` value as written in a TSX source and the kit layout it renders with
+   * instead, when the layout came from another brand; `undefined` otherwise.
+   */
+  swap?: { span: SourceSpan; layout: string };
 };
 
 /**
@@ -143,8 +157,31 @@ export const transformMdxPartial = Effect.fn('transformMdxPartial')(function* (
 export const transformTsxSlide = Effect.fn('transformTsxSlide')(function* (
   slide: SlideSource,
 ): Effect.fn.Return<string, DeckBuildError> {
-  const { code, meta } = yield* readTsxSlide(slide);
-  return `${code}\n${slideMetaExport(meta)}`;
+  const { code } = yield* transformTsxSlideMapped(slide);
+  return code;
+});
+
+/**
+ * {@link transformTsxSlide} with the source map of the one change it can make to the source: when
+ * the slide's layout belongs to another brand, the `layout` value in its frontmatter export is
+ * rewritten to the kit layout it falls back to, so the served or built module never names the other
+ * brand's layout.
+ *
+ * @param slide - The slide file and its source.
+ * @returns The TSX source with the `slideMeta` export appended, and a source map when the source
+ *   was rewritten.
+ * @throws DeckBuildError in the error channel, as {@link transformTsxSlide} does.
+ */
+export const transformTsxSlideMapped = Effect.fn('transformTsxSlideMapped')(function* (
+  slide: SlideSource,
+): Effect.fn.Return<{ code: string; map: SpanReplacement['map'] | null }, DeckBuildError> {
+  const { code, meta, swap } = yield* readTsxSlide(slide);
+  if (swap === undefined) {
+    return { code: `${code}\n${slideMetaExport(meta)}`, map: null };
+  }
+
+  const rewritten = replaceSpan(code, swap.span, JSON.stringify(swap.layout), slide.file);
+  return { code: `${rewritten.code}\n${slideMetaExport(meta)}`, map: rewritten.map };
 });
 
 /**
@@ -158,7 +195,8 @@ const compileMdxSlide = Effect.fn('compileMdxSlide')(function* (
   development: boolean,
 ): Effect.fn.Return<CheckedSlide, DeckBuildError> {
   const { data, body } = yield* readMdxFrontmatter(slide.code, slide);
-  const validated = yield* validateFrontmatter(data, slide.layouts, slide);
+  const swapped = yield* withBrandLayoutFallback(data, slide.layouts, slide.fallback, slide);
+  const validated = yield* validateFrontmatter(swapped, slide.layouts, slide);
   const { layout } = validated;
   yield* checkSurface(validated.frontmatter, slide.brand, slide);
   const frontmatter = withLayoutSurface(
@@ -199,7 +237,13 @@ const readTsxSlide = Effect.fn('readTsxSlide')(function* (
   slide: SlideSource,
 ): Effect.fn.Return<CheckedSlide, DeckBuildError> {
   const meta = yield* tryDeckBuild(() => readTsxMeta(slide.code, slide));
-  const validated = yield* validateFrontmatter(meta.frontmatter, slide.layouts, slide);
+  const swapped = yield* withBrandLayoutFallback(
+    meta.frontmatter,
+    slide.layouts,
+    slide.fallback,
+    slide,
+  );
+  const validated = yield* validateFrontmatter(swapped, slide.layouts, slide);
   const { layout } = validated;
   yield* checkSurface(validated.frontmatter, slide.brand, slide);
   const frontmatter = withLayoutSurface(
@@ -214,8 +258,27 @@ const readTsxSlide = Effect.fn('readTsxSlide')(function* (
   }
 
   const title = frontmatter.title ?? meta.heading ?? slide.id;
-  return { code: slide.code, meta: { frontmatter, title, notes: meta.notes, slots } };
+  const layoutChanged = layout.contract.name !== namedLayout(meta.frontmatter);
+  const swap =
+    layoutChanged && meta.layoutSpan !== undefined
+      ? { span: meta.layoutSpan, layout: layout.contract.name }
+      : undefined;
+  return {
+    code: slide.code,
+    meta: { frontmatter, title, notes: meta.notes, slots },
+    ...(swap === undefined ? {} : { swap }),
+  };
 });
+
+/**
+ * The layout name a frontmatter literal gives, or the default layout's absence as `undefined`.
+ *
+ * @param frontmatter - The parsed frontmatter.
+ */
+function namedLayout(frontmatter: unknown): string | undefined {
+  const name = Predicate.isObject(frontmatter) ? frontmatter.layout : undefined;
+  return typeof name === 'string' ? name : undefined;
+}
 
 /**
  * The compile options a slide's MDX extensions contribute; left out when it has none.

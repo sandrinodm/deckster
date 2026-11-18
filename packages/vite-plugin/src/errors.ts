@@ -161,6 +161,14 @@ export function invalidLayoutCatalog(ref: FileRef, problems: readonly Problem[])
 }
 
 /**
+ * A brand's `layouts.ts` whose layouts do not fit the layouts they fall back to, or clash with a
+ * layout in the catalog.
+ */
+export function invalidBrandLayouts(ref: FileRef, problems: readonly Problem[]): DeckBuildError {
+  return deckBuildError({ ...ref, summary: 'Invalid brand layouts', problems });
+}
+
+/**
  * An MDX extension that cannot be loaded, or whose default export is not an extension.
  */
 export function invalidMdxExtension(ref: FileRef, problems: readonly Problem[]): DeckBuildError {

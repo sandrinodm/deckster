@@ -17,6 +17,7 @@ import type { DeckPage, PageSlide } from '#browser/deck-page.ts';
 import type { BrowserError, CliError, SlideNotReadyError, ViteError } from '#cli-error.ts';
 import type {
   BrandContext,
+  BrandFallback,
   DeckContext,
   DeckRule,
   DeckRuleInput,
@@ -32,6 +33,7 @@ import type { DeckServer } from '#server/deck-server.ts';
 
 import { openDeck, type OpenedDeck } from '#browser/open-deck.ts';
 import { brandContext } from '#lint/brand-context.ts';
+import { findBrandFallbacks } from '#lint/brand-fallbacks.ts';
 import {
   displayFile,
   findingsFromBrandError,
@@ -167,7 +169,10 @@ export const lintDeck = Effect.fn('lintDeck')(function* (
   const rendered = Effect.scoped(
     Effect.gen(function* () {
       const opened = yield* openDeck({ deck: options.deck, brand: options.brand, scale: 1 });
-      const catalog = yield* loadLayoutCatalog();
+      const catalog = yield* loadLayoutCatalog(undefined, {
+        brand: opened.brand.tokens,
+        layoutsFile: opened.brand.layoutsFile,
+      });
       const openComments = yield* openCommentCounts(location.dir);
       return yield* lintOpenedDeck(opened, catalog, rules, openComments);
     }),
@@ -243,12 +248,19 @@ const lintOpenedDeck = Effect.fn('lintOpenedDeck')(function* (
   catalog: LayoutCatalogIndex,
   rules: readonly LintRule[],
   openComments: Readonly<Record<string, number>>,
-): Effect.fn.Return<LintReport, BrowserError | SlideNotReadyError> {
+): Effect.fn.Return<LintReport, BrowserError | SlideNotReadyError, FileSystem.FileSystem> {
   const { deck, place, brand, page, buildWarnings } = opened;
   const loadErrors = yield* page.takeErrors();
+  const fallbacks = yield* findBrandFallbacks({
+    workspaceRoot: place.workspaceRoot,
+    deckDir: place.location.dir,
+    brand: brand.tokens.name,
+    files: page.slides.map((pageSlide) => pageSlide.file),
+    hasLayout: (name) => catalog.has(name),
+  });
   const measured: MeasuredSlide[] = [];
   for (const pageSlide of page.slides) {
-    measured.push(yield* measureSlide(page, pageSlide, place));
+    measured.push(yield* measureSlide(page, pageSlide, place, fallbacks.get(pageSlide.file)));
   }
 
   const deckContext: DeckContext = {
@@ -345,11 +357,13 @@ function shownNeighbour(
  * @param page - The open deck.
  * @param pageSlide - The slide.
  * @param place - The deck's location, for the slide's file.
+ * @param brandFallback - Set when the slide names a layout only another brand defines.
  */
 const measureSlide = Effect.fn('measureSlide')(function* (
   page: DeckPage,
   pageSlide: PageSlide,
   place: DeckPlace,
+  brandFallback: BrandFallback | undefined,
 ): Effect.fn.Return<MeasuredSlide, BrowserError | SlideNotReadyError> {
   const stepCount = yield* page.stepCount(pageSlide.index);
   const snapshots: StepSnapshot[] = [];
@@ -373,6 +387,7 @@ const measureSlide = Effect.fn('measureSlide')(function* (
     budgetSeconds: pageSlide.budget ?? undefined,
     hidden: pageSlide.hidden,
     stepCount,
+    ...(brandFallback === undefined ? {} : { brandFallback }),
   };
   return { slide, snapshots };
 });

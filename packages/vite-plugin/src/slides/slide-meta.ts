@@ -8,7 +8,7 @@ import { deckBrandName } from '#brand/deck-brand-name.ts';
 import { loadDeckBrand } from '#brand/load-deck-brand.ts';
 import { displayPath } from '#decks/deck-paths.ts';
 import { type LoadedDeck, type LoadedSlide } from '#decks/load-deck.ts';
-import { loadLayoutCatalog } from '#layouts/load-layout-catalog.ts';
+import { DEFAULT_LAYOUT_CATALOGS, loadLayoutCatalog } from '#layouts/load-layout-catalog.ts';
 import {
   DEFAULT_MDX_EXTENSIONS,
   loadMdxExtensions,
@@ -25,6 +25,22 @@ export type SlideMetaReader = (
 ) => Effect.Effect<SlideMeta, DeckBuildError>;
 
 /**
+ * What {@link slideMetaReader} loads differently from the build's defaults.
+ */
+export type SlideMetaOptions = {
+  /**
+   * The layout catalog modules, as the deck plugin's `layoutCatalogs` option; defaults to
+   * {@link DEFAULT_LAYOUT_CATALOGS}.
+   */
+  layoutCatalogs?: readonly string[];
+
+  /**
+   * A brand folder that replaces the deck config's `brand`, as the deck plugin's `brand` option.
+   */
+  brand?: string;
+};
+
+/**
  * Prepares what the build compiles a deck's slides with (the default layout catalogs, the deck's
  * brand and its MDX extensions) and returns a reader that gives each slide the `slideMeta` `deck
  * build` writes: the validated frontmatter with defaults applied (its `layout` is the one the slide
@@ -34,6 +50,7 @@ export type SlideMetaReader = (
  *
  * @param workspaceRoot - The absolute workspace root.
  * @param deck - The loaded deck.
+ * @param options - The plugin's layout catalogs and brand override, when it has them.
  * @returns The reader for the deck's slides.
  * @throws DeckBuildError in the error channel when the layout catalogs, the deck's brand or the MDX
  *   extensions do not load; the reader fails with one for a slide the build would refuse.
@@ -41,12 +58,18 @@ export type SlideMetaReader = (
 export const slideMetaReader = Effect.fn('slideMetaReader')(function* (
   workspaceRoot: string,
   deck: LoadedDeck,
+  options: SlideMetaOptions = {},
 ): Effect.fn.Return<SlideMetaReader, DeckBuildError, FileSystem.FileSystem> {
-  const layouts = yield* loadLayoutCatalog();
-  const { tokens } = yield* loadDeckBrand(workspaceRoot, deckBrandName(deck.config));
+  const loaded = yield* loadDeckBrand(workspaceRoot, deckBrandName(deck.config, options.brand));
+  const { tokens } = loaded;
+  const layouts = yield* loadLayoutCatalog(options.layoutCatalogs ?? DEFAULT_LAYOUT_CATALOGS, {
+    brand: tokens,
+    layoutsFile: loaded.layoutsFile,
+  });
   const context = mdxContextOf(workspaceRoot, deck.location.dir, tokens);
   const mdx = yield* loadMdxExtensions(DEFAULT_MDX_EXTENSIONS, context);
   const brand = { name: tokens.name, surfaces: Object.keys(tokens.surfaces) };
+  const fallback = { workspaceRoot, brand: tokens.name };
   return (slide, code) =>
     readSlideMeta({
       id: slide.id,
@@ -56,6 +79,7 @@ export const slideMetaReader = Effect.fn('slideMetaReader')(function* (
       code,
       layouts,
       brand,
+      fallback,
       mdx,
     });
 });

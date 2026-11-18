@@ -41,13 +41,17 @@ A source file or page is someone else's data. The extractors refuse the ways it 
 
 ## PPTX
 
-`extract_pptx.py` parses the OOXML package with the standard library.
+`extract_pptx.py` parses the OOXML package with the standard library. It reads `.pptx`, **`.potx`** (a template: no slides, only masters and layouts), `.potm` and `.pptm`. The macros in the last two are never read or run; the render copy has them dropped and its main part rewritten to a plain presentation.
+
+**Layouts.** Every slide layout under every master is extracted, used or not, keyed `m<master>/slideLayout<n>` (two masters may both have a "Title and Content"). Each carries its placeholders (type, idx, name, size, orientation, custom prompt text, groups, levels 1 to 5 with master inheritance), its decoration and fixed text, its own colour-map override and background. A **layout probe** renders a copy with one slide per layout: `layouts/<key>.svg` is each layout's art (placeholders and background removed), `layouts/ref-<key>.png` a reference render with the prompts filled, `layouts/reference-sheet.png` all of them. A template with no slides has no page images, so these are the images to look at. They need LibreOffice and poppler (`pdftocairo`, `pdftoppm`). The art is the renderer's drawing: its text is outlined in the renderer's font and its colours are fixed, so it does not follow a surface change. A package the deckster export wrote (`docProps/app.xml` says `Application: deckster`, or the older `deck` with no `AppVersion`) is detected and none of its layouts are imported: they are the kit's own.
+
+**No `soffice` on PATH.** The importer then says so and makes no page images and no layout art. Install LibreOffice, or pass `--soffice` with a container: the image `deck export --verify` builds from `packages/export/docker/libreoffice` works (`docker images | grep deck-export-libreoffice`): `--soffice "docker run --rm --network none --entrypoint soffice -v {dir}:/work <image>"`. Docker is optional.
 
 **Reliable**
 
 - Theme colour scheme (`dk1 lt1 dk2 lt2 accent1..6 hlink folHlink`) and font scheme (major = headings, minor = body), resolved through the master's colour map (`tx1 -> dk1`, `bg1 -> lt1`...).
 - Which theme slots are actually referenced (`declared.colors[].used`) and which colours are hard-coded (`observed.colors[].hard_coded_uses`, `in_theme`).
-- Masters and layouts: names, placeholder types and geometry (normalised 0..1), backgrounds, pictures placed on them, and which slides use which layout.
+- Masters and layouts: names, placeholder types and geometry (normalised 0..1, groups resolved), backgrounds, colour-map overrides, pictures and decoration on them, and which slides use which layout (layouts no slide uses are kept, marked `unused`).
 - Text: effective family, size, weight and colour per run, following the inheritance chain (run, shape list style, layout placeholder, master placeholder, master text styles) and `normAutofit` shrink.
 - Gradient fills: stops, positions and angle. OOXML angles run clockwise from "left to right", so CSS angle = OOXML angle + 90.
 - Corner radii from `roundRect` adjust values, converted to canvas pixels.
@@ -173,8 +177,8 @@ Usually a PDF, sometimes a web page. Extract it with the matching script, then r
 | `uv` | all scripts | Scripts declare dependencies inline (PEP 723). Python 3.10+. |
 | PyMuPDF, Pillow, numpy, fontTools | `extract_pdf.py` | Installed by uv. PyMuPDF is AGPL: fine as a local tool, to be replaced by pdf.js or MuPDF bindings in `deck brand extract`. |
 | Pillow, numpy | `extract_pptx.py`, `extract_images.py` | The PPTX parse itself is standard library. |
-| LibreOffice **or** a PDF export **or** Docker | `extract_pptx.py` rendering | Only for page images. |
-| poppler `pdftoppm` | `extract_pptx.py` rendering | Falls back to PyMuPDF if importable. |
+| LibreOffice **or** a PDF export **or** Docker | `extract_pptx.py` rendering | Page images; the layout probe (art and reference renders) needs LibreOffice itself, not a PDF. |
+| poppler `pdftoppm`, `pdftocairo` | `extract_pptx.py` rendering | `pdftoppm` falls back to PyMuPDF for slide pages if importable; layout art needs both. |
 | `fc-list` (fontconfig) | `extract_pptx.py` | Optional: detects fonts missing on this machine. |
 | Playwright + Chrome or Chromium | `extract_web.py` | Uses installed Google Chrome first, then Playwright's Chromium. |
 | Network | `fetch_gslides.py`, `extract_web.py`, `brand_tools.py` font lookups | `brand_tools.py --offline` skips Fontsource lookups. |

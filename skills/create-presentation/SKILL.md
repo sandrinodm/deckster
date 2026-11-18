@@ -158,7 +158,7 @@ Keep the user's load small: at most three questions, only ones whose answer woul
 Scaffold the deck with `deck new <deck> --title "…" --brand <name> --duration <length>` if it does not exist (it passes `deck lint` as created and needs no install step), then read `references/framework.md`: it is the authoring loop (scaffold, catalogs, write, lint, shoot, look, fix) and the slide file format. Layouts and components are read from the catalogs at run time, never from memory, because the framework keeps adding them:
 
 ```
-deck layouts <deck> --summary       # first look: every layout, its title limit, slots and budgets
+deck layouts <deck> --summary       # first look: the brand's own layouts first, then every kit layout, with title limit, slots and budgets
 deck layouts <deck> --json   # the full catalog; read it for the one layout you are writing
 deck charts --json           # charts and numbers: which form for which message, props, limits
 deck diagrams --json         # diagrams, node kinds, step animation
@@ -170,6 +170,7 @@ deck icons --brand a,b       # icon names every brand of the deck has (add --sea
 Then write one file per slide, following `references/slide-craft.md`:
 
 - Pick the layout that fits the evidence, not the other way round. Stay inside its title length and content budget; when content does not fit, split the slide or move words to notes rather than shrinking anything. `decks/lookbook` in the deckster repository shows every layout and option in use.
+- If the deck's brand has layouts of its own, `deck layouts <deck> --summary` lists them first, under a heading that names the brand. They are the organisation's template: prefer one when it fits the slide (a cover, a section divider, a photo slide). Use kit layouts for what the template lacks. A brand layout holds what its fixed boxes hold, so stay inside its budget. Switching the deck to another brand turns its brand-layout slides into the kit layouts they fall back to, and `deck lint` warns (`brand-layout-fallback`); so choose the brand before you choose layouts, and re-check the slides if it changes.
 - Never write raw colors, fonts, sizes or positions. The brand owns those, and lint rejects them.
 - Vary layouts and surfaces to give the deck rhythm, and show the audience where they are: section slides in a long deck (all with the same options, such as `numeral: large`), eyebrows in a deck of about twelve slides or fewer. Put the peak on a surface its neighbours do not have. A run of slides that look alike is the most common way a correct deck ends up dull.
 - Give every slide enough to look at. A slide whose evidence is one short line or a three-box strip leaves most of the canvas empty and reads as unfinished; give the claim its evidence, or fold it into a neighbour.

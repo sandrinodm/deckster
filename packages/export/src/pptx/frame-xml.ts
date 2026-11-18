@@ -10,9 +10,10 @@ import { layoutFrame, paragraphsXml } from '#pptx/text-xml.ts';
  */
 export type PlaceholderRef = {
   /**
-   * `title`, `ctrTitle` (a title slide's title), `subTitle`, `body` or `sldNum` (the slide number).
+   * `title`, `ctrTitle` (a title slide's title), `subTitle`, `body`, `pic` (a picture) or `sldNum`
+   * (the slide number).
    */
-  type: 'title' | 'ctrTitle' | 'subTitle' | 'body' | 'sldNum';
+  type: 'title' | 'ctrTitle' | 'subTitle' | 'body' | 'pic' | 'sldNum';
 
   /**
    * The placeholder index on the layout; titles have none.

@@ -3,7 +3,7 @@ import { Console, Effect } from 'effect';
 import { chooseDeck, defaultDeck } from '#choose-deck.ts';
 import { EXIT_OK, type Command } from '#command.ts';
 import { listLayouts, type LayoutInfo } from '#layouts/list-layouts.ts';
-import { formatSummaries, summarizeLayout } from '#layouts/summarize-layouts.ts';
+import { brandFirst, formatSummaries, summarizeLayout } from '#layouts/summarize-layouts.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
 import { DEFAULT_DECK, Workspace } from '#workspace.ts';
 
@@ -15,15 +15,20 @@ export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
   const { values, positionals } = yield* parseCommandArgs('layouts', argv, {
     json: { type: 'boolean', default: false },
     summary: { type: 'boolean', default: false },
+    brand: { type: 'string' },
   });
   const deck =
     (yield* chooseDeck(positionals[0], yield* defaultDeck(workspaceRoot))) ?? DEFAULT_DECK;
-  const catalog = yield* listLayouts(workspaceRoot, deck);
+  const catalog = yield* listLayouts(workspaceRoot, deck, values.brand);
+  for (const warning of catalog.warnings) {
+    yield* Console.error(`warning: ${warning}`);
+  }
+
   if (values.summary) {
-    const summaries = catalog.layouts.map(summarizeLayout);
+    const summaries = brandFirst(catalog.layouts.map(summarizeLayout));
     yield* Console.log(
       values.json
-        ? JSON.stringify({ deck, layouts: summaries }, null, 2)
+        ? JSON.stringify({ deck, warnings: catalog.warnings, layouts: summaries }, null, 2)
         : formatSummaries(summaries),
     );
     return EXIT_OK;
@@ -52,6 +57,7 @@ function formatLayout(layout: LayoutInfo): string {
   const lines = [
     `${layout.name}  (${layout.source})`,
     `  ${layout.description}`,
+    ...(layout.fallback === null ? [] : [`  Falls back to: ${layout.fallback}`]),
     `  Slots: ${slots}`,
   ];
   const fields = Object.entries(layout.fields).map(([name, field]) => formatField(name, field));

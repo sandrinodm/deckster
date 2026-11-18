@@ -8,6 +8,7 @@ import type { ExportMode, PlanItem } from '#plan/plan-scene.ts';
 import type { ChromeShape } from '#pptx/chrome.ts';
 import type { PptxSlideInput } from '#pptx/deck-input.ts';
 import type { PlaceholderRef } from '#pptx/frame-xml.ts';
+import type { LayoutArt, LayoutSource } from '#pptx/layout-art.ts';
 import type { LayoutSpec, SlideNumberSpec } from '#pptx/layout-specs.ts';
 import type { FontResolver, LinkTarget, TextContext } from '#pptx/text-xml.ts';
 import type { SurfaceTheme } from '#pptx/theme.ts';
@@ -32,6 +33,7 @@ import { chromeXml, slideNumberXml } from '#pptx/chrome-xml.ts';
 import { chromeShapes, sameChrome } from '#pptx/chrome.ts';
 import { diagramXml } from '#pptx/diagram-xml.ts';
 import { offSlidePlaceholderXml, textFrameXml } from '#pptx/frame-xml.ts';
+import { isLayoutArtNode, showsLayoutArt } from '#pptx/layout-art.ts';
 import { matchesSource } from '#pptx/layout-specs.ts';
 import { SHAPE_TREE_ROOT } from '#pptx/master-xml.ts';
 import { embedMedia, mediaPart } from '#pptx/media.ts';
@@ -206,6 +208,13 @@ export type SlideWriteOptions = {
   totals?: { deck: number; file: number };
 
   /**
+   * The art and chrome the slide's layout part draws, when the layout has art. A slide that shows
+   * the same leaves the art to the layout; any other slide draws its own art and hides the layout's
+   * shapes.
+   */
+  layoutSource?: LayoutSource | undefined;
+
+  /**
    * The chrome the slide's layout (or master) draws; a slide drawing the same leaves it to the
    * layout.
    */
@@ -320,6 +329,28 @@ function withoutReplaced(items: readonly PlanItem[]): PlanItem[] {
 }
 
 /**
+ * Writes the art of a brand layout into its slide layout part: the items the layout's slides would
+ * otherwise each draw behind their content, in paint order, with media added to the package once.
+ *
+ * @param pkg - The package.
+ * @param path - The slide layout part's path.
+ * @param art - The art and the slide it was measured on.
+ * @param options - The mode, brand and theme of the layout's surface.
+ * @param nextId - Allocates the layout's shape ids.
+ * @returns The shapes' markup.
+ */
+export function layoutArtXml(
+  pkg: OpcPackage,
+  path: string,
+  art: LayoutArt,
+  options: SlideWriteOptions,
+  nextId: IdAllocator,
+): string {
+  const writer: Writer = { ...newWriter(pkg, path, art.slide, options), nextId };
+  return art.items.map((item) => itemXml(writer, item, new Map())).join('');
+}
+
+/**
  * The state a slide is written with, before any of its shapes is.
  *
  * @param pkg - The package.
@@ -430,11 +461,20 @@ function contentShapes(writer: Writer): SlideShapes {
   const layoutChrome = options.chrome ?? [];
   // Background layers are the slide's first shapes, so they would cover the chrome its layout
   // draws; a slide that has them draws its own chrome over them instead.
-  const backdrop = slide.plan.items.some((item) => item.node.backdrop === true);
-  const inherits = !backdrop && sameChrome(chrome, layoutChrome);
-  const showMaster = inherits || (!backdrop && chrome.length === 0 && layoutChrome.length === 0);
+  const source = options.layoutSource;
+  const hasLayoutArt = source !== undefined;
+  const shown = source !== undefined && showsLayoutArt(slide, source);
+  /**
+   * Whether the item is art the slide's layout part draws for it.
+   */
+  const inLayout = (item: PlanItem): boolean => shown && isLayoutArtNode(item.node);
+  const backdrop = slide.plan.items.some((item) => item.node.backdrop === true && !inLayout(item));
+  const hidesLayout = hasLayoutArt && !shown;
+  const inherits = !backdrop && !hidesLayout && sameChrome(chrome, layoutChrome);
+  const showMaster =
+    !hidesLayout && (inherits || (!backdrop && chrome.length === 0 && layoutChrome.length === 0));
   const chromeNodes = new Set<SceneNode>(chrome.map((shape) => shape.node));
-  const items = grouped.filter((item) => !chromeNodes.has(item.node));
+  const items = grouped.filter((item) => !chromeNodes.has(item.node) && !inLayout(item));
   const assigned = assignPlaceholders(items, options);
   for (const item of items) {
     shapes.push(itemXml(writer, item, assigned));
@@ -507,7 +547,7 @@ type Writer = {
 };
 
 /**
- * A text frame assigned to a placeholder.
+ * A frame or picture assigned to a placeholder.
  */
 type AssignedPlaceholder = {
   /**
@@ -522,8 +562,9 @@ type AssignedPlaceholder = {
 };
 
 /**
- * Which text frames fill which placeholders: for each placeholder of the layout that reads the
- * page, the first frame holding its slot or selector.
+ * Which text frames and pictures fill which placeholders: for each placeholder of the layout that
+ * reads the page, the first frame holding its slot or selector, or for a picture placeholder the
+ * first image in its slot.
  *
  * @param items - The grouped items.
  * @param options - The layout.
@@ -531,8 +572,8 @@ type AssignedPlaceholder = {
 function assignPlaceholders(
   items: readonly PlanItem[],
   options: SlideWriteOptions,
-): Map<TextNode, AssignedPlaceholder> {
-  const assigned = new Map<TextNode, AssignedPlaceholder>();
+): Map<SceneNode, AssignedPlaceholder> {
+  const assigned = new Map<SceneNode, AssignedPlaceholder>();
   const mapping = options.contract?.pptx;
   if (mapping === undefined || options.placeholders === undefined) {
     return assigned;
@@ -548,11 +589,10 @@ function assignPlaceholders(
 
     const source = placeholder.from;
     const frame = items.find(
-      (item): item is PlanItem & { node: TextNode } =>
+      (item) =>
         item.kind === 'native' &&
-        item.node.kind === 'text' &&
         !assigned.has(item.node) &&
-        matchesSource(item.node, source),
+        fillsPlaceholder(item.node, placeholder.kind, source),
     );
     if (frame !== undefined) {
       assigned.set(frame.node, { kind: placeholder.kind, ref: spec.ref });
@@ -560,6 +600,26 @@ function assignPlaceholders(
   }
 
   return assigned;
+}
+
+/**
+ * Whether a node fills a placeholder: a text frame holding the source's text, or for a picture
+ * placeholder an image in the source's slot.
+ *
+ * @param node - The node.
+ * @param kind - The placeholder kind.
+ * @param source - Where the placeholder's content is on the page.
+ */
+function fillsPlaceholder(
+  node: SceneNode,
+  kind: PptxPlaceholderKind,
+  source: { slot: string } | { selector: string },
+): boolean {
+  if (kind === 'picture') {
+    return node.kind === 'image' && 'slot' in source && node.slot === source.slot;
+  }
+
+  return node.kind === 'text' && matchesSource(node, source);
 }
 
 /**
@@ -572,7 +632,7 @@ function assignPlaceholders(
 function fieldPlaceholders(
   slide: PptxSlideInput,
   options: SlideWriteOptions,
-  assigned: ReadonlyMap<TextNode, AssignedPlaceholder>,
+  assigned: ReadonlyMap<SceneNode, AssignedPlaceholder>,
 ): [PptxPlaceholderKind, { text: string; ref: PlaceholderRef }][] {
   const mapping = options.contract?.pptx;
   if (mapping === undefined || options.placeholders === undefined) {
@@ -607,7 +667,7 @@ function fieldPlaceholders(
 function itemXml(
   writer: Writer,
   item: PlanItem,
-  assigned: ReadonlyMap<TextNode, AssignedPlaceholder>,
+  assigned: ReadonlyMap<SceneNode, AssignedPlaceholder>,
 ): string {
   if (item.kind === 'picture') {
     return rasterXml(writer, item.node, item.scope, { name: item.name, alt: item.alt });
@@ -624,7 +684,7 @@ function itemXml(
     }
 
     case 'image': {
-      return imageXml(writer, node);
+      return imageXml(writer, node, assigned.get(node) ?? null);
     }
 
     case 'svg': {
@@ -807,7 +867,9 @@ function recordTextReveals(writer: Writer, node: TextNode, shapeId: number): voi
  */
 function frameName(node: TextNode, placeholder: AssignedPlaceholder | null): string {
   if (placeholder !== null) {
-    return { title: 'Title', subtitle: 'Subtitle', body: 'Body' }[placeholder.kind];
+    return { title: 'Title', subtitle: 'Subtitle', body: 'Body', picture: 'Picture' }[
+      placeholder.kind
+    ];
   }
 
   return `Text: ${excerpt(textOf(node))}`;
@@ -894,8 +956,13 @@ function outlinedTextXml(
  *
  * @param writer - The slide's state.
  * @param node - The image.
+ * @param placeholder - The picture placeholder it fills, if any.
  */
-function imageXml(writer: Writer, node: ImageNode): string {
+function imageXml(
+  writer: Writer,
+  node: ImageNode,
+  placeholder: AssignedPlaceholder | null,
+): string {
   const file = writer.slide.assets.images.get(node.src);
   const fallback = writer.slide.assets.pictures.get(node.id);
   const id = writer.nextId();
@@ -923,6 +990,9 @@ function imageXml(writer: Writer, node: ImageNode): string {
     locked: node.backdrop === true,
     grayscale: node.grayscale,
     link,
+    ...(placeholder === null
+      ? {}
+      : { nvPr: el('p:ph', { type: placeholder.ref.type, idx: placeholder.ref.idx }) }),
   });
 }
 

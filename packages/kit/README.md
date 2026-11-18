@@ -67,6 +67,53 @@ title       surface gradient  title <= 36
             slots: body text 14 words; <Media> image
 ```
 
+## Brand layouts
+
+A brand may bring layouts of its own in `layouts.ts` (format in
+[`@deckster/brand`](../brand/README.md#layouts)). The kit draws and describes them with no
+component or contract per layout.
+
+- **`BrandLayout`** (`src/layouts/brand-layout.tsx`) draws any brand layout from its tokens: a
+  `Frame` with the layout's art behind it and one box for each region at the pixels the layout
+  gives, on the full canvas. Title and text boxes step their text down until it fits the box;
+  media boxes crop the picture in the brand's image treatment. The art replaces the surface's
+  background layers unless the layout says `layers: 'over'`. `runtime.ts` registers one
+  definition per layout of the deck's brand (`brandLayoutDefinitions`), after the kit's layouts.
+- **Page chrome** follows the layout. The layout's `chrome` hides the logo, footer, progress bar
+  or page number, or moves the page number into a box. A media box that reaches two edges meeting
+  at a corner covers that corner, and `chrome-plan.ts` moves what the corner holds to the one
+  across the slide at the same height; a photo on half the slide leaves the corners alone.
+
+`@deckster/kit/catalog` exports the Node side:
+
+| Export                                  | What it does                                                                                                                                                    |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `brandLayoutContract(layout, fallback)` | Derives a layout's contract from the layout and the contract of its fallback.                                                                                   |
+| `checkBrandLayouts(layouts, catalog)`   | Returns `{ errors, warnings }`, each with a `path` into `layouts.ts`, a message and a fix. Used by the build and by `deck brand check`.                         |
+| `brandLayoutCatalog(brand, base)`       | The brand's layouts as a catalog with source `brand:<name>`, loaded after the kit's. It throws when `checkBrandLayouts` finds an error, so callers check first. |
+
+A brand layout's contract is its fallback's, cut down to what the layout binds:
+
+- The slots are the ones its regions bind, with the fallback's descriptions and `accepts`. `body`
+  always exists. The schema has the fallback's fields that regions bind or `fields` lists, with
+  the fallback's `required` flags, defaults and hints. A slide valid on the brand layout is valid
+  on the fallback.
+- Budgets are the fallback's, per slot, and the layout's own `budget` can only tighten them: each
+  limit is the lower of the two. `maxLines` is refused on a slot that does not take code.
+- The fallback's `checks` run on the slide's frontmatter with the defaults of the fields the layout
+  does not take filled in. Its `variants` are kept when everything they refer to exists in the
+  layout and dropped otherwise.
+- The example is the fallback's, reduced to the bound fields and slots.
+- The PPTX mapping (a title placeholder, a body, a picture for the first media region) is built
+  from the regions when the fallback has one.
+
+`checkBrandLayouts` reports as errors a name that is already a kit or engine layout, an unknown
+fallback, a slot or field the fallback lacks or does not accept as text, one it requires that the
+layout does not bind, a missing title the fallback requires and a budget on a slot no region
+binds. Warnings are for a media region on a slot that takes no pictures and a text region on a
+slot that takes only pictures. The brand package checks everything that needs only the brand
+(boxes in the canvas, names that exist).
+
 ## Exports
 
 | Import                              | Runs in | What it is                                                                                                                                                                                           | Used by                                  |
@@ -74,7 +121,7 @@ title       surface gradient  title <= 36
 | `@deckster/kit`                     | browser | Components for TSX slides: `Step`, `Morph`, `Code`, `CodeMove`, `CodeStep`, `Terminal`, `Cmd`, `Out`, `Image`, `Video`, `Lottie`, `Icon`, `Button`, `Download`, `LinkCard`, `QR`, `AppFrame`, `Live` | slides                                   |
 | `@deckster/kit/diagrams`            | browser | Diagram components and parts for TSX slides (`Flow`, `Node`, `Edge`, `Packet`, ...)                                                                                                                  | slides                                   |
 | `@deckster/kit/runtime`             | browser | The runtime plugin: registers every layout, every MDX component and the page chrome                                                                                                                  | `@deckster/vite-plugin`                  |
-| `@deckster/kit/catalog`             | Node    | The layout contracts, loaded by the build and `deck layouts`                                                                                                                                         | `@deckster/vite-plugin`, `@deckster/cli` |
+| `@deckster/kit/catalog`             | Node    | The layout contracts, loaded by the build and `deck layouts`, and `brandLayoutContract`, `checkBrandLayouts` and `brandLayoutCatalog` for a brand's own                                              | `@deckster/vite-plugin`, `@deckster/cli` |
 | `@deckster/kit/mdx`                 | Node    | The MDX extension: Shiki highlighting, media and icon resolution, prop checks, diagram checks and layout, typographic punctuation                                                                    | `@deckster/vite-plugin`                  |
 | `@deckster/kit/vite`                | Node    | `kitVitePlugins()` (icons through `unplugin-icons`, CSV imports for charts) and `KIT_SCAN_ENTRY`                                                                                                     | `@deckster/vite-plugin`                  |
 | `@deckster/kit/chart-catalog`       | Node    | What `deck charts` prints and the numbers the `chart-*` lint rules use (`CHART_LIMITS`)                                                                                                              | `@deckster/cli`                          |
