@@ -20,8 +20,8 @@ what to tell their agent.
 ## Ground truth: v0.5.0, run it
 
 - The pages describe `@deckster/cli` **0.5.0** as published on npm. The code is the tag
-  `v0.5.0`, made from the merge of the release pull request (its commit is not written here until
-  the tag exists; until then the tree is `575d773` on the release branch). Read files at the tag
+  `v0.5.0`, made from the merge of the release pull request (the tag's own hash is not written here until
+  the tag exists; until then the tree is `7dc64ea`, the merge of the release pull request on `main`). Read files at the tag
   (`git -C ../2026-11-13-presentation show v0.5.0:<path>`), because `main` and the working tree
   move on after a release. Pages written before 0.5.0 were checked against 0.4.0 (commit
   `50e5d19`) or 0.3.0 (commit `4e0b186`); a statement that names one of them says which version
