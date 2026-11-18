@@ -72,7 +72,8 @@ slide, and first and last go to the first and last shown slide. A deck opened wi
 on its first shown slide. A hidden slide is still reachable on purpose: a link or hash names it,
 the presenter's sidebar, overview and go-to open it, and `window.__deck.goto` lands on it, which is
 how `deck shot`, `deck lint` and `deck export` reach it. From a hidden slide that was reached this
-way, next and previous step through its own steps, then leave for the neighbouring shown slides.
+way, next and previous step through its own steps, then move to the neighbouring shown slide on that
+side; where there is none (a backup slide after the last shown one), the move does nothing.
 Whatever pairs a slide with the one before or after it (transitions, morphs, the presenter's next
 slide, lint's `layout-repetition`) uses the neighbouring shown slide, so the pair is what the
 audience sees one after the other.
@@ -195,7 +196,8 @@ overlay.
 - **Hidden slides.** The PDF, the PNGs and the PPTX leave them out, as a talk does, and the summary
   says how many. `--include-hidden` puts them in: ordinary pages in the PDF and PNGs, and native
   hidden slides in the PPTX, so PowerPoint skips them in a slide show. A hidden slide named in
-  `--slides` is exported either way.
+  `--slides` is exported without `--include-hidden`, as an ordinary page in the PDF and a PNG, and
+  still marked hidden in the PPTX.
 
 ## History
 

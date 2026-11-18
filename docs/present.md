@@ -63,7 +63,10 @@ Next, previous, Home and End pass over it in the audience window and in the pres
 show one, open the slide sidebar (`s`) or the overview (`o`) and select it, press `g` and type its
 number, or open a link to it. Numbers here are positions in the full slide list, hidden slides
 included, the same as in the sidebar. From the hidden slide, next and previous step through its own
-steps and then go back to the shown slides around it, so you leave a backup slide by pressing next.
+steps and then go to the nearest shown slide after or before it, not back to the slide you jumped
+from. A backup slide placed after the last shown slide has no shown slide after it, so next does
+nothing there; previous goes to the last shown slide, and Home, End, the sidebar, the overview and
+`g` also leave it.
 
 In the sidebar and the overview a hidden slide is dimmed and has a "Hidden" badge. The presenter
 window's header says "Slide 12 of 40 · hidden" on one, and its next-slide preview is the next shown
