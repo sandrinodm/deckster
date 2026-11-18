@@ -1216,6 +1216,30 @@ export function collectScene(options: CollectOptions): CollectedScene {
   };
 
   /**
+   * The step whose content covers and replaces an element, from its closest `data-replaced-at`. It
+   * is `null` when that step is not reached in the captured page (no `.deck-step` of that number is
+   * shown), so the element stays ordinary content there.
+   *
+   * @param element - The element.
+   */
+  const replacedAtOf = (element: Element): number | null => {
+    const owner = element.closest('[data-replaced-at]');
+    if (owner === null) {
+      return null;
+    }
+
+    const step = Number(owner.getAttribute('data-replaced-at'));
+    if (!Number.isInteger(step) || step <= 0) {
+      return null;
+    }
+
+    const reached = Array.from(slide.querySelectorAll(`.deck-step[data-step="${step}"]`)).some(
+      (wrapper) => wrapper.getAttribute('data-step-state') !== 'hidden',
+    );
+    return reached ? step : null;
+  };
+
+  /**
    * The lines of a paragraph: its text and the text of its inline descendants, split where the
    * browser broke the lines.
    *
@@ -1448,6 +1472,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
     const rootStyle = getComputedStyle(root);
     const box = contentBox(toRect(root.getBoundingClientRect()), rootStyle);
     const step = stepOf(root);
+    const replacedAt = replacedAtOf(root);
     const lines = rows.map((row): SceneLine => {
       row.sort((a, b) => a.rect.x - b.rect.x);
       const runs: SceneRun[] = [];
@@ -1502,6 +1527,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
     return lines.map((line) => ({
       lines: [line],
       step,
+      replacedAt,
       align: 'left',
       box: { ...box, x: round(left), width: round(Math.max(box.width, line.right - left)) },
       lineHeight: round(pitch),
@@ -1915,6 +1941,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
     return {
       lines,
       step: stepOf(element),
+      replacedAt: replacedAtOf(element),
       align,
       box,
       lineHeight,
@@ -2253,6 +2280,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
       hints: readHints(element, style),
       slot: slotOf(element),
       step: stepOf(element),
+      replacedAt: replacedAtOf(element),
       ...(inBackdrop ? { backdrop: true as const } : {}),
     };
     const chartSpec = element.getAttribute(CHART_ATTRIBUTE);

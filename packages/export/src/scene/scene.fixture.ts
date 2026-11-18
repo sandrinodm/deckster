@@ -87,6 +87,7 @@ export function paragraph(
   return {
     lines,
     step: null,
+    replacedAt: null,
     align: 'left',
     box: { x: 128, y: first - 34, width: 800, height: lines.length * 50.4 },
     lineHeight: 50.4,
@@ -120,6 +121,7 @@ export function textNode(
     hints: [],
     slot: 'body',
     step: null,
+    replacedAt: null,
     kind: 'text',
     paragraphs: [body],
     container: null,
@@ -145,6 +147,7 @@ export function boxNode(id: number, overrides: Partial<BoxNode> = {}): BoxNode {
     hints: [],
     slot: null,
     step: null,
+    replacedAt: null,
     kind: 'box',
     fill: { kind: 'solid', color: '#f4f5f8' },
     borders: [null, null, null, null],

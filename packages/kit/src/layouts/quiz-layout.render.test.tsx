@@ -123,6 +123,16 @@ describe('the quiz answer reveal', () => {
     expect(html.match(/data-step-state="hidden"/gu)).toHaveLength(CHOICES.length + 1);
   });
 
+  it('marks every neutral copy as replaced at the answer step only when revealing', () => {
+    const revealing = render({ options: ['One', 'Two', 'Three', 'Four'] });
+    expect(revealing.match(/class="kit-quiz-choice"/gu)).toHaveLength(4);
+    expect(revealing.match(/class="kit-quiz-choice" data-replaced-at="1"/gu)).toHaveLength(4);
+    expect(revealing.match(/data-replaced-at/gu)).toHaveLength(4);
+    const recap = render({ reveal: false });
+    expect(recap).not.toContain('kit-quiz-choice');
+    expect(recap).not.toContain('data-replaced-at');
+  });
+
   it('uses tiles through the short-option boundary and rows beyond it', () => {
     const boundary = 'x'.repeat(QUIZ_TILE_MAX_CHARS);
     expect(render({ options: [boundary, 'Short'] })).toContain('data-form="tiles"');

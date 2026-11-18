@@ -945,6 +945,7 @@ function describedParagraph(text: DescribedText): SceneParagraph {
       },
     ],
     step: null,
+    replacedAt: null,
     align: text.align,
     box,
     lineHeight: box.height,

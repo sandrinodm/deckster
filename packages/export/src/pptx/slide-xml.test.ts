@@ -10,7 +10,7 @@ import { contentContract, PIXEL_PNG, logoNode, slideInput, titleNode } from '#pp
 import { slideXml } from '#pptx/slide-xml.ts';
 import { layoutFrame } from '#pptx/text-xml.ts';
 import { surfaceThemeFixture } from '#pptx/theme.fixture.ts';
-import { boxNode } from '#scene/scene.fixture.ts';
+import { boxNode, line, paragraph, textNode } from '#scene/scene.fixture.ts';
 
 /**
  * The slide's title as the layout's placeholder has it.
@@ -177,6 +177,90 @@ describe('slideXml', () => {
       expect(targets.length).toBeGreaterThan(0);
       const declared = declaredIds(written.xml);
       expect(targets.filter((id) => !declared.has(id))).toEqual([]);
+    });
+  });
+
+  describe('content replaced at a step', () => {
+    /**
+     * A neutral copy that step 1 replaces: a filled box and its text, and the overlay that replaces
+     * them, entered at step 1.
+     */
+    const copy = [
+      boxNode(40, { replacedAt: 1, rect: { x: 100, y: 400, width: 800, height: 100 } }),
+      textNode(
+        41,
+        paragraph([line('Neutral copy', 460)], {
+          box: { x: 128, y: 420, width: 700, height: 50 },
+          replacedAt: 1,
+        }),
+        { replacedAt: 1 },
+      ),
+      boxNode(42, { step: 1, rect: { x: 100, y: 400, width: 800, height: 100 } }),
+      textNode(
+        43,
+        paragraph([line('Answer overlay', 460)], {
+          box: { x: 128, y: 420, width: 700, height: 50 },
+          step: 1,
+        }),
+        { step: 1 },
+      ),
+    ];
+
+    /**
+     * Writes the copy and its overlay.
+     *
+     * @param overrides - Write options that differ.
+     */
+    function write(overrides: Partial<SlideWriteOptions> = {}): string {
+      return slideXml(
+        createPackage(),
+        'ppt/slides/slide1.xml',
+        slideInput(0, copy),
+        options(overrides),
+      ).xml;
+    }
+
+    it('does not write the replaced content without animations', () => {
+      const xml = write({ animate: false });
+      expect(xml).not.toContain('Neutral copy');
+      expect(xml).toContain('Answer overlay');
+      expect(xml.match(/<a:t>/g)).toHaveLength(1);
+      expect(xml).not.toContain('<p:timing>');
+      expect(xml.match(/<p:sp>/g)).toHaveLength(2);
+    });
+
+    it('writes the replaced content and exits it on the click that enters its replacement', () => {
+      const xml = write();
+      expect(xml).toContain('Neutral copy');
+      expect(xml).toContain('Answer overlay');
+      expect(xml.match(/<p:cond delay="indefinite"\/>/g)).toHaveLength(1);
+      expect(xml.match(/presetClass="exit"/g)).toHaveLength(2);
+      expect(xml.match(/presetClass="entr"/g)).toHaveLength(2);
+      expect(xml.lastIndexOf('presetClass="entr"')).toBeLessThan(xml.indexOf('presetClass="exit"'));
+    });
+
+    it('animates nothing in image mode', () => {
+      const xml = write({ mode: 'image' });
+      expect(xml).not.toContain('<p:timing>');
+      expect(xml).not.toContain('presetClass');
+    });
+
+    it('drops only the replaced paragraphs of a frame, and exits only those when animated', () => {
+      const mixed = textNode(50, paragraph([line('Kept', 140)]));
+      mixed.paragraphs.push(paragraph([line('Replaced', 214)], { replacedAt: 1 }));
+      const slide = slideInput(0, [mixed]);
+      const still = slideXml(
+        createPackage(),
+        'ppt/slides/slide1.xml',
+        slide,
+        options({ animate: false }),
+      );
+      expect(still.xml).toContain('Kept');
+      expect(still.xml).not.toContain('Replaced');
+      const moving = slideXml(createPackage(), 'ppt/slides/slide1.xml', slide, options());
+      expect(moving.xml).toContain('Replaced');
+      expect(moving.xml).toContain('<p:pRg st="1" end="1"/>');
+      expect(moving.xml.match(/presetClass="exit"/g)).toHaveLength(1);
     });
   });
 });

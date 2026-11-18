@@ -40,7 +40,10 @@ const QUIZ_TILE_LEVELS = [
  * other rows reveal muted overlays on that same step, keeping their initial text neutral. Both
  * states occupy the same box; the hidden explanation also keeps its space, and fitting measures the
  * complete content independently of the requested step or static mode. Tile text is end-aligned so
- * both stacked copies agree, even when options wrap differently.
+ * both stacked copies agree, even when options wrap differently. With reveal enabled each neutral
+ * copy carries `data-replaced-at="1"`, which tells the PowerPoint export that the overlay revealed
+ * at step 1 covers it: an animated file exits the copy on that click, and a file without click
+ * animations leaves it out wherever step 1 is shown.
  */
 function QuizLayout({ frontmatter, slots }: LayoutProps<typeof quizLayoutContract>): ReactNode {
   const { options, answer, explanation, reveal } = frontmatter;
@@ -103,7 +106,10 @@ function QuizLayout({ frontmatter, slots }: LayoutProps<typeof quizLayoutContrac
                   data-correct={String(correct)}
                   {...enterProps(2 + index, isStatic)}>
                   {reveal ? (
-                    <div className="kit-quiz-choice" aria-hidden={answered || undefined}>
+                    <div
+                      className="kit-quiz-choice"
+                      data-replaced-at="1"
+                      aria-hidden={answered || undefined}>
                       <Choice letter={letter} text={option} type={size.text} correct={false} />
                     </div>
                   ) : null}

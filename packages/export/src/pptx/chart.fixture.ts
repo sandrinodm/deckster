@@ -108,6 +108,7 @@ export function chartScene(
     hints: [],
     slot: null,
     step: null,
+    replacedAt: null,
   };
   const node: ChartNode = {
     ...common,

@@ -254,8 +254,7 @@ export function slideXml(
   const background = backgroundXml(writer);
   const masterShapes = showMaster ? {} : { showMasterSp: 0 };
   const hidden = slide.hidden === true ? { show: 0 } : {};
-  const timing =
-    options.animate && options.mode !== 'image' ? timingXml(revealSteps(writer.reveals)) : '';
+  const timing = isAnimated(options) ? timingXml(revealSteps(writer.reveals)) : '';
   writer.counts.animations = [...writer.reveals.keys()].length;
   const xml =
     XML_DECLARATION +
@@ -277,6 +276,47 @@ export function slideXml(
     placeholders: filled,
     droppedLinks: writer.droppedLinks,
   };
+}
+
+/**
+ * Whether the slide gets click animations: they are asked for and the mode has native shapes to
+ * animate (image mode draws the slide as one picture).
+ *
+ * @param options - The slide's write options.
+ */
+function isAnimated(options: SlideWriteOptions): boolean {
+  return options.animate && options.mode !== 'image';
+}
+
+/**
+ * Takes out the content that a later step replaces, for slides without click animations: without
+ * the animation nothing would take it away, so it would stay under its replacement. Items replaced
+ * as a whole go, and so do the replaced paragraphs of a text frame (a frame left empty goes too).
+ *
+ * @param items - The slide's planned items.
+ */
+function withoutReplaced(items: readonly PlanItem[]): PlanItem[] {
+  const kept: PlanItem[] = [];
+  for (const item of items) {
+    const { node } = item;
+    if (node.replacedAt !== null) {
+      continue;
+    }
+
+    if (item.kind !== 'native' || node.kind !== 'text') {
+      kept.push(item);
+      continue;
+    }
+
+    const paragraphs = node.paragraphs.filter((paragraph) => paragraph.replacedAt === null);
+    if (paragraphs.length === node.paragraphs.length) {
+      kept.push(item);
+    } else if (paragraphs.length > 0) {
+      kept.push({ kind: 'native', node: { ...node, paragraphs } });
+    }
+  }
+
+  return kept;
 }
 
 /**
@@ -382,9 +422,10 @@ function contentShapes(writer: Writer): SlideShapes {
   const shapes: string[] = [backgroundGrainXml(writer)];
   const filled: PptxPlaceholderKind[] = [];
   const outlining = options.outlineFonts;
-  const grouped = groupText(slide.plan.items, (node) =>
+  const planned = groupText(slide.plan.items, (node) =>
     outlining === null ? false : isOutlineCandidate(node.paragraphs),
   );
+  const grouped = isAnimated(options) ? planned : withoutReplaced(planned);
   const chrome = chromeShapes(slide, grouped);
   const layoutChrome = options.chrome ?? [];
   // Background layers are the slide's first shapes, so they would cover the chrome its layout
@@ -715,25 +756,46 @@ function textXml(writer: Writer, node: TextNode, placeholder: AssignedPlaceholde
       : writer.options.placeholders?.placeholders.find((entry) => entry.kind === placeholder.kind);
   const context: TextContext =
     placeholder === null ? writer.context : { ...writer.context, defaults: spec?.defaults ?? null };
-  const steps = node.paragraphs.map((paragraph) => paragraph.step);
-  const uniform = steps.every((step) => step === steps[0]);
-  if (uniform) {
-    recordReveal(writer, { ...node, step: steps[0] ?? node.step }, id, true);
-  } else {
-    steps.forEach((step, index) => {
-      if (step !== null && step > 0) {
-        addReveal(writer, step, {
-          shapeId: id,
-          paragraphs: { start: index, end: index },
-          hasText: true,
-        });
-      }
-    });
-  }
+  recordTextReveals(writer, node, id);
 
   const name = frameName(node, placeholder);
   return textFrameXml(node.paragraphs, id, name, context, placeholder?.ref ?? null, {
     layoutRect: spec?.rect ?? null,
+  });
+}
+
+/**
+ * Records when a text frame appears and when it is replaced: as a whole shape when all its
+ * paragraphs share a step, else paragraph by paragraph.
+ *
+ * @param writer - The slide's state.
+ * @param node - The frame.
+ * @param shapeId - The frame's shape id.
+ */
+function recordTextReveals(writer: Writer, node: TextNode, shapeId: number): void {
+  const steps = node.paragraphs.map((paragraph) => paragraph.step);
+  const replaced = node.paragraphs.map((paragraph) => paragraph.replacedAt);
+  const uniformStep = steps.every((step) => step === steps[0]);
+  const uniformReplaced = replaced.every((step) => step === replaced[0]);
+  const whole = {
+    step: uniformStep ? (steps[0] ?? node.step) : null,
+    replacedAt: uniformReplaced ? (replaced[0] ?? node.replacedAt) : null,
+  };
+  recordReveal(writer, whole, shapeId, true);
+  node.paragraphs.forEach((paragraph, index) => {
+    const paragraphs = { start: index, end: index };
+    if (!uniformStep && paragraph.step !== null && paragraph.step > 0) {
+      addReveal(writer, paragraph.step, { shapeId, paragraphs, hasText: true, effect: 'in' });
+    }
+
+    if (!uniformReplaced && paragraph.replacedAt !== null && paragraph.replacedAt > 0) {
+      addReveal(writer, paragraph.replacedAt, {
+        shapeId,
+        paragraphs,
+        hasText: true,
+        effect: 'out',
+      });
+    }
   });
 }
 
@@ -1240,7 +1302,7 @@ function tracked(
 }
 
 /**
- * Records that a shape appears at the node's step.
+ * Records that a shape appears at the node's step and disappears at the step that replaces it.
  *
  * @param writer - The slide's state.
  * @param node - The node.
@@ -1249,12 +1311,16 @@ function tracked(
  */
 function recordReveal(
   writer: Writer,
-  node: Pick<SceneNode, 'step'>,
+  node: Pick<SceneNode, 'step' | 'replacedAt'>,
   shapeId: number,
   hasText: boolean,
 ): void {
   if (node.step !== null && node.step > 0) {
-    addReveal(writer, node.step, { shapeId, paragraphs: null, hasText });
+    addReveal(writer, node.step, { shapeId, paragraphs: null, hasText, effect: 'in' });
+  }
+
+  if (node.replacedAt !== null && node.replacedAt > 0) {
+    addReveal(writer, node.replacedAt, { shapeId, paragraphs: null, hasText, effect: 'out' });
   }
 }
 
@@ -1263,7 +1329,7 @@ function recordReveal(
  *
  * @param writer - The slide's state.
  * @param step - The step.
- * @param target - What appears.
+ * @param target - What appears or disappears.
  */
 function addReveal(writer: Writer, step: number, target: RevealTarget): void {
   const list = writer.reveals.get(step) ?? [];
