@@ -43,4 +43,12 @@ describe('stageTransition', () => {
     expect(stageTransition(0, at(0, 2))).toBe('none');
     expect(stageTransition(3, at(4, 0))).toBe('fade');
   });
+
+  it('pairs slides that follow one another in a talk, skipping hidden ones', () => {
+    const hidden = [false, true, false, false, false];
+    const input = { ...at(2, 0), hidden };
+    expect(stageTransition(2, input)).toBe('push');
+    expect(stageTransition(1, { ...at(1, 0), hidden })).toBeUndefined();
+    expect(stageTransition(3, { ...at(3, 0), hidden })).toBe('none');
+  });
 });

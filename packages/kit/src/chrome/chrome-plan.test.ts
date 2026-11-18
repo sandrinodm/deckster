@@ -25,7 +25,7 @@ function input(
     chrome: CHROME,
     logoCorner: 'top-right',
     index,
-    total: 16,
+    hidden: Array.from({ length: 16 }, () => false),
     frontmatter: { layout: 'content', ...frontmatter },
     bleed,
   };
@@ -43,6 +43,35 @@ describe('planChrome', () => {
     });
     expect(plan.pageText).toBe('3 / 16');
     expect(plan.progress).toBe(3 / 16);
+  });
+
+  it('counts shown slides only for the page number, its total and the progress', () => {
+    const hidden = Array.from({ length: 16 }, (_, slide) => slide === 1 || slide === 2);
+    const plan = planChrome({ ...input(5), hidden });
+    expect(plan.pageText).toBe('4 / 14');
+    expect(plan.progress).toBe(4 / 14);
+  });
+
+  it('leaves the page number out of a hidden slide and keeps the last progress', () => {
+    const hidden = Array.from({ length: 16 }, (_, slide) => slide === 4);
+    const plan = planChrome({ ...input(4), hidden });
+    expect(plan.corners['bottom-right']).toEqual(['footer']);
+    expect(plan.corners['top-right']).toEqual(['logo']);
+    expect(plan.pageText).toBe('');
+    expect(plan.progress).toBe(4 / 15);
+  });
+
+  it('has no progress on a hidden slide before any shown slide', () => {
+    const hidden = Array.from({ length: 16 }, (_, slide) => slide === 0);
+    expect(
+      planChrome({ ...input(0), hidden, chrome: { ...CHROME, skipFirst: false } }).progress,
+    ).toBe(0);
+  });
+
+  it('skips the brand first-slide rule on the first shown slide', () => {
+    const hidden = Array.from({ length: 16 }, (_, slide) => slide === 0);
+    expect(planChrome({ ...input(1), hidden }).visible).toBe(false);
+    expect(planChrome({ ...input(2), hidden }).visible).toBe(true);
   });
 
   it('hides on the first slide when the brand skips it, and on slides that turn it off', () => {

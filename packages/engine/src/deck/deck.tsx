@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useReducer,
   useRef,
@@ -35,6 +36,7 @@ import {
   type NavigationState,
   type Position,
 } from '#navigation/navigation.ts';
+import { hiddenSlides, neighbourShownSlide } from '#navigation/shown-slides.ts';
 import { composePlugins, type DeckRuntime } from '#plugins/compose-plugins.ts';
 import { createReadinessRegistry } from '#readiness/readiness-registry.ts';
 import { useDeckApi } from '#runtime/deck-api.ts';
@@ -95,7 +97,11 @@ export function Deck({
   isEmbed = false,
 }: DeckProps): ReactNode {
   const slideIds = useMemo(() => manifest.slides.map((slide) => slide.id), [manifest]);
-  const [state, dispatch] = useReducer(navigate, slideIds, initialState);
+  const hidden = useMemo(() => hiddenSlides(manifest), [manifest]);
+  const [state, dispatch] = useReducer(navigate, manifest, initialState);
+  useEffect(() => {
+    dispatch({ type: 'hidden', hidden });
+  }, [hidden]);
   const position = useMemo(() => currentPosition(state), [state]);
   const runtime = useMemo(
     () => composePlugins(isEmbed ? embedPlugins(plugins) : plugins),
@@ -209,11 +215,13 @@ function MountedSlides({ manifest, state, isStatic }: MountedSlidesProps) {
   const stageInput = {
     current,
     previousSlide: state.previousSlide,
+    hidden: state.hidden,
     transitionOf: (index: number) =>
       manifest.slides[index]?.module.slideMeta.frontmatter.transition,
   };
+  const mounted = isStatic ? undefined : mountedSlides(state);
   return manifest.slides.map((entry, index) => {
-    if (!isStatic && Math.abs(index - current) > MOUNTED_NEIGHBOURS) {
+    if (mounted !== undefined && !mounted.has(index)) {
       return null;
     }
 
@@ -234,12 +242,42 @@ function MountedSlides({ manifest, state, isStatic }: MountedSlidesProps) {
 }
 
 /**
- * The navigation state at start-up: the position the URL hash names, else the first slide.
+ * The indexes of the slides that stay mounted outside static mode: the current slide and, on each
+ * side, the next {@link MOUNTED_NEIGHBOURS} shown slides, so a hidden slide between two shown ones
+ * is not mounted and the neighbour a move lands on always is.
  *
- * @param slideIds - Slide ids in manifest order.
+ * @param state - The navigation state.
  */
-function initialState(slideIds: readonly string[]): NavigationState {
-  return createNavigationState(slideIds.length, parseHash(window.location.hash, slideIds));
+function mountedSlides(state: NavigationState): ReadonlySet<number> {
+  const mounted = new Set([state.position.slide]);
+  for (const side of ['backward', 'forward'] as const) {
+    let index = state.position.slide;
+    for (let count = 0; count < MOUNTED_NEIGHBOURS; count += 1) {
+      const neighbour = neighbourShownSlide(state.hidden, index, side);
+      if (neighbour === undefined) {
+        break;
+      }
+
+      mounted.add(neighbour);
+      index = neighbour;
+    }
+  }
+
+  return mounted;
+}
+
+/**
+ * The navigation state at start-up: the position the URL hash names, else the first shown slide.
+ *
+ * @param manifest - The deck.
+ */
+function initialState(manifest: DeckManifest): NavigationState {
+  const slideIds = manifest.slides.map((slide) => slide.id);
+  return createNavigationState(
+    slideIds.length,
+    parseHash(window.location.hash, slideIds),
+    hiddenSlides(manifest),
+  );
 }
 
 /**

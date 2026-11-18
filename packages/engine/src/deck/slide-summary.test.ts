@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import { resolveSlideIndex } from '#deck/slide-summary.ts';
+import type { DeckManifest } from '#contract/manifest.ts';
+
+import { resolveSlideIndex, summarizeSlides } from '#deck/slide-summary.ts';
 
 const SLIDE_IDS = ['title', 'steps', 'closing'];
 
@@ -19,5 +21,30 @@ describe('resolveSlideIndex', () => {
     expect(() => resolveSlideIndex(SLIDE_IDS, 'intro')).toThrow(
       'Slide ids: title, steps, closing.',
     );
+  });
+});
+
+describe('summarizeSlides', () => {
+  it('reports every slide in order with whether it is hidden', () => {
+    const slide = (id: string, hidden?: boolean) => ({
+      id,
+      file: `slides/${id}.mdx`,
+      module: {
+        slideMeta: {
+          title: id,
+          notes: '',
+          frontmatter: { layout: 'default', ...(hidden === undefined ? {} : { hidden }) },
+        },
+      },
+    });
+    const manifest = {
+      slides: [slide('a'), slide('b', true), slide('c', false)],
+    } as unknown as DeckManifest;
+    const summaries = summarizeSlides(manifest, []);
+    expect(summaries.map((summary) => [summary.id, summary.hidden])).toEqual([
+      ['a', false],
+      ['b', true],
+      ['c', false],
+    ]);
   });
 });

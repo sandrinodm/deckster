@@ -147,7 +147,7 @@ function useChromeLook(): ChromeLook {
     chrome: brand.chrome,
     logoCorner: brand.logo.placement.corner,
     index,
-    total: deck.manifest.slides.length,
+    hidden: deck.slides.map((slide) => slide.hidden),
     frontmatter,
     bleed,
   });

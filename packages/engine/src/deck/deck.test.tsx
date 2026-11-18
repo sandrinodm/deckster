@@ -290,6 +290,41 @@ describe('Deck navigation', () => {
   });
 });
 
+describe('Deck hidden slides', () => {
+  /**
+   * A four-slide deck whose first and third slides are hidden.
+   */
+  function hiddenDeck() {
+    const hidden = (id: string) =>
+      mdxSlide(id, () => null, { frontmatter: { layout: 'default', hidden: true } });
+    return manifestOf(hidden('a'), stepsSlide('b', []), hidden('c'), stepsSlide('d', []));
+  }
+
+  it('starts on the first shown slide and lists every slide with its hidden flag', () => {
+    mounted = renderDeck(hiddenDeck());
+    expect(window.location.hash).toBe('#/2/0');
+    expect(window.__deck?.slides.map((slide) => slide.hidden)).toEqual([true, false, true, false]);
+  });
+
+  it('skips hidden slides with the keys and still goes to one with goto or a hash', () => {
+    mounted = renderDeck(hiddenDeck());
+    press('ArrowRight');
+    expect(window.location.hash).toBe('#/4/0');
+    press('ArrowLeft');
+    expect(window.location.hash).toBe('#/2/0');
+    act(() => window.__deck?.goto('c'));
+    expect(window.location.hash).toBe('#/3/0');
+    press('ArrowRight');
+    expect(window.location.hash).toBe('#/4/0');
+  });
+
+  it('opens the hidden slide a hash names', () => {
+    window.history.replaceState(null, '', '#/3');
+    mounted = renderDeck(hiddenDeck());
+    expect(window.__deck?.position).toEqual({ slide: 2, step: 0 });
+  });
+});
+
 /**
  * Clicks an element inside `act()` with the given mouse button, the way a browser sends it: a
  * `click` for the left button, a `contextmenu` for the right.

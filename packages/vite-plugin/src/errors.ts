@@ -115,6 +115,22 @@ export function invalidSlideList(ref: FileRef, problems: readonly Problem[]): De
 }
 
 /**
+ * A deck whose every slide is hidden, so a talk would have nothing to show.
+ */
+export function noShownSlide(ref: FileRef, deckId: string): DeckBuildError {
+  return deckBuildError({
+    ...ref,
+    summary: 'Every slide of the deck is hidden',
+    problems: [
+      {
+        message: `Every slide of the deck "${deckId}" has \`hidden: true\`, so there is nothing to show.`,
+        fix: 'Show at least one slide: remove `hidden: true` from one of them.',
+      },
+    ],
+  });
+}
+
+/**
  * MDX that does not compile.
  */
 export function invalidMdx(ref: FileRef, problem: Problem): DeckBuildError {

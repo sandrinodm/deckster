@@ -1,6 +1,8 @@
 import type { ChromeTokens } from '@deckster/brand';
 import type { BleedSide } from '@deckster/engine';
 
+import { shownPageNumber, shownSlideIndexes } from '@deckster/engine';
+
 /**
  * A corner of the slide, as the brand's chrome tokens name it.
  */
@@ -97,9 +99,10 @@ export type ChromeInput = {
   index: number;
 
   /**
-   * The number of slides in the deck.
+   * Whether each slide of the deck is hidden, in deck order. The page number, its total and the
+   * progress count the shown slides only.
    */
-  total: number;
+  hidden: readonly boolean[];
 
   /**
    * The slide's validated frontmatter.
@@ -128,12 +131,14 @@ export type ChromePlan = {
   corners: Readonly<Record<ChromeCorner, readonly ChromeItem[]>>;
 
   /**
-   * The page number as the brand formats it, such as `3 / 14`.
+   * The page number as the brand formats it, such as `3 / 14`; empty on a hidden slide, which has
+   * no page number.
    */
   pageText: string;
 
   /**
-   * How far through the deck the slide is, from more than 0 up to 1, for the progress bar.
+   * How far through the deck the slide is, from more than 0 up to 1, for the progress bar. A hidden
+   * slide keeps the value of the last shown slide before it, or 0 when there is none.
    */
   progress: number;
 };
@@ -148,12 +153,16 @@ export type ChromePlan = {
  * @returns The plan; `visible` is `false` for a slide that hides chrome.
  */
 export function planChrome(input: ChromeInput): ChromePlan {
-  const { chrome, index, total } = input;
+  const { chrome, index } = input;
+  const shown = shownSlideIndexes(input.hidden);
+  const total = shown.length;
+  const page = shownPageNumber(input.hidden, index);
+  const reached = shown.filter((slide) => slide <= index).length;
   const covered = new Set<ChromeCorner>(input.bleed.flatMap((side) => SIDE_CORNERS[side]));
   const placed: Readonly<Record<ChromeItem, ChromeCorner | undefined>> = {
     logo: chrome.logo.show ? input.logoCorner : undefined,
     footer: chrome.footer.show && chrome.footer.text !== '' ? chrome.footer.corner : undefined,
-    page: chrome.pageNumber.show ? chrome.pageNumber.corner : undefined,
+    page: chrome.pageNumber.show && page !== undefined ? chrome.pageNumber.corner : undefined,
   };
   /**
    * The items the brand places in a corner, outermost first.
@@ -179,8 +188,8 @@ export function planChrome(input: ChromeInput): ChromePlan {
       'bottom-left': itemsIn('bottom-left'),
       'bottom-right': itemsIn('bottom-right'),
     },
-    pageText: formatPageNumber(chrome.pageNumber.format, index + 1, total),
-    progress: total === 0 ? 0 : Math.min((index + 1) / total, 1),
+    pageText: page === undefined ? '' : formatPageNumber(chrome.pageNumber.format, page, total),
+    progress: total === 0 ? 0 : Math.min(reached / total, 1),
   };
 }
 
@@ -196,7 +205,8 @@ export function formatPageNumber(format: string, number: number, total: number):
 }
 
 /**
- * Whether chrome shows on the slide.
+ * Whether chrome shows on the slide: not when it turns chrome off, and not on the deck's first
+ * shown slide when the brand skips chrome there.
  *
  * @param input - The brand's chrome and the slide on screen.
  */
@@ -205,5 +215,5 @@ function isVisible(input: ChromeInput): boolean {
     return false;
   }
 
-  return !(input.chrome.skipFirst && input.index === 0);
+  return !(input.chrome.skipFirst && input.index === shownSlideIndexes(input.hidden)[0]);
 }

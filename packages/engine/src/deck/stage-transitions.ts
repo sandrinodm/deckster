@@ -1,5 +1,7 @@
 import type { TransitionKind } from '#contract/transition.ts';
 
+import { areShownNeighbours } from '#navigation/shown-slides.ts';
+
 /**
  * What decides the transition each slide on the stage carries.
  */
@@ -15,6 +17,12 @@ export type StageTransitionInput = {
   previousSlide: number | undefined;
 
   /**
+   * Per slide index, whether it is hidden; a move between slides with only hidden slides between
+   * them counts as a move between neighbours. Missing means no slide is hidden.
+   */
+  hidden?: readonly boolean[];
+
+  /**
    * A slide's own `transition:` frontmatter, `undefined` when it leaves the choice to the brand.
    */
   transitionOf: (index: number) => TransitionKind | undefined;
@@ -24,11 +32,12 @@ export type StageTransitionInput = {
  * The transition a slide on the deck's stage carries in `data-transition`, which the kit's motion
  * stylesheet reads; `undefined` leaves it to the brand's transition.
  *
- * A move between two neighbouring slides plays the transition of the later slide of the pair: going
- * forward the transition onto the next slide, going back the same one in reverse. That holds
- * however the move was made (a key, a click, `goto`, a link, the presenter window), so a slide's
- * `transition:` describes its boundary with the slide before it. A move to a slide further away
- * cuts (`none`), since that slide was not mounted to move from.
+ * A move between two neighbouring slides (the next shown slide, hidden ones skipped) plays the
+ * transition of the later slide of the pair: going forward the transition onto the next slide,
+ * going back the same one in reverse. That holds however the move was made (a key, a click, `goto`,
+ * a link, the presenter window), so a slide's `transition:` describes its boundary with the slide
+ * before it. A move to a slide further away cuts (`none`), since that slide was not mounted to move
+ * from.
  *
  * A neighbour already carries the transition of the move that would bring it on screen, so it rests
  * where that transition starts (off to the side for `push`, transparent for `fade`) before the
@@ -42,7 +51,7 @@ export function stageTransition(
   index: number,
   input: StageTransitionInput,
 ): TransitionKind | undefined {
-  const { current, previousSlide, transitionOf } = input;
+  const { current, previousSlide, transitionOf, hidden = [] } = input;
   if (index !== current) {
     return transitionOf(Math.max(index, current));
   }
@@ -51,7 +60,7 @@ export function stageTransition(
     return undefined;
   }
 
-  if (Math.abs(previousSlide - current) !== 1) {
+  if (!areShownNeighbours(hidden, previousSlide, current)) {
     return 'none';
   }
 

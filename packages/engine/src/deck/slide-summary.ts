@@ -48,6 +48,12 @@ export type SlideSummary = {
   budget: number | undefined;
 
   /**
+   * Whether the slide is hidden (`hidden: true` in its frontmatter): it stays in the deck and the
+   * build, but a talk skips it.
+   */
+  hidden: boolean;
+
+  /**
    * The slide's validated frontmatter, with defaults applied: the fields every slide has plus those
    * of its layout. `surface` is absent when the slide uses the default surface.
    */
@@ -73,6 +79,7 @@ export function summarizeSlides(
     stepCount: stepCounts[index],
     notes: entry.module.slideMeta.notes,
     budget: budgetSeconds(entry.module.slideMeta.frontmatter.budget),
+    hidden: entry.module.slideMeta.frontmatter.hidden === true,
     frontmatter: entry.module.slideMeta.frontmatter,
   }));
 }

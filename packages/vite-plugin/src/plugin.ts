@@ -2,6 +2,7 @@ import type { Plugin, Rollup, ViteDevServer } from 'vite';
 
 import { onCodeReleased } from '@deckster/brand/node';
 import { devSessionOf, issueDevSession } from '@deckster/comments/dev-session';
+import { Effect } from 'effect';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,6 +15,7 @@ import {
   VIRTUAL_BRAND_CSS_ID,
   VIRTUAL_BRAND_ID,
 } from '#brand/brand-modules.ts';
+import { checkShownSlides } from '#decks/check-shown-slides.ts';
 import { DECKS_DIR, displayPath, SLIDES_DIR, type DeckLocation } from '#decks/deck-paths.ts';
 import { findDeck } from '#decks/discover-decks.ts';
 import { loadDeck, type LoadedDeck } from '#decks/load-deck.ts';
@@ -221,7 +223,7 @@ export function deckPlugin(
    */
   const activeDeck = (): Promise<LoadedDeck> => {
     loadedDeck ??= findActiveDeck()
-      .then((deck) => run(loadDeck(workspaceRoot, deck)))
+      .then((deck) => run(loadCheckedDeck(workspaceRoot, deck)))
       .catch((error: unknown) => {
         loadedDeck = undefined;
         throw error;
@@ -380,6 +382,21 @@ export function deckPlugin(
     },
   };
 }
+
+/**
+ * Loads a deck and checks that a talk has a slide to show.
+ *
+ * @param workspaceRoot - The absolute workspace root.
+ * @param deck - The deck to load.
+ */
+const loadCheckedDeck = Effect.fn('loadCheckedDeck')(function* (
+  workspaceRoot: string,
+  deck: DeckLocation,
+) {
+  const loaded = yield* loadDeck(workspaceRoot, deck);
+  yield* checkShownSlides(workspaceRoot, loaded);
+  return loaded;
+});
 
 /**
  * Generates `virtual:deck` for a loaded deck, watching its config and reporting its warnings.
