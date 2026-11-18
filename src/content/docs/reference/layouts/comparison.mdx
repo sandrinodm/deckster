@@ -5,7 +5,7 @@ sidebar:
   order: 23
 ---
 
-Use the `comparison` layout to set two or three options side by side and measure them on the same rows: before and after, you and a competitor, or the options of a decision. You write the options and rows in the frontmatter, mark which option wins each row, and can set the one you recommend on a panel under a badge.
+Use the `comparison` layout to set two or three options side by side and measure them on the same rows: you and a competitor, or the options of a decision. You write the options and rows in the frontmatter, mark which option wins each row, and can set the one you recommend on a panel under a badge.
 
 ## Example
 
@@ -20,7 +20,7 @@ Two options serve here as before and after. Each row names its `winner`, drawn b
 - **You recommend one.** `recommended: true` on at most one option sets its column on a panel with an accent rule under a badge, "Recommended" unless you write `badge:` (up to 20 characters).
 - **You present one option per click.** `reveal: true` adds one option per step.
 
-The title takes up to 50 characters, one line, so the rows fit under it. With three options the columns are narrower: a row `label` takes 18 characters instead of 24, a value 20 instead of 28, and an option's `summary` 24 instead of 36. More than three options or five rows is a [`table`](/reference/layouts/table/).
+The title takes up to 50 characters, one line, so the rows fit under it. With three options the columns are narrower: a row `label` takes 18 characters instead of 24, a value 20 instead of 28, and an option's `summary` 24 instead of 36. More than three options or five rows is a [`table`](/reference/layouts/table/). For plans with a price each, use [`pricing`](/reference/layouts/pricing/); for what to do and what to avoid, [`do-dont`](/reference/layouts/do-dont/); and for pictures of one thing before and after a change, [`before-after`](/reference/layouts/before-after/).
 
 ## Reference
 
@@ -55,5 +55,8 @@ launch-review: 2 errors, 0 warnings.
 - [`shift`](/reference/layouts/shift/): one change from the old state to the new, rather than options to choose from.
 - [`cards`](/reference/layouts/cards/): two to four ideas of equal weight that are not alternatives.
 - [`stats`](/reference/layouts/stats/): each option is one number.
+- [`pricing`](/reference/layouts/pricing/): two to four plans side by side, each with its price and what it includes.
+- [`do-dont`](/reference/layouts/do-dont/): two columns of examples, what to do and what to avoid.
+- [`before-after`](/reference/layouts/before-after/): two pictures at the same size, labelled Before and After.
 
 What `reveal` does is on [builds](/write-slides/builds/).

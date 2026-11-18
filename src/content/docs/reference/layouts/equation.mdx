@@ -19,7 +19,7 @@ Notice how the weight falls: the three terms share one baseline, the × signs ar
 - **The audience should check the arithmetic, or watch it build.** Leave `reveal` out to show it whole; set `reveal: true` to walk through it.
 - **A short title and one line of meaning.** The title takes up to 60 characters, the sentence under it up to 14 words, and the `<Footnote>` with the source up to 16.
 
-The catalog's examples are customers × price × frequency, bookings × take rate = revenue, and lifetime value ÷ acquisition cost. When the figures stand side by side without adding up, use [`stats`](/reference/layouts/stats/); for a trend, use a chart. A longer sum belongs in a [waterfall chart](/reference/charts/#props-Waterfall).
+The catalog's examples are customers × price × frequency, bookings × take rate = revenue, and lifetime value ÷ acquisition cost. When the figures stand side by side without adding up, use [`stats`](/reference/layouts/stats/); for a trend, use a chart. A longer sum belongs in a [waterfall chart](/reference/charts/#props-Waterfall). For nested market sizes, such as a whole market and the part you can win, use [`market`](/reference/layouts/market/).
 
 ## Reference
 
@@ -36,5 +36,6 @@ The catalog's examples are customers × price × frequency, bookings × take rat
 
 - [`stats`](/reference/layouts/stats/): two to four figures that stand side by side without adding up.
 - [`chart`](/reference/layouts/chart/): one chart, when the point is a trend or a breakdown with more parts than four.
+- [`market`](/reference/layouts/market/): two or three nested market sizes, outermost first, when the figures sit inside each other rather than multiply.
 
 How `reveal: true` steps the terms in is part of [building a slide in steps](/write-slides/builds/).
