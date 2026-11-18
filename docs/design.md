@@ -55,10 +55,35 @@ window size, in a screenshot and in an export.
 Each slide has one integer step. Components opt in with `<Step at={2}>` or an `at` prop. The URL
 hash holds the slide and the step (`#/12/3`), so a reload or a shared link lands on the same view.
 
+Motion is there to segment an explanation and to signal where to look, not to decorate. A step
+comes in with one of a few effects (`<Step at={2} effect="wipe">`; rise is the default), a run of
+steps marked `focus` recedes each earlier one to the brand's muted color, and a big number counts
+up to its value when the deck moves forward onto it. Durations and easings are the brand's motion
+tokens. A receded step changes color, never opacity, so it keeps the brand's text contrast.
+
 The page exposes `window.__deck` (`goto`, `ready()` and the slide list) and a `?static` mode in
 which every animation is at its end state. `deck shot`, `deck lint` and `deck export` all drive a
 slide through these two. That is why content that loads late must hold `ready()`, and why
-animations never run in static mode.
+animations never run in static mode: there every revealed step is in place at full strength,
+nothing is receded and every number shows its final value. Copies of a slide (thumbnails,
+presenter panes) and viewers who ask for reduced motion see no movement either.
+
+## Transitions and morphs
+
+The brand names the slide transition (`motion.transition`) and a slide may name its own
+(`transition:` in its frontmatter) for the boundary with the slide before it, both ways. The
+choice belongs to the pair of slides rather than to the key that was pressed, so a deck moves the
+same way from the keyboard, from a link and from the presenter window. Every kind brings the
+incoming slide in on top while the outgoing one stays opaque and in place (or, for `push`, moves
+off edge to edge), so the canvas never shows between two slides.
+
+A morph carries one element from a slide to the next: `<Morph id>` on both, and the element flies
+to its new place while the slides run their transition underneath. It is a view transition scoped
+to the canvas, which names only the one live copy of the element on each side while the old and
+new states are captured; the neighbouring slides that stay mounted, and the slide copies in
+thumbnails and presenter panes, never carry the name. A view transition applies its update a frame
+after it starts, so only interactive moves morph: `window.__deck` moves apply at once and never
+morph, which keeps `deck shot`, `deck lint` and export exact.
 
 ## Hidden slides
 
@@ -147,6 +172,46 @@ to send.
 Budgets count content (words, bullets, items), never the room the content takes. A slide within
 budget in one brand is then within budget in every brand. Whether it fits a brand's type is a
 separate question, answered by the overflow rules.
+
+## Brand layouts
+
+An organisation's template has layouts of its own: a cover with a mark in one corner, a divider
+with a number set large, a photo that runs off the edge. A brand brings them in
+`brands/<name>/layouts.ts`. Each one is data: a name, the kit layout it falls back to, where the
+title and the slots sit on the 1920x1080 canvas, and the art behind them (SVG or raster files in
+the brand folder). It is not a component. Like `brand.ts`, `layouts.ts` is a static literal, so an
+agent can write it under the code gate (see [agent.md](agent.md)) and the build can read another
+brand's layouts without running anything from that brand. One kit component, `BrandLayout`, draws
+every brand layout from its tokens.
+
+A brand layout takes its contract from its fallback. It has the slots and fields its regions
+bind, with the fallback's descriptions, `required` flags, schemas and checks. A slide that is
+valid on the brand layout is therefore valid on the fallback, and the build refuses a layout that
+binds something the fallback lacks or leaves out something it requires.
+
+That is the fallback rule, and it mirrors diagram cards. A deck may be rendered in another brand,
+so a name the brand lacks must not fail the build. A card the brand does not have falls to the
+next card in the order, and `deck lint` reports it (`diagram-card-missing`). A slide that names a
+brand layout the deck's brand lacks renders with the layout's kit fallback, and `deck lint`
+reports it (`brand-layout-fallback`). The swap happens in Node at build time, and the built deck
+names only the kit layout: nothing about another brand reaches the browser. If two brands define
+the same name with different fallbacks, the build fails and asks to rename one.
+
+Budgets come from the fallback too. A layout may tighten a slot's budget, never loosen it: each
+limit is the lower of the two. A slide within the brand layout's budget is then within the
+fallback's, so the swap cannot push it past what the kit layout holds. For the same reason a
+brand layout cannot take a name a kit layout has.
+
+The trade-off is fixed boxes. A kit layout adapts: it sets its text in the brand's margins and
+grid and steps down to fit. A brand layout places each region at pixels, so it matches the
+template exactly and holds only what its boxes hold. The text still steps down to fit its box,
+but a slot's budget counts words, not the room they take, and a layout whose boxes are small
+should tighten its budget. Brand layouts are for the template's own slides; slides the template
+does not cover use kit layouts.
+
+In a PPTX export, each brand layout a deck uses is written as its own PowerPoint slide layout,
+named after the layout's label. Its art is placed once in the layout, and media boxes become
+picture placeholders.
 
 ## Diagrams, charts and code
 

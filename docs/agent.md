@@ -238,7 +238,9 @@ you pick an element.
 Both get the deck MCP tools (lint, screenshots, outline, comments), resume the same conversation
 from turn to turn, and keep it across restarts of `deck dev`. Claude Code runs with no settings
 file at all; its standing rules point it at the catalog and at the `create-presentation` skill's
-guidance as a plain file, since skills are off.
+guidance as a plain file, since skills are off. The same rules ask both providers to build a
+slide's evidence (a chart, a diagram, code, a list the notes walk through) in steps in the order
+the notes explain it, with a `[click]` cue in the notes for each step.
 
 ## Troubleshooting
 
