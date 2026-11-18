@@ -22,7 +22,7 @@ These steps add `nocturne` to a workspace called `talks`. The other three work t
 1. Get a copy of the [repository](https://github.com/sandrinodm/deckster) once, with git or as a ZIP download from GitHub:
 
    ```sh
-   git clone --depth 1 --branch v0.5.0 https://github.com/sandrinodm/deckster.git ~/deckster
+   git clone --depth 1 --branch v0.6.0 https://github.com/sandrinodm/deckster.git ~/deckster
    ```
 
 2. Copy the brand's folder into your workspace's `brands/` folder, then delete its `package.json` and `tsconfig.json`. They list monorepo dependencies (`workspace:*`, `catalog:`) that mean nothing in your workspace.
@@ -113,7 +113,7 @@ Commands that write files keep each brand apart with an `@<brand>` suffix: `deck
 
 ## See what a brand sets
 
-`deck brand <name>` prints a summary: the three families, the type scale in canvas pixels, the spacing, and every role on every surface:
+`deck brand <name>` prints a summary: the three families, the type scale in canvas pixels, the spacing, the brand's own layouts, every role on every surface, the diagram look and the cards:
 
 ```console
 $ deck brand nocturne
@@ -121,11 +121,19 @@ Nocturne (brands/nocturne/brand.ts)
 Fonts: display Fraunces, body Manrope, mono IBM Plex Mono
 Type: display 168px, headline 84px, title 56px, lead 38px, body 34px, small 26px, caption 24px, label 22px, stat 184px, quote 88px, code 26px
 Spacing: 2xs 6px, xs 12px, sm 20px, md 32px, lg 48px, xl 80px, 2xl 120px, 3xl 176px; margins 160x112px
+Layouts: none (layouts.ts adds the brand's own slide layouts)
 Surfaces:
   default (dark): bg #0b0911, surface #181426, fg #efe7da, heading #f7f2ea, muted #b4aed0, accent #ff8f6b, accent-fg #0b0911, border #2d2645, positive #5eead4, negative #ff6f84
   inverse (light): bg #f7f2ea, surface #efe7da, fg #0b0911, heading #0b0911, muted #433a63, accent #c23f1e, accent-fg #f7f2ea, border #e0d4c1, positive #0e7490, negative #b3263c
   accent (light): bg #ff6f4a, surface #ff8f6b, fg #0b0911, heading #0b0911, muted #1f1a30, accent #0b0911, accent-fg #ffb59a, border #c23f1e, positive #0c4a6e, negative #5c0f1f; small text: positive #003755
   gradient (dark): bg #0b0911, surface #f7f2ea14, fg #efe7da, heading #f7f2ea, muted #d6d2e8, accent #ffb59a, accent-fg #0b0911, border #f7f2ea29, positive #67e8f9, negative #ffb59a
+Diagrams: edges 1px, sharp corners, open arrowheads; groups 1px dashed, radius 0px; plain edge labels in the label step
+Cards (colors on the default surface):
+  default: fill #181426, border #b4aed0 1px, radius 0px, plain icon, title display 400
+  outline: no fill, border #b4aed0 1px, radius 0px, plain icon, title display 400
+  solid: fill #ff8f6b, no border, radius 0px, plain icon, title display 400
+  tint: fill #ff8f6b1f, border #ff8f6b 1px, radius 0px, plain icon, title display 400
+  raised: fill #181426, border #ff8f6b 1px, radius 0px, lg shadow, plain icon, title display 400
 Run `deck brand nocturne --json` for every token.
 ```
 

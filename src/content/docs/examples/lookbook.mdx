@@ -11,8 +11,8 @@ The lookbook is one deck that shows everything the kit can make: every layout an
 
 It tells one story, so it reads as a talk rather than a specimen sheet: "Same hour, no van", the launch-day talk of Wrenhaul, a cargo-bike delivery company. **Wrenhaul, its people, customers and every figure are invented.** The deck has 180 slides in 12 parts and 364 steps. Its slides' budgets add up to 122 minutes 35 seconds, and `deck.config.ts` sets `duration: '127m'`. The whole deck is at [/decks/lookbook/](/decks/lookbook/).
 
-<Aside type="note" title="Not in v0.5.0">
-42 of the 180 slides use the 20 layouts that are newer than `@deckster/cli` 0.5.0 (the [layouts reference](/reference/layouts/) lists them). In 0.5.0, `deck lint` reports `layout: There is no "<name>" layout.` for each of those slides, so the deck builds and lints only with a CLI that has them.
+<Aside type="note" title="New in v0.6.0">
+42 of the 180 slides use the 20 layouts that are new in `@deckster/cli` 0.6.0 (the [layouts reference](/reference/layouts/) lists them). In 0.5.0, `deck lint` reports `layout: There is no "<name>" layout.` for each of those slides, so the deck builds and lints only with 0.6.0 or later.
 </Aside>
 
 ## Find what you need
@@ -58,7 +58,7 @@ Here is a split slide with a picture that bleeds off the left edge. The source t
 
 </Steps>
 
-To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). With a CLI that has the 20 newer layouts it lints clean (this output is from the CLI packed from the kit at the commit in `meta.json`, not from 0.5.0, which refuses 42 of the slides):
+To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). With 0.6.0 it lints clean (0.5.0 refuses 42 of the slides):
 
 ```console
 $ deck lint lookbook
