@@ -59,9 +59,14 @@ what to tell their agent.
     (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deck types` writes the
     `tsconfig.json`.
   - Only the `default` brand ships with the CLI. `nocturne`, `fieldnote`, `kinetic` and `tidewater`
-    live in the repository's `brands/` folder. To use one, copy its folder into the workspace's
-    `brands/`, delete its `package.json` (and `tsconfig.json` if present), and install its font
-    packages in the workspace folder with `npm install`; `deck brand check <name>` names them.
+    live in the repository's `brands/` folder. To use one, run
+    `deck brand add gh:sandrinodm/deckster/brands/<name>#v0.6.0`: it copies the folder without
+    its `package.json` and `tsconfig.json` and prints the `npm install` line for its font
+    packages, which go in the workspace folder; `deck brand check <name>` then passes. With 0.5.0
+    and earlier, copy the folder, delete those two files and install the fonts by hand.
+  - Only `fieldnote` of the published brands has a `layouts.ts`. The `brand-layouts` deck that
+    uses its four layouts is not on the docs allowlist, so no still shows a brand layout: show its
+    source and the CLI output of a scratch deck.
   - There is no `hello` deck in a new workspace. To run a published deck, copy
     `decks/<name>/` from the repository and delete its `package.json` and `tsconfig.json` (they
     point into the monorepo and make every slide fail with "Transform failed").
@@ -173,11 +178,15 @@ appear on any page, in examples or screenshots.
 
 ## New in v0.6.0, and newer than the release
 
-Twenty layouts are new in 0.6.0: `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`,
-`quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`,
-`before-after`, `voices`, `persona`, `schedule`, `status` and `actions`. Each of their pages
-carries `<Aside type="note" title="New in v0.6.0">` right after its opening paragraph, with the
-error 0.5.0 prints for the name; another page that names them as a group says "new in 0.6.0" once.
+Three features are new in 0.6.0. Twenty layouts: `recap`, `sources`, `definition`, `features`,
+`do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`,
+`conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`; each of
+their pages carries `<Aside type="note" title="New in v0.6.0">` right after its opening
+paragraph, with the error 0.5.0 prints for the name, and another page that names them as a group
+says "new in 0.6.0" once. Brand layouts (`layouts.ts`, `deck layouts --brand`, the
+`brand-layout-fallback` rule), owned by `/brands/brand-layouts/`. And `deck brand add`, owned by
+the "Add a published brand" and "Add a brand from another repository" sections of
+`/brands/use-a-brand/`.
 A page that describes a feature new in a release says it needs that release: an
 `<Aside type="note" title="New in v0.X.0">` on the page that owns it, or "New in 0.X.0." in a
 sentence or a table row on the others. These notes stay after later releases, because they tell

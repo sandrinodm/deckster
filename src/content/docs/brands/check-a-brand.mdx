@@ -2,7 +2,7 @@
 title: "Check a brand"
 description: "Validate a brand and compare it with its source."
 sidebar:
-  order: 7
+  order: 8
 ---
 
 `deck brand check <name>` validates a brand without rendering a deck. It loads the brand the way every other command does and prints each error and warning with its field and a fix. This page shows how to run the check, read what it prints, and then test the brand on real slides. Use it after you change a brand, and on any brand an agent hands you.
@@ -87,6 +87,7 @@ The checks run in stages. A stage that finds a problem reports all of its proble
 3. **Values CSS can hold.** The resolved tokens must be writable as CSS.
 4. **Quality.** WCAG contrast of the role pairs on every surface: 4.5:1 for `fg` and `muted` on `bg` and `surface`, and for `accent-fg` on `accent`; 3:1 for `heading`, `accent`, `positive` and `negative`. Card colours you write are measured on every surface too: title and subtitle at 4.5:1 on the card's fill, the icon at 3:1. The data palettes are checked on each surface's chart plate. Neighbouring categorical colours must stay apart with normal vision and under protanopia, deuteranopia and tritanopia.
 5. **Files.** The `name` matches the folder, font packages are installed in the workspace, and font, logo and background files exist in the brand folder.
+6. **Layouts.** New in 0.6.0. When the brand has a `layouts.ts`, the check prints its path under `brand.ts` and checks every layout in it: its name, its fallback, the slots and fields it binds, its boxes and the names it uses. Each problem has its path in the file, such as `layouts[3].regions[2].bind`. [Brand layouts](/brands/brand-layouts/#check-it) lists the errors.
 
 [Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/) explains the roles and surfaces these checks measure.
 

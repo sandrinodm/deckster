@@ -50,6 +50,12 @@ For a first install, see [quickstart](/get-started/quickstart/).
 
 There is no changelog file. The [GitHub releases page](https://github.com/sandrinodm/deckster/releases) is the record: the notes for each release list what is new and what changed.
 
+[0.6.0](https://github.com/sandrinodm/deckster/releases/tag/v0.6.0) added three things:
+
+- **Twenty layouts.** `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`, for 52 in all. The descriptions of thirteen older layouts now send some uses to them, such as before and after photos to `before-after`. See the [layouts reference](/reference/layouts/).
+- **Brand layouts.** A brand can bring slide layouts of its own in `brands/<name>/layouts.ts`, each drawn at fixed boxes over the brand's art and falling back to a kit layout in another brand, which `deck lint` reports as `brand-layout-fallback`. `deck layouts` lists them first and takes `--brand`, `deck brand check` checks them, `deck export --pptx` writes each as a slide layout of its own, and the `fieldnote` brand brings four. See [brand layouts](/brands/brand-layouts/).
+- **`deck brand add`.** Copies a brand folder from a git repository into `brands/`, reading it as data, leaving out code and package files, and naming the font packages to install. See [use a brand](/brands/use-a-brand/#add-a-published-brand).
+
 [0.5.0](https://github.com/sandrinodm/deckster/releases/tag/v0.5.0) added one thing:
 
 - **Hidden slides.** `hidden: true` in a slide's frontmatter keeps the slide in the deck and the build, and a talk skips it: next, previous, Home and End pass over it, pacing leaves its budget out, and the brand's page numbers count shown slides only. `deck export` leaves hidden slides out unless you pass `--include-hidden`, which writes them as hidden slides in the PowerPoint file, and `deck shot --json` and the agent's outline report `hidden`. Three lint rules (`time-budget`, `few-builds`, `layout-repetition`) count shown slides only, and a deck whose every slide is hidden fails with an error. See [hidden slides](/write-slides/hidden-slides/).

@@ -84,6 +84,7 @@ The tables list the 43 rules `deck lint --help` prints in 0.6.0, plus `schema` a
 | `slot-content` | error | Put only what the slot accepts in it; move the rest to another slide or slot. |
 | `missing-notes` | warning | Add `<Notes>`. |
 | `layout-repetition` | warning | 3 or more slides in a row share a layout and surface: vary one. Hidden slides are skipped. |
+| `brand-layout-fallback` | warning | New in 0.6.0. The slide names a [brand layout](/brands/brand-layouts/) of another brand, so it renders with that layout's kit fallback. Switch the deck back to that brand, or pick one of the deck brand's layouts. |
 | `few-builds` | warning | Stage chart, diagram and code slides in steps. Hidden slides do not count. |
 | `time-budget` | error | Cut slides or shorten their budgets. Hidden slides' budgets do not count. |
 | `open-comments` | warning | Resolve the slide's comments. |
