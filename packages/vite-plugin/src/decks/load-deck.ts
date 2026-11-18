@@ -11,6 +11,7 @@ import { Effect, FileSystem, Option, Predicate } from 'effect';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { checkShownSlides } from '#decks/check-shown-slides.ts';
 import { displayPath, SLIDES_DIR, type DeckLocation } from '#decks/deck-paths.ts';
 import { resolveSlideOrder, type SlideFile } from '#decks/resolve-slides.ts';
 import { invalidSlideList, unreadableFile, type DeckBuildError, type FileRef } from '#errors.ts';
@@ -84,7 +85,9 @@ export type LoadedDeck = {
  * @param workspaceRoot - The absolute workspace root.
  * @param location - The deck to load.
  * @throws DeckBuildError in the error channel, for a config that fails to import or validate, a
- *   missing `slides/` folder, or a slide list that does not match the files.
+ *   missing `slides/` folder, a slide list that does not match the files, or a deck whose every
+ *   slide is hidden. These fail here, before any server starts, so every command reports them
+ *   alike.
  */
 export const loadDeck = Effect.fn('loadDeck')(function* (
   workspaceRoot: string,
@@ -105,7 +108,9 @@ export const loadDeck = Effect.fn('loadDeck')(function* (
     ...slide,
     file: path.join(location.slidesDir, slide.fileName),
   }));
-  return { location, config, slides, warnings: order.warnings };
+  const deck = { location, config, slides, warnings: order.warnings };
+  yield* checkShownSlides(workspaceRoot, deck);
+  return deck;
 });
 
 /**

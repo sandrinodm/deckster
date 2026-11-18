@@ -3,12 +3,12 @@ import { expect, layer } from '@effect/vitest';
 import { Effect, FileSystem } from 'effect';
 import path from 'node:path';
 
-import { checkShownSlides } from '#decks/check-shown-slides.ts';
 import { deckLocation } from '#decks/deck-paths.ts';
 import { loadDeck } from '#decks/load-deck.ts';
 
 /**
- * Writes a deck whose slides are the given files (name and source), loads it and checks it.
+ * Writes a deck whose slides are the given files (name and source) and loads it, which checks that
+ * a slide is shown.
  */
 const checkDeck = Effect.fn('checkDeck')(function* (files: Readonly<Record<string, string>>) {
   const fs = yield* FileSystem.FileSystem;
@@ -24,8 +24,7 @@ const checkDeck = Effect.fn('checkDeck')(function* (files: Readonly<Record<strin
     yield* fs.writeFileString(path.join(location.slidesDir, name), source);
   }
 
-  const deck = yield* loadDeck(workspace, location);
-  return yield* checkShownSlides(workspace, deck);
+  return yield* loadDeck(workspace, location);
 });
 
 const HIDDEN_MDX = '---\nhidden: true\n---\n# Backup\n';

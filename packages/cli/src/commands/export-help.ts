@@ -51,7 +51,8 @@ Formats:
 Options:
   --steps           One page or slide per step instead of one per slide.
   --slides <list>   Slides to export, such as 3,5-9 or cover,heat-map. Default: every slide that is
-                    not hidden. A hidden slide you name here is exported.
+                    not hidden. A hidden slide you name here is exported: as an
+                    ordinary page in the PDF and a PNG, still marked hidden in the PPTX.
   --include-hidden  Export hidden slides too (\`hidden: true\` in the frontmatter): as ordinary PDF
                     pages and PNGs, and as hidden slides in the PPTX (PowerPoint skips them in a
                     slide show). Without it they are left out and the summary says how many.
