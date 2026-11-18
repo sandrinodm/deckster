@@ -224,6 +224,9 @@ import {
   MIN_RISKS,
   RISK_NAME_MAX_CHARS,
   RISK_MITIGATION_MAX_CHARS,
+  RISKS_HIGHLIGHT_LABEL_MAX_CHARS,
+  RISKS_LABEL_MAX_CHARS,
+  RISKS_LEVEL_LABEL_MAX_CHARS,
 } from '#layouts/risks-layout.contract.ts';
 import {
   SCHEDULE_MIN_PERIODS,
@@ -729,6 +732,22 @@ function statusItems(count: number): Record<string, unknown>[] {
     status: STATUS_STATES[at % STATUS_STATES.length],
     owner: fillName(STATUS_OWNER_MAX_CHARS),
     note: fill(STATUS_NOTE_MAX_CHARS),
+  }));
+}
+
+/**
+ * A register of `count` risks with maximum names and one-line mitigations, both levels medium (the
+ * widest word) and the second row highlighted.
+ *
+ * @param count - The number of risks.
+ */
+function riskRows(count: number): Record<string, unknown>[] {
+  return items(count, (row) => ({
+    name: fill(RISK_NAME_MAX_CHARS),
+    likelihood: 'medium',
+    impact: 'medium',
+    mitigation: fill(RISK_MITIGATION_MAX_CHARS),
+    ...(row === 1 ? { highlight: true } : {}),
   }));
 }
 
@@ -1790,24 +1809,38 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
 
   /**
    * Every register count with maximum names and one-line mitigations, both medium labels (the
-   * widest level), and one highlighted row; full context and footnote, then the same rows bare.
+   * widest level), and one highlighted row; full context and footnote, then the same rows bare. The
+   * largest register is repeated with every column head and level word at its limit.
    */
-  risks: Array.from({ length: MAX_RISKS - MIN_RISKS + 1 }, (_, index) => {
-    const count = MIN_RISKS + index;
-    const frontmatter = {
-      risks: items(count, (row) => ({
-        name: fill(RISK_NAME_MAX_CHARS),
-        likelihood: 'medium',
-        impact: 'medium',
-        mitigation: fill(RISK_MITIGATION_MAX_CHARS),
-        ...(row === 1 ? { highlight: true } : {}),
-      })),
-    };
-    return [
-      { name: `${count}-risks`, frontmatter, filled: ['footnote'] },
-      { name: `${count}-risks-bare`, frontmatter, filled: [], body: false },
-    ];
-  }).flat(),
+  risks: [
+    ...Array.from({ length: MAX_RISKS - MIN_RISKS + 1 }, (_, index) => {
+      const count = MIN_RISKS + index;
+      const frontmatter = { risks: riskRows(count) };
+      return [
+        { name: `${count}-risks`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-risks-bare`, frontmatter, filled: [], body: false },
+      ];
+    }).flat(),
+    {
+      name: `${MAX_RISKS}-risks-labels`,
+      frontmatter: {
+        risks: riskRows(MAX_RISKS),
+        labels: {
+          ...Object.fromEntries(
+            ['name', 'likelihood', 'impact', 'mitigation'].map((key) => [
+              key,
+              fillName(RISKS_LABEL_MAX_CHARS),
+            ]),
+          ),
+          ...Object.fromEntries(
+            ['low', 'medium', 'high'].map((key) => [key, fillName(RISKS_LEVEL_LABEL_MAX_CHARS)]),
+          ),
+          highlight: fillName(RISKS_HIGHLIGHT_LABEL_MAX_CHARS),
+        },
+      },
+      filled: ['footnote'],
+    },
+  ],
 
   /**
    * A plot of six items with the longest names and of ten with the crowded names, each with the

@@ -2,7 +2,11 @@ import { useBrand } from '@deckster/brand/runtime';
 import { defineLayout, useStatic, type LayoutProps } from '@deckster/engine';
 import { useId, useRef, type ReactNode } from 'react';
 
-import type { RiskEntry, risksLayoutContract } from '#layouts/risks-layout.contract.ts';
+import type {
+  RiskEntry,
+  RisksLabels,
+  risksLayoutContract,
+} from '#layouts/risks-layout.contract.ts';
 
 import { useFitLevel } from '#foundation/fit-level.ts';
 import { MEASURE_TOLERANCE_PX } from '#foundation/layout-geometry.ts';
@@ -51,30 +55,10 @@ const LEVEL_MARKS = {
 } as const;
 
 /**
- * Printed names are text rather than CSS case transforms, so native exports keep the same case.
- */
-const LEVEL_LABELS = {
-  /**
-   * The printed name of the low level.
-   */
-  low: 'Low',
-
-  /**
-   * The printed name of the medium level.
-   */
-  medium: 'Medium',
-
-  /**
-   * The printed name of the high level.
-   */
-  high: 'High',
-} as const;
-
-/**
  * A register whose complete content chooses its fit level before any reveal step is shown.
  */
 function RisksLayout({ frontmatter, slots }: LayoutProps<typeof risksLayoutContract>): ReactNode {
-  const { risks, reveal } = frontmatter;
+  const { risks, reveal, labels } = frontmatter;
   const { surface } = useBrand();
   const lit = surface.name === 'accent' || surface.name === 'gradient' ? 'inverse' : 'accent';
   const isStatic = useStatic();
@@ -116,10 +100,10 @@ function RisksLayout({ frontmatter, slots }: LayoutProps<typeof risksLayoutContr
       <Region ref={region} className="kit-risks-region" place="optical">
         <div ref={register} className="kit-risks" role="table" aria-labelledby={titleId}>
           <div className="kit-risks-head kit-type-label" role="row">
-            <span role="columnheader">Risk</span>
-            <span role="columnheader">Likelihood</span>
-            <span role="columnheader">Impact</span>
-            <span role="columnheader">Mitigation</span>
+            <span role="columnheader">{smartPunctuation(labels.name)}</span>
+            <span role="columnheader">{smartPunctuation(labels.likelihood)}</span>
+            <span role="columnheader">{smartPunctuation(labels.impact)}</span>
+            <span role="columnheader">{smartPunctuation(labels.mitigation)}</span>
           </div>
           {risks.map((risk, index) => {
             const content = (
@@ -135,13 +119,15 @@ function RisksLayout({ frontmatter, slots }: LayoutProps<typeof risksLayoutContr
                 <div
                   className="kit-risks-name-cell"
                   role="rowheader"
-                  aria-label={risk.highlight === true ? `Priority risk: ${risk.name}` : undefined}>
+                  aria-label={
+                    risk.highlight === true ? `${labels.highlight}: ${risk.name}` : undefined
+                  }>
                   <h3 className={`kit-risks-name kit-heading kit-type-${size.text}`}>
                     {smartPunctuation(risk.name)}
                   </h3>
                 </div>
-                <Level value={risk.likelihood} />
-                <Level value={risk.impact} />
+                <Level value={risk.likelihood} labels={labels} />
+                <Level value={risk.impact} labels={labels} />
                 <p className="kit-risks-mitigation" role="cell">
                   {smartPunctuation(risk.mitigation)}
                 </p>
@@ -185,13 +171,20 @@ function registerHeight(register: HTMLElement): number {
 }
 
 /**
- * A level written as a word and a rising three-bar meter, filled up to the chosen level.
+ * A level written as the author's word for it and a rising three-bar meter, filled up to the chosen
+ * level. The word is plain text rather than a CSS case transform, so native exports keep its case.
  */
-function Level({ value }: { value: RiskEntry['likelihood'] }): ReactNode {
+function Level({
+  value,
+  labels,
+}: {
+  value: RiskEntry['likelihood'];
+  labels: RisksLabels;
+}): ReactNode {
   return (
     <div className="kit-risks-level" role="cell">
       <KitMeter filled={LEVEL_MARKS[value]} />
-      <span>{LEVEL_LABELS[value]}</span>
+      <span>{smartPunctuation(labels[value])}</span>
     </div>
   );
 }

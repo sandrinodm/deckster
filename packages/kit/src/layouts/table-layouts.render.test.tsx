@@ -19,6 +19,31 @@ vi.mock('@deckster/engine', async (original) => ({
 vi.mock('@deckster/brand/runtime', () => ({ useBrand: () => ({ surface: { name: 'default' } }) }));
 vi.mock('#foundation/backdrop.tsx', () => ({ Backdrop: () => null }));
 
+/**
+ * Renders the `risks` layout with the example register and the given labels, or with the field left
+ * out so the English defaults apply.
+ *
+ * @param labels - The `labels` field to write, or nothing to omit it.
+ */
+function renderRisks(labels?: Record<string, string>): string {
+  const Risks = risksLayout.component;
+  const { labels: _example, ...register } = risksLayoutContract.example.frontmatter;
+  return renderToStaticMarkup(
+    <Risks
+      slideId="risks"
+      frontmatter={{
+        layout: 'risks',
+        ...Schema.decodeUnknownSync(risksLayoutContract.schema)({
+          ...register,
+          ...(labels === undefined ? {} : { labels }),
+        }),
+        title: 'Risks to address',
+      }}
+      slots={{}}
+    />,
+  );
+}
+
 describe('accessible layout tables', () => {
   it('names each table with its rendered title and keeps risk headings inside row headers', () => {
     const Actions = actionsLayout.component;
@@ -75,5 +100,41 @@ describe('accessible layout tables', () => {
     expect(actions).toMatch(/kit-action-owner[^>]*><span>[^<]+<\/span><span class="kit-badge/u);
     expect(status.match(/data-step-state="hidden"/gu)).toHaveLength(3);
     expect(status).toMatch(/<div class="kit-footnote[^>]*>Review source<\/div>/u);
+  });
+
+  it('prints the risk labels it is given in the heads, level words and highlighted row', () => {
+    const html = renderRisks({
+      name: 'Hazard',
+      likelihood: 'Chance',
+      impact: 'Effect',
+      mitigation: 'Response',
+      low: 'Minor',
+      medium: 'Moderate',
+      high: 'Severe',
+      highlight: 'Top hazard',
+    });
+    for (const head of ['Hazard', 'Chance', 'Effect', 'Response']) {
+      expect(html).toContain(`<span role="columnheader">${head}</span>`);
+    }
+
+    for (const word of ['Minor', 'Moderate', 'Severe']) {
+      expect(html).toContain(`<span>${word}</span>`);
+    }
+
+    expect(html).toMatch(/aria-label="Top hazard: Summer drought"/u);
+    expect(html).not.toMatch(/Priority risk|>Likelihood<|>Low<|>Medium<|>High</u);
+  });
+
+  it('prints the English risk labels when none are given', () => {
+    const html = renderRisks();
+    for (const head of ['Risk', 'Likelihood', 'Impact', 'Mitigation']) {
+      expect(html).toContain(`<span role="columnheader">${head}</span>`);
+    }
+
+    for (const word of ['Low', 'Medium', 'High']) {
+      expect(html).toContain(`<span>${word}</span>`);
+    }
+
+    expect(html).toMatch(/aria-label="Priority risk: Summer drought"/u);
   });
 });

@@ -1,5 +1,5 @@
 import { defineLayoutContract, type FieldProblem } from '@deckster/engine/layout';
-import { Schema } from 'effect';
+import { Effect, Schema } from 'effect';
 
 import {
   CHROME_HINT,
@@ -38,9 +38,61 @@ export const RISK_MITIGATION_MAX_CHARS = 42;
 export const RISKS_TITLE_MAX_CHARS = 50;
 
 /**
+ * The longest column head, in characters, including wide mono brands.
+ */
+export const RISKS_LABEL_MAX_CHARS = 11;
+
+/**
+ * The longest printed level word, in characters, beside its three-bar meter.
+ */
+export const RISKS_LEVEL_LABEL_MAX_CHARS = 8;
+
+/**
+ * The longest screen-reader prefix of the highlighted row, in characters; it is never drawn.
+ */
+export const RISKS_HIGHLIGHT_LABEL_MAX_CHARS = 24;
+
+/**
  * The most words in the assessment date or caveat under the register.
  */
 const RISKS_FOOTNOTE_MAX_WORDS = 16;
+
+/**
+ * Optional replacements for the column heads, the level words and the highlighted row's
+ * screen-reader prefix.
+ */
+const Labels = Schema.Struct({
+  name: textField(RISKS_LABEL_MAX_CHARS, 'a risk column label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed('Risk')),
+  ),
+  likelihood: textField(RISKS_LABEL_MAX_CHARS, 'a likelihood column label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed('Likelihood')),
+  ),
+  impact: textField(RISKS_LABEL_MAX_CHARS, 'an impact column label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed('Impact')),
+  ),
+  mitigation: textField(RISKS_LABEL_MAX_CHARS, 'a mitigation column label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed('Mitigation')),
+  ),
+  low: textField(RISKS_LEVEL_LABEL_MAX_CHARS, 'a low level word').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed('Low')),
+  ),
+  medium: textField(RISKS_LEVEL_LABEL_MAX_CHARS, 'a medium level word').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed('Medium')),
+  ),
+  high: textField(RISKS_LEVEL_LABEL_MAX_CHARS, 'a high level word').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed('High')),
+  ),
+  highlight: textField(RISKS_HIGHLIGHT_LABEL_MAX_CHARS, 'a highlight label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed('Priority risk')),
+  ),
+});
+
+/**
+ * Author-supplied column heads, level words and highlight prefix; omitted keys keep the English
+ * defaults.
+ */
+export type RisksLabels = typeof Labels.Type;
 
 /**
  * One risk with its two independent levels and the action that reduces it.
@@ -91,8 +143,8 @@ export const risksLayoutContract = defineLayoutContract({
     'so meaning never depends on colour. Rows stay in the order written; `highlight: true` ' +
     'lights the most severe row on the accent surface and marks it with a diamond, and ' +
     '`reveal: true` brings rows in one per step. Use it to review what could go wrong and ' +
-    'what you will do about it. Column heads and level words are fixed English strings; ' +
-    'use table ' +
+    'what you will do about it. `labels` renames the column heads and level words, for ' +
+    'example `labels: { name: Hazard }`; use table ' +
     'for a longer register with owners, dates or exact scores, matrix to position items on ' +
     'two continuous axes, actions for commitments with owners and deadlines, and steps for ' +
     'the stages of a process.',
@@ -101,6 +153,20 @@ export const risksLayoutContract = defineLayoutContract({
     risks: Schema.Array(Risk).check(
       Schema.isMinLength(MIN_RISKS, { message: `Expected at least ${MIN_RISKS} risks` }),
       Schema.isMaxLength(MAX_RISKS, { message: `Expected at most ${MAX_RISKS} risks` }),
+    ),
+    labels: Labels.pipe(
+      Schema.withDecodingDefaultKey(
+        Effect.succeed({
+          name: 'Risk',
+          likelihood: 'Likelihood',
+          impact: 'Impact',
+          mitigation: 'Mitigation',
+          low: 'Low',
+          medium: 'Medium',
+          high: 'High',
+          highlight: 'Priority risk',
+        }),
+      ),
     ),
     reveal: RevealField,
     chrome: chromeField(true),
@@ -112,6 +178,14 @@ export const risksLayoutContract = defineLayoutContract({
       `${RISK_NAME_MAX_CHARS} characters), \`likelihood\` and \`impact\` (each low, medium or ` +
       `high), and \`mitigation\` (one action of up to ${RISK_MITIGATION_MAX_CHARS} characters). ` +
       'Optionally mark the most severe risk with `highlight: true`, on at most one row.',
+    labels:
+      'Optional replacements for the column heads `name` (Risk), `likelihood` (Likelihood), ' +
+      '`impact` (Impact) and `mitigation` (Mitigation), each 1 to ' +
+      `${RISKS_LABEL_MAX_CHARS} characters; the level words \`low\` (Low), \`medium\` (Medium) ` +
+      `and \`high\` (High), each 1 to ${RISKS_LEVEL_LABEL_MAX_CHARS} characters; and ` +
+      '`highlight` (Priority risk), the screen-reader prefix of the highlighted row, 1 to ' +
+      `${RISKS_HIGHLIGHT_LABEL_MAX_CHARS} characters. Omitted keys keep their English defaults. ` +
+      'For example, `labels: { name: Hazard }`.',
     reveal: REVEAL_HINT,
     chrome: CHROME_HINT,
   },
@@ -142,6 +216,16 @@ export const risksLayoutContract = defineLayoutContract({
     frontmatter: {
       title: 'Summer watering is the risk we must fund',
       eyebrow: 'Canopy programme',
+      labels: {
+        name: 'Risk',
+        likelihood: 'Likelihood',
+        impact: 'Impact',
+        mitigation: 'Mitigation',
+        low: 'Low',
+        medium: 'Medium',
+        high: 'High',
+        highlight: 'Priority risk',
+      },
       risks: [
         {
           name: 'Late stock',

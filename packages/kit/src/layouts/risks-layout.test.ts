@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vite-plus/test';
 import {
   RISK_MITIGATION_MAX_CHARS,
   RISK_NAME_MAX_CHARS,
+  RISKS_HIGHLIGHT_LABEL_MAX_CHARS,
+  RISKS_LABEL_MAX_CHARS,
+  RISKS_LEVEL_LABEL_MAX_CHARS,
   risksLayoutContract,
   risksProblems,
 } from '#layouts/risks-layout.contract.ts';
@@ -17,6 +20,34 @@ const RISK = {
   likelihood: 'high',
   impact: 'medium',
   mitigation: 'Fund a weekly watering crew',
+} as const;
+
+/**
+ * The English column heads, level words and highlight prefix used when `labels` is omitted.
+ */
+const DEFAULT_LABELS = {
+  name: 'Risk',
+  likelihood: 'Likelihood',
+  impact: 'Impact',
+  mitigation: 'Mitigation',
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  highlight: 'Priority risk',
+} as const;
+
+/**
+ * The limit of every label key, in characters.
+ */
+const LABEL_LIMITS = {
+  name: RISKS_LABEL_MAX_CHARS,
+  likelihood: RISKS_LABEL_MAX_CHARS,
+  impact: RISKS_LABEL_MAX_CHARS,
+  mitigation: RISKS_LABEL_MAX_CHARS,
+  low: RISKS_LEVEL_LABEL_MAX_CHARS,
+  medium: RISKS_LEVEL_LABEL_MAX_CHARS,
+  high: RISKS_LEVEL_LABEL_MAX_CHARS,
+  highlight: RISKS_HIGHLIGHT_LABEL_MAX_CHARS,
 } as const;
 
 /**
@@ -99,6 +130,30 @@ describe('the risks layout contract', () => {
       risks: [{ ...RISK, highlight: true }, RISK, { ...RISK, highlight: true }],
     });
     expect(risksLayoutContract.checks?.(frontmatter)).toHaveLength(1);
+  });
+
+  it('keeps the English column heads and level words when labels is omitted', () => {
+    expect(decode({ risks: [RISK, RISK, RISK] }).labels).toEqual(DEFAULT_LABELS);
+  });
+
+  it('keeps the English default of every label key that is not given', () => {
+    const { labels } = decode({ risks: [RISK, RISK, RISK], labels: { name: 'Hazard' } });
+    expect(labels).toEqual({ ...DEFAULT_LABELS, name: 'Hazard' });
+  });
+
+  it('accepts every label at its limit and refuses one over, naming the limit', () => {
+    for (const [key, limit] of Object.entries(LABEL_LIMITS)) {
+      const risks = [RISK, RISK, RISK];
+      expect(() => decode({ risks, labels: { [key]: 'x'.repeat(limit) } })).not.toThrow();
+      expect(() => decode({ risks, labels: { [key]: 'x'.repeat(limit + 1) } })).toThrow(
+        `at most ${limit} characters`,
+      );
+      expect(() => decode({ risks, labels: { [key]: '' } })).toThrow(key);
+    }
+  });
+
+  it('refuses a label key that does not exist', () => {
+    expect(() => decode({ risks: [RISK, RISK, RISK], labels: { owner: 'Who' } })).toThrow('owner');
   });
 
   it('provides native title and context placeholders for PowerPoint', () => {
