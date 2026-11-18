@@ -20,8 +20,10 @@ what to tell their agent.
 ## Ground truth: v0.6.0, run it
 
 - The pages describe `@deckster/cli` **0.6.0** as published on npm. The code is the tag
-  `v0.6.0`, on commit `67418e3` on `main` (the merge of the brand layouts pull request, after the
-  version bump `9cc40bc`). Read files at the tag
+  `v0.6.0`, on commit `5ee4926` on `main` (the merge of the docs gallery fix, which changes only
+  `scripts/docs/ui-shots.ts` after the brand layouts merge `67418e3`, itself after the version
+  bump `9cc40bc`).
+  Read files at the tag
   (`git -C ../2026-11-13-presentation show v0.6.0:<path>`), because `main` and the working tree
   move on after a release. Pages written before 0.6.0 were checked against 0.5.0 (commit
   `7dc64ea`), 0.4.0 (commit `50e5d19`) or 0.3.0 (commit `4e0b186`); a statement that names one of
@@ -54,7 +56,7 @@ what to tell their agent.
   "Install the browser with `npx playwright@1.65.0 install chromium`." 0.4.0, 0.5.0 and 0.6.0 pin the
   same Playwright, 1.65.0.
 - **What an npm workspace has and the repository does not, or the other way round.** Confirmed by
-  running 0.3.0, again with 0.4.0 and 0.5.0 from npm, and with the 0.6.0 tarball:
+  running 0.3.0, again with 0.4.0 and 0.5.0 from npm, and with the 0.6.0 tarball and then 0.6.0 from npm:
   - `deck new <deck>` writes only `decks/<deck>/deck.config.ts` and `decks/<deck>/slides/title.mdx`
     (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deck types` writes the
     `tsconfig.json`.
