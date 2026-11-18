@@ -77,7 +77,7 @@ Run `deck lint <deck>` for every problem with its fix.
 
 ## Read the result from a script
 
-`--json` prints `{ deck, brand, outDir, ok, files, pageErrors }`. Each file has its `path`, `slide`, `number`, `step` (`null` without `--steps`), `width`, `height` and `error`, which is what a broken slide threw, else `null`. `pageErrors` are errors thrown while the deck loaded, before any slide showed. Here for the run above, with the first two files cut:
+`--json` prints `{ deck, brand, outDir, ok, files, pageErrors }`. Each file has its `path`, `slide`, `number`, `step` (`null` without `--steps`), `hidden` (new in 0.5.0: `true` for a slide with `hidden: true`), `width`, `height` and `error`, which is what a broken slide threw, else `null`. `pageErrors` are errors thrown while the deck loaded, before any slide showed. Here for the run above, with the first two files cut:
 
 ```console
 $ deck shot launch-review --json
@@ -93,6 +93,7 @@ $ deck shot launch-review --json
       "slide": "risks",
       "number": 3,
       "step": null,
+      "hidden": false,
       "width": 1920,
       "height": 1080,
       "error": "No risk data loaded"
@@ -103,6 +104,45 @@ $ deck shot launch-review --json
 ```
 
 A failure of the command itself (an unknown deck or slide, no browser) prints `{ "ok": false, "error": { "type", "message" } }` instead. `deck shot` needs Chromium: `npx playwright@1.65.0 install chromium`.
+
+## Hidden slides
+
+New in 0.5.0. `deck shot` shoots every slide, hidden ones included, so it is how you look at a backup slide (see [hidden slides](/write-slides/hidden-slides/)). With a fourth slide, `pricing-backup`, that has `hidden: true`, the run over the deck writes four pictures:
+
+```console
+$ deck shot launch-review
+/Users/you/talks/.deck/shots/launch-review/01-title.png
+/Users/you/talks/.deck/shots/launch-review/02-revenue.png
+/Users/you/talks/.deck/shots/launch-review/03-risks.png
+/Users/you/talks/.deck/shots/launch-review/04-pricing-backup.png
+```
+
+The number in a file name is the slide's place in the list, so hiding a slide renames no file. `--json` says which files are hidden:
+
+```console
+$ deck shot launch-review pricing-backup --json
+{
+  "deck": "launch-review",
+  "brand": "default",
+  "outDir": "/Users/you/talks/.deck/shots/launch-review",
+  "ok": true,
+  "files": [
+    {
+      "path": "/Users/you/talks/.deck/shots/launch-review/04-pricing-backup.png",
+      "slide": "pricing-backup",
+      "number": 4,
+      "step": null,
+      "hidden": true,
+      "width": 1920,
+      "height": 1080,
+      "error": null
+    }
+  ],
+  "pageErrors": []
+}
+```
+
+A hidden slide that is shot directly has no page number in the picture. `deck export --png` leaves hidden slides out unless you pass `--include-hidden`; see [PDF](/export-and-publish/pdf/#hidden-slides).
 
 ## Pictures for agents
 

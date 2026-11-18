@@ -40,7 +40,7 @@ The file is `slides/<id>.mdx` in the deck folder, and the slide shows only once 
 
 ## Frontmatter
 
-Every slide takes six keys, whatever its layout:
+Every slide takes seven keys, whatever its layout:
 
 | Key | What it sets |
 | --- | --- |
@@ -50,6 +50,7 @@ Every slide takes six keys, whatever its layout:
 | `background` | A picture behind the whole slide. See [media](/write-slides/media/). |
 | `budget` | How long you plan to speak, such as `40s` or `1m30s`. See [speaker notes](/write-slides/speaker-notes/). |
 | `transition` | How the slide comes in. See [transitions and morphs](/write-slides/transitions-and-morphs/). |
+| `hidden` | `true` keeps the slide in the deck and skips it in a talk. New in 0.5.0. See [hidden slides](/write-slides/hidden-slides/). |
 
 Every other key belongs to the layout: `eyebrow`, `cards`, `ratio`, `align` and so on. Each layout's fields, limits and slots are on its page under [layouts](/reference/layouts/), and every common key in full on [slide frontmatter](/reference/slide-frontmatter/).
 
@@ -134,7 +135,7 @@ A key that is close to none lists the fields the layout takes:
 $ deck lint launch-review
 decks/launch-review/slides/title.mdx
   error   schema (title): "subtitel" is not a frontmatter field.
-          Fix: Remove it. Known fields: layout, title, surface, background, budget, transition, eyebrow, byline, date, treatment, picture, align, chrome.
+          Fix: Remove it. Known fields: layout, title, surface, background, budget, transition, hidden, eyebrow, byline, date, treatment, picture, align, chrome.
 
 launch-review: 1 error, 0 warnings.
 ```

@@ -41,6 +41,27 @@ sidebar:
 
 `--slides 3,5-9` (numbers, ranges or ids) exports a subset, and `--steps` writes one slide per step. Without a format flag, `deck export` writes the PDF as well; see [PDF](/export-and-publish/pdf/).
 
+## Hidden slides
+
+New in 0.5.0. A slide with `hidden: true` (see [hidden slides](/write-slides/hidden-slides/)) is left out of the PowerPoint file, as it is out of the talk, and the export says how many it left out:
+
+```console
+$ deck export launch-review --pptx
+/Users/you/talks/.deck/exports/launch-review/launch-review.pptx (3 slides, hybrid mode, masters: default, gradient, fonts embedded: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Inter Deck Caption, Inter Deck Lead)
+...
+1 hidden slide left out (add --include-hidden to export).
+```
+
+The `...` stands for the `fonts` line, which is the one shown above. With `--include-hidden` the file has every slide, and each hidden slide is a hidden slide in PowerPoint too: the slide carries `show="0"`, so PowerPoint skips it in a slide show. A backup slide you hid in the deck stays a backup in the file you send:
+
+```console
+$ deck export launch-review --pptx --include-hidden --out all.pptx
+/Users/you/talks/all.pptx (4 slides, hybrid mode, masters: default, gradient, fonts embedded: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Inter Deck Caption, Inter Deck Lead)
+...
+```
+
+A hidden slide that `--slides` names is exported without the flag, and it is still a hidden slide in the file. `--dry-run` lists the slides the export would write: the hidden ones only with `--include-hidden`.
+
 ## Native or picture
 
 `--mode` decides what happens to an element PowerPoint cannot draw the way the web does:

@@ -51,6 +51,8 @@ deck build launch-review --with-exports
 
 A `<Download file="launch-review.pdf">` button on a slide then has a file to link to; see [Links](/write-slides/links/). The exports are the same as `deck export` writes; see [PDF](/export-and-publish/pdf/). They need Chromium (`npx playwright@1.65.0 install chromium`).
 
+New in 0.5.0: the build includes slides with `hidden: true`, and a visitor who opens one by its number or id sees it, but the exports leave them out, as `deck export` does without `--include-hidden`. A deck of four slides with one hidden builds four slides and exports a three-slide PowerPoint file. The gallery of a site counts all four. See [hidden slides](/write-slides/hidden-slides/#hiding-is-not-removing).
+
 ## Build a site of several decks
 
 `--out <dir>` builds decks into one site folder with a gallery page:
