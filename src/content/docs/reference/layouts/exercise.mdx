@@ -1,0 +1,59 @@
+---
+title: "exercise"
+description: "A task for the audience: what to do, for how long, in which groups and what to produce, with two to five numbered instructions."
+sidebar:
+  order: 22
+---
+
+The `exercise` layout sets a task for the audience: a title naming what to do, the duration as a large figure, two to five numbered instructions and a one-line output naming what to produce, with an optional line saying who works together. Use it for a workshop activity, a short practice task or a discussion that must end with something concrete, and leave it on screen while people work.
+
+<Aside type="note" title="New in v0.6.0">
+The `exercise` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "exercise" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="exercise-first-drop" />
+
+`duration: 10 min` is the large timebox on the left, `groups: In pairs` sits under it, and `output:` names the deliverable at the bottom right. The five items of `instructions:` are numbered 01 to 05 in order. The body is one sentence of context, and the `<Footnote>` holds a source or reminder. `surface: inverse` sets the slide dark.
+
+<SlideShot deck="lookbook" slide="exercise-window" alt="On a light slide titled 'Choose the window your customers need', a large '5 min' timebox on the left, two numbered instructions in large type on the right and the output 'One order, one window and a reason' along the bottom." />
+
+With two instructions and no `groups`, body or footnote, the instructions are set larger to use the room.
+
+## When to use it
+
+- **The audience does the task.** The slide is a brief to work from. To explain a process the audience watches, use [`steps`](/reference/layouts/steps/), and for the parts of the session use [`agenda`](/reference/layouts/agenda/).
+- **A timebox, a list and a deliverable.** `duration`, `instructions` and `output` are required. The duration is up to 8 characters with its unit, such as `10 min`.
+- **Two to five instructions.** Each is up to 80 characters, or 64 with four or five, and starts with a verb.
+- **Name what people produce.** `output` is one line of up to 60 characters, and `groups`, up to 24, says who works together, such as `In pairs`.
+- **Context is optional.** The body takes one sentence, up to 14 words, and the `<Footnote>` up to 16.
+- **The labels are fixed.** "Timebox", "Output" and "Groups" are written by the layout in English, in the brand's label style, and there is no `labels` field to change them.
+- **It shows whole.** There is no `reveal`; the brief stays visible throughout.
+- **Speaking time and working time differ.** The slide's `budget` is how long you plan to speak, and `duration` is the audience's time. See [MDX slides](/write-slides/mdx-slides/).
+
+## Reference
+
+<LayoutReference name="exercise" />
+
+## Common mistakes
+
+- **Long instructions in a long list.** The limit drops from 80 to 64 characters at four instructions, so a line that was fine in a list of three becomes a `schema` error:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/exercise-long.mdx
+    error   schema (exercise-long): instructions[0]: The exercise layout sets at most 64 characters here (four or five instructions), got 71.
+            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **Asking for `reveal: true`.** The exercise has no such field. `deck lint` reports a `schema` error: ``"reveal" is not a frontmatter field.`` and lists the layouts that have it.
+- **The task in the body.** The body is context, up to 14 words. Write each action as an item of `instructions:`.
+- **A single instruction.** The schema asks for at least two: "Expected at least 2 instructions".
+
+## Related layouts
+
+- [`steps`](/reference/layouts/steps/): numbered steps that explain a process, rather than a task for the audience.
+- [`agenda`](/reference/layouts/agenda/): the parts of the session.

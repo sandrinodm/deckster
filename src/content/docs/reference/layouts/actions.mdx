@@ -1,0 +1,59 @@
+---
+title: "actions"
+description: "Three to six next actions, each with an owner and a due date, to close a review with commitments."
+sidebar:
+  order: 51
+---
+
+The `actions` layout sets three to six next actions in aligned columns: what will happen, its owner and its due date, so the audience can scan who does what by when. Use it to close a review with commitments, under a title that states what happens next.
+
+<Aside type="note" title="New in v0.6.0">
+The `actions` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "actions" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="actions-launch" />
+
+Each entry in `actions:` has a `title`, an `owner` and a `due`, all required. `current: 2` marks the second action as the one in progress: its row is lit on the accent surface and an "In progress" badge sits beside its owner. The body is the commitment the actions deliver and `<Footnote>` says who reports progress.
+
+<SlideShot deck="lookbook" slide="actions-expansion" alt="A blue slide titled 'Four new cities are ready to launch by June 2027' with six rows under the heads Action, Owner and Due: the second row, Prepare the Mill Green hub, sits on a near-black band with a blue 'In progress' badge next to its owner, and a footnote sits below the list." />
+
+Six actions, the most the layout takes, on `surface: accent` with no context line. The marked row is lit on the inverse surface, because the slide is already on the accent.
+
+## When to use it
+
+- **Someone owns each action and a date closes it.** Use [`steps`](/reference/layouts/steps/) for the stages of a process without owners, [`columns`](/reference/layouts/columns/) for work grouped by horizon or status, [`timeline`](/reference/layouts/timeline/) when dates and milestones tell the story, [`table`](/reference/layouts/table/) when the rows carry figures or more than three columns, [`status`](/reference/layouts/status/) for readiness across workstreams, and [`agenda`](/reference/layouts/agenda/) for the order of a meeting.
+- **Three to six actions, one line each.** A `title` takes up to 40 characters, an `owner` (a person or a team) up to 22, and a `due` (a date or a period such as `12 Dec 2026` or `Q1 2027`) up to 16. The slide title takes up to 50 characters, the body 14 words and the footnote 16.
+- **Mark the action in progress** with `current:`, the number of one row, from 1 to 6. `badge:` is the label on that row, up to 14 characters, "In progress" by default.
+- **Rename the column heads** with `labels`, for example `labels: { owner: Lead }`. The keys are `action`, `owner` and `due`, each up to 12 characters. Keys you leave out keep their English defaults.
+- **Bring the commitments in one at a time** with `reveal: true` and a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="actions" />
+
+## Common mistakes
+
+- **A `current` that is past the end of the list.** `current: 5` on three actions is a `schema` error that names the way back:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/plans.mdx
+    error   schema (plans): current: 5 names action 5, but there are 3 actions.
+            Fix: Write the number of one of the 3 actions (1 to 3), or leave `current` out.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **Leaving out the date.** An action with no `due` fails with "actions[2].due is required." `owner` is required too: an action nobody owns is not a commitment.
+- **A badge with no `current`.** `badge: Late` does nothing on its own, because the badge goes on the row `current` names.
+
+## Related layouts
+
+- [`steps`](/reference/layouts/steps/): the stages of a process, without owners.
+- [`columns`](/reference/layouts/columns/): work grouped by horizon or status.
+- [`timeline`](/reference/layouts/timeline/): dates and milestones are the story.
+- [`table`](/reference/layouts/table/): rows with figures, or more than three columns.
+- [`status`](/reference/layouts/status/): readiness across workstreams.
+- [`agenda`](/reference/layouts/agenda/): the order of a meeting.

@@ -1,0 +1,60 @@
+---
+title: "quadrants"
+description: "Four named lists in a ruled two-by-two grid, for a SWOT, keep, stop, start, try, or any four categories that each need their own list."
+sidebar:
+  order: 27
+---
+
+The `quadrants` layout sets four named lists in a ruled two-by-two grid. Use it for a SWOT, for keep, stop, start and try, or for any four categories that each need a short list of their own.
+
+<Aside type="note" title="New in v0.6.0">
+The `quadrants` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "quadrants" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="quadrants-network" />
+
+The boxes are in `quadrants:` in reading order: top left, top right, bottom left, bottom right. Each has a `title`, bullets in `items` and an `icon` from the brand's set. `highlight: true` on Opportunities gives that box its own surface, and the body is the sentence that frames the four lists. Headings and bullets name each category, so nothing depends on colour.
+
+<SlideShot deck="lookbook" slide="quadrants-next-city" alt="Four boxes in a ruled two-by-two grid on a blue slide under the title 'Open the next city around a dense hub': Keep and Stop on the top row, then Start on a near-black box and Try on the bottom row, each with two bullets and no icons." />
+
+Keep, stop, start and try on `surface: accent`, without icons. The highlighted box is lit on the inverse surface, because the slide is already on the accent. `reveal: true` brings in one box per step, in reading order; the still shows the last step.
+
+## When to use it
+
+- **Four categories, each with its own list.** Use [`matrix`](/reference/layouts/matrix/) when items are positions on two axes, [`columns`](/reference/layouts/columns/) for a board of two to four lanes, [`cards`](/reference/layouts/cards/) for equal options with one sentence each, and [`comparison`](/reference/layouts/comparison/) when options are measured on the same rows.
+- **Exactly four boxes.** Each has a `title` of up to 24 characters and one to four bullets of up to 40.
+- **Short context and footnote.** The body takes up to 10 words and the footnote up to 10, fewer than the 14 and 16 of the `pricing` layout, so both rows keep their height.
+- **Highlight at most one box.** A screen reader hears it as "Highlighted: Start". Without it, the four boxes have equal weight.
+- **Icons on all four boxes or on none.** The icon is decoration from the brand's set; [icons](/reference/icons/) lists the names every published brand has.
+- **Name the boxes one at a time** with `reveal: true` and a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+
+## Reference
+
+<LayoutReference name="quadrants" />
+
+## Common mistakes
+
+- **Bullets in the body.** The lists belong in `quadrants:`, and the body takes text only. `deck lint` reports a list there with the `slot-content` rule:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/plans.mdx
+    error   slot-content (plans): The body slot holds a list of 2 items; the quadrants layout sets it as text.
+            Fix: Write it as a sentence, or move the points to a layout made for a list (content or split; `deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **Three boxes.** "quadrants: Expected exactly 4 quadrants, got a list of 3 items." Use [`columns`](/reference/layouts/columns/) for a board of two to four lanes.
+- **Highlighting two boxes.** "quadrants: 2 quadrants are highlighted; a board highlights at most one."
+- **A context line of 12 words.** `content-budget` reports "The body slot holds 12 words; its layout allows 10."
+- **An icon the brand's set lacks.** It is a `schema` error: "`quadrants[0].icon: watering-can` is not an icon of the lucide set."
+
+## Related layouts
+
+- [`matrix`](/reference/layouts/matrix/): items placed by two axes instead of sorted into categories.
+- [`columns`](/reference/layouts/columns/): a board of two to four lanes.
+- [`cards`](/reference/layouts/cards/): equal options with a title and one sentence each.
+- [`comparison`](/reference/layouts/comparison/): options measured on the same rows.

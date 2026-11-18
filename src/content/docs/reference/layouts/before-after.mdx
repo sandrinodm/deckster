@@ -1,0 +1,57 @@
+---
+title: "before-after"
+description: "Two pictures at the same size, labelled Before and After, under a title that states what changed."
+sidebar:
+  order: 41
+---
+
+The `before-after` layout sets two pictures side by side at the same size, each with a label, under a title that states what changed. Use it for a redesign, a restoration or any visual evidence of a change, where seeing both states does more than a list of differences.
+
+<Aside type="note" title="New in v0.6.0">
+The `before-after` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "before-after" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="before-after-street" />
+
+`before:` and `after:` each name a picture with `src` and `alt`, and add an optional `caption`. `fit: cover` crops both pictures to equal frames around each side's `focal` point. The labels default to "Before" and "After", and the after label carries an arrow and the accent colour. With `reveal: true` the before picture comes in first and the after picture on the next click. The body is one sentence on what to compare.
+
+<SlideShot deck="lookbook" slide="before-after-rider" alt="Two phone screens of a rider app side by side on a near-black slide, labelled Loop planned and Next stop, each shown whole on a dark panel with a one-line caption under it." />
+
+`fit: contain` shows each picture whole, which suits screenshots, and `treatment: plain` keeps them in their own colours. This slide also renames the labels and sets `accent: none`, so neither label is coloured.
+
+## When to use it
+
+- **Two pictures of one change.** A `before` and an `after` are both required, each with `alt` of up to 120 characters. A `label` takes up to 20 characters and a `caption` up to 48, on one line. The title takes up to 50 characters, the body up to 14 words and the footnote up to 16.
+- **Say what changed in the title.** Labels always name the sides, so colour never carries the change by itself. `accent: none` makes the labels neutral, and on an `accent` surface the after label uses the foreground colour instead of the accent.
+- **Choose `contain` or `cover` once.** Both pictures share `fit`. `contain` is the default and shows them whole. With `cover`, add `focal` (`top`, `center 30%` or `40% 20%`) to say what to keep when a picture is cropped. Without `treatment`, `contain` shows plain pictures and `cover` uses the brand's default treatment; [fonts and assets](/brands/fonts-and-assets/) lists the treatments.
+- **Reveal the change.** `reveal: true` brings in the before picture, then the after picture. Put a `[click]` cue for each in the notes. See [builds](/write-slides/builds/).
+- **Files live in the deck folder.** [Media](/write-slides/media/) explains how `src` paths resolve.
+
+## Reference
+
+<LayoutReference name="before-after" />
+
+## Common mistakes
+
+- **A picture without a description.** `alt` is required on both sides:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/ba-alt.mdx
+    error   schema (ba-alt): before.alt is required.
+            Fix: Name the earlier picture with `src` (a file in the deck folder) and `alt` (up to 120 characters). Optionally add `label` (up to 20 characters, default "Before"), `caption` (one line, up to 48 characters), and `focal`. Name the part of the photo to keep when it is cropped, as a CSS position: `focal: top`, `focal: center 30%` (a face in the upper third) or `focal: 40% 20%`.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **A long label or caption.** A label over 20 characters is a `schema` error: `before.label: Expected a picture label of at most 20 characters, got "The old delivery route …" (38 characters).` A caption over 48 fails the same way.
+- **A picture that is not there.** A wrong path is a `media-missing` error: "`before.src: ../assets/van-at-the-bollards.svg` does not exist". The layout draws an empty panel until the file is there.
+- **Comparing pictures that differ in shape.** `fit: cover` crops both to the same frame. Check each with `deck shot` and set `focal` on the side that loses what matters.
+
+## Related layouts
+
+- [`gallery`](/reference/layouts/gallery/): an unpaired collection of pictures with a lead picture.
+- [`screen`](/reference/layouts/screen/): one interface with callouts.
+- [`shift`](/reference/layouts/shift/): a change argued in words and figures rather than two pictures.

@@ -2,7 +2,7 @@
 title: "stats"
 description: "Two to four big numbers in a row, each with what it counts and, optionally, how it changed."
 sidebar:
-  order: 19
+  order: 30
 ---
 
 Use the `stats` layout when the point of a slide is the size of a few things: two to four big numbers in one row, each with a label and, if you like, how it changed. The title says what the numbers mean together.
@@ -19,7 +19,7 @@ Notice two fields. `highlight: true` on the middle stat sets its figure and the 
 - **A change worth showing.** `delta` takes a short note of the change ("+12% since 2023"). Deltas line up across the row whatever the labels' lengths.
 - **A title that draws the conclusion.** A sentence of context can go under it, and the source in a `<Footnote>`.
 
-The row stands at the same height on every stats slide, so a run of them reads steadily. Use a chart for a trend, a table for more than four figures, and [`equation`](/reference/layouts/equation/) when the figures add up to a result.
+The row stands at the same height on every stats slide, so a run of them reads steadily. Use a chart for a trend, a table for more than four figures, and [`equation`](/reference/layouts/equation/) when the figures add up to a result. For market sizes nested inside each other, use [`market`](/reference/layouts/market/); for two to four related charts, use [`dashboard`](/reference/layouts/dashboard/).
 
 ## Reference
 
@@ -39,5 +39,7 @@ The row stands at the same height on every stats slide, so a run of them reads s
 - [`chart`](/reference/layouts/chart/): one chart under the title, when the point is a trend or a pattern.
 - [`table`](/reference/layouts/table/): exact values, when there are more than four figures.
 - [`bento`](/reference/layouts/bento/): facets of one subject when one of them matters most and not every facet is a number.
+- [`market`](/reference/layouts/market/): two or three nested market sizes, drawn as circles whose areas follow the figures.
+- [`dashboard`](/reference/layouts/dashboard/): two to four small charts or number components under one takeaway title.
 
 To set a row of figures inside another layout, with `from` and `better`, see [number components](/data-and-diagrams/number-components/).

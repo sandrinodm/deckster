@@ -7,7 +7,11 @@ sidebar:
     label: "Layouts"
 ---
 
-Use this page to choose a layout for a slide, then open its page to check what it takes before you fill it. Every slide names one in its frontmatter (`layout: stats`); a slide that names none uses `default`. The index below shows each of the 32 layouts as it renders, with what it is for; each links to the layout's own page. For how layouts and slots fit together, read [layouts and slots](/concepts/layouts-and-slots/); for how to fill them in a slide file, [MDX slides](/write-slides/mdx-slides/).
+Use this page to choose a layout for a slide, then open its page to check what it takes before you fill it. Every slide names one in its frontmatter (`layout: stats`); a slide that names none uses `default`. The index below shows each of the 52 layouts as it renders, with what it is for; each links to the layout's own page. For how layouts and slots fit together, read [layouts and slots](/concepts/layouts-and-slots/); for how to fill them in a slide file, [MDX slides](/write-slides/mdx-slides/).
+
+<Aside type="note" title="New in v0.6.0">
+Twenty of the 52 layouts need `@deckster/cli` 0.6.0 or later: `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`. Each of their pages says so; in 0.5.0, `deck lint` reports `There is no "<name>" layout.` for a slide that names one.
+</Aside>
 
 <LayoutIndex />
 
@@ -19,15 +23,16 @@ The groups follow the parts of the [lookbook](/examples/lookbook/) deck, which s
 
 | Group | Layouts | Lookbook part |
 | --- | --- | --- |
-| Openers and closers | [`title`](/reference/layouts/title/), [`section`](/reference/layouts/section/), [`agenda`](/reference/layouts/agenda/), [`bio`](/reference/layouts/bio/), [`closing`](/reference/layouts/closing/) | Open, Close |
-| Statements | [`statement`](/reference/layouts/statement/), [`quote`](/reference/layouts/quote/), [`image`](/reference/layouts/image/) | Say one thing |
-| Content | [`default`](/reference/layouts/default/), [`content`](/reference/layouts/content/), [`split`](/reference/layouts/split/), [`cards`](/reference/layouts/cards/), [`steps`](/reference/layouts/steps/), [`bento`](/reference/layouts/bento/) | Explain |
-| Comparison | [`comparison`](/reference/layouts/comparison/), [`shift`](/reference/layouts/shift/), [`matrix`](/reference/layouts/matrix/), [`table`](/reference/layouts/table/) | Compare and decide |
-| Data | [`stats`](/reference/layouts/stats/), [`equation`](/reference/layouts/equation/), [`chart`](/reference/layouts/chart/) | Prove it with a number; Show the pattern |
-| Diagrams, code and demos | [`diagram`](/reference/layouts/diagram/), [`code`](/reference/layouts/code/), [`demo`](/reference/layouts/demo/) | Show how it works |
-| Product screens | [`screen`](/reference/layouts/screen/), [`gallery`](/reference/layouts/gallery/) | Show the product |
-| People and proof | [`team`](/reference/layouts/team/), [`logos`](/reference/layouts/logos/), [`proof`](/reference/layouts/proof/) | People and proof |
-| Plans and asks | [`timeline`](/reference/layouts/timeline/), [`columns`](/reference/layouts/columns/), [`ask`](/reference/layouts/ask/) | Plan ahead and ask |
+| Openers and closers | [`title`](/reference/layouts/title/), [`section`](/reference/layouts/section/), [`agenda`](/reference/layouts/agenda/), [`bio`](/reference/layouts/bio/), [`recap`](/reference/layouts/recap/), [`sources`](/reference/layouts/sources/), [`closing`](/reference/layouts/closing/) | Open, Close |
+| Statements | [`statement`](/reference/layouts/statement/), [`quote`](/reference/layouts/quote/), [`image`](/reference/layouts/image/), [`definition`](/reference/layouts/definition/) | Say one thing |
+| Content | [`default`](/reference/layouts/default/), [`content`](/reference/layouts/content/), [`split`](/reference/layouts/split/), [`cards`](/reference/layouts/cards/), [`features`](/reference/layouts/features/), [`steps`](/reference/layouts/steps/), [`bento`](/reference/layouts/bento/), [`do-dont`](/reference/layouts/do-dont/), [`faq`](/reference/layouts/faq/) | Explain |
+| Training and workshops | [`quiz`](/reference/layouts/quiz/), [`exercise`](/reference/layouts/exercise/) | Explain (`quiz-cost` is in Prove it with a number) |
+| Comparison | [`comparison`](/reference/layouts/comparison/), [`pricing`](/reference/layouts/pricing/), [`shift`](/reference/layouts/shift/), [`matrix`](/reference/layouts/matrix/), [`quadrants`](/reference/layouts/quadrants/), [`table`](/reference/layouts/table/), [`risks`](/reference/layouts/risks/) | Compare and decide |
+| Data | [`stats`](/reference/layouts/stats/), [`equation`](/reference/layouts/equation/), [`market`](/reference/layouts/market/), [`chart`](/reference/layouts/chart/), [`dashboard`](/reference/layouts/dashboard/) | Prove it with a number; Show the pattern |
+| Diagrams, code and demos | [`diagram`](/reference/layouts/diagram/), [`code`](/reference/layouts/code/), [`demo`](/reference/layouts/demo/), [`conversation`](/reference/layouts/conversation/) | Show how it works |
+| Product screens | [`screen`](/reference/layouts/screen/), [`gallery`](/reference/layouts/gallery/), [`before-after`](/reference/layouts/before-after/) | Show the product |
+| People and proof | [`team`](/reference/layouts/team/), [`logos`](/reference/layouts/logos/), [`proof`](/reference/layouts/proof/), [`voices`](/reference/layouts/voices/), [`persona`](/reference/layouts/persona/) | People and proof |
+| Plans and asks | [`timeline`](/reference/layouts/timeline/), [`schedule`](/reference/layouts/schedule/), [`columns`](/reference/layouts/columns/), [`status`](/reference/layouts/status/), [`actions`](/reference/layouts/actions/), [`ask`](/reference/layouts/ask/) | Plan ahead and ask |
 
 ## How to read a layout page
 
@@ -45,12 +50,12 @@ The same data comes from the CLI for the layouts your workspace has. `deck layou
 
 ```console
 $ deck layouts launch-review --summary
-default     surface default   title any
-            One column of content under an accent rule, centred on the slide: a heading with a lead paragraph, or a heading with a short list.
-            slots: body* heading/text/bullets/image/component 80 words 6 bullets
-title       surface gradient  title <= 36
-            The cover of a deck: the deck title set large on the bottom line, a one-line subtitle, and who is presenting and when.
-            slots: body text 14 words; <Media> image
+default       surface default   title any
+              One column of content under an accent rule, centred on the slide: a heading with a lead paragraph, or a heading with a short list.
+              slots: body* heading/text/bullets/image/component 80 words 6 bullets
+title         surface gradient  title <= 36
+              The cover of a deck: the deck title set large on the bottom line, a one-line subtitle, and who is presenting and when.
+              slots: body text 14 words; <Media> image
 ...
 ```
 

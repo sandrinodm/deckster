@@ -9,23 +9,22 @@ Use this page to see which version of deckster these docs describe, upgrade to t
 
 ## The version these pages describe
 
-`@deckster/cli` **0.5.0**, released on 18 November 2026 from commit `7dc64ea` (tag `v0.5.0`), the day after 0.4.0. Check yours:
+`@deckster/cli` **0.6.0**, released from commit `5ee4926` (tag `v0.6.0`). Check yours:
 
 ```console
 $ deck --version
-0.5.0
+0.6.0
 ```
 
-A feature that needs 0.5.0 is marked "New in v0.5.0" where a page describes it, and one that needs 0.4.0 is marked "New in v0.4.0". Features on the repository's `main` branch that are not in a release yet are marked "Not in v0.5.0" where a page mentions them.
+A feature that needs 0.6.0 is marked "New in v0.6.0" where a page describes it, one that needs 0.5.0 "New in v0.5.0", and one that needs 0.4.0 "New in v0.4.0". Features on the repository's `main` branch that are not in a release yet are left out.
 
 ## Published versions
 
-```console
-$ npm view @deckster/cli versions
-[ '0.0.0-stage', '0.1.0', '0.2.1', '0.3.0', '0.4.0', '0.5.0' ]
+```sh
+npm view @deckster/cli versions
 ```
 
-The releases are 0.1.0, 0.2.1, 0.3.0, 0.4.0 and 0.5.0; `latest` points at 0.5.0. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
+The releases are 0.1.0, 0.2.1, 0.3.0, 0.4.0, 0.5.0 and 0.6.0; `latest` points at 0.6.0. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
 
 ## Upgrade
 
@@ -50,6 +49,14 @@ For a first install, see [quickstart](/get-started/quickstart/).
 ## What changed
 
 There is no changelog file. The [GitHub releases page](https://github.com/sandrinodm/deckster/releases) is the record: the notes for each release list what is new and what changed.
+
+[0.6.0](https://github.com/sandrinodm/deckster/releases/tag/v0.6.0) added three things:
+
+- **Twenty layouts.** `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`, taking the kit from 32 layouts to 52. Each has limits `deck lint` enforces and a PowerPoint mapping, and `deck layouts` lists them. The descriptions of older layouts now send some uses to them, such as before and after photos to `before-after`. See the [layouts reference](/reference/layouts/).
+- **Brand layouts.** A brand can bring slide layouts of its own in `brands/<name>/layouts.ts`, read as data like `brand.ts` and each drawn at fixed boxes over the brand's art. A deck on that brand uses one with `layout: <name>`; a deck on another brand renders the layout's kit fallback, and `deck lint` warns with `brand-layout-fallback`. `deck layouts` lists them first and takes `--brand`, `deck brand check` checks them, `deck export --pptx` writes each as a slide layout of its own, and the `fieldnote` brand brings four. See [brand layouts](/brands/brand-layouts/).
+- **`deck brand add`.** Copies a brand folder from a git repository into `brands/` with your own `git`. It reads `brand.ts` and `layouts.ts` as data without running them, checks the brand before anything is written, copies only brand files, images, fonts, documents and licences, and names the font packages to install. `--force` replaces a brand the workspace already has. See [use a brand](/brands/use-a-brand/#add-a-published-brand).
+
+The 0.6.0 notes also list changes and fixes. In the new layouts, label overrides are one `labels` object, the lit item is `highlight`, and footnotes stay visible while items reveal. `deck lint`'s contrast check measures uppercase labels as they are drawn, and `off-brand` resolves nested surfaces. Sequence diagrams measure their actors at the width they are drawn, so a title that wraps no longer overflows its box; a diagram is measured once more before the deck reports ready; and the brand importer refuses a template layout part name that is not a slide layout. The notes name two gaps: PowerPoint output for the new layouts was checked as XML, with the Open XML SDK validator and in LibreOffice, but not opened in PowerPoint or Keynote, and `deck brand add` was not tried against a private repository or end to end with a `git@` address.
 
 [0.5.0](https://github.com/sandrinodm/deckster/releases/tag/v0.5.0) added one thing:
 

@@ -32,6 +32,11 @@ A deckster workspace is a plain folder with `decks/` in it, and maybe `brands/`.
     - nocturne/
       - brand.ts
       - ...
+    - fieldnote/
+      - brand.ts
+      - layouts.ts
+      - layouts/
+      - ...
   - .deck/
     - shots/
     - exports/
@@ -83,7 +88,7 @@ A deck folder needs no `package.json`. Decks copied from the deckster repository
 
 ## A brand folder
 
-`brands/<name>/` holds one brand: a `brand.ts` file and the files it names, such as logos, background SVGs and font files. It is a folder of plain files and needs no `package.json`. A deck uses it when its `deck.config.ts` says `brand: '<name>'`, or for one command with `--brand <name>`. The `default` brand comes with the CLI, so a workspace without `brands/default/` still renders. A brand that names a Fontsource package the CLI does not carry (it ships Inter, JetBrains Mono and Bricolage Grotesque) finds it in the workspace's `node_modules/`, so you `npm install` it in the workspace; [Fonts and assets](/brands/fonts-and-assets/) covers that.
+`brands/<name>/` holds one brand: a `brand.ts` file and the files it names, such as logos, background SVGs and font files, and, for a brand with slide layouts of its own, a `layouts.ts` file and their art (see [brand layouts](/brands/brand-layouts/), new in 0.6.0). It is a folder of plain files and needs no `package.json`. A deck uses it when its `deck.config.ts` says `brand: '<name>'`, or for one command with `--brand <name>`. The `default` brand comes with the CLI, so a workspace without `brands/default/` still renders. A brand that names a Fontsource package the CLI does not carry (it ships Inter, JetBrains Mono and Bricolage Grotesque) finds it in the workspace's `node_modules/`, so you `npm install` it in the workspace; [Fonts and assets](/brands/fonts-and-assets/) covers that.
 
 ## What deckster writes to `.deck/`
 

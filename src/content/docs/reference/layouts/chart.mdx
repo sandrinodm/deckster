@@ -2,7 +2,7 @@
 title: "chart"
 description: "A title that states the takeaway, then one chart, big number or table filling the space under it."
 sidebar:
-  order: 21
+  order: 33
 ---
 
 Use the `chart` layout when one chart, number figure or table is the slide: the title states what it shows, and the figure fills the space under it. You can set the "so what" in an `<Aside>` column beside it and the source on the bottom line.
@@ -20,7 +20,7 @@ The title carries the number the bars prove (9.4 stops an hour), the `caption` n
 - **The reason fits in a few words.** An `<Aside>` takes up to 36 words: the base budget is 40, and filling the aside switches on the "with aside" variant, which narrows it to 36. A `<Footnote>` takes up to 30 words; the chart's own `source` prop works too.
 - **The data can sit in the frontmatter.** List datasets by name under `data:`, and name one from the chart with `data="name"`; inline rows and imported JSON or CSV files work too.
 
-When the chart needs a paragraph beside it, use [`split`](/reference/layouts/split/); when the point is two to four plain numbers, use [`stats`](/reference/layouts/stats/).
+When the chart needs a paragraph beside it, use [`split`](/reference/layouts/split/); when the point is two to four plain numbers, use [`stats`](/reference/layouts/stats/); for two to four related charts under one title, use [`dashboard`](/reference/layouts/dashboard/).
 
 ## Reference
 
@@ -53,5 +53,6 @@ launch-review: 1 error, 1 warning in 1 slide (1 step checked).
 - [`split`](/reference/layouts/split/): a paragraph or bullets beside the chart, when the text matters as much.
 - [`table`](/reference/layouts/table/): exact values to look up, rather than a pattern.
 - [`diagram`](/reference/layouts/diagram/): the same frame for a diagram instead of data.
+- [`dashboard`](/reference/layouts/dashboard/): two to four small charts or number components, each in a panel with its own heading.
 
 Which chart to pick is on [choosing a chart](/data-and-diagrams/choosing-a-chart/).

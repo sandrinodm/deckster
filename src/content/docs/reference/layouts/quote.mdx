@@ -2,7 +2,7 @@
 title: "quote"
 description: "A person speaking for the point: a testimonial, a resident, a user, a partner."
 sidebar:
-  order: 7
+  order: 9
 ---
 
 The `quote` layout lets someone else make the point: a customer, a resident, a user or a partner, in their own words. The words are set large in the brand's quote style with their name and role under them, and their portrait beside them if you have one.
@@ -15,7 +15,7 @@ Without `photo:`, the quote takes the width of the slide. The layout sets the qu
 
 ## When to use it
 
-- **Someone else says it better.** For the talk's own claim, use [`statement`](/reference/layouts/statement/). To introduce people rather than quote them, use [`bio`](/reference/layouts/bio/) for one and [`team`](/reference/layouts/team/) for several.
+- **Someone else says it better.** For the talk's own claim, use [`statement`](/reference/layouts/statement/). To introduce people rather than quote them, use [`bio`](/reference/layouts/bio/) for one and [`team`](/reference/layouts/team/) for several. For two or three testimonials side by side, use [`voices`](/reference/layouts/voices/); for an exchange of messages, [`conversation`](/reference/layouts/conversation/).
 - **One to three sentences, up to 36 words.** A longer quote steps down in size before `deck lint` stops it at 36.
 - **Say who said it.** `name:` is required, up to 40 characters; `role:` takes up to 64.
 - **Add a portrait** with `photo:` (a file in the deck folder). The quote then keeps to the left and the portrait stands on the right; `focal:` keeps the face in view when it is cropped.
@@ -51,5 +51,7 @@ The layout has one slot, the body. There is no `<Footnote>` or `<Caption>`; put 
 - [`bio`](/reference/layouts/bio/): introduces one person, usually the speaker.
 - [`team`](/reference/layouts/team/): two to eight people with names, roles and photos.
 - [`image`](/reference/layouts/image/): a photo across the slide when the place, not the person, makes the point.
+- [`voices`](/reference/layouts/voices/): two or three short testimonials in equal columns, each with a name and a role.
+- [`conversation`](/reference/layouts/conversation/): a chat transcript of two to four messages, with each side named.
 
 How layouts step text down in size to fit is on [text and fitting](/write-slides/text-and-fitting/).

@@ -1,0 +1,56 @@
+---
+title: "faq"
+description: "Two to four question-and-answer pairs that answer the objections standing between the audience and a decision."
+sidebar:
+  order: 20
+---
+
+The `faq` layout sets two to four questions, each a heading with its short answer under it. Use it to answer the practical objections or recurring questions that stand between the audience and a decision.
+
+<Aside type="note" title="New in v0.6.0">
+The `faq` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "faq" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="faq-windows" />
+
+The pairs are `questions:` in the frontmatter, each with a `q` and an `a`. Four pairs form a two-column grid read left to right, then down. `reveal: true` brings in one complete pair per step, so a question never appears without its answer.
+
+<SlideShot deck="lookbook" slide="faq-booking" alt="Two questions side by side under the title 'Any shop can book a drop today', each in large bold type with a two-line answer beneath it, on a white slide with no body sentence or footnote." />
+
+Two pairs sit side by side, with larger type for the questions and the answers. This slide has no body and no footnote, so the pairs have the whole slide.
+
+## When to use it
+
+- **Each `q` is a question the audience would ask.** Use [`cards`](/reference/layouts/cards/) for parallel claims that are not questions, [`comparison`](/reference/layouts/comparison/) for alternatives measured on shared criteria, and [`content`](/reference/layouts/content/) for one long explanation.
+- **Two to four pairs.** A `q` takes up to 52 characters and an `a` one or two sentences of up to 140; with three or four pairs the limits are 44 and 104. Three pairs leave the last cell empty.
+- **The body is one sentence** of up to 14 words introducing the questions; the pairs themselves belong in `questions:`. A source or date goes in `<Footnote>`, up to 16 words. The title takes up to 50 characters.
+- **Answer one pair at a time.** With `reveal: true`, put a `[click]` cue in the notes for each pair; see [builds](/write-slides/builds/). Stills and static views show every pair.
+
+## Reference
+
+<LayoutReference name="faq" />
+
+## Common mistakes
+
+- **Adding a third question without shortening the first two.** The three-or-four variant applies to every pair, so a question that was fine beside one other becomes a `schema` error:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/windows.mdx
+    error   schema (windows): questions[0].q: The faq layout sets at most 44 characters here (three or four questions), got 49.
+            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **A long introduction.** Past 14 words, `content-budget` reports "The body slot holds 19 words; its layout allows 14." Cut it to one sentence, or leave the body out.
+- **A fifth pair.** The schema stops at four: "questions: Expected at most 4 questions, got a list of 5 items." Put the rest on a second slide.
+- **An answer that is a paragraph.** An answer takes one or two sentences; move the reasoning to the `<Notes>`.
+
+## Related layouts
+
+- [`cards`](/reference/layouts/cards/): parallel claims that are not questions, each with an icon and a title.
+- [`comparison`](/reference/layouts/comparison/): alternatives measured on the same rows.
+- [`content`](/reference/layouts/content/): one explanation, in a paragraph or a short list.

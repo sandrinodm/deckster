@@ -2,7 +2,7 @@
 title: "Import a brand"
 description: "Recreate an existing look from slides, a website or guidelines."
 sidebar:
-  order: 6
+  order: 7
 ---
 
 The `brand-import` skill teaches a coding agent, such as Claude Code or Codex, to recreate an existing look as a deckster brand. You give it a PowerPoint template, a PDF, a Google Slides link, a website, brand guidelines or screenshots. You get back a draft `brands/<name>/brand.ts` that passes `deck brand check`, pictures that compare the brand with the source, and a short list of questions only you can answer. To install the skill, see [skills](/ai-agents/skills/).
@@ -39,7 +39,7 @@ The `zz-` prefix marks the specimen as scratch, so `deck build --out` leaves it 
 
 | Source | Gives | Misses |
 | --- | --- | --- |
-| PPTX | Theme colours and fonts, masters and layouts, exact sizes, gradient stops, native chart styles, logo media | Page images unless it can render them; reusable font files |
+| PPTX or POTX template | Theme colours and fonts, masters and layouts, exact sizes, gradient stops, native chart styles, logo media; the template's slide layouts as brand layouts | Page images unless it can render them; reusable font files |
 | PDF | Exact vector colours, font names (even from subsets), sizes, line heights, PDF gradients, repeated logos | Theme, layouts and letter spacing; charts are only shapes |
 | Google Slides | A PPTX and a PDF from a link shared as "Anyone with the link" | Charts linked from Sheets become images; private decks need a download from you |
 | Website | CSS custom properties, colour pairs by use, text styles, gradients, radii, shadows, transitions, the logo | Web sizes aren't slide sizes; web font files are licensed for that site only |
@@ -51,6 +51,7 @@ A PPTX is the best single source. Several sources together are better, such as a
 ## What you get back
 
 - `brands/<name>/` with a `brand.ts` that passes `deck brand check`, or an exact list of the errors that remain
+- from a template, a `layouts.ts` with one [brand layout](/brands/brand-layouts/) per slide layout it kept, their art in `layouts/`, and side-by-side pictures of each one and the source layout it came from; the handover names each layout's fallback and the layouts it dropped or merged
 - the contact sheet and side-by-side images of source pages and specimen slides
 - a handover that ends with **Needs a human**, at most ten questions, most important first: font licences and the substitute picked for each family, colours the check forced it to change (source value, new value, ratio) and every waiver, missing logo variants, and values it guessed rather than found
 

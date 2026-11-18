@@ -2,7 +2,7 @@
 title: "timeline"
 description: "Three to five dated milestones along a line, in time order: a roadmap, a history or a migration."
 sidebar:
-  order: 30
+  order: 47
 ---
 
 Use the `timeline` layout for three to five dated milestones along a line: a roadmap, a history or a migration. Mark where you stand now, which milestones are done, which slipped and which are only targets.
@@ -24,7 +24,7 @@ A milestone that slipped takes `state: error`, so the room sees it next to the d
 - **You want to show where you are.** `current:` takes the number of a milestone, counted from 1. Leave it out and the line fills to the last one, as for a finished history.
 - **Some milestones differ.** `state:` marks one as done (`success`), slipped (`error`) or tentative (`muted`).
 
-The title takes up to 60 characters and the sentence under it up to 14 words. For a process without dates, use the [`steps`](/reference/layouts/steps/) layout; for values over time, use a chart.
+The title takes up to 60 characters and the sentence under it up to 14 words. For a process without dates, use the [`steps`](/reference/layouts/steps/) layout; for values over time, use a chart; for work that lasts, as lanes of duration bars, use the [`schedule`](/reference/layouts/schedule/) layout.
 
 ## Reference
 
@@ -44,5 +44,6 @@ The title takes up to 60 characters and the sentence under it up to 14 words. Fo
 - [`columns`](/reference/layouts/columns/): a board of now, next and later, when each period holds several items.
 - [`ask`](/reference/layouts/ask/): an amount and the two to four dated milestones it buys, for a request.
 - [`chart`](/reference/layouts/chart/): values over time, such as a `<LineChart>`.
+- [`schedule`](/reference/layouts/schedule/): three to six lanes of duration bars on one axis, when the plan is about how long each part takes.
 
 The layout draws its line with the kit's `<Timeline>`, which you can also write yourself in the `diagram` layout; see [sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/).

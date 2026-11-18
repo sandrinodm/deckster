@@ -1,0 +1,63 @@
+---
+title: "features"
+description: "Six to twelve capabilities in an open grid, each with an icon, a short title and an optional few-word detail."
+sidebar:
+  order: 16
+---
+
+The `features` layout sets six to twelve capabilities in an open grid, each an icon from the brand's set with a short title and, for up to nine of them, a few words of detail. Use it for a product capability overview or a checklist of what a service includes.
+
+<Aside type="note" title="New in v0.6.0">
+The `features` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "features" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="features-network" />
+
+The capabilities are `features:` in the frontmatter, each with an `icon` and a `title`. Six items take three columns and two rows, with no panels around them, so the grid reads as one inventory. This slide has no body or eyebrow, and `surface: inverse` sets it on the dark surface. The layout uses the largest type that fits the whole grid, so six short titles are set large.
+
+<SlideShot deck="lookbook" slide="features-operations" alt="Twelve capabilities in three rows of four under the title 'Every drop has the tools to reach the door', each an outline icon above a short title such as Booking API or Webhooks, with a one-line sentence under the title and a launch-date footnote at the bottom." />
+
+Twelve items take four columns and three rows, in smaller type and without details. This slide adds an `eyebrow`, a body sentence and a `<Footnote>`, and sets `reveal: true`; the still shows the last step.
+
+<SlideShot deck="layouts" slide="features-tools" alt="Nine capabilities in three rows of three on a blue slide, each an outline icon at the left of a title such as Tree register with a one-line detail beneath it." />
+
+Nine items with a `detail` each take three columns, the icon beside the text.
+
+## When to use it
+
+- **The capabilities are peers.** Use [`cards`](/reference/layouts/cards/) for two to four ideas that each need a sentence, [`steps`](/reference/layouts/steps/) when they happen in order, and [`comparison`](/reference/layouts/comparison/) or [`table`](/reference/layouts/table/) when they are measured against alternatives. Five items fit neither: `features` needs six and `cards` stops at four.
+- **Each item is an icon and a title.** The `title` takes up to 22 characters and the optional `detail` up to 28. From nine items on, titles take up to 14 characters, and from ten the details go.
+- **Columns follow the count.** Six or nine items take three columns; seven, eight and ten to twelve take four.
+- **The body is one sentence** of up to 14 words on what the items have in common; a source goes in `<Footnote>`, up to 16. The title takes up to 50 characters.
+- **Reveal by row.** `reveal: true` brings in one row per step: two steps for six items, three for twelve. Put a `[click]` cue in the notes for each; see [builds](/write-slides/builds/).
+- **Icons come from the brand's set.** [icons](/reference/icons/) lists the names all published brands share.
+
+## Reference
+
+<LayoutReference name="features" />
+
+## Common mistakes
+
+- **Details on ten or more items.** `deck lint` rejects the slide:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/capabilities.mdx
+    error   schema (capabilities): features: Details are supported for at most 9 features.
+            Fix: Remove details from every item, or split the inventory across slides.
+
+  launch-review: 1 error, 0 warnings.
+  ```
+
+- **Long titles in a dense grid.** A title that was fine with six items becomes a `schema` error from nine: "features[1].title: The features layout sets at most 14 characters here (three rows), got 16."
+- **Too few items.** "features: Expected at least 6 features, got a list of 5 items."
+- **An icon name the brand's set lacks.** "`features[1].icon: clockz-nope` is not an icon of the lucide set."
+
+## Related layouts
+
+- [`cards`](/reference/layouts/cards/): two to four ideas that each need a line of text.
+- [`steps`](/reference/layouts/steps/): numbered along a line, because the order matters.
+- [`comparison`](/reference/layouts/comparison/): alternatives measured on the same rows.
+- [`table`](/reference/layouts/table/): exact values in rows and columns, such as a feature or price grid.

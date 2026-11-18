@@ -11,51 +11,64 @@ page covers and this page decides how it is written; list any conflict in your r
 
 ## The reader
 
-Someone who installed `@deckster/cli` 0.5.0 from npm (`npm install --global @deckster/cli`, Node
+Someone who installed `@deckster/cli` 0.6.0 from npm (`npm install --global @deckster/cli`, Node
 26 or later) and works in a folder of their own with `decks/` and maybe `brands/`. They have never
 seen the deckster repository, and often they are directing an AI agent (Claude Code, Codex) that
 writes the slides while they review. Write for that person: what to type, what they will see,
 what to tell their agent.
 
-## Ground truth: v0.5.0, run it
+## Ground truth: v0.6.0, run it
 
-- The pages describe `@deckster/cli` **0.5.0** as published on npm. The code is the tag
-  `v0.5.0`, on commit `7dc64ea` on `main` (the merge of the release pull request). Read files at the tag
-  (`git -C ../2026-11-13-presentation show v0.5.0:<path>`), because `main` and the working tree
-  move on after a release. Pages written before 0.5.0 were checked against 0.4.0 (commit
-  `50e5d19`) or 0.3.0 (commit `4e0b186`); a statement that names one of them says which version
-  was measured.
-- **Every command and every output block on a page was run by you against 0.5.0.** Install it
+- The pages describe `@deckster/cli` **0.6.0** as published on npm. The code is the tag
+  `v0.6.0`, on commit `5ee4926` on `main` (the merge of the docs gallery fix, which changes only
+  `scripts/docs/ui-shots.ts` after the brand layouts merge `67418e3`, itself after the version
+  bump `9cc40bc`).
+  Read files at the tag
+  (`git -C ../2026-11-13-presentation show v0.6.0:<path>`), because `main` and the working tree
+  move on after a release. Pages written before 0.6.0 were checked against 0.5.0 (commit
+  `7dc64ea`), 0.4.0 (commit `50e5d19`) or 0.3.0 (commit `4e0b186`); a statement that names one of
+  them says which version was measured.
+- **Every command and every output block on a page was run by you against 0.6.0.** Install it
   once in a scratch folder and run it from a fresh workspace:
 
   ```sh
-  npm install --prefix "$TMPDIR/deck-0.5.0" @deckster/cli@0.5.0
+  npm install --prefix "$TMPDIR/deck-0.6.0" @deckster/cli@0.6.0
   mkdir -p "$TMPDIR/talks" && cd "$TMPDIR/talks"
   export DECK_ROOT="$PWD"                      # the CLI climbs to the nearest folder with decks/
-  export PATH="$TMPDIR/deck-0.5.0/node_modules/.bin:$PATH"
-  deck --version                               # 0.5.0
+  export PATH="$TMPDIR/deck-0.6.0/node_modules/.bin:$PATH"
+  deck --version                               # 0.6.0
   ```
 
-  Before a release is on npm, run the CLI that `npm run sync -- --data` packs from the checkout
-  instead (`node ../2026-11-13-presentation/packages/cli/dist/deck.js`, through a small wrapper
-  script named `deck`), and say so in your report.
+  Before a release is on npm, pack the CLI as the publish workflow does
+  (`pnpm --filter @deckster/cli pack --out <dir>/deckster-cli.tgz` in the checkout) and install
+  that tarball the same way, and say so in your report. Keep both folders out of `/tmp` on macOS
+  (`$TMPDIR` is fine): a stray `/tmp/node_modules` resolves a brand's font packages that a
+  reader's workspace would not have, and `deck brand check` and `deck brand add` then print the
+  wrong output. Running `packages/cli/dist/deck.js` from the checkout through a wrapper finds the
+  checkout's own fonts the same way, and `deck brand add` there writes the repository's package
+  files; use it only for commands that touch no brand.
 
   An agent's shell keeps no state between calls: repeat the `cd`, `DECK_ROOT` and `PATH` lines in
   every command.
 
   Chromium for `lint`, `shot`, `diff` and `export`: `npx playwright@1.65.0 install chromium`.
   Confirmed: with no Chromium, 0.3.0 prints "Could not start Chromium: ..." and then
-  "Install the browser with `npx playwright@1.65.0 install chromium`." 0.4.0 and 0.5.0 pin the
+  "Install the browser with `npx playwright@1.65.0 install chromium`." 0.4.0, 0.5.0 and 0.6.0 pin the
   same Playwright, 1.65.0.
 - **What an npm workspace has and the repository does not, or the other way round.** Confirmed by
-  running 0.3.0, and again with 0.4.0 and 0.5.0 from npm:
+  running 0.3.0, again with 0.4.0 and 0.5.0 from npm, and with the 0.6.0 tarball and then 0.6.0 from npm:
   - `deck new <deck>` writes only `decks/<deck>/deck.config.ts` and `decks/<deck>/slides/title.mdx`
     (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deck types` writes the
     `tsconfig.json`.
   - Only the `default` brand ships with the CLI. `nocturne`, `fieldnote`, `kinetic` and `tidewater`
-    live in the repository's `brands/` folder. To use one, copy its folder into the workspace's
-    `brands/`, delete its `package.json` (and `tsconfig.json` if present), and install its font
-    packages in the workspace folder with `npm install`; `deck brand check <name>` names them.
+    live in the repository's `brands/` folder. To use one, run
+    `deck brand add gh:sandrinodm/deckster/brands/<name>#v0.6.0`: it copies the folder without
+    its `package.json` and `tsconfig.json` and prints the `npm install` line for its font
+    packages, which go in the workspace folder; `deck brand check <name>` then passes. With 0.5.0
+    and earlier, copy the folder, delete those two files and install the fonts by hand.
+  - Only `fieldnote` of the published brands has a `layouts.ts`. The `brand-layouts` deck that
+    uses its four layouts is not on the docs allowlist, so no still shows a brand layout: show its
+    source and the CLI output of a scratch deck.
   - There is no `hello` deck in a new workspace. To run a published deck, copy
     `decks/<name>/` from the repository and delete its `package.json` and `tsconfig.json` (they
     point into the monorepo and make every slide fail with "Transform failed").
@@ -63,8 +76,8 @@ what to tell their agent.
     only `default`. The site's `icons.json` lists the 776 names shared by all five published
     brands.
 - `src/data/*.json` was generated from the repository. `cli.json` carries the help as the npm CLI
-  prints it (checked against `deck <cmd> --help` from 0.3.0 for all 19 commands; the 0.4.0 and 0.5.0
-  data were read from the CLI packed at the release commit, which is what npm publishes), including the
+  prints it (checked against `deck <cmd> --help` from 0.3.0 for all 19 commands; the 0.4.0, 0.5.0 and
+  0.6.0 data were read from the CLI packed at the release commit, which is what npm publishes), including the
   "See docs/agent.md" and "See docs/present.md" lines the CLI prints in `dev` and `present`; those
   files are not in the npm package, so never send readers to them. Still paste help you quote from
   the installed CLI, as for every output block.
@@ -108,14 +121,14 @@ what to tell their agent.
 ## Code and output
 
 - Commands in `sh` fences; command plus output in `console` fences with a `$ ` prompt. Paste
-  output exactly as 0.5.0 printed it. Cut long output with a line `...` and say so in prose. Run
+  output exactly as 0.6.0 printed it. Cut long output with a line `...` and say so in prose. Run
   from inside the workspace, so no `Using the workspace ...` line or scratch path appears; call
   the workspace `talks` and the example deck by a plain name such as `launch-review`.
 - Slide source goes in `mdx` or `tsx` fences. Deck components (`<Notes>`, `<Step>`, `<Flow>`,
   ...) never appear as live tags on a page: the site has its own `Step`, `Steps`, `LinkCard` and
   `Aside`, and the rest are not registered. Inline, write them in backticks: `<Notes>`.
 - Prefer real source: show a slide from a published deck (`slides.json` has every slide's source)
-  over an invented one. If you invent one, lint it with 0.5.0 first.
+  over an invented one. If you invent one, lint it with 0.6.0 first.
 
 ## Site components
 
@@ -165,19 +178,29 @@ has its own page, once per page. A layout links to its own page, `/reference/lay
 anchor on `/reference/layouts/`. Only the nine published decks and five published brands may
 appear on any page, in examples or screenshots.
 
-## New in v0.5.0, and newer than the release
+## New in v0.6.0, and newer than the release
 
-One feature is new in 0.5.0: hidden slides (`hidden: true` in a slide's frontmatter, `deck export
---include-hidden`, the `hidden` field of `deck shot --json` and of `window.__deck.slides`). A page
-that describes it says it needs 0.5.0: an `<Aside type="note" title="New in v0.5.0">` on the page
-that owns it (`/write-slides/hidden-slides/`), or "New in 0.5.0." in a sentence or a table row on
-the others. Two features are new in 0.4.0, embed mode (`?embed`) and diagram looks and cards
-(`diagram.edges`, `groups`, `labels`, `kinds`, `cards` in `brand.ts`, `card="..."` on diagram
-parts, `diagram-card-missing`); their "New in v0.4.0" notes stay, because they tell a reader on an
-older CLI what is missing. Every other behaviour you describe must be in 0.5.0. Something on `main`
-that is newer than the release is left out, or, where a brief asks for it, mentioned in one or
-two sentences inside `<Aside type="note" title="Not in v0.5.0">`; if `main` or the working tree
-differs from the release, describe the release and report the difference.
+Three features are new in 0.6.0. Twenty layouts: `recap`, `sources`, `definition`, `features`,
+`do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`,
+`conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`; each of
+their pages carries `<Aside type="note" title="New in v0.6.0">` right after its opening
+paragraph, with the error 0.5.0 prints for the name, and another page that names them as a group
+says "new in 0.6.0" once. Brand layouts (`layouts.ts`, `deck layouts --brand`, the
+`brand-layout-fallback` rule), owned by `/brands/brand-layouts/`. And `deck brand add`, owned by
+the "Add a published brand" and "Add a brand from another repository" sections of
+`/brands/use-a-brand/`.
+A page that describes a feature new in a release says it needs that release: an
+`<Aside type="note" title="New in v0.X.0">` on the page that owns it, or "New in 0.X.0." in a
+sentence or a table row on the others. These notes stay after later releases, because they tell
+a reader on an older CLI what is missing: hidden slides are new in 0.5.0 (`hidden: true` in a
+slide's frontmatter, `deck export --include-hidden`, the `hidden` field of `deck shot --json` and
+of `window.__deck.slides`; owned by `/write-slides/hidden-slides/`), and embed mode (`?embed`) and
+diagram looks and cards (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` in `brand.ts`,
+`card="..."` on diagram parts, `diagram-card-missing`) are new in 0.4.0. Every other behaviour you
+describe must be in 0.6.0. Something on `main` that is newer than the release is left out, or,
+where a brief asks for it, mentioned in one or two sentences inside
+`<Aside type="note" title="Not in v0.6.0">`; if `main` or the working tree differs from the
+release, describe the release and report the difference.
 
 ## Your report
 

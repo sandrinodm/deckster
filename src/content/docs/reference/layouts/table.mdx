@@ -2,7 +2,7 @@
 title: "table"
 description: "A title that states the takeaway over one table of exact values, written as a Markdown table or the kit's Table component."
 sidebar:
-  order: 18
+  order: 28
 ---
 
 The `table` layout sets one table of exact values under a title that states the takeaway: a lookup, a schedule, a price list or a feature grid. Write it as a Markdown table or a `<Table>`, mark the row or column the point rests on, and set the "so what" beside it if you need one.
@@ -21,7 +21,7 @@ The `table` layout sets one table of exact values under a title that states the 
 - **Figures line up.** Columns of numbers are aligned right with tabular figures; write `numbers: left` to keep every column as the table writes it.
 - **The "so what" goes in `<Aside>`**: a `###` heading and a sentence or two, up to 36 words. The source goes in `<Footnote>`, up to 30 words.
 
-`<Table>` takes the same highlight and alignment as a Markdown table, plus its own props, listed on [charts](/reference/charts/#props-Table).
+`<Table>` takes the same highlight and alignment as a Markdown table, plus its own props, listed on [charts](/reference/charts/#props-Table). Four kinds of table have a layout of their own: [`status`](/reference/layouts/status/) for the readiness of workstreams, [`risks`](/reference/layouts/risks/) for a risk register, [`actions`](/reference/layouts/actions/) for commitments with owners and dates, and [`schedule`](/reference/layouts/schedule/) for durations.
 
 ## Reference
 
@@ -50,5 +50,9 @@ The `table` layout sets one table of exact values under a title that states the 
 - [`comparison`](/reference/layouts/comparison/): two or three options on the same labelled rows, with a winner per row.
 - [`stats`](/reference/layouts/stats/): two to four numbers set large.
 - [`columns`](/reference/layouts/columns/): short items in groups, not values in cells.
+- [`status`](/reference/layouts/status/): three to seven workstreams, each with a named state, an optional owner and a one-line note.
+- [`risks`](/reference/layouts/risks/): three to five risks, each with a likelihood, an impact and a mitigation.
+- [`actions`](/reference/layouts/actions/): three to six next actions, each with an owner and a due date.
+- [`schedule`](/reference/layouts/schedule/): lanes of duration bars on one axis of labelled periods.
 
 Which form fits which message is on [choosing a chart](/data-and-diagrams/choosing-a-chart/).

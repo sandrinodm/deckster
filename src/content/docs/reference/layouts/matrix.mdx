@@ -2,7 +2,7 @@
 title: "matrix"
 description: "A two-by-two map."
 sidebar:
-  order: 17
+  order: 26
 ---
 
 Use the `matrix` layout for a two-by-two map: two axes that cross in the middle, three to ten items placed by judgement, and the one the slide is about marked. Make a positioning or competition slide with it, or any choice framed by two trade-offs.
@@ -20,7 +20,7 @@ Notice that only Saltby, marked `us: true`, is set in the accent with a ring, an
 - **Two axes you can name in a few words.** `x:` and `y:` each take a `low` and a `high` label of up to 16 characters. `quadrants:` is optional: exactly four captions of up to 24 characters.
 - **One subject.** Mark the one item the slide is about with `us: true`; marking a second is a `schema` error. With `reveal: true` the axes come first, then the other items, then the marked one with the note.
 
-The note beside the plot says what the map means, in up to 40 words. When the positions are measured, plot them with `<Scatter>` in the [`chart`](/reference/layouts/chart/) layout. When options are scored on several rows, use the [`comparison`](/reference/layouts/comparison/) layout.
+The note beside the plot says what the map means, in up to 40 words. When the positions are measured, plot them with `<Scatter>` in the [`chart`](/reference/layouts/chart/) layout. When options are scored on several rows, use the [`comparison`](/reference/layouts/comparison/) layout. For four discrete boxes that each hold a list, such as a SWOT, use the [`quadrants`](/reference/layouts/quadrants/) layout.
 
 ## Reference
 
@@ -38,5 +38,6 @@ The note beside the plot says what the map means, in up to 40 words. When the po
 
 - [`chart`](/reference/layouts/chart/): a `<Scatter>` when the positions are measured values.
 - [`comparison`](/reference/layouts/comparison/): two or three options scored on the same rows.
+- [`quadrants`](/reference/layouts/quadrants/): four named lists in a ruled two-by-two grid, when the items fall into boxes rather than positions.
 
 For when a measured plot is the better form, see [choosing a chart](/data-and-diagrams/choosing-a-chart/).

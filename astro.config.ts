@@ -27,7 +27,7 @@ const nimbusConfig = defineNimbusConfig({
   // Top-level order of the rail; each folder's pages fill in automatically.
   // `defaultCollapsed` closes every group that sets no `collapsed` of its own: the top-level groups
   // below all set `collapsed: false`, so only the folders inside them start closed. Today that is
-  // reference/layouts/ (32 pages), which opens on its own pages. Frontmatter can't collapse a
+  // reference/layouts/ (52 pages), which opens on its own pages. Frontmatter can't collapse a
   // folder group (`sidebar.group` takes only label, badge, icon and hideIndex).
   sidebar: {
     defaultCollapsed: true,

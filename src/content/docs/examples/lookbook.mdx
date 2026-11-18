@@ -9,7 +9,11 @@ The lookbook is one deck that shows everything the kit can make: every layout an
 
 <DeckEmbed deck="lookbook" slide="cover" />
 
-It tells one story, so it reads as a talk rather than a specimen sheet: "Same hour, no van", the launch-day talk of Wrenhaul, a cargo-bike delivery company. **Wrenhaul, its people, customers and every figure are invented.** The deck has 138 slides in 12 parts and 270 steps. Its slides' budgets add up to 95 minutes 20 seconds, and `deck.config.ts` sets `duration: '100m'`. The whole deck is at [/decks/lookbook/](/decks/lookbook/).
+It tells one story, so it reads as a talk rather than a specimen sheet: "Same hour, no van", the launch-day talk of Wrenhaul, a cargo-bike delivery company. **Wrenhaul, its people, customers and every figure are invented.** The deck has 180 slides in 12 parts and 364 steps. Its slides' budgets add up to 122 minutes 35 seconds, and `deck.config.ts` sets `duration: '127m'`. The whole deck is at [/decks/lookbook/](/decks/lookbook/).
+
+<Aside type="note" title="New in v0.6.0">
+42 of the 180 slides use the 20 layouts that are new in `@deckster/cli` 0.6.0 (the [layouts reference](/reference/layouts/) lists them). In 0.5.0, `deck lint` reports `layout: There is no "<name>" layout.` for each of those slides, so the deck builds and lints only with 0.6.0 or later.
+</Aside>
 
 ## Find what you need
 
@@ -20,17 +24,17 @@ It tells one story, so it reads as a talk rather than a specimen sheet: "Same ho
 | # | Part | What it shows |
 | --- | --- | --- |
 | 1 | [Open](/decks/lookbook/#/part-open) | Covers with a picture beside or behind the title, a type-only cover, agendas, a speaker with and without a portrait, and the other divider forms |
-| 2 | [Say one thing](/decks/lookbook/#/part-say) | Statements, quotes with and without a portrait, and a picture across the slide with its text in each position |
-| 3 | [Explain](/decks/lookbook/#/part-explain) | The `default` and `content` layouts, text beside a picture, a phone screen or an animation in each ratio, cards, steps and bento grids, with and without builds |
-| 4 | [Compare and decide](/decks/lookbook/#/part-compare) | Comparisons with winners and a recommended option, a shift from old to new, two-by-two matrices, tables with highlighted rows and columns |
-| 5 | [Prove it with a number](/decks/lookbook/#/part-numbers) | Stats rows, a big number that counts up, before and after, sums built term by term, progress, a pictogram and a sparkline |
-| 6 | [Show the pattern](/decks/lookbook/#/part-charts) | One chart per slide: line, bar, donut, waterfall, area, slope, funnel, table, scatter and heatmap |
-| 7 | [Show how it works](/decks/lookbook/#/part-how) | Flow diagrams with journeys, packets, states and cards, a sequence, layers, a cycle, a tree, a diagram timeline and a drawn map; code with stepped highlights, moves, diffs and a terminal; a mini app and a live widget |
-| 8 | [Show the product](/decks/lookbook/#/part-product) | Product screens in a browser, phone, laptop or no frame with numbered callouts, galleries, a screenshot that morphs between slides, and a cued video |
-| 9 | [People and proof](/decks/lookbook/#/part-people) | Founders, a row, a grid and a roster of people, logo walls, and case studies with a customer's quote and numbers |
-| 10 | [Plan ahead and ask](/decks/lookbook/#/part-ahead) | Timelines (a history, a roadmap, a slipped milestone), a board of now, next and later, and the ask |
+| 2 | [Say one thing](/decks/lookbook/#/part-say) | Statements, quotes with and without a portrait, a picture across the slide with its text in each position, and one term defined, dictionary style |
+| 3 | [Explain](/decks/lookbook/#/part-explain) | The `default` and `content` layouts, text beside a picture, a phone screen or an animation in each ratio, cards, a feature grid, steps and bento grids, do and don't columns, questions and answers, a workshop exercise and a quiz, with and without builds |
+| 4 | [Compare and decide](/decks/lookbook/#/part-compare) | Comparisons with winners and a recommended option, plans and prices, a shift from old to new, two-by-two matrices, four-box lists, tables with highlighted rows and columns, and a risk register |
+| 5 | [Prove it with a number](/decks/lookbook/#/part-numbers) | Stats rows, a big number that counts up, before and after, sums built term by term, nested market sizes, progress, a pictogram, a sparkline and a quiz on the cost of a drop |
+| 6 | [Show the pattern](/decks/lookbook/#/part-charts) | One chart per slide: line, bar, donut, waterfall, area, slope, funnel, table, scatter and heatmap; then dashboards of two to four small charts or numbers |
+| 7 | [Show how it works](/decks/lookbook/#/part-how) | Flow diagrams with journeys, packets, states and cards, a sequence, layers, a cycle, a tree, a diagram timeline and a drawn map; code with stepped highlights, moves, diffs and a terminal; a mini app and a live widget; chat transcripts |
+| 8 | [Show the product](/decks/lookbook/#/part-product) | Product screens in a browser, phone, laptop or no frame with numbered callouts, galleries, a screenshot that morphs between slides, a cued video, and two pictures of one change |
+| 9 | [People and proof](/decks/lookbook/#/part-people) | Founders, a row, a grid and a roster of people, logo walls, case studies with a customer's quote and numbers, testimonials in columns, and user personas |
+| 10 | [Plan ahead and ask](/decks/lookbook/#/part-ahead) | Timelines (a history, a roadmap, a slipped milestone), a schedule of lanes and durations, a board of now, next and later, status reports, next actions with owners, and the ask |
 | 11 | [Motion](/decks/lookbook/#/part-motion) | The same three beats set as statements, with each `<Step>` effect (rise, fade, scale, blur, wipe) and with `focus` |
-| 12 | [Close](/decks/lookbook/#/part-close) | Link cards, a download, a code to scan, and the closing slide in its two forms |
+| 12 | [Close](/decks/lookbook/#/part-close) | Link cards, a download, a code to scan, takeaways to recap, a list of sources, and the closing slide in its two forms |
 
 Two slides from the middle of the deck:
 
@@ -54,11 +58,11 @@ Here is a split slide with a picture that bleeds off the left edge. The source t
 
 </Steps>
 
-To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). It then lints clean with the npm CLI:
+To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). With 0.6.0 it lints clean (0.5.0 refuses 42 of the slides):
 
 ```console
 $ deck lint lookbook
-lookbook: no problems in 138 slides (270 steps checked).
+lookbook: no problems in 180 slides (364 steps checked).
 ```
 
 ## How it stays complete

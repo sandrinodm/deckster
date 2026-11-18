@@ -146,7 +146,7 @@
           "title": "Most slides need no new component",
           "layout": "stats",
           "file": "decks/showcase/slides/kit-numbers.mdx",
-          "source": "---\nlayout: stats\ntitle: Most slides need no new component\neyebrow: What ships\nsurface: inverse\nstats:\n  - value: \"32\"\n    label: layouts, each with a budget\n  - value: \"16\"\n    label: charts and number figures\n  - value: \"7\"\n    label: diagram components\n  - value: \"42\"\n    label: lint rules, each with a fix\n    highlight: true\nbudget: 45s\n---\n\n<Footnote>Counted from the catalogs and the lint help that the deck command prints in this repository.</Footnote>\n\n<Notes>\nReal numbers, counted from the CLI this morning. Thirty-two layouts, sixteen charts and figures, seven diagram components. And the one I care about most: forty-two lint rules, each of which names its fix.\n\nThis deck uses twenty-three of the layouts. Count them if you get bored.\n\nTransition: part two is what those components look like with something to say.\n</Notes>\n"
+          "source": "---\nlayout: stats\ntitle: Most slides need no new component\neyebrow: What ships\nsurface: inverse\nstats:\n  - value: \"52\"\n    label: layouts, each with a budget\n  - value: \"16\"\n    label: charts and number figures\n  - value: \"7\"\n    label: diagram components\n  - value: \"42\"\n    label: lint rules, each with a fix\n    highlight: true\nbudget: 45s\n---\n\n<Footnote>Counted from the catalogs and the lint help that the deck command prints in this repository.</Footnote>\n\n<Notes>\nReal numbers, counted from the CLI this morning. Fifty-two layouts, sixteen charts and figures, seven diagram components. And the one I care about most: forty-two lint rules, each of which names its fix.\n\nThis deck uses twenty-three of the layouts. Count them if you get bored.\n\nTransition: part two is what those components look like with something to say.\n</Notes>\n"
         },
         {
           "id": "part-evidence",
@@ -391,10 +391,10 @@
         {
           "id": "recap",
           "number": 44,
-          "title": "This deck used 23 of the 32 layouts and every diagram component in the kit",
+          "title": "This deck used 23 of the 52 layouts and every diagram component in the kit",
           "layout": "chart",
           "file": "decks/showcase/slides/recap.mdx",
-          "source": "---\nlayout: chart\ntitle: This deck used 23 of the 32 layouts and every diagram component in the kit\neyebrow: The evidence, once more\nbudget: 30s\n---\n\n<Progress\n  items={[\n    { label: 'Layouts used, of 32', value: 23, max: 32, unit: 'layouts', highlight: true },\n    { label: 'Diagram components used, of 7', value: 7, max: 7, unit: 'components' },\n    { label: 'Chart and figure components used, of 16', value: 10, max: 16, unit: 'components' },\n  ]}\n/>\n\n<Footnote>Counted against the catalogs in this repository. Lint reports no problems for this deck in either brand.</Footnote>\n\n<Notes>\nOne last piece of evidence, and it is the deck itself. Twenty-three of the thirty-two layouts. All seven diagram components. Ten of the sixteen charts, because six more would have been showing off.\n\nAnd the linter is clean in both brands.\n\nTransition: which leaves one thing to say.\n</Notes>\n"
+          "source": "---\nlayout: chart\ntitle: This deck used 23 of the 52 layouts and every diagram component in the kit\neyebrow: The evidence, once more\nbudget: 30s\n---\n\n<Progress\n  items={[\n    { label: 'Layouts used, of 52', value: 23, max: 52, unit: 'layouts', highlight: true },\n    { label: 'Diagram components used, of 7', value: 7, max: 7, unit: 'components' },\n    { label: 'Chart and figure components used, of 16', value: 10, max: 16, unit: 'components' },\n  ]}\n/>\n\n<Footnote>Counted against the catalogs in this repository. Lint reports no problems for this deck in either brand.</Footnote>\n\n<Notes>\nOne last piece of evidence, and it is the deck itself. Twenty-three of the fifty-two layouts. All seven diagram components. Ten of the sixteen charts, because six more would have been showing off.\n\nAnd the linter is clean in both brands.\n\nTransition: which leaves one thing to say.\n</Notes>\n"
         },
         {
           "id": "closing",
@@ -524,8 +524,24 @@
           "source": "---\nlayout: statement\ntitle: A shop should promise the same hour without owning a van\neyebrow: What we believe\nemphasis: underline\nbudget: 20s\n---\n\nA shop should promise *the same hour* without owning a van.\n\n<Notes>\n`statement` with `emphasis: underline`, on its default inverse surface; use it for the one claim the talk turns on, with the two or three words that carry it marked.\nSay it plainly: the hour is what customers now expect, and a van is what most shops cannot afford or no longer drive into the centre. Everything after this is how we make that true.\n</Notes>\n"
         },
         {
-          "id": "quote-portrait",
+          "id": "definition-loop",
           "number": 15,
+          "title": "A loop is the unit Flock plans",
+          "layout": "definition",
+          "file": "decks/lookbook/slides/definition-loop.mdx",
+          "source": "---\nlayout: definition\ntitle: A loop is the unit Flock plans\neyebrow: The words we use\nsurface: default\nterm: Loop\npronunciation: /luːp/\nkind: noun\nexample: Aoife’s loop 14 carries nine drops from the Old Town hub to nine doors.\nbudget: 35s\n---\n\nA route that takes a rider from the hub to a group of doors and back. Flock groups waiting drops into loops every 90 seconds.\n\n<Footnote>Wrenhaul operating report, October 2026. Median loop: nine drops, 68 minutes, 7.2 km.</Footnote>\n\n<Notes>\n`definition` with `pronunciation`, `kind`, `example` and a footnote, on `surface: default`; use the example to connect a specialist term to a concrete event.\nThe unit is a loop, not a single trip to a door. Aoife’s loop 14 is the route we will follow through the product.\n</Notes>\n"
+        },
+        {
+          "id": "definition-drop",
+          "number": 16,
+          "title": "Every figure from here counts one unit: the drop",
+          "layout": "definition",
+          "file": "decks/lookbook/slides/definition-drop.mdx",
+          "source": "---\nlayout: definition\ntitle: \"Every figure from here counts one unit: the drop\"\neyebrow: The words we use\nterm: Drop\nbudget: 25s\n---\n\nOne parcel, delivered to one door within a promised window.\n\n<Notes>\n`definition` with only `term` and the body, on its default inverse surface; use it to establish a shared meaning before building an argument on it.\nOne parcel, one door, one promise. Every number we show from here counts the same unit.\n</Notes>\n"
+        },
+        {
+          "id": "quote-portrait",
+          "number": 17,
           "title": "Bread that arrives warm is a different product",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-portrait.mdx",
@@ -533,7 +549,7 @@
         },
         {
           "id": "image-bottom",
-          "number": 16,
+          "number": 18,
           "title": "A rider stops at nine doors an hour",
           "layout": "image",
           "file": "decks/lookbook/slides/image-bottom.mdx",
@@ -541,7 +557,7 @@
         },
         {
           "id": "statement-center",
-          "number": 17,
+          "number": 19,
           "title": "Vans are leaving the old towns, deliveries are not",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-center.mdx",
@@ -549,7 +565,7 @@
         },
         {
           "id": "quote-plain",
-          "number": 18,
+          "number": 20,
           "title": "A sample used to wait for the van",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-plain.mdx",
@@ -557,7 +573,7 @@
         },
         {
           "id": "image-left",
-          "number": 19,
+          "number": 21,
           "title": "We deliver until nine at night",
           "layout": "image",
           "file": "decks/lookbook/slides/image-left.mdx",
@@ -565,7 +581,7 @@
         },
         {
           "id": "statement-giant",
-          "number": 20,
+          "number": 22,
           "title": "Same hour, no van",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-giant.mdx",
@@ -573,7 +589,7 @@
         },
         {
           "id": "image-right",
-          "number": 21,
+          "number": 23,
           "title": "Every parcel leaves the hub in its own slot",
           "layout": "image",
           "file": "decks/lookbook/slides/image-right.mdx",
@@ -581,7 +597,7 @@
         },
         {
           "id": "statement-quote",
-          "number": 22,
+          "number": 24,
           "title": "The Old Town got its streets back and its shops kept their customers",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-quote.mdx",
@@ -589,7 +605,7 @@
         },
         {
           "id": "quote-accent",
-          "number": 23,
+          "number": 25,
           "title": "We stopped turning down same-day orders at noon",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-accent.mdx",
@@ -597,7 +613,7 @@
         },
         {
           "id": "image-alone",
-          "number": 24,
+          "number": 26,
           "title": "The van stops here, the bike rides on",
           "layout": "image",
           "file": "decks/lookbook/slides/image-alone.mdx",
@@ -605,7 +621,7 @@
         },
         {
           "id": "part-explain",
-          "number": 25,
+          "number": 27,
           "title": "Explain",
           "layout": "section",
           "file": "decks/lookbook/slides/part-explain.mdx",
@@ -613,7 +629,7 @@
         },
         {
           "id": "default-heading",
-          "number": 26,
+          "number": 28,
           "title": "A drop is one parcel, one door, one promised window",
           "layout": "default",
           "file": "decks/lookbook/slides/default-heading.mdx",
@@ -621,7 +637,7 @@
         },
         {
           "id": "content-text",
-          "number": 27,
+          "number": 29,
           "title": "A hub is a shop front, not a warehouse",
           "layout": "content",
           "file": "decks/lookbook/slides/content-text.mdx",
@@ -629,7 +645,7 @@
         },
         {
           "id": "split-photo-right",
-          "number": 28,
+          "number": 30,
           "title": "Riders know their streets by name",
           "layout": "split",
           "file": "decks/lookbook/slides/split-photo-right.mdx",
@@ -637,15 +653,23 @@
         },
         {
           "id": "cards-three",
-          "number": 29,
+          "number": 31,
           "title": "Open Network does three things for a shop",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-three.mdx",
           "source": "---\nlayout: cards\ntitle: Open Network does three things for a shop\ncards:\n  - icon: plug\n    title: Book a drop\n    text: One call from the shop, the till or the carrier.\n  - icon: map-pin-check\n    title: Follow it to the door\n    text: A webhook for every change, a page for the recipient.\n  - icon: receipt-euro\n    title: One price per drop\n    text: €3.10 a drop, less above 10,000 a month.\nbudget: 45s\n---\n\nOne API, whatever system the shop already runs.\n\n<Notes>\n`cards` with three cards, each with an icon; use it for three peers of equal weight.\nOpen Network is three things and nothing else: book a drop, follow it to the door, pay for it. Everything a shop needs to promise the same hour, without a van and without a contract.\n</Notes>\n"
         },
         {
+          "id": "features-network",
+          "number": 32,
+          "title": "One network covers every part of the drop",
+          "layout": "features",
+          "file": "decks/lookbook/slides/features-network.mdx",
+          "source": "---\nlayout: features\ntitle: One network covers every part of the drop\nsurface: inverse\nfeatures:\n  - icon: plug\n    title: Booking API\n  - icon: clock\n    title: Delivery windows\n  - icon: route\n    title: Flock batching\n  - icon: bike\n    title: Rider app\n  - icon: map-pin\n    title: Live tracking\n  - icon: chart-bar\n    title: Insights\nbudget: 30s\n---\n\n<Notes>\n`features` with six titles and no details, in three open columns on inverse; use it for a capability overview that needs no paragraphs.\nSix parts of one network: the Booking API, Delivery windows, Flock batching, the Rider app, Live tracking and Insights. Open Network puts all six behind one API.\n</Notes>\n"
+        },
+        {
           "id": "default-list",
-          "number": 30,
+          "number": 33,
           "title": "Flock makes four decisions every 90 seconds",
           "layout": "default",
           "file": "decks/lookbook/slides/default-list.mdx",
@@ -653,7 +677,7 @@
         },
         {
           "id": "split-photo-left-bleed",
-          "number": 31,
+          "number": 34,
           "title": "People are home when the drop arrives",
           "layout": "split",
           "file": "decks/lookbook/slides/split-photo-left-bleed.mdx",
@@ -661,7 +685,7 @@
         },
         {
           "id": "steps-loop",
-          "number": 32,
+          "number": 35,
           "title": "Every loop runs the same five steps",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-loop.mdx",
@@ -669,7 +693,7 @@
         },
         {
           "id": "content-aside",
-          "number": 33,
+          "number": 36,
           "title": "A loop is the unit we plan, staff and cost",
           "layout": "content",
           "file": "decks/lookbook/slides/content-aside.mdx",
@@ -677,7 +701,7 @@
         },
         {
           "id": "cards-four-reveal",
-          "number": 34,
+          "number": 37,
           "title": "Riders are staff, with everything that comes with it",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-four-reveal.mdx",
@@ -685,7 +709,7 @@
         },
         {
           "id": "split-screen",
-          "number": 35,
+          "number": 38,
           "title": "The rider sees one stop at a time",
           "layout": "split",
           "file": "decks/lookbook/slides/split-screen.mdx",
@@ -693,7 +717,7 @@
         },
         {
           "id": "bento-hub",
-          "number": 36,
+          "number": 39,
           "title": "One hub, Old Town, seen from four sides",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-hub.mdx",
@@ -701,7 +725,7 @@
         },
         {
           "id": "steps-current",
-          "number": 37,
+          "number": 40,
           "title": "A new merchant sends a first drop in four steps",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-current.mdx",
@@ -709,7 +733,7 @@
         },
         {
           "id": "split-lottie",
-          "number": 38,
+          "number": 41,
           "title": "Every handover ends with a check",
           "layout": "split",
           "file": "decks/lookbook/slides/split-lottie.mdx",
@@ -717,15 +741,23 @@
         },
         {
           "id": "cards-accent",
-          "number": 39,
+          "number": 42,
           "title": "Three windows cover every kind of shop",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-accent.mdx",
           "source": "---\nlayout: cards\ntitle: Three windows cover every kind of shop\nsurface: accent\ncards:\n  - icon: clock\n    title: Same hour\n    text: Booked by 4 pm, at the door within 60 minutes.\n  - icon: calendar-clock\n    title: Two-hour\n    text: Two hours of their choice, 8 am to 8 pm.\n  - icon: moon\n    title: Evening\n    text: 6 to 9 pm, when people are home.\nbudget: 30s\n---\n\nPharmacies sell the hour, grocers the slot, florists the evening.\n\n<Notes>\n`cards` with three cards on `surface: accent`; use it for a short set of peers that should stand out from the slides around it.\nA merchant sells one of three windows. The pharmacy sells the hour, the grocer sells a slot, Fennick Florists sells the evening. One network serves all three.\n</Notes>\n"
         },
         {
+          "id": "features-operations",
+          "number": 43,
+          "title": "Every drop has the tools to reach the door",
+          "layout": "features",
+          "file": "decks/lookbook/slides/features-operations.mdx",
+          "source": "---\nlayout: features\ntitle: Every drop has the tools to reach the door\neyebrow: Open Network\nreveal: true\nfeatures:\n  - icon: plug\n    title: Booking API\n  - icon: code\n    title: TypeScript SDK\n  - icon: terminal\n    title: Command line\n  - icon: key\n    title: Test keys\n  - icon: clock\n    title: Three windows\n  - icon: route\n    title: Flock batching\n  - icon: bike\n    title: Rider app\n  - icon: map-pin\n    title: Live tracking\n  - icon: bell\n    title: Webhooks\n  - icon: shield\n    title: Signed events\n  - icon: repeat\n    title: Event retries\n  - icon: chart-bar\n    title: Insights\nbudget: 45s\n---\n\nThe shop keeps its own systems; Open Network takes the drop from there.\n\n<Footnote>Available at launch, 3 December 2026, across all six cities.</Footnote>\n\n<Notes>\n`features` with twelve icon and title items in four columns and `reveal: true` by row; use it for a compact inventory spoken in three groups.\nThe whole drop sits behind one API. [click] First, the tools that connect the shop: the booking API, SDK, command line and test keys. [click] Then the delivery: three windows, Flock, Rider and Track. [click] Finally, the evidence: webhooks, signed events, retries and Insights. These are capabilities of the same network, not twelve separate products.\n</Notes>\n"
+        },
+        {
           "id": "bento-reveal",
-          "number": 40,
+          "number": 44,
           "title": "Open Network opens in six cities today",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-reveal.mdx",
@@ -733,7 +765,7 @@
         },
         {
           "id": "steps-three",
-          "number": 41,
+          "number": 45,
           "title": "A new hub takes three steps and five months",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-three.mdx",
@@ -741,15 +773,87 @@
         },
         {
           "id": "bento-inverse",
-          "number": 42,
+          "number": 46,
           "title": "A rider's day is six loops",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-inverse.mdx",
           "source": "---\nlayout: bento\ntitle: A rider's day is six loops\nsurface: inverse\ntiles:\n  - value: 6 loops\n    label: in a shift, 54 drops by evening\n  - src: assets/scenes/evening-street.svg\n    alt: Aoife riding back to the hub through the Old Town at dusk, windows and lamps lit\n    focal: 80% 60%\n    treatment: plain\n  - icon: bike\n    title: 43 km in the saddle\n    text: Six loops of 7.2 km, with a break at the hub between them.\nbudget: 30s\n---\n\nAoife Brennan, Old Town, a Tuesday in October.\n\n<Notes>\n`bento` with three tiles on `surface: inverse`: a figure, a picture and a heading, the picture `treatment: plain` so it reads at tile size; use it for one subject told in three facets.\nThis is Aoife's Tuesday: six loops of nine drops, 54 doors, 43 kilometres, and the last loop home under the street lamps.\n</Notes>\n"
         },
         {
+          "id": "do-dont-handover",
+          "number": 47,
+          "title": "A handover ends with the recipient",
+          "layout": "do-dont",
+          "file": "decks/lookbook/slides/do-dont-handover.mdx",
+          "source": "---\nlayout: do-dont\ntitle: A handover ends with the recipient\neyebrow: At the door\nbudget: 30s\ndo:\n  - Confirm who is taking the parcel\n  - Tap delivered after the handover\ndont:\n  - Leave a parcel without permission\n  - Mark a drop done from the street\n---\n\n<Notes>\n`do-dont` with two examples per side and default headings; use it to teach a practical habit through concrete actions.\nThe last metre matters as much as the loop. A successful handover means someone agreed to receive the parcel, then the rider confirmed it in Rider.\n</Notes>\n"
+        },
+        {
+          "id": "do-dont-routing",
+          "number": 48,
+          "title": "Keep the promise when a drop will not fit",
+          "layout": "do-dont",
+          "file": "decks/lookbook/slides/do-dont-routing.mdx",
+          "source": "---\nlayout: do-dont\ntitle: Keep the promise when a drop will not fit\neyebrow: Dispatch decisions\nsurface: inverse\nlabels:\n  do: Keep the promise\n  dont: Avoid the shortcut\nreveal: true\nbudget: 45s\ndo:\n  - Batch waiting drops every 90 seconds\n  - Keep a loop within 9 drops and 75 minutes\n  - Send parcels over 25 kg to a partner van\n  - Agree a new day when no window is possible\ndont:\n  - Keep the old five-minute batching cycle\n  - Squeeze a tenth drop into a full loop\n  - Ask a rider to carry a parcel over the limit\n  - Move a delivery date without asking the recipient\n---\n\nOverflow is a planned handover, with the recipient kept informed.\n\n<Footnote>October 2026: 93% bike loops, 5% partner vans, 2% agreed next-day delivery.</Footnote>\n\n<Notes>\n`do-dont` with four examples, custom headings, `surface: inverse` and `reveal: true`; use the column build to explain the right habits before the shortcuts to avoid.\n[click] Start with the operating rules: batch every 90 seconds, at most nine drops and 75 minutes. Parcels above 25 kg go to a van. If neither can make the window, agree the next day.\n[click] These shortcuts would make a full loop look efficient while breaking the promise. We keep the recipient informed instead.\n</Notes>\n"
+        },
+        {
+          "id": "exercise-window",
+          "number": 49,
+          "title": "Choose the window your customers need",
+          "layout": "exercise",
+          "file": "decks/lookbook/slides/exercise-window.mdx",
+          "source": "---\nlayout: exercise\ntitle: Choose the window your customers need\nduration: 5 min\ninstructions:\n  - Think of one order your shop sends across the city.\n  - Choose same hour, two-hour or evening and explain why.\noutput: One order, one window and a reason\nbudget: 35s\n---\n\n<Notes>\n`exercise` with two instructions and no optional fields; use it for a quick individual task with a visible timebox and deliverable.\nAsk merchants to picture a real order. Give everyone five minutes to choose a window; the specimen's speaking budget covers introducing the task. Invite a grocer and a bakery to compare their choices.\n</Notes>\n"
+        },
+        {
+          "id": "exercise-first-drop",
+          "number": 50,
+          "title": "Plan Brightloaf's first Open Network drop",
+          "layout": "exercise",
+          "file": "decks/lookbook/slides/exercise-first-drop.mdx",
+          "source": "---\nlayout: exercise\ntitle: Plan Brightloaf's first Open Network drop\neyebrow: Put it into practice\nsurface: inverse\nduration: 10 min\ngroups: In pairs\ninstructions:\n  - Open the console with a test key.\n  - Use Brightloaf as pickup and 14 Weir Street as dropoff.\n  - Choose the same-hour delivery window.\n  - Find the drop id and follow its status.\n  - Explain how you would confirm the handover.\noutput: One test drop id and a handover check\nbudget: 45s\n---\n\nUse the loaf's journey to practise booking a drop before sending a real parcel.\n\n<Footnote>Use a test key; the console link is wrenhaul.example/start.</Footnote>\n\n<Notes>\n`exercise` with five instructions, `groups`, context and a footnote on the inverse surface; use it when pairs need a complete brief they can refer to while working.\nGive one partner the console and the other the job of checking the handover. Introduce the ten-minute task, then keep the brief visible while the pairs work. The speaking budget covers the introduction, not the activity.\n</Notes>\n"
+        },
+        {
+          "id": "faq-booking",
+          "number": 51,
+          "title": "Any shop can book a drop today",
+          "layout": "faq",
+          "file": "decks/lookbook/slides/faq-booking.mdx",
+          "source": "---\nlayout: faq\ntitle: Any shop can book a drop today\neyebrow: Before your first drop\nbudget: 35s\nquestions:\n  - q: Do we need our own riders?\n    a: No. Our 310 riders work from 14 hubs across six cities.\n  - q: Do we need a monthly plan?\n    a: No. Open Network costs €3.10 a drop; the hub plan pays off above 950 a month.\n---\n\n<Notes>\n`faq` with two pairs, no context or footnote, in large type; use it to answer the two objections that stand between the audience and its first booking.\nA shop brings the parcel and the address. We bring the hub, the rider and the tracking page. A monthly plan is a choice for shops with enough volume, not a condition of joining.\n</Notes>\n"
+        },
+        {
+          "id": "faq-windows",
+          "number": 52,
+          "title": "Every window has a route to the door",
+          "layout": "faq",
+          "file": "decks/lookbook/slides/faq-windows.mdx",
+          "source": "---\nlayout: faq\ntitle: Every window has a route to the door\neyebrow: Questions from merchants\nsurface: inverse\nreveal: true\nbudget: 55s\nquestions:\n  - q: When can we book the same hour?\n    a: Book by 4 pm. The drop reaches the door within 60 minutes.\n  - q: Can recipients choose an evening slot?\n    a: Yes. The evening window runs from 6 to 9 pm.\n  - q: What if a parcel is too heavy?\n    a: A parcel over 25 kg goes to a partner van.\n  - q: Can a rider collect a return?\n    a: From Q1 2027, riders pick up returns on their next loop.\n---\n\nChoose the promise that fits the parcel and the recipient.\n\n<Footnote>Delivery windows at launch, 3 December 2026; returns pick-up follows in Q1 2027.</Footnote>\n\n<Notes>\n`faq` with four pairs in a two-column grid, `reveal: true`, context and a footnote on inverse; use it to walk through practical questions one complete pair per click.\n[click] Same hour means sixty minutes, booked by four. [click] Evening is a separate window, six to nine. [click] Heavy parcels still have a route: the partner van. [click] Returns pick-up follows in the first quarter, on the rider's next loop.\n</Notes>\n"
+        },
+        {
+          "id": "quiz-same-hour",
+          "number": 53,
+          "title": "Do most recipients choose the same-hour window?",
+          "layout": "quiz",
+          "file": "decks/lookbook/slides/quiz-same-hour.mdx",
+          "source": "---\nlayout: quiz\ntitle: Do most recipients choose the same-hour window?\neyebrow: A question for the room\noptions:\n  - Yes\n  - No\nanswer: A\nreveal: true\nbudget: 30s\n---\n\n<Notes>\n`quiz` with two short options and `reveal: true`; use it for a quick show of hands before the answer.\nAsk the room to choose A or B. Pause long enough for hands to go up.\n\n[click] Yes: eight in ten recipients choose the same-hour window when offered it. This is the choice the network has to make possible.\n</Notes>\n"
+        },
+        {
+          "id": "quiz-routing",
+          "number": 54,
+          "title": "What share of drops go on a bike loop?",
+          "layout": "quiz",
+          "file": "decks/lookbook/slides/quiz-routing.mdx",
+          "source": "---\nlayout: quiz\ntitle: What share of drops go on a bike loop?\neyebrow: October routing\nsurface: inverse\noptions:\n  - Just over half\n  - About three quarters\n  - More than nine in ten\nanswer: C\nexplanation: Bikes carry 93%; partner vans carry 5%, and 2% move to the next day by agreement.\nreveal: true\nbudget: 20s\n---\n\n<Notes>\n`quiz` with three options, `answer: C` and an explanation on the inverse surface; use it to test an assumption about a proportion.\nAsk the room how much of the network the bikes can handle.\n\n[click] C: ninety-three per cent of drops go on a bike loop. The van partner covers five per cent; the remaining two per cent move by agreement.\n</Notes>\n"
+        },
+        {
+          "id": "quiz-loop",
+          "number": 55,
+          "title": "How many drops can Flock put in one loop?",
+          "layout": "quiz",
+          "file": "decks/lookbook/slides/quiz-loop.mdx",
+          "source": "---\nlayout: quiz\ntitle: How many drops can Flock put in one loop?\neyebrow: Dispatch rules\noptions:\n  - Three\n  - Five\n  - Seven\n  - Nine\nanswer: D\nexplanation: Nine drops and 75 minutes are the limits; Flock batches waiting drops every 90 seconds.\nreveal: true\nbudget: 20s\n---\n\n<Notes>\n`quiz` with four short options and `answer: D`; use it to check one concrete operating limit before a demo.\nAsk for the maximum, rather than the number in a typical loop.\n\n[click] D: nine drops. The loop must also stay within seventy-five minutes; a full loop that misses its windows is not a useful batch.\n</Notes>\n"
+        },
+        {
           "id": "part-compare",
-          "number": 43,
+          "number": 56,
           "title": "Compare and decide",
           "layout": "section",
           "file": "decks/lookbook/slides/part-compare.mdx",
@@ -757,7 +861,7 @@
         },
         {
           "id": "comparison-modes",
-          "number": 44,
+          "number": 57,
           "title": "A bike beats a van on every row but one",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-modes.mdx",
@@ -765,7 +869,7 @@
         },
         {
           "id": "shift-window",
-          "number": 45,
+          "number": 58,
           "title": "Shops move from next day to the same hour",
           "layout": "shift",
           "file": "decks/lookbook/slides/shift-window.mdx",
@@ -773,7 +877,7 @@
         },
         {
           "id": "matrix-market",
-          "number": 46,
+          "number": 59,
           "title": "Only Wrenhaul is fast and cheap at once",
           "layout": "matrix",
           "file": "decks/lookbook/slides/matrix-market.mdx",
@@ -781,7 +885,7 @@
         },
         {
           "id": "table-hubs",
-          "number": 47,
+          "number": 60,
           "title": "Density sets the cost of a drop",
           "layout": "table",
           "file": "decks/lookbook/slides/table-hubs.mdx",
@@ -789,15 +893,23 @@
         },
         {
           "id": "comparison-before-after",
-          "number": 48,
+          "number": 61,
           "title": "Pantry Lane now delivers at half the cost",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-before-after.mdx",
           "source": "---\nlayout: comparison\ntitle: Pantry Lane now delivers at half the cost\neyebrow: Before and after\nreveal: true\nbudget: 1m\noptions:\n  - name: Pantry Lane, 2024\n    summary: Delivering in its own vans\n  - name: Pantry Lane, 2026\n    summary: Same hour with Wrenhaul\nrows:\n  - label: Same-day orders a shop\n    values: [38 a week, 62 a week]\n    winner: 2\n  - label: Cost per delivery\n    values: [\"€6.80\", \"€3.20\"]\n    winner: 2\n  - label: Complaints per 1,000\n    values: [\"14\", \"4\"]\n    winner: 2\n  - label: Orders after noon\n    values: [false, true]\n    winner: 2\n  - label: Orders over 25 kg\n    values: [In its own van, Passed to a partner van]\n    winner: 1\n---\n\n<Footnote>Pantry Lane Grocers, 34 shops in four cities: 2024 against October 2026.</Footnote>\n\n<Notes>\n`comparison` with two options as before and after, checks and dashes, and `reveal: true`; use it for a customer's own numbers, including the one that got worse.\n[click] Pantry Lane in 2024, delivering from its own vans: 38 same-day orders a shop each week, and nothing taken after noon.\n[click] And with us: 62 a week, at half the cost, with a third of the complaints. One thing got harder: crates over 25 kg now go to a partner van.\n</Notes>\n"
         },
         {
+          "id": "pricing-break-even",
+          "number": 62,
+          "title": "Above 950 drops a month, the hub plan wins",
+          "layout": "pricing",
+          "file": "decks/lookbook/slides/pricing-break-even.mdx",
+          "source": "---\nlayout: pricing\ntitle: Above 950 drops a month, the hub plan wins\neyebrow: Which plan\nsurface: accent\nreveal: true\nbadge: Above 950 a month\nbudget: 40s\nplans:\n  - name: Open Network\n    price: €3.10\n    period: a drop\n    description: No fee and no minimum\n    features:\n      - Books by API and webhooks\n      - Cheaper above 10,000 a month\n  - name: Hub plan\n    price: €2.90\n    period: a drop\n    description: €190 a month, 500 drops minimum\n    features:\n      - Twenty cents less a drop\n      - The fee pays for itself\n    recommended: true\n---\n\n<Notes>\n`pricing` with two plans, `reveal: true` and a custom `badge`, on the accent surface, where the recommended plan lights up on the inverse surface; use it to walk an audience from one plan to the next.\n[click] Open Network costs €3.10 a drop with no fee. [click] The hub plan is twenty cents cheaper but costs €190 a month, so it only pays off above 950 drops a month. That is the line the price calculator draws.\n</Notes>\n"
+        },
+        {
           "id": "shift-cost",
-          "number": 49,
+          "number": 63,
           "title": "A drop costs half of what a van costs",
           "layout": "shift",
           "file": "decks/lookbook/slides/shift-cost.mdx",
@@ -805,15 +917,39 @@
         },
         {
           "id": "matrix-cities",
-          "number": 50,
+          "number": 64,
           "title": "Saltby is the next city to open",
           "layout": "matrix",
           "file": "decks/lookbook/slides/matrix-cities.mdx",
           "source": "---\nlayout: matrix\ntitle: Saltby is the next city to open\neyebrow: Where we go next\nbudget: 45s\nx:\n  low: Spread out\n  high: Dense centre\ny:\n  low: Council wary\n  high: Council backing\nitems:\n  - name: Saltby\n    x: 82\n    y: 82\n    us: true\n  - name: Ardwen\n    x: 68\n    y: 58\n  - name: Fallowmere\n    x: 58\n    y: 72\n  - name: Tarnock\n    x: 72\n    y: 38\n  - name: Wexholm\n    x: 18\n    y: 64\n  - name: Brindlemoor\n    x: 14\n    y: 26\n---\n\nSaltby has the densest centre of the six and the council keenest to close it to vans. It opens in April; Ardwen and Fallowmere follow in May, Tarnock in June.\n\n<Footnote>Placed by the hubs team from city density data and meetings with each council, 2026.</Footnote>\n\n<Notes>\n`matrix` without quadrant captions, as a decision between named candidates; use it when the axes say enough and the corners need no names.\nTwo things decide a city: how many drops fit in a square kilometre, and whether the council is with us. Saltby leads on both. Wexholm and Brindlemoor wait.\n</Notes>\n"
         },
         {
+          "id": "quadrants-network",
+          "number": 65,
+          "title": "Density is our strength and our constraint",
+          "layout": "quadrants",
+          "file": "decks/lookbook/slides/quadrants-network.mdx",
+          "source": "---\nlayout: quadrants\ntitle: Density is our strength and our constraint\neyebrow: Open Network · SWOT\nbudget: 45s\nquadrants:\n  - title: Strengths\n    icon: bike\n    items:\n      - 97.8% of drops arrive on time\n      - 310 riders on staff\n  - title: Weaknesses\n    icon: map-pin\n    items:\n      - A hub needs 250 drops a day\n      - Bike boxes carry up to 25 kg\n  - title: Opportunities\n    highlight: true\n    icon: route\n    items:\n      - Four more cities by June 2027\n      - Any carrier can book through one API\n  - title: Threats\n    icon: shield\n    items:\n      - Spread-out centres dilute density\n      - Low volume leaves hubs below payback\n---\n\nThe next city needs a dense centre and council backing.\n\n<Footnote>Wrenhaul operating report, October 2026; expansion plan for 2027.</Footnote>\n\n<Notes>\n`quadrants` as a SWOT, with icons, `quadrants[].highlight: true` on the default surface and two bullets per box, all shown at once; use it when four categories each need their own short list.\nOur reliability comes from staff riders and dense loops. Those same loops explain why we cannot open everywhere. We choose cities where demand can support a hub, and use Open Network to bring more drops into those loops.\n</Notes>\n"
+        },
+        {
+          "id": "quadrants-next-city",
+          "number": 66,
+          "title": "Open the next city around a dense hub",
+          "layout": "quadrants",
+          "file": "decks/lookbook/slides/quadrants-next-city.mdx",
+          "source": "---\nlayout: quadrants\ntitle: Open the next city around a dense hub\neyebrow: Expansion review\nsurface: accent\nreveal: true\nbudget: 45s\nquadrants:\n  - title: Keep\n    items:\n      - Staff riders, trained by a rider\n      - Small neighbourhood hubs\n  - title: Stop\n    items:\n      - Treating every centre as dense\n      - Sending heavy boxes by bike\n  - title: Start\n    highlight: true\n    items:\n      - Saltby, with council backing\n      - Returns pick-up in Q1 2027\n  - title: Try\n    items:\n      - Cold boxes for pharmacies\n      - Carrier bookings on Open Network\n---\n\n<Notes>\n`quadrants` as keep/stop/start/try, with `quadrants[].highlight: true` and `reveal: true` on the accent surface; use it to walk a room from a review to the next action.\n[click] Keep the things that make a hub work: staff riders and a small local base. [click] Stop assuming any town can support a bike network; density and parcel size matter. [click] Start with Saltby, and bring returns pick-up into the next quarter. [click] Try the next services through the same hubs: pharmacy cold boxes and carrier bookings.\n</Notes>\n"
+        },
+        {
+          "id": "pricing-plans",
+          "number": 67,
+          "title": "Every plan is a price per drop, with no van",
+          "layout": "pricing",
+          "file": "decks/lookbook/slides/pricing-plans.mdx",
+          "source": "---\nlayout: pricing\ntitle: Every plan is a price per drop, with no van\neyebrow: Prices\nbudget: 45s\nplans:\n  - name: Pay per drop\n    price: €3.40\n    period: a drop\n    description: For a few drops a week\n    features:\n      - No monthly fee\n      - No commitment\n      - Same hour or two-hour slots\n  - name: Hub plan\n    price: €2.90\n    period: a drop\n    description: For steady daily volume\n    features:\n      - €190 a month\n      - 500 drops a month minimum\n      - Every delivery window\n  - name: Open Network\n    price: €3.10\n    period: a drop\n    description: Booked from your own systems\n    features:\n      - No monthly fee\n      - Books by API and webhooks\n      - Cheaper above 10,000 a month\n    recommended: true\n---\n\nOpen Network is the cheapest plan below 950 drops a month.\n\n<Footnote>Prices to merchants from 3 December 2026, before VAT.</Footnote>\n\n<Notes>\n`pricing` with three plans and `recommended: true`, the default badge and a line of context; use it when each option has its own price and its own list of what it includes.\nThree ways to pay, and every one is a price per drop: no hourly rates, no vans to rent. Most merchants should start on Open Network: no fee, no minimum, and it books straight from their own systems.\n</Notes>\n"
+        },
+        {
           "id": "table-plans",
-          "number": 51,
+          "number": 68,
           "title": "Three ways to pay, and each is a price per drop",
           "layout": "table",
           "file": "decks/lookbook/slides/table-plans.mdx",
@@ -821,7 +957,7 @@
         },
         {
           "id": "comparison-plans",
-          "number": 52,
+          "number": 69,
           "title": "Most merchants should start on Open Network",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-plans.mdx",
@@ -829,15 +965,31 @@
         },
         {
           "id": "table-cities",
-          "number": 53,
+          "number": 70,
           "title": "Every city is on time above 96%",
           "layout": "table",
           "file": "decks/lookbook/slides/table-cities.mdx",
           "source": "---\nlayout: table\ntitle: Every city is on time above 96%\neyebrow: Six cities, October 2026\nbudget: 1m\nhighlight:\n  column: On time\n---\n\n| City | Live since | Hubs | Drops a day | Cost per drop | On time |\n| --- | --- | --- | --- | --- | --- |\n| Kestwick | Mar 2022 | 4 | 2,400 | €2.10 | 98.6% |\n| Marrowgate | Sep 2024 | 2 | 1,030 | €2.28 | 97.9% |\n| Port Ellis | Sep 2024 | 2 | 1,030 | €2.31 | 97.1% |\n| Hollin | Feb 2026 | 2 | 950 | €2.41 | 98.2% |\n| Ebbsford | Feb 2026 | 2 | 890 | €2.56 | 96.4% |\n| Calder Bay | Feb 2026 | 2 | 700 | €2.90 | 96.9% |\n\n<Footnote>Wrenhaul operating report, October 2026. A city's cost is its hubs' costs weighted by drops.</Footnote>\n\n<Notes>\n`table` with a highlighted column; use it when the point runs down one measure across every row.\nRead down the last column: Hollin, open only since February, is already at 98.2%. Ebbsford is the lowest at 96.4%, held back by its Castle Hill hub.\n</Notes>\n"
         },
         {
+          "id": "risks-launch",
+          "number": 71,
+          "title": "Missed webhooks are the risk that gates launch",
+          "layout": "risks",
+          "file": "decks/lookbook/slides/risks-launch.mdx",
+          "source": "---\nlayout: risks\ntitle: Missed webhooks are the risk that gates launch\neyebrow: Launch readiness\nsurface: accent\nreveal: true\nbudget: 45s\nrisks:\n  - name: Booking spikes\n    likelihood: high\n    impact: medium\n    mitigation: Stage the 420 merchant invitations\n  - name: Missed webhooks\n    likelihood: low\n    impact: high\n    mitigation: Retry until the merchant acknowledges\n    highlight: true\n  - name: Rider confusion\n    likelihood: medium\n    impact: low\n    mitigation: Brief every hub lead before launch\n---\n\n<Notes>\n`risks` with three rows, `reveal: true` and one `highlight` on the accent surface; use it to review a short register one mitigation at a time.\n[click] We invite the 420 active merchants in stages so a booking spike stays manageable. [click] A missed webhook can leave a shop unsure whether its parcel arrived; retrying until acknowledgement is the launch gate. [click] Hub leads brief riders before the first Open Network loop.\n</Notes>\n"
+        },
+        {
+          "id": "risks-expansion",
+          "number": 72,
+          "title": "Density is the risk behind four new cities",
+          "layout": "risks",
+          "file": "decks/lookbook/slides/risks-expansion.mdx",
+          "source": "---\nlayout: risks\ntitle: Density is the risk behind four new cities\neyebrow: Expansion decision\nsurface: inverse\nbudget: 50s\nrisks:\n  - name: Thin early demand\n    likelihood: medium\n    impact: high\n    mitigation: Sign anchor shops before the lease\n    highlight: true\n  - name: Premises delayed\n    likelihood: medium\n    impact: medium\n    mitigation: Keep a second site in each city\n  - name: Rider vacancies\n    likelihood: high\n    impact: medium\n    mitigation: Train with Aoife before opening\n  - name: Council reversal\n    likelihood: low\n    impact: high\n    mitigation: Agree street access before hiring\n  - name: Bike downtime\n    likelihood: medium\n    impact: low\n    mitigation: Hold spare bikes at every new hub\n---\n\nSaltby, Ardwen, Fallowmere and Tarnock each need a dense first catchment.\n\n<Footnote>Planning assessment for the four 2027 cities; levels are qualitative judgements.</Footnote>\n\n<Notes>\n`risks` with five rows, context and footnote on inverse; use it when each risk needs the same two levels and one concrete action.\nA hub pays off above about 250 drops a day. We sign anchor shops before signing a lease. The remaining risks have an action too, but density is the one that could undermine all four openings.\n</Notes>\n"
+        },
+        {
           "id": "part-numbers",
-          "number": 54,
+          "number": 73,
           "title": "Prove it with a number",
           "layout": "section",
           "file": "decks/lookbook/slides/part-numbers.mdx",
@@ -845,7 +997,7 @@
         },
         {
           "id": "stats-traction",
-          "number": 55,
+          "number": 74,
           "title": "Revenue grew 3.2× in a year, faster than the drops",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-traction.mdx",
@@ -853,7 +1005,7 @@
         },
         {
           "id": "chart-bignumber",
-          "number": 56,
+          "number": 75,
           "title": "2.4 million drops since the first loaf in 2022",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-bignumber.mdx",
@@ -861,7 +1013,7 @@
         },
         {
           "id": "equation-arr",
-          "number": 57,
+          "number": 76,
           "title": "Our revenue is drops times €3.10",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-arr.mdx",
@@ -869,7 +1021,7 @@
         },
         {
           "id": "stats-three",
-          "number": 58,
+          "number": 77,
           "title": "Riders stay because the job is a job",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-three.mdx",
@@ -877,23 +1029,55 @@
         },
         {
           "id": "chart-comparison",
-          "number": 59,
+          "number": 78,
           "title": "A drop costs us €2.34, a euro less than a year ago",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-comparison.mdx",
           "source": "---\nlayout: chart\ntitle: A drop costs us €2.34, a euro less than a year ago\neyebrow: Cost per drop\nbudget: 45s\n---\n\n<Comparison\n  from={{ value: 3.4, label: 'October 2025' }}\n  to={{ value: 2.34, label: 'October 2026' }}\n  better=\"down\"\n  format={{ style: 'currency', currency: 'EUR', digits: 2 }}\n  caption=\"Rider time, hub, bike and software per drop\"\n/>\n\n<Footnote>Wrenhaul operating report, October 2026.</Footnote>\n\n<Notes>\n`chart` with a `<Comparison>` and `better=\"down\"`: two values, the change between them, coloured as good news when it falls; use it when one number moved and the move is the point.\nA year ago a drop cost us €3.40 and sold for €2.90: we lost fifty cents on every one. Now it costs €2.34 and sells for €3.10. Part six shows where the euro went.\n</Notes>\n"
         },
         {
+          "id": "chart-waterfall",
+          "number": 79,
+          "title": "Batching cut €0.58 a drop, more than any other change",
+          "layout": "chart",
+          "file": "decks/lookbook/slides/chart-waterfall.mdx",
+          "source": "---\nlayout: chart\ntitle: Batching cut €0.58 a drop, more than any other change\neyebrow: Cost per drop\nbudget: 1m15s\n---\n\n<Waterfall\n  data={[\n    { step: 'October 2025', cost: 3.4 },\n    { step: 'Flock batching', cost: -0.58 },\n    { step: 'Denser hubs', cost: -0.41 },\n    { step: 'Faster handovers', cost: -0.22 },\n    { step: 'Rider pay rise', cost: 0.15 },\n    { step: 'October 2026', cost: null },\n  ]}\n  x=\"step\"\n  y=\"cost\"\n  totals={['October 2025', 'October 2026']}\n  better=\"down\"\n  reveal=\"series\"\n  highlight={{ category: 'Flock batching', at: 2 }}\n  format={{ style: 'currency', currency: 'EUR', digits: 2 }}\n  caption=\"What one drop costs us in rider time, hub, bike and software\"\n  source=\"Wrenhaul operating report, October 2026\"\n/>\n\n<Aside>\n\n<Step at={2}>\n\n### Every 90 seconds\n\nFlock now batches waiting drops every 90 seconds, so each loop carries more of them. That alone paid for the pay rise almost four times over.\n\n</Step>\n\n</Aside>\n\n<Notes>\n`chart` with a `<Waterfall>` between two totals: the totals first, the changes between them on a click (`reveal=\"series\"`), then the step that matters highlighted with its `<Aside>`; use it for a bridge from one total to another.\nA drop cost us €3.40 a year ago and €2.34 now. [click] Three changes took cost out, and one, the rider pay rise, put 15 cents back in. [click] The biggest by far is Flock: batching every 90 seconds instead of every five minutes saved 58 cents a drop, almost four times what the pay rise cost.\n</Notes>\n"
+        },
+        {
+          "id": "quiz-cost",
+          "number": 80,
+          "title": "What cut the most cost from each drop?",
+          "layout": "quiz",
+          "file": "decks/lookbook/slides/quiz-cost.mdx",
+          "source": "---\nlayout: quiz\ntitle: What cut the most cost from each drop?\neyebrow: From €3.40 to €2.34\nsurface: accent\noptions:\n  - Denser hubs\n  - Flock batching\n  - Faster handovers\n  - Lower rider pay\nanswer: B\nexplanation: Flock saved €0.58 a drop; rider pay rose while total cost fell.\nreveal: false\nbudget: 30s\n---\n\nThe October cost bridge gives one lever the largest saving.\n\n<Footnote>Cost per drop, October 2025 to October 2026; rider pay added €0.15.</Footnote>\n\n<Notes>\n`quiz` with four options, an explanation and `reveal: false` on the accent surface; use it as an answered recap.\nFlock batching is the largest saving at fifty-eight cents a drop. Denser hubs save forty-one cents and faster handovers twenty-two. Rider pay rose by fifteen cents; the savings came from the work around the rider.\n</Notes>\n"
+        },
+        {
           "id": "equation-market",
-          "number": 60,
+          "number": 81,
           "title": "The market is €3.0B a year in 46 cities",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-market.mdx",
           "source": "---\nlayout: equation\ntitle: The market is €3.0B a year in 46 cities\neyebrow: Bottom up\nbudget: 45s\nterms:\n  - value: 46\n    label: cities with a dense centre\n  - value: 21M\n    label: drops a year in each\n    op: times\n  - value: \"€3.10\"\n    label: our average price a drop\n    op: times\nresult:\n  value: \"€3.0B\"\n  label: a year in city drops\n---\n\nA third of it, €1.0B, is within 4 km of a hub.\n\n<Footnote>Wrenhaul market model, 2026. Serviceable: drops under 5 kg within 4 km of a hub.</Footnote>\n\n<Notes>\n`equation` shown whole, as a bottom-up market size; use it when the audience should check the arithmetic, not watch it build.\nCount the cities with a dense centre like Kestwick's: 46. Each sends about 21 million drops a year. At our price that is €3.0B a year, and a third of it is within reach of a hub.\n</Notes>\n"
         },
         {
+          "id": "market-reachable",
+          "number": 82,
+          "title": "Kestwick handles a third of our daily drops",
+          "layout": "market",
+          "file": "decks/lookbook/slides/market-reachable.mdx",
+          "source": "---\nlayout: market\ntitle: Kestwick handles a third of our daily drops\neyebrow: October 2026 daily deliveries\nbudget: 40s\nsizes:\n  - label: Network drops\n    value: \"7,000\"\n    note: Daily drops across all 14 hubs\n  - label: Kestwick drops\n    value: \"2,400\"\n    note: Daily drops from our first four hubs\n---\n\n<Footnote>Wrenhaul hub operations, October 2026.</Footnote>\n\n<Notes>\n`market` with two proportional nested sizes, shown whole; use it to show a whole network and the part served by one city.\nAcross 14 hubs we complete 7,000 drops a day. Kestwick’s four hubs handle 2,400 of them, just over a third. The first city remains a substantial part of the network as we expand.\n</Notes>\n"
+        },
+        {
+          "id": "market-first",
+          "number": 83,
+          "title": "We target €18.6M inside a €1.0B market",
+          "layout": "market",
+          "file": "decks/lookbook/slides/market-first.mdx",
+          "source": "---\nlayout: market\ntitle: We target €18.6M inside a €1.0B market\neyebrow: The part we can win\nsurface: accent\nreveal: true\nbudget: 45s\nsizes:\n  - label: Total market\n    value: €3.0B\n    note: Annual drops across 46 city centres\n  - label: Serviceable market\n    value: €1.0B\n    note: Under 5 kg, within 4 km of a hub\n  - label: 2027 target\n    value: €18.6M\n    note: 500,000 drops a month, annualised\n---\n\nOur Q4 2027 target is a small part of the serviceable market.\n\n<Footnote>Wrenhaul market model, 2026; Q4 2027 target at €3.10 a drop.</Footnote>\n\n<Notes>\n`market` with three proportional nested sizes on accent and `reveal: true`; use it to narrow from the whole market to the part you aim to win.\n[click] The total is €3.0B a year. [click] A third is serviceable by hubs. [click] Our Q4 2027 target of 500,000 monthly drops at €3.10 is €18.6M annualised. That is a target run rate, not a forecast for full-year revenue.\n</Notes>\n"
+        },
+        {
           "id": "content-statrow",
-          "number": 61,
+          "number": 84,
           "title": "Every number moved the right way this year",
           "layout": "content",
           "file": "decks/lookbook/slides/content-statrow.mdx",
@@ -901,7 +1085,7 @@
         },
         {
           "id": "split-pictogram",
-          "number": 62,
+          "number": 85,
           "title": "Given the choice, people pick the hour",
           "layout": "split",
           "file": "decks/lookbook/slides/split-pictogram.mdx",
@@ -909,7 +1093,7 @@
         },
         {
           "id": "stats-two",
-          "number": 63,
+          "number": 86,
           "title": "Fast and clean are the same promise",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-two.mdx",
@@ -917,7 +1101,7 @@
         },
         {
           "id": "chart-progress",
-          "number": 64,
+          "number": 87,
           "title": "€8M of the €14M is committed",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-progress.mdx",
@@ -925,7 +1109,7 @@
         },
         {
           "id": "content-sparkline",
-          "number": 65,
+          "number": 88,
           "title": "Rider turnover fell every month this year",
           "layout": "content",
           "file": "decks/lookbook/slides/content-sparkline.mdx",
@@ -933,7 +1117,7 @@
         },
         {
           "id": "equation-loop",
-          "number": 66,
+          "number": 89,
           "title": "Every loop earns €6.84 before overheads",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-loop.mdx",
@@ -941,7 +1125,7 @@
         },
         {
           "id": "part-charts",
-          "number": 67,
+          "number": 90,
           "title": "Show the pattern",
           "layout": "section",
           "file": "decks/lookbook/slides/part-charts.mdx",
@@ -949,7 +1133,7 @@
         },
         {
           "id": "chart-line",
-          "number": 68,
+          "number": 91,
           "title": "Drops tripled in a year, and the Open Network beta bent the curve",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-line.mdx",
@@ -957,7 +1141,7 @@
         },
         {
           "id": "chart-bar",
-          "number": 69,
+          "number": 92,
           "title": "A rider makes 9.4 stops an hour, nearly twice a merchant's own van",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-bar.mdx",
@@ -965,23 +1149,15 @@
         },
         {
           "id": "split-donut",
-          "number": 70,
+          "number": 93,
           "title": "Two kinds of shop pay 59%",
           "layout": "split",
           "file": "decks/lookbook/slides/split-donut.mdx",
           "source": "---\nlayout: split\ntitle: Two kinds of shop pay 59%\neyebrow: Who pays us\nratio: \"5:7\"\nside: right\nbudget: 45s\n---\n\nGrocers and pharmacies sell what cannot wait for tomorrow's van: fresh food and prescriptions. Parcel partners, new with the beta, are already 14%.\n\n<Media>\n\n<Donut\n  data={[\n    { type: 'Grocers', share: 38 },\n    { type: 'Pharmacies and health', share: 21 },\n    { type: 'Food and bakery', share: 17 },\n    { type: 'Parcel partners', share: 14 },\n    { type: 'Other shops', share: 10 },\n  ]}\n  x=\"type\"\n  y=\"share\"\n  highlight={['Grocers', 'Pharmacies and health']}\n  centerLabel=\"grocers and pharmacies\"\n  caption=\"Revenue by merchant type, October 2026\"\n/>\n\n</Media>\n\n<Footnote>Source: Wrenhaul operating report, October 2026.</Footnote>\n\n<Notes>\n`split` at `ratio: 5:7` with a `<Donut>` in `<Media>`, two slices highlighted and a `centerLabel`; use it for a share of a whole that needs a sentence beside it.\nGrocers are 38% of our revenue and pharmacies 21%: together 59%. What they have in common is urgency, fresh food and prescriptions. Parcel partners are the new slice: 14% in only the second month of the beta.\n</Notes>\n"
         },
         {
-          "id": "chart-waterfall",
-          "number": 71,
-          "title": "Batching cut €0.58 a drop, more than any other change",
-          "layout": "chart",
-          "file": "decks/lookbook/slides/chart-waterfall.mdx",
-          "source": "---\nlayout: chart\ntitle: Batching cut €0.58 a drop, more than any other change\neyebrow: Cost per drop\nbudget: 1m15s\n---\n\n<Waterfall\n  data={[\n    { step: 'October 2025', cost: 3.4 },\n    { step: 'Flock batching', cost: -0.58 },\n    { step: 'Denser hubs', cost: -0.41 },\n    { step: 'Faster handovers', cost: -0.22 },\n    { step: 'Rider pay rise', cost: 0.15 },\n    { step: 'October 2026', cost: null },\n  ]}\n  x=\"step\"\n  y=\"cost\"\n  totals={['October 2025', 'October 2026']}\n  better=\"down\"\n  reveal=\"series\"\n  highlight={{ category: 'Flock batching', at: 2 }}\n  format={{ style: 'currency', currency: 'EUR', digits: 2 }}\n  caption=\"What one drop costs us in rider time, hub, bike and software\"\n  source=\"Wrenhaul operating report, October 2026\"\n/>\n\n<Aside>\n\n<Step at={2}>\n\n### Every 90 seconds\n\nFlock now batches waiting drops every 90 seconds, so each loop carries more of them. That alone paid for the pay rise almost four times over.\n\n</Step>\n\n</Aside>\n\n<Notes>\n`chart` with a `<Waterfall>` between two totals: the totals first, the changes between them on a click (`reveal=\"series\"`), then the step that matters highlighted with its `<Aside>`; use it for a bridge from one total to another.\nA drop cost us €3.40 a year ago and €2.34 now. [click] Three changes took cost out, and one, the rider pay rise, put 15 cents back in. [click] The biggest by far is Flock: batching every 90 seconds instead of every five minutes saved 58 cents a drop, almost four times what the pay rise cost.\n</Notes>\n"
-        },
-        {
           "id": "chart-area",
-          "number": 72,
+          "number": 94,
           "title": "Same-hour drops tripled this year, faster than any other window",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-area.mdx",
@@ -989,7 +1165,7 @@
         },
         {
           "id": "chart-slope",
-          "number": 73,
+          "number": 95,
           "title": "The three newest cities closed the gap by October",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-slope.mdx",
@@ -997,7 +1173,7 @@
         },
         {
           "id": "chart-funnel",
-          "number": 74,
+          "number": 96,
           "title": "Four in ten sign-ups never connect their shop",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-funnel.mdx",
@@ -1005,7 +1181,7 @@
         },
         {
           "id": "chart-table",
-          "number": 75,
+          "number": 97,
           "title": "Pharmacies grew fastest, four times in a year",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-table.mdx",
@@ -1013,7 +1189,7 @@
         },
         {
           "id": "chart-scatter",
-          "number": 76,
+          "number": 98,
           "title": "The denser the hub, the cheaper the drop",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-scatter.mdx",
@@ -1021,23 +1197,55 @@
         },
         {
           "id": "chart-heatmap",
-          "number": 77,
+          "number": 99,
           "title": "Friday from four to six is the busiest two hours of the week",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-heatmap.mdx",
           "source": "---\nlayout: chart\ntitle: Friday from four to six is the busiest two hours of the week\neyebrow: When Kestwick orders\nbudget: 45s\n---\n\nimport load from '../data/kestwick-load.csv';\n\n<Heatmap\n  data={load}\n  x=\"band\"\n  y=\"day\"\n  value=\"drops\"\n  highlight={{ x: '16–18', y: 'Fri' }}\n  scale={['Quiet', 'Busy']}\n  caption=\"Average drops per two-hour band, Kestwick, October 2026\"\n  source=\"Wrenhaul operating report, October 2026\"\n/>\n\n<Notes>\n`chart` with a `<Heatmap>` of weekday by time, one cell outlined; use it for a pattern across two dimensions.\nRead it like a rota. Every weekday builds to the late afternoon, and Friday from four to six is the peak of the week: 510 drops on average, from offices and households ordering for the weekend. Saturday is the exception: it peaks at lunchtime and is quiet by six. We roster riders to this picture.\n</Notes>\n"
         },
         {
+          "id": "dashboard-scale",
+          "number": 100,
+          "title": "Drops tripled while delivery costs fell",
+          "layout": "dashboard",
+          "file": "decks/lookbook/slides/dashboard-scale.mdx",
+          "source": "---\nlayout: dashboard\ntitle: Drops tripled while delivery costs fell\neyebrow: October 2026\npanels:\n  - title: Drops, K, October\n  - title: Cost, €/drop, October\nbudget: 50s\n---\n\n<BarChart\n  data={[{ year: '2025', drops: 61 }, { year: '2026', drops: 182 }]}\n  x=\"year\" y=\"drops\" unit=\"K\" highlight=\"2026\"\n/>\n\n<BarChart\n  data={[{ year: '2025', cost: 3.40 }, { year: '2026', cost: 2.34 }]}\n  x=\"year\" y=\"cost\" format={{ style: 'currency', currency: 'EUR', digits: 2 }}\n  highlight=\"2026\"\n/>\n\n<Footnote>Wrenhaul operating report, October 2026.</Footnote>\n\n<Notes>\n`dashboard` with two full-height bar charts; use it when two measures together make one argument.\nVolume tripled to 182,000 drops in October. At the same time, the cost of a drop fell from €3.40 to €2.34. More drops make each hub denser; this is scale improving the economics.\n</Notes>\n"
+        },
+        {
+          "id": "dashboard-network",
+          "number": 101,
+          "title": "Riders deliver scale on time",
+          "layout": "dashboard",
+          "file": "decks/lookbook/slides/dashboard-network.mdx",
+          "source": "---\nlayout: dashboard\ntitle: Riders deliver scale on time\neyebrow: Network health\nsurface: inverse\npanels:\n  - title: Volume, Oct 2026\n  - title: On time, %, Oct\n  - title: Price, €/drop, Oct\n  - title: Output, stops/hr\nreveal: true\nbudget: 50s\n---\n\n<BigNumber value=\"182K\" label=\"drops, up from 61K\" />\n\n<Progress value={97.8} target={98} label=\"inside the window\" unit=\"%\" />\n\n<BigNumber value=\"€3.10\" label=\"per drop to a shop\" />\n\n<BarChart\n  data={[{ way: 'Rider', stops: 9.4 }, { way: 'Van', stops: 5.1 }]}\n  x=\"way\" y=\"stops\" orientation=\"vertical\" highlight=\"Rider\"\n  format={{ digits: 1 }} unit=\"stops/hr\"\n/>\n\n<Footnote>Wrenhaul operating report, October 2026; merchant survey, n = 112.</Footnote>\n\n<Notes>\n`dashboard` with four mixed chart and number panels on inverse, `reveal: true`; use it for a compact operating review.\n[click] Start with volume: 182,000 drops in October. [click] 97.8% arrived inside the promised window. [click] Shops paid €3.10 per drop on average. [click] Riders made 9.4 stops an hour, against 5.1 for a merchant's own van. Those four measures belong together: growth is useful only if the service still works.\n</Notes>\n"
+        },
+        {
           "id": "part-how",
-          "number": 78,
+          "number": 102,
           "title": "Show how it works",
           "layout": "section",
           "file": "decks/lookbook/slides/part-how.mdx",
           "source": "---\nlayout: section\ntitle: Show how it works\nnumber: 7\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nFrom a shop's checkout to a rider's next stop.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nThis part walks through the system, the code and two live demos.\n</Notes>\n"
         },
         {
+          "id": "conversation-window",
+          "number": 103,
+          "title": "The window is agreed before the rider leaves",
+          "layout": "conversation",
+          "file": "decks/lookbook/slides/conversation-window.mdx",
+          "source": "---\nlayout: conversation\ntitle: The window is agreed before the rider leaves\neyebrow: The same-hour promise\nbudget: 35s\nmessages:\n  - name: Odile Ferrand\n    side: left\n    text: Can this loaf reach the door within the hour?\n  - name: Wrenhaul\n    side: right\n    text: Yes. Book the same-hour window before 4 pm; we collect, ride and hand it over.\n---\n\n<Notes>\n`conversation` with two messages, no role labels and no context; use it when one question and one reply explain the promise.\nThis is Odile Ferrand's question. Our answer is a window they can sell to their customer, with the booking cut-off stated before the rider leaves.\n</Notes>\n"
+        },
+        {
+          "id": "conversation-handover",
+          "number": 104,
+          "title": "A handover ends with proof at the door",
+          "layout": "conversation",
+          "file": "decks/lookbook/slides/conversation-handover.mdx",
+          "source": "---\nlayout: conversation\ntitle: A handover ends with proof at the door\neyebrow: Inside the loop\nsurface: accent\nreveal: true\nbudget: 50s\nmessages:\n  - name: Odile Ferrand\n    role: Brightloaf\n    side: left\n    text: The loaf is packed. What happens next?\n  - name: Wrenhaul\n    role: Merchant support\n    side: right\n    text: Flock batches drops into loops every 90 seconds.\n  - name: Odile Ferrand\n    role: Brightloaf\n    side: left\n    text: Can the recipient follow the rider, and how do I know the loaf reached the door?\n  - name: Wrenhaul\n    role: Merchant support\n    side: right\n    text: Track shows the rider and minutes to go. A check at the door sends drop.delivered back to the shop.\n---\n\nOne parcel, one door, one promised window.\n\n<Footnote>Illustrative exchange; Wrenhaul and Brightloaf Bakery are fictional.</Footnote>\n\n<Notes>\n`conversation` with four messages, speaker `role` labels and `reveal: true` on accent; use it to walk a room through an exchange, one turn per click.\n[click] The loaf is ready. [click] Flock batches the waiting drops every ninety seconds. [click] Odile asks about visibility and proof. [click] Track follows the rider; the check at the door closes the loop and sends the event back to the shop.\n</Notes>\n"
+        },
+        {
           "id": "diagram-architecture",
-          "number": 79,
+          "number": 105,
           "title": "Every drop crosses five systems on its way to a rider",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-architecture.mdx",
@@ -1045,7 +1253,7 @@
         },
         {
           "id": "code-sdk",
-          "number": 80,
+          "number": 106,
           "title": "Booking a drop is one call",
           "layout": "code",
           "file": "decks/lookbook/slides/code-sdk.mdx",
@@ -1053,7 +1261,7 @@
         },
         {
           "id": "diagram-sequence",
-          "number": 81,
+          "number": 107,
           "title": "A drop is booked, batched and handed over in 52 minutes",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-sequence.mdx",
@@ -1061,7 +1269,7 @@
         },
         {
           "id": "code-terminal",
-          "number": 82,
+          "number": 108,
           "title": "You can book a drop from a terminal",
           "layout": "code",
           "file": "decks/lookbook/slides/code-terminal.mdx",
@@ -1069,7 +1277,7 @@
         },
         {
           "id": "diagram-events",
-          "number": 83,
+          "number": 109,
           "title": "Every change reaches the merchant within a second, or is retried until it does",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-events.mdx",
@@ -1077,7 +1285,7 @@
         },
         {
           "id": "code-move",
-          "number": 84,
+          "number": 110,
           "title": "Windows are one new field",
           "layout": "code",
           "file": "decks/lookbook/slides/code-move.mdx",
@@ -1085,7 +1293,7 @@
         },
         {
           "id": "diagram-hops",
-          "number": 85,
+          "number": 111,
           "title": "A drop's trip from shop to door, hop by hop",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-hops.mdx",
@@ -1093,7 +1301,7 @@
         },
         {
           "id": "code-codestep",
-          "number": 86,
+          "number": 112,
           "title": "The SDK is the same call, typed",
           "layout": "code",
           "file": "decks/lookbook/slides/code-codestep.mdx",
@@ -1101,7 +1309,7 @@
         },
         {
           "id": "diagram-layers",
-          "number": 87,
+          "number": 113,
           "title": "Merchants touch one layer; riders another",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-layers.mdx",
@@ -1109,7 +1317,7 @@
         },
         {
           "id": "code-diff",
-          "number": 88,
+          "number": 114,
           "title": "Batching every 90 seconds was a one-line change",
           "layout": "code",
           "file": "decks/lookbook/slides/code-diff.mdx",
@@ -1117,7 +1325,7 @@
         },
         {
           "id": "diagram-cycle",
-          "number": 89,
+          "number": 115,
           "title": "A hub's day is one loop, run 56 times",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-cycle.mdx",
@@ -1125,7 +1333,7 @@
         },
         {
           "id": "code-webhook",
-          "number": 90,
+          "number": 116,
           "title": "A webhook tells you the parcel is home",
           "layout": "code",
           "file": "decks/lookbook/slides/code-webhook.mdx",
@@ -1133,7 +1341,7 @@
         },
         {
           "id": "diagram-tree",
-          "number": 91,
+          "number": 117,
           "title": "Flock sends nine drops in ten to a bike",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-tree.mdx",
@@ -1141,7 +1349,7 @@
         },
         {
           "id": "diagram-cards",
-          "number": 92,
+          "number": 118,
           "title": "Three kinds of partner, and one door into Wrenhaul",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-cards.mdx",
@@ -1149,7 +1357,7 @@
         },
         {
           "id": "diagram-timeline",
-          "number": 93,
+          "number": 119,
           "title": "Open Network went from beta to launch in 12 weeks",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-timeline.mdx",
@@ -1157,7 +1365,7 @@
         },
         {
           "id": "diagram-svg",
-          "number": 94,
+          "number": 120,
           "title": "Three loops cover the Old Town from one hub",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-svg.mdx",
@@ -1165,7 +1373,7 @@
         },
         {
           "id": "demo-appframe",
-          "number": 95,
+          "number": 121,
           "title": "Watch Flock build a loop",
           "layout": "demo",
           "file": "decks/lookbook/slides/demo-appframe.mdx",
@@ -1173,7 +1381,7 @@
         },
         {
           "id": "demo-live",
-          "number": 96,
+          "number": 122,
           "title": "Price your own drops",
           "layout": "demo",
           "file": "decks/lookbook/slides/demo-live.tsx",
@@ -1181,15 +1389,23 @@
         },
         {
           "id": "part-product",
-          "number": 97,
+          "number": 123,
           "title": "Show the product",
           "layout": "section",
           "file": "decks/lookbook/slides/part-product.mdx",
           "source": "---\nlayout: section\ntitle: Show the product\nnumber: 8\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nDispatch, Rider, Track and the Open Network console.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nNow the screens themselves: what hub leads, riders and recipients see.\n</Notes>\n"
         },
         {
+          "id": "before-after-street",
+          "number": 124,
+          "title": "The bollards stopped vans, not deliveries",
+          "layout": "before-after",
+          "file": "decks/lookbook/slides/before-after-street.mdx",
+          "source": "---\nlayout: before-after\ntitle: The bollards stopped vans, not deliveries\neyebrow: Kestwick Old Town\nbefore:\n  src: ../assets/scenes/van-at-the-bollards.svg\n  alt: A delivery van waiting outside the bollards at the entrance to Kestwick Old Town\n  caption: Old Town entrance, before the loop\n  focal: center 50%\nafter:\n  src: ../assets/scenes/hub-square.svg\n  alt: Cargo bikes serving the Old Town square from Wrenhaul's neighbourhood hub\n  caption: Old Town hub, ready for the morning\n  focal: center 50%\nfit: cover\nreveal: true\nbudget: 40s\n---\n\nA neighbourhood hub puts the last mile on the right side of the bollards.\n\n<Footnote>Illustrated scenes of Kestwick Old Town; Wrenhaul and its service are fictional.</Footnote>\n\n<Notes>\n`before-after` with `fit: cover`, captions and an accented after label, revealed before first; use it when two pictures show the change more clearly than a list.\n[click] Before: the van reaches the bollards and stops. The shop still has a delivery to make.\n[click] After: a small hub inside the Old Town sends cargo bikes straight to the door. The restriction becomes the reason the network works.\n</Notes>\n"
+        },
+        {
           "id": "screen-dispatch",
-          "number": 98,
+          "number": 125,
           "title": "A hub lead runs the whole day from one map",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-dispatch.mdx",
@@ -1197,7 +1413,7 @@
         },
         {
           "id": "split-phones",
-          "number": 99,
+          "number": 126,
           "title": "One loop, seen from saddle and door",
           "layout": "split",
           "file": "decks/lookbook/slides/split-phones.mdx",
@@ -1205,15 +1421,23 @@
         },
         {
           "id": "screen-rider",
-          "number": 100,
+          "number": 127,
           "title": "The rider never has to think about the route",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-rider.mdx",
           "source": "---\nlayout: screen\ntitle: The rider never has to think about the route\neyebrow: Rider\nframe: phone\nsrc: ../assets/screens/rider-next-stop.svg\nalt: The Rider app's next stop, 14 Weir Street, with the route on a map, slot B3 in the box and a Hand over button\ncallouts:\n  - x: 88\n    y: 20\n    label: The route is already drawn\n  - x: 38\n    y: 77\n    label: The slot the parcel sits in\n  - x: 88\n    y: 88.4\n    label: One tap closes the drop\nreveal: true\nbudget: 45s\n---\n\nAoife's seventh stop of nine: 14 Weir Street.\n\n<Notes>\n`screen` with `frame: phone` and three `callouts` with `reveal: true`; use it for a phone app, one point per click.\nA rider's screen answers three questions and nothing else. [click] Where am I going: the route is drawn, Flock chose the order. [click] Which parcel: slot B3, so nobody unpacks the box on the pavement. [click] And one tap hands it over and opens the next stop.\n</Notes>\n"
         },
         {
+          "id": "before-after-rider",
+          "number": 128,
+          "title": "One loop becomes one clear next stop",
+          "layout": "before-after",
+          "file": "decks/lookbook/slides/before-after-rider.mdx",
+          "source": "---\nlayout: before-after\ntitle: One loop becomes one clear next stop\neyebrow: Rider\nsurface: inverse\nbefore:\n  src: ../assets/screens/rider-loop.svg\n  alt: Rider showing the ordered list of stops on Aoife's delivery loop\n  label: Loop planned\n  caption: Nine drops, already in order\nafter:\n  src: ../assets/screens/rider-next-stop.svg\n  alt: Rider showing the next address, parcel slot and handover action for Aoife\n  label: Next stop\n  caption: One address, one parcel, one action\nfit: contain\naccent: none\ntreatment: plain\nbudget: 30s\n---\n\n<Notes>\n`before-after` with `fit: contain`, custom neutral labels and no build on inverse; use it to compare two states of a product without cropping either screen.\nFlock has already ordered the loop. Once Aoife starts riding, the list becomes a single next stop with the parcel's slot in the box. She can keep her attention on the street.\n</Notes>\n"
+        },
+        {
           "id": "morph-dispatch-overview",
-          "number": 101,
+          "number": 129,
           "title": "Dispatch shows every loop at once",
           "layout": "split",
           "file": "decks/lookbook/slides/morph-dispatch-overview.mdx",
@@ -1221,7 +1445,7 @@
         },
         {
           "id": "morph-dispatch-detail",
-          "number": 102,
+          "number": 130,
           "title": "A window turns amber before it is missed",
           "layout": "split",
           "file": "decks/lookbook/slides/morph-dispatch-detail.mdx",
@@ -1229,7 +1453,7 @@
         },
         {
           "id": "screen-insights",
-          "number": 103,
+          "number": 131,
           "title": "Merchants see their cost per drop every week",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-insights.mdx",
@@ -1237,7 +1461,7 @@
         },
         {
           "id": "gallery-screens",
-          "number": 104,
+          "number": 132,
           "title": "Four screens run on one stream of events",
           "layout": "gallery",
           "file": "decks/lookbook/slides/gallery-screens.mdx",
@@ -1245,7 +1469,7 @@
         },
         {
           "id": "screen-console",
-          "number": 105,
+          "number": 133,
           "title": "Developers test a drop before they ship",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-console.mdx",
@@ -1253,7 +1477,7 @@
         },
         {
           "id": "split-video",
-          "number": 106,
+          "number": 134,
           "title": "The launch film opens in light alone",
           "layout": "split",
           "file": "decks/lookbook/slides/split-video.mdx",
@@ -1261,7 +1485,7 @@
         },
         {
           "id": "gallery-places",
-          "number": 107,
+          "number": 135,
           "title": "Booked at 08:42, at the door at 09:21",
           "layout": "gallery",
           "file": "decks/lookbook/slides/gallery-places.mdx",
@@ -1269,23 +1493,47 @@
         },
         {
           "id": "part-people",
-          "number": 108,
+          "number": 136,
           "title": "People and proof",
           "layout": "section",
           "file": "decks/lookbook/slides/part-people.mdx",
           "source": "---\nlayout: section\ntitle: People and proof\nnumber: 9\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nThe founders, the team and the customers who vouch for us.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nWho builds Wrenhaul, and the customers who can tell you what changed.\n</Notes>\n"
         },
         {
+          "id": "voices-merchants",
+          "number": 137,
+          "title": "The hour changes what shops can promise",
+          "layout": "voices",
+          "file": "decks/lookbook/slides/voices-merchants.mdx",
+          "source": "---\nlayout: voices\ntitle: The hour changes what shops can promise\neyebrow: Two merchants, one change\nvoices:\n  - quote: Bread that arrives warm is a different product.\n    name: Odile Ferrand\n    role: Owner, Brightloaf Bakery\n    photo: ../assets/people/odile-ferrand.svg\n    focal: center 30%\n  - quote: We can promise dinner tonight, not tomorrow.\n    name: Lotte Brandsma\n    role: Founder, Pantry Lane Grocers\n    photo: ../assets/people/lotte-brandsma.svg\nbudget: 35s\n---\n\n<Footnote>Merchant interviews, October 2026. Illustrative testimonials.</Footnote>\n\n<Notes>\n`voices` with two testimonials and small portraits; use it when several customers support the same claim in their own words.\nOdile talks about the product. Lotte talks about the promise. Both depend on reaching the door within the hour.\n</Notes>\n"
+        },
+        {
+          "id": "voices-network",
+          "number": 138,
+          "title": "One loop serves three different needs",
+          "layout": "voices",
+          "file": "decks/lookbook/slides/voices-network.mdx",
+          "source": "---\nlayout: voices\ntitle: One loop serves three different needs\neyebrow: Shops, clinics and riders\nsurface: inverse\nreveal: true\nvoices:\n  - quote: We can send warm bread beyond our street.\n    name: Odile Ferrand\n    role: Owner, Brightloaf Bakery\n  - quote: The sample reaches the lab while it matters.\n    name: Dr Imogen Hale\n    role: Pathology lead, St Brenna Hospital\n  - quote: I know my next nine stops before I leave.\n    name: Aoife Brennan\n    role: Rider, Old Town hub\nbudget: 45s\n---\n\nShops, clinics and riders describe what the same network makes possible.\n\n<Footnote>Interviews, October 2026. Illustrative testimonials.</Footnote>\n\n<Notes>\n`voices` with three testimonials, initials avatars, `surface: inverse` and `reveal: true`; use it to connect several perspectives to one point.\n[click] Start with Odile: the shop can reach beyond its own street.\n[click] Imogen needs a faster journey to the lab: 31 minutes rather than 74.\n[click] Aoife sees one planned loop. Different needs share the same route.\n</Notes>\n"
+        },
+        {
           "id": "team-founders",
-          "number": 109,
+          "number": 139,
           "title": "Each founder has run one part of this before",
           "layout": "team",
           "file": "decks/lookbook/slides/team-founders.mdx",
           "source": "---\nlayout: team\ntitle: Each founder has run one part of this before\neyebrow: Founders\nmembers:\n  - name: Ines Kowalczyk\n    role: Co-founder and CEO\n    photo: ../assets/people/ines-kowalczyk.svg\n    edge: Ran night routing at Northline Parcel's biggest depot for eight years\n    previously:\n      - name: Northline Parcel\n        src: ../assets/logos/northline-parcel.svg\n  - name: Tobi Adeyemi\n    role: Co-founder and CTO\n    photo: ../assets/people/tobi-adeyemi.svg\n    edge: Wrote Corrin Air's crew solvers, then Flock's first version in a month\n    previously:\n      - name: Corrin Air\n        src: ../assets/logos/corrin-air.svg\n  - name: Maren Solberg\n    role: Co-founder and COO\n    photo: ../assets/people/maren-solberg.svg\n    edge: Rode 11,000 drops herself and opened the first hub with a borrowed key\n    previously:\n      - name: Spoke Couriers Co-op\n        src: ../assets/logos/spoke-couriers-co-op.svg\nbudget: 45s\n---\n\n<Notes>\n`team` with three founders, each with an `edge` and a `previously:` mark; use the founders form when the audience is deciding whether these people can do it.\nRouting, scheduling, riding: between us we had done each part of this job before Wrenhaul. I ran a parcel depot's nights for eight years. Tobi built airline crew schedules, then Flock in a month. Maren rode eleven thousand drops herself.\n</Notes>\n"
         },
         {
+          "id": "persona-hub-lead",
+          "number": 140,
+          "title": "Hub leads need time to rescue a late loop",
+          "layout": "persona",
+          "file": "decks/lookbook/slides/persona-hub-lead.mdx",
+          "source": "---\nlayout: persona\ntitle: Hub leads need time to rescue a late loop\neyebrow: Hub research\nname: Sofia Lindqvist\nrole: Runs the day in Dispatch\nphoto: ../assets/people/persona-hub-lead.svg\nfocal: center 30%\ngoals:\n  - Spot a late loop before a window slips\n  - Move spare capacity to the next hub\n  - Keep riders focused on the road\nfrustrations:\n  - Alerts arriving after the window closes\n  - Calling each rider for an update\n  - Comparing screens during a rush\nbudget: 45s\n---\n\nShow me which loop needs help while I still have time to send another rider.\n\n<Footnote>Illustrative research archetype for hub leads using Dispatch.</Footnote>\n\n<Notes>\n`persona` with an illustrated portrait, a quotation and three goals and frustrations; use it to connect a product decision to a research archetype's working day.\nDispatch should put the window at risk beside the rider who can help. This is a composite role, rather than a named customer testimonial.\n</Notes>\n"
+        },
+        {
           "id": "logos-customers",
-          "number": 110,
+          "number": 141,
           "title": "Five of our merchants, from warm bread to blood samples",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-customers.mdx",
@@ -1293,7 +1541,7 @@
         },
         {
           "id": "proof-pantry-lane",
-          "number": 111,
+          "number": 142,
           "title": "Pantry Lane takes 63% more same-day orders",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-pantry-lane.mdx",
@@ -1301,7 +1549,7 @@
         },
         {
           "id": "team-row",
-          "number": 112,
+          "number": 143,
           "title": "Four people build what riders, hubs and partners use",
           "layout": "team",
           "file": "decks/lookbook/slides/team-row.mdx",
@@ -1309,7 +1557,7 @@
         },
         {
           "id": "logos-color",
-          "number": 113,
+          "number": 144,
           "title": "Eight kinds of shop already send drops",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-color.mdx",
@@ -1317,7 +1565,7 @@
         },
         {
           "id": "proof-st-brenna",
-          "number": 114,
+          "number": 145,
           "title": "Samples reach the lab in 31 minutes, not 74",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-st-brenna.mdx",
@@ -1325,15 +1573,23 @@
         },
         {
           "id": "team-grid",
-          "number": 115,
+          "number": 146,
           "title": "Six leads run the company day to day",
           "layout": "team",
           "file": "decks/lookbook/slides/team-grid.mdx",
           "source": "---\nlayout: team\ntitle: Six leads run the company day to day\neyebrow: Leadership\nmembers:\n  - name: Ines Kowalczyk\n    role: \"CEO: cities and councils\"\n    photo: ../assets/people/ines-kowalczyk.svg\n  - name: Tobi Adeyemi\n    role: \"CTO: Flock and the API\"\n    photo: ../assets/people/tobi-adeyemi.svg\n  - name: Maren Solberg\n    role: \"COO: riders, the daily run\"\n    photo: ../assets/people/maren-solberg.svg\n  - name: Rafael Duarte\n    role: \"Product: the three apps\"\n    photo: ../assets/people/rafael-duarte.svg\n  - name: Hana Sato\n    role: \"Flock: a batch every 90 s\"\n    photo: ../assets/people/hana-sato.svg\n  - name: Yusuf Demir\n    role: \"Hubs: 14 hubs, six cities\"\n    photo: ../assets/people/yusuf-demir.svg\nbudget: 30s\n---\n\nSixty-four people in the office, 310 riders on the streets.\n\n<Notes>\n`team` with six people, set as a grid of three with each name beside its portrait; use it for a leadership team of five or six.\nThese six run Wrenhaul from week to week. I look after the cities and the councils, and the money; Tobi runs Flock and the API; Maren the riders and the daily run; Rafael the three apps; Hana Flock's batching, every 90 seconds; Yusuf all fourteen hubs in six cities. Behind them, 64 people in the office and 310 riders.\n</Notes>\n"
         },
         {
+          "id": "persona-recipient",
+          "number": 147,
+          "title": "Recipients need a window they can plan around",
+          "layout": "persona",
+          "file": "decks/lookbook/slides/persona-recipient.mdx",
+          "source": "---\nlayout: persona\ntitle: Recipients need a window they can plan around\neyebrow: Recipient research\nsurface: inverse\nname: Amara Quist\nrole: Watches a delivery on Track\nphoto: ../assets/people/persona-recipient.svg\nfocal: center 30%\ngoals:\n  - Know when to come downstairs\n  - Leave the parcel with a neighbour\nfrustrations:\n  - Refreshing a vague delivery estimate\n  - Missing the door during a short errand\nbudget: 30s\n---\n\nI need to know if I can step out for milk before the rider gets here.\n\n<Notes>\n`persona` with an illustrated portrait, two items in each list and `surface: inverse`; use it for a compact research archetype. The illustration represents a composite participant.\nTrack should help the recipient make a small decision about their day: wait, step out or choose a neighbour. Keep the delivery estimate and handover choices together.\n</Notes>\n"
+        },
+        {
           "id": "logos-wall",
-          "number": 116,
+          "number": 148,
           "title": "Fourteen organisations stand behind the launch",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-wall.mdx",
@@ -1341,7 +1597,7 @@
         },
         {
           "id": "proof-brightloaf",
-          "number": 117,
+          "number": 149,
           "title": "Brightloaf delivers 93% of its bread warm",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-brightloaf.mdx",
@@ -1349,7 +1605,7 @@
         },
         {
           "id": "team-roster",
-          "number": 118,
+          "number": 150,
           "title": "Eight people opened the first six cities",
           "layout": "team",
           "file": "decks/lookbook/slides/team-roster.mdx",
@@ -1357,7 +1613,7 @@
         },
         {
           "id": "part-ahead",
-          "number": 119,
+          "number": 151,
           "title": "Plan ahead and ask",
           "layout": "section",
           "file": "decks/lookbook/slides/part-ahead.mdx",
@@ -1365,7 +1621,7 @@
         },
         {
           "id": "timeline-history",
-          "number": 120,
+          "number": 152,
           "title": "Four years from one hub to six cities",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-history.mdx",
@@ -1373,23 +1629,55 @@
         },
         {
           "id": "columns-roadmap",
-          "number": 121,
+          "number": 153,
           "title": "We finish the network before we widen it",
           "layout": "columns",
           "file": "decks/lookbook/slides/columns-roadmap.mdx",
           "source": "---\nlayout: columns\ntitle: We finish the network before we widen it\neyebrow: Roadmap\ncurrent: 1\ncolumns:\n  - title: Now\n    note: Q1 2027\n    items:\n      - Returns picked up on the next loop\n      - Leave-with-neighbour on the Track page\n      - Cold boxes for pharmacy drops\n  - title: Next\n    note: '2027'\n    items:\n      - Four new cities, ten in all\n      - A second Saltby hub, Mill Green\n      - Integrations with parcel carriers\n  - title: Later\n    note: '2028'\n    items:\n      - Night consolidation hubs\n      - Kerb data for city councils\n      - Bikes shared between hubs\nbudget: 45s\n---\n\n<Footnote>Dates are the plan the Series A is raised against.</Footnote>\n\n<Notes>\n`columns` with Now, Next and Later and `current: 1` lighting the first; use it for a roadmap of short items by horizon.\nNow is the next three months, and all three items make the network better for the shops already on it: returns picked up on the next loop, leave-with-neighbour, and cold boxes for the pharmacies. Only then do we widen it: four cities and a second hub in Saltby in 2027, and the bigger bets in 2028.\n</Notes>\n"
         },
         {
+          "id": "status-launch",
+          "number": 154,
+          "title": "The network launches today; two decisions remain",
+          "layout": "status",
+          "file": "decks/lookbook/slides/status-launch.mdx",
+          "source": "---\nlayout: status\ntitle: The network launches today; two decisions remain\neyebrow: Launch readiness\nsurface: default\nbudget: 45s\nitems:\n  - name: Open Network\n    status: done\n    owner: Tobi Adeyemi\n    note: The API opens to every shop today.\n  - name: Halyard Parcel\n    status: on-track\n    owner: Beatriz Lund\n    note: The beta now feeds the live network.\n  - name: Returns pick-up\n    status: at-risk\n    owner: Rafael Duarte\n    note: Confirm the Q1 handover flow this month.\n  - name: New city leases\n    status: blocked\n    owner: Yusuf Demir\n    note: Saltby needs the board approval first.\n---\n\nToday's launch is ready; the next wave needs two clear decisions.\n\n<Footnote>Wrenhaul launch review, 3 December 2026. Future milestones remain targets.</Footnote>\n\n<Notes>\n`status` with four workstreams, every status value, owners and a one-line update on the default surface; use it for a readiness review where the title states the overall position.\nOpen Network opens today, and Halyard is already feeding it. The decisions sit in the last two rows: agree how returns reach the hub and approve Saltby's first lease. Neither holds up today's launch.\n</Notes>\n"
+        },
+        {
+          "id": "status-next-wave",
+          "number": 155,
+          "title": "Sandgate needs power before the February opening",
+          "layout": "status",
+          "file": "decks/lookbook/slides/status-next-wave.mdx",
+          "source": "---\nlayout: status\ntitle: Sandgate needs power before the February opening\neyebrow: 2026 city launches · January review\nsurface: inverse\nreveal: true\nbudget: 40s\nitems:\n  - name: Hub leases\n    status: done\n    note: All six leases were signed in September.\n  - name: Rider training\n    status: on-track\n    note: 132 riders train in Kestwick this month.\n  - name: Hollin and Ebbsford\n    status: done\n    note: Four hubs fitted out in December.\n  - name: Calder Bay launch\n    status: at-risk\n    note: No trial run before the city opens.\n  - name: Sandgate chargers\n    status: blocked\n    note: The unit has no power for the chargers.\n---\n\nJanuary review of the six funded hub openings: one blocker and one risk.\n\n<Footnote>January 2026 readiness review. All six hubs subsequently opened in February.</Footnote>\n\n<Notes>\n`status` with five workstreams, no owners, mixed states and `reveal: true` on the inverse surface; use it for a dated readiness review with a final source line.\nThis is the January review of the 2026 openings, before the launch in this talk. [click] All six leases were signed in September 2025. [click] The 132 riders are training in Kestwick this month, four weeks each. [click] The four hubs in Hollin and Ebbsford were fitted out in December. [click] Calder Bay now opens without the trial run Sandgate was meant to give it. [click] Sandgate has no power for its chargers, which is the blocker. The source line dates the review: all six hubs subsequently opened in February 2026.\n</Notes>\n"
+        },
+        {
           "id": "timeline-roadmap",
-          "number": 122,
+          "number": 156,
           "title": "Eighteen months from today's launch to break-even",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-roadmap.mdx",
           "source": "---\nlayout: timeline\ntitle: Eighteen months from today's launch to break-even\neyebrow: The plan\ncurrent: 1\nreveal: true\nmilestones:\n  - date: 3 Dec 2026\n    title: Open Network launches\n    detail: And the Series A, today\n  - date: Q1 2027\n    title: Returns pick-up\n    detail: Collected on the next loop\n  - date: Q2 2027\n    title: Four new cities\n    detail: Ten cities live in all\n  - date: Q4 2027\n    title: 500,000 drops a month\n    detail: Up from 182,000 today\n    state: muted\n  - date: Q2 2028\n    title: Company break-even\n    detail: Every cost counted\n    state: muted\nbudget: 1m\n---\n\nThe first three are dates we set; the last two are targets.\n\n<Notes>\n`timeline` with `current: 1` and `reveal: true`, the milestones after the current one drawn as still to come and the two targets as tentative (`state: muted`, a dashed dot); use it for a plan seen from where we stand, with more dates than an ask holds.\n[click] We are here, at the filled dot: today's launch, open to every shop in six cities. [click] By the end of March, riders pick up returns on their next loop. [click] By June, four new cities. [click] By the end of 2027, 500,000 drops a month. [click] And in the second quarter of 2028, the whole company breaks even. The last two are targets: they depend on growth, not only on us.\n</Notes>\n"
         },
         {
+          "id": "schedule-openings",
+          "number": 157,
+          "title": "Six hubs open between April and June",
+          "layout": "schedule",
+          "file": "decks/lookbook/slides/schedule-openings.mdx",
+          "source": "---\nlayout: schedule\ntitle: Six hubs open between April and June\neyebrow: The 2027 openings\nbudget: 45s\nperiods: [Jan, Feb, Mar, Apr, May, Jun]\ncurrent: 1\nnow: 2\nlanes:\n  - name: Saltby · Quayside\n    bars: [{ from: 1, to: 3, label: Fit-out / train }, { from: 4, to: 6, label: First loops }]\n  - name: Ardwen · two hubs\n    bars: [{ from: 2, to: 4 }, { from: 5, to: 6 }]\n  - name: Fallowmere\n    bars: [{ from: 3, to: 4 }, { from: 5, to: 6 }]\n  - name: Tarnock · two hubs\n    bars: [{ from: 3, to: 5 }, { from: 6, to: 6 }]\n---\n\nStaggered openings let experienced hub leads train the next crew.\n\n<Footnote>Delivery sequence for the planned Q2 2027 openings; dates remain targets.</Footnote>\n\n<Notes>\n`schedule` with six periods, four lanes and two bars per lane, with only Saltby labelled and current; use it for overlapping work with durations.\nThe first loops start in April in Saltby, May in Ardwen and Fallowmere, and June in Tarnock. This is the delivery sequence behind the four-city plan: six hubs and 134 riders at opening.\n</Notes>\n"
+        },
+        {
+          "id": "schedule-quayside",
+          "number": 158,
+          "title": "Quayside covers its costs by September",
+          "layout": "schedule",
+          "file": "decks/lookbook/slides/schedule-quayside.mdx",
+          "source": "---\nlayout: schedule\ntitle: Quayside covers its costs by September\neyebrow: Saltby's first hub\nsurface: accent\nbudget: 45s\nperiods: [Feb, Mar, Apr, May, Jun, Jul, Aug, Sep]\nnow: 1\ncurrent: 1\nreveal: true\nlanes:\n  - name: Fit out\n    bars: [{ from: 1, to: 2 }]\n  - name: First loops\n    bars: [{ from: 3, to: 8 }]\n  - name: Pay back the €380k\n    bars: [{ from: 4, to: 8 }]\n---\n\nThe €380k decision funds 22 riders and 22 bikes at Quayside.\n\n<Footnote>Monthly planning periods in 2027; September is the five-month median payback target.</Footnote>\n\n<Notes>\n`schedule` with unlabelled bars, `now`, `current`, `reveal: true` and `surface: accent`; use it to walk a room through concurrent delivery lanes.\n[click] The lease is signed in January; fit-out and training run through March.\n[click] First loops start in April with 22 riders and 22 bikes.\n[click] Pay back the €380k from May to September, the five-month median target after loops start in April.\n</Notes>\n"
+        },
+        {
           "id": "ask-series-a",
-          "number": 123,
+          "number": 159,
           "title": "Fund four new cities, then break-even",
           "layout": "ask",
           "file": "decks/lookbook/slides/ask-series-a.mdx",
@@ -1397,7 +1685,7 @@
         },
         {
           "id": "columns-four",
-          "number": 124,
+          "number": 160,
           "title": "Four cities and six hubs open between April and June",
           "layout": "columns",
           "file": "decks/lookbook/slides/columns-four.mdx",
@@ -1405,7 +1693,7 @@
         },
         {
           "id": "timeline-slipped",
-          "number": 125,
+          "number": 161,
           "title": "One opening slipped, and we said so",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-slipped.mdx",
@@ -1413,15 +1701,31 @@
         },
         {
           "id": "ask-pilot",
-          "number": 126,
+          "number": 162,
           "title": "Approve Saltby's first hub this month",
           "layout": "ask",
           "file": "decks/lookbook/slides/ask-pilot.mdx",
           "source": "---\nlayout: ask\ntitle: Approve Saltby's first hub this month\neyebrow: For the board\nsurface: inverse\namount: €380k\nlabel: Saltby, Quayside hub\nmilestones:\n  - text: Lease signed on a 40 m² unit at Quayside\n    by: Jan 2027\n  - text: First loops with 22 riders and 22 bikes\n    by: Apr 2027\n  - text: The hub covers its own costs\n    by: Sep 2027\nbudget: 40s\n---\n\nOne hub, from a signed lease to paying its way.\n\n<Notes>\n`ask` without `funds`, three milestones, on the inverse surface; use it for a single decision put to a board.\nThe ask for the board is smaller than the round: €380,000 for Saltby's first hub. Sign the Quayside lease in January, run the first loops in April, and the hub pays for itself five months later, which is our median.\n</Notes>\n"
         },
         {
+          "id": "actions-launch",
+          "number": 163,
+          "title": "Returns training clears the way to close the round",
+          "layout": "actions",
+          "file": "decks/lookbook/slides/actions-launch.mdx",
+          "source": "---\nlayout: actions\ntitle: Returns training clears the way to close the round\neyebrow: Next actions\ncurrent: 2\nreveal: true\nbudget: 45s\nactions:\n  - title: Open the network to every shop\n    owner: Tobi Adeyemi\n    due: 3 Dec 2026\n  - title: Train every hub on returns\n    owner: Aoife Brennan\n    due: Q1 2027\n  - title: Close the Series A round\n    owner: Ines Kowalczyk\n    due: Q1 2027\n---\n\nWe improve the service in six cities before opening four more.\n\n<Footnote>Owners report progress at the next network review.</Footnote>\n\n<Notes>\n`actions` with three commitments, `current: 2` and `reveal: true`; use it to name who does what next and by when.\n[click] Tobi owns opening the network today. The console and test keys are ready; the next merchant can book a real drop. [click] Aoife owns returns training in the first quarter. That is the action in progress, because every hub needs the same handover routine before returns go on the next loop. [click] Ines owns closing the round. We improve the service in the cities already live while the funding for four more comes together.\n</Notes>\n"
+        },
+        {
+          "id": "actions-expansion",
+          "number": 164,
+          "title": "Four new cities are ready to launch by June 2027",
+          "layout": "actions",
+          "file": "decks/lookbook/slides/actions-expansion.mdx",
+          "source": "---\nlayout: actions\ntitle: Four new cities are ready to launch by June 2027\neyebrow: The next network review\nsurface: accent\ncurrent: 2\nbudget: 45s\nactions:\n  - title: Agree the four new city launch dates\n    owner: Ines Kowalczyk\n    due: Jan 2027\n  - title: Prepare the Mill Green hub\n    owner: Yusuf Demir\n    due: Feb 2027\n  - title: Validate pharmacy cold boxes\n    owner: Aoife Brennan\n    due: Mar 2027\n  - title: Ship leave-with-neighbour in Track\n    owner: Rafael Duarte\n    due: May 2027\n  - title: Connect the next parcel carrier\n    owner: Beatriz Lund\n    due: Jun 2027\n  - title: Review progress toward 500,000 drops\n    owner: Ines Kowalczyk\n    due: Dec 2027\n---\n\n<Footnote>The dates are planning periods, reviewed as each city is confirmed.</Footnote>\n\n<Notes>\n`actions` with six rows on `surface: accent`, `current: 2` marking the current row with an accent rule and no context; use it for a compact review of accountable next steps.\nEach commitment has one owner and one review period. Yusuf is preparing Mill Green now, while Aoife checks the pharmacy boxes and Rafael ships the recipient option. The next carrier connection follows in the second quarter. At year end, Ines reviews progress against the five hundred thousand monthly drops target. These are commitments to review, with the plan updated as each city is confirmed.\n</Notes>\n"
+        },
+        {
           "id": "part-motion",
-          "number": 127,
+          "number": 165,
           "title": "Motion",
           "layout": "section",
           "file": "decks/lookbook/slides/part-motion.mdx",
@@ -1429,7 +1733,7 @@
         },
         {
           "id": "motion-rise",
-          "number": 128,
+          "number": 166,
           "title": "Rise: each entry of the log rises into place",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-rise.mdx",
@@ -1437,7 +1741,7 @@
         },
         {
           "id": "motion-fade",
-          "number": 129,
+          "number": 167,
           "title": "Fade: each message appears where it stands",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-fade.mdx",
@@ -1445,7 +1749,7 @@
         },
         {
           "id": "motion-scale",
-          "number": 130,
+          "number": 168,
           "title": "Scale: each beat grows a step closer",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-scale.mdx",
@@ -1453,7 +1757,7 @@
         },
         {
           "id": "motion-blur",
-          "number": 131,
+          "number": 169,
           "title": "Blur: the arrival time comes into focus",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-blur.mdx",
@@ -1461,7 +1765,7 @@
         },
         {
           "id": "motion-wipe",
-          "number": 132,
+          "number": 170,
           "title": "Wipe: each leg is drawn from shop to door",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-wipe.mdx",
@@ -1469,7 +1773,7 @@
         },
         {
           "id": "motion-focus",
-          "number": 133,
+          "number": 171,
           "title": "Focus: only the latest status is lit",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-focus.mdx",
@@ -1477,15 +1781,47 @@
         },
         {
           "id": "part-close",
-          "number": 134,
+          "number": 172,
           "title": "Close",
           "layout": "section",
           "file": "decks/lookbook/slides/part-close.mdx",
           "source": "---\nlayout: section\ntitle: Close\nnumber: 12\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nWhere to start, and how to reach us.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nThe last part: links, a code to scan and how to reach us.\n</Notes>\n"
         },
         {
+          "id": "recap-network",
+          "number": 173,
+          "title": "A denser network makes every drop work harder",
+          "layout": "recap",
+          "file": "decks/lookbook/slides/recap-network.mdx",
+          "source": "---\nlayout: recap\ntitle: A denser network makes every drop work harder\npoints:\n  - title: Fill the hubs before opening more.\n  - title: Let every merchant book from their own systems.\nbudget: 25s\n---\n\n<Notes>\n`recap` with two sentences and no optional detail; use it to close a part with the two ideas the audience should carry forward.\nDensity brings down the cost of a drop. Open Network lets more merchants use the hubs we already have. Those two decisions belong together.\n</Notes>\n"
+        },
+        {
+          "id": "recap-launch",
+          "number": 174,
+          "title": "The next chapter starts with the hubs we have",
+          "layout": "recap",
+          "file": "decks/lookbook/slides/recap-launch.mdx",
+          "source": "---\nlayout: recap\ntitle: The next chapter starts with the hubs we have\neyebrow: What to remember\nsurface: accent\nreveal: true\npoints:\n  - title: Density makes the next drop cheaper.\n    detail: Cost per drop fell from €3.40 to €2.34 as the hubs filled.\n  - title: Open Network opens the same loops to more shops.\n    detail: Merchants book from their own systems, with no monthly fee.\n  - title: Four new cities come before break-even.\n    detail: The €14M Series A funds the network through Q2 2028.\n  - title: Your first drop can run this week.\n    detail: Connect a shop, book a window and let the hub take it.\nbudget: 40s\n---\n\nThese are the commitments behind today's launch.\n\n<Footnote>October 2026 operating figures; expansion and break-even are targets.</Footnote>\n\n<Notes>\n`recap` with four points, supporting detail, context, a footnote and `reveal: true`, on accent; use it to close the talk by returning to its claims one at a time.\n[click] Density has already brought cost per drop down to €2.34. [click] Open Network brings more shops onto those same loops. [click] The funding buys four cities and a path to break-even in Q2 2028. [click] The audience can start now: book one drop this week.\n</Notes>\n"
+        },
+        {
+          "id": "sources-evidence",
+          "number": 175,
+          "title": "Three records underpin the launch figures",
+          "layout": "sources",
+          "file": "decks/lookbook/slides/sources-evidence.mdx",
+          "source": "---\nlayout: sources\ntitle: Three records underpin the launch figures\neyebrow: References\nbudget: 25s\nsources:\n  - title: Network performance, October 2026\n    author: Maren Solberg\n    publisher: Wrenhaul Operations\n    year: \"2026\"\n    url: https://wrenhaul.example/network/october-2026\n  - title: Merchant outcomes from the same-hour pilot\n    author: Tobi Adeyemi\n    publisher: Wrenhaul Insights\n    year: \"2026\"\n    url: https://wrenhaul.example/pilot\n  - title: Open Network launch specification\n    author: Hana Sato\n    publisher: Wrenhaul Engineering\n    year: \"2026\"\n    url: https://wrenhaul.example/docs/open-network\n---\n\nOperations, customer results and API records support the launch.\n\n<Footnote>Links checked 12 November 2026.</Footnote>\n\n<Notes>\n`sources` with three complete references in one column; use it to leave the evidence behind a talk within reach.\nThe first record supports the 182,000 October drops and the €2.34 cost per drop. The second holds the merchant case studies. The third defines what opens today.\n</Notes>\n"
+        },
+        {
+          "id": "sources-records",
+          "number": 176,
+          "title": "Every launch claim has a record behind it",
+          "layout": "sources",
+          "file": "decks/lookbook/slides/sources-records.mdx",
+          "source": "---\nlayout: sources\ntitle: Every launch claim has a record behind it\neyebrow: Further reading\nsurface: inverse\nbudget: 35s\nsources:\n  - title: Network performance, October 2026\n    publisher: Wrenhaul Operations\n    year: \"2026\"\n    url: https://wrenhaul.example/network/october-2026\n  - title: Pantry Lane same-day order review\n    author: Lotte Brandsma\n    year: \"2026\"\n  - title: St Brenna sample transit study\n    author: Dr Imogen Hale\n    year: \"2026\"\n  - title: Brightloaf warm bread trial\n    author: Odile Ferrand\n    year: \"2026\"\n  - title: Open Network launch specification\n    author: Hana Sato\n    url: https://wrenhaul.example/docs/open-network\n  - title: Flock batching and route constraints\n    publisher: Wrenhaul Engineering\n  - title: Four-city opening commitments\n    publisher: Wrenhaul Operations\n    year: \"2027\"\n  - title: Series A allocation and runway model\n    publisher: Wrenhaul Finance\n    year: \"2026\"\n    url: https://wrenhaul.example/investors\n---\n\n<Footnote>Pilot reviews cover June to October 2026.</Footnote>\n\n<Notes>\n`sources` with eight references in two columns on inverse; use it for a bibliography with mixed amounts of citation detail.\nRead down the left column, then down the right. Keep these records available during questions about the merchant outcomes, the API or the four-city plan. We do not read each citation aloud.\n</Notes>\n"
+        },
+        {
           "id": "content-links",
-          "number": 135,
+          "number": 177,
           "title": "Everything you need to ship a drop today",
           "layout": "content",
           "file": "decks/lookbook/slides/content-links.mdx",
@@ -1493,7 +1829,7 @@
         },
         {
           "id": "split-qr",
-          "number": 136,
+          "number": 178,
           "title": "Book a test drop from your phone, now",
           "layout": "split",
           "file": "decks/lookbook/slides/split-qr.mdx",
@@ -1501,7 +1837,7 @@
         },
         {
           "id": "closing-ask",
-          "number": 137,
+          "number": 179,
           "title": "Send us your first drop this week",
           "layout": "closing",
           "file": "decks/lookbook/slides/closing-ask.mdx",
@@ -1509,7 +1845,7 @@
         },
         {
           "id": "closing-questions",
-          "number": 138,
+          "number": 180,
           "title": "What should we deliver next?",
           "layout": "closing",
           "file": "decks/lookbook/slides/closing-questions.mdx",
@@ -1613,10 +1949,10 @@
         {
           "id": "part-people",
           "number": 12,
-          "title": "Quote and bio",
+          "title": "People, voices and definitions",
           "layout": "section",
           "file": "decks/layouts/slides/part-people.mdx",
-          "source": "---\nlayout: section\ntitle: Quote and bio\nnumber: 3\neyebrow: Layout\nbudget: 10s\n---\n\nA person speaking for the point, and the person giving the talk.\n\n<Notes>\nTwo layouts about one person: quote lets someone else make the point; bio introduces the speaker.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: People, voices and definitions\nnumber: 3\neyebrow: Layout\nbudget: 10s\n---\n\nSpeakers, testimonies, exchanges, shared meanings and the needs behind a product decision.\n\n<Notes>\nQuote gives one person the stage; voices collects testimonials; conversation shows an exchange; definition establishes a shared meaning; bio introduces a speaker; persona connects research to a design decision.\n</Notes>\n"
         },
         {
           "id": "quote-portrait",
@@ -1635,8 +1971,72 @@
           "source": "---\nlayout: quote\ntitle: What the night nurses told us\neyebrow: From the ward\nname: Mariam Haddad\nrole: Charge nurse, Eastgate General Hospital\nsurface: accent\nbudget: 30s\n---\n\nThe worst nights are the second and third of a heatwave, when the flats never cool down.\n\n<Notes>\nWithout a photo the quote takes the width of the slide. Read it slowly, then pause.\n</Notes>\n"
         },
         {
-          "id": "bio-speaker",
+          "id": "conversation-min",
           "number": 15,
+          "title": "A resident gets a next step",
+          "layout": "conversation",
+          "file": "decks/layouts/slides/conversation-min.mdx",
+          "source": "---\nlayout: conversation\ntitle: A resident gets a next step\nbudget: 25s\nmessages:\n  - name: Resident\n    side: left\n    text: Can our street get a shade tree?\n  - name: Larkfield\n    side: right\n    text: Yes. Send the address and we will survey the pavement.\n---\n\n<Notes>\nThe minimum exchange: two named speakers and one reply, without optional labels or slots.\n</Notes>\n"
+        },
+        {
+          "id": "conversation-four",
+          "number": 16,
+          "title": "A survey answers the resident in plain language",
+          "layout": "conversation",
+          "file": "decks/layouts/slides/conversation-four.mdx",
+          "source": "---\nlayout: conversation\ntitle: A survey answers the resident in plain language\neyebrow: Before we plant\nsurface: accent\nbudget: 40s\nmessages:\n  - name: Resident\n    role: School neighbour\n    side: left\n    text: The school gate has no shade. There is a wide strip of pavement outside. Is there enough room for a tree?\n  - name: Larkfield\n    role: Survey team\n    side: right\n    text: We check pipes, cables, sight lines and roots. Send a photo and the street address to book a visit.\n  - name: Resident\n    role: School neighbour\n    side: left\n    text: I sent both. If the site passes, does the school need volunteers to water the tree through its first summer?\n  - name: Larkfield\n    role: Survey team\n    side: right\n    text: The city waters new trees for three summers. After the survey, we send the planting season to the school.\n---\n\n<Notes>\nFour longer turns approach the message allowance; on accent our replies take the inverse surface.\n</Notes>\n"
+        },
+        {
+          "id": "conversation-max",
+          "number": 17,
+          "title": "Every planting request ends with a clear next step",
+          "layout": "conversation",
+          "file": "decks/layouts/slides/conversation-max.mdx",
+          "source": "---\nlayout: conversation\ntitle: Every planting request ends with a clear next step\neyebrow: Resident services\nsurface: inverse\nreveal: true\nbudget: 50s\nmessages:\n  - name: Resident services\n    role: City help desk\n    side: left\n    text: A resident wants a tree. What should they send?\n  - name: Canopy programme\n    role: Programme lead\n    side: right\n    text: Send the street address and a pavement photo.\n  - name: Resident services\n    role: City help desk\n    side: left\n    text: They sent both. Do you check pipes and roots? Who will care for the tree after planting?\n  - name: Canopy programme\n    role: Programme lead\n    side: right\n    text: We check pipes, cables, sight lines and root space. The city waters the tree for three summers after planting.\n---\n\nA request moves from a street address to a planting season and an owner.\n\n<Footnote>Illustrative service exchange; the city keeps responsibility for every street tree throughout its life.</Footnote>\n\n<Notes>\nFour messages near their limits, with context, role labels, footnote and a build.\n[click] The first question. [click] The address and photograph. [click] The site checks and the question of care. [click] The city surveys the site and waters the tree for three summers.\n</Notes>\n"
+        },
+        {
+          "id": "definition-min",
+          "number": 18,
+          "title": "Canopy is the shade above us",
+          "layout": "definition",
+          "file": "decks/layouts/slides/definition-min.mdx",
+          "source": "---\nlayout: definition\ntitle: Canopy is the shade above us\nterm: Canopy\nbudget: 20s\n---\n\nThe layer of leaves and branches above the ground.\n\n<Notes>\n`definition` with no optional fields: a short term and its meaning, sized up to use the room.\nDefine what we measure before comparing the districts.\n</Notes>\n"
+        },
+        {
+          "id": "definition-max",
+          "number": 19,
+          "title": "Canopy is measured across the whole neighbourhood",
+          "layout": "definition",
+          "file": "decks/layouts/slides/definition-max.mdx",
+          "source": "---\nlayout: definition\ntitle: Canopy is measured across the whole neighbourhood\neyebrow: Larkfield’s survey vocabulary\nsurface: default\nterm: Urban canopy cover\npronunciation: /UR-buhn KAN-uh-pee KUH-vuh/\nkind: Urban forestry measure\nexample: A block with 30% cover has tree crowns above three tenths of its streets, gardens and public spaces.\nbudget: 40s\n---\n\nThe share of a neighbourhood’s ground covered by tree crowns when seen from above. We measure streets, gardens and public land together so the survey captures shade across the whole area, regardless of ownership.\n\n<Footnote>Larkfield Urban Forestry Division, annual canopy survey. All land inside the neighbourhood boundary is included.</Footnote>\n\n<Notes>\n`definition` near every field limit, with both metadata fields, a two-sentence meaning, an example and a source.\nThe denominator includes private gardens as well as public streets; that is why the neighbourhood boundary matters.\n</Notes>\n"
+        },
+        {
+          "id": "voices-min",
+          "number": 20,
+          "title": "Shade brings people outside",
+          "layout": "voices",
+          "file": "decks/layouts/slides/voices-min.mdx",
+          "source": "---\nlayout: voices\ntitle: Shade brings people outside\nvoices:\n  - quote: Mum sits outside again.\n    name: Priya Nair\n    role: Holloway resident\n  - quote: We walk to school now.\n    name: Sam Okafor\n    role: Eastgate parent\nbudget: 25s\n---\n\n<Notes>\n`voices` at minimum content: two short quotes, no optional fields, initials avatars and larger quote type.\nThe shortest form still gives each resident an equal share of the slide.\n</Notes>\n"
+        },
+        {
+          "id": "voices-max",
+          "number": 21,
+          "title": "The first summer changed daily routines",
+          "layout": "voices",
+          "file": "decks/layouts/slides/voices-max.mdx",
+          "source": "---\nlayout: voices\ntitle: The first summer changed daily routines\neyebrow: Larkfield residents, September 2026\nsurface: inverse\nreveal: true\nvoices:\n  - quote: My mother sat outside on an August afternoon for the first time.\n    name: Priya Nair\n    role: Chair, Holloway tenants’ association\n    photo: ../assets/people/priya-nair.svg\n    focal: center 30%\n  - quote: The children rest in the shade on the daily walk to school.\n    name: Sam Okafor\n    role: Parent, Eastgate primary school\n  - quote: People talk by the library instead of hurrying home at noon.\n    name: Eleanor Hughes\n    role: Community librarian, Larkfield Central\nbudget: 45s\n---\n\nThree neighbourhoods describe how the canopy changed their daily routines during the first summer.\n\n<Footnote>September 2026 interviews; illustrative testimonials from the canopy programme’s resident review, not a representative survey.</Footnote>\n\n<Notes>\n`voices` with three long testimonials, context, a footnote, mixed photo and initials avatars, and `reveal: true`.\n[click] Priya’s mother has somewhere to sit again.\n[click] Sam sees the difference on the daily school run.\n[click] Eleanor sees neighbours spending more time together.\n</Notes>\n"
+        },
+        {
+          "id": "voices-pair",
+          "number": 22,
+          "title": "Shade gives neighbours more time together",
+          "layout": "voices",
+          "file": "decks/layouts/slides/voices-pair.mdx",
+          "source": "---\nlayout: voices\ntitle: Shade gives neighbours more time together\neyebrow: Two residents on the first summer\nsurface: accent\nvoices:\n  - quote: We can walk to school under the trees even on hot afternoons when the old route was too much for me.\n    name: Sam Okafor\n    role: Parent, Eastgate primary school\n  - quote: The library feels like part of our street again; people stop in the shade and talk on the way home.\n    name: Eleanor Hughes\n    role: Community librarian, Larkfield Central\nbudget: 35s\n---\n\nThe school route and library offer cooler places to pause on hot summer afternoons.\n\n<Footnote>September 2026 interviews; illustrative testimonials from the canopy programme’s resident review, not a representative survey.</Footnote>\n\n<Notes>\n`voices` with two quotes at the character limit, context and a footnote on the accent surface.\nSam describes a cooler school run. Eleanor sees neighbours staying to talk instead of hurrying home.\n</Notes>\n"
+        },
+        {
+          "id": "bio-speaker",
+          "number": 23,
           "title": "Who is speaking",
           "layout": "bio",
           "file": "decks/layouts/slides/bio-speaker.mdx",
@@ -1644,23 +2044,39 @@
         },
         {
           "id": "bio-initials",
-          "number": 16,
+          "number": 24,
           "title": "Our guest",
           "layout": "bio",
           "file": "decks/layouts/slides/bio-initials.mdx",
           "source": "---\nlayout: bio\ntitle: Our guest\neyebrow: Guest speaker\nname: Dr. Amaka Bello\nrole: Public health officer, Larkfield Council\nsurface: inverse\ncontacts:\n  - label: Email\n    text: a.bello@larkfield.example\n    href: mailto:a.bello@larkfield.example\nbudget: 20s\n---\n\nAmaka leads the council's heat-health plan and wrote the hospital's heat-alert protocol. She will take questions on the health data.\n\n<Notes>\nNo photo on file, so the portrait is an initials tile. Hand over to Amaka after this slide.\n</Notes>\n"
         },
         {
+          "id": "persona-min",
+          "number": 25,
+          "title": "Wardens need a shared rota",
+          "layout": "persona",
+          "file": "decks/layouts/slides/persona-min.mdx",
+          "source": "---\nlayout: persona\ntitle: Wardens need a shared rota\nname: Nia Mensah\nrole: Volunteer tree warden\ngoals:\n  - Keep trees alive\n  - Share the rounds\nfrustrations:\n  - Unclear advice\n  - No holiday cover\nbudget: 20s\n---\n\nI can water on Tuesdays. Who takes Wednesday?\n\n<Notes>\n`persona` at minimum content: no optional fields, two short items in each list, a short quotation and an initials tile.\nA shared rota answers the participant's immediate need.\n</Notes>\n"
+        },
+        {
+          "id": "persona-max",
+          "number": 26,
+          "title": "Wardens need cover throughout the dry season",
+          "layout": "persona",
+          "file": "decks/layouts/slides/persona-max.mdx",
+          "source": "---\nlayout: persona\ntitle: Wardens need cover throughout the dry season\neyebrow: Eastgate watering research\nsurface: inverse\nname: Alexandra Montgomery-Clarke\nrole: Eastgate volunteer watering coordinator\nphoto: ../assets/people/alexandra-montgomery-clarke.svg\nfocal: center 30%\ntreatment: plain\ngoals:\n  - Share the summer watering rounds fairly\n  - Know which new trees need extra water\n  - Find a replacement before taking leave\n  - Report damaged guards in one place\nfrustrations:\n  - Different watering advice from each team\n  - No record of the last maintenance visit\n  - Volunteers discovering empty water tanks\n  - Requests lost between city departments\nbudget: 45s\n---\n\nI can cover the Tuesday watering round, but I need to know who takes over when I am away for two weeks in August.\n\n<Footnote>Illustrative persona from Eastgate watering interviews; findings describe volunteer coordination, rather than the whole city.</Footnote>\n\n<Notes>\n`persona` near its maximum: a long identity, four long items in each list, a full quotation and a research footnote.\nSeparate the coordination need from the practical work of watering. The rota must show cover and the last visit before the dry season starts.\n</Notes>\n"
+        },
+        {
           "id": "part-cards",
-          "number": 17,
-          "title": "Cards",
+          "number": 27,
+          "title": "Cards, features and questions",
           "layout": "section",
           "file": "decks/layouts/slides/part-cards.mdx",
-          "source": "---\nlayout: section\ntitle: Cards\nnumber: 4\neyebrow: Layout\nbudget: 10s\n---\n\nTwo to four ideas of equal weight, each with an icon.\n\n<Notes>\nThe cards layout: peers, not a sequence. Icons come from the brand's set by name.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Cards, features and questions\nnumber: 4\neyebrow: Layout\nbudget: 10s\n---\n\nParallel ideas, capabilities, or practical questions with short answers.\n\n<Notes>\nCards gives two to four peers room for explanation; features groups six to twelve capabilities in an open icon grid; faq pairs questions with answers.\n</Notes>\n"
         },
         {
           "id": "cards-principles",
-          "number": 18,
+          "number": 28,
           "title": "Three rules decide where a tree goes",
           "layout": "cards",
           "file": "decks/layouts/slides/cards-principles.mdx",
@@ -1668,7 +2084,7 @@
         },
         {
           "id": "cards-benefits",
-          "number": 19,
+          "number": 29,
           "title": "What a street gains from a mature canopy",
           "layout": "cards",
           "file": "decks/layouts/slides/cards-benefits.mdx",
@@ -1676,23 +2092,71 @@
         },
         {
           "id": "cards-options",
-          "number": 20,
+          "number": 30,
           "title": "Two ways to water the young trees",
           "layout": "cards",
           "file": "decks/layouts/slides/cards-options.mdx",
           "source": "---\nlayout: cards\ntitle: Two ways to water the young trees\neyebrow: Aftercare\nsurface: accent\ncards:\n  - icon: users\n    title: Volunteer wardens\n    text: Residents adopt a tree and water it every week.\n  - icon: route\n    title: Council rounds\n    text: A truck on a weekly route, at $38 a tree a year.\nbudget: 30s\n---\n\nThe plan uses both: wardens where they sign up, rounds everywhere else.\n\n<Notes>\nTwo cards is the smallest set. The plan uses both options; the point is that neither alone covers every street.\n</Notes>\n"
         },
         {
+          "id": "faq-min",
+          "number": 31,
+          "title": "The care continues after planting",
+          "layout": "faq",
+          "file": "decks/layouts/slides/faq-min.mdx",
+          "source": "---\nlayout: faq\ntitle: The care continues after planting\nbudget: 25s\nquestions:\n  - q: Who waters the trees?\n    a: Our crews, for three summers.\n  - q: What if a tree dies?\n    a: We replace it next season.\n---\n\n<Notes>\n`faq` with two short pairs and no optional fields. The largest type gives the answers the weight they need in a public meeting.\n</Notes>\n"
+        },
+        {
+          "id": "faq-three",
+          "number": 32,
+          "title": "A site survey settles the planting choice",
+          "layout": "faq",
+          "file": "decks/layouts/slides/faq-three.mdx",
+          "source": "---\nlayout: faq\ntitle: A site survey settles the planting choice\neyebrow: Before we dig\nsurface: accent\nbudget: 30s\nquestions:\n  - q: Will the roots damage the pavement?\n    a: The site survey checks rooting space before a tree is chosen.\n  - q: Can we plant under overhead wires?\n    a: Only where the mature crown can keep clear of the wires.\n  - q: Who chooses the species?\n    a: The arborist matches soil, space and summer heat to a suitable tree.\n---\n\n<Notes>\n`faq` with three pairs: the last cell stays empty, keeping reading order clear, on the accent surface.\n</Notes>\n"
+        },
+        {
+          "id": "faq-max",
+          "number": 33,
+          "title": "Every planting site has a named care team",
+          "layout": "faq",
+          "file": "decks/layouts/slides/faq-max.mdx",
+          "source": "---\nlayout: faq\ntitle: Every planting site has a named care team\neyebrow: Residents ask before the planting season\nsurface: inverse\nreveal: true\nbudget: 45s\nquestions:\n  - q: Who waters trees through the first summers?\n    a: Our crews water every new tree for three summers. A named arborist checks its growth each season.\n  - q: What happens when a newly planted tree dies?\n    a: We replace it in the next planting season. The replacement receives three summers of watering and care.\n  - q: How do residents report damaged tree guards?\n    a: Report the street and nearest house number to the tree team. A crew checks the guard on its next round.\n  - q: Can a resident ask for a different species?\n    a: Yes, before planting. The arborist checks soil, space and summer heat before choosing a species.\n---\n\nEvery request reaches the crew for that street.\n\n<Footnote>Larkfield Urban Forestry Division, 2027 planting programme. Care covers watering, guards and replacement trees.</Footnote>\n\n<Notes>\n`faq` with four near-limit pairs, context, an eyebrow and a footnote, on inverse.\n[click] Watering is part of the programme. [click] Replacements restart the care period. [click] A street and house number tell us where to look. [click] Species choices follow the site survey.\n</Notes>\n"
+        },
+        {
+          "id": "features-min",
+          "number": 34,
+          "title": "Tree care continues after planting",
+          "layout": "features",
+          "file": "decks/layouts/slides/features-min.mdx",
+          "source": "---\nlayout: features\ntitle: Tree care continues after planting\nfeatures:\n  - icon: map-pin\n    title: Survey\n  - icon: trees\n    title: Planting\n  - icon: droplets\n    title: Watering\n  - icon: shield\n    title: Protection\n  - icon: users\n    title: Wardens\n  - icon: chart-bar\n    title: Reporting\nbudget: 25s\n---\n\n<Notes>\n`features` with six capabilities, just icons and titles: the minimum content uses three columns and two open rows. Planting is only one part of the service.\n</Notes>\n"
+        },
+        {
+          "id": "features-tools",
+          "number": 35,
+          "title": "Wardens can care for a whole street",
+          "layout": "features",
+          "file": "decks/layouts/slides/features-tools.mdx",
+          "source": "---\nlayout: features\ntitle: Wardens can care for a whole street\neyebrow: Warden support\nsurface: accent\nfeatures:\n  - icon: map-pin\n    title: Tree register\n    detail: Find each adopted tree\n  - icon: droplets\n    title: Water rounds\n    detail: Share rounds with neighbours\n  - icon: bell\n    title: Dry reminders\n    detail: Know when soil needs water\n  - icon: users\n    title: Local wardens\n    detail: Meet wardens on your street\n  - icon: shield\n    title: Damage reports\n    detail: Tell the arborist of damage\n  - icon: book\n    title: Care guidance\n    detail: Know what to check in season\n  - icon: calendar\n    title: Expert visits\n    detail: Book a visit for a sick tree\n  - icon: chart-bar\n    title: Growth reports\n    detail: Track growth on your street\n  - icon: heart\n    title: Health checks\n    detail: Spot disease before it grows\nbudget: 35s\n---\n\nEach street warden gets the same support from the canopy programme.\n\n<Notes>\n`features` with nine detailed capabilities in three open columns; use this upper detail count for a compact inventory of support.\nWardens can find their trees, share the care and get help from the city. The nine capabilities support one service.\n</Notes>\n"
+        },
+        {
+          "id": "features-max",
+          "number": 36,
+          "title": "The canopy programme covers a tree for life",
+          "layout": "features",
+          "file": "decks/layouts/slides/features-max.mdx",
+          "source": "---\nlayout: features\ntitle: The canopy programme covers a tree for life\neyebrow: A complete tree care service\nreveal: true\nfeatures:\n  - icon: map-pin\n    title: Heat surveys\n  - icon: trees\n    title: Native trees\n  - icon: shovel\n    title: Soil cells\n  - icon: calendar\n    title: Tree planting\n  - icon: droplets\n    title: Tree watering\n  - icon: shield\n    title: Root guards\n  - icon: users\n    title: Tree wardens\n  - icon: bell\n    title: Drought alerts\n  - icon: heart\n    title: Health checks\n  - icon: wind\n    title: Storm repairs\n  - icon: chart-bar\n    title: Canopy metrics\n  - icon: repeat\n    title: Replacements\nbudget: 50s\n---\n\nEvery planted tree stays on the register, with care recorded across its whole life.\n\n<Footnote>The city retains responsibility for every adopted tree; wardens support the arborist team.</Footnote>\n\n<Notes>\n`features` with twelve icons and titles, context and a footnote: the fullest grid, in three rows of four. [click] Start with survey and planting. [click] Keep the roots watered and protected with the wardens. [click] Measure growth, check health and replace losses. Nothing here ends on planting day.\n</Notes>\n"
+        },
+        {
           "id": "part-steps",
-          "number": 21,
-          "title": "Steps",
+          "number": 37,
+          "title": "Processes, actions and exercises",
           "layout": "section",
           "file": "decks/layouts/slides/part-steps.mdx",
-          "source": "---\nlayout: section\ntitle: Steps\nnumber: 5\neyebrow: Layout\nbudget: 10s\n---\n\nA process of three to five steps, in order.\n\n<Notes>\nThe steps layout: numbered markers on a line, with the current step marked.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Processes, actions and exercises\nnumber: 5\neyebrow: Layout\nbudget: 10s\n---\n\nA process, accountable next actions, or a timed task with a concrete output.\n\n<Notes>\nSteps explain how work happens; actions commit owners and dates; exercise gives instructions, a timebox and an output.\n</Notes>\n"
         },
         {
           "id": "steps-planting",
-          "number": 22,
+          "number": 38,
           "title": "Four steps put a tree in the ground for good",
           "layout": "steps",
           "file": "decks/layouts/slides/steps-planting.mdx",
@@ -1700,7 +2164,7 @@
         },
         {
           "id": "steps-adopt",
-          "number": 23,
+          "number": 39,
           "title": "Adopting a street tree takes five minutes",
           "layout": "steps",
           "file": "decks/layouts/slides/steps-adopt.mdx",
@@ -1708,23 +2172,55 @@
         },
         {
           "id": "steps-three",
-          "number": 24,
+          "number": 40,
           "title": "The committee decides in three steps",
           "layout": "steps",
           "file": "decks/layouts/slides/steps-three.mdx",
           "source": "---\nlayout: steps\ntitle: The committee decides in three steps\neyebrow: Decision path\nsteps:\n  - title: Read the plan\n    text: The plan, the pilot data and the costs by district are in the papers.\n  - title: Visit Holloway Road\n    text: A walk on 4 December shows pilot blocks beside control blocks.\n  - title: Vote on the capital line\n    text: The vote on 11 December sets five years of funding.\nbudget: 30s\n---\n\n<Notes>\nThree steps with the longest text a step takes. Nothing is marked current: none of these has happened yet.\n</Notes>\n"
         },
         {
+          "id": "actions-min",
+          "number": 41,
+          "title": "Planting starts when owners deliver by March",
+          "layout": "actions",
+          "file": "decks/layouts/slides/actions-min.mdx",
+          "source": "---\nlayout: actions\ntitle: Planting starts when owners deliver by March\nactions:\n  - title: Confirm the planting sites\n    owner: Dana Okafor\n    due: January 2027\n  - title: Book the field crews\n    owner: Operations\n    due: February 2027\n  - title: Open warden sign-ups\n    owner: Community\n    due: March 2027\nbudget: 30s\n---\n\n<Notes>\nThree commitments put the programme in motion: Dana confirms the sites, Operations books the crews, and Community opens sign-ups before the spring rounds.\n</Notes>\n"
+        },
+        {
+          "id": "actions-max",
+          "number": 42,
+          "title": "Site and crew approvals unlock planting by April",
+          "layout": "actions",
+          "file": "decks/layouts/slides/actions-max.mdx",
+          "source": "---\nlayout: actions\ntitle: Site and crew approvals unlock planting by April\neyebrow: Programme delivery\nsurface: inverse\ncurrent: 2\nactions:\n  - title: Confirm east-side sites and permits\n    owner: Dana Okafor\n    due: 12 January 2027\n  - title: Book crews for the planting programme\n    owner: Field operations team\n    due: 26 January 2027\n  - title: Inspect stock before the city takes it\n    owner: Nursery liaison team\n    due: 9 February 2027\n  - title: Match new trees with watering wardens\n    owner: Community partnerships\n    due: 23 February 2027\n  - title: Publish three summers of watering rounds\n    owner: Tree care coordinators\n    due: 16 March 2027\n  - title: Review canopy maps with district leads\n    owner: District programme\n    due: 30 March 2027\nbudget: 45s\n---\n\nEvery owner confirms the date before the next programme review in January.\n\n<Footnote>Dates depend on the nursery inspection; owners report exceptions before the next review.</Footnote>\n\n<Notes>\nSix commitments, each with an owner and a date. Booking the crews is in progress. Nursery checks precede delivery, wardens precede planting, and the watering rounds cover the first three summers. The map review closes the loop with district leads.\n</Notes>\n"
+        },
+        {
+          "id": "exercise-min",
+          "number": 43,
+          "title": "Mark the next tree on your street",
+          "layout": "exercise",
+          "file": "decks/layouts/slides/exercise-min.mdx",
+          "source": "---\nlayout: exercise\nsurface: accent\ntitle: Mark the next tree on your street\nduration: 5 min\ninstructions:\n  - Choose the hottest block.\n  - Mark one planting site.\noutput: One marked map\nbudget: 30s\n---\n\n<Notes>\n`exercise` at minimum content: two short instructions and no optional fields.\nGive residents the heat map and ask them to mark a site. Keep the timebox visible while they work.\n</Notes>\n"
+        },
+        {
+          "id": "exercise-max",
+          "number": 44,
+          "title": "Plan three summers of care for a new street tree",
+          "layout": "exercise",
+          "file": "decks/layouts/slides/exercise-max.mdx",
+          "source": "---\nlayout: exercise\ntitle: Plan three summers of care for a new street tree\neyebrow: Larkfield neighbourhood planting session\nsurface: inverse\nduration: 120 min\ngroups: Teams of three residents\ninstructions:\n  - Compare heat maps for Eastgate and Holloway, agree on a site.\n  - Mark a tree site clear of pipes, cables and narrow pavements.\n  - Choose a large species whose crown will shade the walking route.\n  - Name neighbours who will share weekly watering duties per tree.\n  - List the checks your group will make after each summer heatwave.\noutput: One annotated street map with a three-summer watering rota\nbudget: 40s\n---\n\nStart with the hottest block and keep walking routes accessible throughout the work.\n\n<Footnote>Bring your map to the review; the forestry team will check underground services before planting.</Footnote>\n\n<Notes>\n`exercise` at maximum content: five long instructions, duration, groups, eyebrow, context and footnote.\nHand out street maps and explain the required output. The speaking budget introduces the activity; the timebox is the time residents have to complete it.\n</Notes>\n"
+        },
+        {
           "id": "part-comparison",
-          "number": 25,
-          "title": "Comparison",
+          "number": 45,
+          "title": "Compare, price and practise",
           "layout": "section",
           "file": "decks/layouts/slides/part-comparison.mdx",
-          "source": "---\nlayout: section\ntitle: Comparison\nnumber: 6\neyebrow: Layout\nbudget: 10s\n---\n\nTwo or three options measured on the same rows.\n\n<Notes>\nThe comparison layout: rows line up across options, and the recommended one sits on a panel.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Compare, price and practise\nnumber: 6\neyebrow: Layout\nbudget: 10s\n---\n\nShared criteria, prices, habits to follow or avoid, and questions for the room.\n\n<Notes>\nComparison aligns shared criteria; pricing gives each plan a price and features; do-dont teaches practical habits; quiz reveals the right answer to lettered choices.\n</Notes>\n"
         },
         {
           "id": "comparison-species",
-          "number": 26,
+          "number": 46,
           "title": "Large trees cost more and cool far more",
           "layout": "comparison",
           "file": "decks/layouts/slides/comparison-species.mdx",
@@ -1732,23 +2228,79 @@
         },
         {
           "id": "comparison-funding",
-          "number": 27,
+          "number": 47,
           "title": "Three ways to fund ten years of planting",
           "layout": "comparison",
           "file": "decks/layouts/slides/comparison-funding.mdx",
           "source": "---\nlayout: comparison\ntitle: Three ways to fund ten years of planting\neyebrow: Funding options\nsurface: inverse\nreveal: true\noptions:\n  - name: Annual budget\n    summary: Decided each year\n  - name: Capital line\n    summary: Ten years, three reviews\n    recommended: true\n  - name: Green bond\n    summary: Borrowed up front\nrows:\n  - label: Ten-year cost\n    values: [$42M, $42M, $49M with interest]\n  - label: Nursery certainty\n    values: [One year, Ten years, Ten years]\n  - label: Can stop early\n    values: [true, true, false]\n  - label: Needs a vote\n    values: [Every year, Once, Once]\n  - label: First trees\n    values: [Spring 2027, Spring 2027, Autumn 2027]\nbudget: 1m\n---\n\n<Notes>\nThree options, one per click, recommended last. The capital line gives nurseries the certainty to grow large stock and still lets the committee stop it.\n</Notes>\n"
         },
         {
+          "id": "pricing-contracts",
+          "number": 48,
+          "title": "Most schools should take the district contract",
+          "layout": "pricing",
+          "file": "decks/layouts/slides/pricing-contracts.mdx",
+          "source": "---\nlayout: pricing\ntitle: Most schools should take the district contract\neyebrow: Tree care for schools\nplans:\n  - name: Single site\n    price: $900\n    period: a year\n    description: One school ground, up to 40 trees\n    features:\n      - Two inspections a year\n      - Storm call-outs within a day\n      - Leaf clearance in November\n  - name: District\n    price: $6,400\n    period: a year\n    description: Every school in one district\n    features:\n      - Quarterly inspections\n      - Call-outs within four hours\n      - A named arborist\n      - Two new trees each year\n    recommended: true\n  - name: City\n    price: Custom\n    description: Every public ground in Larkfield\n    features:\n      - Monthly inspections\n      - Planting and watering\n      - A crew on call all year\nbudget: 45s\n---\n\nEight schools or more and the district contract costs less per site.\n\n<Footnote>Prices for the 2027 season, before sales tax; the city contract is priced by tender.</Footnote>\n\n<Notes>\nStart with the district contract: it is what most of the room needs. Then the single site for small trusts, and the city contract for the parks department.\n</Notes>\n"
+        },
+        {
+          "id": "pricing-wardens",
+          "number": 49,
+          "title": "A warden pays for nothing but the water",
+          "layout": "pricing",
+          "file": "decks/layouts/slides/pricing-wardens.mdx",
+          "source": "---\nlayout: pricing\ntitle: A warden pays for nothing but the water\neyebrow: Watering wardens\nsurface: inverse\nplans:\n  - name: Street warden\n    price: Free\n    description: Water the trees on your own street\n    features:\n      - A watering bag a tree\n      - A reminder in dry weeks\n  - name: Block warden\n    price: $40\n    period: a season\n    description: Water a whole block with a crew\n    features:\n      - A hose cart and a key\n      - Training with an arborist\nbudget: 30s\n---\n\n<Notes>\nTwo ways to help. Most wardens take a street for free; the block wardens pay forty dollars a season towards the hose carts.\n</Notes>\n"
+        },
+        {
+          "id": "pricing-tiers",
+          "number": 50,
+          "title": "Four ways to adopt a street tree",
+          "layout": "pricing",
+          "file": "decks/layouts/slides/pricing-tiers.mdx",
+          "source": "---\nlayout: pricing\ntitle: Four ways to adopt a street tree\neyebrow: Adopt a tree\nreveal: true\nbadge: Most adopters\nplans:\n  - name: One tree\n    price: $120\n    period: once\n    description: A tree on your street, your name\n    features:\n      - Planted next season\n      - A plaque on the guard\n      - Watered three summers\n      - On the canopy map\n  - name: A row\n    price: $1,080\n    period: ten trees\n    description: Ten trees on one street\n    features:\n      - Planted on one day\n      - A plaque for the row\n      - Watered three summers\n      - A yearly growth report\n    recommended: true\n  - name: A block\n    price: $4,800\n    period: fifty trees\n    description: A block's worth for a business\n    features:\n      - A block of your choice\n      - Your logo on plaques\n      - Watered three summers\n      - A yearly growth report\n  - name: A grove\n    price: Custom\n    description: A park or a school ground\n    features:\n      - Designed with the city\n      - Plaques and a sign\n      - Five summers watered\n      - A ten-year care plan\nbudget: 1m\n---\n\n<Footnote>Adoptions fund planting only; the city keeps every adopted tree for its whole life.</Footnote>\n\n<Notes>\nFour tiers, one per click. [click] One tree, the gift most people give. [click] A row, which is what most adopters take. [click] A block, for a business. [click] And a grove, which we design with you.\n</Notes>\n"
+        },
+        {
+          "id": "do-dont-min",
+          "number": 51,
+          "title": "Water the roots, leave the trunk clear",
+          "layout": "do-dont",
+          "file": "decks/layouts/slides/do-dont-min.mdx",
+          "source": "---\nlayout: do-dont\ntitle: Water the roots, leave the trunk clear\nbudget: 30s\ndo:\n  - Water slowly into the soil\n  - Keep mulch away from the trunk\ndont:\n  - Spray the leaves at midday\n  - Pile mulch against the bark\n---\n\n<Notes>\nTwo habits for Larkfield's watering wardens: wet the roots and protect the bark.\n</Notes>\n"
+        },
+        {
+          "id": "do-dont-max",
+          "number": 52,
+          "title": "A careful first summer keeps new trees alive",
+          "layout": "do-dont",
+          "file": "decks/layouts/slides/do-dont-max.mdx",
+          "source": "---\nlayout: do-dont\ntitle: A careful first summer keeps new trees alive\neyebrow: Watering wardens · 2027\nsurface: accent\nlabels:\n  do: Help the roots establish\n  dont: Avoid the common errors\nreveal: true\nbudget: 45s\ndo:\n  - Water slowly across the soil bed on a dry summer evening\n  - Leave a clear ring around the trunk as you spread mulch\n  - Check the soil below the surface before adding a bucket\n  - Report damaged stakes and split ties to the arborist\ndont:\n  - Pour the whole bucket onto one spot beside the new trunk\n  - Heap fresh mulch against the bark to hide the soil basin\n  - Assume wet pavement means the soil below is damp enough\n  - Tighten a loose tie until it rubs against the tree bark\n---\n\nEvery watering warden follows the same guide in the first two summers after planting.\n\n<Footnote>Larkfield watering guide, 2027; ask the duty arborist if a tree looks stressed.</Footnote>\n\n<Notes>\n[click] Four practical habits keep the water where a young tree needs it.\n[click] Four tempting shortcuts can undo that work; report problems early instead.\n</Notes>\n"
+        },
+        {
+          "id": "quiz-min",
+          "number": 53,
+          "title": "Does a new tree need three summers of care?",
+          "layout": "quiz",
+          "file": "decks/layouts/slides/quiz-min.mdx",
+          "source": "---\nlayout: quiz\ntitle: Does a new tree need three summers of care?\noptions:\n  - Yes\n  - No\nanswer: A\nbudget: 20s\n---\n\n<Notes>\nAsk the room, then reveal the answer.\n\n[click] Yes. Watering and checks continue through three summers.\n</Notes>\n"
+        },
+        {
+          "id": "quiz-max",
+          "number": 54,
+          "title": "Which commitment keeps planting on schedule?",
+          "layout": "quiz",
+          "file": "decks/layouts/slides/quiz-max.mdx",
+          "source": "---\nlayout: quiz\ntitle: Which commitment keeps planting on schedule?\neyebrow: Larkfield canopy programme\nsurface: inverse\noptions:\n  - Order the largest trees before checking soil and underground services\n  - Confirm sites, watering wardens and crews before ordering street trees\n  - Move every new tree to streets with the most requests this planting year\n  - Wait for a road rebuild before asking residents to water young trees\nanswer: B\nexplanation: A confirmed site, a crew and three summers of watering turn a planting date into a living tree.\nreveal: true\nbudget: 35s\n---\n\nChoose the commitment the programme can deliver through the whole planting season.\n\n<Footnote>Larkfield Urban Forestry Division, planting and aftercare review for the 2027 season.</Footnote>\n\n<Notes>\nFour options near their limits, with the question, context, reason and source all filled.\n\n[click] B is the complete commitment. A planting order is only useful after the site and its care are secured.\n</Notes>\n"
+        },
+        {
           "id": "part-timeline",
-          "number": 28,
-          "title": "Timeline",
+          "number": 55,
+          "title": "Timeline and schedule",
           "layout": "section",
           "file": "decks/layouts/slides/part-timeline.mdx",
-          "source": "---\nlayout: section\ntitle: Timeline\nnumber: 7\neyebrow: Layout\nbudget: 10s\n---\n\nDated milestones, and where we are now.\n\n<Notes>\nThe timeline layout hosts the kit timeline, with its milestones in the frontmatter.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Timeline and schedule\nnumber: 7\neyebrow: Layout\nbudget: 10s\n---\n\nDated milestones, concurrent work and durations.\n\n<Notes>\nTimeline shows dated milestones; schedule shows parallel workstreams with duration bars.\n</Notes>\n"
         },
         {
           "id": "timeline-plan",
-          "number": 29,
+          "number": 56,
           "title": "The pilot ran three summers; the plan starts in spring",
           "layout": "timeline",
           "file": "decks/layouts/slides/timeline-plan.mdx",
@@ -1756,23 +2308,39 @@
         },
         {
           "id": "timeline-decade",
-          "number": 30,
+          "number": 57,
           "title": "Ten years to a quarter of Eastgate in shade",
           "layout": "timeline",
           "file": "decks/layouts/slides/timeline-decade.mdx",
           "source": "---\nlayout: timeline\ntitle: Ten years to a quarter of Eastgate in shade\neyebrow: The plan by phase\nsurface: inverse\nreveal: true\nmilestones:\n  - date: '2027'\n    title: Eastgate begins\n    detail: 600 trees on the hottest blocks\n  - date: '2029'\n    title: First review\n    detail: Survival and street temperature\n  - date: '2030'\n    title: Millbrook begins\n    detail: The second-hottest district\n  - date: '2034'\n    title: Northfield infill\n    detail: Gaps in the older canopy\n  - date: '2036'\n    title: Last planting\n    detail: 6,000 trees in total\n    state: muted\nbudget: 45s\n---\n\nEach phase starts only after the review before it.\n\n<Notes>\nFive milestones, one per click; five is the most a timeline takes. The last is tentative until the second review in 2032.\n</Notes>\n"
         },
         {
+          "id": "schedule-min",
+          "number": 58,
+          "title": "Planting overlaps the first care visits",
+          "layout": "schedule",
+          "file": "decks/layouts/slides/schedule-min.mdx",
+          "source": "---\nlayout: schedule\ntitle: Planting overlaps the first care visits\nbudget: 30s\nperiods: [Jan, Feb, Mar]\nlanes:\n  - name: Survey\n    bars: [{ from: 1, to: 1 }]\n  - name: Planting\n    bars: [{ from: 1, to: 2 }]\n  - name: Tree care\n    bars: [{ from: 2, to: 3 }]\n---\n\n<Notes>\n`schedule` at minimum content: three periods and three lanes with unlabelled durations.\nSurvey in January, plant through February, start care before the planting crew leaves.\n</Notes>\n"
+        },
+        {
+          "id": "schedule-max",
+          "number": 59,
+          "title": "Six workstreams protect the planting season",
+          "layout": "schedule",
+          "file": "decks/layouts/slides/schedule-max.mdx",
+          "source": "---\nlayout: schedule\ntitle: Six workstreams protect the planting season\neyebrow: Larkfield · delivery plan\nsurface: inverse\nbudget: 45s\nperiods: [Jan, Feb, Mar, Apr, May, Jun, Jul, Aug]\nnow: 3\ncurrent: 3\nlanes:\n  - name: Survey and site checks\n    bars: [{ from: 1, to: 2 }, { from: 2, to: 3 }]\n  - name: Nursery stock orders\n    bars: [{ from: 1, to: 2 }, { from: 3, to: 3 }]\n  - name: Planting crew rotation\n    bars: [{ from: 2, to: 4 }, { from: 4, to: 5 }]\n  - name: Watering and mulching\n    bars: [{ from: 3, to: 6 }, { from: 5, to: 8 }]\n  - name: Street warden training\n    bars: [{ from: 2, to: 3 }, { from: 4, to: 5 }]\n  - name: Summer canopy readings\n    bars: [{ from: 6, to: 7 }, { from: 8, to: 8 }]\n---\n\nCare begins while planting crews finish the next district.\n\n<Footnote>Illustrative crew schedule for Larkfield's 2027 planting season; subject to weather and nursery stock.</Footnote>\n\n<Notes>\n`schedule` with eight periods, six lanes, two unlabelled bars per lane at the combined content limit, now and current.\nKeep each crew's two assignments on separate tracks, even when they overlap.\n</Notes>\n"
+        },
+        {
           "id": "part-table",
-          "number": 31,
-          "title": "Table",
+          "number": 60,
+          "title": "Tables, status and risks",
           "layout": "section",
           "file": "decks/layouts/slides/part-table.mdx",
-          "source": "---\nlayout: section\ntitle: Table\nnumber: 8\neyebrow: Layout\nbudget: 10s\n---\n\nExact values, with the row that matters marked.\n\n<Notes>\nThe table layout takes a Markdown table or the kit Table and gives both the same treatment.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Tables, status and risks\nnumber: 8\neyebrow: Layout\nbudget: 10s\n---\n\nExact values, workstream updates and risks with mitigations.\n\n<Notes>\nTable holds exact values; status gives workstreams labelled states, owners and updates; risks pairs qualitative likelihood and impact with one mitigation each.\n</Notes>\n"
         },
         {
           "id": "table-schedule",
-          "number": 32,
+          "number": 61,
           "title": "Eastgate needs the most trees and gets them first",
           "layout": "table",
           "file": "decks/layouts/slides/table-schedule.mdx",
@@ -1780,7 +2348,7 @@
         },
         {
           "id": "table-aside",
-          "number": 33,
+          "number": 62,
           "title": "Survival is highest where residents water",
           "layout": "table",
           "file": "decks/layouts/slides/table-aside.mdx",
@@ -1788,15 +2356,47 @@
         },
         {
           "id": "table-dense",
-          "number": 34,
+          "number": 63,
           "title": "Every block on the Eastgate list, hottest first",
           "layout": "table",
           "file": "decks/layouts/slides/table-dense.mdx",
           "source": "---\nlayout: table\ntitle: Every block on the Eastgate list, hottest first\neyebrow: Block by block\nhighlight:\n  row: 1\n---\n\n| Block | Street | Surface °C | Canopy | Residents | Over 65 | Trees | Year |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| E-14 | Holloway Road | 52.1 | 3% | 1,240 | 22% | 46 | 2027 |\n| E-09 | Canal Street | 51.4 | 4% | 980 | 18% | 38 | 2027 |\n| E-21 | Market Row | 50.8 | 5% | 1,410 | 25% | 52 | 2027 |\n| E-03 | Station Lane | 50.2 | 4% | 760 | 15% | 31 | 2027 |\n| E-17 | Tanners Yard | 49.9 | 6% | 1,120 | 27% | 44 | 2028 |\n| E-11 | Foundry Way | 49.5 | 7% | 890 | 19% | 36 | 2028 |\n| E-06 | Gasworks Road | 49.1 | 5% | 1,030 | 21% | 40 | 2028 |\n| E-25 | Mill Street | 48.7 | 8% | 670 | 16% | 28 | 2028 |\n\n<Footnote>Surface temperature at 3 p.m., 12 July 2026; residents from the 2025 census.</Footnote>\n\n<Notes>\nThe dense case: eight rows and eight columns, stepped down in size to fit. Do not read it out; point at the first row and say the rest follow the same pattern.\n</Notes>\n"
         },
         {
+          "id": "risks-min",
+          "number": 64,
+          "title": "Watering is the first call on our crews",
+          "layout": "risks",
+          "file": "decks/layouts/slides/risks-min.mdx",
+          "source": "---\nlayout: risks\ntitle: Watering is the first call on our crews\nbudget: 35s\nrisks:\n  - name: Dry summer\n    likelihood: high\n    impact: high\n    mitigation: Book watering crews\n  - name: Late stock\n    likelihood: low\n    impact: medium\n    mitigation: Reserve local trees\n  - name: Warden gaps\n    likelihood: medium\n    impact: low\n    mitigation: Pair up neighbours\n---\n\n<Notes>\nThree risks, no optional fields: the register takes its roomiest fitting level. Watering is the first job to fund.\n</Notes>\n"
+        },
+        {
+          "id": "risks-max",
+          "number": 65,
+          "title": "Five risks have actions before planting starts",
+          "layout": "risks",
+          "file": "decks/layouts/slides/risks-max.mdx",
+          "source": "---\nlayout: risks\ntitle: Five risks have actions before planting starts\neyebrow: Larkfield · 2027 readiness\nsurface: inverse\nbudget: 50s\nrisks:\n  - name: Summer watering deficit\n    likelihood: high\n    impact: high\n    mitigation: Book weekly watering crews before planting\n    highlight: true\n  - name: Nursery delivery delays\n    likelihood: medium\n    impact: high\n    mitigation: Reserve extra stock with a second nursery\n  - name: Warden training capacity\n    likelihood: medium\n    impact: medium\n    mitigation: Run weekly briefings with district leads\n  - name: Underground service maps\n    likelihood: low\n    impact: high\n    mitigation: Survey every planting pit before digging\n  - name: Young tree damage claims\n    likelihood: medium\n    impact: low\n    mitigation: Fit guards and log damage on every visit\n---\n\nEvery district has a practical response before the first tree goes into the ground.\n\n<Footnote>Assessment for the 2027 planting season; review each mitigation with district leads before work starts.</Footnote>\n\n<Notes>\nFive risks with near-limit names and mitigations, a highlighted row, context and footnote. Likelihood and impact remain independent; medium is the widest printed level.\n</Notes>\n"
+        },
+        {
+          "id": "status-min",
+          "number": 66,
+          "title": "Spring planting is ready to start",
+          "layout": "status",
+          "file": "decks/layouts/slides/status-min.mdx",
+          "source": "---\nlayout: status\ntitle: Spring planting is ready to start\nbudget: 30s\nitems:\n  - name: Nursery stock\n    status: done\n    note: All trees are reserved.\n  - name: Ground preparation\n    status: on-track\n    note: Crews start on Monday.\n  - name: Watering rota\n    status: on-track\n    note: Three summers of care are funded.\n---\n\n<Notes>\n`status` at minimum content, with three workstreams and no optional fields; use it for a short readiness check.\nThe stock is secured, the ground crews are ready, and the care budget covers three summers.\n</Notes>\n"
+        },
+        {
+          "id": "status-max",
+          "number": 67,
+          "title": "Summer care needs cover on two routes",
+          "layout": "status",
+          "file": "decks/layouts/slides/status-max.mdx",
+          "source": "---\nlayout: status\ntitle: Summer care needs cover on two routes\neyebrow: Canopy programme review\nsurface: inverse\nbudget: 1m\nitems:\n  - name: Eastgate spring planting\n    status: done\n    owner: Dana Okafor\n    note: All 300 trees are planted and mapped.\n  - name: Millbrook ground crews\n    status: on-track\n    owner: Leah Chen\n    note: Ground work starts after the last frost.\n  - name: Summer watering routes\n    status: at-risk\n    owner: Nia Williams\n    note: Two summer routes still need a warden.\n  - name: Northfield tree surveys\n    status: on-track\n    owner: Omar Patel\n    note: Final survey closes before crews arrive.\n  - name: School adoption scheme\n    status: blocked\n    owner: Dana Okafor\n    note: School board must approve the care rota.\n  - name: Riverside storm checks\n    status: done\n    owner: Leah Chen\n    note: High-risk trees have signed inspections.\n  - name: Wardens training days\n    status: on-track\n    owner: Nia Williams\n    note: Volunteers get training dates this week.\n---\n\nSeven workstreams reviewed before summer; watering cover and school approval need action this month.\n\n<Footnote>Urban Forestry Division review, March 2027. Owners report progress weekly; weather may shift planting dates.</Footnote>\n\n<Notes>\n`status` at maximum count with owners, context and a footnote; use it for the full programme review.\nRead the two exceptions first: summer watering and the school care rota. The remaining workstreams are complete or on track.\n</Notes>\n"
+        },
+        {
           "id": "part-logos",
-          "number": 35,
+          "number": 68,
           "title": "Logos",
           "layout": "section",
           "file": "decks/layouts/slides/part-logos.mdx",
@@ -1804,7 +2404,7 @@
         },
         {
           "id": "logos-six",
-          "number": 36,
+          "number": 69,
           "title": "Six partners fund the first three years",
           "layout": "logos",
           "file": "decks/layouts/slides/logos-six.mdx",
@@ -1812,7 +2412,7 @@
         },
         {
           "id": "logos-color",
-          "number": 37,
+          "number": 70,
           "title": "Four funders matched the council's first year",
           "layout": "logos",
           "file": "decks/layouts/slides/logos-color.mdx",
@@ -1820,7 +2420,7 @@
         },
         {
           "id": "logos-wall",
-          "number": 38,
+          "number": 71,
           "title": "Eighteen organisations signed the canopy pledge",
           "layout": "logos",
           "file": "decks/layouts/slides/logos-wall.mdx",
@@ -1828,7 +2428,7 @@
         },
         {
           "id": "part-image",
-          "number": 39,
+          "number": 72,
           "title": "Image",
           "layout": "section",
           "file": "decks/layouts/slides/part-image.mdx",
@@ -1836,7 +2436,7 @@
         },
         {
           "id": "image-bottom",
-          "number": 40,
+          "number": 73,
           "title": "This is what 25% canopy looks like",
           "layout": "image",
           "file": "decks/layouts/slides/image-bottom.mdx",
@@ -1844,7 +2444,7 @@
         },
         {
           "id": "image-side",
-          "number": 41,
+          "number": 74,
           "title": "Two trees shade a whole square",
           "layout": "image",
           "file": "decks/layouts/slides/image-side.mdx",
@@ -1852,7 +2452,7 @@
         },
         {
           "id": "image-alone",
-          "number": 42,
+          "number": 75,
           "title": "A street in Westgate in July",
           "layout": "image",
           "file": "decks/layouts/slides/image-alone.mdx",
@@ -1860,7 +2460,7 @@
         },
         {
           "id": "part-bento",
-          "number": 43,
+          "number": 76,
           "title": "Bento",
           "layout": "section",
           "file": "decks/layouts/slides/part-bento.mdx",
@@ -1868,7 +2468,7 @@
         },
         {
           "id": "bento-pilot",
-          "number": 44,
+          "number": 77,
           "title": "Eastgate's pilot paid off on every front",
           "layout": "bento",
           "file": "decks/layouts/slides/bento-pilot.mdx",
@@ -1876,7 +2476,7 @@
         },
         {
           "id": "bento-square",
-          "number": 45,
+          "number": 78,
           "title": "Mature crowns put shade where people sit",
           "layout": "bento",
           "file": "decks/layouts/slides/bento-square.mdx",
@@ -1884,7 +2484,7 @@
         },
         {
           "id": "bento-plane",
-          "number": 46,
+          "number": 79,
           "title": "One London plane gives back five ways",
           "layout": "bento",
           "file": "decks/layouts/slides/bento-plane.mdx",
@@ -1892,7 +2492,7 @@
         },
         {
           "id": "part-shift",
-          "number": 47,
+          "number": 80,
           "title": "Shift",
           "layout": "section",
           "file": "decks/layouts/slides/part-shift.mdx",
@@ -1900,7 +2500,7 @@
         },
         {
           "id": "shift-requests",
-          "number": 48,
+          "number": 81,
           "title": "Residents ask, and the city plants",
           "layout": "shift",
           "file": "decks/layouts/slides/shift-requests.mdx",
@@ -1908,7 +2508,7 @@
         },
         {
           "id": "shift-species",
-          "number": 49,
+          "number": 82,
           "title": "We stop planting pears and plant planes",
           "layout": "shift",
           "file": "decks/layouts/slides/shift-species.mdx",
@@ -1916,15 +2516,15 @@
         },
         {
           "id": "part-gallery",
-          "number": 50,
-          "title": "Gallery",
+          "number": 83,
+          "title": "Gallery and before-after",
           "layout": "section",
           "file": "decks/layouts/slides/part-gallery.mdx",
-          "source": "---\nlayout: section\ntitle: Gallery\nnumber: 13\neyebrow: Layout\nbudget: 10s\n---\n\nTwo to four photos or screens, each with its caption under it.\n\n<Notes>\nThe gallery layout: the lead picture on the left, the others beside it, captions never over a photo.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Gallery and before-after\nnumber: 13\neyebrow: Layout\nbudget: 10s\n---\n\nA collection with a lead picture, or two equal pictures showing one change.\n\n<Notes>\nGallery gives one picture the lead; before-after gives two states equal space and clear labels. Captions stay under the pictures.\n</Notes>\n"
         },
         {
           "id": "gallery-canopy",
-          "number": 51,
+          "number": 84,
           "title": "The canopy we want, and where it is missing",
           "layout": "gallery",
           "file": "decks/layouts/slides/gallery-canopy.mdx",
@@ -1932,7 +2532,7 @@
         },
         {
           "id": "gallery-app",
-          "number": 52,
+          "number": 85,
           "title": "Residents ask for a tree from their phone",
           "layout": "gallery",
           "file": "decks/layouts/slides/gallery-app.mdx",
@@ -1940,15 +2540,31 @@
         },
         {
           "id": "gallery-season",
-          "number": 53,
+          "number": 86,
           "title": "A request becomes a planted street in one season",
           "layout": "gallery",
           "file": "decks/layouts/slides/gallery-season.mdx",
           "source": "---\nlayout: gallery\ntitle: A request becomes a planted street in one season\neyebrow: From phone to pavement\nsurface: default\npictures:\n  - src: assets/westgate-street.jpg\n    alt: A residential street under a full summer canopy\n    caption: Westgate, twenty summers on.\n    focal: center 35%\n  - src: assets/screens/request-map.svg\n    alt: The planting map with the request among 412 others\n    caption: 'April: crews plan the round.'\n    fit: contain\n  - src: assets/screens/request-form.svg\n    alt: The request form on a phone\n    caption: 'March: a resident asks.'\n    fit: contain\n  - src: assets/screens/request-status.svg\n    alt: The request status on a phone, showing the tree planted on 12 May\n    caption: 'May: the tree is in.'\n    fit: contain\nbudget: 40s\n---\n\n<Notes>\nStart bottom left: a resident asks in March, crews plan in April, the tree is in by May. The big picture is why: this is Westgate, twenty summers after the same kind of request.\n</Notes>\n"
         },
         {
+          "id": "before-after-min",
+          "number": 87,
+          "title": "A planting map becomes a crew round",
+          "layout": "before-after",
+          "file": "decks/layouts/slides/before-after-min.mdx",
+          "source": "---\nlayout: before-after\ntitle: A planting map becomes a crew round\nbefore:\n  src: assets/screens/request-map.svg\n  alt: The planting map with resident requests awaiting a crew round\nafter:\n  src: assets/screens/round-dashboard.svg\n  alt: The crew dashboard with the planting round ready to send\nbudget: 25s\n---\n\n<Notes>\nThe minimum pair: required pictures and alt text only, with default labels and both screens shown whole. The map is the input; the round is the work crews take into the street.\n</Notes>\n"
+        },
+        {
+          "id": "before-after-max",
+          "number": 88,
+          "title": "A resident request becomes a planted street",
+          "layout": "before-after",
+          "file": "decks/layouts/slides/before-after-max.mdx",
+          "source": "---\nlayout: before-after\ntreatment: plain\ntitle: A resident request becomes a planted street\neyebrow: Larkfield planting programme\nsurface: accent\nbefore:\n  src: assets/screens/request-map.svg\n  alt: Larkfield's planting map with resident requests prioritised by heat across the city\n  focal: top left\n  label: Before crew dispatch\n  caption: Resident requests, ready for a round\nafter:\n  src: assets/westgate-street.jpg\n  alt: The residential street in Westgate with mature trees shading both sides of the road\n  label: After the investment\n  caption: Westgate, twenty summers of growth\n  focal: center 35%\nfit: cover\nreveal: true\nbudget: 40s\n---\n\nHottest blocks receive the first rounds; every request stays visible until planting is complete.\n\n<Footnote>Larkfield Urban Forestry Division, 2026 annual review. Westgate illustrates the long-term canopy goal.</Footnote>\n\n<Notes>\nA full pair with context, labels near their limit, captions and a source; the after label keeps foreground contrast on the accent slide.\n[click] Before, requests wait on a map. The heat priority decides which crew round leaves first.\n[click] After, the reason for that work is visible: a street that carries its own shade.\n</Notes>\n"
+        },
+        {
           "id": "part-proof",
-          "number": 54,
+          "number": 89,
           "title": "Proof",
           "layout": "section",
           "file": "decks/layouts/slides/part-proof.mdx",
@@ -1956,7 +2572,7 @@
         },
         {
           "id": "proof-holloway",
-          "number": 55,
+          "number": 90,
           "title": "Holloway flats stayed three degrees cooler in August",
           "layout": "proof",
           "file": "decks/layouts/slides/proof-holloway.mdx",
@@ -1964,7 +2580,7 @@
         },
         {
           "id": "proof-eastgate",
-          "number": 56,
+          "number": 91,
           "title": "Eastgate General admitted fewer people for heat",
           "layout": "proof",
           "file": "decks/layouts/slides/proof-eastgate.mdx",
@@ -1972,7 +2588,7 @@
         },
         {
           "id": "proof-single",
-          "number": 57,
+          "number": 92,
           "title": "Volunteers kept nine in ten young trees alive",
           "layout": "proof",
           "file": "decks/layouts/slides/proof-single.mdx",
@@ -1980,15 +2596,15 @@
         },
         {
           "id": "part-structure",
-          "number": 58,
-          "title": "Columns and matrix",
+          "number": 93,
+          "title": "Boards and maps",
           "layout": "section",
           "file": "decks/layouts/slides/part-structure.mdx",
-          "source": "---\nlayout: section\ntitle: Columns and matrix\nnumber: 15\neyebrow: Layout\nbudget: 10s\n---\n\nShort items in headed columns, and a two-by-two map of where things stand.\n\n<Notes>\nTwo layouts for structure: columns sets a board of short items, such as a roadmap; matrix places a few items on two axes by judgement.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Boards and maps\nnumber: 15\neyebrow: Layout\nbudget: 10s\n---\n\nLists in columns or four labelled boxes, and a map of where things stand.\n\n<Notes>\nColumns groups items in lanes; matrix places items on two axes by judgement; quadrants groups four lists in a two-by-two grid.\n</Notes>\n"
         },
         {
           "id": "columns-roadmap",
-          "number": 59,
+          "number": 94,
           "title": "Next year the programme moves from planting to keeping",
           "layout": "columns",
           "file": "decks/layouts/slides/columns-roadmap.mdx",
@@ -1996,7 +2612,7 @@
         },
         {
           "id": "columns-requests",
-          "number": 60,
+          "number": 95,
           "title": "Where this autumn's tree requests stand",
           "layout": "columns",
           "file": "decks/layouts/slides/columns-requests.mdx",
@@ -2004,7 +2620,7 @@
         },
         {
           "id": "columns-asks",
-          "number": 61,
+          "number": 96,
           "title": "What residents asked for, and what we changed",
           "layout": "columns",
           "file": "decks/layouts/slides/columns-asks.mdx",
@@ -2012,7 +2628,7 @@
         },
         {
           "id": "matrix-peers",
-          "number": 62,
+          "number": 97,
           "title": "Only Larkfield plants fast and keeps its trees alive",
           "layout": "matrix",
           "file": "decks/layouts/slides/matrix-peers.mdx",
@@ -2020,7 +2636,7 @@
         },
         {
           "id": "matrix-districts",
-          "number": 63,
+          "number": 98,
           "title": "Eastgate is the hottest district with the least shade",
           "layout": "matrix",
           "file": "decks/layouts/slides/matrix-districts.mdx",
@@ -2028,23 +2644,39 @@
         },
         {
           "id": "matrix-options",
-          "number": 64,
+          "number": 99,
           "title": "Three ways to water the young trees",
           "layout": "matrix",
           "file": "decks/layouts/slides/matrix-options.mdx",
           "source": "---\nlayout: matrix\ntitle: Three ways to water the young trees\neyebrow: Aftercare options\nsurface: accent\nx:\n  low: Costly\n  high: Cheap\ny:\n  low: Patchy\n  high: Reliable\nquadrants:\n  - Reliable but costly\n  - Best of both\n  - Avoid\n  - Cheap but patchy\nitems:\n  - name: Council rounds\n    x: 24\n    y: 78\n  - name: Volunteer wardens\n    x: 80\n    y: 32\n  - name: Wardens and rounds\n    x: 66\n    y: 72\nbudget: 30s\n---\n\nNeither option alone covers every street; together they come close at a cost the budget can carry.\n\n<Notes>\nThree items is the fewest. No item is marked as ours: the slide frames the choice before the recommendation.\n</Notes>\n"
         },
         {
+          "id": "quadrants-min",
+          "number": 100,
+          "title": "Care comes before another planting season",
+          "layout": "quadrants",
+          "file": "decks/layouts/slides/quadrants-min.mdx",
+          "source": "---\nlayout: quadrants\ntitle: Care comes before another planting season\nquadrants:\n  - title: Keep\n    items:\n      - Street wardens\n  - title: Stop\n    items:\n      - Unfunded planting\n  - title: Start\n    items:\n      - Weekly dry checks\n  - title: Try\n    items:\n      - Shared hose carts\nbudget: 30s\n---\n\n<Notes>\n`quadrants` with one short bullet per box and no optional fields; use it for a four-part review whose categories need equal weight.\nBefore we plant again, keep what works and change how we fund and check the care.\n</Notes>\n"
+        },
+        {
+          "id": "quadrants-max",
+          "number": 101,
+          "title": "Fund the care before expanding the canopy",
+          "layout": "quadrants",
+          "file": "decks/layouts/slides/quadrants-max.mdx",
+          "source": "---\nlayout: quadrants\ntitle: Fund the care before expanding the canopy\nsurface: inverse\neyebrow: Canopy programme review\nquadrants:\n  - title: Strengths to build upon\n    icon: leaf\n    items:\n      - Wardens know every tree on their street\n      - Three summers of watering are funded\n      - Schools have a named arborist on call\n      - Tree records follow each planting crew\n  - title: Weaknesses we must fix\n    icon: search\n    items:\n      - Dry spells expose gaps in the rota\n      - Hose carts are shared across districts\n      - New wardens need practical training\n      - Some streets still lack a care budget\n  - title: Opportunities for 2027\n    highlight: true\n    icon: droplets\n    items:\n      - Recruit wardens before planting starts\n      - Put a shared hose cart on every block\n      - Inspect new trees after every dry week\n      - Pair each school with a local warden\n  - title: Threats we should watch\n    icon: shield\n    items:\n      - Hotter summers raise the water demand\n      - Storm damage can divert planting crews\n      - Unfunded trees lose their summer care\n      - Vacant sites can delay the next season\nbudget: 1m\n---\n\nFund watering and train wardens before planting on more streets.\n\n<Footnote>Programme review, 2026 season; priorities for the 2027 care budget.</Footnote>\n\n<Notes>\n`quadrants` at four bullets per box with long headings, icons, highlight, context and a footnote; use it to organise a dense SWOT in four distinct lists.\nThe opportunity is the decision: fund and recruit the people who keep trees alive before buying more trees.\n</Notes>\n"
+        },
+        {
           "id": "part-numbers",
-          "number": 65,
+          "number": 102,
           "title": "Numbers",
           "layout": "section",
           "file": "decks/layouts/slides/part-numbers.mdx",
-          "source": "---\nlayout: section\ntitle: Numbers\nnumber: 16\neyebrow: Layout\nbudget: 10s\n---\n\nA figure built from its parts, and the amount a decision asks for.\n\n<Notes>\nThe equation layout adds figures up to a result on an accent panel; the ask layout sets one amount beside the dated milestones it buys.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Numbers\nnumber: 16\neyebrow: Layout\nbudget: 10s\n---\n\nArithmetic, nested markets, a specific ask, and measures supporting one takeaway.\n\n<Notes>\nEquation builds a result from its terms; market narrows a whole to the part within reach; ask sets an amount beside the milestones it buys; dashboard groups small charts under one takeaway.\n</Notes>\n"
         },
         {
           "id": "equation-value",
-          "number": 66,
+          "number": 103,
           "title": "Every street tree is worth $96 a year to the city",
           "layout": "equation",
           "file": "decks/layouts/slides/equation-value.mdx",
@@ -2052,7 +2684,7 @@
         },
         {
           "id": "equation-budget",
-          "number": 67,
+          "number": 104,
           "title": "The first planting costs the city $900k",
           "layout": "equation",
           "file": "decks/layouts/slides/equation-budget.mdx",
@@ -2060,15 +2692,31 @@
         },
         {
           "id": "equation-return",
-          "number": 68,
+          "number": 105,
           "title": "A tree pays for its planting more than twice over",
           "layout": "equation",
           "file": "decks/layouts/slides/equation-return.mdx",
           "source": "---\nlayout: equation\ntitle: A tree pays for its planting more than twice over\neyebrow: Return on a tree\nsurface: inverse\nterms:\n  - value: $96\n    label: benefit each year\n  - value: 40\n    label: years a street tree lives\n    op: times\n  - value: $1,450\n    label: to plant and water it\n    op: divide\nresult:\n  value: 2.6×\n  label: returned on every dollar planted\nbudget: 30s\n---\n\n<Notes>\nThe same tree over its life: forty years of benefit against what it costs to put in the ground.\n</Notes>\n"
         },
         {
+          "id": "market-min",
+          "number": 106,
+          "title": "Schools are our first reachable market",
+          "layout": "market",
+          "file": "decks/layouts/slides/market-min.mdx",
+          "source": "---\nlayout: market\ntitle: Schools are our first reachable market\nbudget: 30s\nsizes:\n  - label: All sites\n    value: $4.2M\n    note: Public grounds within crew range\n  - label: Schools\n    value: $640k\n    note: School contracts we can win this year\n---\n\n<Notes>\n`market` at minimum content: two sizes, no context, eyebrow or footnote. The school grounds fit inside the public sites our crews can reach.\n</Notes>\n"
+        },
+        {
+          "id": "market-max",
+          "number": 107,
+          "title": "School contracts give our crews a foothold",
+          "layout": "market",
+          "file": "decks/layouts/slides/market-max.mdx",
+          "source": "---\nlayout: market\ntitle: School contracts give our crews a foothold\neyebrow: Annual tree care contracts\nsurface: inverse\nreveal: true\nbudget: 45s\nsizes:\n  - label: County sites\n    value: $18.4M\n    note: All public grounds across the county\n  - label: Within reach\n    value: $4.25M\n    note: Grounds within the range of our crews\n  - label: School sites\n    value: $640,000\n    note: Schools we can serve with existing crews\n---\n\nAnnual contract value narrows to the schools we can serve with crews already hired.\n\n<Footnote>County procurement register, 2026; crew coverage model, March 2027. All figures annualised.</Footnote>\n\n<Notes>\n`market` with three sizes, full labels, long figures, context, footnote and an outside-in build on inverse.\n[click] County tree care is the whole market. [click] Our crew range defines the serviceable part. [click] Existing crews can win the school contracts first.\n</Notes>\n"
+        },
+        {
           "id": "ask-capital",
-          "number": 69,
+          "number": 108,
           "title": "Fund three years of planting",
           "layout": "ask",
           "file": "decks/layouts/slides/ask-capital.mdx",
@@ -2076,7 +2724,7 @@
         },
         {
           "id": "ask-crews",
-          "number": 70,
+          "number": 109,
           "title": "Two more crews before the spring",
           "layout": "ask",
           "file": "decks/layouts/slides/ask-crews.mdx",
@@ -2084,15 +2732,39 @@
         },
         {
           "id": "ask-grant",
-          "number": 71,
+          "number": 110,
           "title": "Match the state's canopy grant",
           "layout": "ask",
           "file": "decks/layouts/slides/ask-grant.mdx",
           "source": "---\nlayout: ask\ntitle: Match the state's canopy grant\neyebrow: Our request to the state\nsurface: inverse\namount: $640,000\nlabel: State canopy fund, 2027\nmilestones:\n  - text: Tree survey of every block east of Holloway Road\n    by: March 2027\n  - text: 420 trees planted where the survey finds no shade\n    by: Nov 2027\n  - text: A volunteer waterer signed up for every new tree\n    by: May 2028\n  - text: Survival of the new trees above 90% after two summers\n    by: Sept 2029\nfunds:\n  - label: Planting\n    share: 45\n  - label: Nursery stock\n    share: 25\n  - label: Survey\n    share: 12\n  - label: Volunteer programme\n    share: 10\n  - label: Reporting\n    share: 8\nbudget: 50s\n---\n\n<Notes>\nThe state matches what the city puts in. Four checkpoints the fund officers can hold us to, and where every dollar goes.\n</Notes>\n"
         },
         {
+          "id": "dashboard-min",
+          "number": 111,
+          "title": "Wardens help more trees survive",
+          "layout": "dashboard",
+          "file": "decks/layouts/slides/dashboard-min.mdx",
+          "source": "---\nlayout: dashboard\ntitle: Wardens help more trees survive\npanels:\n  - title: Survival, %, 2026\n  - title: Cover, %, Mar–Sep 2026\nbudget: 25s\n---\n\n<BigNumber value=\"94%\" label=\"trees alive after summer\" />\n\n<LineChart data={[{ month: \"Mar\", cover: 48 }, { month: \"Jun\", cover: 64 }, { month: \"Sep\", cover: 86 }]} x=\"month\" y=\"cover\" unit=\"%\" zero highlight={{ series: \"cover\" }} />\n\n<Notes>\n`dashboard` at minimum content: two panels, no eyebrow or footnote. The number and the full-height trend both support the same takeaway about keeping trees alive.\n</Notes>\n"
+        },
+        {
+          "id": "dashboard-three",
+          "number": 112,
+          "title": "Eastgate’s pilot keeps 94% of its new trees",
+          "layout": "dashboard",
+          "file": "decks/layouts/slides/dashboard-three.mdx",
+          "source": "---\nlayout: dashboard\ntitle: Eastgate’s pilot keeps 94% of its new trees\neyebrow: Pilot results\nsurface: inverse\npanels:\n  - title: Survival, %, Sep\n  - title: Cover, %, 2026\n  - title: Planting, 2026\nbudget: 35s\n---\n\n<Donut data={[{ status: 'Alive', share: 94 }, { status: 'Lost', share: 6 }]} x=\"status\" y=\"share\" highlight=\"Alive\" unit=\"%\" />\n\n<Progress value={86} target={90} label=\"blocks covered\" unit=\"%\" />\n\n<BigNumber value=\"1,240\" label=\"trees in 38 blocks\" />\n\n<Footnote>Larkfield Urban Forestry Division, pilot survey, September 2026.</Footnote>\n\n<Notes>\n`dashboard` with three equal panels in one row. Read survival first, then the watering network, then the size of the pilot.\n</Notes>\n"
+        },
+        {
+          "id": "dashboard-max",
+          "number": 113,
+          "title": "The pilot keeps more of its new trees alive",
+          "layout": "dashboard",
+          "file": "decks/layouts/slides/dashboard-max.mdx",
+          "source": "---\nlayout: dashboard\ntitle: The pilot keeps more of its new trees alive\neyebrow: Canopy programme annual review, 2026\npanels:\n  - title: Survival, %, 2026\n  - title: Cover, %, Mar–Sep\n  - title: Alive, trees, 2026\n  - title: Goal, trees, 2027\nreveal: true\nbudget: 45s\n---\n\n<BarChart data={[{ area: 'Pilot', alive: 94 }, { area: 'North', alive: 82 }, { area: 'River', alive: 88 }]} x=\"area\" y=\"alive\" format=\"percent\" highlight=\"Pilot\" />\n\n<LineChart data={[{ month: 'Mar', Pilot: 48 }, { month: 'Jun', Pilot: 64 }, { month: 'Sep', Pilot: 86 }]} x=\"month\" y=\"Pilot\" unit=\"%\" zero highlight={{ series: \"Pilot\" }} />\n\n<BigNumber value=\"1,166\" label=\"of 1,240 planted\" />\n\n<Progress value={1240} max={1500} target={1500} unit=\"trees\" label=\"toward next year\" />\n\n<Footnote>Larkfield Urban Forestry Division, September 2026; survival measured after the first summer in pilot blocks.</Footnote>\n\n<Notes>\n`dashboard` at maximum panel count with near-limit headings and a full footnote.\n[click] Compare survival across the three areas. [click] Warden cover rose through the summer. [click] That leaves 1,166 pilot trees alive. [click] The 1,240 trees planted count toward a 1,500-tree goal for 2027.\n</Notes>\n"
+        },
+        {
           "id": "part-screen",
-          "number": 72,
+          "number": 114,
           "title": "Screen",
           "layout": "section",
           "file": "decks/layouts/slides/part-screen.mdx",
@@ -2100,7 +2772,7 @@
         },
         {
           "id": "screen-map",
-          "number": 73,
+          "number": 115,
           "title": "Crews plan every planting round from one map",
           "layout": "screen",
           "file": "decks/layouts/slides/screen-map.mdx",
@@ -2108,7 +2780,7 @@
         },
         {
           "id": "screen-phone",
-          "number": 74,
+          "number": 116,
           "title": "Asking for a tree takes under two minutes",
           "layout": "screen",
           "file": "decks/layouts/slides/screen-phone.mdx",
@@ -2116,7 +2788,7 @@
         },
         {
           "id": "screen-laptop",
-          "number": 75,
+          "number": 117,
           "title": "Each round closes with one page for the crews",
           "layout": "screen",
           "file": "decks/layouts/slides/screen-laptop.mdx",
@@ -2124,15 +2796,47 @@
         },
         {
           "id": "part-closing",
-          "number": 76,
-          "title": "Closing",
+          "number": 118,
+          "title": "Recap, sources and closing",
           "layout": "section",
           "file": "decks/layouts/slides/part-closing.mdx",
-          "source": "---\nlayout: section\ntitle: Closing\nnumber: 18\neyebrow: Layout\nbudget: 10s\n---\n\nThe last slide: what to do, and how to follow up.\n\n<Notes>\nThe closing layout ends the deck: the ask, the contacts and a QR code to the full plan.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Recap, sources and closing\nnumber: 18\neyebrow: Layout\nbudget: 10s\n---\n\nTakeaways to remember, references to follow, and the next step.\n\n<Notes>\nRecap gathers takeaways; sources lists references in citation order; closing carries the ask, contacts and a QR code.\n</Notes>\n"
+        },
+        {
+          "id": "recap-min",
+          "number": 119,
+          "title": "Shade needs trees and care",
+          "layout": "recap",
+          "file": "decks/layouts/slides/recap-min.mdx",
+          "source": "---\nlayout: recap\ntitle: Shade needs trees and care\npoints:\n  - title: Plant where the heat is.\n  - title: Water for three summers.\nbudget: 25s\n---\n\n<Notes>\n`recap` at minimum content: two sentences, no eyebrow, context, detail or footnote. Use it to leave two commitments in the room.\nThe heat map tells us where. The watering budget keeps the trees alive once we have planted them.\n</Notes>\n"
+        },
+        {
+          "id": "recap-max",
+          "number": 120,
+          "title": "Every new tree needs a funded plan for its future",
+          "layout": "recap",
+          "file": "decks/layouts/slides/recap-max.mdx",
+          "source": "---\nlayout: recap\ntitle: Every new tree needs a funded plan for its future\neyebrow: The canopy programme in review\nsurface: inverse\nreveal: true\npoints:\n  - title: Plant the hottest streets before cooler blocks.\n    detail: Rank blocks by July surface heat before choosing streets.\n  - title: Give large species connected soil for their roots.\n    detail: Connect soil cells under pavement, clear of buried pipes.\n  - title: Fund three summers of care before planting a tree.\n    detail: Fund watering, mulch and regular checks for each new tree.\n  - title: Report survival and shade for each planted street.\n    detail: Report failed trees too, so next year's plan improves.\nbudget: 45s\n---\n\nThe review joins planting decisions to the care and public reporting that follow.\n\n<Footnote>Larkfield Urban Forestry Division; survival is measured after three summers of funded care.</Footnote>\n\n<Notes>\n`recap` at maximum content: four long sentences, each with detail, plus context and a footnote.\n[click] Plant for heat. [click] Build for roots. [click] Fund the care. [click] Publish what survived.\n</Notes>\n"
+        },
+        {
+          "id": "sources-min",
+          "number": 121,
+          "title": "Three studies guide where we plant",
+          "layout": "sources",
+          "file": "decks/layouts/slides/sources-min.mdx",
+          "source": "---\nlayout: sources\ntitle: Three studies guide where we plant\nbudget: 20s\nsources:\n  - title: Eastgate summer heat survey\n  - title: Holloway Road planting trial\n  - title: Street tree survival register\n---\n\n<Notes>\n`sources` with three titles and no optional fields; use it for a short list of references already familiar to the audience.\nThe heat survey identifies the hottest blocks. The planting trial tests the response. The register checks survival after three summers.\n</Notes>\n"
+        },
+        {
+          "id": "sources-max",
+          "number": 122,
+          "title": "The planting decision rests on eight local studies",
+          "layout": "sources",
+          "file": "decks/layouts/slides/sources-max.mdx",
+          "source": "---\nlayout: sources\ntitle: The planting decision rests on eight local studies\neyebrow: Canopy programme references\nsurface: inverse\nbudget: 35s\nsources:\n  - title: Summer heat and surface temperatures across Eastgate streets\n    author: Dana Okafor and team\n    publisher: Met. Survey Office\n    year: \"2026\"\n    url: https://larkfield.example/studies/eastgate-surface-temperature-monitoring-2026?season=summer\n  - title: Three summers of street tree survival along Holloway Road\n    author: Morgan Bell & Rui Chen\n    publisher: Larkfield Forestry\n    year: \"2024–2026\"\n    url: https://larkfield.example/research/holloway-road-three-summer-planting-trial\n  - title: Rooting space and crown growth under restricted pavements\n    author: Rowan Bell and team\n    publisher: Urban Tree Lab\n    year: \"2023–2025\"\n    url: https://larkfield.example/studies/pavement-rooting-and-crown-growth\n  - title: Summer shade on the walking routes to Eastgate schools\n    author: Sasha Ibe et al.\n    publisher: Eastgate Schools\n    year: \"2025\"\n    url: https://larkfield.example/research/shaded-walking-routes-to-schools\n  - title: Street tree species for Larkfield’s hotter, drier summers\n    author: Alex Moreau and team\n    publisher: Canopy Research Unit\n    year: \"2022–2025\"\n    url: https://larkfield.example/canopy/species-and-drought-tolerance\n  - title: Resident requests for new street trees across Eastgate\n    author: Kofi Mensah and team\n    publisher: Larkfield Council\n    year: \"2026\"\n    url: https://larkfield.example/data/resident-street-tree-requests\n  - title: Inspection intervals and capacity for mature street trees\n    author: Jules Vermeer and team\n    publisher: Arborist Service\n    year: \"2024–2025\"\n    url: https://larkfield.example/canopy/maintenance-and-inspection-capacity\n  - title: Establishment costs and care for next year’s planting season\n    author: Petra Novak and team\n    publisher: Larkfield Finance\n    year: \"2026\"\n    url: https://larkfield.example/budget/canopy-programme-establishment-care\n---\n\nHeat and survival studies set the next planting season's priorities.\n\n<Footnote>Reviewed for the November 2026 committee meeting; full destinations remain available in the shared deck.</Footnote>\n\n<Notes>\n`sources` with eight full references, context and footnote; use it for the bibliography at the end of an evidence-led review.\nThe references read down the left column first. Every full destination is retained even when the address is shortened on screen.\n</Notes>\n"
         },
         {
           "id": "closing-ask",
-          "number": 77,
+          "number": 123,
           "title": "Plant where it is hottest first",
           "layout": "closing",
           "file": "decks/layouts/slides/closing-ask.mdx",
@@ -2140,7 +2844,7 @@
         },
         {
           "id": "closing-questions",
-          "number": 78,
+          "number": 124,
           "title": "Questions",
           "layout": "closing",
           "file": "decks/layouts/slides/closing-questions.mdx",

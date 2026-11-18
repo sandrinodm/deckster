@@ -23,7 +23,7 @@ deckster is a slide framework where every slide is a file: MDX or TSX, filling a
 
 **A slide** is one file in the deck's `slides/` folder. An MDX slide is frontmatter plus Markdown and components such as `<Step>` and `<Notes>`; a TSX slide is a React component for slides that need real code. The example above is the whole of `slides/steps.mdx`.
 
-**A layout** is picked by each slide's `layout:` field. There are 32, such as `stats`, `cards` and `comparison`. The layout owns the grid, the type and the spacing, and its contract says which fields and slots it takes and how much content fits. See [Layouts and slots](/concepts/layouts-and-slots/).
+**A layout** is picked by each slide's `layout:` field. There are 52, such as `stats`, `cards` and `comparison`. The layout owns the grid, the type and the spacing, and its contract says which fields and slots it takes and how much content fits. See [Layouts and slots](/concepts/layouts-and-slots/).
 
 **A brand** is a typed `brand.ts` with colours, surfaces, fonts, icons, motion and chart palettes. Slides hold no colours or pixel positions, so the same deck renders in another brand without an edit. The `default` brand comes with the CLI.
 
@@ -42,7 +42,7 @@ The reasons behind these choices are on [Design decisions](/project/design-decis
 | For | You need |
 | --- | --- |
 | Every command | Node.js 26 or later |
-| `deck lint`, `deck shot`, `deck diff`, `deck export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.0 install chromium` for 0.5.0 |
+| `deck lint`, `deck shot`, `deck diff`, `deck export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.0 install chromium` for 0.6.0 |
 | `deck present` | Electron's binary, downloaded once (about 120 MB). Without it, `deck present` prints the command that downloads it; `--browser` presents in Chrome instead. Checked on macOS with one display only: several displays, Windows and Linux are untested |
 | `deck diff` against a git ref | A git repository; otherwise compare with a folder saved by `deck diff --save-baseline` |
 | `deck export --verify` | Docker, for the LibreOffice and Open XML SDK checks. The `quicklook` and `keynote` renderers work on macOS only |

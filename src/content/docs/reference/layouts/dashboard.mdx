@@ -1,0 +1,59 @@
+---
+title: "dashboard"
+description: "Two to four small charts or number components under one takeaway title, each in a panel with its own heading."
+sidebar:
+  order: 34
+---
+
+The `dashboard` layout sets two to four small charts or number components under one takeaway title, each in a panel with its own heading: two side by side, three in a row, or four in a two-by-two grid. Use it when several measures together make one argument, such as an operating review.
+
+<Aside type="note" title="New in v0.6.0">
+The `dashboard` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "dashboard" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="dashboard-network" />
+
+The headings are in `panels:` and the body holds one component per heading, in the same order: two `<BigNumber>`, a `<Progress>` with a target and a `<BarChart>`. Each heading names the measure, unit and period ("On time, %, Oct"). `reveal: true` brings in one plot per step while the headings and rules stay in place.
+
+<SlideShot deck="lookbook" slide="dashboard-scale" alt="Two bar charts side by side under the title 'Drops tripled while delivery costs fell': drops in thousands for 2025 and 2026 on the left, cost per drop in euros on the right, with the 2026 bar in blue in both." />
+
+Two panels leave room for full-height charts, and both highlight `2026`.
+
+## When to use it
+
+- **One takeaway.** The title states the conclusion every panel supports. Different conclusions go on separate slides.
+- **Two to four panels, one component each.** The headings are up to 24 characters, or 18 with three or four panels. The body takes a chart, a number component or a table, as direct children, with no prose, `div` or `<Step>` around them.
+- **Few plotted charts.** With four panels, plot at most two charts and fill the rest with `<BigNumber>`, `<Progress>` or `<Sparkline>`. A sparkline goes beside numbers, not alone in a panel. A `<Table>` fits two panels only, with up to four data rows and three columns.
+- **Short labels.** A chart has one series. In two panels it takes up to four categories with labels of up to 11 characters, and a caption of up to 32. In three or four panels it takes up to three categories with seven-character labels, and no caption.
+- **A unit on every chart,** as `unit=` or a percent or currency `format`, and **one highlight:** the same subject in every panel, or only in the panel the title is about.
+- **Shared source.** Put it in `<Footnote>`, up to 16 words, and keep charts free of their own sources.
+- **Name the plots one at a time** with `reveal: true`, and put a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
+
+[Number components](/data-and-diagrams/number-components/) and [choosing a chart](/data-and-diagrams/choosing-a-chart/) cover the panels themselves.
+
+## Reference
+
+<LayoutReference name="dashboard" />
+
+## Common mistakes
+
+- **Headings and components that do not match.** A different count of each is a `render-error`: the slide shows the message instead of its content. Three headings and two components:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/dashboard-count.mdx
+    error   render-error (dashboard-count step 0): The slide shows an error instead of its content: Dashboard has 3 panel headings but 2 body components. Write one direct chart or number component per panel, in heading order.
+            Fix: Fix the error in decks/launch-review/slides/dashboard-count.mdx; `deck dev` shows it with its stack in the browser.
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **A heading that was fine for two panels.** In a row of three, "Warden cover, %, 2026" is a `schema` error: "panels[1].title: The dashboard layout sets at most 18 characters here (three or four panels), got 21."
+- **A chart with no unit.** `deck lint` warns with `chart-missing-unit` on each `<BarChart>` that has no `unit`, no currency or percent `format` and no caption: "`<BarChart>` shows values without a unit or a caption naming the measure."
+
+## Related layouts
+
+- [`chart`](/reference/layouts/chart/): one detailed plot, or a chart with an aside.
+- [`stats`](/reference/layouts/stats/): when every panel would be a number.

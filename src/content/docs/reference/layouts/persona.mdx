@@ -1,0 +1,59 @@
+---
+title: "persona"
+description: "A user persona from research: a portrait, a name and role, a quotation and two lists, goals and frustrations."
+sidebar:
+  order: 46
+---
+
+The `persona` layout sets one research persona on a slide: a portrait with a name and role on the left, and on the right a quotation in the person's own words above two lists, goals and frustrations. Use it to tie a design decision to what one participant wants and what gets in their way.
+
+<Aside type="note" title="New in v0.6.0">
+The `persona` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "persona" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="persona-hub-lead" />
+
+`name` and `role` sit under the portrait. The body is the quotation, written without quotation marks, and the layout adds them. `goals:` and `frustrations:` are the two lists, here with three items each. The title states what this person needs from the product, not who they are, and the `<Footnote>` says the persona is an illustrative archetype. `photo` names the portrait, and `focal: center 30%` keeps the face in the upper third when it is cropped.
+
+<SlideShot deck="lookbook" slide="persona-recipient" alt="A near-black slide with an illustrated portrait of a woman on the left, her name Amara Quist and her role under it, and on the right a large quotation about stepping out for milk above two columns headed Goals and Frustrations, with two items each." />
+
+With two items in each list, the quotation and lists are set larger: the layout starts at the largest size and steps both lists down together until the sheet fits. This slide also sets `surface: inverse`.
+
+## When to use it
+
+- **One person from your research.** Use [`bio`](/reference/layouts/bio/) to introduce a speaker, [`quote`](/reference/layouts/quote/) when only the words matter and [`proof`](/reference/layouts/proof/) for a customer's measured result. For findings pooled across many participants, use [`cards`](/reference/layouts/cards/) or [`columns`](/reference/layouts/columns/).
+- **Two to four items per list.** Each goal and each frustration takes up to 40 characters. `name` takes up to 28 characters, `role` up to 40, and the title up to 50.
+- **A verbatim quotation, or none.** The body takes up to 24 words in the participant's own words. Leave it out if no verbatim quotation was recorded.
+- **Rename the headings with `labels:`.** `labels: { goals: Needs, frustrations: Blockers }` replaces "Goals" and "Frustrations"; each takes up to 16 characters. The headings are always shown, so colour never separates the lists.
+- **Portrait or initials.** Without `photo`, the portrait is an initials tile. `focal` and `treatment` work as on `bio`; `treatment: plain` shows a photo as it is.
+- **Say what it is.** The footnote holds the research source, the interview date or a caveat, up to 16 words. Mark an invented or composite persona there.
+
+## Reference
+
+<LayoutReference name="persona" />
+
+## Common mistakes
+
+- **A quotation that runs on.** The body is a quotation of up to 24 words, not a paragraph about the person:
+
+  ```console
+  $ deck lint launch-review
+  decks/launch-review/slides/p-quote.mdx
+    error   content-budget (p-quote): The body slot holds 30 words; its layout allows 24.
+            Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+
+  launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
+  ```
+
+- **Too many or too few items.** Five goals are a `schema` error: `goals: Expected at most 4 research items, got a list of 5 items.` One frustration is one too few: `frustrations: Expected at least 2 research items, got a list of 1 item.` Both lists take two to four.
+- **A title that repeats the name.** The name is on the slide already. State the need instead.
+- **A made-up quotation.** The body is the participant's own words, so write one only if it was said.
+
+## Related layouts
+
+- [`bio`](/reference/layouts/bio/): a speaker's introduction, with name, role and contacts.
+- [`quote`](/reference/layouts/quote/): a person's words on their own.
+- [`proof`](/reference/layouts/proof/): a customer's measured outcome.
+- [`cards`](/reference/layouts/cards/): findings pooled across many participants, as parallel ideas.

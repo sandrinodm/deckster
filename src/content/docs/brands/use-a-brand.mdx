@@ -5,60 +5,50 @@ sidebar:
   order: 1
 ---
 
-A brand is a folder under `brands/` that sets a deck's colours, type, logo, icons and motion. This page shows you how to add one of the published brands to your workspace, pick a brand for a deck, and render the same deck in another brand without editing a slide.
+A brand is a folder under `brands/` that sets a deck's colours, type, logo, icons and motion. This page shows you how to add one of the published brands, or a brand from any git repository, to your workspace, pick a brand for a deck, and render the same deck in another brand without editing a slide.
 
 <BrandGrid slide="review-rounds" />
 
 ## Which brands you have
 
-Only `default` ships with the npm CLI. It works in every workspace, even one without a `brands/` folder. The other four published brands, `nocturne`, `fieldnote`, `kinetic` and `tidewater`, are folders in the [repository's `brands/` folder](https://github.com/sandrinodm/deckster/tree/main/brands). You copy them into your workspace.
+Only `default` ships with the npm CLI. It works in every workspace, even one without a `brands/` folder. The other four published brands, `nocturne`, `fieldnote`, `kinetic` and `tidewater`, are folders in the [repository's `brands/` folder](https://github.com/sandrinodm/deckster/tree/main/brands). `deck brand add` copies one into your workspace, and so it does any brand folder in a git repository you can read.
 
 ## Add a published brand
 
-These steps add `nocturne` to a workspace called `talks`. The other three work the same way. Only the font packages differ, and `deck brand check` names them.
+These steps add `nocturne` to a workspace called `talks`. The other three work the same way. Only the font packages differ, and `deck brand add` names them.
+
+<Aside type="note" title="New in v0.6.0">
+`deck brand add` needs `@deckster/cli` 0.6.0 or later. 0.5.0 reads `add` as a brand name and prints `No such brand in brands/add/brand.ts`; with it, copy the brand's folder from a clone of the repository into `brands/` and delete its `package.json` and `tsconfig.json`.
+</Aside>
 
 <Steps>
 
-1. Get a copy of the [repository](https://github.com/sandrinodm/deckster) once, with git or as a ZIP download from GitHub:
-
-   ```sh
-   git clone --depth 1 --branch v0.5.0 https://github.com/sandrinodm/deckster.git ~/deckster
-   ```
-
-2. Copy the brand's folder into your workspace's `brands/` folder, then delete its `package.json` and `tsconfig.json`. They list monorepo dependencies (`workspace:*`, `catalog:`) that mean nothing in your workspace.
-
-   ```sh
-   mkdir -p brands
-   cp -R ~/deckster/brands/nocturne brands/
-   rm brands/nocturne/package.json brands/nocturne/tsconfig.json
-   ```
-
-3. Check the brand. It fails because its fonts aren't installed yet, and each error names the package:
+1. Add the brand from the repository, at the tag of the CLI you run, so the brand and the CLI match. It needs `git` on your `PATH`:
 
    ```console
-   $ deck brand check nocturne
-   brands/nocturne/brand.ts
-     error   typography.families.display.source.package: @fontsource-variable/fraunces is not installed for brands/nocturne.
-             Fix: Install it in the workspace folder, where the brand's fonts resolve from: npm install @fontsource-variable/fraunces.
-     error   typography.families.body.source.package: @fontsource-variable/manrope is not installed for brands/nocturne.
-             Fix: Install it in the workspace folder, where the brand's fonts resolve from: npm install @fontsource-variable/manrope.
-     error   typography.families.mono.source.package: @fontsource/ibm-plex-mono is not installed for brands/nocturne.
-             Fix: Install it in the workspace folder, where the brand's fonts resolve from: npm install @fontsource/ibm-plex-mono.
-   nocturne: cannot be used (3 errors, 0 warnings).
+   $ deck brand add gh:sandrinodm/deckster/brands/nocturne#v0.6.0
+   Fetching gh:sandrinodm/deckster/brands/nocturne#v0.6.0 with git...
+   Added brands/nocturne/ from gh:sandrinodm/deckster/brands/nocturne#v0.6.0 at 5ee4926 (4 files).
+   Left out: package.json (package file), tsconfig.json (package file).
+   Next:
+     npm install @fontsource-variable/fraunces@5.3.0 @fontsource-variable/manrope@5.3.0 @fontsource/ibm-plex-mono@5.3.0
+     deck brand check nocturne
    ```
 
-4. Install the packages in the workspace folder, the one that holds `decks/` and `brands/`. If it has no `package.json`, `npm install` creates one.
+   It writes `brands/nocturne/` with `brand.ts`, the two logos and the README, and leaves out the `package.json` and `tsconfig.json` that tie the folder to the repository. Fonts are not installed: the `Next:` lines say what to run, with the versions the source repository gives the font packages (the brand's `package.json`, read through the repository's pnpm catalog where it says `catalog:`).
+
+2. Install the font packages in the workspace folder, the one that holds `decks/` and `brands/`. If it has no `package.json`, `npm install` creates one.
 
    ```console
-   $ npm install @fontsource-variable/fraunces @fontsource-variable/manrope @fontsource/ibm-plex-mono
+   $ npm install @fontsource-variable/fraunces@5.3.0 @fontsource-variable/manrope@5.3.0 @fontsource/ibm-plex-mono@5.3.0
 
-   added 3 packages in 176ms
+   added 3 packages in 2s
 
    3 packages are looking for funding
      run `npm fund` for details
    ```
 
-5. Check again:
+3. Check the brand:
 
    ```console
    $ deck brand check nocturne
@@ -66,9 +56,40 @@ These steps add `nocturne` to a workspace called `talks`. The other three work t
    nocturne: is valid (0 errors, 0 warnings).
    ```
 
+   Before the fonts are installed, the check fails with one error per package, such as `typography.families.display.source.package: @fontsource-variable/fraunces is not installed for brands/nocturne.`
+
 </Steps>
 
 The CLI already carries the fonts of `default` (Bricolage Grotesque, Inter and JetBrains Mono), so a brand that uses only those needs no install. [Check a brand](/brands/check-a-brand/) explains the rest of what `deck brand check` reports.
+
+## Add a brand from another repository
+
+`deck brand add <source>` works with any git repository your `git` can read. The source names the repository, the folder that holds `brand.ts`, and optionally a ref after `#`, a branch, a tag or a full 40-character commit. Without a ref it takes the default branch.
+
+| Source | Example |
+| --- | --- |
+| `gh:<owner>/<repo>/<folder>#<ref>`, over HTTPS | `gh:acme/brand-kit/brands/acme#v2` |
+| A GitHub link to the folder | `https://github.com/acme/brand-kit/tree/v2/brands/acme` |
+| Any HTTPS or SSH address, with the folder after `//` | `git@github.com:acme/brand-kit.git//brands/acme#v2` |
+
+It runs your own `git`, so your credential helper, SSH key and `url.<base>.insteadOf` rules apply, and a private repository works when `git clone` would. It fetches only that folder, at the commit the ref names, and each network step may take up to two minutes. The folder is named after the brand's `name` in `brand.ts`, not after the folder in the source.
+
+What it copies and what it refuses:
+
+- **Data, not code.** `brand.ts` and `layouts.ts` are read as data and never run, and a `brand.ts` that is more than one `defineBrand` call around plain values is refused. The brand is checked before anything is written, and `deck brand check`, once its fonts are installed, checks what needs them.
+- **Only brand files.** `brand.ts`, `layouts.ts`, images (`svg`, `png`, `webp`, `jpg`, `jpeg`), fonts (`woff2`, `woff`, `ttf`, `otf`), documents (`md`, `txt`, `json`) and licence files. Other code, symlinks, hidden files and package files (`package.json`, lock files, `tsconfig.json` and the like) are left out, and `Left out:` lists them. At most 500 files and 50 MiB.
+- **No overwrite.** When the workspace already has a brand of that name, it stops: `The workspace already has brands/nocturne/.` Pass `--force` to replace it; the output then starts with `Replaced`, and a failed copy puts the old folder back.
+
+A source that is not a brand folder fails before anything is written:
+
+```console
+$ deck brand add gh:sandrinodm/deckster/decks/hello#v0.6.0
+Fetching gh:sandrinodm/deckster/decks/hello#v0.6.0 with git...
+gh:sandrinodm/deckster/decks/hello#v0.6.0 has no brand.ts, so it is not a brand folder.
+Point at the folder that holds brand.ts, such as gh:owner/repo/brands/<name>.
+```
+
+`--json` prints `{ ok, brand, dir, source, commit, replaced, files, written, skipped, fonts, warnings, next }`: `skipped` has each left-out file with its reason, `fonts` each font package with its version and whether it is `installed`, and `next` the commands to run. The full help is under [`deck brand`](/reference/cli/#cli-brand).
 
 ## Which brand a deck uses
 
@@ -113,7 +134,7 @@ Commands that write files keep each brand apart with an `@<brand>` suffix: `deck
 
 ## See what a brand sets
 
-`deck brand <name>` prints a summary: the three families, the type scale in canvas pixels, the spacing, and every role on every surface:
+`deck brand <name>` prints a summary: the three families, the type scale in canvas pixels, the spacing, the brand's own layouts, every role on every surface, the diagram look and the cards:
 
 ```console
 $ deck brand nocturne
@@ -121,15 +142,23 @@ Nocturne (brands/nocturne/brand.ts)
 Fonts: display Fraunces, body Manrope, mono IBM Plex Mono
 Type: display 168px, headline 84px, title 56px, lead 38px, body 34px, small 26px, caption 24px, label 22px, stat 184px, quote 88px, code 26px
 Spacing: 2xs 6px, xs 12px, sm 20px, md 32px, lg 48px, xl 80px, 2xl 120px, 3xl 176px; margins 160x112px
+Layouts: none (layouts.ts adds the brand's own slide layouts)
 Surfaces:
   default (dark): bg #0b0911, surface #181426, fg #efe7da, heading #f7f2ea, muted #b4aed0, accent #ff8f6b, accent-fg #0b0911, border #2d2645, positive #5eead4, negative #ff6f84
   inverse (light): bg #f7f2ea, surface #efe7da, fg #0b0911, heading #0b0911, muted #433a63, accent #c23f1e, accent-fg #f7f2ea, border #e0d4c1, positive #0e7490, negative #b3263c
   accent (light): bg #ff6f4a, surface #ff8f6b, fg #0b0911, heading #0b0911, muted #1f1a30, accent #0b0911, accent-fg #ffb59a, border #c23f1e, positive #0c4a6e, negative #5c0f1f; small text: positive #003755
   gradient (dark): bg #0b0911, surface #f7f2ea14, fg #efe7da, heading #f7f2ea, muted #d6d2e8, accent #ffb59a, accent-fg #0b0911, border #f7f2ea29, positive #67e8f9, negative #ffb59a
+Diagrams: edges 1px, sharp corners, open arrowheads; groups 1px dashed, radius 0px; plain edge labels in the label step
+Cards (colors on the default surface):
+  default: fill #181426, border #b4aed0 1px, radius 0px, plain icon, title display 400
+  outline: no fill, border #b4aed0 1px, radius 0px, plain icon, title display 400
+  solid: fill #ff8f6b, no border, radius 0px, plain icon, title display 400
+  tint: fill #ff8f6b1f, border #ff8f6b 1px, radius 0px, plain icon, title display 400
+  raised: fill #181426, border #ff8f6b 1px, radius 0px, lg shadow, plain icon, title display 400
 Run `deck brand nocturne --json` for every token.
 ```
 
-Without a name it prints `default`. `--json` prints every resolved token as hex colours and canvas pixels: palette, surfaces, gradients, typography, shape, spacing, logo, icons, imagery, chrome, motion, data and charts. The fields themselves are listed in the [brand schema](/reference/brand-schema/).
+Without a name it prints `default`. `--json` prints every resolved token as hex colours and canvas pixels: palette, surfaces, gradients, typography, shape, spacing, logo, icons, imagery, chrome, motion, data and charts, and the brand's layouts with their defaults filled in. The fields themselves are listed in the [brand schema](/reference/brand-schema/).
 
 ## Icons when you switch brands
 
