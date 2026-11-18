@@ -118,6 +118,9 @@
           "wipe",
           "zoom"
         ]
+      },
+      "hidden": {
+        "type": "boolean"
       }
     },
     "additionalProperties": false
