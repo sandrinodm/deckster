@@ -50,6 +50,11 @@ DRAWING_TAGS = {"path", "use", "image", "rect", "circle", "ellipse", "line", "po
 HIDDEN_PARENTS = {"defs", "clipPath", "symbol", "mask", "pattern", "marker"}
 
 
+# A slide layout part the probe may point a slide at. The name comes from the template's zip, so
+# anything else (a quote, a path) is refused rather than written into the probe's XML.
+LAYOUT_PART = re.compile(r"ppt/slideLayouts/[A-Za-z0-9_-]+\.xml")
+
+
 class ProbeError(Exception):
     """A package the probe cannot be built from."""
 
@@ -196,6 +201,9 @@ def build_probe(src: Path, dst: Path, layouts: list[dict], variant: str = "art")
 
     Returns {"slides": n, "group_placeholders_removed": n}. `src` must already be a plain presentation
     (`to_presentation`) built from the neutralised copy."""
+    for layout in layouts:
+        if not LAYOUT_PART.fullmatch(str(layout["part"])):
+            raise ProbeError(f"layout part {layout['part']!r} is not a slide layout part name")
     with zipfile.ZipFile(src) as zin:
         parts = {info.filename: zin.read(info.filename) for info in zin.infolist() if not info.filename.endswith("/")}
     removed = 0
@@ -226,7 +234,7 @@ def build_probe(src: Path, dst: Path, layouts: list[dict], variant: str = "art")
         parts[slide] = _slide_xml(layout, variant).encode("utf-8")
         parts[f"ppt/slides/_rels/slide{index}.xml.rels"] = (
             HEADER + f'<Relationships xmlns="{REL_NS}"><Relationship Id="rId1" Type="{OFFICE_REL}/slideLayout" '
-            f'Target="../slideLayouts/{posixpath.basename(layout["part"])}"/></Relationships>').encode("utf-8")
+            f'Target="../slideLayouts/{_attr(posixpath.basename(layout["part"]))}"/></Relationships>').encode("utf-8")
         ET.SubElement(rels, f"{{{REL_NS}}}Relationship", {"Id": f"rIdProbe{index}", "Type": f"{OFFICE_REL}/slide", "Target": f"slides/slide{index}.xml"})
         ET.SubElement(ct, f"{{{CT_NS}}}Override", {"PartName": f"/{slide}", "ContentType": SLIDE_TYPE})
         ids.append((256 + index, f"rIdProbe{index}"))

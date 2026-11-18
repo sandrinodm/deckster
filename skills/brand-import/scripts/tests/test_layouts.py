@@ -245,6 +245,11 @@ class Checks(unittest.TestCase):
 
 
 class Probe(Fixture):
+    def test_a_layout_part_name_that_is_not_a_slide_layout_is_refused(self):
+        for part in ('ppt/slideLayouts/a" TargetMode="External.xml', "ppt/slideLayouts/../x.xml", "ppt/media/x.xml"):
+            with self.subTest(part=part), self.assertRaises(LP.ProbeError):
+                LP.build_probe(self.tmp / "missing.pptx", self.tmp / "out.pptx", [{"part": part}])
+
     def test_potx_becomes_a_presentation_without_macros(self):
         out = self.tmp / "plain.pptx"
         LP.to_presentation(self.tmp / "template.potx", out)
