@@ -170,6 +170,11 @@ type SlideHeaderProps = {
   title: string | undefined;
 
   /**
+   * The title element id, for regions labelled by the slide title.
+   */
+  titleId?: string;
+
+  /**
    * The most lines the title takes before it steps down in size.
    */
   maxLines?: number;
@@ -183,12 +188,17 @@ type SlideHeaderProps = {
 export function SlideHeader({
   eyebrow,
   title,
+  titleId,
   maxLines = TITLE_MAX_LINES,
 }: SlideHeaderProps): ReactNode {
   return (
     <header className="kit-header" {...useEnter(0)}>
       <Eyebrow text={eyebrow} reserve />
-      <FittedText as="h2" className="kit-title kit-heading kit-type-headline" maxLines={maxLines}>
+      <FittedText
+        as="h2"
+        id={titleId}
+        className="kit-title kit-heading kit-type-headline"
+        maxLines={maxLines}>
         {title}
       </FittedText>
     </header>
@@ -203,6 +213,11 @@ type FittedTextProps = {
    * The element to render.
    */
   as: 'h1' | 'h2' | 'p' | 'blockquote' | 'div';
+
+  /**
+   * The element id, when another region refers to this text.
+   */
+  id?: string | undefined;
 
   /**
    * Classes, including one `kit-type-*` class that sets the size to step down from.
@@ -237,6 +252,7 @@ type FittedTextProps = {
  */
 export function FittedText({
   as: Tag,
+  id,
   className,
   maxLines = 1,
   ladder,
@@ -253,7 +269,7 @@ export function FittedText({
   }
 
   return (
-    <Tag ref={setRef} className={`kit-fitted ${className}`}>
+    <Tag ref={setRef} id={id} className={`kit-fitted ${className}`}>
       {typeof children === 'string' ? smartPunctuation(children) : children}
     </Tag>
   );

@@ -96,6 +96,15 @@ export function textField(maxChars: number, what: string): Schema.NonEmptyString
 }
 
 /**
+ * An Iconify name in the brand's set, or an explicitly installed set as `set:name`.
+ */
+export const IconNameField = Schema.NonEmptyString.check(
+  Schema.isPattern(/^(?:[a-z0-9-]+:)?[a-z0-9-]+$/u, {
+    message: 'Expected an icon name such as "leaf" or "tabler:leaf"',
+  }),
+);
+
+/**
  * Where a cropped photo keeps its subject: a CSS position such as `top`, `center 30%` or `40% 20%`.
  */
 export const FocalField = Schema.optionalKey(

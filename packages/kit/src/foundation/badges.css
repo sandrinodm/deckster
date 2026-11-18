@@ -1,0 +1,39 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-badge,
+  .kit-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--brand-space-2xs);
+    margin: 0;
+    padding: var(--brand-space-2xs) var(--brand-space-xs);
+    white-space: nowrap;
+  }
+
+  .kit-badge {
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-accent);
+    color: var(--brand-color-accent-fg);
+  }
+
+  .kit-pill {
+    border: var(--brand-stroke-hairline) solid currentColor;
+    border-radius: var(--brand-radius-lg);
+    color: var(--brand-color-fg);
+  }
+
+  .kit-pill[data-tone='positive'] {
+    color: var(--brand-color-positive-text);
+  }
+  .kit-pill[data-tone='negative'] {
+    color: var(--brand-color-negative-text);
+  }
+  .kit-pill[data-tone='muted'] {
+    color: var(--brand-color-muted);
+    border-color: var(--brand-color-border);
+  }
+  .kit-pill[data-exception] {
+    border-width: var(--brand-stroke-bold);
+  }
+}

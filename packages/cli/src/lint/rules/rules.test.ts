@@ -9,7 +9,11 @@ import { Effect } from 'effect';
 import type { ElementSnapshot, SlideRule } from '#lint/types.ts';
 
 import { brandContext, isBrandColor } from '#lint/brand-context.ts';
-import { CARD_FIXTURE_BRAND, fixtureBrandTokens } from '#lint/fixture-brands.fixture.ts';
+import {
+  CARD_FIXTURE_BRAND,
+  FIXTURE_BRANDS,
+  fixtureBrandTokens,
+} from '#lint/fixture-brands.fixture.ts';
 import { brokenImageRule } from '#lint/rules/broken-image.ts';
 import { canvasOverflowRule } from '#lint/rules/canvas-overflow.ts';
 import { containerOverflowRule } from '#lint/rules/container-overflow.ts';
@@ -716,6 +720,29 @@ layer(NodeServices.layer)('lint rules for layouts and media', (it) => {
       expect(messages(offBrandRule, tokens, [outside])).toEqual([
         expect.stringContaining(`"loose" uses the text color ${text.slice(0, 7)}`),
       ]);
+    }),
+  );
+
+  it.effect('off-brand permits derived colors only inside their nested surface', () =>
+    Effect.gen(function* () {
+      const tokens = yield* fixtureBrandTokens({ ...FIXTURE_BRANDS['wide-sans'] });
+      const slideBrand = brandContext(tokens.name, tokens, 'accent');
+      const inverse = brandContext(tokens.name, tokens, 'inverse');
+      const color = inverse.surface.roles.accent;
+      expect(isBrandColor(color, slideBrand.allowed.colors)).toBe(false);
+
+      const panel = element({ index: 0, data: { surface: 'inverse' } });
+      const wrapper = element({ index: 1, parent: 0 });
+      const badge = element({ index: 2, parent: 1, backgroundColor: color });
+      const input = (elements: ElementSnapshot[]) =>
+        slideRuleInput(tokens, { elements }, { slide: { surface: 'accent' } });
+      expect(offBrandRule.check(input([panel, wrapper, badge]))).toEqual([]);
+      expect(offBrandRule.check(input([{ ...badge, parent: null }]))).toEqual([
+        expect.objectContaining({ message: expect.stringContaining('on the "accent" surface') }),
+      ]);
+      expect(
+        offBrandRule.check(input([panel, wrapper, { ...badge, data: { surface: 'accent' } }])),
+      ).toHaveLength(1);
     }),
   );
 

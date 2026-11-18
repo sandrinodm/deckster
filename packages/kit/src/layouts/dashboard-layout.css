@@ -1,0 +1,143 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-dashboard-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-dashboard-grid {
+    display: grid;
+    flex: 1 1 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    gap: var(--kit-gutter);
+    min-height: 0;
+    height: 100%;
+  }
+
+  .kit-frame[data-layout='dashboard'][data-count='3'] .kit-dashboard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .kit-frame[data-layout='dashboard'][data-count='4'] .kit-dashboard-grid {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+
+  .kit-dashboard-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    padding-top: var(--brand-space-sm);
+    border-top: var(--brand-stroke-regular) solid var(--brand-color-border);
+  }
+
+  .kit-dashboard-heading {
+    flex: none;
+    margin: 0 0 var(--brand-space-sm);
+  }
+
+  .kit-dashboard-plot {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-width: 0;
+    min-height: 0;
+    container-type: size;
+  }
+
+  .kit-dashboard-content {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .kit-frame[data-layout='dashboard'][data-level='1'] .kit-dashboard-heading {
+    --kit-scale: 0.88;
+
+    margin-bottom: var(--brand-space-xs);
+  }
+
+  .kit-frame[data-layout='dashboard'][data-level='2'] .kit-dashboard-heading {
+    --kit-scale: 0.78;
+
+    margin-bottom: var(--brand-space-2xs);
+  }
+
+  /* Dense grids use headline figures; two panels have room for the display step. The dashboard
+     overrides BigNumber's local region scale so figures in separate panels stay level. */
+  .kit-frame[data-layout='dashboard'] .kit-big-number,
+  .kit-frame[data-layout='dashboard'] .kit-progress {
+    --kit-big-scale: calc(var(--brand-type-headline-size) / var(--brand-type-stat-size));
+  }
+
+  .kit-frame[data-layout='dashboard'] .kit-dashboard-plot .kit-stat-value {
+    --kit-scale: calc(var(--brand-type-headline-size) / var(--brand-type-stat-size));
+
+    width: auto;
+    align-self: auto;
+    padding: 0;
+    font-size: calc(var(--brand-type-headline-size) * var(--kit-fit));
+    line-height: var(--brand-type-headline-line-height);
+    color: var(--brand-chart-stat);
+  }
+
+  .kit-frame[data-layout='dashboard'][data-count='2'] .kit-big-number,
+  .kit-frame[data-layout='dashboard'][data-count='2'] .kit-progress {
+    --kit-big-scale: calc(var(--brand-type-display-size) / var(--brand-type-stat-size));
+  }
+
+  .kit-frame[data-layout='dashboard'][data-count='2'] .kit-dashboard-plot .kit-stat-value {
+    --kit-scale: calc(var(--brand-type-display-size) / var(--brand-type-stat-size));
+
+    font-size: calc(var(--brand-type-display-size) * var(--kit-fit));
+    line-height: var(--brand-type-display-line-height);
+  }
+
+  .kit-frame[data-layout='dashboard'] .kit-big-number-label {
+    --kit-step-family: var(--brand-type-lead-family);
+    --kit-step-size: var(--brand-type-lead-size);
+    --kit-step-line-height: var(--brand-type-lead-line-height);
+    --kit-step-weight: var(--brand-type-lead-weight);
+    --kit-step-tracking: var(--brand-type-lead-tracking);
+    --kit-step-style: var(--brand-type-lead-style);
+    --kit-step-case: var(--brand-type-lead-case);
+    --kit-step-features: var(--brand-type-lead-features);
+    --kit-step-axes: var(--brand-type-lead-axes);
+  }
+
+  /* Figure components normally centre themselves inside a full chart region. Here their first
+     line stands directly below the panel heading, alongside the other panels' first line. */
+  .kit-frame[data-layout='dashboard'] .kit-chart-plot::before,
+  .kit-frame[data-layout='dashboard'] .kit-chart-plot::after {
+    display: none;
+  }
+
+  .kit-frame[data-layout='dashboard'] .kit-dashboard-panel[data-plate='visible'] {
+    padding: var(--brand-space-sm);
+    border-radius: var(--brand-radius-lg);
+    background: var(--brand-data-plate);
+  }
+
+  .kit-frame[data-layout='dashboard']
+    .kit-dashboard-panel[data-plate='visible']
+    .kit-dashboard-heading {
+    color: var(--brand-chart-heading);
+  }
+
+  .kit-frame[data-layout='dashboard'] .kit-progress-item {
+    gap: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='dashboard'][data-count='4'] .kit-progress-track {
+    height: var(--brand-space-sm);
+    margin-top: calc(-1 * var(--brand-space-xs));
+  }
+
+  .kit-frame[data-layout='dashboard'] .kit-dashboard-panel[data-plate='visible'] .kit-chart {
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+}

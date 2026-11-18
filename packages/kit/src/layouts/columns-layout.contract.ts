@@ -109,7 +109,8 @@ export const columnsLayoutContract = defineLayoutContract({
     '`reveal: true` brings the columns in one per step. Use it when each group holds several ' +
     'short items; use cards when each idea is one card with a line of text, steps when the ' +
     'groups are stages of one process, timeline when they have dates, and comparison when ' +
-    'options are measured on the same rows.',
+    'options are measured on the same rows; ' +
+    'use quadrants for four boxes, status for readiness, actions for owners and deadlines, or schedule for durations.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     columns: Schema.Array(Column).check(

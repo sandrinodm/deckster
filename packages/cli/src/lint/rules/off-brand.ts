@@ -9,7 +9,7 @@ import type {
   StepSnapshot,
 } from '#lint/types.ts';
 
-import { isBrandColor, isTokenSize } from '#lint/brand-context.ts';
+import { brandContext, isBrandColor, isTokenSize } from '#lint/brand-context.ts';
 import { TAILWIND_SPACING_UNIT_PX } from '#lint/limits.ts';
 import { describeElement, round } from '#lint/rules/describe.ts';
 import { visibleTextElements } from '#lint/rules/elements.ts';
@@ -162,15 +162,23 @@ export const offBrandRule: SlideRule = {
       }
     };
     const carded = cardedElements(snapshot);
-    const withCards: BrandContext = {
-      ...brand,
-      allowed: { ...brand.allowed, colors: [...brand.allowed.colors, ...brand.allowed.cardColors] },
-    };
+    const surfaces = surfaceBrands(snapshot, brand);
     /**
      * The brand values for an element: card colors are allowed only inside a part drawn with a
      * card.
      */
-    const brandFor = (element: ElementSnapshot) => (carded.has(element.index) ? withCards : brand);
+    const brandFor = (element: ElementSnapshot) => {
+      const current = surfaces.get(element.index) ?? brand;
+      return carded.has(element.index)
+        ? {
+            ...current,
+            allowed: {
+              ...current.allowed,
+              colors: [...current.allowed.colors, ...current.allowed.cardColors],
+            },
+          }
+        : current;
+    };
     for (const element of snapshot.elements) {
       checkPaint(element, brandFor(element), add);
       checkSpacing(element, brand, add);
@@ -181,9 +189,40 @@ export const offBrandRule: SlideRule = {
       checkText(element, brandFor(element), fitted.has(element.index), add);
     }
 
-    return [...occurrences.values()].map((occurrence) => violation(occurrence, brand));
+    return [...occurrences.values()].map((occurrence) => {
+      const first = occurrence.elements[0];
+      return violation(occurrence, first === undefined ? brand : brandFor(first));
+    });
   },
 };
+
+/**
+ * Resolves each element's nearest surface, including nested panels whose derived colors differ from
+ * the slide's. Snapshot elements precede their descendants in document order.
+ *
+ * @param snapshot - The measured elements and their surface attributes.
+ * @param brand - The brand on the slide's surface.
+ */
+function surfaceBrands(
+  snapshot: StepSnapshot,
+  brand: BrandContext,
+): ReadonlyMap<number, BrandContext> {
+  const surfaces = new Map<string, BrandContext>([[brand.surface.name, brand]]);
+  const elements = new Map<number, BrandContext>();
+  for (const element of snapshot.elements) {
+    const inherited = element.parent === null ? brand : (elements.get(element.parent) ?? brand);
+    const name = element.data['surface'] ?? inherited.surface.name;
+    let current = surfaces.get(name);
+    if (current === undefined) {
+      current = brandContext(brand.name, brand.tokens, name);
+      surfaces.set(name, current);
+    }
+
+    elements.set(element.index, current);
+  }
+
+  return elements;
+}
 
 /**
  * Checks the element's background, and the SVG fill and stroke it paints itself.

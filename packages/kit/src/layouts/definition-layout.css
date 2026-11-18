@@ -1,0 +1,83 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-definition-region {
+    width: var(--kit-measure-wide);
+    max-width: 100%;
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-definition {
+    width: 100%;
+    margin: 0;
+  }
+
+  .kit-definition-term {
+    margin: 0;
+    /* The header starts at headline; fitting the entry must never collapse its term hierarchy. */
+    font-size: max(
+      calc(var(--kit-step-size) * var(--kit-scale)),
+      calc(1.5 * var(--brand-type-headline-size))
+    );
+    overflow-wrap: normal;
+    text-wrap: balance;
+  }
+
+  .kit-definition-meaning {
+    margin: 0;
+  }
+
+  .kit-definition-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--brand-space-xs) var(--brand-space-md);
+    margin: var(--brand-space-lg) 0 0;
+    color: var(--brand-color-muted);
+  }
+
+  .kit-definition-body {
+    margin-top: var(--brand-space-xl);
+    text-wrap: pretty;
+  }
+
+  .kit-definition-body > :first-child {
+    margin-top: 0;
+  }
+
+  .kit-definition-body > :last-child {
+    margin-bottom: 0;
+  }
+
+  .kit-definition-example {
+    display: block;
+    margin-top: var(--brand-space-lg);
+    padding-top: var(--brand-space-sm);
+    border-top: var(--brand-stroke-regular) solid var(--brand-color-border);
+  }
+
+  .kit-definition-example-label,
+  .kit-definition-example-text {
+    margin: 0;
+  }
+
+  .kit-definition-example-label {
+    margin-bottom: var(--brand-space-xs);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-definition-example-text {
+    text-wrap: pretty;
+  }
+
+  .kit-frame[data-layout='definition'][data-compact='true'] .kit-definition-term {
+    overflow-wrap: break-word;
+  }
+
+  .kit-frame[data-layout='definition'][data-compact='true'] .kit-definition-body {
+    margin-top: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='definition'][data-compact='true'] .kit-definition-example {
+    margin-top: var(--brand-space-sm);
+  }
+}

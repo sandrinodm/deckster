@@ -1,0 +1,230 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='quiz'] {
+    --kit-quiz-pad: var(--brand-space-md);
+    --kit-quiz-text: var(--brand-type-lead-size);
+    --kit-quiz-letter: calc(1.6 * var(--kit-quiz-text));
+    --kit-quiz-count: 3;
+    --kit-quiz-gap-floor: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='quiz'][data-count='2'] {
+    --kit-quiz-count: 2;
+  }
+  .kit-frame[data-layout='quiz'][data-count='4'] {
+    --kit-quiz-count: 4;
+  }
+  .kit-frame[data-layout='quiz'][data-level='0'] {
+    --kit-quiz-pad: var(--brand-space-xl);
+  }
+  .kit-frame[data-layout='quiz'][data-level='1'] {
+    --kit-quiz-pad: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='quiz'][data-level='3'] {
+    --kit-quiz-pad: var(--brand-space-xs);
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'][data-level='0'] {
+    --kit-quiz-text: var(--brand-type-title-size);
+  }
+
+  .kit-frame[data-layout='quiz'][data-form='tiles']:is([data-level='2'], [data-level='3']) {
+    --kit-quiz-pad: var(--brand-space-xs);
+    --kit-quiz-gap-floor: var(--brand-space-xs);
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'][data-level='3'] {
+    --kit-quiz-text: var(--brand-type-body-size);
+  }
+
+  .kit-frame[data-layout='quiz'][data-form='rows']:is([data-level='2'], [data-level='3']) {
+    --kit-quiz-pad: var(--brand-space-2xs);
+  }
+
+  .kit-frame[data-layout='quiz'][data-form='rows']:is([data-level='2'], [data-level='3'])
+    .kit-quiz {
+    gap: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='quiz'][data-form='rows']:is([data-level='2'], [data-level='3'])
+    .kit-quiz-options {
+    gap: var(--brand-space-xs);
+  }
+
+  .kit-quiz-context {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+  .kit-quiz-region {
+    margin-top: var(--kit-title-gap);
+  }
+  .kit-quiz {
+    display: grid;
+    gap: var(--brand-space-lg);
+    width: 100%;
+  }
+  .kit-quiz-options {
+    display: grid;
+    gap: var(--brand-space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kit-quiz-option {
+    position: relative;
+    min-width: 0;
+    border-radius: var(--brand-radius-md);
+  }
+  /* The opaque base keeps the neutral copy covered on translucent surfaces, in the page and PPTX. */
+  .kit-quiz-choice,
+  .kit-quiz-result {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 1.2em;
+    align-items: center;
+    gap: var(--kit-gutter);
+    padding: var(--kit-quiz-pad) var(--brand-space-lg);
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-md);
+    min-width: 0;
+    background: var(--brand-color-bg);
+    color: var(--brand-color-fg);
+  }
+  .kit-quiz-choice {
+    isolation: isolate;
+  }
+  .kit-quiz-choice::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--brand-color-surface);
+  }
+  .kit-quiz-result {
+    position: absolute;
+    inset: 0;
+  }
+  .kit-quiz-result[data-flow='static'] {
+    position: static;
+  }
+  .kit-quiz-answer {
+    background: var(--brand-background, var(--brand-color-bg));
+    border-color: transparent;
+  }
+  .kit-quiz-letter {
+    display: grid;
+    place-items: center;
+    inline-size: 1.6em;
+    aspect-ratio: 1;
+    border: var(--brand-stroke-hairline) solid currentColor;
+    border-radius: var(--brand-radius-sm);
+    color: inherit;
+  }
+  .kit-quiz-answer .kit-quiz-letter {
+    background: currentColor;
+  }
+  .kit-quiz-answer .kit-quiz-letter > span {
+    color: var(--brand-background, var(--brand-color-bg));
+  }
+  .kit-quiz-text {
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+  }
+  .kit-frame[data-layout='quiz'][data-form='rows'] :is(.kit-quiz-text, .kit-quiz-letter) {
+    font-family: var(--brand-type-body-family);
+    font-weight: var(--brand-type-body-weight);
+  }
+  .kit-quiz-receded {
+    color: var(--brand-color-muted);
+  }
+  .kit-quiz-mark {
+    display: block;
+    width: 1.2em;
+    height: 1.2em;
+  }
+
+  .kit-quiz-explanation {
+    display: flex;
+    align-items: baseline;
+    gap: var(--brand-space-sm);
+    margin: 0;
+    color: var(--brand-color-fg);
+    text-wrap: pretty;
+  }
+  .kit-quiz-explanation .kit-quiz-letter {
+    flex: none;
+    align-self: start;
+  }
+
+  .kit-frame[data-layout='quiz'][data-form='tiles'] .kit-quiz-options {
+    grid-template-columns: repeat(var(--kit-quiz-count), minmax(min-content, 1fr));
+    grid-template-rows: auto minmax(
+        var(--kit-quiz-gap-floor),
+        calc(2 * var(--kit-quiz-letter))
+      ) auto;
+    gap: var(--kit-gutter);
+    align-content: safe center;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'] .kit-quiz-option {
+    display: grid;
+    grid-row: 1 / -1;
+    grid-template-rows: subgrid;
+    min-width: min-content;
+  }
+  /* Intrinsic columns let a word spanning the tile contribute to its minimum width. */
+  .kit-frame[data-layout='quiz'][data-form='tiles'] :is(.kit-quiz-choice, .kit-quiz-result) {
+    grid-template-columns: auto auto 1.2em;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles']
+    :is(.kit-quiz-choice, .kit-quiz-result[data-flow='static']) {
+    grid-row: 1 / -1;
+    grid-template-rows: subgrid;
+    min-width: min-content;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'] .kit-quiz-result:not([data-flow='static']) {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'] .kit-quiz-letter {
+    grid-area: 1 / 1;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'] .kit-quiz-mark {
+    grid-area: 1 / 3;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'] .kit-quiz-text {
+    grid-area: 3 / 1 / 4 / -1;
+    align-self: end;
+    overflow-wrap: normal;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'][data-level='3'] .kit-quiz-options {
+    grid-template-columns: repeat(var(--kit-quiz-count), minmax(0, 1fr));
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'][data-level='3']
+    :is(.kit-quiz-option, .kit-quiz-choice, .kit-quiz-result) {
+    min-width: 0;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'][data-level='3']
+    :is(.kit-quiz-choice, .kit-quiz-result) {
+    padding-inline: var(--brand-space-sm);
+    grid-template-columns: auto minmax(0, 1fr) 1.2em;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'][data-level='3'] .kit-quiz-text {
+    overflow-wrap: break-word;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles'] :is(.kit-quiz-text, .kit-quiz-letter) {
+    font-family: var(--brand-type-title-family);
+    font-weight: var(--brand-type-title-weight);
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles']:is([data-level='2'], [data-level='3'])
+    :is(.kit-quiz-options, .kit-quiz-choice, .kit-quiz-result) {
+    row-gap: var(--brand-space-sm);
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles']:is([data-level='0'], [data-level='1'])
+    .kit-quiz {
+    height: 100%;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .kit-frame[data-layout='quiz'][data-form='tiles']:is([data-level='0'], [data-level='1'])
+    .kit-quiz-options {
+    height: 100%;
+  }
+}

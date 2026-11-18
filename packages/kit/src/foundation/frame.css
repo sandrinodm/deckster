@@ -20,6 +20,7 @@
     --kit-title-gap: var(--brand-space-lg);
     --kit-columns: var(--brand-grid-columns);
     --kit-gutter: var(--brand-grid-gutter);
+    --kit-measure-wide: calc(10 * var(--kit-column) + 9 * var(--kit-gutter));
     --kit-canvas-width: 1920px;
     --kit-canvas-height: 1080px;
     --kit-content-width: calc(var(--kit-canvas-width) - 2 * var(--brand-margin-x));

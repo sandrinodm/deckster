@@ -1,0 +1,41 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-mark {
+    display: inline-block;
+    flex: none;
+    width: 1cap;
+    height: 1cap;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: var(--brand-icon-stroke);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .kit-meter {
+    display: inline-flex;
+    flex: none;
+    align-items: end;
+    height: 1cap;
+    gap: 0.12em;
+  }
+
+  .kit-meter > span {
+    width: 0.22em;
+    height: 100%;
+    background: var(--brand-color-muted);
+  }
+
+  .kit-meter > span:nth-child(1) {
+    height: 35%;
+  }
+
+  .kit-meter > span:nth-child(2) {
+    height: 57.5%;
+  }
+
+  .kit-meter > span[data-filled='true'] {
+    background: currentColor;
+  }
+}

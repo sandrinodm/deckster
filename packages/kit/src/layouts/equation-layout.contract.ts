@@ -168,7 +168,8 @@ export const equationLayoutContract = defineLayoutContract({
     'result last, counting up. Use it for a bottom-up market size (customers × price × ' +
     'frequency), a business model (bookings × take rate = revenue) or unit economics (lifetime ' +
     'value ÷ acquisition cost); use stats when the figures stand side by side without adding ' +
-    'up, and a chart for a trend.',
+    'up, and a chart for a trend; ' +
+    'use market for nested market sizes.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     terms: Schema.Array(Term).check(

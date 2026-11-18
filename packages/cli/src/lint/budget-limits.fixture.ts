@@ -203,7 +203,8 @@ function slideMdx(
       ? { ...limits, maxWords: limits.maxWords + 1 }
       : limits;
   };
-  const parts = limitCase.body === false ? [] : [bodyMdx(contract, budget(BODY_SLOT), shape)];
+  const prose = limitCase.body === false ? [] : [bodyMdx(contract, budget(BODY_SLOT), shape)];
+  const parts = limitCase.bodyMdx === undefined ? prose : [limitCase.bodyMdx];
   for (const slot of limitCase.filled) {
     parts.push(slotMdx(contract, slot, budget(slot)));
   }

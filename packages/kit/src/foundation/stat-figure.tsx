@@ -40,6 +40,11 @@ type StatValueProps = {
    * Extra classes, such as a size for the figure.
    */
   className?: string;
+
+  /**
+   * Whether the figure counts up on entry; defaults to true. Disable for fixed timeboxes.
+   */
+  countUp?: boolean;
 };
 
 /**
@@ -47,12 +52,12 @@ type StatValueProps = {
  * the live deck moves forward onto the slide, or onto the step that reveals the figure, a plain
  * number counts up to its value (`useCountUp`). The final value keeps its place in the layout, so
  * fitting never sees the count and the figure never shifts. Static mode, `SlideView` copies, going
- * backward and reduced motion show the value as it is.
+ * backward, reduced motion and `countUp={false}` show the value as it is.
  */
-export function StatValue({ value, className }: StatValueProps): ReactNode {
+export function StatValue({ value, className, countUp = true }: StatValueProps): ReactNode {
   const ref = useRef<HTMLParagraphElement>(null);
   const { prefix, number, suffix, spaced } = splitStat(String(value));
-  const counting = useCountUp(number, ref);
+  const counting = useCountUp(countUp ? number : '', ref);
   const extra = className === undefined ? '' : ` ${className}`;
   const classes = `kit-stat-value kit-type-stat kit-numeric${extra}`;
   return (
@@ -62,7 +67,7 @@ export function StatValue({ value, className }: StatValueProps): ReactNode {
           {prefix}
         </span>
       )}
-      {counting === undefined ? (
+      {!countUp || counting === undefined ? (
         number
       ) : (
         <CountingNumber number={number} counting={counting} align={countAlign(prefix, suffix)} />

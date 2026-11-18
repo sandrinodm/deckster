@@ -43,7 +43,8 @@ export const chartLayoutContract = defineLayoutContract({
     ' charts`). Fill <Aside> with the "so what" (a key number or a sentence) to ' +
     "set it in a column beside the chart; put the source in <Footnote> or the chart's `source`. " +
     'Datasets may sit in the `data:` frontmatter. Use split when a chart needs a paragraph ' +
-    'beside it, and stats for two to four plain numbers.',
+    'beside it, and stats for two to four plain numbers; ' +
+    'use dashboard for two to four related measures.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     data: DataField,

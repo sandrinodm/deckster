@@ -148,6 +148,18 @@ export default defineConfig({
         },
       },
       {
+        files: [
+          'packages/kit/src/layouts/comparison-layout.tsx',
+          'packages/kit/src/layouts/status-layout.tsx',
+          'packages/kit/src/layouts/risks-layout.tsx',
+          'packages/kit/src/layouts/actions-layout.tsx',
+        ],
+        // Overrides inherit the base plugins, so enable the JSX plugins here too.
+        plugins: ['react', 'react-perf', 'jsx-a11y'],
+        // ARIA table roles on subgrid divs; native table elements cannot take the subgrid layout.
+        rules: { 'jsx-a11y/prefer-tag-over-role': 'off' },
+      },
+      {
         files: ['**/*.{test,spec}.{ts,tsx}'],
         plugins: ['vitest'],
         rules: {

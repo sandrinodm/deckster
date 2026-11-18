@@ -1,0 +1,131 @@
+/*
+ * The status layout: a twelve-column report whose display names and explicit state pills keep
+ * exceptions prominent. Thin, muted completed states recede; bold outlines and distinct marks
+ * carry risk and blockage even when an accent surface resolves their hues to the same ink.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='status'] {
+    --kit-status-pad: var(--brand-space-lg);
+    --kit-status-name-scale: 1.12;
+  }
+
+  .kit-status-context {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-status-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-status-report {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    column-gap: var(--kit-gutter);
+    height: 100%;
+    grid-template-rows: max-content repeat(
+        var(--kit-status-count),
+        minmax(auto, calc(var(--brand-space-xl) * 4))
+      );
+  }
+
+  .kit-status-head,
+  .kit-status-row {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .kit-status-name-cell {
+    grid-column: 1 / span 4;
+    min-width: 0;
+  }
+
+  .kit-status-state-cell {
+    display: flex;
+    align-items: center;
+    grid-column: 5 / span 2;
+    min-width: 0;
+  }
+
+  .kit-status-owner {
+    grid-column: 7 / span 2;
+    color: var(--brand-color-muted);
+  }
+
+  .kit-status-note {
+    grid-column: 7 / span 6;
+    color: var(--brand-color-fg);
+  }
+
+  .kit-frame[data-layout='status'][data-owner='true'] .kit-status-note {
+    grid-column: 9 / span 4;
+  }
+
+  .kit-status-head {
+    padding-bottom: var(--brand-space-sm);
+    border-bottom: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-status-head .kit-status-note {
+    color: inherit;
+  }
+
+  .kit-status-row {
+    padding-block: var(--kit-status-pad);
+  }
+
+  .kit-status-row[data-first='false'] {
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+  }
+
+  .kit-status-name,
+  .kit-status-owner,
+  .kit-status-note {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .kit-status-name {
+    --kit-scale: var(--kit-status-name-scale);
+    color: var(--brand-color-heading);
+  }
+
+  .kit-status-row:is([data-status='done'], [data-status='on-track']) .kit-status-note {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-frame[data-layout='status'][data-space='roomy'] {
+    --kit-status-name-scale: 1;
+  }
+
+  .kit-frame[data-layout='status']:is([data-space='snug'], [data-space='trimmed']) {
+    --kit-status-name-scale: 0.8;
+    --kit-status-pad: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='status'][data-space='trimmed'] {
+    --kit-status-pad: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='status'][data-space='compact'] {
+    --kit-status-name-scale: 0.7;
+    --kit-status-pad: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='status'][data-space='tight'] {
+    --kit-status-name-scale: 0.64;
+    --kit-status-pad: var(--brand-space-2xs);
+  }
+
+  .kit-frame[data-layout='status']:is([data-space='compact'], [data-space='tight'])
+    .kit-status-pill {
+    padding-block: 0;
+    line-height: var(--brand-type-caption-line-height);
+  }
+}

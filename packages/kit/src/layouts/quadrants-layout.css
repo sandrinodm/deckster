@@ -1,0 +1,116 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='quadrants'] {
+    --kit-quadrant-pad: var(--brand-space-md);
+    --kit-quadrant-gap: var(--brand-space-sm);
+  }
+
+  .kit-quadrants-context {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-quadrants-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-quadrants {
+    display: grid;
+    height: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: var(--kit-gutter);
+  }
+
+  .kit-quadrant {
+    min-width: 0;
+    padding: var(--kit-quadrant-pad);
+    border-top: var(--brand-stroke-regular) solid var(--brand-color-border);
+    overflow-wrap: anywhere;
+  }
+
+  .kit-quadrant[data-surface] {
+    border-color: var(--brand-color-heading);
+    background: var(--brand-background, var(--brand-color-bg));
+  }
+
+  .kit-quadrant-content {
+    display: grid;
+    gap: var(--kit-quadrant-gap);
+  }
+
+  .kit-quadrant-head {
+    display: flex;
+    align-items: center;
+    gap: var(--brand-space-sm);
+    min-width: 0;
+  }
+
+  .kit-quadrant-title {
+    font-family: var(--brand-type-title-family);
+    font-weight: var(--brand-type-title-weight);
+    flex: 1;
+    margin: 0;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .kit-quadrant-icon {
+    flex: none;
+    width: 1em;
+    height: 1em;
+    color: var(--brand-color-heading);
+  }
+
+  .kit-quadrant-icon [stroke-width],
+  .kit-quadrant-icon[stroke-width] {
+    stroke-width: var(--brand-icon-stroke);
+  }
+
+  .kit-quadrant-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-2xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-quadrant-item {
+    position: relative;
+    margin: 0 0 0 1.1em;
+    color: var(--brand-color-fg);
+    text-wrap: pretty;
+  }
+
+  /* Materialized markers preserve bullets in native PowerPoint text. */
+  .kit-quadrant-item::before {
+    content: '';
+    position: absolute;
+    top: calc(0.5lh - 0.12em);
+    left: -0.85em;
+    width: 0.24em;
+    height: 0.24em;
+    border-radius: min(var(--brand-radius-sm), 0.12em);
+    background: var(--brand-color-fg);
+  }
+
+  .kit-frame[data-layout='quadrants'][data-level='0'] {
+    --kit-quadrant-pad: var(--brand-space-lg);
+    --kit-quadrant-gap: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='quadrants'][data-level='0'] .kit-quadrant-items {
+    gap: var(--brand-space-xs);
+  }
+
+  .kit-frame[data-layout='quadrants'][data-compact='true'] {
+    --kit-quadrant-pad: var(--brand-space-sm);
+    --kit-quadrant-gap: var(--brand-space-xs);
+  }
+
+  .kit-frame[data-layout='quadrants'][data-compact='true'] .kit-quadrant-items {
+    gap: 0;
+  }
+}
