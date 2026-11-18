@@ -130,7 +130,7 @@ Read the format file for the chosen format, then `references/narrative.md` if yo
 
 If the request spans two formats (a product talk at a conference, a training for sellers), read both and let the audience's goal decide which one provides the spine.
 
-Write the storyline as five to nine sentences, each a claim, that read as a complete argument on their own. This is the talk at its smallest. If the sequence does not persuade as plain text, no slide design will rescue it. Then set the time budget: total minutes minus Q&A minus about 10 percent slack, split across the storyline beats.
+Write the storyline as five to nine sentences, each a claim, that read as a complete argument on their own. This is the talk at its smallest. If the sequence does not persuade as plain text, no slide design will rescue it. Then set the time budget: total minutes minus Q&A minus about 10 percent slack, split across the storyline beats. Backup slides marked `hidden: true` are outside that time budget.
 
 ## Step 4: Outline, then review
 

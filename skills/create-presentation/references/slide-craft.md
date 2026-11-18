@@ -236,4 +236,4 @@ Transition: So the question becomes, why don't they invite anyone? That's the ne
 - **Team slides:** say why each person is the right one for this problem (the `edge` line on `team`), not only where they worked.
 - **Product screens:** one `screen` per slide, with callouts in the order the notes walk them. The screenshot is the app alone, without its own browser bar or device bezel, since the frame draws those.
 - **Closing slide:** the takeaway and the next step, since it stays up during Q&A. Not "Thank you", not "Questions?".
-- **Appendix:** backup slides for likely questions, after the closing slide, each marked "Backup" in its eyebrow with a token time budget (`framework.md`, Time budgets). They are exempt from the one-idea discipline but still need assertion titles, so they can be found and used under pressure.
+- **Appendix:** backup slides for likely questions, after the closing slide, each marked `hidden: true` so the talk skips it, and "Backup" in its eyebrow; they add nothing to the time budget (`framework.md`, Time budgets). They are exempt from the one-idea discipline but still need assertion titles, so they can be found and used under pressure.
