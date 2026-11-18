@@ -20,8 +20,7 @@ what to tell their agent.
 ## Ground truth: v0.5.0, run it
 
 - The pages describe `@deckster/cli` **0.5.0** as published on npm. The code is the tag
-  `v0.5.0`, made from the merge of the release pull request (the tag's own hash is not written here until
-  the tag exists; until then the tree is `7dc64ea`, the merge of the release pull request on `main`). Read files at the tag
+  `v0.5.0`, on commit `7dc64ea` on `main` (the merge of the release pull request). Read files at the tag
   (`git -C ../2026-11-13-presentation show v0.5.0:<path>`), because `main` and the working tree
   move on after a release. Pages written before 0.5.0 were checked against 0.4.0 (commit
   `50e5d19`) or 0.3.0 (commit `4e0b186`); a statement that names one of them says which version
@@ -49,7 +48,7 @@ what to tell their agent.
   "Install the browser with `npx playwright@1.65.0 install chromium`." 0.4.0 and 0.5.0 pin the
   same Playwright, 1.65.0.
 - **What an npm workspace has and the repository does not, or the other way round.** Confirmed by
-  running 0.3.0, again with 0.4.0 from npm, and with 0.5.0 as packed at its release tree:
+  running 0.3.0, and again with 0.4.0 and 0.5.0 from npm:
   - `deck new <deck>` writes only `decks/<deck>/deck.config.ts` and `decks/<deck>/slides/title.mdx`
     (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deck types` writes the
     `tsconfig.json`.

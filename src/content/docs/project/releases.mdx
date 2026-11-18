@@ -9,23 +9,23 @@ Use this page to see which version of deckster these docs describe, upgrade to t
 
 ## The version these pages describe
 
-`@deckster/cli` **0.4.0**, released on 17 November 2026 from commit `50e5d19` (tag `v0.4.0`), later the same day as 0.3.0. Check yours:
+`@deckster/cli` **0.5.0**, released on 18 November 2026 from commit `7dc64ea` (tag `v0.5.0`), the day after 0.4.0. Check yours:
 
 ```console
 $ deck --version
-0.4.0
+0.5.0
 ```
 
-A feature that needs 0.4.0 is marked "New in v0.4.0" where a page describes it. Features on the repository's `main` branch that are not in a release yet are marked "Not in v0.4.0" where a page mentions them.
+A feature that needs 0.5.0 is marked "New in v0.5.0" where a page describes it, and one that needs 0.4.0 is marked "New in v0.4.0". Features on the repository's `main` branch that are not in a release yet are marked "Not in v0.5.0" where a page mentions them.
 
 ## Published versions
 
 ```console
 $ npm view @deckster/cli versions
-[ '0.0.0-stage', '0.1.0', '0.2.1', '0.3.0', '0.4.0' ]
+[ '0.0.0-stage', '0.1.0', '0.2.1', '0.3.0', '0.4.0', '0.5.0' ]
 ```
 
-The releases are 0.1.0, 0.2.1, 0.3.0 and 0.4.0; `latest` points at 0.4.0. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
+The releases are 0.1.0, 0.2.1, 0.3.0, 0.4.0 and 0.5.0; `latest` points at 0.5.0. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
 
 ## Upgrade
 
@@ -50,6 +50,10 @@ For a first install, see [quickstart](/get-started/quickstart/).
 ## What changed
 
 There is no changelog file. The [GitHub releases page](https://github.com/sandrinodm/deckster/releases) is the record: the notes for each release list what is new and what changed.
+
+[0.5.0](https://github.com/sandrinodm/deckster/releases/tag/v0.5.0) added one thing:
+
+- **Hidden slides.** `hidden: true` in a slide's frontmatter keeps the slide in the deck and the build, and a talk skips it: next, previous, Home and End pass over it, pacing leaves its budget out, and the brand's page numbers count shown slides only. `deck export` leaves hidden slides out unless you pass `--include-hidden`, which writes them as hidden slides in the PowerPoint file, and `deck shot --json` and the agent's outline report `hidden`. Three lint rules (`time-budget`, `few-builds`, `layout-repetition`) count shown slides only, and a deck whose every slide is hidden fails with an error. See [hidden slides](/write-slides/hidden-slides/).
 
 [0.4.0](https://github.com/sandrinodm/deckster/releases/tag/v0.4.0) added two things:
 
