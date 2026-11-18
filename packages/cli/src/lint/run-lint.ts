@@ -301,8 +301,8 @@ function checkSlides(
     const input = {
       slide,
       neighbours: {
-        previous: measured[position - 1]?.slide,
-        next: measured[position + 1]?.slide,
+        previous: shownNeighbour(measured, position, -1),
+        next: shownNeighbour(measured, position, 1),
       },
       deck: context.deck,
       brand: context.brands(slide.surface),
@@ -314,6 +314,29 @@ function checkSlides(
       return runSlideRules(active, { ...input, snapshot });
     });
   });
+}
+
+/**
+ * The nearest shown slide before (`-1`) or after (`1`) a position: what a talk shows next to it,
+ * hidden slides skipped.
+ *
+ * @param measured - The slides, in deck order.
+ * @param position - The position of the slide.
+ * @param direction - `-1` for the previous slide, `1` for the next.
+ */
+function shownNeighbour(
+  measured: readonly MeasuredSlide[],
+  position: number,
+  direction: -1 | 1,
+): SlideContext | undefined {
+  for (let at = position + direction; at >= 0 && at < measured.length; at += direction) {
+    const candidate = measured[at]?.slide;
+    if (candidate !== undefined && !candidate.hidden) {
+      return candidate;
+    }
+  }
+
+  return undefined;
 }
 
 /**
@@ -348,6 +371,7 @@ const measureSlide = Effect.fn('measureSlide')(function* (
     frontmatter: pageSlide.frontmatter,
     notes: pageSlide.notes,
     budgetSeconds: pageSlide.budget ?? undefined,
+    hidden: pageSlide.hidden,
     stepCount,
   };
   return { slide, snapshots };
@@ -418,13 +442,14 @@ function dedupe(findings: readonly KeyedFinding[]): LintFinding[] {
 }
 
 /**
- * The total of the slides' speaking budgets in seconds, or `null` when no slide has one.
+ * The total of the shown slides' speaking budgets in seconds, or `null` when none has one. Hidden
+ * slides are not part of the talk, so their budgets stay out.
  *
  * @param slides - The slides.
  */
 function totalBudget(slides: readonly SlideContext[]): number | null {
   const budgets = slides.flatMap((slide) =>
-    slide.budgetSeconds === undefined ? [] : [slide.budgetSeconds],
+    slide.hidden || slide.budgetSeconds === undefined ? [] : [slide.budgetSeconds],
   );
   return budgets.length === 0 ? null : budgets.reduce((total, seconds) => total + seconds, 0);
 }

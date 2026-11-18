@@ -50,7 +50,11 @@ Formats:
 
 Options:
   --steps           One page or slide per step instead of one per slide.
-  --slides <list>   Slides to export, such as 3,5-9 or cover,heat-map. Default: every slide.
+  --slides <list>   Slides to export, such as 3,5-9 or cover,heat-map. Default: every slide that is
+                    not hidden. A hidden slide you name here is exported.
+  --include-hidden  Export hidden slides too (\`hidden: true\` in the frontmatter): as ordinary PDF
+                    pages and PNGs, and as hidden slides in the PPTX (PowerPoint skips them in a
+                    slide show). Without it they are left out and the summary says how many.
   --brand <name>    Render with brands/<name> instead of the deck config's brand.
   --out <path>      Output folder, or a .pdf or .pptx file when exporting that one format.
                     Default: ${DEFAULT_EXPORT_DIR}/<deck> (or <deck>@<brand>).

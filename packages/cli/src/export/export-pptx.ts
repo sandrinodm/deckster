@@ -284,6 +284,7 @@ const captureTarget = Effect.fn('captureTarget')(function* (
       scene: capture.scene,
       plan: capture.plan,
       assets: { ...capture.assets, media },
+      hidden: target.slide.hidden,
     },
     webShot,
   };

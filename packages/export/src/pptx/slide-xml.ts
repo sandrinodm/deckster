@@ -253,6 +253,7 @@ export function slideXml(
   const { shapes, showMaster, filled } = slideShapes(writer);
   const background = backgroundXml(writer);
   const masterShapes = showMaster ? {} : { showMasterSp: 0 };
+  const hidden = slide.hidden === true ? { show: 0 } : {};
   const timing =
     options.animate && options.mode !== 'image' ? timingXml(revealSteps(writer.reveals)) : '';
   writer.counts.animations = [...writer.reveals.keys()].length;
@@ -260,7 +261,7 @@ export function slideXml(
     XML_DECLARATION +
     el(
       'p:sld',
-      { ...PML_NAMESPACES, 'xmlns:p14': P14_NAMESPACE, ...masterShapes },
+      { ...PML_NAMESPACES, 'xmlns:p14': P14_NAMESPACE, ...masterShapes, ...hidden },
       el(
         'p:cSld',
         { name: slide.title },

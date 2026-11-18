@@ -10,6 +10,7 @@ const SECONDS_PER_MINUTE = 60;
 /**
  * The slides' speaking budgets (`budget:` frontmatter) adding up to more than the time the talk
  * has. The talk's length is the deck config's `duration`; without one the rule reports nothing.
+ * Hidden slides are not part of the talk, so their budgets do not count.
  */
 export const timeBudgetRule: DeckRule = {
   /**
@@ -31,20 +32,22 @@ export const timeBudgetRule: DeckRule = {
    * The sentence `deck lint --help` lists for the rule.
    */
   description:
-    "The slides' budgets add up to more than the talk's duration (the deck config's `duration`).",
+    "The slides' budgets add up to more than the talk's duration (the deck config's `duration`); " +
+    'hidden slides are left out.',
 
   /**
    * Compares the total of the slide budgets with the deck's duration.
    */
   check: ({ deck }) => {
     const duration = deck.durationSeconds;
-    const budgets = deck.slides.map((slide) => slide.budgetSeconds ?? 0);
+    const shown = deck.slides.filter((slide) => !slide.hidden);
+    const budgets = shown.map((slide) => slide.budgetSeconds ?? 0);
     const total = budgets.reduce((sum, seconds) => sum + seconds, 0);
     if (duration === undefined || total <= duration) {
       return [];
     }
 
-    const unbudgeted = deck.slides.filter((slide) => slide.budgetSeconds === undefined).length;
+    const unbudgeted = shown.filter((slide) => slide.budgetSeconds === undefined).length;
     const verb = unbudgeted === 1 ? 'has' : 'have';
     const unbudgetedNote =
       unbudgeted === 0 ? '' : ` (${count(unbudgeted, 'slide')} ${verb} no budget, so it is more)`;

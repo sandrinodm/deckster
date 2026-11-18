@@ -89,6 +89,7 @@ export function fakeDeckTools(): FakeDeckTools {
             steps: 1,
             budgetSeconds: null,
             notesChars: 10,
+            hidden: false,
           },
         ],
       };

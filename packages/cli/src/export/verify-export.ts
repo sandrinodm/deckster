@@ -446,7 +446,10 @@ const writeTargets = Effect.fn('writeTargets')(function* (
     }
 
     const single = path.join(outDir, 'singles', `${name}.pptx`);
-    const built = yield* buildDeckPptx(capture, opened, contracts, options, [entry.input]);
+    // Renderers skip a hidden slide, as a slide show does; the picture to compare is the slide's.
+    const built = yield* buildDeckPptx(capture, opened, contracts, options, [
+      { ...entry.input, hidden: false },
+    ]);
     yield* writeVerifyFile(single, built.bytes);
     singles.push(single);
   }

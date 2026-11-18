@@ -68,6 +68,7 @@ export function pageSlide(
     layout: 'default',
     notes: 'Say this.',
     budget: null,
+    hidden: false,
     frontmatter: { layout: 'default' },
     ...overrides,
   };

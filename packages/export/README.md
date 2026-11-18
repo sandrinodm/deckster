@@ -30,6 +30,10 @@ $ pnpm deck export hello
 (`hybrid`, `native`, `image`), `--outline-text`, `--no-embed-fonts`, `--fonts system`, `--notes`,
 `--dry-run` and `--verify`.
 
+Which slides go into an export is the CLI's choice, not this package's: it leaves out slides with
+`hidden: true` unless `--include-hidden` is given. With that flag a slide's `PptxSlideInput` has
+`hidden: true`, and `buildPptx` writes it with `show="0"`, so PowerPoint skips it in a slide show.
+
 ## How an export runs
 
 PPTX, one slide at a time, then once for the deck:

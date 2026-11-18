@@ -116,6 +116,7 @@ export function slideContext(overrides: Partial<SlideContext> = {}): SlideContex
     frontmatter: { layout: 'default' },
     notes: 'Say this.',
     budgetSeconds: undefined,
+    hidden: false,
     stepCount: 1,
     ...overrides,
   };

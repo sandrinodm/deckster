@@ -290,6 +290,7 @@ export const deckToolsLive = Effect.fn('deckToolsLive')(function* (
           steps: yield* opened.page.stepCount(slide.index),
           budgetSeconds: slide.budget,
           notesChars: slide.notes.length,
+          hidden: slide.hidden,
         });
       }
 

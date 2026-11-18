@@ -13,7 +13,8 @@ const EVIDENCE_LAYOUTS = new Set(['chart', 'diagram', 'code']);
 /**
  * A deck that shows its evidence all at once: of its chart, diagram and code slides (at least
  * {@link FEW_BUILDS_MIN_EVIDENCE_SLIDES} of them), fewer than {@link FEW_BUILDS_MIN_SHARE} build in
- * steps. A slide builds when it has more than one step, whatever does the building.
+ * steps. A slide builds when it has more than one step, whatever does the building. Hidden slides
+ * are not counted: they are not part of the talk.
  */
 export const fewBuildsRule: DeckRule = {
   /**
@@ -36,13 +37,15 @@ export const fewBuildsRule: DeckRule = {
    */
   description:
     `Fewer than ${FEW_BUILDS_MIN_SHARE * 100}% of a deck's chart, diagram and code slides ` +
-    `(${FEW_BUILDS_MIN_EVIDENCE_SLIDES} or more) build in steps.`,
+    `(${FEW_BUILDS_MIN_EVIDENCE_SLIDES} or more) build in steps; hidden slides are left out.`,
 
   /**
    * Reports the deck once, naming the evidence slides that show everything on arrival.
    */
   check: ({ deck }) => {
-    const evidence = deck.slides.filter((slide) => EVIDENCE_LAYOUTS.has(slide.layout));
+    const evidence = deck.slides.filter(
+      (slide) => !slide.hidden && EVIDENCE_LAYOUTS.has(slide.layout),
+    );
     const unstaged = evidence.filter((slide) => slide.stepCount <= 1);
     const staged = evidence.length - unstaged.length;
     if (

@@ -22,12 +22,12 @@ export const BRAND_FOLDER_SEPARATOR = '@';
 const HELP = `Usage: deck shot <deck> [slide] [--steps] [--brand <name>] [--out <dir>] [--scale <n>] [--json]
 
 Renders a deck in static mode and writes a 1920x1080 PNG per slide, so you can look at the
-slides. Open the files to inspect them; --json lists them for scripts. A slide that throws is
-still captured, showing its error, and the command exits with 1.
+slides, hidden ones included. Open the files to inspect them; --json lists them for scripts. A
+slide that throws is still captured, showing its error, and the command exits with 1.
 
 Arguments:
   deck            Deck folder name under decks/.
-  slide           One slide, by id or 1-based number. Default: every slide.
+  slide           One slide, by id or 1-based number. Default: every slide, hidden ones too.
 
 Options:
   --steps         One PNG per step instead of one per slide, named NN-id.stepK.png (K from 0).
@@ -36,9 +36,10 @@ Options:
   --out <dir>     Output folder. Default: ${DEFAULT_SHOT_DIR}/<deck>, or
                   ${DEFAULT_SHOT_DIR}/<deck>${BRAND_FOLDER_SEPARATOR}<brand> with --brand.
   --scale <n>     Pixel density from ${MIN_SCALE} to ${MAX_SCALE}; 2 writes 3840x2160 images. Default: 1.
-  --json          Print { deck, brand, outDir, ok, files: [{ path, slide, number, step, width,
-                  height, error }], pageErrors }. error is what a broken slide threw, else null;
-                  pageErrors are errors thrown while the deck loaded. A failure prints
+  --json          Print { deck, brand, outDir, ok, files: [{ path, slide, number, step, hidden,
+                  width, height, error }], pageErrors }. hidden is true for a slide with
+                  \`hidden: true\`. error is what a broken slide threw, else null; pageErrors
+                  are errors thrown while the deck loaded. A failure prints
                   { ok: false, error: { type, message } } instead.
   -h, --help      Show this help.
 

@@ -6,7 +6,8 @@ import { REPEATED_LAYOUT_RUN } from '#lint/limits.ts';
 
 /**
  * Runs of slides that look the same: {@link REPEATED_LAYOUT_RUN} or more in a row with the same
- * layout on the same surface. A change of surface is enough to break a run.
+ * layout on the same surface. A change of surface is enough to break a run. Hidden slides are
+ * skipped, so the runs are the slides as a talk shows them one after another.
  */
 export const layoutRepetitionRule: DeckRule = {
   /**
@@ -28,13 +29,14 @@ export const layoutRepetitionRule: DeckRule = {
    * The sentence `deck lint --help` lists for the rule.
    */
   description:
-    `${REPEATED_LAYOUT_RUN} or more slides in a row ` + 'use the same layout on the same surface.',
+    `${REPEATED_LAYOUT_RUN} or more slides in a row ` +
+    'use the same layout on the same surface, counting shown slides only.',
 
   /**
    * Reports each run once, at the slide that makes it long enough.
    */
   check: ({ deck }) =>
-    runsOf(deck.slides)
+    runsOf(deck.slides.filter((slide) => !slide.hidden))
       .filter((run) => run.length >= REPEATED_LAYOUT_RUN)
       .map((run) => {
         const [first] = run;

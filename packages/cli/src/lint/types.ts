@@ -509,6 +509,12 @@ export type SlideContext = {
   budgetSeconds: number | undefined;
 
   /**
+   * Whether the slide is hidden (`hidden: true`). Slide rules still check it; the deck rules that
+   * describe the talk leave it out.
+   */
+  hidden: boolean;
+
+  /**
    * The number of steps, step 0 included.
    */
   stepCount: number;
