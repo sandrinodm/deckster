@@ -1415,44 +1415,36 @@ function plainOutput(text: string, root: string): string {
 }
 
 /**
- * The gallery page `deck build --all --out` writes, built into a scratch folder. Skipped when the
- * workspace has a deck outside the docs allowlist, which `--all` would put on the page.
+ * The gallery page `deck build --all --out` writes, built into a scratch folder from the decks on
+ * the docs allowlist only. The build runs in a scratch workspace holding copies of those decks,
+ * each linked to its own dependencies, and a link to the brands, so a deck outside the allowlist
+ * never reaches the page. The CLI does not list a deck folder that is itself a link.
  *
  * @param browser - The browser.
  * @returns The gallery page to shoot.
- * @throws ShotSkipped for a deck outside the allowlist; Error when the build fails.
+ * @throws Error when the build fails.
  */
 async function shotBuildGallery(browser: Browser): Promise<Page> {
-  const allowed = new Set<string>(DOCS_DECKS);
-  const outside = (await workspaceDecks()).filter((deck) => !allowed.has(deck));
-  if (outside.length > 0) {
-    throw new ShotSkipped(
-      `deck build --all would show decks outside the docs allowlist: ${outside.join(', ')}`,
-    );
+  const root = await scratchWorkspace('docs-ui-gallery-');
+  await symlink(path.join(WORKSPACE_ROOT, 'brands'), path.join(root, 'brands'), 'dir');
+  for (const deck of DOCS_DECKS) {
+    const source = path.join(WORKSPACE_ROOT, 'decks', deck);
+    const target = path.join(root, 'decks', deck);
+    await cp(source, target, { recursive: true, filter: (file) => !COPY_EXCLUDED.test(file) });
+    await symlink(path.join(source, 'node_modules'), path.join(target, 'node_modules'), 'dir');
   }
 
-  const site = path.join(await scratchFolder('docs-ui-gallery-'), 'site');
-  await deckOrThrow(['build', '--all', '--out', site]);
+  const site = path.join(await scratchFolder('docs-ui-gallery-site-'), 'site');
+  const run = await runDeckIn(root, ['build', '--all', '--out', site]);
+  if (run.code !== 0) {
+    throw new Error(`deck build --all exited ${run.code}:\n${run.stdout}${run.stderr}`);
+  }
+
   const context = await newShotContext(browser, 1);
   const page = await context.newPage();
   await page.goto(pathToFileURL(path.join(site, 'index.html')).href);
   await waitForImages(page);
   return page;
-}
-
-/**
- * The deck folders of the repository: the folders under `decks/` with a `deck.config.ts`.
- *
- * @returns Their names.
- */
-async function workspaceDecks(): Promise<string[]> {
-  const decksDir = path.join(WORKSPACE_ROOT, 'decks');
-  const entries = await readdir(decksDir, { withFileTypes: true });
-  const folders = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
-  const checks = await Promise.all(
-    folders.map((name) => exists(path.join(decksDir, name, 'deck.config.ts'))),
-  );
-  return folders.filter((_, index) => checks[index] === true);
 }
 
 /**
