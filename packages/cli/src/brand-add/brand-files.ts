@@ -58,10 +58,23 @@ const CODE_EXTENSIONS = new Set(['ts', 'tsx', 'mts', 'cts', 'js', 'jsx', 'mjs', 
 const BRAND_MODULES = new Set([BRAND_FILE, LAYOUTS_FILE]);
 
 /**
- * Package files the remote brand has for its own workspace; `deck brand add` writes the ones this
- * workspace needs instead.
+ * File names, in lower case, that configure a package, a package manager or TypeScript. They are
+ * never copied, at any depth and in any case: a case-insensitive file system would take
+ * `Package.JSON` for `package.json`. `deck brand add` writes the ones this workspace needs.
  */
-const PACKAGE_FILES = new Set(['package.json', 'tsconfig.json']);
+const PACKAGE_FILE_NAMES = new Set([
+  'package.json',
+  'package-lock.json',
+  'npm-shrinkwrap.json',
+  'tsconfig.json',
+  'jsconfig.json',
+  'deno.json',
+  'deno.jsonc',
+  'bunfig.toml',
+  'pnpm-workspace.yaml',
+  'pnpm-lock.yaml',
+  'yarn.lock',
+]);
 
 /**
  * Why a file of the fetched brand is not copied.
@@ -151,7 +164,8 @@ function skipReason(file: FetchedFile): SkipReason | undefined {
     return 'hidden';
   }
 
-  if (PACKAGE_FILES.has(file.path)) {
+  const name = segments.at(-1) ?? '';
+  if (PACKAGE_FILE_NAMES.has(name.toLowerCase())) {
     return 'package file';
   }
 
@@ -159,7 +173,6 @@ function skipReason(file: FetchedFile): SkipReason | undefined {
     return undefined;
   }
 
-  const name = segments.at(-1) ?? '';
   const extension = path.extname(name).slice(1).toLowerCase();
   if (extension === '' && LICENCE_NAMES.has(name.toUpperCase())) {
     return undefined;

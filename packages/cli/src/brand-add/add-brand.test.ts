@@ -97,6 +97,7 @@ function makeRemote(): string {
   });
   fs.writeFileSync(path.join(brandDir, 'helper.ts'), 'export const x = 1;\n');
   fs.writeFileSync(path.join(brandDir, '.env'), 'TOKEN=secret\n');
+  fs.writeFileSync(path.join(brandDir, 'logos', 'Package.JSON'), '{ "type": "commonjs" }\n');
   fs.symlinkSync('/etc/hosts', path.join(brandDir, 'logos', 'hosts.svg'));
   const codeDir = path.join(repo, 'brands', 'code');
   fs.mkdirSync(codeDir, { recursive: true });
@@ -173,13 +174,14 @@ layer(NodeServices.layer)('addBrand', (it) => {
           { path: 'helper.ts', reason: 'code' },
           { path: 'logos/hosts.svg', reason: 'symlink' },
           { path: 'package.json', reason: 'package file' },
+          { path: 'logos/Package.JSON', reason: 'package file' },
         ]),
       );
       expect(added.next).toEqual(['pnpm install', `pnpm deck brand check ${BRAND}`]);
       expect(fs.readFileSync(path.join(dir, 'brand.ts'), 'utf8')).toBe(
         fs.readFileSync(path.join(FRAMEWORK_ROOT, 'brands', BRAND, 'brand.ts'), 'utf8'),
       );
-      for (const left of ['.env', 'helper.ts', 'logos/hosts.svg']) {
+      for (const left of ['.env', 'helper.ts', 'logos/hosts.svg', 'logos/Package.JSON']) {
         expect(fs.existsSync(path.join(dir, left)), left).toBe(false);
       }
 
