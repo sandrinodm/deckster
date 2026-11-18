@@ -5,7 +5,7 @@ sidebar:
   order: 8
 ---
 
-Use this page to check the keys every slide's frontmatter takes, whatever its layout: `layout`, `title`, `surface`, `background`, `budget` and `transition`. A layout adds its own keys (`eyebrow`, `align`, `stats` and so on); those are on each layout's page under [layouts](/reference/layouts/).
+Use this page to check the keys every slide's frontmatter takes, whatever its layout: `layout`, `title`, `surface`, `background`, `budget`, `transition` and `hidden`. A layout adds its own keys (`eyebrow`, `align`, `stats` and so on); those are on each layout's page under [layouts](/reference/layouts/).
 
 ## Keys
 
@@ -21,6 +21,7 @@ The table gives each key's type, allowed values and limits. It marks no key as r
 | `background` | the surface's own background | `none` hides the surface's background layers. An image path paints that image instead of them. The object form takes `src` and options: `fit` (`cover`, the default, crops around `focal`; `contain` shows the whole image), `focal` (`{ x, y }` in percent, default the centre), `opacity` (0 to 1, default 1), `tint` (`{ role, opacity }`, a colour of the surface laid over the image: `bg`, `surface`, `fg` or `accent`) and `layers` (`replace`, the default, or `over` to paint the image above the surface's layers). See [media](/write-slides/media/). |
 | `budget` | none | How long you mean to speak on the slide: minutes and seconds, such as `90s`, `2m` or `1m30s` (up to 999 minutes and 9999 seconds). The presenter window paces against it, and the `time-budget` lint rule adds the budgets up against the deck's `duration`. See [speaker notes](/write-slides/speaker-notes/). |
 | `transition` | the brand's transition | The transition for the move between the previous slide and this one, both ways: `none`, `fade`, `slide`, `rise`, `push`, `cover`, `wipe` or `zoom`. See [transitions and morphs](/write-slides/transitions-and-morphs/). |
+| `hidden` | `false` | `true` keeps the slide in the deck and the build and skips it in a talk: next and previous pass over it, exports leave it out, and its `budget` is not counted. A link, the slide sidebar and go-to still open it. Anything but `true` or `false` is a `schema` error. New in 0.5.0. See [hidden slides](/write-slides/hidden-slides/). |
 
 The table shows `budget` as a plain string because the schema cannot carry its pattern; the build checks it.
 

@@ -65,6 +65,10 @@ Rules for a morph:
 - **Neighbours only.** Morphs play between consecutive slides. An `id` the other slide does not have, or an element in a step that is not shown yet, does not fly.
 - **Morph something with its own size.** The element's box flies, so a chart or figure that fills its whole region flies as that region. One or two morphs per move keep the eye on what carries over.
 
+## Around a hidden slide
+
+New in 0.5.0. A slide pairs with the slide before it that a talk shows, so [hidden slides](/write-slides/hidden-slides/) do not break a pair. With slide 4 hidden, the move from slide 3 to slide 5 plays the transition of slide 5, and a `<Morph>` with the same `id` on slides 3 and 5 carries the element across. A move between the hidden slide and the slide next to it in the list pairs those two as usual.
+
 ## When nothing moves
 
 Transitions and morphs play only in the live deck. There is no morph, and no transition in the pictures, in:

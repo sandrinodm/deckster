@@ -11,20 +11,20 @@ Use this page to link to a slide and step, open a deck in static mode or as the 
 
 A deck writes its position into the URL as `#/<slide>/<step>`:
 
-- `<slide>` is the slide's number, counted from 1, so it matches page numbers. In a hash you type or link to, it may also be the slide's id: `#/steps/2` is the same as `#/2/2` in the `hello` deck.
+- `<slide>` is the slide's number in the slide list, counted from 1, hidden slides included. It matches the page numbers in a deck without hidden slides; the page numbers an audience sees count shown slides only (see [hidden slides](/write-slides/hidden-slides/#two-numbering-rules)). In a hash you type or link to, it may also be the slide's id: `#/steps/2` is the same as `#/2/2` in the `hello` deck.
 - `<step>` counts from 0, where 0 is the slide before any `<Step>` shows (see [steps](/concepts/steps/)). Leave it out for step 0: `#/3`.
 
-The deck writes the number back: open `#/steps/1` and the address bar shows `#/2/1`. A hash with an unknown id or a number out of range is ignored.
+The deck writes the number back: open `#/steps/1` and the address bar shows `#/2/1`. A hash with an unknown id or a number out of range is ignored. A hash that names a hidden slide opens it, and a deck opened without a hash starts on the first shown slide (new in 0.5.0).
 
 ## Query parameters
 
-Version 0.4.0 reads three:
+Version 0.5.0 reads three:
 
 | Parameter | Does |
 | --- | --- |
 | `?static` | Static mode: every slide mounts, and motion, video and live demos show their final state. `?static=1` and `?static=true` also turn it on; `?static=0`, `false` or `no` leave it off. `deck shot`, `deck lint` and the exports open pages this way. See [static mode and readiness](/concepts/static-mode-and-readiness/). |
 | `?presenter` | Opens the page as the presenter window, with notes and timer, instead of the audience window. In a browser, `p` opens this URL at the current position. |
-| `?embed` | New in 0.4.0. Embed mode, for a deck shown in an iframe on another page: the slides and the brand's chrome without the presenter tools, overlays or plugin key and click handlers, and a small control with previous and next buttons, the slide count and an "Open full deck" link that opens the same position without `?embed` in a new tab. Takes the same values as `?static`. |
+| `?embed` | New in 0.4.0. Embed mode, for a deck shown in an iframe on another page: the slides and the brand's chrome without the presenter tools, overlays or plugin key and click handlers, and a small control with previous and next buttons, the slide count (shown slides only since 0.5.0) and an "Open full deck" link that opens the same position without `?embed` in a new tab. Takes the same values as `?static`. |
 
 They combine with the hash: `http://localhost:5173/?static#/steps/2`.
 
@@ -34,12 +34,12 @@ While a deck is mounted, `window.__deck` holds its automation API, the one `deck
 
 | Member | What it is |
 | --- | --- |
-| `slides` | The slides in order. Each has `index` (from 0), `id`, `file`, `title`, `layout`, `stepCount` (step 0 included; `undefined` until the slide has mounted once), `notes`, `budget` (in seconds) and `frontmatter`. |
+| `slides` | The slides in order, hidden ones included. Each has `index` (from 0), `id`, `file`, `title`, `layout`, `stepCount` (step 0 included; `undefined` until the slide has mounted once), `notes`, `budget` (in seconds), `hidden` (`true` for a slide with `hidden: true`; new in 0.5.0) and `frontmatter`. |
 | `position` | The slide and step on screen: `{ slide, step }`, the slide counted from 0. |
 | `isStatic` | Whether the page runs in `?static` mode. |
-| `goto(slide, step?)` | Shows a slide, by index from 0 or by id, at a step (default 0). A step past the slide's last clamps to it. Throws a `RangeError` for a slide that does not exist. |
-| `next()` | The next step, or the next slide after the last step. Does nothing at the end. |
-| `prev()` | The previous step, or the previous slide at its last step. Does nothing at the start. |
+| `goto(slide, step?)` | Shows a slide, by index from 0 or by id, at a step (default 0). A step past the slide's last clamps to it. It lands on a hidden slide too. Throws a `RangeError` for a slide that does not exist. |
+| `next()` | The next step, or the next shown slide after the last step; hidden slides are skipped. Does nothing at the end. |
+| `prev()` | The previous step, or the previous shown slide at its last step; hidden slides are skipped. Does nothing at the start. |
 | `ready()` | A promise that resolves when the slide on screen (every slide, in static mode) is ready to capture. |
 
 `goto`, `next` and `prev` apply synchronously: when the call returns, the new slide is rendered. They never morph; a morph that a key press started finishes at once, so the API always moves from where the deck really is. Note that `position` and `goto` count slides from 0 while the hash counts from 1.

@@ -17,13 +17,15 @@ These work in every running deck and in both `deck present` windows.
 
 | Key | Does |
 | --- | --- |
-| Right, Down, PageDown, Space | Next step, or the next slide after the last step |
-| Left, Up, PageUp, Shift+Space | Previous step, or the previous slide |
-| Home | First slide |
-| End | Last slide |
-| `g`, then a number and Enter | Go to that slide |
+| Right, Down, PageDown, Space | Next step, or the next shown slide after the last step |
+| Left, Up, PageUp, Shift+Space | Previous step, or the previous shown slide |
+| Home | First shown slide |
+| End | Last shown slide |
+| `g`, then a number and Enter | Go to that slide, hidden or not. The number counts every slide |
 | Left click | Next step or slide |
 | Right click | Previous step or slide |
+
+New in 0.5.0: the keys and the clicks skip slides marked `hidden: true`; see [backup slides](/present/presenter-tools-and-shortcuts/#backup-slides).
 
 PageDown and PageUp are what most presentation clickers send. A click does not move the deck when it lands on a button, link or other interactive element, ends a drag or a text selection, or is made with a modifier key held. `mouseNavigation: false` in [`deck.config.ts`](/reference/deck-config/) turns both clicks off; the keys still work.
 

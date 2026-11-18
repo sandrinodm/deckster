@@ -11,28 +11,29 @@ page covers and this page decides how it is written; list any conflict in your r
 
 ## The reader
 
-Someone who installed `@deckster/cli` 0.4.0 from npm (`npm install --global @deckster/cli`, Node
+Someone who installed `@deckster/cli` 0.5.0 from npm (`npm install --global @deckster/cli`, Node
 26 or later) and works in a folder of their own with `decks/` and maybe `brands/`. They have never
 seen the deckster repository, and often they are directing an AI agent (Claude Code, Codex) that
 writes the slides while they review. Write for that person: what to type, what they will see,
 what to tell their agent.
 
-## Ground truth: v0.4.0, run it
+## Ground truth: v0.5.0, run it
 
-- The pages describe `@deckster/cli` **0.4.0** as published on npm. The code is the tag
-  `v0.4.0`, on commit `50e5d19` on `main` (the merge of the release pull request). Read
-  files at the tag (`git -C ../2026-11-13-presentation show v0.4.0:<path>`), because `main` and
-  the working tree move on after a release. Pages written before 0.4.0 were checked against 0.3.0
-  (commit `4e0b186`); a statement that names 0.3.0 says which version was measured.
-- **Every command and every output block on a page was run by you against 0.4.0.** Install it
+- The pages describe `@deckster/cli` **0.5.0** as published on npm. The code is the tag
+  `v0.5.0`, on commit `7dc64ea` on `main` (the merge of the release pull request). Read files at the tag
+  (`git -C ../2026-11-13-presentation show v0.5.0:<path>`), because `main` and the working tree
+  move on after a release. Pages written before 0.5.0 were checked against 0.4.0 (commit
+  `50e5d19`) or 0.3.0 (commit `4e0b186`); a statement that names one of them says which version
+  was measured.
+- **Every command and every output block on a page was run by you against 0.5.0.** Install it
   once in a scratch folder and run it from a fresh workspace:
 
   ```sh
-  npm install --prefix "$TMPDIR/deck-0.4.0" @deckster/cli@0.4.0
+  npm install --prefix "$TMPDIR/deck-0.5.0" @deckster/cli@0.5.0
   mkdir -p "$TMPDIR/talks" && cd "$TMPDIR/talks"
   export DECK_ROOT="$PWD"                      # the CLI climbs to the nearest folder with decks/
-  export PATH="$TMPDIR/deck-0.4.0/node_modules/.bin:$PATH"
-  deck --version                               # 0.4.0
+  export PATH="$TMPDIR/deck-0.5.0/node_modules/.bin:$PATH"
+  deck --version                               # 0.5.0
   ```
 
   Before a release is on npm, run the CLI that `npm run sync -- --data` packs from the checkout
@@ -44,10 +45,10 @@ what to tell their agent.
 
   Chromium for `lint`, `shot`, `diff` and `export`: `npx playwright@1.65.0 install chromium`.
   Confirmed: with no Chromium, 0.3.0 prints "Could not start Chromium: ..." and then
-  "Install the browser with `npx playwright@1.65.0 install chromium`." 0.4.0 pins the same
-  Playwright, 1.65.0.
+  "Install the browser with `npx playwright@1.65.0 install chromium`." 0.4.0 and 0.5.0 pin the
+  same Playwright, 1.65.0.
 - **What an npm workspace has and the repository does not, or the other way round.** Confirmed by
-  running 0.3.0, and again with 0.4.0 from npm:
+  running 0.3.0, and again with 0.4.0 and 0.5.0 from npm:
   - `deck new <deck>` writes only `decks/<deck>/deck.config.ts` and `decks/<deck>/slides/title.mdx`
     (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deck types` writes the
     `tsconfig.json`.
@@ -62,8 +63,8 @@ what to tell their agent.
     only `default`. The site's `icons.json` lists the 776 names shared by all five published
     brands.
 - `src/data/*.json` was generated from the repository. `cli.json` carries the help as the npm CLI
-  prints it (checked against `deck <cmd> --help` from 0.3.0 for all 19 commands; the 0.4.0 data
-  was read from the CLI packed at the release commit, which is what npm publishes), including the
+  prints it (checked against `deck <cmd> --help` from 0.3.0 for all 19 commands; the 0.4.0 and 0.5.0
+  data were read from the CLI packed at the release commit, which is what npm publishes), including the
   "See docs/agent.md" and "See docs/present.md" lines the CLI prints in `dev` and `present`; those
   files are not in the npm package, so never send readers to them. Still paste help you quote from
   the installed CLI, as for every output block.
@@ -107,14 +108,14 @@ what to tell their agent.
 ## Code and output
 
 - Commands in `sh` fences; command plus output in `console` fences with a `$ ` prompt. Paste
-  output exactly as 0.4.0 printed it. Cut long output with a line `...` and say so in prose. Run
+  output exactly as 0.5.0 printed it. Cut long output with a line `...` and say so in prose. Run
   from inside the workspace, so no `Using the workspace ...` line or scratch path appears; call
   the workspace `talks` and the example deck by a plain name such as `launch-review`.
 - Slide source goes in `mdx` or `tsx` fences. Deck components (`<Notes>`, `<Step>`, `<Flow>`,
   ...) never appear as live tags on a page: the site has its own `Step`, `Steps`, `LinkCard` and
   `Aside`, and the rest are not registered. Inline, write them in backticks: `<Notes>`.
 - Prefer real source: show a slide from a published deck (`slides.json` has every slide's source)
-  over an invented one. If you invent one, lint it with 0.4.0 first.
+  over an invented one. If you invent one, lint it with 0.5.0 first.
 
 ## Site components
 
@@ -164,16 +165,19 @@ has its own page, once per page. A layout links to its own page, `/reference/lay
 anchor on `/reference/layouts/`. Only the nine published decks and five published brands may
 appear on any page, in examples or screenshots.
 
-## New in v0.4.0, and newer than the release
+## New in v0.5.0, and newer than the release
 
-Two features are new in 0.4.0: embed mode (`?embed`) and diagram looks and cards
+One feature is new in 0.5.0: hidden slides (`hidden: true` in a slide's frontmatter, `deck export
+--include-hidden`, the `hidden` field of `deck shot --json` and of `window.__deck.slides`). A page
+that describes it says it needs 0.5.0: an `<Aside type="note" title="New in v0.5.0">` on the page
+that owns it (`/write-slides/hidden-slides/`), or "New in 0.5.0." in a sentence or a table row on
+the others. Two features are new in 0.4.0, embed mode (`?embed`) and diagram looks and cards
 (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` in `brand.ts`, `card="..."` on diagram
-parts, `diagram-card-missing`). A page that describes one says it needs 0.4.0: an
-`<Aside type="note" title="New in v0.4.0">` on the page that owns it, or "New in 0.4.0." in a
-table row. Every other behaviour you describe must be in 0.4.0. Something on `main` that is newer
-than the release is left out, or, where a brief asks for it, mentioned in one or two sentences
-inside `<Aside type="note" title="Not in v0.4.0">`; if `main` or the working tree differs from
-the release, describe the release and report the difference.
+parts, `diagram-card-missing`); their "New in v0.4.0" notes stay, because they tell a reader on an
+older CLI what is missing. Every other behaviour you describe must be in 0.5.0. Something on `main`
+that is newer than the release is left out, or, where a brief asks for it, mentioned in one or
+two sentences inside `<Aside type="note" title="Not in v0.5.0">`; if `main` or the working tree
+differs from the release, describe the release and report the difference.
 
 ## Your report
 

@@ -78,6 +78,22 @@ Slides are matched by id, not by position, so inserting a slide reports one `add
 
 Only the slides that left their order are `moved`: reordering one slide reports that slide, not every slide it passed. With nothing else changed, the reorder above prints `moved    revenue  (slide 3 -> 2)`.
 
+## Hidden slides
+
+New in 0.5.0. `deck diff` shoots every slide, hidden ones included, so an edit to a backup slide is reported like any other (see [hidden slides](/write-slides/hidden-slides/)). Hiding or showing a slide is reported too, because the pictures change: the page numbers and totals of the shown slides move, and a hidden slide has no page number of its own. With the `default` brand, a baseline saved while `pricing-backup` was shown and a diff after adding `hidden: true` to it:
+
+```console
+$ deck diff launch-review
+launch-review (default) against /Users/you/talks/.deck/baseline/launch-review: 3 changed, 1 unchanged
+  changed  revenue  (slide 2)  <0.01%
+  changed  risks  (slide 3)  <0.01%
+  changed  pricing-backup  (slide 4)  0.02%
+Report: /Users/you/talks/.deck/diff/launch-review/index.html
+Summary for a pull request: /Users/you/talks/.deck/diff/launch-review/summary.md
+```
+
+The title slide stays `unchanged` because the `default` brand draws no page number on the first slide (`chrome.skipFirst`).
+
 ## Options
 
 | Option | What it does |
@@ -128,7 +144,7 @@ Compared with `HEAD`: 1 changed, 2 unchanged.
 That workflow uses the repository's pnpm set-up, so it is not ready to copy into an npm workspace. In an npm workspace, the job's commands for steps 3 and 4 are these, with `main` as the base branch:
 
 ```sh
-npm install --global @deckster/cli@0.4.0
+npm install --global @deckster/cli@0.5.0
 npx playwright@1.65.0 install chromium
 git fetch origin main
 deck diff launch-review --base origin/main

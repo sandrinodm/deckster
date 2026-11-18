@@ -77,6 +77,32 @@ $ deck export hello --pdf --slides 9
 Run `deck export --help` for the usage.
 ```
 
+## Hidden slides
+
+New in 0.5.0. A slide with `hidden: true` is not in the talk, so the export leaves it out of the PDF and says how many it left out. This `launch-review` deck has a fourth slide, `pricing-backup`, that is hidden (see [hidden slides](/write-slides/hidden-slides/)):
+
+```console
+$ deck export launch-review --pdf
+/Users/you/talks/.deck/exports/launch-review/launch-review.pdf (3 pages, 3 bookmarks, 0 slide links, 0 external links)
+1 hidden slide left out (add --include-hidden to export).
+```
+
+`--include-hidden` puts hidden slides in as ordinary pages, with a bookmark each, in the order of the slide list:
+
+```console
+$ deck export launch-review --pdf --include-hidden --out handout.pdf
+/Users/you/talks/handout.pdf (4 pages, 4 bookmarks, 0 slide links, 0 external links)
+```
+
+A hidden slide that `--slides` names is exported without the flag, also inside a range such as `3-4`. A selection is your choice of slides, so no line about hidden slides follows it:
+
+```console
+$ deck export launch-review --pdf --slides risks,pricing-backup --out backup.pdf
+/Users/you/talks/backup.pdf (2 pages, 2 bookmarks, 0 slide links, 0 external links)
+```
+
+Slide numbers in `--slides` count every slide, hidden ones included. `deck export --png` follows the same rules, while `deck shot` shoots every slide.
+
 ## Speaker notes pages
 
 `--notes` adds a notes page per slide (the slide with its notes) after the slides, under one more bookmark, "Speaker notes":

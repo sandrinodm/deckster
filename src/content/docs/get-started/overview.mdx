@@ -42,7 +42,7 @@ The reasons behind these choices are on [Design decisions](/project/design-decis
 | For | You need |
 | --- | --- |
 | Every command | Node.js 26 or later |
-| `deck lint`, `deck shot`, `deck diff`, `deck export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.0 install chromium` for 0.4.0 |
+| `deck lint`, `deck shot`, `deck diff`, `deck export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.0 install chromium` for 0.5.0 |
 | `deck present` | Electron's binary, downloaded once (about 120 MB). Without it, `deck present` prints the command that downloads it; `--browser` presents in Chrome instead. Checked on macOS with one display only: several displays, Windows and Linux are untested |
 | `deck diff` against a git ref | A git repository; otherwise compare with a folder saved by `deck diff --save-baseline` |
 | `deck export --verify` | Docker, for the LibreOffice and Open XML SDK checks. The `quicklook` and `keynote` renderers work on macOS only |

@@ -32,8 +32,8 @@ A built deck has five: Slide sidebar, Overview, Presenter window, Fullscreen and
 | --- | --- | --- |
 | Right, Down, PageDown, Space | Next step or slide | both windows |
 | Left, Up, PageUp, Shift+Space | Previous step or slide | both windows |
-| Home, End | First or last slide | both windows |
-| `g` | Go to slide: type its number, then Enter | both windows |
+| Home, End | First or last shown slide | both windows |
+| `g` | Go to slide: type its number, then Enter. A hidden slide too | both windows |
 | `b`, `w` | Black out or white out the screen; press again, or any navigation key, to bring the slide back | both windows |
 | `l` | Laser pointer | both windows |
 | `f` | Fullscreen | both windows |
@@ -43,7 +43,7 @@ A built deck has five: Slide sidebar, Overview, Presenter window, Fullscreen and
 | `?` | Every key the running deck knows | both windows |
 | Escape | Close the panel on top | both windows |
 
-A key pressed with Ctrl, Alt or Meta is left to the browser. The full list is in [Keyboard shortcuts](/reference/keyboard-shortcuts/).
+A key pressed with Ctrl, Alt or Meta is left to the browser. Next, previous, Home and End skip [hidden slides](/write-slides/hidden-slides/); see [backup slides](#backup-slides) below. The full list is in [Keyboard shortcuts](/reference/keyboard-shortcuts/).
 
 ## Find a slide: sidebar and overview
 
@@ -71,9 +71,30 @@ The timer starts when you press Start. Pacing compares it with each slide's `bud
 
 - **Without a `duration`** in `deck.config.ts`, the budgets stand as written, and the second figure reads Budgets left.
 - **With a `duration`**, the slides without a budget share the time the budgets leave over equally, and then every budget is scaled so they add up to the duration exactly. A 20-minute talk whose budgets add up to 10 minutes plans each slide at twice its budget. The second figure reads Talk left.
+- **Hidden slides** are left out of the plan: their budgets are not in the total, and a `duration` is shared between the shown slides. On a hidden slide This slide shows a dash, because the slide has no time of its own. New in 0.5.0.
 - **Without any budget**, there is no plan, with or without a `duration`: a duration alone is not spread over the slides. The label reads No budgets, and This slide and Schedule show a dash. With a `duration`, Talk left still counts it down.
 
 Once there is a plan, the label at the top right says Not started until you press Start, then On pace while the timer is inside the current slide's planned window, or Ahead or Behind with the minutes and seconds. This slide counts down the current slide's budget from the moment it came on screen, and shows a dash on a slide that has none when there is no `duration`; Schedule shows how far ahead (positive) or behind (negative) you are.
+
+## Backup slides
+
+<Aside type="note" title="New in v0.5.0">
+Hidden slides need `@deckster/cli` 0.5.0 or later.
+</Aside>
+
+A slide with `hidden: true` is a backup: next, previous, Home and End pass over it, so the talk runs without it and the slide waits for its question. [Hidden slides](/write-slides/hidden-slides/) shows how to write one. Here is how you reach it while you present:
+
+<Steps>
+
+1. Open the slide sidebar (`s`) or the overview (`o`) and select the backup. Both dim a hidden slide and badge it "Hidden". Or press `g`, type its number and press Enter. The number is the one the sidebar shows, which counts hidden slides too. Or open a link to it, such as `#/4`.
+
+2. Answer the question. On the hidden slide, next and previous step through its own steps first, as on any slide.
+
+3. Leave it. Next goes to the first shown slide after the backup in the slide list, and previous to the last shown slide before it. Neither remembers where you were, so to return to the slide you came from, select it in the sidebar or press `g` and its number. A backup after the last shown slide has no next.
+
+</Steps>
+
+On a hidden slide the presenter window's header reads "Slide 4 of 4 · hidden". Its next-slide preview shows the next shown slide, the one the audience gets after it, not the next slide in the list. The audience window shows no page number on a hidden slide, and the page numbers of the shown slides run without a gap; the two numbering rules are on [hidden slides](/write-slides/hidden-slides/#two-numbering-rules).
 
 ## Two windows, one position
 

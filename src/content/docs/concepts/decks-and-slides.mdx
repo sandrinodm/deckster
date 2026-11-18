@@ -61,7 +61,7 @@ Every slide is laid out on a 1920x1080 canvas, and the canvas is scaled to fit t
 
 ## How a slide is addressed
 
-The URL hash names the slide and the [step](/concepts/steps/): `#/<slide>/<step>`. In `#/2/0`, the slide number counts from 1 and the step from 0. When you type or link a hash, you can use the slide id instead of the number, as in `#/live-counter/1`. The deck then rewrites the hash to the number form. A reload or a shared link opens the same slide at the same step.
+The URL hash names the slide and the [step](/concepts/steps/): `#/<slide>/<step>`. In `#/2/0`, the slide number counts from 1 and the step from 0. The number is the slide's place in the list, so a slide with `hidden: true` has one too ([hidden slides](/write-slides/hidden-slides/)). When you type or link a hash, you can use the slide id instead of the number, as in `#/live-counter/1`. The deck then rewrites the hash to the number form. A reload or a shared link opens the same slide at the same step.
 
 ## What the build checks
 

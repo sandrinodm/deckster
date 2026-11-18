@@ -1,0 +1,95 @@
+---
+title: "Hidden slides"
+description: "Keep a backup slide in the deck and skip it in the talk with hidden: true."
+sidebar:
+  order: 6.5
+---
+
+A slide with `hidden: true` stays in the deck and in the build, and a talk skips it. Use it for a backup slide that answers a question you expect, for an appendix, or for a slide you have parked for later. After this page you can hide and show a slide, and you know what presenting, exporting and linting do with one.
+
+<Aside type="note" title="New in v0.5.0">
+`hidden` needs `@deckster/cli` 0.5.0 or later. In 0.4.0, `deck lint` reports `"hidden" is not a frontmatter field.`
+</Aside>
+
+## Hide a slide
+
+<Steps>
+
+1. Add `hidden: true` to the slide's frontmatter. This is a backup slide for the pricing question:
+
+   ```mdx
+   ---
+   layout: content
+   title: Why the Team plan costs 12 euros
+   hidden: true
+   budget: 1m
+   ---
+   ```
+
+   A TSX slide puts the same line in its `frontmatter` object, as a literal (see [TSX slides](/write-slides/tsx-slides/)). To show the slide again, delete the line or write `hidden: false`.
+
+2. Keep the slide in `slides` in `deck.config.ts`, where it sits in the order like any other. Its place in the list decides its number, which stays the same whether it is hidden or not.
+
+3. Check that the value is a boolean. `hidden` takes `true` or `false`, and the build refuses anything else:
+
+   ```console
+   $ deck lint launch-review
+   decks/launch-review/slides/pricing-backup.mdx
+     error   schema (pricing-backup): hidden: Expected boolean, got "yes".
+             Fix: Write `hidden: true` to skip the slide in a talk, or leave the key out.
+
+   launch-review: 1 error, 0 warnings.
+   ```
+
+</Steps>
+
+The key is one of the keys every slide takes; the full list is on [slide frontmatter](/reference/slide-frontmatter/).
+
+## What a talk does with it
+
+Next, previous, Home and End pass over a hidden slide, in the audience window, in the presenter window and in the controls of an embedded deck. A deck opened without a slide in its address starts on the first shown slide. A link, the slide sidebar, the overview and go-to still open a hidden slide, so you can reach a backup when the question comes. [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/#backup-slides) covers what you press and what the presenter window shows.
+
+A hidden slide's `budget` is not part of the plan. The presenter's pacing and the `time-budget` lint rule count shown slides only.
+
+## Two numbering rules
+
+Two kinds of number appear around a deck, and hiding a slide treats them differently:
+
+| Number | It counts | Where you meet it |
+| --- | --- | --- |
+| The position in the slide list | every slide, hidden or not | The slide number in the address (`#/4`), the numbers in the sidebar and the overview, "Slide 4 of 4" in the presenter window, go-to, the file names of `deck shot`, and `--slides` |
+| What the audience sees | shown slides only | The brand's page number and its total, the progress bar, and the slide count in the controls of an embedded deck |
+
+The first kind never moves when you hide or show a slide, so a saved link, a review comment and a screenshot name keep pointing at the same slide. The second kind has no gap: a deck of 35 slides with 5 hidden ones shows pages 1 to 30. A hidden slide that you open on purpose shows no page number, and the progress bar stays where the last shown slide before it left it. A brand whose chrome skips the first slide (`skipFirst`) skips the first shown slide.
+
+## Hiding is not removing
+
+A hidden slide is still part of the deck. `deck build` builds it, and whoever opens the built deck with its number or id in the address (`#/4` or `#/pricing-backup`) sees it. The gallery that `deck build --all --out` writes counts it in the deck's slide count. To take a slide out of the deck, remove its id from `slides` in `deck.config.ts`.
+
+A deck needs a slide to show. When every slide has `hidden: true`, the build stops:
+
+```console
+$ deck build launch-review
+✓ 0 modules transformed.
+✗ Build failed in 22ms
+Every slide of the deck is hidden in decks/launch-review/deck.config.ts:
+  - Every slide of the deck "launch-review" has `hidden: true`, so there is nothing to show.
+    Fix: Show at least one slide: remove `hidden: true` from one of them.
+```
+
+Every command that opens the deck stops with the same message and exit code 1. `deck lint` reports it as a `schema` error:
+
+```console
+$ deck lint launch-review
+decks/launch-review/deck.config.ts
+  error   schema: Every slide of the deck "launch-review" has `hidden: true`, so there is nothing to show.
+          Fix: Show at least one slide: remove `hidden: true` from one of them.
+
+launch-review: 1 error, 0 warnings.
+```
+
+## Export, review and lint
+
+- **`deck export`** leaves hidden slides out of the PDF, the PNGs and the PowerPoint file and says how many. `--include-hidden` puts them in, and in the PowerPoint file they are hidden slides, which PowerPoint skips in a slide show. See [PDF](/export-and-publish/pdf/#hidden-slides) and [PowerPoint](/export-and-publish/powerpoint/#hidden-slides).
+- **`deck shot`, `deck diff` and `deck lint`** cover a hidden slide like any other, so a backup slide is checked for overflow and contrast too. `deck shot --json` marks each file with `hidden`. See [screenshots](/review/screenshots/#hidden-slides).
+- **Three lint rules** count shown slides only: `time-budget`, `few-builds` and `layout-repetition`. See [lint](/review/lint/#hidden-slides).

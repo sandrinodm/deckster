@@ -6,8 +6,10 @@
  * packages/engine/src/contract/deck-config.ts for the deck config. Written at v0.3.0 (commit
  * 4e0b186); the diagram look and cards (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` and
  * `color.surfaces.<name>.diagram.cards`), new in 0.4.0, from schema/diagram-schema.ts and
- * resolve/resolve-diagram.ts at commit 6c27269. Checked against the 0.4.0 release commit
- * (c018637): the brand and deck-config schemas and their defaults are otherwise unchanged.
+ * resolve/resolve-diagram.ts at commit 6c27269. Checked against the 0.5.0 release merge
+ * (commit 7dc64ea on main): the brand and deck-config
+ * schemas and their defaults are otherwise unchanged (0.5.0 changes only the slide frontmatter,
+ * which has no overlay).
  *
  * Keys are the row paths exactly as flattenSchema in format.ts writes them
  * (`color.surfaces.<name>.background[type=image].fit`). A row with no entry shows an empty
