@@ -1,4 +1,13 @@
 import {
+  ACTION_DUE_MAX_CHARS,
+  ACTION_HEADING_MAX_CHARS,
+  ACTION_OWNER_MAX_CHARS,
+  ACTION_BADGE_MAX_CHARS,
+  ACTION_TITLE_MAX_CHARS,
+  MIN_ACTIONS,
+  MAX_ACTIONS,
+} from '#layouts/actions-layout.contract.ts';
+import {
   AGENDA_DETAIL_MAX_CHARS,
   AGENDA_DETAIL_MAX_CHARS_DENSE,
   AGENDA_ITEM_MAX_CHARS,
@@ -15,6 +24,11 @@ import {
   ASK_MILESTONE_MAX_CHARS,
   ASK_MIN_MILESTONES,
 } from '#layouts/ask-layout.contract.ts';
+import {
+  BEFORE_AFTER_ALT_MAX_CHARS,
+  BEFORE_AFTER_CAPTION_MAX_CHARS,
+  BEFORE_AFTER_LABEL_MAX_CHARS,
+} from '#layouts/before-after-layout.contract.ts';
 import {
   MAX_TILES,
   MIN_TILES,
@@ -67,12 +81,59 @@ import {
   VALUE_MAX_CHARS_IN_THREE,
 } from '#layouts/comparison-layout.contract.ts';
 import {
+  MAX_MESSAGES,
+  MESSAGE_NAME_MAX_CHARS,
+  MESSAGE_ROLE_MAX_CHARS,
+  MESSAGE_TEXT_MAX_CHARS,
+  MIN_MESSAGES,
+} from '#layouts/conversation-layout.contract.ts';
+import {
+  DASHBOARD_PANEL_TITLE_MAX_CHARS,
+  DASHBOARD_PANEL_TITLE_MAX_CHARS_DENSE,
+} from '#layouts/dashboard-layout.contract.ts';
+import {
+  DEFINITION_EXAMPLE_LABEL_MAX_CHARS,
+  DEFINITION_EXAMPLE_MAX_CHARS,
+  DEFINITION_KIND_MAX_CHARS,
+  DEFINITION_PRONUNCIATION_MAX_CHARS,
+  DEFINITION_TERM_MAX_CHARS,
+} from '#layouts/definition-layout.contract.ts';
+import {
+  DO_DONT_ITEM_MAX_CHARS,
+  DO_DONT_LABEL_MAX_CHARS,
+  MIN_DO_DONT_ITEMS,
+  MAX_DO_DONT_ITEMS,
+} from '#layouts/do-dont-layout.contract.ts';
+import {
   EQUATION_LABEL_MAX_CHARS,
   EQUATION_RESULT_LABEL_MAX_CHARS,
   EQUATION_VALUE_MAX_CHARS,
   MAX_TERMS,
   MIN_TERMS,
 } from '#layouts/equation-layout.contract.ts';
+import {
+  EXERCISE_DENSE_FROM,
+  EXERCISE_DURATION_MAX_CHARS,
+  EXERCISE_GROUPS_MAX_CHARS,
+  EXERCISE_INSTRUCTION_MAX_CHARS,
+  EXERCISE_INSTRUCTION_MAX_CHARS_DENSE,
+  EXERCISE_OUTPUT_MAX_CHARS,
+} from '#layouts/exercise-layout.contract.ts';
+import {
+  FAQ_ANSWER_MAX_CHARS,
+  FAQ_ANSWER_MAX_CHARS_DENSE,
+  FAQ_QUESTION_MAX_CHARS,
+  FAQ_QUESTION_MAX_CHARS_DENSE,
+  MAX_FAQ_QUESTIONS,
+  MIN_FAQ_QUESTIONS,
+} from '#layouts/faq-layout.contract.ts';
+import {
+  FEATURE_DETAIL_MAX_CHARS,
+  FEATURE_TITLE_MAX_CHARS,
+  FEATURE_TITLE_MAX_CHARS_DENSE,
+  FEATURES_DENSE_FROM,
+  MAX_FEATURES_WITH_DETAILS,
+} from '#layouts/features-layout.contract.ts';
 import {
   MAX_PICTURES,
   MIN_PICTURES,
@@ -88,6 +149,12 @@ import {
 } from '#layouts/layout-fields.ts';
 import { LOGO_NAME_MAX_CHARS, LOGO_NAME_MAX_CHARS_DENSE } from '#layouts/logos-layout.contract.ts';
 import {
+  MARKET_LABEL_MAX_CHARS,
+  MARKET_NOTE_MAX_CHARS,
+  MIN_MARKET_SIZES,
+  MAX_MARKET_SIZES,
+} from '#layouts/market-layout.contract.ts';
+import {
   MATRIX_AXIS_MAX_CHARS,
   MATRIX_CROWDED_ITEMS,
   MATRIX_ITEM_MAX_CHARS,
@@ -95,6 +162,30 @@ import {
   MATRIX_QUADRANT_MAX_CHARS,
   MAX_MATRIX_ITEMS,
 } from '#layouts/matrix-layout.contract.ts';
+import {
+  MIN_PERSONA_ITEMS,
+  MAX_PERSONA_ITEMS,
+  PERSONA_ITEM_MAX_CHARS,
+  PERSONA_LABEL_MAX_CHARS,
+  PERSONA_NAME_MAX_CHARS,
+  PERSONA_ROLE_MAX_CHARS,
+} from '#layouts/persona-layout.contract.ts';
+import {
+  MAX_PLAN_FEATURES,
+  MAX_PLANS,
+  MIN_PLAN_FEATURES,
+  MIN_PLANS,
+  PLAN_BADGE_MAX_CHARS,
+  PLAN_BADGE_MAX_CHARS_IN_FOUR,
+  PLAN_DESCRIPTION_MAX_CHARS,
+  PLAN_DESCRIPTION_MAX_CHARS_IN_FOUR,
+  PLAN_FEATURE_MAX_CHARS,
+  PLAN_FEATURE_MAX_CHARS_IN_FOUR,
+  PLAN_NAME_MAX_CHARS,
+  PLAN_NAME_MAX_CHARS_IN_FOUR,
+  PLAN_PERIOD_MAX_CHARS,
+  PLAN_PRICE_MAX_CHARS,
+} from '#layouts/pricing-layout.contract.ts';
 import {
   MAX_PROOF_METRICS,
   PROOF_CUSTOMER_MAX_CHARS,
@@ -104,7 +195,51 @@ import {
   PROOF_TIMEFRAME_MAX_CHARS,
   PROOF_VALUE_MAX_CHARS,
 } from '#layouts/proof-layout.contract.ts';
+import {
+  MAX_QUADRANT_ITEMS,
+  MIN_QUADRANT_ITEMS,
+  QUADRANT_COUNT,
+  QUADRANT_ITEM_MAX_CHARS,
+  QUADRANT_TITLE_MAX_CHARS,
+} from '#layouts/quadrants-layout.contract.ts';
+import {
+  MIN_QUIZ_OPTIONS,
+  MAX_QUIZ_OPTIONS,
+  QUIZ_OPTION_MAX_CHARS,
+  QUIZ_TILE_MAX_CHARS,
+  QUIZ_EXPLANATION_MAX_CHARS,
+} from '#layouts/quiz-layout.contract.ts';
 import { QUOTE_NAME_MAX_CHARS, QUOTE_ROLE_MAX_CHARS } from '#layouts/quote-layout.contract.ts';
+import {
+  MIN_RECAP_POINTS,
+  MAX_RECAP_POINTS,
+  RECAP_POINT_MAX_CHARS,
+  RECAP_POINT_MAX_CHARS_IN_FOUR,
+  RECAP_POINT_MAX_CHARS_IN_THREE,
+  RECAP_DETAIL_MAX_CHARS,
+  RECAP_DETAIL_MAX_CHARS_IN_FOUR,
+} from '#layouts/recap-layout.contract.ts';
+import {
+  MAX_RISKS,
+  MIN_RISKS,
+  RISK_NAME_MAX_CHARS,
+  RISK_MITIGATION_MAX_CHARS,
+  RISKS_HIGHLIGHT_LABEL_MAX_CHARS,
+  RISKS_LABEL_MAX_CHARS,
+  RISKS_LEVEL_LABEL_MAX_CHARS,
+} from '#layouts/risks-layout.contract.ts';
+import {
+  SCHEDULE_MIN_PERIODS,
+  SCHEDULE_MAX_PERIODS,
+  SCHEDULE_MIN_LANES,
+  SCHEDULE_MAX_LANES,
+  SCHEDULE_MAX_BARS,
+  SCHEDULE_MAX_BAR_CONTENT,
+  SCHEDULE_PERIOD_MAX_CHARS,
+  SCHEDULE_PERIOD_MAX_CHARS_DENSE,
+  SCHEDULE_LANE_MAX_CHARS,
+  SCHEDULE_BAR_MAX_CHARS,
+} from '#layouts/schedule-layout.contract.ts';
 import {
   CALLOUT_LABEL_MAX_CHARS,
   MAX_CALLOUTS,
@@ -118,6 +253,18 @@ import {
   SHIFT_TEXT_MAX_CHARS,
   SHIFT_VALUE_MAX_CHARS,
 } from '#layouts/shift-layout.contract.ts';
+import {
+  MIN_SOURCES,
+  MAX_SOURCES,
+  SOURCES_TWO_COLUMNS,
+  SOURCE_TITLE_MAX_CHARS,
+  SOURCE_TITLE_MAX_CHARS_DENSE,
+  SOURCE_CREDIT_MAX_CHARS_DENSE,
+  SOURCE_AUTHOR_MAX_CHARS,
+  SOURCE_PUBLISHER_MAX_CHARS,
+  SOURCE_YEAR_MAX_CHARS,
+  SOURCE_URL_MAX_CHARS,
+} from '#layouts/sources-layout.contract.ts';
 import { SPLIT_RATIOS, SPLIT_SIDES } from '#layouts/split-layout.contract.ts';
 import {
   MAX_STATS,
@@ -127,6 +274,15 @@ import {
   STAT_LABEL_MAX_CHARS_IN_FOUR,
   STAT_VALUE_MAX_CHARS,
 } from '#layouts/stats-layout.contract.ts';
+import {
+  MIN_STATUS_ITEMS,
+  MAX_STATUS_ITEMS,
+  STATUS_NAME_MAX_CHARS,
+  STATUS_LABEL_MAX_CHARS,
+  STATUS_OWNER_MAX_CHARS,
+  STATUS_NOTE_MAX_CHARS,
+  STATUS_STATES,
+} from '#layouts/status-layout.contract.ts';
 import {
   STEP_TEXT_MAX_CHARS,
   STEP_TEXT_MAX_CHARS_IN_FIVE,
@@ -153,6 +309,15 @@ import {
   MILESTONE_TITLE_MAX_CHARS_DENSE,
 } from '#layouts/timeline-layout.contract.ts';
 import { BYLINE_MAX_CHARS, DATE_MAX_CHARS } from '#layouts/title-layout.contract.ts';
+import {
+  MAX_VOICES,
+  MIN_VOICES,
+  VOICE_NAME_MAX_CHARS,
+  VOICE_NAME_MAX_CHARS_IN_THREE,
+  VOICE_QUOTE_MAX_CHARS,
+  VOICE_QUOTE_MAX_CHARS_IN_THREE,
+  VOICE_ROLE_MAX_CHARS,
+} from '#layouts/voices-layout.contract.ts';
 
 /**
  * Text that fills a field to a given length, written to wrap as badly as real text can: long words
@@ -164,6 +329,12 @@ const FILLER =
   'Internationalization of the Westminster woodland maintenance work, overseen by Maximilian ' +
   'Wojciechowski-Hammond, made Wolverhampton and Northumberland commit more summer money to ' +
   'watering every new tree; ';
+
+/**
+ * Long words with few short breaks stress a paragraph even when authored newlines are collapsed.
+ */
+const CONVERSATION_FILLER =
+  'Westminster woodland maintenance overseen Wolverhampton Northumberland programme surveyors ';
 
 /**
  * Names that set as wide as names get: long given and family names, hyphenated, with wide letters.
@@ -440,6 +611,147 @@ function shiftState(figure: boolean): Record<string, string> {
 }
 
 /**
+ * `count` plans with the widest prices and the longest names, periods, descriptions and features
+ * their count allows.
+ *
+ * @param count - The number of plans.
+ * @param shape - How many features each plan lists, and whether the second plan is recommended.
+ */
+function pricingPlans(
+  count: number,
+  shape: { features: number; recommended: boolean },
+): Record<string, unknown>[] {
+  const four = count === MAX_PLANS;
+  return items(count, (index) => ({
+    name: fill(four ? PLAN_NAME_MAX_CHARS_IN_FOUR : PLAN_NAME_MAX_CHARS),
+    price: (WIDE_VALUES[index % WIDE_VALUES.length] ?? '').slice(0, PLAN_PRICE_MAX_CHARS),
+    period: fill(PLAN_PERIOD_MAX_CHARS),
+    description: fill(four ? PLAN_DESCRIPTION_MAX_CHARS_IN_FOUR : PLAN_DESCRIPTION_MAX_CHARS),
+    features: items(shape.features, () =>
+      fill(four ? PLAN_FEATURE_MAX_CHARS_IN_FOUR : PLAN_FEATURE_MAX_CHARS),
+    ),
+    ...(shape.recommended && index === 1 ? { recommended: true } : {}),
+  }));
+}
+
+/**
+ * Real small charts and figures, kept at the panel density described in the dashboard contract.
+ *
+ * @param count - Two, three or four panels.
+ */
+function dashboardBody(count: number): string {
+  const categories = count === 2 ? 4 : 3;
+  const data = items(categories, (index) => ({
+    district: fillName(count === 2 ? 10 : 6) + index,
+    trees: 94 - index * 12,
+  }));
+  const bars = [
+    '<BarChart',
+    `data={${JSON.stringify(data)}}`,
+    'x="district" y="trees" orientation="vertical"',
+    'highlight="max" unit="trees" caption="Trees kept, 2026" />',
+  ].join(' ');
+  const trend = data.map((_row, index) => ({
+    month: String(2023 + index),
+    trees: 40 + index * 18,
+  }));
+  const caption = count === 2 ? ` caption=${JSON.stringify(fill(32))}` : '';
+  const line = [
+    '<LineChart',
+    `data={${JSON.stringify(trend)}}`,
+    'x="month" y="trees" unit="trees" zero',
+    `highlight={{ series: "trees" }}${caption} />`,
+  ].join(' ');
+  const number = `<BigNumber value=${JSON.stringify(WIDE_VALUES[0])} label=${JSON.stringify(fill(18))} />`;
+  const progress = '<Progress value={86} target={90} unit="%" label="blocks covered" />';
+  return [bars.replace(' caption="Trees kept, 2026"', caption), line, number, progress]
+    .slice(0, count)
+    .join('\n\n');
+}
+
+/**
+ * Dense chart geometry beyond the recommended two plots, including legends and value axes.
+ */
+function dashboardFourCharts(): string {
+  const slices = items(3, (index) => ({ status: fillName(6) + index, share: 70 - index * 20 }));
+  const trend = items(3, (index) => ({ month: String(2024 + index), trees: 500 + index * 500 }));
+  return [
+    dashboardBody(4).split('\n\n').slice(0, 2).join('\n\n'),
+    `<Donut data={${JSON.stringify(slices)}}`,
+    'x="status" y="share" unit="%" highlight="max" center="none" />',
+    '',
+    `<AreaChart data={${JSON.stringify(trend)}}`,
+    'x="month" y="trees" unit="trees" highlight={{ series: "trees" }} />',
+  ].join('\n');
+}
+
+/**
+ * A four-row, three-column table beside a plotted chart, with the longest published labels.
+ */
+function dashboardTable(): string {
+  const data = items(4, (index) => ({
+    district: fillName(10) + index,
+    alive: 94 - index * 3,
+    planted: 1240 + index * 100,
+  }));
+  const columns = [
+    { key: 'district', label: fillName(11) },
+    { key: 'alive', label: fillName(11), unit: '%' },
+    { key: 'planted', label: fillName(11), unit: 'trees' },
+  ];
+  return [
+    `<Table data={${JSON.stringify(data)}} columns={${JSON.stringify(columns)}}`,
+    `highlight={{ row: ${JSON.stringify(fillName(10) + '0')} }} />`,
+    '',
+    dashboardBody(2).split('\n\n')[0],
+  ].join('\n');
+}
+
+/**
+ * Four boxes with the longest labels and bullets, optionally with an icon in every heading.
+ *
+ * @param count - The bullets per box, at a count boundary.
+ * @param icons - Whether every box names a brand icon.
+ */
+function quadrantBoxes(count: number, icons: boolean): Record<string, unknown>[] {
+  return items(QUADRANT_COUNT, () => ({
+    title: fill(QUADRANT_TITLE_MAX_CHARS),
+    items: items(count, () => fill(QUADRANT_ITEM_MAX_CHARS)),
+    ...(icons ? { icon: 'leaf' } : {}),
+  }));
+}
+
+/**
+ * Workstreams filled to their character limits, cycling through every labelled state.
+ *
+ * @param count - How many workstreams to generate.
+ */
+function statusItems(count: number): Record<string, unknown>[] {
+  return items(count, (at) => ({
+    name: fillName(STATUS_NAME_MAX_CHARS),
+    status: STATUS_STATES[at % STATUS_STATES.length],
+    owner: fillName(STATUS_OWNER_MAX_CHARS),
+    note: fill(STATUS_NOTE_MAX_CHARS),
+  }));
+}
+
+/**
+ * A register of `count` risks with maximum names and one-line mitigations, both levels medium (the
+ * widest word) and the second row highlighted.
+ *
+ * @param count - The number of risks.
+ */
+function riskRows(count: number): Record<string, unknown>[] {
+  return items(count, (row) => ({
+    name: fill(RISK_NAME_MAX_CHARS),
+    likelihood: 'medium',
+    impact: 'medium',
+    mitigation: fill(RISK_MITIGATION_MAX_CHARS),
+    ...(row === 1 ? { highlight: true } : {}),
+  }));
+}
+
+/**
  * One slide at the limits of its layout: the frontmatter, and which named slots to fill. Every
  * named slot the case lists is filled to its budget by the stress test, and `body` always is.
  */
@@ -464,6 +776,12 @@ export type LimitCase = {
    * Whether `body` is filled too; it is unless the case says `false`.
    */
   body?: boolean;
+
+  /**
+   * Chart or component content to exercise instead of generated prose; budgets still fill the named
+   * text slots. This keeps measured chart regions under test at their actual panel size.
+   */
+  bodyMdx?: string;
 };
 
 /**
@@ -472,6 +790,70 @@ export type LimitCase = {
  * lints, so every budget in a contract is proven where it binds. A new layout adds its cases here.
  */
 export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
+  /**
+   * Every message count at its longest text and attribution, with context and footnote and bare.
+   * Distinct speakers exercise every optional role; accent cases exercise the inverse replies.
+   * Short titles keep the header at full size, leaving less height than a fitted long title.
+   */
+  conversation: [
+    ...Array.from({ length: MAX_MESSAGES - MIN_MESSAGES + 1 }, (_, index) => {
+      const count = MIN_MESSAGES + index;
+      const frontmatter = {
+        messages: items(count, (message) => ({
+          name: `${fillName(MESSAGE_NAME_MAX_CHARS - 1)}${message + 1}`,
+          role: fill(MESSAGE_ROLE_MAX_CHARS),
+          side: message % 2 === 0 ? 'left' : 'right',
+          text: fill(MESSAGE_TEXT_MAX_CHARS),
+        })),
+        reveal: true,
+      };
+      return [
+        { name: `${count}-messages`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-messages-bare`, frontmatter, filled: [], body: false },
+        {
+          name: `${count}-messages-accent`,
+          frontmatter: { ...frontmatter, surface: 'accent' },
+          filled: ['footnote'],
+        },
+        {
+          name: `${count}-messages-short-title`,
+          frontmatter: {
+            ...frontmatter,
+            title: 'A reply makes the next step clear',
+            surface: 'inverse',
+            messages: frontmatter.messages.map((message) => ({
+              ...message,
+              text: cut(CONVERSATION_FILLER, MESSAGE_TEXT_MAX_CHARS),
+            })),
+          },
+          filled: ['footnote'],
+        },
+      ];
+    }).flat(),
+    {
+      name: 'gradient',
+      frontmatter: {
+        surface: 'gradient',
+        messages: [
+          { name: 'Maya', side: 'left', text: 'Will a survey confirm the space?' },
+          { name: 'Dana', side: 'right', text: 'Yes. We will survey the pavement.' },
+        ],
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'short-bare',
+      frontmatter: {
+        messages: [
+          { name: 'Maya', side: 'left', text: 'Can we plant here?' },
+          { name: 'Dana', side: 'right', text: 'Yes. Let us survey the site.' },
+        ],
+      },
+      filled: [],
+      body: false,
+    },
+  ],
+
   /**
    * The default layout has no fields.
    */
@@ -539,6 +921,59 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
       frontmatter: { size: 'giant', align, emphasis: 'underline' },
       filled: [],
     })),
+  ],
+
+  /**
+   * One full dictionary entry with every optional field and a footnote, each metadata field alone,
+   * a wide unbroken term, and the bare entry without metadata, example or footnote. The body
+   * remains filled in the bare case because a definition always needs its meaning.
+   */
+  definition: [
+    {
+      name: 'full',
+      frontmatter: {
+        term: fill(DEFINITION_TERM_MAX_CHARS),
+        pronunciation: fill(DEFINITION_PRONUNCIATION_MAX_CHARS),
+        kind: fill(DEFINITION_KIND_MAX_CHARS),
+        example: fill(DEFINITION_EXAMPLE_MAX_CHARS),
+        labels: { example: fill(DEFINITION_EXAMPLE_LABEL_MAX_CHARS) },
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'long-word',
+      frontmatter: {
+        term: 'W'.repeat(DEFINITION_TERM_MAX_CHARS),
+        pronunciation: fill(DEFINITION_PRONUNCIATION_MAX_CHARS),
+        kind: fill(DEFINITION_KIND_MAX_CHARS),
+        example: fill(DEFINITION_EXAMPLE_MAX_CHARS),
+        labels: { example: fill(DEFINITION_EXAMPLE_LABEL_MAX_CHARS) },
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'pronunciation',
+      frontmatter: {
+        surface: 'default',
+        term: fill(DEFINITION_TERM_MAX_CHARS),
+        pronunciation: fill(DEFINITION_PRONUNCIATION_MAX_CHARS),
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'kind',
+      frontmatter: {
+        surface: 'accent',
+        term: fill(DEFINITION_TERM_MAX_CHARS),
+        kind: fill(DEFINITION_KIND_MAX_CHARS),
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'bare',
+      frontmatter: { term: fill(DEFINITION_TERM_MAX_CHARS) },
+      filled: [],
+    },
   ],
 
   /**
@@ -663,6 +1098,24 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
   })),
 
   /**
+   * Two and three voices with the longest quotes, names and roles, both with context and a footnote
+   * and bare, so the largest quote scales are exercised too.
+   */
+  voices: [MIN_VOICES, MAX_VOICES].flatMap((count) => {
+    const frontmatter = {
+      voices: items(count, () => ({
+        quote: fill(count === MAX_VOICES ? VOICE_QUOTE_MAX_CHARS_IN_THREE : VOICE_QUOTE_MAX_CHARS),
+        name: fillName(count === MAX_VOICES ? VOICE_NAME_MAX_CHARS_IN_THREE : VOICE_NAME_MAX_CHARS),
+        role: fill(VOICE_ROLE_MAX_CHARS),
+      })),
+    };
+    return [
+      { name: `${count}-voices`, frontmatter, filled: ['footnote'] },
+      { name: `${count}-voices-bare`, frontmatter, filled: [], body: false },
+    ];
+  }),
+
+  /**
    * A case study at its fullest (three metrics each with a figure before, a timeframe, a portrait,
    * the widest logo and a footnote) and at its sparest (one metric, no portrait, no logo).
    */
@@ -702,6 +1155,63 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
   })),
 
   /**
+   * Every count boundary in both research lists, with the longest identity and findings, a
+   * portrait, quotation and footnote; bare initials forms without a quotation or footnote; and a
+   * medium name that could otherwise stay at a taller, unfitted size than the longest name.
+   */
+  persona: [
+    ...[MIN_PERSONA_ITEMS, MAX_PERSONA_ITEMS].flatMap((goals) =>
+      [MIN_PERSONA_ITEMS, MAX_PERSONA_ITEMS].flatMap((frustrations) => {
+        const frontmatter = {
+          name: fillName(PERSONA_NAME_MAX_CHARS),
+          role: fill(PERSONA_ROLE_MAX_CHARS),
+          goals: items(goals, () => fill(PERSONA_ITEM_MAX_CHARS)),
+          frustrations: items(frustrations, () => fill(PERSONA_ITEM_MAX_CHARS)),
+        };
+        return [
+          {
+            name: `${goals}-goals-${frustrations}-frustrations`,
+            frontmatter: { ...frontmatter, photo: PORTRAIT, focal: 'center 30%' },
+            filled: ['footnote'],
+          },
+          {
+            name: `${goals}-goals-${frustrations}-frustrations-bare`,
+            frontmatter,
+            filled: [],
+            body: false,
+          },
+        ];
+      }),
+    ),
+    {
+      name: 'medium-name',
+      frontmatter: {
+        name: fillName(PERSONA_NAME_MAX_CHARS / 2),
+        role: fill(PERSONA_ROLE_MAX_CHARS),
+        photo: PORTRAIT,
+        goals: items(MAX_PERSONA_ITEMS, () => fill(PERSONA_ITEM_MAX_CHARS)),
+        frustrations: items(MAX_PERSONA_ITEMS, () => fill(PERSONA_ITEM_MAX_CHARS)),
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'custom-labels',
+      frontmatter: {
+        name: fillName(PERSONA_NAME_MAX_CHARS),
+        role: fill(PERSONA_ROLE_MAX_CHARS),
+        photo: PORTRAIT,
+        labels: {
+          goals: fill(PERSONA_LABEL_MAX_CHARS),
+          frustrations: fill(PERSONA_LABEL_MAX_CHARS),
+        },
+        goals: items(MAX_PERSONA_ITEMS, () => fill(PERSONA_ITEM_MAX_CHARS)),
+        frustrations: items(MAX_PERSONA_ITEMS, () => fill(PERSONA_ITEM_MAX_CHARS)),
+      },
+      filled: ['footnote'],
+    },
+  ],
+
+  /**
    * The widest amount with its label, four milestones and five allocations at their longest, and
    * two milestones with no allocations, each with a line of context.
    */
@@ -727,6 +1237,78 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
   })),
 
   /**
+   * Two, three and four takeaways at their longest, with context and a footnote; the same bare to
+   * exercise larger fit levels, and sentences alone to exercise the lightest form.
+   */
+  recap: Array.from({ length: MAX_RECAP_POINTS - MIN_RECAP_POINTS + 1 }, (_, index) => {
+    const count = MIN_RECAP_POINTS + index;
+    const four = count === MAX_RECAP_POINTS;
+    const titleLimit = [
+      RECAP_POINT_MAX_CHARS,
+      RECAP_POINT_MAX_CHARS_IN_THREE,
+      RECAP_POINT_MAX_CHARS_IN_FOUR,
+    ][index]!;
+    const points = items(count, () => ({
+      title: fill(titleLimit),
+      detail: fill(four ? RECAP_DETAIL_MAX_CHARS_IN_FOUR : RECAP_DETAIL_MAX_CHARS),
+    }));
+    return [
+      { name: `${count}-points`, frontmatter: { points, reveal: true }, filled: ['footnote'] },
+      { name: `${count}-points-bare`, frontmatter: { points }, filled: [], body: false },
+      {
+        name: `${count}-sentences-bare`,
+        frontmatter: { points: points.map(({ title }) => ({ title })) },
+        filled: [],
+        body: false,
+      },
+    ];
+  }).flat(),
+
+  /**
+   * References at each column boundary, all bibliographic fields and full URLs at their limits,
+   * with context and footnote, without slots, and with titles alone for the larger citation
+   * levels.
+   */
+  sources: [MIN_SOURCES, SOURCES_TWO_COLUMNS - 1, SOURCES_TWO_COLUMNS, MAX_SOURCES].flatMap(
+    (count) => {
+      const prefix = 'https://woodland.example/';
+      const frontmatter = {
+        sources: items(count, () => ({
+          title: fill(
+            count >= SOURCES_TWO_COLUMNS ? SOURCE_TITLE_MAX_CHARS_DENSE : SOURCE_TITLE_MAX_CHARS,
+          ),
+          author: fillName(
+            count >= SOURCES_TWO_COLUMNS ? SOURCE_CREDIT_MAX_CHARS_DENSE : SOURCE_AUTHOR_MAX_CHARS,
+          ),
+          publisher: fillName(
+            count >= SOURCES_TWO_COLUMNS
+              ? SOURCE_CREDIT_MAX_CHARS_DENSE
+              : SOURCE_PUBLISHER_MAX_CHARS,
+          ),
+          year: fill(SOURCE_YEAR_MAX_CHARS),
+          url:
+            prefix +
+            'canopy-study/'
+              .repeat(SOURCE_URL_MAX_CHARS)
+              .slice(0, SOURCE_URL_MAX_CHARS - prefix.length),
+        })),
+      };
+      return [
+        { name: `${count}-sources`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-sources-bare`, frontmatter, filled: [], body: false },
+        {
+          name: `${count}-sources-titles`,
+          frontmatter: {
+            sources: frontmatter.sources.map(({ title }) => ({ title })),
+          },
+          filled: [],
+          body: false,
+        },
+      ];
+    },
+  ),
+
+  /**
    * A closing slide with the longest QR link and three contacts, and one with neither.
    */
   closing: [true, false].map((full) => ({
@@ -739,6 +1321,33 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
       : {},
     filled: [],
   })),
+
+  /**
+   * Features at the minimum, column switch, second-row boundary, third-row boundary and maximum.
+   * Full, bare and titles-only cases exercise text limits and the stretched fit levels.
+   */
+  features: [6, 7, 8, 9, 10, 11, 12].flatMap((count) => {
+    const dense = count >= FEATURES_DENSE_FROM;
+    const frontmatter = {
+      features: items(count, () => ({
+        icon: 'leaf',
+        title: fill(dense ? FEATURE_TITLE_MAX_CHARS_DENSE : FEATURE_TITLE_MAX_CHARS),
+        ...(count <= MAX_FEATURES_WITH_DETAILS ? { detail: fill(FEATURE_DETAIL_MAX_CHARS) } : {}),
+      })),
+    };
+    return [
+      { name: `${count}-features`, frontmatter, filled: ['footnote'] },
+      { name: `${count}-features-bare`, frontmatter, filled: [], body: false },
+      {
+        name: `${count}-features-titles`,
+        frontmatter: {
+          features: frontmatter.features.map(({ icon, title }) => ({ icon, title })),
+        },
+        filled: [],
+        body: false,
+      },
+    ];
+  }),
 
   /**
    * Two, three and four cards with icons, the longest titles and text, a line of context and a
@@ -760,7 +1369,7 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
   }),
 
   /**
-   * Boards of two, three and four columns, each with the most items, the longest headings, tags and
+   * Boards of two, three and four columns, each with the most items, the longest labels, tags and
    * items, the second column current, with a line of context and a footnote.
    */
   columns: Array.from({ length: MAX_COLUMNS - MIN_COLUMNS + 1 }, (_, index) => {
@@ -783,6 +1392,32 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
   }),
 
   /**
+   * Every action count with all columns at their limits and one current row; with context and
+   * footnote, and bare to exercise the generous fit levels.
+   */
+  actions: Array.from({ length: MAX_ACTIONS - MIN_ACTIONS + 1 }, (_, index) => {
+    const count = MIN_ACTIONS + index;
+    const frontmatter = {
+      current: 2,
+      badge: fill(ACTION_BADGE_MAX_CHARS),
+      labels: {
+        action: fill(ACTION_HEADING_MAX_CHARS),
+        owner: fill(ACTION_HEADING_MAX_CHARS),
+        due: fill(ACTION_HEADING_MAX_CHARS),
+      },
+      actions: items(count, () => ({
+        title: fill(ACTION_TITLE_MAX_CHARS),
+        owner: fillName(ACTION_OWNER_MAX_CHARS),
+        due: fill(ACTION_DUE_MAX_CHARS),
+      })),
+    };
+    return [
+      { name: `${count}-actions`, frontmatter, filled: ['footnote'] },
+      { name: `${count}-actions-bare`, frontmatter, filled: [], body: false },
+    ];
+  }).flat(),
+
+  /**
    * Three, four and five steps with the longest titles and text, a current step, a line of context
    * and a footnote; and the same steps bare, without context or footnote, where the most room is
    * and the roomy levels are tried with the longest strings.
@@ -800,6 +1435,41 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
       { name: `${count}-steps-bare`, frontmatter, filled: [], body: false },
     ];
   }),
+
+  /**
+   * Two through five instructions at their limits, the widest duration, grouping and output, with
+   * context and footnote, then bare to exercise the stretched levels; and a minimal brief.
+   */
+  exercise: [
+    ...[2, 3, 4, 5].flatMap((count) => {
+      const frontmatter = {
+        duration: (WIDE_VALUES[0] ?? '').slice(0, EXERCISE_DURATION_MAX_CHARS),
+        groups: fill(EXERCISE_GROUPS_MAX_CHARS),
+        output: fill(EXERCISE_OUTPUT_MAX_CHARS),
+        instructions: items(count, () =>
+          fill(
+            count >= EXERCISE_DENSE_FROM
+              ? EXERCISE_INSTRUCTION_MAX_CHARS_DENSE
+              : EXERCISE_INSTRUCTION_MAX_CHARS,
+          ),
+        ),
+      };
+      return [
+        { name: `${count}-instructions`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-instructions-bare`, frontmatter, filled: [], body: false },
+      ];
+    }),
+    {
+      name: 'minimal-bare',
+      frontmatter: {
+        duration: '5 min',
+        instructions: ['Choose a block.', 'Mark a tree.'],
+        output: 'One marked map',
+      },
+      filled: [],
+      body: false,
+    },
+  ],
 
   /**
    * Two and three options, one recommended, over six rows of the longest labels and values, with a
@@ -823,6 +1493,356 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
   })),
 
   /**
+   * Two, three and four pairs with the longest questions and answers, with context and a footnote;
+   * and the same pairs bare, to stress the roomy ladder with the most room available.
+   */
+  faq: Array.from({ length: MAX_FAQ_QUESTIONS - MIN_FAQ_QUESTIONS + 1 }, (_, index) => {
+    const count = MIN_FAQ_QUESTIONS + index;
+    const frontmatter = {
+      questions: Array.from({ length: count }, () => ({
+        q: fill(
+          count === MIN_FAQ_QUESTIONS ? FAQ_QUESTION_MAX_CHARS : FAQ_QUESTION_MAX_CHARS_DENSE,
+        ),
+        a: fill(count === MIN_FAQ_QUESTIONS ? FAQ_ANSWER_MAX_CHARS : FAQ_ANSWER_MAX_CHARS_DENSE),
+      })),
+    };
+    return [
+      { name: `${count}-questions`, frontmatter, filled: ['footnote'] },
+      { name: `${count}-questions-bare`, frontmatter, filled: [], body: false },
+    ];
+  }).flat(),
+
+  /**
+   * Two and three nested sizes with the widest figures and full labels and notes, with and without
+   * context and a footnote, so both roomy and dense levels are exercised. Equal scopes stress the
+   * typographic ladder on inverse; tiny scopes stress the minimum visible marker on accent. A short
+   * title keeps the largest header metrics above full content on gradient.
+   */
+  market: [MIN_MARKET_SIZES, MAX_MARKET_SIZES].flatMap((count) => {
+    const frontmatter = {
+      sizes: items(count, (index) => ({
+        label: fillName(MARKET_LABEL_MAX_CHARS),
+        value: ['€888.88M', '€88.888M', '€8.8888M'][index],
+        note: fill(MARKET_NOTE_MAX_CHARS),
+      })),
+    };
+    return [
+      { name: `${count}-sizes`, frontmatter, filled: ['footnote'] },
+      { name: `${count}-sizes-bare`, frontmatter, filled: [], body: false },
+      {
+        name: `${count}-sizes-close`,
+        frontmatter: {
+          surface: 'inverse',
+          sizes: frontmatter.sizes.map((size) => ({ ...size, value: '€888.88M' })),
+        },
+        filled: ['footnote'],
+      },
+      {
+        name: `${count}-sizes-tiny`,
+        frontmatter: {
+          surface: 'accent',
+          sizes: frontmatter.sizes.map((size, index) => ({
+            ...size,
+            value: index === count - 1 ? '€0.0001M' : size.value,
+          })),
+        },
+        filled: ['footnote'],
+      },
+      {
+        name: `${count}-sizes-short-title`,
+        frontmatter: { ...frontmatter, title: 'Our market', surface: 'gradient' },
+        filled: ['footnote'],
+      },
+    ];
+  }),
+
+  /**
+   * Two, three and four plans, the second recommended under the longest badge, each with the most
+   * features, the widest prices and every text at its longest, with a line of context and a
+   * footnote; and the same plans bare, without context or footnote, where the most room is and the
+   * stretched levels are tried with the longest strings; and two plans with the fewest features and
+   * no recommended plan.
+   */
+  pricing: [
+    ...Array.from({ length: MAX_PLANS - MIN_PLANS + 1 }, (_, index) => {
+      const count = MIN_PLANS + index;
+      const frontmatter = {
+        badge: fill(count === MAX_PLANS ? PLAN_BADGE_MAX_CHARS_IN_FOUR : PLAN_BADGE_MAX_CHARS),
+        plans: pricingPlans(count, { features: MAX_PLAN_FEATURES, recommended: true }),
+      };
+      return [
+        { name: `${count}-plans`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-plans-bare`, frontmatter, filled: [], body: false },
+      ];
+    }).flat(),
+    {
+      name: 'fewest-features',
+      frontmatter: {
+        plans: pricingPlans(MIN_PLANS, { features: MIN_PLAN_FEATURES, recommended: false }),
+      },
+      filled: ['footnote'],
+    },
+  ],
+
+  /**
+   * Every panel count, with the longest labels and footnote and real measured charts; and the same
+   * grids without a footnote or generated prose, so the charts also exercise the largest room.
+   */
+  dashboard: [
+    ...[2, 3, 4].flatMap((count) => {
+      const frontmatter = {
+        ...(count === 3 ? { surface: 'inverse' } : {}),
+        panels: items(count, () => ({
+          title: fill(
+            count === 2 ? DASHBOARD_PANEL_TITLE_MAX_CHARS : DASHBOARD_PANEL_TITLE_MAX_CHARS_DENSE,
+          ),
+        })),
+      };
+      const bodyMdx = dashboardBody(count);
+      return [
+        { name: `${count}-panels`, frontmatter, filled: ['footnote'], bodyMdx },
+        { name: `${count}-panels-no-footnote`, frontmatter, filled: [], bodyMdx },
+        {
+          name: `${count}-panels-short-title`,
+          frontmatter: { ...frontmatter, title: 'Trees survive with wardens', surface: 'accent' },
+          filled: ['footnote'],
+          bodyMdx,
+        },
+      ];
+    }),
+    {
+      // Deliberately exceeds the two-plotted-chart recommendation to guard chart geometry.
+      name: '4-panels-charts',
+      frontmatter: {
+        panels: items(4, () => ({ title: fill(DASHBOARD_PANEL_TITLE_MAX_CHARS_DENSE) })),
+      },
+      filled: ['footnote'],
+      bodyMdx: dashboardFourCharts(),
+    },
+    {
+      name: '3-panels-area',
+      frontmatter: {
+        panels: items(3, () => ({ title: fill(DASHBOARD_PANEL_TITLE_MAX_CHARS_DENSE) })),
+      },
+      filled: ['footnote'],
+      bodyMdx: [
+        `<Donut data={${JSON.stringify(items(3, (index) => ({ status: fillName(6) + index, share: 70 - index * 20 })))}}`,
+        'x="status" y="share" unit="%" highlight="max" center="none" />',
+        '',
+        `<AreaChart data={${JSON.stringify(items(3, (index) => ({ month: String(2024 + index), trees: 400 + index * 200 })))}}`,
+        'x="month" y="trees" unit="trees" highlight={{ series: "trees" }} />',
+        '',
+        dashboardBody(3).split('\n\n')[0],
+      ].join('\n'),
+    },
+    {
+      name: '2-panels-donut',
+      frontmatter: {
+        panels: items(2, () => ({ title: fill(DASHBOARD_PANEL_TITLE_MAX_CHARS) })),
+      },
+      filled: ['footnote'],
+      bodyMdx: [
+        `<Donut data={${JSON.stringify(items(4, (index) => ({ status: fillName(10) + index, share: 40 - index * 10 })))}}`,
+        `x="status" y="share" unit="%" highlight="max" center="none" caption=${JSON.stringify(fill(32))} />`,
+        '',
+        `<AreaChart data={${JSON.stringify(items(4, (index) => ({ month: String(2023 + index), trees: 500 + index * 500 })))}}`,
+        `x="month" y="trees" unit="trees" highlight={{ series: "trees" }} caption=${JSON.stringify(fill(32))} />`,
+      ].join('\n'),
+    },
+    {
+      name: '2-panels-numbers',
+      frontmatter: {
+        surface: 'inverse',
+        panels: items(2, () => ({ title: fill(DASHBOARD_PANEL_TITLE_MAX_CHARS) })),
+      },
+      filled: ['footnote'],
+      bodyMdx: [
+        `<BigNumber value=${JSON.stringify(WIDE_VALUES[0])} label=${JSON.stringify(fill(18))} />`,
+        '',
+        `<Progress value={1240} max={2000} target={2000} unit="trees" label=${JSON.stringify(fill(18))} />`,
+      ].join('\n'),
+    },
+    {
+      name: '2-panels-table',
+      frontmatter: {
+        panels: items(2, () => ({ title: fill(DASHBOARD_PANEL_TITLE_MAX_CHARS) })),
+      },
+      filled: ['footnote'],
+      bodyMdx: dashboardTable(),
+    },
+  ],
+
+  /**
+   * Every count from two to four, at the longest text and labels, both with context and footnote
+   * and bare; plus unequal lists in both directions to stress shared row alignment.
+   */
+  'do-dont': [
+    ...Array.from({ length: MAX_DO_DONT_ITEMS - MIN_DO_DONT_ITEMS + 1 }, (_, index) => {
+      const count = MIN_DO_DONT_ITEMS + index;
+      const frontmatter = {
+        do: items(count, () => fill(DO_DONT_ITEM_MAX_CHARS)),
+        dont: items(count, () => fill(DO_DONT_ITEM_MAX_CHARS)),
+        labels: { do: fill(DO_DONT_LABEL_MAX_CHARS), dont: fill(DO_DONT_LABEL_MAX_CHARS) },
+      };
+      return [
+        { name: `${count}-items`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-items-bare`, frontmatter, filled: [], body: false },
+      ];
+    }).flat(),
+    ...[false, true].map((reverse) => ({
+      name: reverse ? 'short-do' : 'short-dont',
+      frontmatter: {
+        do: items(reverse ? MIN_DO_DONT_ITEMS : MAX_DO_DONT_ITEMS, () =>
+          fill(DO_DONT_ITEM_MAX_CHARS),
+        ),
+        dont: items(reverse ? MAX_DO_DONT_ITEMS : MIN_DO_DONT_ITEMS, () =>
+          fill(DO_DONT_ITEM_MAX_CHARS),
+        ),
+        labels: { do: fill(DO_DONT_LABEL_MAX_CHARS), dont: fill(DO_DONT_LABEL_MAX_CHARS) },
+      },
+      filled: ['footnote'],
+    })),
+  ],
+
+  /**
+   * Four boxes with the fewest and most bullets, the longest labels and items, icons and the second
+   * box emphasized, with context and a footnote; and bare boards without icons or highlight at both
+   * boundaries to exercise the larger fit levels. Full boards also take inverse and accent surfaces
+   * so nested highlight is checked in both directions. An uneven board checks equal row heights
+   * when one list is full and the other three have one bullet. Capitals stress the space shared by
+   * a heading and its icon.
+   */
+  quadrants: [
+    ...[MIN_QUADRANT_ITEMS, MAX_QUADRANT_ITEMS].flatMap((count) => [
+      {
+        name: `${count}-items`,
+        frontmatter: {
+          quadrants: quadrantBoxes(count, true).map((box, index) => ({
+            ...box,
+            highlight: index === 1,
+          })),
+        },
+        filled: ['footnote'],
+      },
+      {
+        name: `${count}-items-bare`,
+        frontmatter: { quadrants: quadrantBoxes(count, false) },
+        filled: [],
+        body: false,
+      },
+    ]),
+    {
+      name: 'uneven',
+      frontmatter: {
+        quadrants: quadrantBoxes(MIN_QUADRANT_ITEMS, true).map((box, index) => ({
+          ...box,
+          highlight: index === 1,
+          ...(index === 0
+            ? { items: items(MAX_QUADRANT_ITEMS, () => fill(QUADRANT_ITEM_MAX_CHARS)) }
+            : {}),
+        })),
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'capitals',
+      frontmatter: {
+        quadrants: quadrantBoxes(MAX_QUADRANT_ITEMS, true).map((box, index) => ({
+          ...box,
+          highlight: index === QUADRANT_COUNT - 1,
+          title: fill(QUADRANT_TITLE_MAX_CHARS).toUpperCase(),
+          items: items(MAX_QUADRANT_ITEMS, () => fill(QUADRANT_ITEM_MAX_CHARS).toUpperCase()),
+        })),
+      },
+      filled: ['footnote'],
+    },
+    ...['inverse', 'accent'].map((surface) => ({
+      name: `full-${surface}`,
+      frontmatter: {
+        surface,
+        quadrants: quadrantBoxes(MAX_QUADRANT_ITEMS, true).map((box, index) => ({
+          ...box,
+          highlight: index === 1,
+        })),
+      },
+      filled: ['footnote'],
+    })),
+  ],
+
+  /**
+   * Every choice count at the row and tile character boundaries with the longest explanation,
+   * context and footnote; the same counts bare to exercise larger type; and the smallest question
+   * without an explanation.
+   */
+  quiz: [
+    ...Array.from({ length: MAX_QUIZ_OPTIONS - MIN_QUIZ_OPTIONS + 1 }, (_, index) => {
+      const count = MIN_QUIZ_OPTIONS + index;
+      const frontmatter = {
+        options: items(count, () => fill(QUIZ_OPTION_MAX_CHARS)),
+        answer: 'B',
+        explanation: fill(QUIZ_EXPLANATION_MAX_CHARS),
+        reveal: true,
+      };
+      return [
+        { name: `${count}-options`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-options-bare`, frontmatter, filled: [], body: false },
+        {
+          name: `tiles-${count}`,
+          frontmatter: { ...frontmatter, options: items(count, () => fill(QUIZ_TILE_MAX_CHARS)) },
+          filled: ['footnote'],
+        },
+        {
+          name: `tiles-${count}-bare`,
+          frontmatter: { ...frontmatter, options: items(count, () => fill(QUIZ_TILE_MAX_CHARS)) },
+          filled: [],
+          body: false,
+        },
+      ];
+    }).flat(),
+    {
+      name: 'minimal',
+      frontmatter: { options: ['Yes', 'No'], answer: 'A', reveal: false },
+      filled: [],
+      body: false,
+    },
+  ],
+
+  /**
+   * Every register count with maximum names and one-line mitigations, both medium labels (the
+   * widest level), and one highlighted row; full context and footnote, then the same rows bare. The
+   * largest register is repeated with every column head and level word at its limit.
+   */
+  risks: [
+    ...Array.from({ length: MAX_RISKS - MIN_RISKS + 1 }, (_, index) => {
+      const count = MIN_RISKS + index;
+      const frontmatter = { risks: riskRows(count) };
+      return [
+        { name: `${count}-risks`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-risks-bare`, frontmatter, filled: [], body: false },
+      ];
+    }).flat(),
+    {
+      name: `${MAX_RISKS}-risks-labels`,
+      frontmatter: {
+        risks: riskRows(MAX_RISKS),
+        labels: {
+          ...Object.fromEntries(
+            ['name', 'likelihood', 'impact', 'mitigation'].map((key) => [
+              key,
+              fillName(RISKS_LABEL_MAX_CHARS),
+            ]),
+          ),
+          ...Object.fromEntries(
+            ['low', 'medium', 'high'].map((key) => [key, fillName(RISKS_LEVEL_LABEL_MAX_CHARS)]),
+          ),
+          highlight: fillName(RISKS_HIGHLIGHT_LABEL_MAX_CHARS),
+        },
+      },
+      filled: ['footnote'],
+    },
+  ],
+
+  /**
    * A plot of six items with the longest names and of ten with the crowded names, each with the
    * longest axis labels and quadrant captions, a marked item, the note and a footnote; and the ten
    * without captions or note, the plot centred. Items stand where real maps put them: spread over
@@ -838,6 +1858,132 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
       name: `${MAX_MATRIX_ITEMS}-items-bare`,
       frontmatter: matrixFrontmatter(MAX_MATRIX_ITEMS, false),
       filled: ['footnote'],
+      body: false,
+    },
+  ],
+
+  /**
+   * Every lane count with both axis boundaries, two bars per lane and labels up to the combined
+   * content limit, the current lane, and a now marker at each axis edge, both filled and bare; plus
+   * the minimum unlabelled form. Single-period bars prove labels do not depend on the duration's
+   * width.
+   */
+  schedule: [
+    ...Array.from(
+      { length: SCHEDULE_MAX_LANES - SCHEDULE_MIN_LANES + 1 },
+      (_, index) => SCHEDULE_MIN_LANES + index,
+    ).flatMap((count) =>
+      [SCHEDULE_MIN_PERIODS, SCHEDULE_MAX_PERIODS].flatMap((periodCount) => {
+        const frontmatter = {
+          periods: items(periodCount, () =>
+            fill(periodCount >= 7 ? SCHEDULE_PERIOD_MAX_CHARS_DENSE : SCHEDULE_PERIOD_MAX_CHARS),
+          ),
+          current: count,
+          now: periodCount === SCHEDULE_MIN_PERIODS ? 1 : periodCount,
+          lanes: items(count, (laneIndex) => ({
+            name: fillName(SCHEDULE_LANE_MAX_CHARS),
+            bars: items(SCHEDULE_MAX_BARS, (barIndex) => ({
+              from: periodCount,
+              to: periodCount,
+              ...(laneIndex * SCHEDULE_MAX_BARS + barIndex <
+              SCHEDULE_MAX_BAR_CONTENT - count * SCHEDULE_MAX_BARS
+                ? { label: fill(SCHEDULE_BAR_MAX_CHARS) }
+                : {}),
+            })),
+          })),
+        };
+        return [
+          { name: `${count}-lanes-${periodCount}-periods`, frontmatter, filled: ['footnote'] },
+          {
+            name: `${count}-lanes-${periodCount}-periods-bare`,
+            frontmatter,
+            filled: [],
+            body: false,
+          },
+        ];
+      }),
+    ),
+    {
+      name: 'five-periods-body-axis',
+      frontmatter: {
+        periods: items(5, () => fill(SCHEDULE_PERIOD_MAX_CHARS)),
+        current: 1,
+        lanes: items(SCHEDULE_MIN_LANES, () => ({
+          name: fillName(SCHEDULE_LANE_MAX_CHARS),
+          bars: [{ from: 1, to: 5 }],
+        })),
+      },
+      filled: [],
+      body: false,
+    },
+    {
+      name: 'mixed-accent',
+      frontmatter: {
+        surface: 'accent',
+        periods: ['Q1 27', 'Q2 27', 'Q3 27', 'Q4 27', 'Q1 28', 'Q2 28', 'Q3 28', 'Q4 28'],
+        current: 2,
+        now: 4,
+        lanes: [
+          { name: 'Saltby depot closure', bars: [{ from: 1, to: 3, label: 'Run down routes' }] },
+          {
+            name: 'Quayside hub',
+            bars: [
+              { from: 2, to: 4, label: 'Fit-out' },
+              { from: 5, to: 8, label: 'First loops' },
+            ],
+          },
+          { name: 'Ardwen two hubs', bars: [{ from: 3, to: 6 }] },
+          {
+            name: 'Fallowmere',
+            bars: [
+              { from: 4, to: 5, label: 'Lease and fit' },
+              { from: 6, to: 8 },
+            ],
+          },
+          { name: 'Tarnock two hubs', bars: [{ from: 5, to: 8 }] },
+          { name: 'Fleet electrification', bars: [{ from: 1, to: 8 }] },
+        ],
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'six-labelled',
+      frontmatter: {
+        now: SCHEDULE_MAX_PERIODS,
+        current: SCHEDULE_MAX_LANES,
+        periods: items(SCHEDULE_MAX_PERIODS, () => fill(SCHEDULE_PERIOD_MAX_CHARS_DENSE)),
+        lanes: items(SCHEDULE_MAX_LANES, () => ({
+          name: fillName(SCHEDULE_LANE_MAX_CHARS),
+          bars: [{ from: 1, to: SCHEDULE_MAX_PERIODS, label: fill(SCHEDULE_BAR_MAX_CHARS) }],
+        })),
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: 'far-label',
+      frontmatter: {
+        periods: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+        current: 3,
+        now: 7,
+        lanes: [
+          { name: 'Survey', bars: [{ from: 1, to: 1, label: 'Holloway survey' }] },
+          { name: 'Planting', bars: [{ from: 2, to: 4, label: 'Eastgate streets' }] },
+          { name: 'Summer readings', bars: [{ from: 7, to: 8, label: 'Heat at 3 p.m.' }] },
+        ],
+      },
+      filled: [],
+      body: false,
+    },
+    {
+      name: 'minimum',
+      frontmatter: {
+        periods: items(SCHEDULE_MIN_PERIODS, () => fill(SCHEDULE_PERIOD_MAX_CHARS)),
+        lanes: items(SCHEDULE_MIN_LANES, () => ({
+          name: fillName(SCHEDULE_LANE_MAX_CHARS),
+          bars: [{ from: 1, to: SCHEDULE_MIN_PERIODS }],
+        })),
+      },
+      filled: [],
       body: false,
     },
   ],
@@ -908,6 +2054,44 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
   }),
 
   /**
+   * Both fits at the longest labels and one-line captions, with mixed picture proportions, context
+   * and a footnote; bare pairs exercise the full-height image wells and default labels.
+   */
+  'before-after': (['contain', 'cover'] as const).flatMap((fit) => [
+    {
+      name: fit,
+      frontmatter: {
+        fit,
+        before: {
+          src: WIDE_SCREEN,
+          alt: fill(BEFORE_AFTER_ALT_MAX_CHARS),
+          label: fill(BEFORE_AFTER_LABEL_MAX_CHARS),
+          caption: fill(BEFORE_AFTER_CAPTION_MAX_CHARS),
+        },
+        after: {
+          src: PHONE_SCREEN,
+          alt: fill(BEFORE_AFTER_ALT_MAX_CHARS),
+          label: fill(BEFORE_AFTER_LABEL_MAX_CHARS),
+          caption: fill(BEFORE_AFTER_CAPTION_MAX_CHARS),
+        },
+        reveal: true,
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: `${fit}-bare`,
+      frontmatter: {
+        fit,
+        before: { src: WIDE_SCREEN, alt: fill(BEFORE_AFTER_ALT_MAX_CHARS) },
+        after: { src: WIDE_SCREEN, alt: fill(BEFORE_AFTER_ALT_MAX_CHARS) },
+        accent: 'none',
+      },
+      filled: [],
+      body: false,
+    },
+  ]),
+
+  /**
    * A screen in each frame with four callouts at the longest labels, at the picture's corners and
    * centre, with the longest description and address, a sentence beside it and a footnote.
    */
@@ -929,8 +2113,8 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
   })),
 
   /**
-   * Three, four and five tiles with the longest figures, labels, headings and text, each kind of
-   * tile in the lead's cell and the small ones, with a line of context and a footnote.
+   * Three, four and five tiles with the longest figures, labels, labels and text, each kind of tile
+   * in the lead's cell and the small ones, with a line of context and a footnote.
    */
   bento: Array.from({ length: MAX_TILES - MIN_TILES + 1 }, (_, index) => {
     const count = MIN_TILES + index;
@@ -950,6 +2134,63 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
     frontmatter: { from: shiftState(figures), to: shiftState(figures) },
     filled: ['footnote'],
   })),
+
+  /**
+   * Every count boundary with all fields at their limits, with context and footnote and bare; the
+   * same states also cover the widest pill. Bare reports retain owners; no-owners reports omit
+   * them. Full reports also test inverse and accent surfaces, mixed owners, translated labels and a
+   * reveal with a final footnote at maximum count.
+   */
+  status: [
+    ...Array.from({ length: MAX_STATUS_ITEMS - MIN_STATUS_ITEMS + 1 }, (_, index) => {
+      const count = MIN_STATUS_ITEMS + index;
+      const frontmatter = {
+        items: statusItems(count),
+      };
+      return [
+        { name: `${count}-items`, frontmatter, filled: ['footnote'] },
+        { name: `${count}-items-bare`, frontmatter, filled: [], body: false },
+        {
+          name: `${count}-items-no-owners`,
+          frontmatter: { items: frontmatter.items.map(({ owner: _owner, ...item }) => item) },
+          filled: [],
+          body: false,
+        },
+      ];
+    }).flat(),
+    {
+      name: `${MAX_STATUS_ITEMS}-items-mixed-owners`,
+      frontmatter: {
+        items: statusItems(MAX_STATUS_ITEMS).map(({ owner, ...item }, index) =>
+          index % 2 === 0 ? { ...item, owner } : item,
+        ),
+      },
+      filled: ['footnote'],
+    },
+    {
+      name: `${MAX_STATUS_ITEMS}-items-reveal`,
+      frontmatter: { items: statusItems(MAX_STATUS_ITEMS), reveal: true },
+      filled: ['footnote'],
+    },
+    {
+      name: `${MAX_STATUS_ITEMS}-items-labels`,
+      frontmatter: {
+        items: statusItems(MAX_STATUS_ITEMS),
+        labels: Object.fromEntries(
+          ['name', 'status', 'owner', 'note', ...STATUS_STATES].map((key) => [
+            key,
+            fillName(STATUS_LABEL_MAX_CHARS),
+          ]),
+        ),
+      },
+      filled: ['footnote'],
+    },
+    ...['inverse', 'accent'].map((surface) => ({
+      name: `${MAX_STATUS_ITEMS}-items-${surface}`,
+      frontmatter: { surface, items: statusItems(MAX_STATUS_ITEMS) },
+      filled: ['footnote'],
+    })),
+  ],
 
   /**
    * A table region across the twelve columns and beside the aside, both with a footnote; the stress

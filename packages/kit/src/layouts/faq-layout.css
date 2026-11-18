@@ -1,0 +1,98 @@
+/*
+ * Open blocks under a neutral rule, in two equal columns (six kit columns each). Each pair shares
+ * question and answer tracks through a subgrid, so answers align across each row. Roomy levels
+ * stretch within a content-sized ceiling; compact levels reduce padding, gaps and question size.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-faq-context {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-faq-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-faq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: auto auto;
+    gap: var(--brand-space-lg) var(--kit-gutter);
+  }
+
+  .kit-faq-pair {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: var(--brand-space-sm);
+    align-content: start;
+    min-width: 0;
+    padding: var(--brand-space-md) var(--brand-space-md) var(--brand-space-md) 0;
+    border-top: var(--brand-stroke-regular) solid var(--brand-color-border);
+    overflow-wrap: break-word;
+  }
+
+  [data-surface='accent'] .kit-faq-pair {
+    border-top-color: var(--brand-color-muted);
+  }
+
+  .kit-faq-question {
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .kit-faq-answer {
+    margin: 0;
+    color: var(--brand-color-fg);
+    text-wrap: pretty;
+  }
+
+  .kit-frame[data-layout='faq'][data-roomy='true'] .kit-faq-grid {
+    --kit-faq-answer-size: var(--brand-type-lead-size);
+    --kit-faq-answer-line-height: var(--brand-type-lead-line-height);
+
+    height: 100%;
+    align-content: start;
+    /* Questions keep their natural height; only answer tracks stretch within a ceiling. */
+    grid-auto-rows: auto
+      minmax(
+        min-content,
+        calc(
+          3 * var(--kit-faq-answer-size) * var(--kit-faq-answer-line-height) - var(--brand-space-lg)
+        )
+      );
+  }
+
+  .kit-frame[data-layout='faq'][data-roomy='true'][data-count='2'][data-level='1'] .kit-faq-grid,
+  .kit-frame[data-layout='faq'][data-roomy='true'][data-count='3'] .kit-faq-grid,
+  .kit-frame[data-layout='faq'][data-roomy='true'][data-count='4'] .kit-faq-grid {
+    --kit-faq-answer-size: var(--brand-type-body-size);
+    --kit-faq-answer-line-height: var(--brand-type-body-line-height);
+  }
+
+  .kit-frame[data-layout='faq'][data-roomy='true'] .kit-faq-pair {
+    padding-top: var(--brand-space-lg);
+    padding-bottom: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='faq'][data-roomy='true'][data-count='3'] .kit-faq-pair,
+  .kit-frame[data-layout='faq'][data-roomy='true'][data-count='4'] .kit-faq-pair {
+    padding-top: var(--brand-space-md);
+    padding-bottom: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='faq'][data-compact='true'] .kit-faq-pair {
+    row-gap: var(--brand-space-xs);
+    padding: var(--brand-space-xs) var(--brand-space-xs) var(--brand-space-xs) 0;
+  }
+
+  .kit-frame[data-layout='faq'][data-compact='true'] .kit-faq-question {
+    --kit-scale: 0.8;
+  }
+
+  .kit-frame[data-layout='faq'][data-compact='true'] .kit-faq-grid {
+    row-gap: var(--brand-space-md);
+  }
+}

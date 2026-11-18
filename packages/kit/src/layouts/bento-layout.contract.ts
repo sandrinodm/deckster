@@ -8,6 +8,7 @@ import {
   chromeField,
   EYEBROW_HINT,
   EyebrowField,
+  IconNameField,
   FOCAL_HINT,
   FocalField,
   REVEAL_HINT,
@@ -84,11 +85,6 @@ export const BENTO_CONTEXT_MAX_WORDS = 12;
 const BENTO_FOOTNOTE_MAX_WORDS = 24;
 
 /**
- * An icon name in the brand's set, or in another installed set as `set:name`.
- */
-const ICON_NAME_PATTERN = /^(?:[a-z0-9-]+:)?[a-z0-9-]+$/u;
-
-/**
  * One tile: a figure with a label, a heading with a line of text and an optional icon, or a
  * picture. Which kind a tile is follows from the fields it sets; {@link bentoProblems} holds each
  * tile to one kind.
@@ -100,13 +96,7 @@ const Tile = Schema.Struct({
   label: Schema.optionalKey(textField(TILE_LABEL_MAX_CHARS, 'a tile label')),
   title: Schema.optionalKey(textField(TILE_TITLE_MAX_CHARS, 'a tile title')),
   text: Schema.optionalKey(textField(TILE_TEXT_MAX_CHARS, 'a tile text')),
-  icon: Schema.optionalKey(
-    Schema.NonEmptyString.check(
-      Schema.isPattern(ICON_NAME_PATTERN, {
-        message: 'Expected an icon name such as "leaf" or "tabler:leaf"',
-      }),
-    ),
-  ),
+  icon: Schema.optionalKey(IconNameField),
   src: Schema.optionalKey(Schema.NonEmptyString),
   alt: Schema.optionalKey(textField(TILE_ALT_MAX_CHARS, 'a picture description')),
   focal: FocalField,

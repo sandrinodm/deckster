@@ -19,8 +19,8 @@ pnpm deck lint lookbook
 pnpm deck lint lookbook --brand nocturne
 ```
 
-The deck has 138 slides in 12 parts and 270 steps. Its slides' `budget:` values add up to 95
-minutes 20 seconds, so `deck.config.ts` sets `duration: '100m'`, with five minutes of slack. That
+The deck has 180 slides in 12 parts and 364 steps. Its slides' `budget:` values add up to 122
+minutes 35 seconds, so `deck.config.ts` sets `duration: '127m'`, with four minutes of slack. That
 is the lookbook read end to end, not the forty-minute launch talk the story imagines
 (`BRIEF.md`), which would use a few slides from each part.
 
@@ -30,20 +30,20 @@ The slides are grouped by the job a slide does, so the part you need is the one 
 problem. Slide ids say what the slide shows (`split-photo-left-bleed`, `chart-waterfall`,
 `motion-wipe`), and the first line of every slide's speaker notes names its recipe.
 
-| #   | Part                   | What it shows                                                                                                                                                                                                     |
-| --- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Open                   | The cover with a picture beside or behind the title, a type-only cover, agendas (the plan, the day, where we are now), a speaker with and without a portrait, and the other divider forms                         |
-| 2   | Say one thing          | Statements (underlined, centred, giant, as a quote), quotes with and without a portrait, and a picture across the slide with its text at the bottom, left, right or not at all                                    |
-| 3   | Explain                | The default and content layouts, text beside a picture, a phone screen or an animation in each ratio, cards, steps and bento grids, with and without builds                                                       |
-| 4   | Compare and decide     | Comparisons with winners and a recommended option, a shift from old to new, two-by-two matrices, tables with highlighted rows and columns                                                                         |
-| 5   | Prove it with a number | Stats rows, a big number that counts up, before and after, sums built term by term, progress, a pictogram and a sparkline                                                                                         |
-| 6   | Show the pattern       | One chart per slide: line, bar, donut, waterfall, area, slope, funnel, table, scatter and heatmap                                                                                                                 |
-| 7   | Show how it works      | Flow diagrams with journeys, packets and states, a sequence, layers, a cycle, a tree, a diagram timeline and a drawn map; code with stepped highlights, moves, diffs and a terminal; a mini app and a live widget |
-| 8   | Show the product       | Product screens in a browser, phone, laptop or no frame with numbered callouts, two phones side by side, galleries of screens and scenes, a screenshot that morphs between slides, and a cued video               |
-| 9   | People and proof       | Founders, a row, a grid and a roster of people, logo walls in one tone and in colour, and case studies with a customer's quote and numbers                                                                        |
-| 10  | Plan ahead and ask     | Timelines (a history, a roadmap, a slipped milestone), a board of now, next and later, and the ask                                                                                                                |
-| 11  | Motion                 | The same three beats of one drop, set large as statements, with each `<Step>` effect (rise, fade, scale, blur, wipe) and with `focus`                                                                             |
-| 12  | Close                  | Link cards, a download, a code to scan, and the closing slide in its two forms                                                                                                                                    |
+| #   | Part                   | What it shows                                                                           |
+| --- | ---------------------- | --------------------------------------------------------------------------------------- |
+| 1   | Open                   | Covers, agendas, the speaker, divider forms                                             |
+| 2   | Say one thing          | Statements, definitions, quotes, a picture across the slide                             |
+| 3   | Explain                | Text, pictures, peers, capabilities, questions, processes, exercises, facets and habits |
+| 4   | Compare and decide     | Options, plans and prices, a change, a map, four lists, exact values and risk registers |
+| 5   | Prove it with a number | Big numbers, nested markets, before and after, a sum, a cost bridge and quiz            |
+| 6   | Show the pattern       | Single charts and dashboards: trend, ranking, flow, spread                              |
+| 7   | Show how it works      | Diagrams, conversations, code, live demos                                               |
+| 8   | Show the product       | Framed screens, galleries, before and after, a morph, video                             |
+| 9   | People and proof       | Founders, team, testimonials, personas, logos and case studies                          |
+| 10  | Plan ahead and ask     | History, roadmap, status reports, schedules, actions and the ask                        |
+| 11  | Motion                 | The five step effects side by side, and focus                                           |
+| 12  | Close                  | Takeaways, references, links, a code to scan, the last slide                            |
 
 ## What holds it complete
 

@@ -11,6 +11,11 @@ const FADE_MS = 300;
 const FADE_PRESET_ID = 10;
 
 /**
+ * PowerPoint's preset id for the Disappear exit effect.
+ */
+const DISAPPEAR_PRESET_ID = 1;
+
+/**
  * The timing node id of the root `p:cTn`, which holds the main sequence.
  */
 const ROOT_NODE_ID = 1;
@@ -26,7 +31,8 @@ const SEQUENCE_NODE_ID = 2;
 const FIRST_CLICK_NODE_ID = 3;
 
 /**
- * Something that appears on a click: a whole shape, or some paragraphs of a text shape.
+ * Something that appears or disappears on a click: a whole shape, or some paragraphs of a text
+ * shape.
  */
 export type RevealTarget = {
   /**
@@ -43,11 +49,18 @@ export type RevealTarget = {
    * Whether the shape has a text body (text frames and boxes), which the build list must name.
    */
   hasText: boolean;
+
+  /**
+   * `in` fades the target in. `out` makes it disappear once the fade-ins of the same click are
+   * done, because the content that covers and replaces it has entered by then.
+   */
+  effect: 'in' | 'out';
 };
 
 /**
- * The slide's `p:timing`: one click per step, fading in everything that appears at that step, in
- * step order. Returns an empty string when nothing is revealed.
+ * The slide's `p:timing`: one click per step, fading in everything that appears at that step and
+ * then making everything that the step replaces disappear, in step order. Returns an empty string
+ * when nothing is revealed.
  *
  * @param steps - The targets of each click, in order; empty steps are skipped.
  */
@@ -101,13 +114,17 @@ export function timingXml(steps: readonly (readonly RevealTarget[])[]): string {
 /**
  * One click: a click-triggered group whose first effect starts the click and the rest run with it.
  *
- * @param targets - What appears on this click, in order.
+ * @param targets - What appears and disappears on this click; entrances are written first.
  * @param newId - Allocates timing node ids; the outer and inner groups take the first two.
  */
 function clickXml(targets: readonly RevealTarget[], newId: () => number): string {
   const outerId = newId();
   const innerId = newId();
-  const effects = targets.map((target, index) => effectXml(target, index === 0, newId));
+  const ordered = [
+    ...targets.filter((target) => target.effect === 'in'),
+    ...targets.filter((target) => target.effect === 'out'),
+  ];
+  const effects = ordered.map((target, index) => effectXml(target, index === 0, newId));
   return el(
     'p:par',
     {},
@@ -166,9 +183,10 @@ function buildListXml(revealed: readonly RevealTarget[]): string[] {
 }
 
 /**
- * One fade-in: set visible, then fade.
+ * One effect: a fade-in (set visible, then fade), or a Disappear (set hidden) that starts when the
+ * click's fade-ins end.
  *
- * @param target - What appears.
+ * @param target - What appears or disappears.
  * @param isFirst - Whether it is the click's first effect (the others start with it).
  * @param newId - Allocates timing node ids.
  */
@@ -180,9 +198,10 @@ function effectXml(target: RevealTarget, isFirst: boolean, newId: () => number):
     range === null ? '' : el('p:txEl', {}, el('p:pRg', { st: range.start, end: range.end })),
   );
   const tgtEl = el('p:tgtEl', {}, shape);
+  const entering = target.effect === 'in';
   const effectId = newId();
   const setId = newId();
-  const fadeId = newId();
+  const fadeId = entering ? newId() : 0;
   return el(
     'p:par',
     {},
@@ -190,14 +209,14 @@ function effectXml(target: RevealTarget, isFirst: boolean, newId: () => number):
       'p:cTn',
       {
         id: effectId,
-        presetID: FADE_PRESET_ID,
-        presetClass: 'entr',
+        presetID: entering ? FADE_PRESET_ID : DISAPPEAR_PRESET_ID,
+        presetClass: entering ? 'entr' : 'exit',
         presetSubtype: 0,
         fill: 'hold',
         grpId: 0,
         nodeType: isFirst ? 'clickEffect' : 'withEffect',
       },
-      el('p:stCondLst', {}, el('p:cond', { delay: 0 })),
+      el('p:stCondLst', {}, el('p:cond', { delay: entering || isFirst ? 0 : FADE_MS })),
       el(
         'p:childTnLst',
         {},
@@ -215,13 +234,15 @@ function effectXml(target: RevealTarget, isFirst: boolean, newId: () => number):
             tgtEl,
             el('p:attrNameLst', {}, el('p:attrName', {}, 'style.visibility')),
           ),
-          el('p:to', {}, el('p:strVal', { val: 'visible' })),
+          el('p:to', {}, el('p:strVal', { val: entering ? 'visible' : 'hidden' })),
         ),
-        el(
-          'p:animEffect',
-          { transition: 'in', filter: 'fade' },
-          el('p:cBhvr', {}, el('p:cTn', { id: fadeId, dur: FADE_MS }), tgtEl),
-        ),
+        entering
+          ? el(
+              'p:animEffect',
+              { transition: 'in', filter: 'fade' },
+              el('p:cBhvr', {}, el('p:cTn', { id: fadeId, dur: FADE_MS }), tgtEl),
+            )
+          : '',
       ),
     ),
   );

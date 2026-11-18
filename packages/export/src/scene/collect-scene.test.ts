@@ -45,6 +45,91 @@ const SLIDE_HTML = `<!doctype html><html><head><style>
   </div>
 </section></div></body></html>`;
 
+/**
+ * A slide with a neutral copy that the content revealed at step 1 covers and replaces: text, a
+ * filled box and a `::before`, under the overlay's own text and box.
+ *
+ * @param state - The overlay step's `data-step-state`.
+ */
+function replacedHtml(state: 'past' | 'hidden'): string {
+  return `<!doctype html><html><head><style>
+  body { margin: 0; font-family: Arial, sans-serif; }
+  .deck-canvas { position: relative; width: 1920px; height: 1080px; }
+  section { position: absolute; inset: 0; background: #fcfcfd; }
+  .option { position: relative; margin: 100px 128px; width: 600px; height: 120px; }
+  .copy { position: absolute; inset: 0; background: #e8ecf8; font-size: 36px; }
+  .copy::before { content: ''; position: absolute; left: 0; top: 0; width: 12px; height: 120px; background: #2d4ae0; }
+  .deck-step { position: absolute; inset: 0; }
+  .overlay { position: absolute; inset: 0; background: #2d4ae0; color: #ffffff; font-size: 36px; }
+</style></head><body><div class="deck-canvas"><section data-slide-active="true" data-surface="default">
+  <div class="option">
+    <div class="copy" data-replaced-at="1"><span>Neutral copy</span></div>
+    <div class="deck-step" data-step="1" data-step-state="${state}"><div class="overlay"><span>Answer overlay</span></div></div>
+  </div>
+</section></div></body></html>`;
+}
+
+describe('collectScene replacedAt in Chromium', () => {
+  let browser: Browser;
+  let page: Page;
+
+  beforeAll(async () => {
+    browser = await chromium.launch();
+    page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  }, BROWSER_TIMEOUT_MS);
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  /**
+   * Collects the replaced-copy slide and splits its nodes into the copy's and the overlay's.
+   *
+   * @param state - The overlay step's `data-step-state`.
+   */
+  async function collect(state: 'past' | 'hidden'): Promise<{
+    copy: CollectedScene['nodes'];
+    overlay: CollectedScene['nodes'];
+  }> {
+    await page.setContent(replacedHtml(state));
+    const scene = await page.evaluate(collectScene, { placeholderSelectors: [] });
+    const inOverlay = (node: CollectedScene['nodes'][number]): boolean =>
+      node.selector.includes('deck-step') || node.step !== null;
+    return {
+      copy: scene.nodes.filter((node) => !inOverlay(node) && node.selector.includes('copy')),
+      overlay: scene.nodes.filter(inOverlay),
+    };
+  }
+
+  /**
+   * The `replacedAt` of a node and of each of its paragraphs.
+   *
+   * @param node - The node.
+   */
+  function replacements(node: CollectedScene['nodes'][number]): (number | null)[] {
+    return [
+      node.replacedAt,
+      ...(node.kind === 'text' ? node.paragraphs.map((paragraph) => paragraph.replacedAt) : []),
+    ];
+  }
+
+  it('marks the copy and its pseudo element as replaced once the overlay step is reached', async () => {
+    const { copy, overlay } = await collect('past');
+    expect(copy.some((node) => node.kind === 'text')).toBe(true);
+    expect(copy.filter((node) => node.kind === 'box').length).toBeGreaterThanOrEqual(2);
+    expect(overlay.some((node) => node.kind === 'text')).toBe(true);
+    expect(overlay.some((node) => node.kind === 'box')).toBe(true);
+    expect(copy.flatMap(replacements).every((value) => value === 1)).toBe(true);
+    expect(overlay.flatMap(replacements).every((value) => value === null)).toBe(true);
+  });
+
+  it('leaves the copy as ordinary content while the overlay step is hidden', async () => {
+    const { copy } = await collect('hidden');
+    expect(copy.length).toBeGreaterThan(0);
+    expect(copy.flatMap(replacements).every((value) => value === null)).toBe(true);
+  });
+});
+
 describe('collectScene in Chromium', () => {
   let browser: Browser;
   let page: Page;

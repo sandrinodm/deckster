@@ -36,11 +36,15 @@ import { resolveNodeKind, NODE_KINDS } from '#diagrams/node-kinds.ts';
 import { cardShape, nodeGeometry } from '#diagrams/node-shapes.ts';
 import { movesAt, planTrip, staticTripPositions, tailBehind } from '#diagrams/packet-motion.ts';
 import { roundedPath, type PathSegment } from '#diagrams/path-geometry.ts';
-import { layoutSequence, type SequenceLayout } from '#diagrams/sequence-layout.ts';
+import {
+  layoutSequence,
+  sequenceActorWidth,
+  type SequenceLayout,
+} from '#diagrams/sequence-layout.ts';
 import { useDiagramDescription } from '#diagrams/use-description.ts';
-import { useElementSize } from '#diagrams/use-element-size.ts';
+import { useElementSize, type ElementSize } from '#diagrams/use-element-size.ts';
 import { useKindIcons } from '#diagrams/use-kind-icons.ts';
-import { useMeasurements } from '#diagrams/use-measurements.ts';
+import { useMeasurementEffect, useMeasurementState } from '#diagrams/use-measurements.ts';
 import { useMotionPlans } from '#diagrams/use-motion-plans.ts';
 import { smartPunctuation } from '#foundation/smart-punctuation.ts';
 
@@ -137,10 +141,11 @@ export function SequenceDiagram({
   const tokens = useDiagramTokens(root);
   const cards = useMemo(() => actorCards(actors, tokens, card), [actors, tokens, card]);
   const key = JSON.stringify({ actors, messages });
-  const measurements = useMeasurements(
-    root,
-    `${key}|${size?.width ?? 0}|${tokens === undefined ? '' : [...cards.values()].map((one) => one.name).join(' ')}`,
-  );
+  const boxWidth = measuredActorWidth(actors.length, size, tokens);
+  const cardNames =
+    tokens === undefined ? '' : [...cards.values()].map((one) => one.name).join(' ');
+  const measureKey = `${key}|${Math.round(boxWidth)}|${cardNames}`;
+  const { measurements, settled, dispatch } = useMeasurementState(measureKey);
   const layout = useMemo(() => {
     if (size === undefined || tokens === undefined || measurements === undefined) {
       return undefined;
@@ -151,15 +156,15 @@ export function SequenceDiagram({
       messages,
       size,
       {
-        actorMaxWidth: actorWidth(tokens),
+        ...actorSpacing(tokens),
         actorHeight: measurements.nodeHeight,
-        gutter: tokens.space.xl,
         rowMax: tokens.type.caption * ROW_MAX_CAPTIONS,
         loopWidth: tokens.space.xl,
       },
     );
   }, [actors, messages, size, tokens, measurements]);
-  useReadyHold(layout === undefined);
+  useMeasurementEffect(root, measureKey, layout, dispatch);
+  useReadyHold(layout === undefined || !settled);
   const reduced = useReducedMotion();
   const still = isStatic || reduced || !movesAt(tokens?.motion);
   const current = messages.findIndex((message) => message.at !== undefined && message.at === step);
@@ -207,7 +212,7 @@ export function SequenceDiagram({
       kind="sequence"
       title={title}
       summary={summary}
-      ready={layout !== undefined}
+      ready={layout !== undefined && settled}
       height={height}
       live={live}
       data={{
@@ -221,7 +226,7 @@ export function SequenceDiagram({
         ]}
       />
       {layout === undefined || tokens === undefined ? (
-        <MeasureActors actors={actors} cards={cards} extras={extras} width={actorWidth(tokens)} />
+        <MeasureActors actors={actors} cards={cards} extras={extras} width={boxWidth} />
       ) : (
         <SequenceDrawing
           actors={actors}
@@ -333,6 +338,37 @@ const GHOST_STAGGER_MS = 26;
  */
 function actorWidth(tokens: DiagramTokens | undefined): number {
   return (tokens?.type.caption ?? DEFAULT_CAPTION_PX) * ACTOR_WIDTH_CAPTIONS;
+}
+
+/**
+ * How wide actor boxes get and how far apart they stay, in pixels, for the layout and for the width
+ * the actors are measured at.
+ *
+ * @param tokens - The brand's values.
+ */
+function actorSpacing(tokens: DiagramTokens): { actorMaxWidth: number; gutter: number } {
+  return { actorMaxWidth: actorWidth(tokens), gutter: tokens.space.xl };
+}
+
+/**
+ * The width the layout will give every actor box, so the hidden actors are measured as wide as they
+ * are drawn and a title that wraps in its box is measured wrapped. Before the diagram's size and
+ * the brand's values are read, it is the widest an actor box gets.
+ *
+ * @param actorCount - How many actors stand side by side.
+ * @param size - The diagram's box, once measured.
+ * @param tokens - The brand's values, once read.
+ */
+function measuredActorWidth(
+  actorCount: number,
+  size: ElementSize | undefined,
+  tokens: DiagramTokens | undefined,
+): number {
+  if (size === undefined || tokens === undefined) {
+    return actorWidth(tokens);
+  }
+
+  return sequenceActorWidth(actorCount, size.width, actorSpacing(tokens));
 }
 
 /**

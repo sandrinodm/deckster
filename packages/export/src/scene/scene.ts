@@ -403,6 +403,12 @@ export type SceneParagraph = {
   step: number | null;
 
   /**
+   * The step whose content covers and replaces the paragraph (from `data-replaced-at`), or `null`
+   * when nothing replaces it or that step is not reached in the captured page.
+   */
+  replacedAt: number | null;
+
+  /**
    * The computed `text-align`, with `start` and `end` resolved.
    */
   align: 'left' | 'center' | 'right' | 'justify';
@@ -489,6 +495,12 @@ export type SceneNodeBase = {
    * The step at which the node appears (the order of its nearest step wrapper), or `null`.
    */
   step: number | null;
+
+  /**
+   * The step whose content covers and replaces the node (from the closest `data-replaced-at`), or
+   * `null` when nothing replaces it or that step is not reached in the captured page.
+   */
+  replacedAt: number | null;
 
   /**
    * Set on the nodes of a layout's background layers (`[data-backdrop]`): the surface's image,

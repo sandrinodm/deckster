@@ -1,0 +1,96 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-voices-context {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-voices-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-voices {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-voices-count, 3), minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    column-gap: var(--kit-gutter);
+  }
+
+  .kit-frame[data-layout='voices'][data-count='2']:is([data-level='0'], [data-level='1'])
+    .kit-voices {
+    height: 100%;
+    grid-template-rows: minmax(min-content, 1fr) auto;
+  }
+
+  .kit-voice {
+    display: grid;
+    grid-row: 1 / -1;
+    grid-template-rows: subgrid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    margin: 0;
+    padding: var(--brand-space-lg) 0 0;
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    overflow-wrap: break-word;
+  }
+
+  .kit-voice-quote {
+    --kit-scale: var(--kit-voices-scale);
+
+    align-self: start;
+    margin: 0;
+    padding-inline-end: 0.62em;
+  }
+
+  .kit-voice-quote::before {
+    content: '\201C';
+    position: absolute;
+    translate: -0.62em 0;
+    color: var(--brand-color-accent);
+  }
+
+  .kit-voice-quote::after {
+    content: '\201D';
+  }
+
+  .kit-voice-speaker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: var(--brand-space-sm);
+    margin-top: var(--brand-space-xl);
+  }
+
+  .kit-frame[data-layout='voices'][data-level='3'] .kit-voice-speaker {
+    margin-top: var(--brand-space-lg);
+  }
+
+  .kit-voice-speaker:has(.kit-voice-avatar) {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .kit-voice-avatar {
+    width: calc(2 * var(--brand-space-xl));
+    height: calc(2 * var(--brand-space-xl));
+    border-radius: var(--kit-media-radius, 0);
+  }
+
+  .kit-voice-avatar .kit-portrait-initials {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-voice-attribution {
+    min-width: 0;
+  }
+
+  .kit-voice-name {
+    margin: 0;
+  }
+
+  .kit-voice-role {
+    margin: var(--brand-space-2xs) 0 0;
+    color: var(--brand-color-muted);
+    text-wrap: pretty;
+  }
+}

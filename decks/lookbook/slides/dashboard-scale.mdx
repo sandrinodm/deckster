@@ -1,0 +1,27 @@
+---
+layout: dashboard
+title: Drops tripled while delivery costs fell
+eyebrow: October 2026
+panels:
+  - title: Drops, K, October
+  - title: Cost, €/drop, October
+budget: 50s
+---
+
+<BarChart
+  data={[{ year: '2025', drops: 61 }, { year: '2026', drops: 182 }]}
+  x="year" y="drops" unit="K" highlight="2026"
+/>
+
+<BarChart
+  data={[{ year: '2025', cost: 3.40 }, { year: '2026', cost: 2.34 }]}
+  x="year" y="cost" format={{ style: 'currency', currency: 'EUR', digits: 2 }}
+  highlight="2026"
+/>
+
+<Footnote>Wrenhaul operating report, October 2026.</Footnote>
+
+<Notes>
+`dashboard` with two full-height bar charts; use it when two measures together make one argument.
+Volume tripled to 182,000 drops in October. At the same time, the cost of a drop fell from €3.40 to €2.34. More drops make each hub denser; this is scale improving the economics.
+</Notes>

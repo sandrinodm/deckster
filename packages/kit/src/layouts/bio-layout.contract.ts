@@ -42,7 +42,8 @@ export const bioLayoutContract = defineLayoutContract({
     'two `contacts:` (email, site or handle) stacked on the bottom line. Without `photo:` the ' +
     'portrait is a tile with their initials. Use it once, near the start; use team for three or ' +
     'more people and quote for someone speaking for the point. `title:` names the slide in the ' +
-    'outline and is not shown.',
+    'outline and is not shown; ' +
+    'use persona for a user profile with goals and frustrations.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     name: textField(BIO_NAME_MAX_CHARS, 'a name'),

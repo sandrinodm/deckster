@@ -99,9 +99,10 @@ export const galleryLayoutContract = defineLayoutContract({
     'others share the right. Each picture, from `pictures:`, has `src` and `alt` and optionally ' +
     'a `caption` set under it, never over it; `fit: contain` shows a screenshot whole instead of ' +
     'cropping it. Defaults to the inverse surface, where screens and photos read like prints on ' +
-    'a light table. Use it for product shots, screens of a flow, before and after photos, or a ' +
-    'site from several sides; use split for one picture with text beside it, image for one ' +
-    'photo across the slide, and bento when the pictures share the slide with figures.',
+    'a light table. Use it for product shots, screens of a flow, or a site from several sides; ' +
+    'use before-after for two pictures of one change, split for one picture with text beside ' +
+    'it, image for one photo across the slide, and bento when the pictures share the slide ' +
+    'with figures.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     pictures: Schema.Array(Picture).check(

@@ -1,0 +1,21 @@
+---
+layout: quiz
+title: How many drops can Flock put in one loop?
+eyebrow: Dispatch rules
+options:
+  - Three
+  - Five
+  - Seven
+  - Nine
+answer: D
+explanation: Nine drops and 75 minutes are the limits; Flock batches waiting drops every 90 seconds.
+reveal: true
+budget: 20s
+---
+
+<Notes>
+`quiz` with four short options and `answer: D`; use it to check one concrete operating limit before a demo.
+Ask for the maximum, rather than the number in a typical loop.
+
+[click] D: nine drops. The loop must also stay within seventy-five minutes; a full loop that misses its windows is not a useful batch.
+</Notes>

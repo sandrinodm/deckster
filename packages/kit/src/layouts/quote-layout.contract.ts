@@ -40,7 +40,8 @@ export const quoteLayoutContract = defineLayoutContract({
     'said it, and `photo:` sets their portrait beside the quote (cropped to it, the face kept ' +
     'in view with `focal`). Keep it to one to three sentences; a longer quote steps down in ' +
     "size and past 36 words is cut. Use statement for the talk's own claim, and team or bio " +
-    'to introduce people.',
+    'to introduce people; ' +
+    'use voices for several testimonials or conversation for an exchange.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     name: textField(QUOTE_NAME_MAX_CHARS, 'a name'),

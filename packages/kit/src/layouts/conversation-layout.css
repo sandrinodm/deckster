@@ -1,0 +1,112 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='conversation'] {
+    --kit-conversation-pad: var(--brand-space-lg);
+    --kit-conversation-gap: var(--brand-space-md);
+  }
+
+  .kit-conversation-context {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-conversation-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-conversation {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(var(--kit-columns), minmax(0, 1fr));
+    grid-auto-rows: minmax(min-content, 1fr);
+    gap: var(--kit-conversation-gap) var(--kit-gutter);
+  }
+
+  .kit-conversation-message {
+    grid-column: 1 / span 10;
+    display: grid;
+    grid-template-columns: calc(2.5 * var(--kit-column) + 1.5 * var(--kit-gutter)) minmax(0, 1fr);
+    gap: var(--brand-space-md);
+    align-items: start;
+    min-width: 0;
+    position: relative;
+    isolation: isolate;
+    padding: var(--kit-conversation-pad);
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-bg);
+    color: var(--brand-color-fg);
+  }
+
+  /* The neutral panel stays opaque over a patterned or photographic slide background. */
+  .kit-conversation-message::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--brand-color-surface);
+  }
+
+  .kit-conversation-message[data-side='right'] {
+    grid-column: 3 / span 10;
+    border-color: transparent;
+    background: var(--brand-background, var(--brand-color-bg));
+  }
+
+  .kit-conversation-message[data-side='right']::before {
+    content: none;
+  }
+
+  .kit-conversation-speaker {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-2xs);
+    padding-top: var(--brand-space-2xs);
+  }
+
+  .kit-conversation-name,
+  .kit-conversation-role {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .kit-conversation-name {
+    color: var(--brand-color-heading);
+  }
+
+  .kit-conversation-role {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-conversation-message[data-side='right'] .kit-conversation-role {
+    color: var(--brand-color-fg);
+  }
+
+  .kit-conversation-text {
+    margin: 0;
+    padding-inline-start: var(--brand-space-md);
+    border-inline-start: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+
+  .kit-frame[data-layout='conversation'][data-spacing='roomy'] .kit-conversation-message {
+    align-content: center;
+  }
+
+  .kit-frame[data-layout='conversation'][data-spacing='normal'] {
+    --kit-conversation-pad: var(--brand-space-md);
+    --kit-conversation-gap: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='conversation'][data-spacing='tight'] {
+    --kit-conversation-pad: var(--brand-space-xs);
+    --kit-conversation-gap: var(--brand-space-xs);
+  }
+}

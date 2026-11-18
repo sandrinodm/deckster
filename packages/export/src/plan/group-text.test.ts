@@ -44,4 +44,22 @@ describe('groupText', () => {
       ]),
     ).toHaveLength(3);
   });
+
+  it('keeps stacked paragraphs apart when they are replaced at different steps', () => {
+    const copy = textNode(1, paragraph([line('Copy', 140)], { replacedAt: 1 }), { replacedAt: 1 });
+    const plain = textNode(2, paragraph([line('Plain', 214)]));
+    const same = textNode(3, paragraph([line('Same', 214)], { replacedAt: 1 }), { replacedAt: 1 });
+    expect(
+      groupText([
+        { kind: 'native', node: copy },
+        { kind: 'native', node: plain },
+      ]),
+    ).toHaveLength(2);
+    expect(
+      groupText([
+        { kind: 'native', node: copy },
+        { kind: 'native', node: same },
+      ]),
+    ).toHaveLength(1);
+  });
 });

@@ -86,7 +86,8 @@ export const timelineLayoutContract = defineLayoutContract({
     'rings the milestone we are at and fills the line up to it; a milestone can be marked done ' +
     '(`state: success`), slipped (`error`) or tentative (`muted`); `reveal: true` adds one ' +
     'milestone per click. Split a longer history over two slides. Use steps for a process ' +
-    'without dates, and a chart for values over time.',
+    'without dates, and a chart for values over time; ' +
+    'use schedule for lanes with durations.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     milestones: Schema.Array(MilestoneItem).check(

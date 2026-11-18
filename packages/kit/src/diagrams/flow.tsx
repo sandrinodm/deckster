@@ -52,7 +52,7 @@ import { useAutoLayout, type AutoCandidate } from '#diagrams/use-auto-layout.ts'
 import { useDiagramDescription } from '#diagrams/use-description.ts';
 import { useElementSize } from '#diagrams/use-element-size.ts';
 import { useKindIcons } from '#diagrams/use-kind-icons.ts';
-import { useMeasurements } from '#diagrams/use-measurements.ts';
+import { useMeasurementEffect, useMeasurementState } from '#diagrams/use-measurements.ts';
 import { useMotionPlans } from '#diagrams/use-motion-plans.ts';
 import { widestWord } from '#diagrams/word-breaks.ts';
 import { maxOf } from '#foundation/lists.ts';
@@ -353,10 +353,8 @@ export function FlowView({
     { ...(cols === undefined ? {} : { cols }), ...(rows === undefined ? {} : { rows }) },
   );
   const nodeWidth = singleNodeWidth(size, metrics, isAuto ? undefined : grid.cols, spec);
-  const measurements = useMeasurements(
-    root,
-    `${specKey}|${Math.round(nodeWidth)}|${[...cards.values()].map((one) => one.name).join(' ')}`,
-  );
+  const measureKey = `${specKey}|${Math.round(nodeWidth)}|${[...cards.values()].map((one) => one.name).join(' ')}`;
+  const { measurements, settled, dispatch } = useMeasurementState(measureKey);
   const measured = useMemo(
     () =>
       metrics === undefined
@@ -430,8 +428,17 @@ export function FlowView({
     reshape,
     cards,
   ]);
+  useMeasurementEffect(
+    root,
+    measureKey,
+    layout !== undefined && layout.nodes.size > 0 ? layout : undefined,
+    dispatch,
+  );
   const ready =
-    layout !== undefined && measurements !== undefined && (!isAuto || centres !== undefined);
+    layout !== undefined &&
+    measurements !== undefined &&
+    (settled || spec.nodes.length === 0) &&
+    (!isAuto || centres !== undefined);
   useReadyHold(!ready);
   const frame = useMemo(() => flowFrame(spec, step), [spec, step]);
   const reduced = useReducedMotion();

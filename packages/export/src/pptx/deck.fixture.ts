@@ -48,6 +48,7 @@ export function logoNode(id: number): ImageNode {
     hints: [],
     slot: null,
     step: null,
+    replacedAt: null,
     kind: 'image',
     src: '/brand/logo.png',
     alt: '',

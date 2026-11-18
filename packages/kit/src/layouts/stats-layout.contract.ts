@@ -93,7 +93,8 @@ export const statsLayoutContract = defineLayoutContract({
     'changed. The title states what the numbers mean together. The row stands on one line on ' +
     'every stats slide; set `highlight: true` on the stat the point rests on. Use it when the ' +
     'point is the size of something; use a chart (or split with one) for a trend, and a table ' +
-    'for more than four figures.',
+    'for more than four figures; ' +
+    'use market for nested sizes or dashboard for related charts.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     stats: Schema.Array(Stat).check(

@@ -11,8 +11,10 @@ import { Cmd, Out, Terminal } from '#code/terminal.tsx';
 import { DIAGRAM_COMPONENTS } from '#diagrams/diagram-components.ts';
 import { MarkdownTable } from '#foundation/markdown-table.tsx';
 import { Icon } from '#icons/icon.tsx';
+import { actionsLayout } from '#layouts/actions-layout.tsx';
 import { agendaLayout } from '#layouts/agenda-layout.tsx';
 import { askLayout } from '#layouts/ask-layout.tsx';
+import { beforeAfterLayout } from '#layouts/before-after-layout.tsx';
 import { bentoLayout } from '#layouts/bento-layout.tsx';
 import { bioLayout } from '#layouts/bio-layout.tsx';
 import { cardsLayout } from '#layouts/cards-layout.tsx';
@@ -22,27 +24,45 @@ import { codeLayout } from '#layouts/code-layout.tsx';
 import { columnsLayout } from '#layouts/columns-layout.tsx';
 import { comparisonLayout } from '#layouts/comparison-layout.tsx';
 import { contentLayout } from '#layouts/content-layout.tsx';
+import { conversationLayout } from '#layouts/conversation-layout.tsx';
+import { dashboardLayout } from '#layouts/dashboard-layout.tsx';
 import { defaultLayout } from '#layouts/default-layout.tsx';
+import { definitionLayout } from '#layouts/definition-layout.tsx';
 import { demoLayout } from '#layouts/demo-layout.tsx';
 import { diagramLayout } from '#layouts/diagram-layout.tsx';
+import { doDontLayout } from '#layouts/do-dont-layout.tsx';
 import { equationLayout } from '#layouts/equation-layout.tsx';
+import { exerciseLayout } from '#layouts/exercise-layout.tsx';
+import { faqLayout } from '#layouts/faq-layout.tsx';
+import { featuresLayout } from '#layouts/features-layout.tsx';
 import { galleryLayout } from '#layouts/gallery-layout.tsx';
 import { imageLayout } from '#layouts/image-layout.tsx';
 import { logosLayout } from '#layouts/logos-layout.tsx';
+import { marketLayout } from '#layouts/market-layout.tsx';
 import { matrixLayout } from '#layouts/matrix-layout.tsx';
+import { personaLayout } from '#layouts/persona-layout.tsx';
+import { pricingLayout } from '#layouts/pricing-layout.tsx';
 import { proofLayout } from '#layouts/proof-layout.tsx';
+import { quadrantsLayout } from '#layouts/quadrants-layout.tsx';
+import { quizLayout } from '#layouts/quiz-layout.tsx';
 import { quoteLayout } from '#layouts/quote-layout.tsx';
+import { recapLayout } from '#layouts/recap-layout.tsx';
+import { risksLayout } from '#layouts/risks-layout.tsx';
+import { scheduleLayout } from '#layouts/schedule-layout.tsx';
 import { screenLayout } from '#layouts/screen-layout.tsx';
 import { sectionLayout } from '#layouts/section-layout.tsx';
 import { shiftLayout } from '#layouts/shift-layout.tsx';
+import { sourcesLayout } from '#layouts/sources-layout.tsx';
 import { splitLayout } from '#layouts/split-layout.tsx';
 import { statementLayout } from '#layouts/statement-layout.tsx';
 import { statsLayout } from '#layouts/stats-layout.tsx';
+import { statusLayout } from '#layouts/status-layout.tsx';
 import { stepsLayout } from '#layouts/steps-layout.tsx';
 import { tableLayout } from '#layouts/table-layout.tsx';
 import { teamLayout } from '#layouts/team-layout.tsx';
 import { timelineLayout } from '#layouts/timeline-layout.tsx';
 import { titleLayout } from '#layouts/title-layout.tsx';
+import { voicesLayout } from '#layouts/voices-layout.tsx';
 import { Button } from '#links/button.tsx';
 import { Download } from '#links/download.tsx';
 import { LinkCard } from '#links/link-card.tsx';
@@ -83,29 +103,49 @@ export default definePlugin({
     splitLayout,
     statsLayout,
     equationLayout,
+    marketLayout,
     chartLayout,
+    dashboardLayout,
     diagramLayout,
     codeLayout,
     demoLayout,
+    definitionLayout,
     agendaLayout,
+    recapLayout,
     quoteLayout,
+    voicesLayout,
+    conversationLayout,
     proofLayout,
     imageLayout,
     galleryLayout,
+    beforeAfterLayout,
     screenLayout,
     cardsLayout,
     columnsLayout,
+    quadrantsLayout,
+    faqLayout,
+    featuresLayout,
     bentoLayout,
     stepsLayout,
+    actionsLayout,
+    exerciseLayout,
     comparisonLayout,
     matrixLayout,
+    pricingLayout,
+    doDontLayout,
+    quizLayout,
     shiftLayout,
     timelineLayout,
+    scheduleLayout,
     tableLayout,
+    statusLayout,
+    risksLayout,
     logosLayout,
     teamLayout,
     bioLayout,
+    personaLayout,
     askLayout,
+    sourcesLayout,
     closingLayout,
   ],
   components: {

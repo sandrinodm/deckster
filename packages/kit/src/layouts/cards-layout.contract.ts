@@ -6,6 +6,7 @@ import {
   chromeField,
   EYEBROW_HINT,
   EyebrowField,
+  IconNameField,
   REVEAL_HINT,
   RevealField,
   textField,
@@ -51,13 +52,7 @@ export const CARDS_TITLE_MAX_CHARS = 60;
  * One card: an icon, a short title and a line or two of text.
  */
 const Card = Schema.Struct({
-  icon: Schema.optionalKey(
-    Schema.NonEmptyString.check(
-      Schema.isPattern(/^(?:[a-z0-9-]+:)?[a-z0-9-]+$/u, {
-        message: 'Expected an icon name such as "leaf" or "tabler:leaf"',
-      }),
-    ),
-  ),
+  icon: Schema.optionalKey(IconNameField),
   title: textField(CARD_TITLE_MAX_CHARS, 'a card title'),
   text: Schema.optionalKey(textField(CARD_TEXT_MAX_CHARS, 'a card text')),
 });
@@ -73,12 +68,13 @@ export type CardEntry = typeof Card.Type;
 export const cardsLayoutContract = defineLayoutContract({
   name: 'cards',
   description:
-    'Two to four parallel ideas of equal weight (features, pillars, options, principles), each a ' +
+    'Two to four parallel ideas of equal weight (pillars, options, principles), each a ' +
     'card with an icon from the brand set, a short title and a line or two of text, from ' +
     '`cards:` in the frontmatter. The cards share the row and the height under the title. Use ' +
     'it when the ideas are peers; use steps when they happen in order, stats when each is a ' +
     'number, comparison when they are alternatives measured on the same rows, and content for ' +
-    'a list. `reveal: true` shows them one per step.',
+    'a list. `reveal: true` shows them one per step; ' +
+    'use features for six to twelve capabilities, quadrants for four boxes, faq for questions and answers, or recap for takeaways.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     cards: Schema.Array(Card).check(

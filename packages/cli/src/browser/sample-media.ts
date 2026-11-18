@@ -41,7 +41,8 @@ function hideText(ids: {
   style.id = ids.style;
   style.textContent =
     'section[data-slide-active="true"] *, section[data-slide-active="true"] *::before, ' +
-    'section[data-slide-active="true"] *::after { color: transparent !important; ' +
+    // Keep color intact: borders and SVG shapes may paint their backing with currentColor.
+    'section[data-slide-active="true"] *::after { ' +
     '-webkit-text-fill-color: transparent !important; text-shadow: none !important; ' +
     'text-decoration-color: transparent !important; caret-color: transparent !important; } ' +
     // SVG text (chart and diagram labels) is painted by `fill` and `stroke`, not `color`.
@@ -82,6 +83,7 @@ async function sampleUnderText(input: {
     const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
     const scale = bitmap.width / input.clip.width;
     const SAMPLE_STEP_PX = 3;
+    const CAPITALIZED_WORD = /(^|[^\p{L}\p{N}])(\p{L})/gu;
     const RGBA_CHANNELS = 4;
     const LOW_FRACTION = 0.02;
     const HIGH_FRACTION = 0.98;
@@ -121,6 +123,8 @@ async function sampleUnderText(input: {
     for (const element of marked) {
       const index = Number(element.getAttribute(input.attribute));
       const samples: { lum: number; color: string }[] = [];
+      const style = getComputedStyle(element);
+      context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
       for (const node of Array.from(element.childNodes)) {
         if (node.nodeType !== Node.TEXT_NODE || (node.textContent ?? '').trim() === '') {
           continue;
@@ -128,11 +132,36 @@ async function sampleUnderText(input: {
 
         const range = document.createRange();
         range.selectNodeContents(node);
+        // Range boxes include the font's unused ascent/descent, which can overlap a neighbouring
+        // rule even when no glyph does. Sample the ink's vertical bounds around the same baseline.
+        const raw = node.textContent ?? '';
+        let shown = raw;
+        if (style.textTransform === 'uppercase') {
+          shown = raw.toLocaleUpperCase(
+            element.closest('[lang]')?.getAttribute('lang') || undefined,
+          );
+        } else if (style.textTransform === 'lowercase') {
+          shown = raw.toLocaleLowerCase(
+            element.closest('[lang]')?.getAttribute('lang') || undefined,
+          );
+        } else if (style.textTransform === 'capitalize') {
+          // Capitalizing the first letter of each word preserves lowercase ascenders and descenders.
+          shown = raw.replace(CAPITALIZED_WORD, (word) => word.toLocaleUpperCase());
+        }
+
+        const metrics = context.measureText(shown);
+        const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
         for (const rect of Array.from(range.getClientRects())) {
+          const fontScale = fontHeight > 0 ? rect.height / fontHeight : 1;
+          const baseline = rect.top + metrics.fontBoundingBoxAscent * fontScale;
+          const inkTop =
+            fontHeight > 0 ? baseline - metrics.actualBoundingBoxAscent * fontScale : rect.top;
+          const inkBottom =
+            fontHeight > 0 ? baseline + metrics.actualBoundingBoxDescent * fontScale : rect.bottom;
           const left = Math.max(0, Math.floor((rect.left - input.clip.x) * scale));
-          const top = Math.max(0, Math.floor((rect.top - input.clip.y) * scale));
+          const top = Math.max(0, Math.floor((inkTop - input.clip.y) * scale));
           const right = Math.min(canvas.width, Math.ceil((rect.right - input.clip.x) * scale));
-          const bottom = Math.min(canvas.height, Math.ceil((rect.bottom - input.clip.y) * scale));
+          const bottom = Math.min(canvas.height, Math.ceil((inkBottom - input.clip.y) * scale));
           for (let y = top; y < bottom; y += SAMPLE_STEP_PX) {
             for (let x = left; x < right; x += SAMPLE_STEP_PX) {
               const offset = (y * canvas.width + x) * RGBA_CHANNELS;

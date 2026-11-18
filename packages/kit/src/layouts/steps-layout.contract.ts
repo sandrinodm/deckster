@@ -99,7 +99,8 @@ export const stepsLayoutContract = defineLayoutContract({
     'a line or two on how, from `steps:` in the frontmatter. `current:` marks the step the talk ' +
     'is on (the line fills up to it), and `reveal: true` adds one step per click. Use it for ' +
     'how something is done; use timeline when the steps have dates, agenda for the parts of the ' +
-    'talk, and cards for ideas that are not in order.',
+    'talk, and cards for ideas that are not in order; ' +
+    'use actions for commitments with owners or exercise for a timed activity.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     steps: Schema.Array(ProcessStep).check(

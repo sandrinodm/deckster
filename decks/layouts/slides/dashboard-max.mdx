@@ -1,0 +1,27 @@
+---
+layout: dashboard
+title: The pilot keeps more of its new trees alive
+eyebrow: Canopy programme annual review, 2026
+panels:
+  - title: Survival, %, 2026
+  - title: Cover, %, Mar–Sep
+  - title: Alive, trees, 2026
+  - title: Goal, trees, 2027
+reveal: true
+budget: 45s
+---
+
+<BarChart data={[{ area: 'Pilot', alive: 94 }, { area: 'North', alive: 82 }, { area: 'River', alive: 88 }]} x="area" y="alive" format="percent" highlight="Pilot" />
+
+<LineChart data={[{ month: 'Mar', Pilot: 48 }, { month: 'Jun', Pilot: 64 }, { month: 'Sep', Pilot: 86 }]} x="month" y="Pilot" unit="%" zero highlight={{ series: "Pilot" }} />
+
+<BigNumber value="1,166" label="of 1,240 planted" />
+
+<Progress value={1240} max={1500} target={1500} unit="trees" label="toward next year" />
+
+<Footnote>Larkfield Urban Forestry Division, September 2026; survival measured after the first summer in pilot blocks.</Footnote>
+
+<Notes>
+`dashboard` at maximum panel count with near-limit headings and a full footnote.
+[click] Compare survival across the three areas. [click] Warden cover rose through the summer. [click] That leaves 1,166 pilot trees alive. [click] The 1,240 trees planted count toward a 1,500-tree goal for 2027.
+</Notes>

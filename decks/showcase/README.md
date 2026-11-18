@@ -1,7 +1,7 @@
 # The showcase deck
 
 "Slides an agent can write": a 45-slide talk about deckster, built with deckster. It uses 23 of the
-32 kit layouts, every diagram form, ten of the sixteen chart and figure components, code, media, two
+52 kit layouts, every diagram form, ten of the sixteen chart and figure components, code, media, two
 live React demos, and slides about the tools around a deck (lint, comments, the agent, the
 presenter window, export). Read it as a tour of what a deck can contain, and open the slide files
 to see how each part is written.

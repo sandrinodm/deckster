@@ -1,0 +1,27 @@
+---
+layout: risks
+title: Missed webhooks are the risk that gates launch
+eyebrow: Launch readiness
+surface: accent
+reveal: true
+budget: 45s
+risks:
+  - name: Booking spikes
+    likelihood: high
+    impact: medium
+    mitigation: Stage the 420 merchant invitations
+  - name: Missed webhooks
+    likelihood: low
+    impact: high
+    mitigation: Retry until the merchant acknowledges
+    highlight: true
+  - name: Rider confusion
+    likelihood: medium
+    impact: low
+    mitigation: Brief every hub lead before launch
+---
+
+<Notes>
+`risks` with three rows, `reveal: true` and one `highlight` on the accent surface; use it to review a short register one mitigation at a time.
+[click] We invite the 420 active merchants in stages so a booking spike stays manageable. [click] A missed webhook can leave a shop unsure whether its parcel arrived; retrying until acknowledgement is the launch gate. [click] Hub leads brief riders before the first Open Network loop.
+</Notes>

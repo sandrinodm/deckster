@@ -1,0 +1,288 @@
+/*
+ * The pricing layout: a row of equal panels under the header, one per plan. Each panel is a subgrid
+ * of the row's five rows (the name, the description, the price with its period, a gap, and the
+ * features), so names, prices and first features line up across the row whatever their length.
+ * The recommended plan wears the accent surface, which paints its own background and roles.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='pricing'] {
+    --kit-plan-pad: var(--brand-space-lg);
+    --kit-plan-gap: 0px;
+  }
+
+  .kit-pricing-context {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-pricing-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-pricing {
+    display: grid;
+    grid-template-columns: repeat(var(--kit-plan-count, 3), minmax(0, 1fr));
+    grid-template-rows: auto auto auto var(--kit-plan-gap) auto;
+    column-gap: var(--kit-gutter);
+  }
+
+  /* A plan is the row's grid item, revealed or not: a step wrapper has `display: contents`. */
+  .kit-plan {
+    display: grid;
+    grid-row: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: subgrid;
+    min-width: 0;
+    padding: var(--kit-plan-pad);
+    position: relative;
+    isolation: isolate;
+    border: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    border-radius: var(--brand-radius-lg);
+    background: var(--brand-color-bg);
+    overflow-wrap: break-word;
+  }
+
+  /*
+   * A panel is the surface's raised color laid over its background color, so it stays opaque where
+   * the raised color is translucent: a picture or pattern behind the slide never shows through
+   * under the text.
+   */
+  .kit-plan::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--brand-color-surface);
+  }
+
+  /* The recommended plan wears the accent surface, which paints its own background and roles. */
+  .kit-plan[data-surface] {
+    border-color: transparent;
+    background: var(--brand-background, var(--brand-color-bg));
+  }
+
+  .kit-plan[data-surface]::before {
+    content: none;
+  }
+
+  /*
+   * The badge is a tab hanging from the recommended plan's top edge: a chip in the accent, its text
+   * in the accent's own text color. Every plan keeps the room for it above its name, so the names
+   * stand level.
+   */
+  .kit-frame[data-layout='pricing'][data-badge='true'] .kit-plan {
+    padding-top: calc(
+      var(--brand-type-label-size) * var(--brand-type-label-line-height) + 2 *
+        var(--brand-space-2xs) + var(--brand-space-sm)
+    );
+  }
+
+  .kit-plan-badge {
+    position: absolute;
+    top: 0;
+    left: var(--kit-plan-pad);
+    max-width: calc(100% - 2 * var(--kit-plan-pad));
+    margin: 0;
+    padding: var(--brand-space-2xs) var(--brand-space-xs);
+    white-space: nowrap;
+    border-radius: 0 0 var(--brand-radius-sm) var(--brand-radius-sm);
+    background: var(--brand-color-accent);
+    color: var(--brand-color-accent-fg);
+  }
+
+  .kit-plan-name {
+    grid-row: 1;
+    align-self: end;
+    margin: 0;
+  }
+
+  .kit-plan-description {
+    grid-row: 2;
+    margin: var(--brand-space-2xs) 0 0;
+    color: var(--brand-color-muted);
+    text-wrap: pretty;
+  }
+
+  .kit-plan[data-surface] .kit-plan-description {
+    color: var(--brand-color-fg);
+  }
+
+  /*
+   * The price, the column's hero: the stat style a size under the stats layout's, with its period
+   * beside it on the baseline, or under it when the two do not fit one line. The prices of a row
+   * shrink together until the widest fits its column, and stand level at the top of their row.
+   */
+  .kit-plan-price {
+    grid-row: 3;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: last baseline;
+    align-self: start;
+    column-gap: var(--brand-space-xs);
+    min-width: 0;
+    margin-top: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='pricing'] .kit-plan-value {
+    --kit-scale: 0.56;
+
+    display: block;
+    flex: 0 1 auto;
+    align-self: auto;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    white-space: nowrap;
+    line-height: 1;
+    color: var(--brand-color-heading);
+  }
+
+  .kit-plan-period {
+    margin: 0;
+    color: var(--brand-color-muted);
+  }
+
+  .kit-plan[data-surface] .kit-plan-period {
+    color: var(--brand-color-fg);
+  }
+
+  /* The features under a rule, each after a check in the accent, on the plan's foot. */
+  .kit-plan-features {
+    grid-row: 5;
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-xs);
+    margin: var(--brand-space-md) 0 0;
+    padding: var(--brand-space-sm) 0 0;
+    border-top: var(--brand-stroke-hairline) solid var(--brand-color-border);
+    list-style: none;
+  }
+
+  .kit-plan-feature {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--brand-space-xs);
+    align-items: baseline;
+    margin: 0;
+    color: var(--brand-color-fg);
+    text-wrap: pretty;
+  }
+
+  .kit-plan-check {
+    align-self: center;
+    color: var(--brand-color-fg);
+  }
+
+  .kit-plan[data-surface] .kit-plan-check {
+    color: currentColor;
+  }
+
+  /* Four plans: less padding, a smaller name and price, so each keeps to its quarter. */
+  .kit-frame[data-layout='pricing'][data-count='4'] {
+    --kit-plan-pad: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='pricing'][data-count='4'] .kit-plan-name {
+    --kit-scale: 0.88;
+  }
+
+  .kit-frame[data-layout='pricing'][data-count='4'] .kit-plan-value {
+    --kit-scale: 0.48;
+  }
+}
+
+/*
+ * Stretched plans, for a row whose content leaves room: the grid is as tall as the region and the
+ * gap row takes what the content leaves, so the name, description and price stand at the top of
+ * each plan and the features on its foot. The gap has a floor, so a row that cannot leave each plan
+ * that much air overflows the region and the layout steps down; and a ceiling, so a row with little
+ * in it does not become tall, mostly empty panels: it is then shorter than the region and stands in
+ * its middle. At the roomy level the price is a size up.
+ */
+@layer components {
+  .kit-frame[data-layout='pricing']:is([data-grow='roomy'], [data-grow='snug']) {
+    --kit-plan-gap: minmax(
+      var(--kit-plan-gap-floor),
+      calc(2 * var(--brand-type-title-size) * var(--brand-type-title-line-height))
+    );
+    --kit-plan-gap-floor: var(--brand-space-xl);
+  }
+
+  .kit-frame[data-layout='pricing'][data-grow='snug'] {
+    --kit-plan-gap-floor: var(--brand-space-lg);
+  }
+
+  .kit-frame[data-layout='pricing']:is([data-grow='roomy'], [data-grow='snug']) .kit-pricing {
+    height: 100%;
+    align-content: safe center;
+  }
+
+  .kit-frame[data-layout='pricing'][data-grow='roomy'] .kit-plan-value {
+    --kit-scale: 0.72;
+  }
+
+  .kit-frame[data-layout='pricing'][data-grow='roomy'][data-count='2'] .kit-plan-value {
+    --kit-scale: 0.9;
+  }
+
+  .kit-frame[data-layout='pricing'][data-grow='roomy'][data-count='4'] .kit-plan-value {
+    --kit-scale: 0.6;
+  }
+
+  .kit-frame[data-layout='pricing'][data-grow='roomy'] .kit-plan {
+    padding-top: var(--brand-space-xl);
+  }
+}
+
+/* Compact plans, for a row that does not fit at the small size: less padding and spacing, a
+   smaller name and price. */
+@layer components {
+  .kit-frame[data-layout='pricing'][data-compact='true'] {
+    --kit-plan-pad: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'] .kit-plan-name {
+    --kit-scale: 0.8;
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'] .kit-plan-value {
+    --kit-scale: 0.4;
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'][data-count='4'] .kit-plan-value {
+    --kit-scale: 0.36;
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'] .kit-plan-price {
+    margin-top: var(--brand-space-xs);
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'] .kit-plan-features {
+    margin-top: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'][data-badge='true'] .kit-plan {
+    padding-top: calc(
+      var(--brand-type-label-size) * var(--brand-type-label-line-height) + 2 *
+        var(--brand-space-2xs) + var(--brand-space-xs)
+    );
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'] .kit-plan-features {
+    gap: var(--brand-space-2xs);
+    padding-top: var(--brand-space-sm);
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'] .kit-plan-feature {
+    column-gap: var(--brand-space-2xs);
+  }
+
+  .kit-frame[data-layout='pricing'][data-compact='true'][data-count='4'] {
+    --kit-plan-pad: var(--brand-space-sm);
+  }
+}

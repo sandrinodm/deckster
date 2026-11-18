@@ -39,8 +39,13 @@ it.effect('deck layouts --summary prints an aligned entry per layout in plain te
   Effect.gen(function* () {
     const { code, output } = yield* runCaptured(['layouts', 'hello', '--summary']);
     expect(code).toBe(0);
-    expect(output).toMatch(/^default {5}surface default {3}title any\n/u);
-    expect(output).toMatch(/\nstats {7}surface default {3}title <= 90 {2}stats\[2-4\]\n/u);
+    expect(output).toMatch(/^default +surface default {3}title any\n/u);
+    expect(output).toMatch(/\nstats +surface default {3}title <= 90 {2}stats\[2-4\]\n/u);
+    const entries = output.split('\n').filter((line) => /^\S+ +surface /u.test(line));
+    expect(new Set(entries.map((line) => line.indexOf('surface'))).size).toBe(1);
+    expect(
+      new Set(entries.map((line) => line.indexOf('title', line.indexOf('surface')))).size,
+    ).toBe(1);
     expect(output).toContain('slots: body text 14 words; <Media> image');
     expect(output).not.toContain('"frontmatter"');
   }),

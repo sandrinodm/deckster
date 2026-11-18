@@ -1,0 +1,88 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-before-after-context {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-before-after-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-before-after {
+    display: grid;
+    flex: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto minmax(calc(6 * var(--brand-type-title-size)), 1fr);
+    column-gap: var(--kit-gutter);
+    row-gap: var(--brand-space-xs);
+    height: 100%;
+  }
+
+  .kit-frame[data-layout='before-after'][data-caption='true'] .kit-before-after {
+    grid-template-rows: auto minmax(calc(6 * var(--brand-type-title-size)), 1fr) auto;
+  }
+
+  .kit-before-after-item {
+    display: grid;
+    grid-row: 1 / -1;
+    grid-template-rows: subgrid;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+  }
+
+  .kit-before-after-label {
+    display: flex;
+    grid-row: 1;
+    align-items: center;
+    gap: var(--brand-space-2xs);
+    margin: 0;
+    color: var(--brand-color-muted);
+    white-space: nowrap;
+  }
+
+  .kit-before-after-label[data-side='after'] {
+    color: var(--brand-color-fg);
+  }
+
+  .kit-before-after-label[data-highlight] {
+    color: var(--brand-color-accent);
+  }
+
+  .kit-before-after-arrow {
+    flex: none;
+    width: 1em;
+    height: 1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: var(--brand-icon-stroke);
+  }
+
+  .kit-frame[data-layout='before-after'][data-fit='contain']
+    :is(.kit-before-after-label, .kit-before-after-caption) {
+    justify-self: center;
+    text-align: center;
+  }
+
+  .kit-before-after-picture {
+    grid-row: 2;
+  }
+
+  .kit-before-after-caption {
+    grid-row: 3;
+    min-width: 0;
+    margin: 0;
+    color: var(--brand-color-muted);
+    white-space: nowrap;
+  }
+
+  .kit-frame[data-layout='before-after'][data-level='1'] .kit-before-after {
+    grid-template-rows: auto minmax(calc(4 * var(--brand-type-title-size)), 1fr);
+  }
+
+  .kit-frame[data-layout='before-after'][data-caption='true'][data-level='1'] .kit-before-after {
+    grid-template-rows: auto minmax(calc(4 * var(--brand-type-title-size)), 1fr) auto;
+  }
+}

@@ -1,0 +1,32 @@
+---
+layout: dashboard
+title: Riders deliver scale on time
+eyebrow: Network health
+surface: inverse
+panels:
+  - title: Volume, Oct 2026
+  - title: On time, %, Oct
+  - title: Price, €/drop, Oct
+  - title: Output, stops/hr
+reveal: true
+budget: 50s
+---
+
+<BigNumber value="182K" label="drops, up from 61K" />
+
+<Progress value={97.8} target={98} label="inside the window" unit="%" />
+
+<BigNumber value="€3.10" label="per drop to a shop" />
+
+<BarChart
+  data={[{ way: 'Rider', stops: 9.4 }, { way: 'Van', stops: 5.1 }]}
+  x="way" y="stops" orientation="vertical" highlight="Rider"
+  format={{ digits: 1 }} unit="stops/hr"
+/>
+
+<Footnote>Wrenhaul operating report, October 2026; merchant survey, n = 112.</Footnote>
+
+<Notes>
+`dashboard` with four mixed chart and number panels on inverse, `reveal: true`; use it for a compact operating review.
+[click] Start with volume: 182,000 drops in October. [click] 97.8% arrived inside the promised window. [click] Shops paid €3.10 per drop on average. [click] Riders made 9.4 stops an hour, against 5.1 for a merchant's own van. Those four measures belong together: growth is useful only if the service still works.
+</Notes>

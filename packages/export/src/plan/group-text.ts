@@ -21,9 +21,9 @@ const MIN_HORIZONTAL_OVERLAP = 0.5;
  * Sets paragraphs that read as one block of text in one frame, so PowerPoint edits them together
  * (and a list stays one list): consecutive native text items merge when they are in the same
  * painted container, slot and placeholder, stack top to bottom with a gap of at most three lines,
- * overlap horizontally, share their alignment, and no other item drawn between them overlaps the
- * merged frame, and either both wrap or neither does (wrapping is set per frame). Everything else
- * keeps its order.
+ * overlap horizontally, share their alignment, are replaced at the same step (or by none), and no
+ * other item drawn between them overlaps the merged frame, and either both wrap or neither does
+ * (wrapping is set per frame). Everything else keeps its order.
  *
  * @param items - The plan's items in paint order.
  * @param keepApart - Text items that stay frames of their own, such as text drawn as outlines.
@@ -84,7 +84,8 @@ function findMergeTarget(
 }
 
 /**
- * Whether a paragraph can join a frame.
+ * Whether a paragraph can join a frame. Text replaced at different steps, or replaced against text
+ * that is not, never shares a frame.
  *
  * @param frame - The frame so far.
  * @param next - The next text item.
@@ -111,8 +112,11 @@ export function canMerge(frame: TextNode, next: TextNode): boolean {
   const narrower = Math.min(last.box.width, first.box.width);
   const sideBySide = narrower > 0 && overlap / narrower >= MIN_HORIZONTAL_OVERLAP;
   const sameWrap = (last.wrapWidth === null) === (first.wrapWidth === null);
+  const sameReplacement =
+    frame.replacedAt === next.replacedAt && last.replacedAt === first.replacedAt;
   return (
     sameContext &&
+    sameReplacement &&
     stacked &&
     sideBySide &&
     sameWrap &&

@@ -86,6 +86,25 @@ const MESSAGE_ROW_POSITION = 0.75;
 const SELF_LOOP_ROWS = 0.35;
 
 /**
+ * The width of every actor box: the widest an actor box gets, or less when the actors share a
+ * narrower diagram, so each keeps the gutter between it and the next. The diagram measures its
+ * actors' text at this width, so it must match the boxes {@link layoutSequence} draws.
+ *
+ * @param actorCount - How many actors stand side by side; fewer than one counts as one.
+ * @param width - The diagram's width, in canvas pixels.
+ * @param metrics - The widest an actor box gets and the least room between two, in canvas pixels.
+ * @returns The width in canvas pixels; zero or less when the gutter alone fills an actor's share.
+ */
+export function sequenceActorWidth(
+  actorCount: number,
+  width: number,
+  metrics: Pick<SequenceMetrics, 'actorMaxWidth' | 'gutter'>,
+): number {
+  const cell = width / Math.max(actorCount, 1);
+  return Math.min(metrics.actorMaxWidth, cell - metrics.gutter);
+}
+
+/**
  * Lays out a sequence diagram: actors side by side across the top, evenly spaced, each with a
  * lifeline down; messages one per row from top to bottom, as horizontal arrows between the
  * lifelines (a message to self loops out to the right and back). Rows share the height under the
@@ -103,7 +122,7 @@ export function layoutSequence(
   metrics: SequenceMetrics,
 ): SequenceLayout {
   const cell = size.width / Math.max(actors.length, 1);
-  const width = Math.min(metrics.actorMaxWidth, cell - metrics.gutter);
+  const width = sequenceActorWidth(actors.length, size.width, metrics);
   const top = metrics.actorHeight + metrics.gutter / 2;
   const row = Math.min(
     metrics.rowMax,

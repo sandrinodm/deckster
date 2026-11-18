@@ -213,7 +213,8 @@ export const matrixLayoutContract = defineLayoutContract({
     '`reveal: true` shows the axes first, then the other items, then the marked ' +
     'one with the note. Use it for a positioning or competition slide, or any choice framed by ' +
     'two trade-offs; use a chart (`<Scatter>`) when the positions are measured, and comparison ' +
-    'when options are scored on several rows.',
+    'when options are scored on several rows; ' +
+    'use quadrants for four discrete boxes.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     x: Axis,

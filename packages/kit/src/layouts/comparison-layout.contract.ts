@@ -194,14 +194,15 @@ export function comparisonProblems(
 export const comparisonLayoutContract = defineLayoutContract({
   name: 'comparison',
   description:
-    'Two or three options side by side, measured on the same two to five rows: before and after, ' +
+    'Two or three options side by side, measured on the same two to five rows: ' +
     'us and them, or the options of a decision, from `options:` and `rows:` in the frontmatter. ' +
     'Each row has a label and one value per option (text, or true and false for a check and a ' +
     'dash) and may name its `winner`, the number of the option that wins that row, which is ' +
     'drawn bold with a diamond. Mark the option you recommend with `recommended: true`: its column is set on a panel ' +
     'with an accent rule under a badge (`badge:`, "Recommended" by default). `reveal: true` adds ' +
     'one option per click. Use stats when each option is one number, a table for more than three ' +
-    'options or five rows, and cards for ideas that are not alternatives.',
+    'options or five rows, and cards for ideas that are not alternatives; ' +
+    'use pricing for plans, do-dont for behaviours, before-after for pictures of a change, or shift for a change in words.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     options: Schema.Array(ComparisonOption).check(
