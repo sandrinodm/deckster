@@ -35,7 +35,7 @@ These steps add `nocturne` to a workspace called `talks`. The other three work t
      deck brand check nocturne
    ```
 
-   It writes `brands/nocturne/` with `brand.ts`, the two logos and the README, and leaves out the `package.json` and `tsconfig.json` that tie the folder to the repository. Fonts are not installed: the `Next:` lines say what to run, with the versions the brand's own `package.json` pins.
+   It writes `brands/nocturne/` with `brand.ts`, the two logos and the README, and leaves out the `package.json` and `tsconfig.json` that tie the folder to the repository. Fonts are not installed: the `Next:` lines say what to run, with the versions the source repository gives the font packages (the brand's `package.json`, read through the repository's pnpm catalog where it says `catalog:`).
 
 2. Install the font packages in the workspace folder, the one that holds `decks/` and `brands/`. If it has no `package.json`, `npm install` creates one.
 
