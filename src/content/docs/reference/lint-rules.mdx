@@ -83,9 +83,9 @@ The tables list the 42 rules `deck lint --help` prints in 0.5.0, plus `schema` a
 | `content-budget` | error | Cut, split, or pick a layout made for more content. |
 | `slot-content` | error | Put only what the slot accepts in it; move the rest to another slide or slot. |
 | `missing-notes` | warning | Add `<Notes>`. |
-| `layout-repetition` | warning | 3 or more slides in a row share a layout and surface: vary one. |
-| `few-builds` | warning | Stage chart, diagram and code slides in steps. |
-| `time-budget` | error | Cut slides or shorten their budgets. |
+| `layout-repetition` | warning | 3 or more slides in a row share a layout and surface: vary one. Hidden slides are skipped. |
+| `few-builds` | warning | Stage chart, diagram and code slides in steps. Hidden slides do not count. |
+| `time-budget` | error | Cut slides or shorten their budgets. Hidden slides' budgets do not count. |
 | `open-comments` | warning | Resolve the slide's comments. |
 
 ## From the slide compiler

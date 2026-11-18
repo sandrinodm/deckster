@@ -67,9 +67,9 @@ export default defineDeck({
 
 ## What uses the budgets
 
-**The presenter window** paces the talk against them, scaled to fit the `duration` when there is one. It needs at least one budget: a deck with a `duration` and no budgets shows No budgets, because the duration alone is not spread over the slides. [How pacing works](/present/presenter-tools-and-shortcuts/#how-pacing-works) explains the figures it shows.
+**The presenter window** paces the talk against them, scaled to fit the `duration` when there is one, and leaves out hidden slides (new in 0.5.0). It needs at least one budget: a deck with a `duration` and no budgets shows No budgets, because the duration alone is not spread over the slides. [How pacing works](/present/presenter-tools-and-shortcuts/#how-pacing-works) explains the figures it shows.
 
-**`deck lint`** adds the budgets up. When they come to more than the deck's `duration`, `time-budget` is an error; without a `duration` the rule reports nothing. A slide without notes is a `missing-notes` warning:
+**`deck lint`** adds the budgets up. When they come to more than the deck's `duration`, `time-budget` is an error; without a `duration` the rule reports nothing. A [hidden slide](/write-slides/hidden-slides/) is not in the talk, so its budget is left out of the total (new in 0.5.0). A slide without notes is a `missing-notes` warning:
 
 ```console
 $ deck lint launch-review
