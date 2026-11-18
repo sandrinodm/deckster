@@ -44,7 +44,7 @@ import {
 import { useDiagramDescription } from '#diagrams/use-description.ts';
 import { useElementSize, type ElementSize } from '#diagrams/use-element-size.ts';
 import { useKindIcons } from '#diagrams/use-kind-icons.ts';
-import { useMeasurements } from '#diagrams/use-measurements.ts';
+import { useMeasurementEffect, useMeasurementState } from '#diagrams/use-measurements.ts';
 import { useMotionPlans } from '#diagrams/use-motion-plans.ts';
 import { smartPunctuation } from '#foundation/smart-punctuation.ts';
 
@@ -144,7 +144,8 @@ export function SequenceDiagram({
   const boxWidth = measuredActorWidth(actors.length, size, tokens);
   const cardNames =
     tokens === undefined ? '' : [...cards.values()].map((one) => one.name).join(' ');
-  const measurements = useMeasurements(root, `${key}|${Math.round(boxWidth)}|${cardNames}`);
+  const measureKey = `${key}|${Math.round(boxWidth)}|${cardNames}`;
+  const { measurements, settled, dispatch } = useMeasurementState(measureKey);
   const layout = useMemo(() => {
     if (size === undefined || tokens === undefined || measurements === undefined) {
       return undefined;
@@ -162,7 +163,8 @@ export function SequenceDiagram({
       },
     );
   }, [actors, messages, size, tokens, measurements]);
-  useReadyHold(layout === undefined);
+  useMeasurementEffect(root, measureKey, layout, dispatch);
+  useReadyHold(layout === undefined || !settled);
   const reduced = useReducedMotion();
   const still = isStatic || reduced || !movesAt(tokens?.motion);
   const current = messages.findIndex((message) => message.at !== undefined && message.at === step);
@@ -210,7 +212,7 @@ export function SequenceDiagram({
       kind="sequence"
       title={title}
       summary={summary}
-      ready={layout !== undefined}
+      ready={layout !== undefined && settled}
       height={height}
       live={live}
       data={{
