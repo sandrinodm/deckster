@@ -9,6 +9,7 @@ import path from 'node:path';
 
 import { PANEL_SERVERS, panelUrl, useAgentPanelServers } from './support/agent-panel-servers.ts';
 import { FIXTURE_WORKSPACE } from './support/case-servers.ts';
+import { isMarkedDocument, markDocument } from './support/marked-document.ts';
 import { test, type PageProblems } from './support/page-problems.ts';
 import { openDeck } from './support/presenter-deck.ts';
 
@@ -57,10 +58,20 @@ type Fixtures = {
 /**
  * Records every message the page sends over a WebSocket into `window.__sent`, kept in session
  * storage so it survives the reload a deck config change causes. Installing it twice is harmless.
+ * It runs in every document of the page, including the blank one a new tab starts with, whose
+ * opaque origin has no storage (reading `sessionStorage` there throws); such a document records in
+ * memory only.
  */
 function recordSentMessages(): void {
   const key = 'e2e-sent-messages';
-  const sent: unknown[] = JSON.parse(window.sessionStorage.getItem(key) ?? '[]') as unknown[];
+  let storage: Storage | undefined;
+  try {
+    storage = window.sessionStorage;
+  } catch {
+    storage = undefined;
+  }
+
+  const sent: unknown[] = JSON.parse(storage?.getItem(key) ?? '[]') as unknown[];
   Reflect.set(window, '__sent', sent);
   if (Reflect.get(WebSocket.prototype, '__recording') === true) {
     return;
@@ -71,7 +82,7 @@ function recordSentMessages(): void {
   WebSocket.prototype.send = function send(this: WebSocket, data) {
     if (typeof data === 'string' && data.startsWith('{')) {
       sent.push(JSON.parse(data));
-      window.sessionStorage.setItem(key, JSON.stringify(sent));
+      storage?.setItem(key, JSON.stringify(sent));
     }
 
     Reflect.apply(original, this, [data]);
@@ -92,6 +103,22 @@ async function sentPrompts(browser: Browser): Promise<ClientMessage[]> {
     ),
   );
   return JSON.parse(text) as ClientMessage[];
+}
+
+/**
+ * How many turns the page has heard end (`turn-done` events), counting the replay a newly loaded
+ * page receives.
+ *
+ * @param browser - The page.
+ */
+function turnsDone(browser: Browser): Promise<number> {
+  return browser.evaluate(
+    () =>
+      (
+        (Reflect.get(window, '__deckAgent') as { events?: { type: string }[] } | undefined)
+          ?.events ?? []
+      ).filter((event) => event.type === 'turn-done').length,
+  );
 }
 
 /**
@@ -252,12 +279,15 @@ describe('the agent panel with the fake provider', () => {
     await expect(chip).toContainText('title.mdx:7');
     await expect(browser.locator('.da-outline')).toBeVisible();
 
+    await markDocument(browser);
     await ask(browser, 'Make the title friendlier [fake-title:Hello, fake agent]');
     await expect(browser.locator('.da-prompt-text')).toContainText('Make the title friendlier');
-    await expect(browser.locator('.da-tool').first()).toBeVisible({ timeout: TURN_TIMEOUT_MS });
+    // A finished turn folds its tool lines into one summary line, so a line may already be hidden
+    // in it by the time it is read.
+    await expect(browser.locator('.da-tool').first()).toBeAttached({ timeout: TURN_TIMEOUT_MS });
     await expect(
       browser.locator('.da-tool[data-icon="edit"][data-status="done"]').first(),
-    ).toBeVisible({
+    ).toBeAttached({
       timeout: TURN_TIMEOUT_MS,
     });
     await expect(browser.locator('.da-answer')).toContainText('title', {
@@ -291,6 +321,8 @@ describe('the agent panel with the fake provider', () => {
     await browser.locator('.da-footer [data-action="undo"]').click();
     await expect(browser.locator(HEADING)).toHaveText('Hello, deck', { timeout: TURN_TIMEOUT_MS });
     await expect(browser.locator('.da-footer [data-action="redo"]')).toBeVisible();
+    // The turn changed only a slide, which hot reloads: the page never loaded again.
+    expect(await isMarkedDocument(browser)).toBe(true);
   });
 
   test('keeps every key typed in the composer away from the deck, and Escape gives them back', async (fixtures) => {
@@ -345,6 +377,7 @@ describe('the agent panel with the fake provider', () => {
   test('shows the sign-in command when the provider is not signed in, with a retry', async (fixtures) => {
     const { browser } = fixtures;
     await freshPanel(fixtures, `${RIGHT}#/2/0`);
+    await markDocument(browser);
     await ask(browser, 'Hello [fake:not-signed-in]');
     const problem = browser.locator('.da-problem[data-kind="not-signed-in"]');
     await expect(problem).toBeVisible({ timeout: TURN_TIMEOUT_MS });
@@ -352,10 +385,20 @@ describe('the agent panel with the fake provider', () => {
     await expect(
       browser.locator('.da-problem[data-kind="not-signed-in"] .da-command code'),
     ).toHaveText('claude');
-    await expect(
-      browser.locator('.da-problem[data-kind="not-signed-in"] [data-action="retry"]'),
-    ).toBeVisible();
+    const retry = browser.locator('.da-problem[data-kind="not-signed-in"] [data-action="retry"]');
+    await expect(retry).toBeVisible();
     await expect(browser.locator('.da-head-dot[data-state="problem"]')).toHaveCount(1);
+
+    await retry.click();
+    await expect.poll(() => turnsDone(browser), { timeout: TURN_TIMEOUT_MS }).toBe(2);
+    await expect(problem).toHaveCount(2);
+    expect((await sentPrompts(browser)).slice(-2)).toMatchObject([
+      { text: 'Hello [fake:not-signed-in]' },
+      { text: 'Hello [fake:not-signed-in]' },
+    ]);
+    // Neither turn changed a file, so the page never loaded again: nothing navigates away while
+    // the test reads it.
+    expect(await isMarkedDocument(browser)).toBe(true);
   });
 
   test('labels the automatic lint fix and links it to the failing turn', async (fixtures) => {
@@ -374,8 +417,12 @@ describe('the agent panel with the fake provider', () => {
     await expect(browser.locator('.da-lint[data-state="clean"]')).toBeVisible({
       timeout: TURN_TIMEOUT_MS,
     });
+    // The fix is undone first; only once it shows as undone does the one undo button left belong
+    // to the failing turn.
     await browser.locator('.da-footer [data-action="undo"]').click();
-    await expect(browser.locator('.da-footer [data-action="undo"]')).toBeVisible();
+    await expect(browser.locator('.da-footer [data-action="redo"]')).toBeVisible({
+      timeout: TURN_TIMEOUT_MS,
+    });
     await browser.locator('.da-footer [data-action="undo"]').click();
     await expect(browser.locator(HEADING)).toHaveText('Hello, deck', { timeout: TURN_TIMEOUT_MS });
   });

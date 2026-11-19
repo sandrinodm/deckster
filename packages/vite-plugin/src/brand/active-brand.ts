@@ -13,6 +13,7 @@ import { brandCssCode, brandModuleCode, RESOLVED_BRAND_ID } from '#brand/brand-m
 import { deckBrandName } from '#brand/deck-brand-name.ts';
 import { loadDeckBrand } from '#brand/load-deck-brand.ts';
 import { loadDeck } from '#decks/load-deck.ts';
+import { trackHeldLoads } from '#held-loads.ts';
 
 /**
  * The brand a deck renders with, loaded once and reloaded after edits.
@@ -32,6 +33,15 @@ export type ActiveBrand = {
    * The brand folder name, once known.
    */
   name: () => string | undefined;
+
+  /**
+   * Whether the brand was loaded while an agent turn held a file it read (the deck config, the
+   * brand's `brand.ts` or `layouts.ts`) under `root`, whose hold has ended, so it may be out of
+   * date and must load again. Each ended hold answers `true` once.
+   *
+   * @param root - The absolute folder whose hold ended.
+   */
+  loadedWhileHeld: (root: string) => boolean;
 };
 
 /**
@@ -68,19 +78,28 @@ export type ActiveBrandOptions = {
 export function createActiveBrand(options: ActiveBrandOptions): ActiveBrand {
   let loaded: Promise<LoadedBrand> | undefined;
   let name: string | undefined;
+  const heldLoads = trackHeldLoads();
 
   /**
-   * Reads the deck config for the brand name, then loads and compiles that brand.
+   * Reads the deck config for the brand name, then loads and compiles that brand. The files it read
+   * are noted at its start and its end, for when an agent turn holds them.
    */
   const load = async (): Promise<LoadedBrand> => {
     const location = await options.deck();
-    return options.run(
-      Effect.gen(function* () {
-        const deck = yield* loadDeck(options.workspaceRoot, location);
-        name = deckBrandName(deck.config, options.override);
-        return yield* loadDeckBrand(options.workspaceRoot, name);
-      }),
-    );
+    heldLoads.note([location.configFile]);
+    try {
+      const brand = await options.run(
+        Effect.gen(function* () {
+          const deck = yield* loadDeck(options.workspaceRoot, location);
+          name = deckBrandName(deck.config, options.override);
+          return yield* loadDeckBrand(options.workspaceRoot, name);
+        }),
+      );
+      heldLoads.note(brandCodeFiles(brand));
+      return brand;
+    } finally {
+      heldLoads.note([location.configFile]);
+    }
   };
   return {
     load: () => {
@@ -94,6 +113,7 @@ export function createActiveBrand(options: ActiveBrandOptions): ActiveBrand {
       loaded = undefined;
     },
     name: () => name,
+    loadedWhileHeld: heldLoads.released,
   };
 }
 
@@ -140,8 +160,9 @@ export function brandModuleSource(
 
 /**
  * Reloads the page with the brand read afresh whenever a file of the active brand changes, or the
- * deck config changes (it may name another brand). Every module is invalidated, because slides are
- * validated against the brand's surfaces.
+ * deck config changes (it may name another brand), and when an agent turn's hold ends after the
+ * brand was loaded during it. Every module is invalidated, because slides are validated against the
+ * brand's surfaces.
  *
  * @param server - The dev server.
  * @param input - The workspace, the deck and its brand.
@@ -168,13 +189,10 @@ export function watchBrand(
       reload();
     }
   });
-  // A held brand or config loads again once the agent turn that held it is settled.
+  // A brand loaded while an agent turn held its config or files loads again once the turn is
+  // settled. A brand loaded before the turn is still the one on disk, so the page keeps its state.
   const stop = onCodeReleased((root) => {
-    const resolved = `${root}${path.sep}`;
-    if (
-      path.resolve(input.deck.configFile).startsWith(resolved) ||
-      isActiveBrandFile(brandsDir, path.join(root, 'brand.ts'), input.brand.name())
-    ) {
+    if (input.brand.loadedWhileHeld(root)) {
       reload();
     }
   });
@@ -234,4 +252,16 @@ function isActiveBrandFile(brandsDir: string, file: string, name: string | undef
   }
 
   return name === undefined || relative.split(path.sep)[0] === name;
+}
+
+/**
+ * The code files of a loaded brand that an agent turn can hold: its `brand.ts` and, when it has
+ * one, its `layouts.ts`.
+ *
+ * @param brand - The loaded brand.
+ */
+function brandCodeFiles(brand: LoadedBrand): string[] {
+  return brand.layoutsFile === undefined
+    ? [brand.location.file]
+    : [brand.location.file, brand.layoutsFile];
 }

@@ -116,8 +116,10 @@ api?.slideWarnings(file); // readonly MdxWarning[]
 A deck that cannot be used fails with a `DeckBuildError` whose message names the file relative to
 the workspace and lists each problem with its fix. Vite's overlay shows it and links to the file.
 
-While serving, the plugin reloads the page when `deck.config.ts` changes or a file is added to or
-removed from `slides/`, and when the brand changes.
+While serving, the plugin reloads the page when `deck.config.ts` changes, when a slide file (`.mdx`
+or `.tsx`) is added to or removed from `slides/`, and when the brand changes. When an agent turn
+ends, it reloads the page only if the page loaded the deck or its brand while the turn held them;
+a turn that only edits slides leaves the page to hot reload them.
 
 ## Dev server endpoints
 

@@ -67,6 +67,16 @@ export type SlideOrder = {
 };
 
 /**
+ * Whether a file name in `slides/` holds a slide (`.mdx` or `.tsx`); any other file, such as a
+ * temporary file written beside a slide, is no part of the slide list.
+ *
+ * @param fileName - A file name, without its folder.
+ */
+export function isSlideFileName(fileName: string): boolean {
+  return slideKindOf(fileName) !== undefined;
+}
+
+/**
  * Matches the ordered slide ids from `deck.config.ts` to the files in `slides/`. Each id must name
  * exactly one `<id>.mdx` or `<id>.tsx`. Other file types are ignored.
  *
@@ -108,17 +118,26 @@ export function resolveSlideOrder(
 function groupSlideFiles(fileNames: readonly string[]): Map<string, SlideFile[]> {
   const filesById = new Map<string, SlideFile[]>();
   for (const fileName of [...fileNames].sort()) {
-    const extension = EXTENSION_PATTERN.exec(fileName)?.[0] ?? '';
-    const kind = SLIDE_EXTENSIONS[extension];
+    const kind = slideKindOf(fileName);
     if (kind === undefined) {
       continue;
     }
 
-    const id = fileName.slice(0, -extension.length);
+    const id = fileName.replace(EXTENSION_PATTERN, '');
     filesById.set(id, [...(filesById.get(id) ?? []), { id, fileName, kind }]);
   }
 
   return filesById;
+}
+
+/**
+ * The kind of slide a file name holds, from its extension, or `undefined` when it is no slide.
+ *
+ * @param fileName - A file name, without its folder.
+ */
+function slideKindOf(fileName: string): SlideKind | undefined {
+  const extension = EXTENSION_PATTERN.exec(fileName)?.[0] ?? '';
+  return SLIDE_EXTENSIONS[extension];
 }
 
 /**
