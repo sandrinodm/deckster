@@ -13,6 +13,43 @@ const INCOMING = 'incoming brand';
 const EXTERNAL = 'externally created brand';
 
 layer(NodeFileSystem.layer)('installBrand', (it) => {
+  for (const component of ['.deck', 'brand-add', BRAND]) {
+    it.effect(
+      `refuses a linked ${component} transaction directory without deleting its contents`,
+      () =>
+        Effect.gen(function* () {
+          const fs = yield* FileSystem.FileSystem;
+          const root = yield* fs.makeTempDirectoryScoped();
+          const outside = yield* fs.makeTempDirectoryScoped();
+          const components = ['.deck', 'brand-add', BRAND];
+          const index = components.indexOf(component);
+          const link = path.join(root, 'brands', ...components.slice(0, index + 1));
+          const outsideStage = path.join(outside, ...components.slice(index + 1), 'stage');
+          yield* writeBrand(outsideStage, ORIGINAL);
+          yield* fs.makeDirectory(path.dirname(link), { recursive: true });
+          yield* fs.symlink(outside, link);
+
+          const result = yield* install(root, false).pipe(Effect.result);
+          expect(yield* fs.readFileString(path.join(outsideStage, MARKER))).toBe(ORIGINAL);
+          expect(result._tag).toBe('Failure');
+          expect(yield* fs.exists(brandPaths(root).target)).toBe(false);
+        }),
+    );
+  }
+
+  it.effect('supports a brands folder linked to another directory', () =>
+    Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+      const root = yield* fs.makeTempDirectoryScoped();
+      const brands = yield* fs.makeTempDirectoryScoped();
+      yield* fs.symlink(brands, path.join(root, 'brands'));
+
+      const result = yield* install(root, false);
+      expect(result.replaced).toBe(false);
+      expect(yield* fs.readFileString(path.join(brands, BRAND, MARKER))).toBe(INCOMING);
+    }),
+  );
+
   it.effect('restores the previous brand after a failed publication', () =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
