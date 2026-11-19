@@ -26,11 +26,6 @@ const SQLITE_BUSY = 5;
  */
 type InstallPaths = {
   /**
-   * The hidden transaction folder under `brands/`.
-   */
-  directory: string;
-
-  /**
    * The persistent SQLite lock file for this brand.
    */
   lock: string;
@@ -102,15 +97,8 @@ export function installBrand<A, E, R>(
 > {
   return Effect.scoped(
     Effect.gen(function* () {
-      const fs = yield* FileSystem.FileSystem;
       const paths = installPaths(root, name);
-      yield* fs
-        .makeDirectory(paths.directory, { recursive: true })
-        .pipe(
-          Effect.mapError((error) =>
-            fileSystemError('create', paths.directory, error, INSTALL_FIX),
-          ),
-        );
+      yield* createInstallDirectory(root, name);
       yield* acquireInstallLock(paths.lock);
       yield* recoverInstall(paths);
       yield* Effect.addFinalizer(() => cleanStaging(paths));
@@ -132,7 +120,6 @@ function installPaths(root: string, name: string): InstallPaths {
   const directory = path.join(root, BRANDS_DIR, '.deck', 'brand-add', name);
   const stageRoot = path.join(directory, 'stage');
   return {
-    directory,
     lock: path.join(directory, 'lock.sqlite'),
     stageRoot,
     staged: brandLocation(stageRoot, name).dir,
@@ -141,6 +128,46 @@ function installPaths(root: string, name: string): InstallPaths {
     retired: path.join(stageRoot, 'retired'),
   };
 }
+
+/**
+ * Creates only real directories below the workspace's brands folder. The brands folder itself may
+ * point to another filesystem, but transaction paths must not redirect recovery or cleanup.
+ *
+ * @param root - The workspace root.
+ * @param name - The validated brand name.
+ */
+const createInstallDirectory = Effect.fn('createInstallDirectory')(function* (
+  root: string,
+  name: string,
+) {
+  const fs = yield* FileSystem.FileSystem;
+  let directory = path.join(root, BRANDS_DIR);
+  yield* fs
+    .makeDirectory(directory, { recursive: true })
+    .pipe(Effect.mapError((error) => fileSystemError('create', directory, error, INSTALL_FIX)));
+
+  for (const component of ['.deck', 'brand-add', name]) {
+    directory = path.join(directory, component);
+    yield* fs.makeDirectory(directory).pipe(
+      Effect.catch((error) => {
+        if (error.reason._tag === 'AlreadyExists') {
+          return Effect.void;
+        }
+
+        return Effect.fail(fileSystemError('create', directory, error, INSTALL_FIX));
+      }),
+    );
+    const entry = yield* fs
+      .lstat(directory)
+      .pipe(Effect.mapError((error) => fileSystemError('inspect', directory, error, INSTALL_FIX)));
+    if (entry.type !== 'Directory') {
+      return yield* cliError(
+        `Brand installation requires a real directory at ${directory}. ` +
+          'Move the existing entry somewhere safe before trying again.',
+      );
+    }
+  }
+});
 
 /**
  * Holds SQLite’s write lock until the scope closes; waiting for the lock is interruptible.
