@@ -45,7 +45,7 @@ export const bindQuitKey: Effect.Effect<void, never, Scope.Scope> = Effect.gen(f
   }
 
   const wasRaw = input.isRaw;
-  const wasPaused = input.isPaused();
+  const wasFlowing = input.readableFlowing === true;
   /**
    * Routes q and Ctrl+C through shutdown so scoped cleanup runs.
    */
@@ -69,7 +69,7 @@ export const bindQuitKey: Effect.Effect<void, never, Scope.Scope> = Effect.gen(f
       Effect.sync(() => {
         input.off('keypress', press);
         input.setRawMode(wasRaw);
-        if (wasPaused) {
+        if (!wasFlowing) {
           input.pause();
         }
       }),
