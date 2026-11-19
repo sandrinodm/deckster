@@ -2,7 +2,6 @@ import type { Plugin, Rollup, ViteDevServer } from 'vite';
 
 import { onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
 import { devSessionOf, issueDevSession } from '@deckster/comments/dev-session';
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { MdxWarning } from '#slides/compile-mdx.ts';
@@ -23,7 +22,7 @@ import { DECKS_DIR, displayPath, SLIDES_DIR, type DeckLocation } from '#decks/de
 import { findDeck } from '#decks/discover-decks.ts';
 import { loadDeck, type LoadedDeck } from '#decks/load-deck.ts';
 import { REORDER_ENDPOINT, reorderMiddleware } from '#decks/reorder-middleware.ts';
-import { isSlideFileName } from '#decks/resolve-slides.ts';
+import { trackSlideFileChanges } from '#decks/slide-file-changes.ts';
 import { unresolvedRuntimePlugin } from '#errors.ts';
 import { trackHeldLoads, type HeldLoads } from '#held-loads.ts';
 import {
@@ -526,14 +525,11 @@ function watchManifest(
 
     environment.hot.send({ type: 'full-reload' });
   };
+  const slideFilesChanged = trackSlideFileChanges(deck.slidesDir);
   server.watcher.add(deck.dir);
   server.watcher.on('all', (event, file) => {
     const isConfigChange = file === deck.configFile;
-    const isSlideListChange =
-      (event === 'add' || event === 'unlink') &&
-      path.dirname(file) === deck.slidesDir &&
-      isSlideFileName(path.basename(file));
-    if (isConfigChange || isSlideListChange) {
+    if (isConfigChange || slideFilesChanged(event, file)) {
       reload();
     }
   });
