@@ -39,6 +39,44 @@ export const QUIZ_EXPLANATION_MAX_CHARS = 100;
 export const QUIZ_TITLE_MAX_CHARS = 50;
 
 /**
+ * The longest screen-reader name of the choice list or of the answer's tick, in characters; neither
+ * is ever drawn.
+ */
+export const QUIZ_LABEL_MAX_CHARS = 24;
+
+/**
+ * The English screen-reader names used when the author gives no `labels`.
+ */
+const DEFAULT_QUIZ_LABELS = {
+  /**
+   * The accessible name of the list of choices.
+   */
+  choices: 'Answer choices',
+
+  /**
+   * The accessible name of the tick on the revealed answer.
+   */
+  correct: 'Correct answer',
+} as const;
+
+/**
+ * Optional replacements for the screen-reader names of the choice list and the answer's tick.
+ */
+const Labels = Schema.Struct({
+  choices: textField(QUIZ_LABEL_MAX_CHARS, 'a choices label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_QUIZ_LABELS.choices)),
+  ),
+  correct: textField(QUIZ_LABEL_MAX_CHARS, 'a correct answer label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_QUIZ_LABELS.correct)),
+  ),
+});
+
+/**
+ * Author-supplied screen-reader names; omitted keys keep the English defaults.
+ */
+export type QuizLabels = typeof Labels.Type;
+
+/**
  * A letter identifying a quiz choice.
  */
 export type QuizAnswer = (typeof QUIZ_LETTERS)[number];
@@ -80,7 +118,9 @@ export const quizLayoutContract = defineLayoutContract({
     'the answer. Use it to test an ' +
     'assumption or invite a quick knowledge check before giving the reason. Use cards for ' +
     'parallel ideas with no right answer, comparison for alternatives measured on shared rows, ' +
-    'and content for an open question without fixed choices.',
+    'and content for an open question without fixed choices. `labels` renames what screen ' +
+    'readers hear for the choice list and the tick, for example ' +
+    '`labels: { correct: Richtige Antwort }`.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     options: Schema.Array(textField(QUIZ_OPTION_MAX_CHARS, 'an option')).check(
@@ -93,6 +133,7 @@ export const quizLayoutContract = defineLayoutContract({
     ),
     answer: Schema.Literals(QUIZ_LETTERS),
     explanation: Schema.optionalKey(textField(QUIZ_EXPLANATION_MAX_CHARS, 'an explanation')),
+    labels: Labels.pipe(Schema.withDecodingDefaultKey(Effect.succeed({ ...DEFAULT_QUIZ_LABELS }))),
     reveal: Schema.Boolean.pipe(Schema.withDecodingDefaultKey(Effect.succeed(true))),
     chrome: chromeField(true),
   }),
@@ -107,6 +148,11 @@ export const quizLayoutContract = defineLayoutContract({
     explanation:
       `Give the reason in up to ${QUIZ_EXPLANATION_MAX_CHARS} characters; ` +
       'it appears with the answer.',
+    labels:
+      'Optional replacements for `choices` (Answer choices), the screen-reader name of the ' +
+      'choice list, and `correct` (Correct answer), the name of the tick on the answer, each 1 ' +
+      `to ${QUIZ_LABEL_MAX_CHARS} characters; neither is drawn. Omitted keys keep their English ` +
+      'defaults. For example, `labels: { correct: Richtige Antwort }`.',
     reveal:
       'Defaults to true: show all choices first, then the answer on step 1. Set `reveal: false` ' +
       'to show the answered recap immediately.',
@@ -144,6 +190,7 @@ export const quizLayoutContract = defineLayoutContract({
       explanation:
         'Planting starts the work; water and regular checks carry it through ' +
         'the first three summers.',
+      labels: { ...DEFAULT_QUIZ_LABELS },
       reveal: true,
     },
     body: '<Notes>Ask for a show of hands, then reveal B and explain the care commitment.</Notes>\n',

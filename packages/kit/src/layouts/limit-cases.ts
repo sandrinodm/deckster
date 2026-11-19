@@ -198,6 +198,7 @@ import {
 import {
   MAX_QUADRANT_ITEMS,
   MIN_QUADRANT_ITEMS,
+  QUADRANTS_HIGHLIGHT_LABEL_MAX_CHARS,
   QUADRANT_COUNT,
   QUADRANT_ITEM_MAX_CHARS,
   QUADRANT_TITLE_MAX_CHARS,
@@ -208,6 +209,7 @@ import {
   QUIZ_OPTION_MAX_CHARS,
   QUIZ_TILE_MAX_CHARS,
   QUIZ_EXPLANATION_MAX_CHARS,
+  QUIZ_LABEL_MAX_CHARS,
 } from '#layouts/quiz-layout.contract.ts';
 import { QUOTE_NAME_MAX_CHARS, QUOTE_ROLE_MAX_CHARS } from '#layouts/quote-layout.contract.ts';
 import {
@@ -239,6 +241,8 @@ import {
   SCHEDULE_PERIOD_MAX_CHARS_DENSE,
   SCHEDULE_LANE_MAX_CHARS,
   SCHEDULE_BAR_MAX_CHARS,
+  SCHEDULE_NOW_LABEL_MAX_CHARS,
+  SCHEDULE_SPOKEN_LABEL_MAX_CHARS,
 } from '#layouts/schedule-layout.contract.ts';
 import {
   CALLOUT_LABEL_MAX_CHARS,
@@ -1710,7 +1714,7 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
    * boundaries to exercise the larger fit levels. Full boards also take inverse and accent surfaces
    * so nested highlight is checked in both directions. An uneven board checks equal row heights
    * when one list is full and the other three have one bullet. Capitals stress the space shared by
-   * a heading and its icon.
+   * a heading and its icon. A full board repeats with the highlight prefix at its limit.
    */
   quadrants: [
     ...[MIN_QUADRANT_ITEMS, MAX_QUADRANT_ITEMS].flatMap((count) => [
@@ -1767,12 +1771,23 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
       },
       filled: ['footnote'],
     })),
+    {
+      name: `${MAX_QUADRANT_ITEMS}-items-labels`,
+      frontmatter: {
+        labels: { highlight: fillName(QUADRANTS_HIGHLIGHT_LABEL_MAX_CHARS) },
+        quadrants: quadrantBoxes(MAX_QUADRANT_ITEMS, true).map((box, index) => ({
+          ...box,
+          highlight: index === 1,
+        })),
+      },
+      filled: ['footnote'],
+    },
   ],
 
   /**
    * Every choice count at the row and tile character boundaries with the longest explanation,
-   * context and footnote; the same counts bare to exercise larger type; and the smallest question
-   * without an explanation.
+   * context and footnote; the same counts bare to exercise larger type; the smallest question
+   * without an explanation; and the largest question with both screen-reader names at their limit.
    */
   quiz: [
     ...Array.from({ length: MAX_QUIZ_OPTIONS - MIN_QUIZ_OPTIONS + 1 }, (_, index) => {
@@ -1804,6 +1819,20 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
       frontmatter: { options: ['Yes', 'No'], answer: 'A', reveal: false },
       filled: [],
       body: false,
+    },
+    {
+      name: `${MAX_QUIZ_OPTIONS}-options-labels`,
+      frontmatter: {
+        options: items(MAX_QUIZ_OPTIONS, () => fill(QUIZ_OPTION_MAX_CHARS)),
+        answer: 'B',
+        explanation: fill(QUIZ_EXPLANATION_MAX_CHARS),
+        labels: {
+          choices: fillName(QUIZ_LABEL_MAX_CHARS),
+          correct: fillName(QUIZ_LABEL_MAX_CHARS),
+        },
+        reveal: true,
+      },
+      filled: ['footnote'],
     },
   ],
 
@@ -1866,7 +1895,8 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
    * Every lane count with both axis boundaries, two bars per lane and labels up to the combined
    * content limit, the current lane, and a now marker at each axis edge, both filled and bare; plus
    * the minimum unlabelled form. Single-period bars prove labels do not depend on the duration's
-   * width.
+   * width. The densest axis repeats with every label at its limit and the now marker at each edge,
+   * where the widest marker has the least room.
    */
   schedule: [
     ...Array.from(
@@ -1986,6 +2016,24 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
       filled: [],
       body: false,
     },
+    ...[1, SCHEDULE_MAX_PERIODS].map((now) => ({
+      name: `labels-now-${now}`,
+      frontmatter: {
+        now,
+        current: 1,
+        periods: items(SCHEDULE_MAX_PERIODS, () => fill(SCHEDULE_PERIOD_MAX_CHARS_DENSE)),
+        lanes: items(SCHEDULE_MAX_LANES, () => ({
+          name: fillName(SCHEDULE_LANE_MAX_CHARS),
+          bars: [{ from: 1, to: SCHEDULE_MAX_PERIODS, label: fill(SCHEDULE_BAR_MAX_CHARS) }],
+        })),
+        labels: {
+          now: fillName(SCHEDULE_NOW_LABEL_MAX_CHARS),
+          nowPeriod: fillName(SCHEDULE_SPOKEN_LABEL_MAX_CHARS),
+          through: fillName(SCHEDULE_SPOKEN_LABEL_MAX_CHARS),
+        },
+      },
+      filled: ['footnote'],
+    })),
   ],
 
   /**

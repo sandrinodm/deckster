@@ -46,7 +46,7 @@ const QUIZ_TILE_LEVELS = [
  * animations leaves it out wherever step 1 is shown.
  */
 function QuizLayout({ frontmatter, slots }: LayoutProps<typeof quizLayoutContract>): ReactNode {
-  const { options, answer, explanation, reveal } = frontmatter;
+  const { options, answer, explanation, reveal, labels } = frontmatter;
   const answered = useStepAt(reveal ? 1 : undefined) !== 'hidden';
   const isStatic = useStatic();
   const contextEnter = useEnter(1);
@@ -85,7 +85,7 @@ function QuizLayout({ frontmatter, slots }: LayoutProps<typeof quizLayoutContrac
       )}
       <Region ref={region} className="kit-quiz-region" place="optical">
         <div ref={content} className={`kit-quiz kit-type-${size.text}`}>
-          <ol className="kit-quiz-options" aria-label="Answer choices">
+          <ol className="kit-quiz-options" aria-label={labels.choices}>
             {options.map((option, index) => {
               const letter = QUIZ_LETTERS[index] ?? '';
               const correct = letter === answer;
@@ -96,7 +96,12 @@ function QuizLayout({ frontmatter, slots }: LayoutProps<typeof quizLayoutContrac
                   }
                   data-flow={reveal ? undefined : 'static'}
                   {...(correct ? { 'data-surface': lit } : {})}>
-                  <Choice letter={letter} text={option} type={size.text} correct={correct} />
+                  <Choice
+                    letter={letter}
+                    text={option}
+                    type={size.text}
+                    correct={correct ? labels.correct : undefined}
+                  />
                 </div>
               );
               return (
@@ -110,7 +115,7 @@ function QuizLayout({ frontmatter, slots }: LayoutProps<typeof quizLayoutContrac
                       className="kit-quiz-choice"
                       data-replaced-at="1"
                       aria-hidden={answered || undefined}>
-                      <Choice letter={letter} text={option} type={size.text} correct={false} />
+                      <Choice letter={letter} text={option} type={size.text} />
                     </div>
                   ) : null}
                   {reveal ? <Step at={1}>{overlay}</Step> : overlay}
@@ -148,9 +153,9 @@ function Choice({
    */
   type: string;
   /**
-   * Whether this is the revealed answer, with a tick and an accessible label.
+   * The accessible name of the tick on the revealed answer; absent on every other choice.
    */
-  correct: boolean;
+  correct?: string | undefined;
 }): ReactNode {
   return (
     <>
@@ -160,10 +165,10 @@ function Choice({
       <span className={`kit-quiz-text kit-type-${type}`}>{smartPunctuation(text)}</span>
       <span
         className="kit-quiz-mark"
-        role={correct ? 'img' : undefined}
-        aria-label={correct ? 'Correct answer' : undefined}
-        aria-hidden={correct ? undefined : true}>
-        {correct ? <KitMark kind="check" /> : null}
+        role={correct === undefined ? undefined : 'img'}
+        aria-label={correct}
+        aria-hidden={correct === undefined ? true : undefined}>
+        {correct === undefined ? null : <KitMark kind="check" />}
       </span>
     </>
   );

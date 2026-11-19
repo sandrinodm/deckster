@@ -3,6 +3,7 @@ import { Schema } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 
 import {
+  QUADRANTS_HIGHLIGHT_LABEL_MAX_CHARS,
   QUADRANT_ITEM_MAX_CHARS,
   QUADRANT_TITLE_MAX_CHARS,
   quadrantsLayoutContract,
@@ -28,7 +29,7 @@ const BOXES = [
  *
  * @param frontmatter - The fields without a layout name.
  */
-function decode(frontmatter: Record<string, unknown>): unknown {
+function decode(frontmatter: Record<string, unknown>) {
   const schema = Schema.Struct({
     ...SlideFrontmatter.fields,
     ...quadrantsLayoutContract.schema.fields,
@@ -134,6 +135,29 @@ describe('the quadrants layout contract', () => {
     expect(fields.quadrants.every((box) => box.icon === undefined)).toBe(true);
     expect(quadrantsLayoutContract.description).toContain('Four named lists');
     expect(() => decode(frontmatter)).not.toThrow();
+  });
+
+  it('keeps the English highlight prefix when labels is omitted', () => {
+    expect(decode({ quadrants: BOXES }).labels).toEqual({ highlight: 'Highlighted' });
+    expect(decode({ quadrants: BOXES, labels: {} }).labels).toEqual({ highlight: 'Highlighted' });
+  });
+
+  it('accepts a highlight label at its limit and refuses one over, naming the limit', () => {
+    const limit = QUADRANTS_HIGHLIGHT_LABEL_MAX_CHARS;
+    expect(decode({ quadrants: BOXES, labels: { highlight: 'Priorität' } }).labels).toEqual({
+      highlight: 'Priorität',
+    });
+    expect(() =>
+      decode({ quadrants: BOXES, labels: { highlight: 'x'.repeat(limit) } }),
+    ).not.toThrow();
+    expect(() =>
+      decode({ quadrants: BOXES, labels: { highlight: 'x'.repeat(limit + 1) } }),
+    ).toThrow(`at most ${limit} characters`);
+    expect(() => decode({ quadrants: BOXES, labels: { highlight: '' } })).toThrow('highlight');
+  });
+
+  it('refuses a label key that does not exist', () => {
+    expect(() => decode({ quadrants: BOXES, labels: { keep: 'Behalten' } })).toThrow('keep');
   });
 
   it('maps to native PowerPoint title and context placeholders', () => {
