@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import type { BrandSource } from '#brand-add/brand-source.ts';
 
-import { cliError, firstLine, type CliError } from '#cli-error.ts';
+import { cliError, type CliError } from '#cli-error.ts';
 
 /**
  * The file a pnpm workspace keeps its version catalog in, fetched with the brand so its `catalog:`
@@ -26,9 +26,9 @@ export type GitProtocol = 'https' | 'ssh' | 'file';
 export const NETWORK_PROTOCOLS: readonly GitProtocol[] = ['https', 'ssh'];
 
 /**
- * A full commit hash, which is fetched as it is instead of being looked up.
+ * A full SHA-1 or SHA-256 commit hash, which is fetched as it is instead of being looked up.
  */
-const COMMIT_PATTERN = /^[0-9a-f]{40}$/;
+const COMMIT_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 
 /**
  * The characters of a commit hash shown in messages.
@@ -127,7 +127,7 @@ export type FetchedBrand = {
 };
 
 /**
- * What a finished git command printed and exited with.
+ * A finished git command's status and data on standard output.
  */
 type GitResult = {
   /**
@@ -139,11 +139,6 @@ type GitResult = {
    * Standard output.
    */
   stdout: string;
-
-  /**
-   * Standard error.
-   */
-  stderr: string;
 };
 
 /**
@@ -271,21 +266,24 @@ const resolveCommit = Effect.fn('resolveCommit')(function* (
   const listed = yield* git(['ls-remote', '--', source.remote, ...wanted]);
   if (listed.code !== 0) {
     return yield* cliError(
-      `git could not read ${source.remote}: ${firstLine(listed.stderr.trim())}\n${ACCESS_FIX}`,
+      `git could not read ${source.remote} (git ls-remote exited with ${listed.code}).\n` +
+        ACCESS_FIX,
     );
   }
 
-  const commits = new Map(
-    listed.stdout
-      .split('\n')
-      .map((line) => line.split('\t'))
-      .flatMap(([hash, name]) => (hash === undefined || name === undefined ? [] : [[name, hash]])),
-  );
+  const commits = new Map<string, string>();
+  for (const line of listed.stdout.split('\n')) {
+    const [hash, name] = line.split('\t');
+    if (hash !== undefined && name !== undefined && COMMIT_PATTERN.test(hash)) {
+      commits.set(name, hash);
+    }
+  }
+
   const commit = wanted.map((name) => commits.get(name)).find((hash) => hash !== undefined);
   if (commit === undefined) {
     return yield* cliError(
       `${source.remote} has no branch or tag "${ref ?? 'HEAD'}".\n` +
-        'Name a branch, a tag or a full 40-character commit after #.',
+        'Name a branch, a tag or a full commit hash after #.',
     );
   }
 
@@ -307,7 +305,7 @@ const checkoutFolder = Effect.fn('checkoutFolder')(function* (
   git: Git,
 ): Effect.fn.Return<void, CliError, ChildProcessSpawner.ChildProcessSpawner> {
   const patterns = source.folder === '' ? ['/*'] : [`/${source.folder}/`, `/${WORKSPACE_MANIFEST}`];
-  const steps: readonly (readonly string[])[] = [
+  const steps: readonly (readonly [string, ...string[]])[] = [
     ['init', '--quiet'],
     ['remote', 'add', 'origin', source.remote],
     ['fetch', '--quiet', '--depth', '1', '--filter=blob:none', '--no-tags', 'origin', commit],
@@ -319,7 +317,7 @@ const checkoutFolder = Effect.fn('checkoutFolder')(function* (
     if (result.code !== 0) {
       return yield* cliError(
         `git could not fetch ${source.remote} at ${shortCommit(commit)} ` +
-          `(git ${step[0]}): ${firstLine(result.stderr.trim())}\n${ACCESS_FIX}`,
+          `(git ${step[0]} exited with ${result.code}).\n${ACCESS_FIX}`,
       );
     }
   }
@@ -343,7 +341,7 @@ const listFiles = Effect.fn('listFiles')(function* (
   const listed = yield* git(['ls-tree', '-r', '-l', '-z', '--full-tree', commit, ...scope]);
   if (listed.code !== 0) {
     return yield* cliError(
-      `git could not list the files of ${source.remote}: ${firstLine(listed.stderr.trim())}`,
+      `git could not list the files of ${source.remote} (git ls-tree exited with ${listed.code}).`,
     );
   }
 
@@ -382,7 +380,8 @@ function readTreeEntry(entry: string, prefix: string): FetchedFile | undefined {
 
 /**
  * Runs git in a folder to completion, with {@link GIT_ENV} added to the user's environment (which
- * keeps `PATH`, `HOME` and `SSH_AUTH_SOCK`). A non-zero exit is a result, not a failure.
+ * keeps `PATH`, `HOME` and `SSH_AUTH_SOCK`). Git, its credential helpers and its transports can
+ * include credentials in diagnostics, such as when `insteadOf` rewrites the address.
  *
  * @param cwd - The folder to run in.
  * @param args - The arguments after `git`.
@@ -393,19 +392,20 @@ const runGit = Effect.fn('runGit')(function* (
   args: readonly string[],
 ): Effect.fn.Return<GitResult, CliError, ChildProcessSpawner.ChildProcessSpawner> {
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
-  const command = ChildProcess.make('git', [...args], { cwd, env: GIT_ENV, extendEnv: true });
+  const command = ChildProcess.make('git', [...args], {
+    cwd,
+    env: GIT_ENV,
+    extendEnv: true,
+    stderr: 'ignore',
+  });
   return yield* Effect.scoped(
     Effect.gen(function* () {
       const handle = yield* spawner.spawn(command);
-      const [stdout, stderr, code] = yield* Effect.all(
-        [
-          Stream.mkString(Stream.decodeText(handle.stdout)),
-          Stream.mkString(Stream.decodeText(handle.stderr)),
-          handle.exitCode,
-        ],
+      const [stdout, code] = yield* Effect.all(
+        [Stream.mkString(Stream.decodeText(handle.stdout)), handle.exitCode],
         { concurrency: 'unbounded' },
       );
-      return { code: Number(code), stdout, stderr };
+      return { code: Number(code), stdout };
     }),
   ).pipe(Effect.mapError(() => cliError('Could not run `git`. Install git, then try again.')));
 });
