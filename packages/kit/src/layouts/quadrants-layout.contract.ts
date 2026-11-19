@@ -1,5 +1,5 @@
 import { defineLayoutContract, type FieldProblem } from '@deckster/engine/layout';
-import { Schema } from 'effect';
+import { Effect, Schema } from 'effect';
 
 import {
   CHROME_HINT,
@@ -51,6 +51,36 @@ export const QUADRANTS_CONTEXT_MAX_WORDS = 10;
  * The most words on the bottom source or caveat line.
  */
 export const QUADRANTS_FOOTNOTE_MAX_WORDS = 10;
+
+/**
+ * The longest screen-reader prefix of the highlighted box's heading, in characters; it is never
+ * drawn.
+ */
+export const QUADRANTS_HIGHLIGHT_LABEL_MAX_CHARS = 24;
+
+/**
+ * The English screen-reader prefix used when the author gives no `labels`.
+ */
+const DEFAULT_QUADRANTS_LABELS = {
+  /**
+   * Read before the highlighted box's heading, followed by a colon.
+   */
+  highlight: 'Highlighted',
+} as const;
+
+/**
+ * Optional replacement for the highlighted box's screen-reader prefix.
+ */
+const Labels = Schema.Struct({
+  highlight: textField(QUADRANTS_HIGHLIGHT_LABEL_MAX_CHARS, 'a highlight label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_QUADRANTS_LABELS.highlight)),
+  ),
+});
+
+/**
+ * Author-supplied highlight prefix; an omitted key keeps the English default.
+ */
+export type QuadrantsLabels = typeof Labels.Type;
 
 /**
  * One labelled box with its own short bullet list and an optional decorative icon.
@@ -112,7 +142,8 @@ export const quadrantsLayoutContract = defineLayoutContract({
     'Use it for SWOT, keep/stop/start/try, or any four categories that each need their own ' +
     'list. Use matrix when items are positions on two axes, columns for a board of two to ' +
     'four lanes, cards for equal options with one sentence each, and comparison when options ' +
-    'are measured on the same rows.',
+    'are measured on the same rows. `labels.highlight` renames the prefix screen readers hear ' +
+    'before the highlighted heading, for example `labels: { highlight: Priorität }`.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     quadrants: Schema.Array(Quadrant).check(
@@ -122,6 +153,9 @@ export const quadrantsLayoutContract = defineLayoutContract({
       Schema.isMaxLength(QUADRANT_COUNT, {
         message: `Expected exactly ${QUADRANT_COUNT} quadrants`,
       }),
+    ),
+    labels: Labels.pipe(
+      Schema.withDecodingDefaultKey(Effect.succeed({ ...DEFAULT_QUADRANTS_LABELS })),
     ),
     reveal: RevealField,
     chrome: chromeField(true),
@@ -135,6 +169,11 @@ export const quadrantsLayoutContract = defineLayoutContract({
       `${QUADRANT_ITEM_MAX_CHARS} characters), and optionally \`icon\` (a name from the ` +
       'brand set, such as leaf, or tabler:leaf). Give an icon to all four boxes or to none. ' +
       'Set `highlight: true` on at most one box to emphasize it, or omit it for equal weight.',
+    labels:
+      'An optional replacement for `highlight` (Highlighted), the screen-reader prefix of the ' +
+      `highlighted box's heading, 1 to ${QUADRANTS_HIGHLIGHT_LABEL_MAX_CHARS} characters; it is ` +
+      'never drawn. An omitted key keeps its English default. For example, ' +
+      '`labels: { highlight: Priorität }`.',
     reveal: REVEAL_HINT,
     chrome: CHROME_HINT,
   },
@@ -166,6 +205,7 @@ export const quadrantsLayoutContract = defineLayoutContract({
     frontmatter: {
       title: 'Keep the care that makes new trees survive',
       eyebrow: 'Season review',
+      labels: { ...DEFAULT_QUADRANTS_LABELS },
       quadrants: [
         {
           title: 'Keep',

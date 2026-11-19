@@ -2,7 +2,12 @@ import { SlideFrontmatter } from '@deckster/engine/frontmatter';
 import { Schema } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 
-import { scheduleLayoutContract, scheduleProblems } from '#layouts/schedule-layout.contract.ts';
+import {
+  SCHEDULE_NOW_LABEL_MAX_CHARS,
+  SCHEDULE_SPOKEN_LABEL_MAX_CHARS,
+  scheduleLayoutContract,
+  scheduleProblems,
+} from '#layouts/schedule-layout.contract.ts';
 
 /**
  * A valid three-period schedule, with a single-period bar and overlapping durations.
@@ -23,9 +28,23 @@ const SCHEDULE = {
 };
 
 /**
+ * The English now marker and screen-reader words used when `labels` is omitted.
+ */
+const DEFAULT_LABELS = { now: 'Now', nowPeriod: 'now', through: 'through' } as const;
+
+/**
+ * The limit of every label key, in characters.
+ */
+const LABEL_LIMITS = {
+  now: SCHEDULE_NOW_LABEL_MAX_CHARS,
+  nowPeriod: SCHEDULE_SPOKEN_LABEL_MAX_CHARS,
+  through: SCHEDULE_SPOKEN_LABEL_MAX_CHARS,
+} as const;
+
+/**
  * Decodes the shared slide fields and the schedule fields, rejecting excess keys.
  */
-function decode(fields: Record<string, unknown>): unknown {
+function decode(fields: Record<string, unknown>) {
   const schema = Schema.Struct({
     ...SlideFrontmatter.fields,
     ...scheduleLayoutContract.schema.fields,
@@ -132,6 +151,29 @@ describe('the schedule layout contract', () => {
     ).toMatchObject([
       { path: 'lanes', message: 'Expected at most 12 bars and bar labels combined.' },
     ]);
+  });
+
+  it('keeps the English now marker and screen-reader words when labels is omitted', () => {
+    expect(decode(SCHEDULE).labels).toEqual(DEFAULT_LABELS);
+  });
+
+  it('keeps the English default of every label key that is not given', () => {
+    const { labels } = decode({ ...SCHEDULE, labels: { now: 'Heute' } });
+    expect(labels).toEqual({ ...DEFAULT_LABELS, now: 'Heute' });
+  });
+
+  it('accepts every label at its limit and refuses one over, naming the limit', () => {
+    for (const [key, limit] of Object.entries(LABEL_LIMITS)) {
+      expect(() => decode({ ...SCHEDULE, labels: { [key]: 'x'.repeat(limit) } })).not.toThrow();
+      expect(() => decode({ ...SCHEDULE, labels: { [key]: 'x'.repeat(limit + 1) } })).toThrow(
+        `at most ${limit} characters`,
+      );
+      expect(() => decode({ ...SCHEDULE, labels: { [key]: '' } })).toThrow(key);
+    }
+  });
+
+  it('refuses a label key that does not exist', () => {
+    expect(() => decode({ ...SCHEDULE, labels: { next: 'Next' } })).toThrow('next');
   });
 
   it('maps title and context to native PowerPoint placeholders', () => {

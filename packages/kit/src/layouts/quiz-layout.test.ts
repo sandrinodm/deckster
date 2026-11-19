@@ -4,17 +4,28 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import {
   QUIZ_EXPLANATION_MAX_CHARS,
+  QUIZ_LABEL_MAX_CHARS,
   QUIZ_OPTION_MAX_CHARS,
   quizLayoutContract,
   quizProblems,
 } from '#layouts/quiz-layout.contract.ts';
 
 /**
+ * The smallest valid question, which every label test varies.
+ */
+const QUESTION = { options: ['Yes', 'No'], answer: 'A' } as const;
+
+/**
+ * The English screen-reader names used when `labels` is omitted.
+ */
+const DEFAULT_LABELS = { choices: 'Answer choices', correct: 'Correct answer' } as const;
+
+/**
  * Decodes the quiz with the shared slide fields, refusing misspelled fields as the build does.
  *
  * @param fields - The quiz frontmatter without its layout name.
  */
-function decode(fields: Record<string, unknown>): unknown {
+function decode(fields: Record<string, unknown>) {
   const schema = Schema.Struct({ ...SlideFrontmatter.fields, ...quizLayoutContract.schema.fields });
   return Schema.decodeUnknownSync(schema)(
     { layout: 'quiz', ...fields },
@@ -74,6 +85,30 @@ describe('the quiz layout contract', () => {
       chrome: false,
     });
     expect(() => decode({ ...fields, colour: 'red' })).toThrow('Expected no excess property');
+  });
+
+  it('keeps the English screen-reader names when labels is omitted', () => {
+    expect(decode(QUESTION).labels).toEqual(DEFAULT_LABELS);
+  });
+
+  it('keeps the English default of every label key that is not given', () => {
+    const { labels } = decode({ ...QUESTION, labels: { correct: 'Richtige Antwort' } });
+    expect(labels).toEqual({ ...DEFAULT_LABELS, correct: 'Richtige Antwort' });
+  });
+
+  it('accepts every label at its limit and refuses one over, naming the limit', () => {
+    for (const key of Object.keys(DEFAULT_LABELS)) {
+      const limit = QUIZ_LABEL_MAX_CHARS;
+      expect(() => decode({ ...QUESTION, labels: { [key]: 'x'.repeat(limit) } })).not.toThrow();
+      expect(() => decode({ ...QUESTION, labels: { [key]: 'x'.repeat(limit + 1) } })).toThrow(
+        `at most ${limit} characters`,
+      );
+      expect(() => decode({ ...QUESTION, labels: { [key]: '' } })).toThrow(key);
+    }
+  });
+
+  it('refuses a label key that does not exist', () => {
+    expect(() => decode({ ...QUESTION, labels: { wrong: 'Falsch' } })).toThrow('wrong');
   });
 
   it('maps the question and context to native PowerPoint placeholders', () => {

@@ -32,7 +32,7 @@ function ScheduleLayout({
   frontmatter,
   slots,
 }: LayoutProps<typeof scheduleLayoutContract>): ReactNode {
-  const { periods, lanes, current, now, reveal } = frontmatter;
+  const { periods, lanes, current, now, reveal, labels } = frontmatter;
   const isStatic = useStatic();
   const { surface } = useBrand();
   const outlined =
@@ -79,15 +79,14 @@ function ScheduleLayout({
                 {smartPunctuation(period)}
                 {now === index + 1 ? (
                   <span className="kit-schedule-sr-only" data-decorative="">
-                    {' '}
-                    (now)
+                    {` (${labels.nowPeriod})`}
                   </span>
                 ) : null}
               </div>
             ))}
             {now === undefined ? null : (
               <span className="kit-schedule-now kit-type-label" aria-hidden="true">
-                Now
+                {smartPunctuation(labels.now)}
               </span>
             )}
           </div>
@@ -124,7 +123,7 @@ function ScheduleLayout({
                       key={barIndex}
                       className="kit-schedule-track"
                       style={{ gridRow: barIndex + 1 }}
-                      aria-label={`${bar.label ?? lane.name}: ${periods[bar.from - 1]} through ${periods[bar.to - 1]}`}>
+                      aria-label={`${bar.label ?? lane.name}: ${periods[bar.from - 1]} ${labels.through} ${periods[bar.to - 1]}`}>
                       {bar.label === undefined ? null : (
                         <span
                           className={`kit-schedule-label kit-type-${labelType}`}

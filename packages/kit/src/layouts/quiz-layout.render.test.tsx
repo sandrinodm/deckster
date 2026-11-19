@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
-import type { QuizAnswer } from '#layouts/quiz-layout.contract.ts';
+import type { QuizAnswer, QuizLabels } from '#layouts/quiz-layout.contract.ts';
 
 import { quizLayout } from '#layouts/quiz-layout.tsx';
 import { QUIZ_LETTERS, QUIZ_TILE_MAX_CHARS } from '#layouts/quiz-values.ts';
@@ -15,6 +15,11 @@ const view = vi.hoisted(() => ({ step: 0, isStatic: false, surface: 'default' })
  * Choices shared by the default render and its expected Step count.
  */
 const CHOICES = ['First choice', 'Second choice'];
+
+/**
+ * The English screen-reader names the contract decodes when a slide gives no `labels`.
+ */
+const DEFAULT_LABELS: QuizLabels = { choices: 'Answer choices', correct: 'Correct answer' };
 
 vi.mock('@deckster/engine', async (original) => ({
   ...(await original<typeof import('@deckster/engine')>()),
@@ -45,7 +50,13 @@ function render({
   reveal = true,
   answer = 'B',
   options = CHOICES,
-}: { reveal?: boolean; answer?: QuizAnswer; options?: string[] } = {}): string {
+  labels = DEFAULT_LABELS,
+}: {
+  reveal?: boolean;
+  answer?: QuizAnswer;
+  options?: string[];
+  labels?: QuizLabels;
+} = {}): string {
   const Component = quizLayout.component;
   return renderToStaticMarkup(
     <Component
@@ -56,6 +67,7 @@ function render({
         options,
         answer,
         explanation: 'The reason for B.',
+        labels,
         reveal,
         chrome: true,
       }}
@@ -137,6 +149,22 @@ describe('the quiz answer reveal', () => {
     const boundary = 'x'.repeat(QUIZ_TILE_MAX_CHARS);
     expect(render({ options: [boundary, 'Short'] })).toContain('data-form="tiles"');
     expect(render({ options: [boundary + 'x', 'Short'] })).toContain('data-form="rows"');
+  });
+
+  it('names the choice list and the answer tick in English by default', () => {
+    view.step = 1;
+    const html = render();
+    expect(html).toContain('<ol class="kit-quiz-options" aria-label="Answer choices">');
+    expect(html.match(/aria-label="Correct answer"/gu)).toHaveLength(1);
+  });
+
+  it('reads the author’s names for the choice list and the answer tick', () => {
+    view.step = 1;
+    const html = render({ labels: { choices: 'Antworten', correct: 'Richtige Antwort' } });
+    expect(html).toContain('<ol class="kit-quiz-options" aria-label="Antworten">');
+    expect(html.match(/aria-label="Richtige Antwort"/gu)).toHaveLength(1);
+    expect(html).not.toContain('Answer choices');
+    expect(html).not.toContain('Correct answer');
   });
 
   it('labels four options in contract order without duplicate recap letters', () => {

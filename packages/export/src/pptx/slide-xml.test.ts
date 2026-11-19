@@ -87,6 +87,22 @@ describe('slideXml', () => {
     expect(embeds.size).toBe(1);
   });
 
+  it('crops a fetched picture but not the captured picture of one that could not be fetched', () => {
+    const crop = { left: 0, top: 0.07, right: 0, bottom: 0.07 };
+    const fetched = { ...logoNode(20), selector: 'img.photo', crop };
+    const unfetched = { ...fetched, id: 21, src: '/missing.png' };
+    const slide = slideInput(0, [fetched, unfetched]);
+    const pictures = new Map([[unfetched.id, PIXEL_PNG]]);
+    const written = slideXml(
+      createPackage(),
+      'ppt/slides/slide1.xml',
+      { ...slide, assets: { ...slide.assets, pictures } },
+      options(),
+    );
+    expect(written.counts.images).toBe(2);
+    expect(written.xml.match(/<a:srcRect [^>]*\/>/g)).toEqual(['<a:srcRect t="7000" b="7000"/>']);
+  });
+
   it('marks shapes that appear at a step for click animations', () => {
     const box = boxNode(30, { step: 1 });
     const written = slideXml(

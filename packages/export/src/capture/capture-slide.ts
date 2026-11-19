@@ -6,13 +6,14 @@ import { Effect } from 'effect';
 import type { FetchedFile, TooLargeFile } from '#capture/page-scripts.ts';
 import type { ExportMode, MasterBackground, ScenePlan } from '#plan/plan-scene.ts';
 import type { EmbeddedFile, GrainFile, SlideAssets } from '#pptx/deck-input.ts';
-import type { BoxNode, SceneNode, SceneRect, SlideScene } from '#scene/scene.ts';
+import type { BoxNode, ImageNode, SceneNode, SceneRect, SlideScene } from '#scene/scene.ts';
 
 import {
   encodePicture,
   fetchFile,
   grainTile,
   isolateNode,
+  rasterizeSvg,
   restoreIsolation,
 } from '#capture/page-scripts.ts';
 import { exportError, type ExportError } from '#export-error.ts';
@@ -151,6 +152,11 @@ const MAX_PICTURE_PIXELS = 1920 * 1080;
 const MAX_PICTURE_DENSITY = 2;
 
 /**
+ * A side limit in pixels keeps very narrow or tall SVG fallbacks within Chromium's canvas limits.
+ */
+const MAX_SVG_PICTURE_SIDE = 8192;
+
+/**
  * The JPEG quality of pictures without transparency.
  */
 const JPEG_QUALITY = 0.88;
@@ -223,7 +229,7 @@ const captureAssets = Effect.fn('captureAssets')(function* (
   yield* pictureElements(capture, plan, options, pictures);
   const imageNodes = imageNodesOf(plan);
   const images = yield* fetchImages(page, imageNodes, plan, options.label);
-  yield* pictureUnfetchedImages(capture, imageNodes, images, pictures);
+  yield* pictureImageFallbacks(capture, imageNodes, images, pictures);
   const background = yield* pictureBackdrop(capture, plan, options);
   const grain = yield* grainOf(page, scene, plan, options);
   return { pictures, images, media: new Map(), slidePicture: null, background, grain };
@@ -346,28 +352,95 @@ const fetchImages = Effect.fn('fetchImages')(function* (
 });
 
 /**
- * Pictures each image node whose file is an SVG, or could not be fetched, as the page draws it.
+ * Captures the full source of cropped SVGs so the same picture crop works in renderers using either
+ * format. Uncropped SVGs and images without an embeddable original use the visible box.
  *
  * @param capture - The page, scale and slide.
  * @param imageNodes - The image nodes of the plan.
- * @param images - The fetched files by source.
+ * @param images - The fetched files by source, with SVGs removed if their PNG cannot be made.
  * @param pictures - Receives each picture by node id.
  */
-const pictureUnfetchedImages = Effect.fn('pictureUnfetchedImages')(function* (
+const pictureImageFallbacks = Effect.fn('pictureImageFallbacks')(function* (
   capture: PictureCapture,
-  imageNodes: ReturnType<typeof imageNodesOf>,
-  images: ReadonlyMap<string, EmbeddedFile>,
+  imageNodes: readonly ImageNode[],
+  images: Map<string, EmbeddedFile>,
   pictures: Map<number, Uint8Array>,
 ): Effect.fn.Return<void, ExportError> {
+  const nodesBySource = new Map<string, ImageNode[]>();
   for (const node of imageNodes) {
-    const isSvg = images.get(node.src)?.extension === 'svg';
-    if (isSvg || !images.has(node.src)) {
-      const picture = yield* nodePicture(capture, node, 'subtree');
+    const nodes = nodesBySource.get(node.src);
+    if (nodes === undefined) {
+      nodesBySource.set(node.src, [node]);
+    } else {
+      nodes.push(node);
+    }
+  }
+
+  for (const [src, nodes] of nodesBySource) {
+    const file = images.get(src);
+    if (file !== undefined && file.extension !== 'svg') {
+      continue;
+    }
+
+    const cropped = nodes.some((node) => Object.values(node.crop).some((fraction) => fraction > 0));
+    const needsFullSource = file !== undefined && cropped;
+    const fallback = needsFullSource ? yield* svgPicture(capture, file, nodes) : null;
+    if (needsFullSource && fallback === null) {
+      images.delete(src);
+    }
+
+    for (const node of nodes) {
+      const picture = fallback ?? (yield* nodePicture(capture, node, 'subtree'));
       if (picture !== null) {
         pictures.set(node.id, picture);
       }
     }
   }
+});
+
+/**
+ * Renders an SVG at a density suitable for its largest placement, including the cropped-away area.
+ * The PNG follows the source's aspect ratio so the same bytes can be used at every placement.
+ *
+ * @param capture - The page, scale and slide.
+ * @param file - The original SVG.
+ * @param nodes - All native placements of the source on the slide.
+ */
+const svgPicture = Effect.fn('svgPicture')(function* (
+  capture: PictureCapture,
+  file: EmbeddedFile,
+  nodes: readonly ImageNode[],
+): Effect.fn.Return<Uint8Array | null, ExportError> {
+  const natural = nodes[0]?.natural;
+  if (natural === undefined || natural.width <= 0 || natural.height <= 0) {
+    return null;
+  }
+
+  let scale = 0;
+  for (const { rect, crop } of nodes) {
+    const visibleWidth = Math.max(1, natural.width * (1 - crop.left - crop.right));
+    const visibleHeight = Math.max(1, natural.height * (1 - crop.top - crop.bottom));
+    scale = Math.max(scale, rect.width / visibleWidth, rect.height / visibleHeight);
+  }
+
+  const maxPixels = MAX_PICTURE_PIXELS * Math.max(1, (capture.scale ?? 1) ** 2);
+  const density = Math.min(
+    scale * (capture.scale ?? MAX_PICTURE_DENSITY),
+    Math.sqrt(maxPixels / (natural.width * natural.height)),
+    MAX_SVG_PICTURE_SIDE / Math.max(natural.width, natural.height),
+  );
+  const width = Math.max(1, Math.round(natural.width * density));
+  const height = Math.max(1, Math.round(natural.height * density));
+  const png = yield* Effect.tryPromise({
+    try: () =>
+      capture.page.evaluate(rasterizeSvg, {
+        base64: Buffer.from(file.data).toString('base64'),
+        width,
+        height,
+      }),
+    catch: (cause) => exportError(`rasterize an SVG on ${capture.label}`, cause, CAPTURE_FIX),
+  });
+  return png === null ? null : new Uint8Array(Buffer.from(png, 'base64'));
 });
 
 /**

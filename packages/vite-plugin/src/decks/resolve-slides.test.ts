@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 
-import { resolveSlideOrder } from '#decks/resolve-slides.ts';
+import { isSlideFileName, resolveSlideOrder } from '#decks/resolve-slides.ts';
 
 describe('resolveSlideOrder', () => {
   it('orders slide files by the manifest, not by file name', () => {
@@ -44,5 +44,19 @@ describe('resolveSlideOrder', () => {
       'slides/extra.mdx is not listed in deck.config.ts, so it is not a slide and the deck ' +
         'leaves it out. Add "extra" to slides to show it, or keep it there if slides import it.',
     ]);
+  });
+});
+
+describe('isSlideFileName', () => {
+  it('is true for MDX and TSX files', () => {
+    expect(isSlideFileName('title.mdx')).toBe(true);
+    expect(isSlideFileName('live-counter.tsx')).toBe(true);
+  });
+
+  it('is false for other files, such as the temporary file a sync renames over a slide', () => {
+    expect(isSlideFileName('.title.mdx.9cdfb1267c5e.deck-sync')).toBe(false);
+    expect(isSlideFileName('chart.ts')).toBe(false);
+    expect(isSlideFileName('notes.md')).toBe(false);
+    expect(isSlideFileName('mdx')).toBe(false);
   });
 });

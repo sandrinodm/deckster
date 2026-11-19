@@ -204,9 +204,10 @@ describe('paragraph and run XML', () => {
     expect(xml).toContain('<a:t> / 16</a:t>');
     const subset = runXml(
       run('9 / 16'),
-      context({ slideNumber: 9, totals: { deck: 16, file: 5 } }),
+      context({ slideNumber: 9, totals: { deck: 16, file: 5, position: 2 } }),
     );
     expect(subset).toContain('<a:t> / 5</a:t>');
+    expect(subset).toMatch(/<a:fld [^>]*type="slidenum"[^>]*>.*<a:t>2<\/a:t><\/a:fld>/);
   });
 
   it('refers to the brand families through the theme', () => {

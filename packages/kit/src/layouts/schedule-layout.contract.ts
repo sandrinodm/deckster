@@ -1,5 +1,5 @@
 import { defineLayoutContract, type FieldProblem } from '@deckster/engine/layout';
-import { Schema } from 'effect';
+import { Effect, Schema } from 'effect';
 
 import {
   CHROME_HINT,
@@ -69,9 +69,62 @@ export const SCHEDULE_BAR_MAX_CHARS = 16;
 export const SCHEDULE_TITLE_MAX_CHARS = 50;
 
 /**
+ * The longest now marker, in characters, centred on its period even at either end of an
+ * eight-period axis.
+ */
+export const SCHEDULE_NOW_LABEL_MAX_CHARS = 6;
+
+/**
+ * The longest screen-reader word for the period at now or for the span of a bar, in characters;
+ * neither is ever drawn.
+ */
+export const SCHEDULE_SPOKEN_LABEL_MAX_CHARS = 24;
+
+/**
  * The most words in the schedule's source or caveat, preserving the grid's height.
  */
 const SCHEDULE_FOOTNOTE_MAX_WORDS = 16;
+
+/**
+ * The English marker and screen-reader words used when the author gives no `labels`.
+ */
+const DEFAULT_SCHEDULE_LABELS = {
+  /**
+   * The marker drawn under the period at now.
+   */
+  now: 'Now',
+
+  /**
+   * Read in parentheses after the period at now.
+   */
+  nowPeriod: 'now',
+
+  /**
+   * Read between the first and last period of a bar.
+   */
+  through: 'through',
+} as const;
+
+/**
+ * Optional replacements for the visible now marker, the screen-reader note on the period at now and
+ * the word read between a bar's first and last period.
+ */
+const Labels = Schema.Struct({
+  now: textField(SCHEDULE_NOW_LABEL_MAX_CHARS, 'a now marker').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_SCHEDULE_LABELS.now)),
+  ),
+  nowPeriod: textField(SCHEDULE_SPOKEN_LABEL_MAX_CHARS, 'a now period label').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_SCHEDULE_LABELS.nowPeriod)),
+  ),
+  through: textField(SCHEDULE_SPOKEN_LABEL_MAX_CHARS, 'a span word').pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(DEFAULT_SCHEDULE_LABELS.through)),
+  ),
+});
+
+/**
+ * Author-supplied now marker and screen-reader words; omitted keys keep the English defaults.
+ */
+export type ScheduleLabels = typeof Labels.Type;
 
 /**
  * A one-based period index. Cross-field checks also hold it to the actual axis length.
@@ -170,7 +223,8 @@ export const scheduleLayoutContract = defineLayoutContract({
     'parallel delivery, a rollout or overlapping work. Reveal lanes one per click. Use timeline ' +
     'for dated milestones without durations, steps for a sequence without dates, or columns ' +
     'for a Now / Next / Later board without a measured axis. ' +
-    'Use table for a timetable with exact dates per row.',
+    'Use table for a timetable with exact dates per row. `labels` renames the now marker and ' +
+    'the words read to screen readers, for example `labels: { now: Heute }`.',
   schema: Schema.Struct({
     eyebrow: EyebrowField,
     periods: Schema.Array(textField(SCHEDULE_PERIOD_MAX_CHARS, 'a period label')).check(
@@ -198,6 +252,9 @@ export const scheduleLayoutContract = defineLayoutContract({
         ),
       ),
     ),
+    labels: Labels.pipe(
+      Schema.withDecodingDefaultKey(Effect.succeed({ ...DEFAULT_SCHEDULE_LABELS })),
+    ),
     reveal: RevealField,
     chrome: chromeField(true),
   }),
@@ -216,10 +273,17 @@ export const scheduleLayoutContract = defineLayoutContract({
       'bars and bar labels combined; each optional label counts as one. Overlaps use separate tracks.',
     now:
       `Set now to a period index from 1 to ${SCHEDULE_MAX_PERIODS} within the actual axis ` +
-      'to label its centre Now; omit it for no marker.',
+      'to label its centre Now, or `labels.now`; omit it for no marker.',
     current:
       `Set current to the number of the lane the talk is on, or the one at now, from 1 to ` +
       `${SCHEDULE_MAX_LANES} within the actual list, to mark it with an arrow and stronger bars.`,
+    labels:
+      'Optional replacements for `now` (Now), the marker drawn at the now period, 1 to ' +
+      `${SCHEDULE_NOW_LABEL_MAX_CHARS} characters; \`nowPeriod\` (now), read in parentheses ` +
+      'after that period; and `through` (through), read between the first and last period of ' +
+      `each bar. The two read words are never drawn, 1 to ${SCHEDULE_SPOKEN_LABEL_MAX_CHARS} ` +
+      'characters each. Omitted keys keep their English defaults. For example, ' +
+      '`labels: { now: Heute }`.',
     reveal: REVEAL_HINT,
     chrome: CHROME_HINT,
   },
@@ -260,6 +324,7 @@ export const scheduleLayoutContract = defineLayoutContract({
       periods: ['Jan', 'Feb', 'Mar', 'Apr'],
       current: 2,
       now: 2,
+      labels: { ...DEFAULT_SCHEDULE_LABELS },
       lanes: [
         { name: 'Survey', bars: [{ from: 1, to: 2, label: 'Site visits' }] },
         {

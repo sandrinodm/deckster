@@ -321,6 +321,44 @@ export async function encodePicture(args: EncodeArgs): Promise<EncodedPicture | 
 }
 
 /**
+ * Renders an SVG's full source as a PNG. The picture's DrawingML crop applies to both media files.
+ * Runs in the browser and returns `null` if the SVG cannot be decoded.
+ *
+ * @param args - The SVG bytes as base64 and its requested PNG dimensions in pixels.
+ * @param args.base64 - The original SVG bytes.
+ * @param args.width - The PNG width.
+ * @param args.height - The PNG height.
+ */
+export async function rasterizeSvg(args: {
+  base64: string;
+  width: number;
+  height: number;
+}): Promise<string | null> {
+  const bytes = Uint8Array.from(atob(args.base64), (char) => char.charCodeAt(0));
+  const url = URL.createObjectURL(new Blob([bytes], { type: 'image/svg+xml' }));
+  const image = new Image();
+  try {
+    image.src = url;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = args.width;
+    canvas.height = args.height;
+    const context = canvas.getContext('2d');
+    if (context === null) {
+      return null;
+    }
+
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const png = canvas.toDataURL('image/png');
+    return png === 'data:,' ? null : png.slice(png.indexOf(',') + 1);
+  } catch {
+    return null;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/**
  * A grain texture tile, as the brand draws it over a gradient.
  */
 export type GrainTile = {

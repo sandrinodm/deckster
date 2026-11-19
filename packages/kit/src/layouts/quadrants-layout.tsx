@@ -60,7 +60,7 @@ function QuadrantsLayout({
   frontmatter,
   slots,
 }: LayoutProps<typeof quadrantsLayoutContract>): ReactNode {
-  const { quadrants, reveal } = frontmatter;
+  const { quadrants, reveal, labels } = frontmatter;
   const { brand, surface } = useBrand();
   const lit = surface.name === 'accent' || surface.name === 'gradient' ? 'inverse' : 'accent';
   const isStatic = useStatic();
@@ -103,6 +103,7 @@ function QuadrantsLayout({
                 quadrant={quadrant}
                 icon={icons[index]}
                 lit={quadrant.highlight === true ? lit : undefined}
+                highlightLabel={labels.highlight}
                 titleType={`kit-type-${size.title}`}
                 itemType={`kit-type-${size.text}`}
                 enter={enterProps(FIRST_QUADRANT_ORDER + index, isStatic)}
@@ -143,6 +144,11 @@ type QuadrantBoxProps = {
   lit: string | undefined;
 
   /**
+   * The screen-reader prefix of the heading when the box is lit.
+   */
+  highlightLabel: string;
+
+  /**
    * The heading's brand type step.
    */
   titleType: string;
@@ -166,6 +172,7 @@ function QuadrantBox({
   quadrant,
   icon: Icon,
   lit,
+  highlightLabel,
   titleType,
   itemType,
   enter,
@@ -185,7 +192,7 @@ function QuadrantBox({
           <h3
             className={`kit-quadrant-title kit-heading ${titleType}`}
             data-fit="scaled"
-            aria-label={lit === undefined ? undefined : `Highlighted: ${quadrant.title}`}>
+            aria-label={lit === undefined ? undefined : `${highlightLabel}: ${quadrant.title}`}>
             {smartPunctuation(quadrant.title)}
           </h3>
         </div>

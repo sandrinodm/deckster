@@ -2,7 +2,6 @@ import type { Plugin, Rollup, ViteDevServer } from 'vite';
 
 import { onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
 import { devSessionOf, issueDevSession } from '@deckster/comments/dev-session';
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { MdxWarning } from '#slides/compile-mdx.ts';
@@ -23,7 +22,9 @@ import { DECKS_DIR, displayPath, SLIDES_DIR, type DeckLocation } from '#decks/de
 import { findDeck } from '#decks/discover-decks.ts';
 import { loadDeck, type LoadedDeck } from '#decks/load-deck.ts';
 import { REORDER_ENDPOINT, reorderMiddleware } from '#decks/reorder-middleware.ts';
+import { trackSlideFileChanges } from '#decks/slide-file-changes.ts';
 import { unresolvedRuntimePlugin } from '#errors.ts';
+import { trackHeldLoads, type HeldLoads } from '#held-loads.ts';
 import {
   DEFAULT_LAYOUT_CATALOGS,
   loadLayoutCatalog,
@@ -211,6 +212,7 @@ export function deckPlugin(
   let location: Promise<DeckLocation> | undefined;
   let loadedDeck: Promise<LoadedDeck> | undefined;
   let catalog: { brand: LoadedBrand; index: Promise<LayoutCatalogIndex> } | undefined;
+  const deckLoads = trackHeldLoads();
 
   /**
    * Finds the deck once and remembers the result, so every hook sees the same location.
@@ -222,11 +224,19 @@ export function deckPlugin(
 
   /**
    * Loads the deck config and slide list, reused until the manifest or the slide files change; a
-   * failed load is retried on the next call.
+   * failed load is retried on the next call. A load while an agent turn holds the config is noted
+   * at its start and its end, so the end of the hold reloads the page.
    */
   const activeDeck = (): Promise<LoadedDeck> => {
     loadedDeck ??= findActiveDeck()
-      .then((deck) => run(loadDeck(workspaceRoot, deck)))
+      .then((deck) => {
+        /**
+         * Notes the config, when an agent turn holds it now.
+         */
+        const noteHeld = () => deckLoads.note([deck.configFile]);
+        noteHeld();
+        return run(loadDeck(workspaceRoot, deck)).finally(noteHeld);
+      })
       .catch((error: unknown) => {
         loadedDeck = undefined;
         throw error;
@@ -388,7 +398,7 @@ export function deckPlugin(
       server.middlewares.use(issueDevSession(session));
       server.middlewares.use(OPEN_IN_EDITOR_ENDPOINT, refuseOpenInEditor);
       const deck = await findActiveDeck();
-      watchManifest(server, deck, () => {
+      watchManifest(server, deck, deckLoads, () => {
         loadedDeck = undefined;
       });
       server.middlewares.use(
@@ -486,13 +496,22 @@ function slideSource(workspaceRoot: string, id: string, code: string): SlideFile
 }
 
 /**
- * Reloads the page when slides are added or removed or the manifest changes.
+ * Reloads the page when slide files are added or removed or the manifest changes, and when an agent
+ * turn's hold on the config ends after the deck was loaded during it. Other files appearing in
+ * `slides/`, such as the temporary file a turn's sync writes before renaming it over a slide,
+ * change no slide list and reload nothing.
  *
  * @param server - The dev server.
  * @param deck - The deck.
+ * @param heldLoads - The deck loads made while a turn held the config.
  * @param onChange - Called before the reload, to forget the loaded deck.
  */
-function watchManifest(server: ViteDevServer, deck: DeckLocation, onChange: () => void): void {
+function watchManifest(
+  server: ViteDevServer,
+  deck: DeckLocation,
+  heldLoads: HeldLoads,
+  onChange: () => void,
+): void {
   /**
    * Forgets the loaded deck and reloads the page with the new manifest.
    */
@@ -506,20 +525,20 @@ function watchManifest(server: ViteDevServer, deck: DeckLocation, onChange: () =
 
     environment.hot.send({ type: 'full-reload' });
   };
+  const slideFilesChanged = trackSlideFileChanges(deck.slidesDir);
   server.watcher.add(deck.dir);
   server.watcher.on('all', (event, file) => {
     const isConfigChange = file === deck.configFile;
-    const isSlideListChange =
-      (event === 'add' || event === 'unlink') && path.dirname(file) === deck.slidesDir;
-    if (isConfigChange || isSlideListChange) {
+    if (isConfigChange || slideFilesChanged(event, file)) {
       reload();
     }
   });
   // While an agent turn runs the config is held; once the turn guard has settled the turn (its
-  // working copy synced and retired, everything else verified), the hold ends and the config (with
-  // any slide-list edit) loads again.
+  // working copy synced and retired, everything else verified), the hold ends. A deck loaded during
+  // the hold may show a config held back from the turn, so the page reloads to load it for real. A
+  // page that loaded no deck during the turn already shows the config, and keeps its state.
   const stop = onCodeReleased((root) => {
-    if (path.resolve(deck.configFile).startsWith(`${root}${path.sep}`)) {
+    if (heldLoads.released(root)) {
       reload();
     }
   });

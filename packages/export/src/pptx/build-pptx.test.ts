@@ -155,6 +155,20 @@ function artPictures(xml: string): number {
   return xml.match(/descr="Picture \(frame\.png\)"/g)?.length ?? 0;
 }
 
+/**
+ * A slide number field and the text it caches.
+ */
+const SLIDE_NUMBER_FIELD = /<a:fld [^>]*type="slidenum"[^>]*>.*?<a:t>([^<]*)<\/a:t><\/a:fld>/;
+
+/**
+ * The cached text of a part's slide number field, or `null` when it has none.
+ *
+ * @param xml - The part.
+ */
+function slideNumberField(xml: string): string | null {
+  return SLIDE_NUMBER_FIELD.exec(xml)?.[1] ?? null;
+}
+
 layer(NodeServices.layer)('buildPptx', (it) => {
   it.effect(
     'writes a brand layout as a layout part with its label, art and picture placeholder',
@@ -251,6 +265,8 @@ layer(NodeServices.layer)('buildPptx', (it) => {
         expect(slide).toContain('<p:ph type="sldNum" idx="12"/>');
         expect(slide).toContain('type="slidenum"');
         expect(slide).toContain('<a:t> / 2</a:t>');
+        expect(slideNumberField(slide)).toBe('1');
+        expect(slideNumberField(parts['ppt/slides/slide2.xml'] ?? '')).toBe('2');
         expect(slide).toContain('<p:ph type="title"/>');
         expect(slide).toContain('wrap="square"');
         expect(slide).not.toContain('kern=');
