@@ -1,6 +1,5 @@
 import { isSafeName } from '@deckster/brand';
 import { deckCommand } from '@deckster/engine/command';
-import { discoverDecks } from '@deckster/vite-plugin';
 import { Effect, type FileSystem } from 'effect';
 
 import { chooseDeck } from '#choose-deck.ts';
@@ -26,6 +25,7 @@ export const chooseInteractiveDeck = Effect.fn('chooseInteractiveDeck')(function
     return { deck: specified };
   }
 
+  const { discoverDecks } = yield* Effect.promise(() => import('@deckster/vite-plugin'));
   const discovered = yield* discoverDecks(workspaceRoot);
   const decks = discovered.filter((deck) => isSafeName(deck.id));
   const [only, ...others] = decks;

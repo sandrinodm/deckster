@@ -1,6 +1,7 @@
 import {
   decodeEvent,
   encodeMessage,
+  type ShellChooserTarget,
   type ShellCommand,
   type ShellDisplay,
   type ShellEvent,
@@ -60,6 +61,11 @@ type ShellProcess = {
    * Every event the shell wrote, replayed to late subscribers.
    */
   events: PubSub.PubSub<ShellEvent>;
+
+  /**
+   * The latest connected display list, including reports after startup.
+   */
+  displays: Ref.Ref<readonly ShellDisplay[]>;
 
   /**
    * Completes with the exit code and the tail of standard error when the process ends.
@@ -123,6 +129,7 @@ const spawnShell = Effect.fn('spawnShell')(function* (
       ),
     );
   const events = yield* PubSub.unbounded<ShellEvent>({ replay: REPLAY });
+  const displays = yield* Ref.make<readonly ShellDisplay[]>([]);
   const exited = yield* Deferred.make<{ code: number; stderr: string }>();
   const stderrTail = yield* Ref.make<readonly string[]>([]);
   yield* child.stdout.pipe(
@@ -130,9 +137,15 @@ const spawnShell = Effect.fn('spawnShell')(function* (
     Stream.splitLines,
     Stream.runForEach((line) => {
       const decoded = decodeEvent(line);
-      return decoded.ok
-        ? PubSub.publish(events, decoded.message)
-        : Ref.update(stderrTail, (lines) => [...lines, line].slice(-STDERR_LINES));
+      if (!decoded.ok) {
+        return Ref.update(stderrTail, (lines) => [...lines, line].slice(-STDERR_LINES));
+      }
+
+      const event = decoded.message;
+      const publish = PubSub.publish(events, event);
+      return event.type === 'displays'
+        ? Ref.set(displays, event.displays).pipe(Effect.andThen(publish))
+        : publish;
     }),
     Effect.ignore,
     Effect.forkScoped,
@@ -170,7 +183,7 @@ const spawnShell = Effect.fn('spawnShell')(function* (
       Effect.ignore,
     ),
   );
-  return { events, exited, send, closeInput };
+  return { events, displays, exited, send, closeInput };
 });
 
 /**
@@ -186,10 +199,21 @@ const awaitEvent = Effect.fn('awaitEvent')(function* <Type extends ShellEvent['t
   shell: ShellProcess,
   type: Type,
   timeout: Duration.Input,
-  what: string,
+  options: { readonly what: string; readonly requestId?: string; readonly ignoreErrors?: boolean },
 ): Effect.fn.Return<Extract<ShellEvent, { type: Type }>, ShellError> {
   const found = Stream.fromPubSub(shell.events).pipe(
-    Stream.filter((event) => event.type === type || event.type === 'error'),
+    Stream.filter((event) => {
+      if (event.type !== type && event.type !== 'error') {
+        return false;
+      }
+
+      if (event.type === 'error' && options.ignoreErrors === true) {
+        return false;
+      }
+
+      const requestId = 'requestId' in event ? event.requestId : undefined;
+      return requestId === options.requestId;
+    }),
     Stream.runHead,
     Effect.flatMap(
       Option.match({
@@ -205,7 +229,7 @@ const awaitEvent = Effect.fn('awaitEvent')(function* <Type extends ShellEvent['t
     Effect.flatMap(({ code, stderr }) =>
       Effect.fail(
         shellError(
-          `The Electron shell exited with code ${code} before ${what}.` +
+          `The Electron shell exited with code ${code} before ${options.what}.` +
             (stderr === '' ? '' : `\n${stderr}`),
         ),
       ),
@@ -216,7 +240,7 @@ const awaitEvent = Effect.fn('awaitEvent')(function* <Type extends ShellEvent['t
     Effect.catchTag('TimeoutError', () =>
       Effect.fail(
         shellError(
-          `The Electron shell did not report ${what} within the start-up timeout. ` +
+          `The Electron shell did not report ${options.what} within the start-up timeout. ` +
             'Run the command again; if it keeps failing, ' +
             'check that the deck URL loads in a browser.',
         ),
@@ -246,11 +270,12 @@ export const startShell = Effect.fn('DeckShell.start')(function* (
   const binary = yield* resolveShellBinary(root, electronDir);
   const shell = yield* spawnShell(root, binary, shellConfig(root, options), options.env);
   const displays = yield* Deferred.make<readonly ShellDisplay[], ShellError>();
-  yield* awaitEvent(shell, 'displays', options.startTimeout, AWAITING_DISPLAYS).pipe(
+  yield* awaitEvent(shell, 'displays', options.startTimeout, { what: AWAITING_DISPLAYS }).pipe(
     Effect.map((event) => event.displays),
     (waiting) => Deferred.into(waiting, displays),
     Effect.forkScoped,
   );
+  const connected = Deferred.await(displays).pipe(Effect.andThen(Ref.get(shell.displays)));
   const closed = Deferred.await(shell.exited).pipe(
     Effect.flatMap(({ code, stderr }) => {
       if (code === 0) {
@@ -270,12 +295,29 @@ export const startShell = Effect.fn('DeckShell.start')(function* (
   const open = Effect.fn('DeckShell.open')(function* (
     target: ShellOpenOptions,
   ): Effect.fn.Return<ShellSession, ShellError | CliError, Scope.Scope> {
-    const known = yield* Deferred.await(displays);
+    const known = yield* connected;
     const plan = yield* planWindows(target.flags, known);
     // Closes the window before anything the caller started after the shell, such as the server.
-    yield* Effect.addFinalizer(() => quit);
+    const selection = target.selection;
+    yield* Effect.addFinalizer(() => {
+      if (selection === undefined) {
+        return quit;
+      }
+
+      return shell.send({ type: 'close-deck', requestId: selection.key }).pipe(
+        Effect.andThen(
+          awaitEvent(shell, 'deck-closed', options.startTimeout, {
+            what: 'the deck closed',
+            ignoreErrors: true,
+            requestId: selection.key,
+          }),
+        ),
+        Effect.ignore,
+      );
+    });
     yield* shell.send({
       type: 'open',
+      ...(selection === undefined ? {} : { requestId: selection.key, stateKey: selection.deck }),
       plan: plan.plan,
       target: {
         url: target.url,
@@ -284,7 +326,10 @@ export const startShell = Effect.fn('DeckShell.start')(function* (
         ...(target.agentCode === undefined ? {} : { agentCode: target.agentCode }),
       },
     });
-    const ready = yield* awaitEvent(shell, 'ready', options.startTimeout, 'the window loaded');
+    const ready = yield* awaitEvent(shell, 'ready', options.startTimeout, {
+      what: 'the window loaded',
+      ...(selection === undefined ? {} : { requestId: selection.key }),
+    });
     return {
       displays: known,
       plan,
@@ -297,7 +342,12 @@ export const startShell = Effect.fn('DeckShell.start')(function* (
       quit,
     };
   });
-  return { displays: Deferred.await(displays), open };
+  const openChooser = Effect.fn('DeckShell.openChooser')(function* (target: ShellChooserTarget) {
+    yield* shell.send({ type: 'open-chooser', target });
+    yield* awaitEvent(shell, 'chooser-ready', options.startTimeout, { what: 'the chooser loaded' });
+    return { closed };
+  });
+  return { displays: connected, open, openChooser };
 });
 
 /**
@@ -323,6 +373,6 @@ export const listShellDisplays = Effect.fn('DeckShell.listDisplays')(function* (
     { url: 'http://127.0.0.1/', listOnly: true, profileDir: shellProfileDir(root) },
     {},
   );
-  const first = yield* awaitEvent(shell, 'displays', timeout, AWAITING_DISPLAYS);
+  const first = yield* awaitEvent(shell, 'displays', timeout, { what: AWAITING_DISPLAYS });
   return first.displays;
 });

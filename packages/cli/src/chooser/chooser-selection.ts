@@ -22,6 +22,11 @@ export type ChooserDeck = {
    * Keeps the launcher open when the deck uses a separate operator window.
    */
   readonly stayOnChooser?: boolean;
+
+  /**
+   * Focuses an already open deck without starting another copy.
+   */
+  readonly focus?: Effect.Effect<void>;
 };
 
 /**
@@ -146,6 +151,7 @@ export const makeChooserSelection = Effect.fn('makeChooserSelection')(function* 
 
       if (active !== undefined) {
         if (active.name === name) {
+          yield* active.deck.focus ?? Effect.void;
           return { kind: 'opened', deck: active.deck };
         }
 

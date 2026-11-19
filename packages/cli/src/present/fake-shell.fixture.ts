@@ -146,6 +146,7 @@ export function fakeShell(options: FakeShellOptions = {}): FakeShell {
     );
     const startedShell: StartedShell = {
       displays: Effect.succeed(displays),
+      openChooser: () => Effect.succeed({ closed: Deferred.await(closed) }),
       open: Effect.fn('fakeShell.open')(function* (target) {
         opened.push({ ...startOptions, ...target });
         if (options.startTimesOut === true) {

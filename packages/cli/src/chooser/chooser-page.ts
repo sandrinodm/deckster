@@ -10,6 +10,7 @@ const CHOOSER_STYLES = `
 .card { width: 100%; color: inherit; font: inherit; text-align: left; padding: 0; }
 button.card { cursor: pointer; }
 button.card:hover { border-color: var(--accent); }
+button:disabled { cursor: wait; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
 .controls a { color: var(--accent); }
@@ -22,6 +23,8 @@ button.card:hover { border-color: var(--accent); }
 .status:empty { margin: 0; }
 .status { margin: 16px 0 0; }
 .status[data-error="true"] { color: var(--accent); }
+.conflict { max-width: 36ch; font: inherit; }
+.conflict menu { display: flex; gap: 12px; justify-content: flex-end; padding: 0; }
 `;
 
 /**
@@ -123,13 +126,26 @@ function renderOperator(
   const empty = 'No decks found. Run <code>deck new &lt;name&gt;</code> to create one.';
   const protocol = [HTTP_CONFLICT, HTTP_START_FAILED, SELECTION_HEADER] as const;
   const script = chooserClient.toString();
-  const args = [base, returning ?? null, protocol].map((value) => JSON.stringify(value)).join(', ');
+  const args = [base, returning ?? null, protocol, desktop]
+    .map((value) => JSON.stringify(value))
+    .join(', ');
   const list = deckCount === 0 ? `<p class="empty">${empty}</p>` : `<ul class="grid">${cards}</ul>`;
   return `<div class="controls" ${label === '' ? 'hidden' : ''}>
 <a href="${base}current" ${desktop ? 'hidden' : ''}>${label}</a>
-<button type="button" data-close>Close deck</button>
+<button type="button" data-close>${desktop ? 'Back to decks' : 'Close deck'}</button>
 </div>
 <div class="status" role="status" aria-live="polite"></div>
+${
+  desktop
+    ? `<dialog class="conflict" aria-labelledby="deck-chooser-conflict">
+<form method="dialog">
+<p id="deck-chooser-conflict"></p>
+<menu><button value="cancel" autofocus>Keep presenting</button>
+<button value="leave">Stop agent and leave deck</button></menu>
+</form>
+</dialog>`
+    : ''
+}
 ${list}
 <script nonce="${nonce}">(${script})(${args});</script>`;
 }
@@ -163,11 +179,16 @@ function chooserClient(
   base: string,
   returning: string | null,
   [conflict, failed, selectionHeader]: readonly [number, number, string],
+  desktop: boolean,
 ): void {
   const status = document.querySelector<HTMLElement>('.status');
   const fallback = 'The deck chooser could not complete this request.';
   const closing = 'Closing deck…';
+  const conflictDialog = document.querySelector<HTMLDialogElement>('dialog.conflict');
   const controls = document.querySelector<HTMLElement>('.controls');
+  const cards = document.querySelectorAll<HTMLButtonElement>('button[data-deck]');
+  const close = document.querySelector<HTMLButtonElement>('[data-close]');
+  const selectionButtons = close === null ? [...cards] : [...cards, close];
   const covers = document.querySelectorAll<HTMLImageElement>('img[data-cover]');
   let pending = false;
 
@@ -184,25 +205,29 @@ function chooserClient(
   /**
    * Requests a selection change and prompts before stopping a running agent.
    */
-  async function change(action: string, label: string): Promise<void> {
+  async function change(action: string, label: string, selection = returning): Promise<boolean> {
     if (pending) {
-      return;
+      return false;
     }
 
     pending = true;
+    for (const button of selectionButtons) {
+      button.disabled = true;
+    }
+
     message(label);
     try {
       const route = new URL(base + action, window.location.origin);
-      if (returning !== null && action === 'close') {
-        route.searchParams.set('selection', returning);
+      if (selection !== null && action === 'close') {
+        route.searchParams.set('selection', selection);
       }
 
       let response = await fetch(route, { method: 'POST' });
       if (response.status === conflict) {
         const prompt = await response.text();
-        if (!window.confirm(prompt)) {
+        if (!(await confirmChange(prompt))) {
           message('');
-          return;
+          return false;
         }
 
         const confirmation = response.headers.get(selectionHeader) ?? '';
@@ -219,30 +244,89 @@ function chooserClient(
           controls.hidden = true;
         }
 
-        return;
+        return false;
       }
 
       if (detail !== '') {
         window.location.assign(detail);
-        return;
+        return true;
+      }
+
+      if (desktop) {
+        const closingDeck = action === 'close';
+        if (controls !== null) {
+          controls.hidden = closingDeck;
+        }
+
+        message('');
+        return true;
       }
 
       window.location.reload();
+      return true;
     } catch {
       message(fallback, true);
+      return false;
     } finally {
       pending = false;
+      for (const button of selectionButtons) {
+        button.disabled = false;
+      }
     }
   }
 
-  for (const button of document.querySelectorAll<HTMLButtonElement>('button[data-deck]')) {
+  /**
+   * Uses an in-page dialog in Electron, where Chromium dialogs are disabled for every window.
+   */
+  function confirmChange(prompt: string): boolean | Promise<boolean> {
+    if (conflictDialog === null) {
+      return window.confirm(prompt);
+    }
+
+    const copy = conflictDialog.querySelector('p');
+    if (copy !== null) {
+      copy.textContent = prompt;
+    }
+
+    conflictDialog.returnValue = '';
+    return new Promise((resolve) => {
+      conflictDialog.addEventListener(
+        'close',
+        () => resolve(conflictDialog.returnValue === 'leave'),
+        { once: true },
+      );
+      conflictDialog.showModal();
+    });
+  }
+
+  if (desktop) {
+    window.addEventListener('deckster:return-to-chooser', (event) => {
+      if (!(event instanceof CustomEvent)) {
+        return;
+      }
+
+      const detail: unknown = event.detail;
+      if (typeof detail !== 'object' || detail === null) {
+        return;
+      }
+
+      if ('done' in detail && 'selection' in detail) {
+        const { done, selection } = detail;
+        if (typeof done === 'function' && typeof selection === 'string') {
+          void change('close', closing, selection).then((closed) => done(closed));
+        }
+      }
+    });
+  }
+
+  for (const button of cards) {
     button.addEventListener('click', () => {
       const name = button.dataset.deck ?? '';
       void change('open/' + encodeURIComponent(name), 'Opening ' + name + '…');
     });
   }
 
-  document.querySelector('[data-close]')?.addEventListener('click', () => {
+  close?.addEventListener('click', () => {
     void change('close', closing);
   });
   window.addEventListener('pageshow', ({ persisted }) => {

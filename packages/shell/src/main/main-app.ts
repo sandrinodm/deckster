@@ -1,12 +1,23 @@
 import { app, BrowserWindow, ipcMain, Menu, powerSaveBlocker, screen, session } from 'electron';
 import { fileURLToPath } from 'node:url';
 
-import type { ShellCommand, ShellEvent, ShellTarget } from '#protocol/shell-messages.ts';
+import type {
+  ShellCommand,
+  ShellEvent,
+  ShellPlan,
+  ShellTarget,
+  ShellWindowRole,
+} from '#protocol/shell-messages.ts';
 
 import { APP_NAME, isStockElectron } from '#bundle/app-identity.ts';
 import { adoptTarget } from '#main/adopt-target.ts';
 import { installAgentCodeGuard } from '#main/agent-code.ts';
 import { appIconPath } from '#main/app-icon.ts';
+import {
+  backToDecksChannel,
+  createChooserWindow,
+  installReturnControl,
+} from '#main/chooser-window.ts';
 import { readConfig, readTestOptions } from '#main/config.ts';
 import { clearSession, installFrameSandbox } from '#main/deck-session.ts';
 import { listDisplays, watchDisplays } from '#main/displays.ts';
@@ -57,6 +68,8 @@ process.on('exit', () => removeTemporaryProfile(profile));
  * carries a target.
  */
 let appOrigin: string | undefined;
+let deckPartition: string | undefined;
+let desktopSelection: { readonly plan: ShellPlan; readonly requestId: string } | undefined;
 
 /**
  * Clears the default session in the background, started right after the displays are sent.
@@ -82,7 +95,8 @@ function leave(code: number): void {
   }
 
   leaving = true;
-  manager?.destroyAll();
+  chooser.window()?.destroy();
+  manager.destroyAll();
   power.release();
   app.exit(code);
 }
@@ -130,6 +144,11 @@ app.setName(
 );
 
 /**
+ * The gallery window stays independent of the active deck windows and their partition.
+ */
+const chooser = createChooserWindow(screen, testOptions, () => leave(0), report);
+
+/**
  * Creates and moves the shell's windows.
  */
 const manager = createWindowManager({
@@ -142,6 +161,9 @@ const manager = createWindowManager({
   quit: () => leave(0),
   platform: process.platform,
   report,
+  returnToChooser,
+  audienceMoved: placeChooser,
+  updateReturnControl,
 });
 
 /**
@@ -150,6 +172,7 @@ const manager = createWindowManager({
 const writer = createEventWriter(process.stdout, () => leave(0));
 
 app.on('window-all-closed', () => leave(0));
+app.on('before-quit', () => leave(0));
 
 /**
  * Applies one command from the CLI.
@@ -158,6 +181,15 @@ const handle = createCommandHandler({
   windows: manager,
   hasTarget: () => manager.hasTarget(),
   adoptTarget: adopt,
+  openChooser: async (target) => {
+    installMenu(false);
+    return chooser.open(target);
+  },
+  placeChooser: (plan, requestId) => {
+    desktopSelection = { plan, requestId };
+    placeChooser();
+  },
+  closeDeck: closeSelection,
   leaving: () => leaving,
   installMenu: (kiosk) => installMenu(kiosk),
   send,
@@ -192,23 +224,114 @@ async function activateDock(): Promise<void> {
  *
  * @param target - The deck, from the configuration or an `open` command.
  */
-function adopt(target: ShellTarget): Promise<void> {
-  return adoptTarget(target, {
-    sessionFor: (partition) => session.fromPartition(partition),
-    installHooks: (deckSession, origin) => {
-      installPermissions(deckSession, origin);
-      installDownloadPolicy(deckSession, report);
-      installAgentCodeGuard(deckSession, origin);
-      installFrameSandbox(deckSession, origin);
+function adopt(target: ShellTarget, stateKey?: string): Promise<void> {
+  return adoptTarget(
+    target,
+    {
+      sessionFor: (partition) => session.fromPartition(partition),
+      installHooks: (deckSession, origin) => {
+        installPermissions(deckSession, origin);
+        installDownloadPolicy(deckSession, report);
+        installAgentCodeGuard(deckSession, origin);
+        installFrameSandbox(deckSession, origin);
+      },
+      setName: (name) => app.setName(appNameFor(process.platform, name)),
+      defaultCleared: () => defaultCleared,
+      activateDock,
+      setTarget: (windowTarget) => {
+        manager.setTarget(windowTarget);
+        appOrigin = new URL(windowTarget.url).origin;
+        deckPartition = windowTarget.partition;
+      },
     },
-    setName: (name) => app.setName(appNameFor(process.platform, name)),
-    defaultCleared: () => defaultCleared,
-    activateDock,
-    setTarget: (windowTarget) => {
-      manager.setTarget(windowTarget);
-      appOrigin = new URL(windowTarget.url).origin;
-    },
+    stateKey,
+  );
+}
+
+/**
+ * Requests a return to the chooser and lets the operator confirm stopping a busy agent.
+ */
+function returnToChooser(): boolean {
+  if (leaving || chooser.window() === undefined || desktopSelection === undefined) {
+    return false;
+  }
+
+  const returningFrom = manager.current();
+  chooser.requestReturn(desktopSelection.requestId, () => {
+    placeChooser();
+    if (returningFrom !== undefined && !returningFrom.isDestroyed()) {
+      returningFrom.focus();
+    }
   });
+  return true;
+}
+
+/**
+ * Shows the return control in the presenter or a windowed operator's sole-display audience view.
+ */
+function mayReturn(role: ShellWindowRole): boolean {
+  const plan = desktopSelection?.plan;
+  if (chooser.window() === undefined || plan === undefined) {
+    return false;
+  }
+
+  const operatorOnly = !plan.audience.fullscreen && plan.presenter === undefined && !plan.kiosk;
+  return role === 'presenter' || (operatorOnly && screen.getAllDisplays().length === 1);
+}
+
+/**
+ * Changes the control only on the currently trusted page. It can appear or disappear after a
+ * display is connected or disconnected.
+ */
+function updateReturnControl(win: BrowserWindow, role: ShellWindowRole): void {
+  if (chooser.window() === undefined || win.isDestroyed()) {
+    return;
+  }
+
+  const url = URL.parse(win.webContents.getURL());
+  if (appOrigin !== undefined && url?.origin === appOrigin) {
+    installReturnControl(win.webContents, mayReturn(role));
+  }
+}
+
+/**
+ * Moves the chooser off the audience display when the plan or the connected displays change.
+ */
+function placeChooser(): void {
+  const plan = desktopSelection?.plan;
+  if (plan === undefined) {
+    return;
+  }
+
+  const audienceDisplay = manager.audienceDisplay() ?? plan.audience.displayId;
+  chooser.place(audienceDisplay, plan.presenter?.displayId, true);
+  const audience = manager.audience();
+  if (audience !== undefined) {
+    updateReturnControl(audience, 'audience');
+  }
+}
+
+/**
+ * Discards the deck's Chromium storage and connections before the CLI stops its server.
+ */
+async function closeSelection(): Promise<void> {
+  const plan = desktopSelection?.plan;
+  const partition = deckPartition;
+  appOrigin = undefined;
+  deckPartition = undefined;
+  desktopSelection = undefined;
+  manager.closeDeck();
+  if (partition !== undefined) {
+    const retired = session.fromPartition(partition);
+    await retired.closeAllConnections().catch(() => undefined);
+    await clearSession(retired);
+  }
+
+  installMenu(false);
+  app.setName(appNameFor(process.platform, APP_NAME));
+  if (plan !== undefined) {
+    chooser.place(plan.audience.displayId, plan.presenter?.displayId, false);
+  }
 }
 
 /**
@@ -232,9 +355,10 @@ function installMenu(kiosk: boolean): void {
           manager.moveToNextDisplay(win);
         }
       },
-      reload: () => manager.current()?.webContents.reload(),
+      reload: () => (manager.current() ?? chooser.window())?.webContents.reload(),
       toggleDevTools: () => manager.current()?.webContents.toggleDevTools(),
       quit: () => leave(0),
+      ...(chooser.window() === undefined ? {} : { backToDecks: returnToChooser }),
     },
     process.platform,
     APP_NAME,
@@ -248,9 +372,11 @@ function installMenu(kiosk: boolean): void {
  *
  * @param event - The IPC event.
  */
-function isTrusted(event: { senderFrame?: { url: string } | null }): boolean {
-  const url = event.senderFrame?.url;
+function isTrusted(event: Electron.IpcMainInvokeEvent): boolean {
+  const frame = event.senderFrame;
+  const url = frame?.url;
   return (
+    frame === event.sender.mainFrame &&
     url !== undefined &&
     appOrigin !== undefined &&
     URL.canParse(url) &&
@@ -285,6 +411,15 @@ function handleIpc(
 function senderWindow(event: Electron.IpcMainInvokeEvent): BrowserWindow | undefined {
   return BrowserWindow.fromWebContents(event.sender) ?? undefined;
 }
+
+handleIpc(backToDecksChannel, (event) => {
+  const win = senderWindow(event);
+  if (win === manager.window('presenter') && mayReturn('presenter')) {
+    returnToChooser();
+  } else if (win === manager.audience() && mayReturn('audience')) {
+    returnToChooser();
+  }
+});
 
 handleIpc('deck-shell:displays', () => listDisplays(screen));
 handleIpc('deck-shell:open-presenter', (_event, displayId) => {
@@ -379,7 +514,10 @@ void app.whenReady().then(async () => {
     return;
   }
 
-  watchDisplays(screen, () => send({ type: 'displays', displays: listDisplays(screen) }));
+  watchDisplays(screen, () => {
+    placeChooser();
+    send({ type: 'displays', displays: listDisplays(screen) });
+  });
   started = true;
   if (config.plan !== undefined) {
     handle({ type: 'open', plan: config.plan });

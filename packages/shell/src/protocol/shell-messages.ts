@@ -162,6 +162,27 @@ export type ShellTarget = {
 };
 
 /**
+ * The chooser address and the preferred operator display. The shell falls back to another
+ * non-audience display if the topology changes.
+ */
+export type ShellChooserTarget = {
+  /**
+   * The loopback URL of the chooser document.
+   */
+  url: string;
+
+  /**
+   * The display where the audience will open.
+   */
+  audienceDisplayId: number;
+
+  /**
+   * The preferred separate operator display.
+   */
+  operatorDisplayId: number | undefined;
+};
+
+/**
  * Everything the shell writes to its standard output, one JSON object per line.
  */
 export type ShellEvent =
@@ -182,6 +203,11 @@ export type ShellEvent =
        * The audience window has loaded the page.
        */
       type: 'ready';
+
+      /**
+       * Correlates desktop selection requests with their own readiness event.
+       */
+      requestId?: string;
 
       /**
        * The windows now open.
@@ -254,9 +280,36 @@ export type ShellEvent =
     }
   | {
       /**
+       * The chooser document has finished loading.
+       */
+      type: 'chooser-ready';
+
+      /**
+       * The display where the operator window was placed.
+       */
+      displayId: number;
+    }
+  | {
+      /**
+       * The previous audience and presenter windows and their session are retired.
+       */
+      type: 'deck-closed';
+
+      /**
+       * The selection request that initiated the close.
+       */
+      requestId: string;
+    }
+  | {
+      /**
        * Something failed.
        */
       type: 'error';
+
+      /**
+       * The selection request that failed, when the chooser is open.
+       */
+      requestId?: string;
 
       /**
        * What failed.
@@ -275,6 +328,16 @@ export type ShellCommand =
       type: 'open';
 
       /**
+       * Required for an open that belongs to a chooser selection.
+       */
+      requestId?: string;
+
+      /**
+       * The selected deck's window-state key.
+       */
+      stateKey?: string;
+
+      /**
        * Where the windows go.
        */
       plan: ShellPlan;
@@ -284,6 +347,28 @@ export type ShellCommand =
        * shell already has one.
        */
       target?: ShellTarget;
+    }
+  | {
+      /**
+       * Opens the chooser in its own operator window.
+       */
+      type: 'open-chooser';
+
+      /**
+       * The chooser document and preferred display.
+       */
+      target: ShellChooserTarget;
+    }
+  | {
+      /**
+       * Closes the deck windows and clears their session.
+       */
+      type: 'close-deck';
+
+      /**
+       * The identifier of the selection to close.
+       */
+      requestId: string;
     }
   | {
       /**
@@ -397,6 +482,14 @@ export function decodeEvent(line: string): Decoded<ShellEvent> {
         : bad('displays needs a list of displays');
     case 'ready':
       return isReady(value) ? ok(value) : bad('ready needs windows, url, title and hasDeck');
+    case 'chooser-ready':
+      return isFiniteNumber(value['displayId'])
+        ? ok({ type: 'chooser-ready', displayId: value['displayId'] })
+        : bad('chooser-ready needs a displayId');
+    case 'deck-closed':
+      return typeof value['requestId'] === 'string'
+        ? ok({ type: 'deck-closed', requestId: value['requestId'] })
+        : bad('deck-closed needs a requestId');
     case 'window-opened':
       return isWindowInfo(value['info'])
         ? ok({ type: 'window-opened', info: value['info'] })
@@ -415,7 +508,11 @@ export function decodeEvent(line: string): Decoded<ShellEvent> {
         : bad('captured needs a path');
     case 'error':
       return typeof value['message'] === 'string'
-        ? ok({ type: 'error', message: value['message'] })
+        ? ok({
+            type: 'error',
+            message: value['message'],
+            ...readRequestId(value),
+          })
         : bad('error needs a message');
     default:
       return bad(`unknown event type ${JSON.stringify(value['type'])}`);
@@ -444,10 +541,28 @@ export function decodeCommand(line: string): Decoded<ShellCommand> {
       }
 
       const target = decodeTarget(value['target']);
-      return typeof target === 'string'
-        ? bad(target)
-        : ok({ type: 'open', plan: value['plan'], target });
+      if (typeof target === 'string') {
+        return bad(target);
+      }
+
+      return ok({
+        type: 'open',
+        plan: value['plan'],
+        target,
+        ...readRequestId(value),
+        ...(typeof value['stateKey'] === 'string' ? { stateKey: value['stateKey'] } : {}),
+      });
     }
+    case 'open-chooser': {
+      const target = readChooserTarget(value['target']);
+      return target === undefined
+        ? bad('open-chooser needs a loopback url and display IDs')
+        : ok({ type: 'open-chooser', target });
+    }
+    case 'close-deck':
+      return typeof value['requestId'] === 'string'
+        ? ok({ type: 'close-deck', requestId: value['requestId'] })
+        : bad('close-deck needs a requestId');
     case 'list-displays':
       return ok({ type: 'list-displays' });
     case 'open-presenter':
@@ -473,6 +588,33 @@ export function decodeCommand(line: string): Decoded<ShellCommand> {
     default:
       return bad(`unknown command type ${JSON.stringify(value['type'])}`);
   }
+}
+
+/**
+ * Reads the optional selection identifier without including unrecognised fields.
+ */
+function readRequestId(value: Record<string, unknown>): { requestId?: string } {
+  return typeof value['requestId'] === 'string' ? { requestId: value['requestId'] } : {};
+}
+
+/**
+ * Reads the chooser address and proposed operator placement.
+ */
+function readChooserTarget(value: unknown): ShellChooserTarget | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const { url, audienceDisplayId, operatorDisplayId } = value;
+  if (typeof url !== 'string' || !isLoopbackHttpUrl(url) || !isFiniteNumber(audienceDisplayId)) {
+    return undefined;
+  }
+
+  if (operatorDisplayId !== undefined && !isFiniteNumber(operatorDisplayId)) {
+    return undefined;
+  }
+
+  return { url, audienceDisplayId, operatorDisplayId };
 }
 
 /**
@@ -613,7 +755,8 @@ function isReady(value: Record<string, unknown>): value is Extract<ShellEvent, {
     value['windows'].every(isWindowInfo) &&
     typeof value['url'] === 'string' &&
     typeof value['title'] === 'string' &&
-    typeof value['hasDeck'] === 'boolean'
+    typeof value['hasDeck'] === 'boolean' &&
+    (value['requestId'] === undefined || typeof value['requestId'] === 'string')
   );
 }
 

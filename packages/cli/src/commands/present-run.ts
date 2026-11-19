@@ -7,19 +7,21 @@ import { Console, Effect } from 'effect';
 import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 
+import type { ChooserLink } from '#chooser/chooser-link.ts';
+import type { ChooserDeck } from '#chooser/chooser-selection.ts';
 import type { AgentFlags } from '#server/dev-server.ts';
 
 import { AGENT_ARG_OPTIONS, readAgentFlags } from '#agent/agent-flag-options.ts';
-import { chooseDeck, defaultDeck } from '#choose-deck.ts';
+import { chooseInteractiveDeck } from '#chooser/deck-choice.ts';
 import { cliError, usageError, type CliError } from '#cli-error.ts';
 import { EXIT_OK, type Command, type CommandError, type CommandServices } from '#command.ts';
 import { printJson, withJsonErrors } from '#json-output.ts';
 import { parseCommandArgs, readBrandName, readPort } from '#parse-command-args.ts';
 import { BrowserOpener } from '#present/browser-fallback.ts';
-import { DEFAULT_START_TIMEOUT, DeckShell } from '#present/deck-shell.ts';
-import { describeDisplays, type PlanFlags } from '#present/window-plan.ts';
-import { awaitShutdown } from '#server/shutdown.ts';
-import { DEFAULT_DECK, Workspace } from '#workspace.ts';
+import { DEFAULT_START_TIMEOUT, DeckShell, type StartedShell } from '#present/deck-shell.ts';
+import { describeDisplays, planWindows, type PlanFlags } from '#present/window-plan.ts';
+import { awaitShutdown, bindQuitKey } from '#server/shutdown.ts';
+import { Workspace } from '#workspace.ts';
 
 /**
  * The bytes of randomness in the window's one-time code (32 characters in base64url).
@@ -305,8 +307,7 @@ const runPresent = Effect.fn('deck.present')(function* (
     );
   }
 
-  const deckName =
-    (yield* chooseDeck(positionals[0], yield* defaultDeck(workspaceRoot))) ?? DEFAULT_DECK;
+  const { deck } = yield* chooseInteractiveDeck(workspaceRoot, positionals[0], 'present');
   if (agent !== undefined) {
     // A bad --agent value is a usage error, reported before Electron starts.
     const { resolveAgentSetup } = yield* Effect.tryPromise({
@@ -319,16 +320,168 @@ const runPresent = Effect.fn('deck.present')(function* (
     yield* resolveAgentSetup('present', agent);
   }
 
-  // The shell boots while the deck is found, loaded and served; nothing is waited for until `open`.
+  const flags: PlanFlags = {
+    fullscreen: values.fullscreen,
+    kiosk: values.kiosk,
+    display,
+    presenter: values.presenter,
+    presenterDisplay,
+  };
+  const options = {
+    workspaceRoot,
+    port,
+    brand,
+    agent,
+    flags,
+    built: values.built,
+    browser: values.browser,
+    verbose: values.verbose,
+  };
   const started = values.browser
     ? undefined
     : yield* shell.start({
-        stateKey: deckName,
+        stateKey: deck ?? '/chooser',
         stateFile: path.join(workspaceRoot, '.deck', 'shell', 'windows.json'),
         startTimeout: DEFAULT_START_TIMEOUT,
         env: {},
       });
-  const modules = yield* loadPresentModules(values.built, agent !== undefined);
+  if (deck === undefined) {
+    yield* presentChooser(options, started);
+  } else {
+    const target = yield* openPresentation(options, deck, started);
+    if (target.closed === undefined) {
+      yield* openInBrowser(target.url);
+      yield* awaitShutdown;
+    } else {
+      yield* Effect.raceFirst(target.closed, awaitShutdown);
+    }
+  }
+
+  return EXIT_OK;
+});
+
+/**
+ * The shared launch settings for direct and chooser presentations.
+ */
+type PresentationOptions = {
+  /**
+   * The workspace containing deck and brand folders.
+   */
+  readonly workspaceRoot: string;
+
+  /**
+   * The requested listener port, if any.
+   */
+  readonly port: number | undefined;
+
+  /**
+   * The requested development brand override, if any.
+   */
+  readonly brand: string | undefined;
+
+  /**
+   * The development agent settings, if enabled.
+   */
+  readonly agent: AgentFlags | undefined;
+
+  /**
+   * The audience and presenter window placement settings.
+   */
+  readonly flags: PlanFlags;
+
+  /**
+   * Whether to serve a static build.
+   */
+  readonly built: boolean;
+
+  /**
+   * Whether the presentation runs inside a browser.
+   */
+  readonly browser: boolean;
+
+  /**
+   * Whether to print Vite's full log.
+   */
+  readonly verbose: boolean;
+};
+
+/**
+ * Keeps one launcher and shell alive while selections open and close in their own scopes.
+ */
+const presentChooser = Effect.fn('deck.present.chooser')(function* (
+  options: PresentationOptions,
+  started: StartedShell | undefined,
+): Effect.fn.Return<void, CommandError, CommandServices> {
+  const operator =
+    started === undefined ? undefined : yield* planWindows(options.flags, yield* started.displays);
+  const { startDeckChooser } = yield* Effect.promise(() => import('#chooser/chooser-server.ts'));
+  const { url } = yield* startDeckChooser({
+    ...options,
+    host: false,
+    desktop: started !== undefined,
+    open: (deck, chooser) =>
+      openPresentation({ ...options, port: 0 }, deck, started, chooser).pipe(
+        Effect.map(({ url, busy, focus }): ChooserDeck => ({
+          url,
+          stayOnChooser: started !== undefined,
+          ...(busy === undefined ? {} : { busy }),
+          ...(focus === undefined ? {} : { focus }),
+        })),
+      ),
+  });
+  yield* bindQuitKey;
+  yield* Console.log(`  Deck chooser: ${url}`);
+  if (started === undefined || operator === undefined) {
+    yield* openInBrowser(url);
+    yield* awaitShutdown;
+    return;
+  }
+
+  const launcher = yield* started.openChooser({
+    url,
+    audienceDisplayId: operator.plan.audience.displayId,
+    operatorDisplayId: operator.plan.presenter?.displayId,
+  });
+  yield* Console.log('Choose a deck in Deckster. Close the chooser or press Ctrl+C to quit.');
+  yield* Effect.raceFirst(launcher.closed, awaitShutdown);
+});
+
+/**
+ * The selection's listening address, busy state, and desktop window controls.
+ */
+type OpenPresentation = {
+  /**
+   * The served deck URL.
+   */
+  readonly url: string;
+
+  /**
+   * Checks whether the active agent has work in progress.
+   */
+  readonly busy?: Effect.Effect<boolean>;
+
+  /**
+   * Brings the already open presentation to the foreground.
+   */
+  readonly focus?: Effect.Effect<void>;
+
+  /**
+   * Completes if the Electron process exits.
+   */
+  readonly closed?: Effect.Effect<void, CommandError>;
+};
+
+/**
+ * Serves one deck and opens its role windows when running in Electron. The caller owns its scope.
+ */
+const openPresentation = Effect.fn('deck.present.open')(function* (
+  options: PresentationOptions,
+  deckName: string,
+  started: StartedShell | undefined,
+  chooser?: ChooserLink,
+): Effect.fn.Return<OpenPresentation, CommandError, CommandServices> {
+  const { workspaceRoot, brand, port, built, agent, browser, verbose, flags } = options;
+  const modules = yield* loadPresentModules(built, agent !== undefined);
   const location = yield* modules.plugin.findDeck(workspaceRoot, deckName);
   const loaded = yield* modules.plugin.loadDeck(workspaceRoot, location);
   const brandName = brand ?? loaded.config.brand ?? DEFAULT_BRAND;
@@ -337,45 +490,30 @@ const runPresent = Effect.fn('deck.present')(function* (
     loadedBrand.tokens.surfaces[DEFAULT_SURFACE]?.roles.bg ?? FALLBACK_BACKGROUND_COLOR;
   // The window's first page load presents this code and gets the dev session; nothing else does.
   const agentCode =
-    values.browser || values.built
-      ? undefined
-      : randomBytes(AGENT_CODE_BYTES).toString('base64url');
-  const url = yield* serveDeck({
+    browser || built ? undefined : randomBytes(AGENT_CODE_BYTES).toString('base64url');
+  const { url, busy } = yield* serveDeck({
     modules,
     workspaceRoot,
     location,
     brand,
     port,
-    built: values.built,
     agent,
     agentCode,
-    verbose: values.verbose,
+    verbose,
+    chooser: chooser === undefined ? undefined : { ...chooser, desktop: started !== undefined },
   });
   yield* Console.log(`Presenting ${deckName} at ${url}`);
   if (started === undefined) {
-    const opening = yield* (yield* BrowserOpener).open(url);
-    yield* Console.log(
-      opening === 'chrome-app'
-        ? 'Opened Chrome in app mode. Press Ctrl+C here to stop the server.'
-        : 'Opened your default browser. Press Ctrl+C here to stop the server.',
-    );
-    yield* awaitShutdown;
-    return EXIT_OK;
+    return { url, ...(busy === undefined ? {} : { busy }) };
   }
 
-  const flags: PlanFlags = {
-    fullscreen: values.fullscreen,
-    kiosk: values.kiosk,
-    display,
-    presenter: values.presenter,
-    presenterDisplay,
-  };
   const session = yield* started.open({
     url,
     title: clampShellTitle(loaded.config.title),
     backgroundColor,
     flags,
     ...(agentCode === undefined ? {} : { agentCode }),
+    ...(chooser === undefined ? {} : { selection: { key: chooser.key, deck: deckName } }),
   });
   for (const note of session.plan.notes) {
     yield* Console.log(note);
@@ -394,10 +532,16 @@ const runPresent = Effect.fn('deck.present')(function* (
       : `, presenter on display ${session.plan.presenterIndex}`;
   yield* Console.log(
     `Window open on display ${session.plan.audienceIndex}${presenterNote}. ` +
-      'Close the window or press Ctrl+C to stop.',
+      (chooser === undefined
+        ? 'Close the window or press Ctrl+C to stop.'
+        : 'Use Back to decks to choose another deck, or press Ctrl+C to quit.'),
   );
-  yield* Effect.raceFirst(session.closed, awaitShutdown);
-  return EXIT_OK;
+  return {
+    url,
+    ...(busy === undefined ? {} : { busy }),
+    focus: session.send({ type: 'focus' }),
+    closed: session.closed,
+  };
 });
 
 /**
@@ -430,11 +574,6 @@ type ServeOptions = {
   port: number | undefined;
 
   /**
-   * Whether to serve the static build instead of the dev server.
-   */
-  built: boolean;
-
-  /**
    * The agent flags, handed to the dev server's options.
    */
   agent: AgentFlags | undefined;
@@ -448,6 +587,11 @@ type ServeOptions = {
    * Whether to print the dev server's whole log.
    */
   verbose: boolean;
+
+  /**
+   * The chooser selection, when this deck was opened from the gallery.
+   */
+  chooser: ChooserLink | undefined;
 };
 
 /**
@@ -458,7 +602,11 @@ type ServeOptions = {
  */
 const serveDeck = Effect.fn('serveDeck')(function* (
   options: ServeOptions,
-): Effect.fn.Return<string, CommandError, CommandServices | Scope.Scope> {
+): Effect.fn.Return<
+  Pick<OpenPresentation, 'url' | 'busy'>,
+  CommandError,
+  CommandServices | Scope.Scope
+> {
   const { modules, workspaceRoot, location, port } = options;
   const logLevel = options.verbose ? 'info' : 'warn';
   const { serving } = modules;
@@ -474,13 +622,14 @@ const serveDeck = Effect.fn('serveDeck')(function* (
       printUrls: false,
       command: 'present',
       logLevel,
+      ...(options.chooser === undefined ? {} : { chooser: options.chooser }),
       ...(options.agentCode === undefined ? {} : { agentCode: options.agentCode }),
     });
     if (sessions !== undefined && serving.turnSummaries !== undefined) {
       yield* serving.turnSummaries.printTurnSummaries(sessions);
     }
 
-    return url;
+    return { url, ...(sessions === undefined ? {} : { busy: sessions.busy }) };
   }
 
   yield* Console.log(`Building ${location.id}...`);
@@ -491,6 +640,21 @@ const serveDeck = Effect.fn('serveDeck')(function* (
     port,
     host: false,
     logLevel,
+    ...(options.chooser === undefined ? {} : { chooser: options.chooser }),
   });
-  return server.resolvedUrls?.local[0] ?? `http://localhost:${port ?? PREVIEW_DEFAULT_PORT}/`;
+  return {
+    url: server.resolvedUrls?.local[0] ?? `http://localhost:${port ?? PREVIEW_DEFAULT_PORT}/`,
+  };
+});
+
+/**
+ * Opens the current document in Chrome app mode or the default browser.
+ */
+const openInBrowser = Effect.fn('deck.present.browser')(function* (url: string) {
+  const opening = yield* (yield* BrowserOpener).open(url);
+  yield* Console.log(
+    opening === 'chrome-app'
+      ? 'Opened Chrome in app mode. Press Ctrl+C here to stop the server.'
+      : 'Opened your default browser. Press Ctrl+C here to stop the server.',
+  );
 });

@@ -106,6 +106,11 @@ export type WindowTarget = {
    * outlive the run).
    */
   partition: string;
+
+  /**
+   * Uses the shell config's state key when a chooser has not supplied a selected deck.
+   */
+  stateKey?: string;
 };
 
 /**
@@ -156,6 +161,21 @@ export type WindowManagerDeps = {
    * Where notes about refused links go; standard error in the shell.
    */
   report: (message: string) => void;
+
+  /**
+   * Routes an audience close to the chooser. True means the shell should defer closing.
+   */
+  returnToChooser?: () => boolean;
+
+  /**
+   * Repositions the chooser when the audience moves.
+   */
+  audienceMoved?: () => void;
+
+  /**
+   * Mounts the desktop return control in a trusted window, when eligible.
+   */
+  updateReturnControl?: (win: BrowserWindow, role: ShellWindowRole) => void;
 };
 
 /**
@@ -180,7 +200,17 @@ export type WindowManager = {
    *
    * @param plan - Where the windows go.
    */
-  open: (plan: ShellPlan) => Promise<void>;
+  open: (plan: ShellPlan, requestId?: string) => Promise<void>;
+
+  /**
+   * Destroys the current deck's windows and releases the target for the next selection.
+   */
+  closeDeck: () => void;
+
+  /**
+   * The display that currently contains the audience, if any.
+   */
+  audienceDisplay: () => number | undefined;
 
   /**
    * Opens the presenter window, or focuses (and moves) it when it is open. Before the audience
@@ -263,7 +293,7 @@ export type WindowManager = {
 export function createWindowManager(deps: WindowManagerDeps): WindowManager {
   const { config, test, screen, send, power, platform } = deps;
   const windows = new Map<ShellWindowRole, BrowserWindow>();
-  const quitGate = createQuitGate();
+  let quitGate = createQuitGate();
   const keepsState = !test.hidden && !test.corner && config.stateFile !== undefined;
   let target: (WindowTarget & { origin: string }) | undefined;
   let agentCode = agentCodeOnce(undefined);
@@ -393,7 +423,7 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
     const bounds = win.getBounds();
     writeWindowState(
       config.stateFile,
-      withSavedWindow(readWindowState(config.stateFile), config.stateKey, role, {
+      withSavedWindow(readWindowState(config.stateFile), need().stateKey ?? config.stateKey, role, {
         bounds,
         displayId: screen.getDisplayMatching(bounds).id,
       }),
@@ -412,7 +442,11 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
       return undefined;
     }
 
-    const saved = savedWindow(readWindowState(config.stateFile), config.stateKey, role);
+    const saved = savedWindow(
+      readWindowState(config.stateFile),
+      need().stateKey ?? config.stateKey,
+      role,
+    );
     return restorableBounds(saved, display.id, displays);
   };
 
@@ -457,11 +491,17 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
     };
     win.on('moved', schedule);
     win.on('resized', schedule);
-    win.on('close', () => {
+    win.on('close', (event) => {
+      if (role === 'audience' && deps.returnToChooser?.() === true) {
+        event.preventDefault();
+        return;
+      }
+
       clearTimeout(timer);
       savePosition(role, win);
     });
     win.on('closed', () => {
+      clearTimeout(timer);
       if (windows.get(role) === win) {
         windows.delete(role);
       }
@@ -477,8 +517,13 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
       win.on('leave-full-screen', () => announceFullscreen(role, win, false));
     }
 
+    if (role === 'audience') {
+      win.on('move', () => deps.audienceMoved?.());
+    }
+
     const contents = win.webContents;
     const { origin } = need();
+    contents.on('dom-ready', () => deps.updateReturnControl?.(win, role));
     installNavigationGuards(contents, origin, openExternal);
     contents.on('will-prevent-unload', (event) => event.preventDefault());
     contents.setWindowOpenHandler((details) => {
@@ -530,6 +575,15 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
       }
     });
     contents.on('before-input-event', (event, input) => {
+      const pressed = input.type === 'keyDown' && !input.isAutoRepeat;
+      const withModifier = input.meta || input.control;
+      const returnKey = input.shift && input.key.toLowerCase() === 'b';
+      if (pressed && withModifier && returnKey) {
+        if (deps.returnToChooser?.() === true) {
+          event.preventDefault();
+        }
+      }
+
       const quitKey =
         input.type === 'keyDown' && !input.isAutoRepeat && input.key.toLowerCase() === 'q';
       if (plan?.kiosk === true && quitKey && (input.meta || input.control)) {
@@ -630,7 +684,20 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
       agentCode = agentCodeOnce(next.agentCode);
     },
     hasTarget: () => target !== undefined,
-    open: async (nextPlan) => {
+    closeDeck: () => {
+      for (const [role, win] of windows) {
+        savePosition(role, win);
+      }
+
+      destroyAll();
+      target = undefined;
+      plan = undefined;
+      queuedPresenter = undefined;
+      agentCode = agentCodeOnce(undefined);
+      quitGate = createQuitGate();
+    },
+    audienceDisplay: () => (windows.has('audience') ? currentAudienceDisplay() : undefined),
+    open: async (nextPlan, requestId) => {
       if (windows.has('audience')) {
         throw new Error(
           'The audience window is already open: send focus, open-presenter or move-to-display.',
@@ -681,6 +748,7 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
 
       send({
         type: 'ready',
+        ...(requestId === undefined ? {} : { requestId }),
         windows: [...windows.entries()].map(([role, window]) => infoOf(role, window)),
         url: win.webContents.getURL(),
         title: win.webContents.getTitle(),
