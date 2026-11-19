@@ -1,11 +1,12 @@
 import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import * as NodeServices from '@effect/platform-node/NodeServices';
-import { afterAll, beforeAll, expect, layer } from '@effect/vitest';
+import { afterAll, beforeAll, describe, expect, it, layer } from '@effect/vitest';
 import { Effect } from 'effect';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, fork, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { addBrand, type AddBrandRequest } from '#brand-add/add-brand.ts';
 import { parseBrandSource } from '#brand-add/brand-source.ts';
@@ -16,6 +17,7 @@ import { NETWORK_PROTOCOLS } from '#brand-add/fetch-brand.ts';
  * a user's git configuration may send an https address to SSH.
  */
 const ADDRESS = 'https://example.test/acme/brand-kit.git';
+const SSH_ADDRESS = 'ssh://git@example.test/acme/brand-kit.git';
 
 /**
  * The brand the test repository holds, copied from the framework.
@@ -46,6 +48,7 @@ const saved = new Map(GIT_VARIABLES.map((name) => [name, process.env[name]]));
  * The repository on disk.
  */
 let remote = '';
+let fixtureSsh = '';
 
 /**
  * Runs git synchronously for the fixture, with a fixed identity.
@@ -139,7 +142,12 @@ function request(source: string, options: Partial<AddBrandRequest> = {}): AddBra
 
 beforeAll(() => {
   remote = makeRemote();
-  const config = path.join(scratch('deck-brand-add-git-'), 'gitconfig');
+  const gitDirectory = scratch('deck-brand-add-git-');
+  const config = path.join(gitDirectory, 'gitconfig');
+  fixtureSsh = path.join(gitDirectory, 'fixture-ssh');
+  fs.writeFileSync(fixtureSsh, '#!/bin/sh\nexec git-upload-pack "$DECK_TEST_GIT_REMOTE"\n', {
+    mode: 0o700,
+  });
   fs.writeFileSync(config, `[url "file://${remote}"]\n\tinsteadOf = ${ADDRESS}\n`);
   process.env['GIT_CONFIG_GLOBAL'] = config;
   process.env['GIT_CONFIG_NOSYSTEM'] = '1';
@@ -271,3 +279,166 @@ layer(NodeServices.layer)('addBrand', (it) => {
     }),
   );
 });
+
+const CLI = fileURLToPath(new URL('../bin.ts', import.meta.url));
+const INSTALL_FIXTURE = fileURLToPath(new URL('./brand-install.fixture.ts', import.meta.url));
+const CHILD_TEST_TIMEOUT_MS = 60_000;
+const CHILD_RUNTIME_MS = 25_000;
+
+type CliExit = {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  stdout: string;
+  stderr: string;
+};
+
+type BrandCli = {
+  child: ChildProcess;
+  exit: Promise<CliExit>;
+};
+
+describe('deck brand add publication', () => {
+  it.each([false, true])(
+    'rechecks the target after a concurrent add with force=%s',
+    async (force) => {
+      const root = workspace();
+      const first = startBrandCli(root, false, 'publish');
+      const children = [first];
+      try {
+        await waitForCli(first, 'paused');
+        const second = startBrandCli(root, force);
+        children.push(second);
+        await waitForCli(second, 'waiting');
+        first.child.send('resume');
+
+        const added = await first.exit;
+        expect(added.code, added.stderr).toBe(0);
+        expect(JSON.parse(added.stdout)).toMatchObject({ ok: true, replaced: false });
+        const next = await second.exit;
+        const replaced = { ok: true, replaced: true };
+        const refused = {
+          ok: false,
+          error: { message: expect.stringContaining('Pass --force') },
+        };
+        expect(next.code, next.stderr).toBe(force ? 0 : 1);
+        expect(JSON.parse(next.stdout)).toMatchObject(force ? replaced : refused);
+      } finally {
+        await stopBrandClis(children);
+      }
+    },
+    CHILD_TEST_TIMEOUT_MS,
+  );
+
+  it.each([
+    { point: 'publish', oldRemains: true },
+    { point: 'retire', oldRemains: false },
+  ] as const)(
+    'recovers the right brand after SIGKILL at $point',
+    async ({ point, oldRemains }) => {
+      const root = workspace();
+      const installed = path.join(root, 'brands', BRAND);
+      fs.mkdirSync(installed, { recursive: true });
+      const marker = path.join(installed, 'local.md');
+      fs.writeFileSync(marker, 'keep this installed brand');
+      const first = startBrandCli(root, true, point);
+      const children = [first];
+      try {
+        await waitForCli(first, 'paused');
+        const second = startBrandCli(root, false);
+        children.push(second);
+        await waitForCli(second, 'waiting');
+        first.child.kill('SIGKILL');
+
+        expect((await first.exit).signal).toBe('SIGKILL');
+        const recovered = await second.exit;
+        expect(recovered.code, recovered.stderr).toBe(1);
+        expect(JSON.parse(recovered.stdout)).toMatchObject({
+          ok: false,
+          error: { message: expect.stringContaining('Pass --force') },
+        });
+        expect(fs.existsSync(marker)).toBe(oldRemains);
+        expect(fs.existsSync(path.join(installed, 'brand.ts'))).toBe(!oldRemains);
+        const transaction = path.join(root, 'brands', '.deck', 'brand-add', BRAND);
+        expect(fs.readdirSync(transaction)).toEqual(['lock.sqlite']);
+      } finally {
+        await stopBrandClis(children);
+      }
+    },
+    CHILD_TEST_TIMEOUT_MS,
+  );
+});
+
+function startBrandCli(root: string, force: boolean, pauseAt = ''): BrandCli {
+  const source = `${SSH_ADDRESS}//brands/${BRAND}#v1`;
+  const args = ['brand', 'add', source, '--json'];
+  if (force) {
+    args.push('--force');
+  }
+
+  const child = fork(CLI, args, {
+    cwd: root,
+    execArgv: ['--import', INSTALL_FIXTURE],
+    silent: true,
+    env: {
+      ...process.env,
+      DECK_ROOT: root,
+      DECK_TEST_BRAND_PAUSE: pauseAt,
+      DECK_TEST_BRAND_TARGET: path.join(root, 'brands', BRAND),
+      DECK_TEST_GIT_REMOTE: remote,
+      GIT_ALLOW_PROTOCOL: undefined,
+      GIT_CONFIG_GLOBAL: os.devNull,
+      GIT_SSH: fixtureSsh,
+      GIT_SSH_COMMAND: undefined,
+      GIT_SSH_VARIANT: 'ssh',
+      TMPDIR: root,
+    },
+  });
+  let stdout = '';
+  let stderr = '';
+  child.stdout?.setEncoding('utf8').on('data', (chunk: string) => {
+    stdout += chunk;
+  });
+  child.stderr?.setEncoding('utf8').on('data', (chunk: string) => {
+    stderr += chunk;
+  });
+  const timeout = setTimeout(() => child.kill('SIGKILL'), CHILD_RUNTIME_MS);
+  const exit = new Promise<CliExit>((resolve, reject) => {
+    child.once('error', reject);
+    child.once('close', (code, signal) => {
+      clearTimeout(timeout);
+      resolve({ code, signal, stdout, stderr });
+    });
+  });
+  return { child, exit };
+}
+
+async function waitForCli({ child, exit }: BrandCli, event: string): Promise<void> {
+  let listener: ((message: unknown) => void) | undefined;
+  try {
+    await Promise.race([
+      new Promise<void>((resolve) => {
+        listener = (message) => {
+          if (message === event) {
+            resolve();
+          }
+        };
+        child.on('message', listener);
+      }),
+      exit.then(({ code, signal, stdout, stderr }) => {
+        throw new Error(`CLI exited with ${code ?? signal} before ${event}: ${stdout}\n${stderr}`);
+      }),
+    ]);
+  } finally {
+    if (listener !== undefined) {
+      child.off('message', listener);
+    }
+  }
+}
+
+async function stopBrandClis(children: readonly BrandCli[]): Promise<void> {
+  for (const { child } of children) {
+    child.kill('SIGKILL');
+  }
+
+  await Promise.allSettled(children.map(({ exit }) => exit));
+}

@@ -1,4 +1,3 @@
-import type { PlatformError } from 'effect';
 import type { ChildProcessSpawner } from 'effect/process';
 
 import {
@@ -15,7 +14,6 @@ import {
   BRAND_FILE,
   BRANDS_DIR,
   brandLocation,
-  fileExists,
   loadBrand,
   readStaticModule,
   resolveFontFiles,
@@ -36,6 +34,7 @@ import {
   remoteFontPackages,
   type FontPackage,
 } from '#brand-add/font-packages.ts';
+import { installBrand } from '#brand-add/install-brand.ts';
 import { cliError, fileSystemError, type CliError, type FileSystemError } from '#cli-error.ts';
 
 /**
@@ -183,8 +182,8 @@ type ReadBrand = {
 /**
  * Fetches a brand folder from a git repository and adds it to the workspace as `brands/<name>`,
  * named by the brand's own `name`. `brand.ts` is read as data and never run, and the brand is
- * validated in a temporary folder before anything is written; only its data, images, fonts and
- * documents are copied (see `planBrandFiles`). In the repository checkout the brand also gets a
+ * validated in a staging folder before it is installed; only its data, images, fonts and documents
+ * are copied (see `planBrandFiles`). In the repository checkout the brand also gets a
  * `package.json` and `tsconfig.json` like the other brands. Fontsource packages are not installed;
  * the result names the command that installs them.
  *
@@ -226,22 +225,27 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
   const fetched = yield* fetchBrand(source, checkout, request.protocols);
   const plan = yield* planBrandFiles(fetched.files, source.display);
   const brand = yield* readBrand(fetched);
-  const target = brandLocation(root, brand.name);
-  const exists = yield* checkTarget(target.dir, brand.name, request);
-
   const remoteFonts = yield* remoteFontPackages(
     fontsourcePackages(brand.tokens),
     fetched.dir,
     fetched.checkout,
   );
-  const stageRoot = path.join(temporary, 'stage');
-  const stageDir = brandLocation(stageRoot, brand.name).dir;
-  yield* copyFiles(fetched.dir, stageDir, plan.copy);
-  const written = request.installed
-    ? []
-    : yield* writePackageFiles(root, stageDir, brand.name, remoteFonts);
-  const warnings = yield* validateStaged(stageRoot, brand);
-  yield* placeBrand(stageDir, target.dir, path.join(temporary, 'replaced'));
+  const installOptions = { source: source.display, force: request.force };
+  const { prepared, replaced } = yield* installBrand(
+    root,
+    brand.name,
+    installOptions,
+    (stageRoot) =>
+      Effect.gen(function* () {
+        const stageDir = brandLocation(stageRoot, brand.name).dir;
+        yield* copyFiles(fetched.dir, stageDir, plan.copy);
+        const written = request.installed
+          ? []
+          : yield* writePackageFiles(root, stageDir, brand.name, remoteFonts);
+        const warnings = yield* validateStaged(stageRoot, brand);
+        return { written, warnings };
+      }),
+  );
 
   const fonts = yield* checkFonts(root, brand, remoteFonts);
   return {
@@ -249,39 +253,14 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
     dir: `${BRANDS_DIR}/${brand.name}`,
     source: source.display,
     commit: fetched.commit,
-    replaced: exists,
+    replaced,
     files: plan.copy,
-    written,
+    written: prepared.written,
     skipped: plan.skipped,
     fonts,
-    warnings,
+    warnings: prepared.warnings,
     next: nextSteps(brand.name, fonts, request.installed),
   };
-});
-
-/**
- * Whether the workspace already has a brand of that name, which only `force` may replace.
- *
- * @param dir - The brand folder in the workspace.
- * @param name - The brand name.
- * @param request - The source and `force`.
- * @returns Whether the folder exists.
- * @throws CliError in the error channel when it exists and `force` is not set.
- */
-const checkTarget = Effect.fn('checkTarget')(function* (
-  dir: string,
-  name: string,
-  request: AddBrandRequest,
-): Effect.fn.Return<boolean, CliError, FileSystem.FileSystem> {
-  const exists = yield* fileExists(dir);
-  if (exists && !request.force) {
-    return yield* cliError(
-      `The workspace already has ${BRANDS_DIR}/${name}/.\n` +
-        `Pass --force to replace it with the brand from ${request.source.display}.`,
-    );
-  }
-
-  return exists;
 });
 
 /**
@@ -417,47 +396,6 @@ const writePackageFiles = Effect.fn('writePackageFiles')(function* (
   }
 
   return Object.keys(files);
-});
-
-/**
- * Moves the staged brand into the workspace. A brand already there is set aside first and put back
- * if the copy fails, so a failed replace leaves the old brand as it was. The staged folder is
- * copied, not renamed, because the temporary folder may be on another file system.
- *
- * @param stageDir - The staged brand folder.
- * @param target - The brand folder in the workspace.
- * @param aside - A temporary path to keep the replaced brand at.
- */
-const placeBrand = Effect.fn('placeBrand')(function* (
-  stageDir: string,
-  target: string,
-  aside: string,
-): Effect.fn.Return<void, FileSystemError, FileSystem.FileSystem> {
-  const fs = yield* FileSystem.FileSystem;
-  /**
-   * The error for a failed step of the move.
-   *
-   * @param action - What the step tried, such as `set aside`.
-   * @param file - The folder it acted on.
-   */
-  const failed = (action: string, file: string) => (error: PlatformError.PlatformError) =>
-    fileSystemError(action, file, error, 'Check the folder, then try again.');
-  const replacing = yield* fileExists(target);
-  if (replacing) {
-    yield* fs.copy(target, aside).pipe(Effect.mapError(failed('set aside', target)));
-    yield* fs.remove(target, { recursive: true }).pipe(Effect.mapError(failed('replace', target)));
-  }
-
-  yield* makeFolder(path.dirname(target));
-  const restore = replacing
-    ? fs
-        .remove(target, { recursive: true })
-        .pipe(Effect.andThen(fs.copy(aside, target)), Effect.ignore)
-    : fs.remove(target, { recursive: true }).pipe(Effect.ignore);
-  yield* fs.copy(stageDir, target).pipe(
-    Effect.mapError(failed('write', target)),
-    Effect.tapError(() => restore),
-  );
 });
 
 /**
