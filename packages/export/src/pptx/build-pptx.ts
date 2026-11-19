@@ -688,6 +688,7 @@ function slideLinkResolver(place: SlidePlace): (deckIndex: number) => string | n
  * @param input - The deck.
  * @param slide - The slide.
  * @param path - The slide part's path.
+ * @param index - The slide's zero-based position in the export.
  * @param place - Where the slide goes and what it builds on.
  * @param theme - The surface theme the slide is written with.
  */
@@ -696,6 +697,7 @@ function writeSlideBody(
   input: PptxDeckInput,
   slide: PptxSlideInput,
   path: string,
+  index: number,
   place: SlidePlace,
   theme: SurfaceTheme,
 ): SlideWriteResult {
@@ -709,7 +711,7 @@ function writeSlideBody(
     animate: input.animate,
     outlineFonts: input.outlineFonts,
     slideNumber: slide.slideIndex + 1,
-    totals: { deck: input.slideIds.length, file: input.slides.length },
+    totals: { deck: input.slideIds.length, file: input.slides.length, position: index + 1 },
     slideIds: input.slideIds,
     chrome: place.layout?.spec.chrome ?? place.master?.spec.chrome ?? [],
     slideNumberSpec: slideNumberSpecOf(place),
@@ -741,7 +743,7 @@ function writeSlide(
 
   const theme = place.master?.spec.theme ?? surfaceThemes(input.brand)[0];
   const written =
-    theme === undefined ? null : writeSlideBody(pkg, input, slide, path, place, theme);
+    theme === undefined ? null : writeSlideBody(pkg, input, slide, path, index, place, theme);
   pkg.addPart(path, written?.xml ?? '', CONTENT_TYPE.slide);
   const notesPath = `ppt/notesSlides/notesSlide${index + 1}.xml`;
   pkg.addPart(notesPath, notesSlideXml(slide.notes), CONTENT_TYPE.notesSlide);

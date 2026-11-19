@@ -458,6 +458,27 @@ export type TextDefaults = {
 };
 
 /**
+ * The slide counts a page number such as `15 / 42` is rewritten with when a file holds only some of
+ * the deck's slides, or each step of a slide as its own slide.
+ */
+export type SlideTotals = {
+  /**
+   * The deck's slide count, which the page number shows.
+   */
+  deck: number;
+
+  /**
+   * The file's slide count, written in its place.
+   */
+  file: number;
+
+  /**
+   * The slide's 1-based position in the file, written as the slide number field's cached text.
+   */
+  position: number;
+};
+
+/**
  * What the run writer needs from the slide it writes.
  */
 export type TextContext = {
@@ -482,10 +503,10 @@ export type TextContext = {
   slideNumber: number | null;
 
   /**
-   * The total the page number shows (the deck's slide count) and the total to write instead (the
-   * file's), or `null` to leave the text as it is.
+   * The total the page number shows (the deck's slide count), the total to write instead (the
+   * file's) and the slide's position in the file, or `null` to leave the text as it is.
    */
-  totals?: { deck: number; file: number } | null;
+  totals?: SlideTotals | null;
 
   /**
    * Picks each run's font. Without one, brand families are theme references and bold starts at 600.
@@ -731,11 +752,14 @@ export function runXml(run: SceneRun, context: TextContext): string {
     totals === null
       ? rest
       : rest.replace(new RegExp(`(\\D)${totals.deck}(?!\\d)`), `$1${totals.file}`);
+  // The field's cached text is what renderers that do not recompute fields show, so it is the
+  // slide's place in the file, which is what PowerPoint computes and what the total counts.
+  const cached = totals === null ? number : String(totals.position);
   const field = el(
     'a:fld',
     { id: '{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}', type: 'slidenum' },
     properties,
-    el('a:t', {}, escapeXml(number)),
+    el('a:t', {}, escapeXml(cached)),
   );
   /**
    * A plain run of text, or nothing for empty text.

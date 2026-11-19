@@ -819,6 +819,32 @@ export type PictureOptions = {
 };
 
 /**
+ * The crop of a picture whose only image is the one captured from the page: none, because that
+ * capture is of the visible box and so already shows only the part the crop would keep.
+ */
+export const NO_CROP = {
+  /**
+   * Nothing cut off the left.
+   */
+  left: 0,
+
+  /**
+   * Nothing cut off the top.
+   */
+  top: 0,
+
+  /**
+   * Nothing cut off the right.
+   */
+  right: 0,
+
+  /**
+   * Nothing cut off the bottom.
+   */
+  bottom: 0,
+} as const;
+
+/**
  * A picture.
  *
  * @param rect - Where it goes.

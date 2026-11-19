@@ -8,7 +8,7 @@ import { el } from '#ooxml/xml.ts';
 import { textFrameXml } from '#pptx/frame-xml.ts';
 import { SLIDE_NUMBER_IDX } from '#pptx/layout-specs.ts';
 import { embedMedia } from '#pptx/media.ts';
-import { cNvPr, pictureXml, xfrm } from '#pptx/shape-xml.ts';
+import { cNvPr, NO_CROP, pictureXml, xfrm } from '#pptx/shape-xml.ts';
 import { listStyleXml } from '#pptx/text-xml.ts';
 
 /**
@@ -60,7 +60,7 @@ export function chromeXml(
           ...(svgId === undefined ? {} : { svgId }),
           name: 'Logo',
           descr: node.alt === '' ? `${brandLabel} logo` : node.alt,
-          crop: node.crop,
+          crop: file === undefined ? NO_CROP : node.crop,
           radii: node.radii,
         });
       }

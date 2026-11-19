@@ -10,7 +10,7 @@ import type { PptxSlideInput } from '#pptx/deck-input.ts';
 import type { PlaceholderRef } from '#pptx/frame-xml.ts';
 import type { LayoutArt, LayoutSource } from '#pptx/layout-art.ts';
 import type { LayoutSpec, SlideNumberSpec } from '#pptx/layout-specs.ts';
-import type { FontResolver, LinkTarget, TextContext } from '#pptx/text-xml.ts';
+import type { FontResolver, LinkTarget, SlideTotals, TextContext } from '#pptx/text-xml.ts';
 import type { SurfaceTheme } from '#pptx/theme.ts';
 import type {
   BoxNode,
@@ -50,6 +50,7 @@ import {
   grainXml,
   hotspotXml,
   idAllocator,
+  NO_CROP,
   pictureXml,
   vectorGroupXml,
   type IdAllocator,
@@ -203,9 +204,10 @@ export type SlideWriteOptions = {
   slideNumber: number;
 
   /**
-   * The deck's slide count, which the page number shows, and the file's, written instead.
+   * The deck's slide count, which the page number shows, the file's, written instead, and the
+   * slide's position in the file.
    */
-  totals?: { deck: number; file: number };
+  totals?: SlideTotals;
 
   /**
    * The art and chrome the slide's layout part draws, when the layout has art. A slide that shows
@@ -984,7 +986,7 @@ function imageXml(
     ...(svgId === undefined ? {} : { svgId }),
     name: node.alt === '' ? 'Picture' : `Picture: ${excerpt(node.alt)}`,
     descr: node.alt === '' ? pictureFallbackAlt(node.src) : node.alt,
-    crop: node.crop,
+    crop: file === undefined ? NO_CROP : node.crop,
     radii: node.radii,
     opacity: node.opacity,
     locked: node.backdrop === true,
