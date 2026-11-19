@@ -30,6 +30,15 @@ Keep, stop, start and try on `surface: accent`, without icons. The highlighted b
 - **Icons on all four boxes or on none.** The icon is decoration from the brand's set; [icons](/reference/icons/) lists the names every published brand has.
 - **Name the boxes one at a time** with `reveal: true` and a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
 
+## Custom labels
+
+New in v0.6.1. Screen readers use `highlight` to identify the emphasised quadrant. Set these fields in the slide frontmatter. Omitted labels keep their English defaults.
+
+```yaml
+labels:
+  highlight: Priorität
+```
+
 ## Reference
 
 <LayoutReference name="quadrants" />

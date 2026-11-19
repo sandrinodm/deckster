@@ -2853,6 +2853,85 @@
       ]
     },
     {
+      "name": "brand-layouts",
+      "title": "Street trees, ten years on",
+      "brand": "fieldnote",
+      "slides": [
+        {
+          "id": "title",
+          "number": 1,
+          "title": "Street trees, ten years on",
+          "layout": "fieldnote-cover",
+          "file": "decks/brand-layouts/slides/title.mdx",
+          "source": "---\nlayout: fieldnote-cover\ntitle: \"Street trees, ten years on\"\neyebrow: Urban Forestry\nbyline: Dana Okafor, Urban Forestry\ndate: 18 November 2026\n---\n\nWhat a decade of planting taught us about where trees survive.\n\n<Notes>\nOpen with the number of trees planted and why the council funded the programme in 2016.\n</Notes>\n"
+        },
+        {
+          "id": "what-we-did",
+          "number": 2,
+          "title": "We planted 12,400 trees and walked every one of them twice",
+          "layout": "fieldnote-columns",
+          "file": "decks/brand-layouts/slides/what-we-did.mdx",
+          "source": "---\nlayout: fieldnote-columns\ntitle: \"We planted 12,400 trees and walked every one of them twice\"\neyebrow: The programme\n---\n\n- 12,400 street trees planted in 2016 to 2025\n- Two surveys: year 3 and year 8\n- 41 neighbourhoods, from the old town to the ring road estates\n\n<Aside>\nSurvival is counted per tree, not per street, so one lost tree in a row of five still shows.\n</Aside>\n\n<Notes>\nExplain the survey method briefly; the details are in the appendix.\n</Notes>\n"
+        },
+        {
+          "id": "part-one",
+          "number": 3,
+          "title": "What ten years of planting showed",
+          "layout": "fieldnote-section",
+          "file": "decks/brand-layouts/slides/part-one.mdx",
+          "source": "---\nlayout: fieldnote-section\ntitle: \"What ten years of planting showed\"\nnumber: \"01\"\n---\n\nSurvival, the spread between districts, and what explains it.\n\n<Notes>\nSay how long this part takes: about ten minutes.\n</Notes>\n"
+        },
+        {
+          "id": "findings",
+          "number": 4,
+          "title": "Eight in ten trees are alive, but not evenly",
+          "layout": "content",
+          "file": "decks/brand-layouts/slides/findings.mdx",
+          "source": "---\nlayout: content\ntitle: \"Eight in ten trees are alive, but not evenly\"\neyebrow: Findings\n---\n\nOverall survival at year 8 is 81 percent. The spread between neighbourhoods is the story: the best district keeps 94 percent of its trees, the worst 58.\n\n- Wide pits beat tree grates every time\n- Corner plots lose twice as many trees to vehicle strikes\n- Watering in the first two summers matters more than species\n\n<Notes>\nLand the spread before explaining it.\n</Notes>\n"
+        },
+        {
+          "id": "planting",
+          "number": 5,
+          "title": "Wide pits made the difference here",
+          "layout": "fieldnote-photo",
+          "file": "decks/brand-layouts/slides/planting.mdx",
+          "source": "---\nlayout: fieldnote-photo\ntitle: \"Wide pits made the difference here\"\neyebrow: What worked\n---\n\nWhere the council cut pits to two metres wide and added a mulch ring, nine in ten trees reached year 8.\n\n<Media>\n<img src={row} alt=\"An illustrated street of young plane trees along a row of brick buildings\" />\n</Media>\n\n<Caption>\nLinden Street, year 8: illustration.\n</Caption>\n\n<Notes>\nThis is the case we point other districts to.\n</Notes>\n\nimport row from '../assets/street-row.svg';\n"
+        },
+        {
+          "id": "numbers",
+          "number": 6,
+          "title": "Survival fell where pits stayed narrow",
+          "layout": "fieldnote-columns",
+          "file": "decks/brand-layouts/slides/numbers.mdx",
+          "source": "---\nlayout: fieldnote-columns\ntitle: \"Survival fell where pits stayed narrow\"\neyebrow: The numbers\nsurface: inverse\n---\n\nYear 8 survival by pit width:\n\n- Under 1 m: 58 percent\n- 1 to 2 m: 83 percent\n- Over 2 m: 94 percent\n\n<Aside>\nThe cost per surviving tree is lowest in the widest pits, because fewer replacements are needed.\n</Aside>\n\n<Notes>\nThe inverse surface here uses the layout's own forest art for the rules.\n</Notes>\n"
+        },
+        {
+          "id": "part-two",
+          "number": 7,
+          "title": "Where the next 10,000 go",
+          "layout": "fieldnote-section",
+          "file": "decks/brand-layouts/slides/part-two.mdx",
+          "source": "---\nlayout: fieldnote-section\ntitle: \"Where the next 10,000 go\"\nnumber: \"02\"\n---\n\nFour districts with the lowest canopy cover come first.\n\n<Notes>\nTransition to the forward plan.\n</Notes>\n"
+        },
+        {
+          "id": "method",
+          "number": 8,
+          "title": "Canopy cover, mapped block by block",
+          "layout": "split",
+          "file": "decks/brand-layouts/slides/method.mdx",
+          "source": "---\nlayout: split\ntitle: \"Canopy cover, mapped block by block\"\n---\n\nEach crown is measured from aerial survey and checked against the tree register.\n\n- Green: surviving planted trees\n- Terracotta: replanting priorities\n\n<Media>\n<img src={map} alt=\"A map of nine city blocks with tree crowns in green and replanting sites in terracotta\" />\n</Media>\n\n<Notes>\nPoint at the terracotta dots.\n</Notes>\n\nimport map from '../assets/canopy-map.svg';\n"
+        },
+        {
+          "id": "closing",
+          "number": 9,
+          "title": "Thank you",
+          "layout": "fieldnote-cover",
+          "file": "decks/brand-layouts/slides/closing.mdx",
+          "source": "---\nlayout: fieldnote-cover\ntitle: \"Thank you\"\nsurface: default\neyebrow: Questions\nbyline: dana.okafor@example.org\n---\n\nPlant wide, water early, count every tree.\n\n<Notes>\nLeave this up during questions.\n</Notes>\n"
+        }
+      ]
+    },
+    {
       "name": "components",
       "title": "Shipping the canopy API",
       "brand": "default",

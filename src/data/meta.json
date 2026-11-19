@@ -1,11 +1,12 @@
 {
-  "version": "0.6.0",
-  "commit": "5ee49266f1d8c75b08603c701d7ea6e389f05a67",
+  "version": "0.6.1",
+  "commit": "2042d1a0eb4abc8b1a42fb140614e31b1c7e674a",
   "decks": [
     "hello",
     "showcase",
     "lookbook",
     "layouts",
+    "brand-layouts",
     "components",
     "data-stories",
     "diagrams-demo",

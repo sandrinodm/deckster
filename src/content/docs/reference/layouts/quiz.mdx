@@ -29,6 +29,16 @@ The title poses the question, `options:` lists the choices, lettered A to D in o
 - **The body and footnote show before the answer.** The body is one line of context, up to 14 words, and the footnote a source of up to 16, so neither is the place for the reason.
 - **Ask first, then click.** Put one `[click]` cue in the notes before the answer; see [builds](/write-slides/builds/).
 
+## Custom labels
+
+New in v0.6.1. Screen readers use `choices` for the list of answers and `correct` for the tick on the right answer. Set these fields in the slide frontmatter. Omitted labels keep their English defaults.
+
+```yaml
+labels:
+  choices: Antwortmöglichkeiten
+  correct: Richtige Antwort
+```
+
 ## Reference
 
 <LayoutReference name="quiz" />

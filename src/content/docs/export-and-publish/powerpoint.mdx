@@ -62,6 +62,10 @@ $ deck export launch-review --pptx --include-hidden --out all.pptx
 
 A hidden slide that `--slides` names is exported without the flag, and it is still a hidden slide in the file. `--dry-run` lists the slides the export would write: the hidden ones only with `--include-hidden`.
 
+### Numbering a partial export
+
+A slide-number field in the PowerPoint file follows its position in that file. For example, if you export just slide 7, a footer that normally shows the slide number and total reads `1 / 1`. In v0.6.1 the exporter also saves that value for viewers that display the cached field. The source deck keeps its original numbering.
+
 ## Native or picture
 
 `--mode` decides what happens to an element PowerPoint cannot draw the way the web does:
@@ -96,6 +100,7 @@ The output is cut to the `deploy` slide.
 - **The deck's layouts** as PowerPoint layouts, with placeholders placed and styled as the deck sets them. A [brand layout](/brands/brand-layouts/) (new in 0.6.0) becomes a slide layout of its own, named after its `label`, with its art placed once in the layout and its media regions as picture placeholders; the dry run marks its slides `art in layout`.
 - **Editable text** that wraps where the web wraps.
 - **Shapes, gradients and pictures**; a picture is stored once and as JPEG when it is opaque.
+- **SVG image files** keep their vector original when the exporter can embed it. The file also carries a PNG for viewers that use a raster copy. As of v0.6.1, a cropped SVG uses the same crop on both versions. If an image source cannot be fetched, the exporter captures the visible image and keeps that framing.
 - **Tables** as PowerPoint tables.
 - **Charts as native charts**: bar charts for `<BarChart>`, `<Comparison>`, `<Progress>`, `<Waterfall>` and `<Funnel>`, line charts for `<LineChart>`, `<Slope>` and `<Sparkline>`, and native area, doughnut and scatter charts for `<AreaChart>`, `<Donut>` and `<Scatter>`. `<BigNumber>`, `<StatRow>`, `<Pictogram>` and `<Heatmap>` have no native chart type; the dry run shows how each is drawn. Which chart to use is on [Choosing a chart](/data-and-diagrams/choosing-a-chart/).
 - **Diagrams** as native shapes and connectors, with the brand's cards: fills, borders, corner radii, shadows and accent stripes, and the arrowhead style of the edges. PowerPoint draws one outer shadow per shape, so a card's shadow keeps only its strongest layer, and a `dot` arrowhead is centred on the line's end, where the slide draws it a little before the end.

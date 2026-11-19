@@ -31,6 +31,17 @@ This slide has eight periods, three lanes with one bar each and `reveal: true`, 
 - **Little prose.** The body, up to 14 words, says what the plan delivers; the durations belong in the lanes. The `<Footnote>` takes a source or caveat, up to 16 words.
 - **Name the lanes one at a time** with `reveal: true`, and put a `[click]` cue in the notes for each. See [builds](/write-slides/builds/).
 
+## Custom labels
+
+New in v0.6.1. Use `now` for the visible marker. Screen readers use `nowPeriod` after the current period and `through` between the start and end of a bar. Set these fields in the slide frontmatter. Omitted labels keep their English defaults.
+
+```yaml
+labels:
+  now: Heute
+  nowPeriod: heute
+  through: bis
+```
+
 ## Reference
 
 <LayoutReference name="schedule" />
