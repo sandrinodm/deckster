@@ -36,7 +36,7 @@ export {
   resetLayoutCache,
   type LayoutInBrand,
 } from '#node/find-layout-in-brands.ts';
-export { resolveFontFiles, type ResolvedFonts } from '#node/font-files.ts';
+export { resolveFontFiles, type FontPackageOptions, type ResolvedFonts } from '#node/font-files.ts';
 export {
   loadBrand,
   type BrandRead,

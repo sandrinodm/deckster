@@ -16,7 +16,7 @@ import {
   type BrandLocation,
 } from '#node/brand-paths.ts';
 import { forgetLoaded, gatedLoad, isCodeHeld, rememberLoaded } from '#node/code-gate.ts';
-import { resolveFontFiles } from '#node/font-files.ts';
+import { resolveFontFiles, type FontPackageOptions } from '#node/font-files.ts';
 import { FRAMEWORK_ROOT } from '#node/framework-root.ts';
 import {
   BRAND_CALLEE,
@@ -155,12 +155,22 @@ export type BrandRead = 'import' | 'data';
 /**
  * Options for {@link loadBrand}.
  */
-export type LoadBrandOptions = {
-  /**
-   * How to read the brand file; `import` by default.
-   */
-  read?: BrandRead;
-};
+export type LoadBrandOptions =
+  | {
+      /**
+       * How to read the brand file; `import` by default.
+       */
+      read?: BrandRead;
+      fontPackages?: never;
+    }
+  | {
+      read: 'data';
+
+      /**
+       * How to resolve Fontsource packages when validating a staged import.
+       */
+      fontPackages: FontPackageOptions;
+    };
 
 /**
  * A brand that passed every check, compiled and ready to serve.
@@ -180,6 +190,11 @@ export type LoadedBrand = {
    * `@font-face` rules whose URLs are absolute file paths.
    */
   fontFaces: readonly FontFaceRule[];
+
+  /**
+   * Fontsource packages that a staged import must install before the brand can render.
+   */
+  missingFontPackages: readonly string[];
 
   /**
    * The brand compiled to CSS, a Tailwind theme, `@font-face` rules and Shiki themes.
@@ -252,7 +267,8 @@ export const loadBrand = Effect.fn('loadBrand')(function* (
     layouts?.source,
   );
   const { tokens } = resolved;
-  const fonts = yield* resolveFontFiles(tokens.typography, location);
+  const fontPackages = read === 'data' ? options.fontPackages : undefined;
+  const fonts = yield* resolveFontFiles(tokens.typography, location, fontPackages);
   const logos = yield* resolveLogoFiles(tokens, location);
   const backgrounds = yield* resolveBackgroundFiles(tokens, location);
   const problems = [
@@ -289,6 +305,7 @@ export const loadBrand = Effect.fn('loadBrand')(function* (
     location,
     tokens,
     fontFaces: fonts.faces,
+    missingFontPackages: fonts.missingPackages,
     compiled,
     logoFiles: logos.files,
     backgroundFiles: backgrounds.files,
