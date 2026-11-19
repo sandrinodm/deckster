@@ -4,12 +4,13 @@ import { devSessionOf } from '@deckster/comments/dev-session';
 import { deckCommand } from '@deckster/engine/command';
 import { DEV_RUNTIME_PLUGINS, deckViteConfig } from '@deckster/vite-plugin';
 import * as NodeServices from '@effect/platform-node/NodeServices';
-import { Cause, Console, Deferred, Effect, type FileSystem, type Scope } from 'effect';
+import { Cause, Console, Deferred, Effect, Exit, Scope, type FileSystem } from 'effect';
 import { createServer, mergeConfig, type ViteDevServer } from 'vite';
 
 import type { DeckBrowser } from '#browser/deck-browser.ts';
 import type { Workspace } from '#workspace.ts';
 
+import { chooserLinkPlugin, type ChooserLink } from '#chooser/chooser-link.ts';
 import { cliError, ViteError, type CliError } from '#cli-error.ts';
 import { closeDevServer, deckCompiler } from '#server/deck-server-live.ts';
 import { withoutViteExitHandlers } from '#server/shutdown.ts';
@@ -103,6 +104,11 @@ export type DevServerOptions = {
    * endpoints need.
    */
   agentCode?: string;
+
+  /**
+   * The browser's launcher, when the deck was picked from its chooser.
+   */
+  chooser?: ChooserLink;
 };
 
 /**
@@ -197,6 +203,26 @@ const loadAgentHost = Effect.fn('loadAgentHost')(function* (): Effect.fn.Return<
 });
 
 /**
+ * The number of additional ephemeral ports to try after one belongs to an old deck origin.
+ */
+const CHOOSER_PORT_RETRIES = 4;
+
+/**
+ * A chooser-only bind outcome that is safe to retry before publishing the server.
+ */
+const REUSED_PORT = {
+  /**
+   * Distinguishes ephemeral-port reuse from unrelated startup failures.
+   */
+  _tag: 'DeckPortReused',
+} as const;
+
+/**
+ * The services for a Vite deck server and its optional agent and tools.
+ */
+type DevServices = Scope.Scope | DeckBrowser | Workspace | FileSystem.FileSystem;
+
+/**
  * Starts the Vite dev server of a deck in the caller's scope and, with `mcp`, publishes the MCP
  * endpoint and its token. With `agent`, it also starts the agent host (its running turn is killed
  * when the scope closes), mounts `/__deck/agent`, loads the page's agent plugin, and checks the
@@ -209,11 +235,32 @@ const loadAgentHost = Effect.fn('loadAgentHost')(function* (): Effect.fn.Return<
  */
 export const startDevServer = Effect.fn('startDevServer')(function* (
   options: DevServerOptions,
-): Effect.fn.Return<
-  StartedDevServer,
-  ViteError | CliError,
-  Scope.Scope | DeckBrowser | Workspace | FileSystem.FileSystem
-> {
+): Effect.fn.Return<StartedDevServer, ViteError | CliError, DevServices> {
+  const owner = yield* Effect.scope;
+  const attempt = Effect.gen(function* () {
+    const scope = yield* Scope.fork(owner);
+    return yield* startDevServerOnce(options).pipe(
+      Scope.provide(scope),
+      Effect.onExit((exit) => (Exit.isFailure(exit) ? Scope.close(scope, exit) : Effect.void)),
+    );
+  });
+  return yield* attempt.pipe(
+    Effect.retry({
+      times: CHOOSER_PORT_RETRIES,
+      while: (error) => error._tag === REUSED_PORT._tag,
+    }),
+    Effect.catchTag(REUSED_PORT._tag, () =>
+      cliError('Could not assign a fresh dev server port for this deck.'),
+    ),
+  );
+});
+
+/**
+ * Opens one candidate server. A reused chooser port fails before the MCP endpoint is published.
+ */
+const startDevServerOnce = Effect.fn('startDevServerOnce')(function* (
+  options: DevServerOptions,
+): Effect.fn.Return<StartedDevServer, ViteError | CliError | typeof REUSED_PORT, DevServices> {
   const { workspaceRoot, deck, brand, port } = options;
   const mcp = options.mcp || options.agent !== undefined;
   const host = mcp ? yield* loadAgentHost() : undefined;
@@ -280,7 +327,7 @@ export const startDevServer = Effect.fn('startDevServer')(function* (
     },
     { warmup: true },
   );
-  const plugins = [];
+  const plugins = options.chooser === undefined ? [] : [chooserLinkPlugin(options.chooser)];
   if (host !== undefined && tools !== undefined && token !== undefined && pageLink !== undefined) {
     plugins.push(host.deckMcpPlugin({ tools, token, pageLink }));
     if (sessions !== undefined && agent !== undefined) {
@@ -299,7 +346,7 @@ export const startDevServer = Effect.fn('startDevServer')(function* (
     server: {
       port,
       strictPort: port !== undefined,
-      host: options.host || (mcp ? '127.0.0.1' : false),
+      host: options.host || (mcp || options.chooser !== undefined ? '127.0.0.1' : false),
     },
     ...(plugins.length === 0 ? {} : { plugins }),
   });
@@ -311,6 +358,10 @@ export const startDevServer = Effect.fn('startDevServer')(function* (
     closeDevServer,
   );
   running = server;
+  if (options.chooser !== undefined) {
+    devSessionOf(server).allowNavigationFromPort(options.chooser.port);
+  }
+
   if (options.agentCode !== undefined) {
     const session = devSessionOf(server);
     session.setStrict(true);
@@ -320,7 +371,11 @@ export const startDevServer = Effect.fn('startDevServer')(function* (
   yield* Effect.tryPromise({
     try: () => server.listen(),
     catch: (cause) => new ViteError({ cause }),
-  });
+  }).pipe(Effect.uninterruptible);
+  if (options.chooser !== undefined && !options.chooser.claimPort(listeningPort(server))) {
+    return yield* Effect.fail(REUSED_PORT);
+  }
+
   yield* Deferred.succeed(listening, undefined);
   if (options.printUrls) {
     server.printUrls();

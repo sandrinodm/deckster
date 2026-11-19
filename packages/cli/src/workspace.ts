@@ -7,8 +7,7 @@ import path from 'node:path';
 import { cliError, type CliError } from '#cli-error.ts';
 
 /**
- * The deck `dev`, `preview`, `present`, `layouts` and `mcp` use when no deck is named and `DECK` is
- * unset.
+ * The deck `preview`, `present`, `layouts` and `mcp` use when no deck is named and `DECK` is unset.
  */
 export const DEFAULT_DECK = 'hello';
 

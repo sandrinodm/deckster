@@ -1,5 +1,4 @@
 import { AGENT_HELP } from '#agent/agent-flags.ts';
-import { DEFAULT_DECK } from '#workspace.ts';
 
 /**
  * The text `deck dev --help` prints.
@@ -8,13 +7,15 @@ export const HELP = `Usage: deck dev [deck] [--port <n>] [--host] [--brand <name
                 [--agent claude|codex] [--agent-panel right|bottom] [--agent-model <m>]
                 [--agent-web]
 
-Serves a deck with hot reload and prints the URL. It runs until you press q or Ctrl+C.
+Serves a deck with hot reload. When several decks exist, open the printed chooser URL to pick one.
+It runs until you press q or Ctrl+C.
 
 Arguments:
-  deck            Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}", else the only deck.
+  deck            Deck folder name under decks/. Defaults to $DECK, the sole deck, or the chooser.
 
 Options:
-  --port <n>      Use this port and fail if it is taken. Default: the first free port from 5173.
+  --port <n>      Use this port for the deck or chooser and fail if it is taken.
+                  Default: the first free port from 5173.
   --host          Listen on all network interfaces, for example to present from a phone.
   --brand <name>  Render with brands/<name> instead of the deck config's brand.
   --mcp           Also serve the deck's MCP tools at /__deck/mcp on 127.0.0.1, for agents (Claude

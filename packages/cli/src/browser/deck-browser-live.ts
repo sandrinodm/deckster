@@ -72,5 +72,5 @@ export const openDeckPage = Effect.fn('openDeckPage')(function* (
     try: () => context.newPage(),
     catch: (cause) => browserError(OPEN_PAGE_ACTION, cause),
   });
-  return yield* loadDeckPage(page, url, options.workspaceRoot);
+  return yield* loadDeckPage(page, url, options);
 });

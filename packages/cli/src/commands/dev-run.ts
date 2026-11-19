@@ -1,19 +1,18 @@
 import { loadBrand } from '@deckster/brand/node';
 import { findDeck, loadDeck } from '@deckster/vite-plugin';
-import { Effect } from 'effect';
+import { Console, Effect } from 'effect';
 
 import { AGENT_ARG_OPTIONS, readAgentFlags } from '#agent/agent-flag-options.ts';
-import { chooseDeck, defaultDeck } from '#choose-deck.ts';
+import { chooseInteractiveDeck } from '#chooser/deck-choice.ts';
 import { EXIT_OK, type Command } from '#command.ts';
 import { parseCommandArgs, readBrandName, readPort } from '#parse-command-args.ts';
 import { startDevServer } from '#server/dev-server.ts';
-import { awaitShutdown, requestShutdown } from '#server/shutdown.ts';
-import { DEFAULT_DECK, Workspace } from '#workspace.ts';
+import { awaitShutdown, bindQuitKey, requestShutdown } from '#server/shutdown.ts';
+import { Workspace } from '#workspace.ts';
 
 /**
- * Parses the arguments and serves the deck until the process is stopped. The server belongs to the
- * command's scope, so it closes when the command is interrupted (Ctrl+C, SIGTERM, SIGHUP) or the
- * person presses q, and every finalizer runs.
+ * Parses the arguments and serves a selected deck, or the interactive chooser, until the process is
+ * stopped. The command's scope closes the server and its active session on shutdown.
  */
 export const run: Command['run'] = Effect.fn('deck.dev')(function* (argv) {
   const { root: workspaceRoot } = yield* Workspace;
@@ -27,17 +26,17 @@ export const run: Command['run'] = Effect.fn('deck.dev')(function* (argv) {
   const port = yield* readPort('dev', values.port);
   const brand = yield* readBrandName('dev', values.brand);
   const agent = yield* readAgentFlags('dev', values);
-  const deck =
-    (yield* chooseDeck(positionals[0], yield* defaultDeck(workspaceRoot))) ?? DEFAULT_DECK;
-  yield* loadDeck(workspaceRoot, yield* findDeck(workspaceRoot, deck));
+  const { deck } = yield* chooseInteractiveDeck(workspaceRoot, positionals[0], 'dev');
+  if (deck !== undefined) {
+    yield* loadDeck(workspaceRoot, yield* findDeck(workspaceRoot, deck));
+  }
+
   if (brand !== undefined) {
-    // A mistyped --brand fails here with the brands that exist, not later in the browser.
     yield* loadBrand(workspaceRoot, brand);
   }
 
-  const { server } = yield* startDevServer({
+  const options = {
     workspaceRoot,
-    deck,
     brand,
     port,
     host: values.host,
@@ -45,13 +44,36 @@ export const run: Command['run'] = Effect.fn('deck.dev')(function* (argv) {
     agent,
     printUrls: true,
     command: 'dev',
-  });
-  // q stops through the command's scope, so agent turns are killed and server.json is removed;
-  // Vite's own q calls process.exit() first.
-  server.bindCLIShortcuts({
-    print: true,
-    customShortcuts: [{ key: 'q', description: 'quit', action: () => requestShutdown() }],
-  });
+  };
+  if (deck === undefined) {
+    if (agent !== undefined) {
+      const { resolveAgentSetup } = yield* Effect.promise(() => import('#agent/agent-flags.ts'));
+      yield* resolveAgentSetup('dev', agent);
+    }
+
+    const { startDeckChooser } = yield* Effect.promise(() => import('#chooser/chooser-server.ts'));
+    const { url } = yield* startDeckChooser({
+      ...options,
+      open: Effect.fn('deck.dev.openSelection')(function* (id, chooser) {
+        yield* loadDeck(workspaceRoot, yield* findDeck(workspaceRoot, id));
+        const selected = yield* startDevServer({ ...options, deck: id, chooser, port: 0 });
+        return {
+          url: selected.url,
+          ...(selected.sessions === undefined ? {} : { busy: selected.sessions.busy }),
+        };
+      }),
+    });
+    yield* bindQuitKey;
+    yield* Console.log(`  Deck chooser: ${url}`);
+  } else {
+    const { server } = yield* startDevServer({ ...options, deck });
+    // Vite's default q exits before the command's scoped cleanup runs.
+    server.bindCLIShortcuts({
+      print: true,
+      customShortcuts: [{ key: 'q', description: 'quit', action: () => requestShutdown() }],
+    });
+  }
+
   yield* awaitShutdown;
   return EXIT_OK;
 });

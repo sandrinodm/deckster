@@ -107,6 +107,12 @@ export type DevSession = {
   readonly addCode: (code: string) => void;
 
   /**
+   * Allows top-level navigations from the current launcher on this loopback hostname and port to
+   * start a session. The session itself still requires the deck origin and its cookie.
+   */
+  readonly allowNavigationFromPort: (port: number) => void;
+
+  /**
    * The `Cookie` header value that authenticates, for tests and tools in this process.
    *
    * @param port - The server's port.
@@ -193,6 +199,7 @@ export function createDevSession(): DevSession {
   const secret = randomBytes(SECRET_BYTES).toString('base64url');
   const codes = new Set<string>();
   let strict = false;
+  let launcherPort: number | undefined;
 
   /**
    * The cookie's name on the port a request arrived on.
@@ -209,7 +216,7 @@ export function createDevSession(): DevSession {
         (request.method === 'GET' || request.method === 'HEAD') &&
         DOCUMENT_PATHS.has(url.pathname) &&
         request.headers['sec-fetch-dest'] === 'document' &&
-        NAVIGATION_SITES.has(String(request.headers['sec-fetch-site'] ?? '')) &&
+        isTrustedNavigation(request, launcherPort) &&
         originRefusal(request, 'The deck') === undefined;
       if (!isDocument) {
         return false;
@@ -251,6 +258,10 @@ export function createDevSession(): DevSession {
 
     addCode: (code) => {
       codes.add(code);
+    },
+
+    allowNavigationFromPort: (port) => {
+      launcherPort = port;
     },
 
     cookieHeader: (port) => `${nameFor(port)}=${secret}`,
@@ -296,4 +307,23 @@ export function issueDevSession(
     session.issue(request, response);
     next();
   };
+}
+
+/**
+ * The launcher and its selected deck are on different origins on the same loopback host. Only the
+ * exact launcher origin extends the usual typed and same-origin document navigations.
+ */
+function isTrustedNavigation(request: IncomingMessage, launcherPort: number | undefined): boolean {
+  const site = String(request.headers['sec-fetch-site'] ?? '');
+  if (NAVIGATION_SITES.has(site)) {
+    return true;
+  }
+
+  if (site !== 'same-site' || launcherPort === undefined) {
+    return false;
+  }
+
+  const hostname = hostnameOf(request.headers.host ?? '');
+  const referrer = URL.parse(request.headers.referer ?? '');
+  return referrer?.origin === `http://${hostname}:${launcherPort}`;
 }
