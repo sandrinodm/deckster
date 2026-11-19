@@ -5,6 +5,7 @@ import * as NodeServices from '@effect/platform-node/NodeServices';
 import { Console, Effect } from 'effect';
 
 import { addBrand, type AddedBrand } from '#brand-add/add-brand.ts';
+import { parseBrandSource } from '#brand-add/brand-source.ts';
 import { shortCommit } from '#brand-add/fetch-brand.ts';
 import { usageError } from '#cli-error.ts';
 import { EXIT_OK } from '#command.ts';
@@ -22,21 +23,19 @@ import { Workspace } from '#workspace.ts';
  *   `addBrand`.
  */
 export const runBrandAdd = Effect.fn('deck.brand.add')(function* (argv: readonly string[]) {
-  const { values, positionals } = yield* parseCommandArgs('brand', argv, {
+  const args = parseCommandArgs('brand', argv, {
     json: { type: 'boolean', default: false },
     force: { type: 'boolean', default: false },
   });
-  const [source, ...extra] = positionals;
-  if (source === undefined || extra.length > 0) {
-    return yield* usageError(
-      'Name one brand source, for example ' +
-        `\`${deckCommand()} brand add gh:acme/brand-kit/brands/acme#v2\`.`,
-      'brand',
-    );
+  const { values, positionals } = yield* args.pipe(Effect.mapError(invalidAddArguments));
+  const [input, ...extra] = positionals;
+  if (input === undefined || extra.length > 0) {
+    return yield* invalidAddArguments();
   }
 
+  const source = yield* parseBrandSource(input);
   const { root } = yield* Workspace;
-  yield* Console.error(`Fetching ${source} with git...`);
+  yield* Console.error(`Fetching ${source.display} with git...`);
   const added = yield* addBrand(root, {
     source,
     force: values.force,
@@ -50,6 +49,17 @@ export const runBrandAdd = Effect.fn('deck.brand.add')(function* (argv: readonly
 
   return EXIT_OK;
 });
+
+/**
+ * Reports malformed arguments without quoting a source that was parsed as an option.
+ */
+function invalidAddArguments(): ReturnType<typeof usageError> {
+  return usageError(
+    'Name one brand source with optional --force or --json flags. For example, ' +
+      `\`${deckCommand()} brand add gh:acme/brand-kit/brands/acme#v2\`.`,
+    'brand',
+  );
+}
 
 /**
  * The plain-text report of an added brand: where it came from, what was left out, its warnings and

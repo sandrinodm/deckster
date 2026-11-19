@@ -6,13 +6,13 @@ import { parseBrandSource, type BrandSource } from '#brand-add/brand-source.ts';
 /**
  * Sources that parse, with what they parse to.
  */
-const VALID: readonly (readonly [string, BrandSource])[] = [
+const VALID: readonly (readonly [string, Omit<BrandSource, 'display'>])[] = [
   [
     'gh:acme/brand-kit/brands/acme#v2',
     { remote: 'https://github.com/acme/brand-kit.git', folder: 'brands/acme', ref: 'v2' },
   ],
   [
-    'github:acme/brand-kit',
+    ' github:acme/brand-kit ',
     { remote: 'https://github.com/acme/brand-kit.git', folder: '', ref: undefined },
   ],
   [
@@ -36,6 +36,10 @@ const VALID: readonly (readonly [string, BrandSource])[] = [
     { remote: 'ssh://git@git.example.com/design/brand-kit.git', folder: 'acme', ref: 'v1.2.0' },
   ],
   [
+    'ssh://git@github.com:22/acme/brand-kit.git',
+    { remote: 'ssh://git@github.com:22/acme/brand-kit.git', folder: '', ref: undefined },
+  ],
+  [
     'git@github.com:acme/brand-kit.git//brands/acme#v2',
     { remote: 'git@github.com:acme/brand-kit.git', folder: 'brands/acme', ref: 'v2' },
   ],
@@ -54,23 +58,50 @@ const INVALID: readonly (readonly [string, string])[] = [
   ['http://github.com/acme/brand-kit', 'only https:// and ssh://'],
   ['https://user:token@github.com/acme/brand-kit', 'user name, token or password'],
   ['https://token@github.com/acme/brand-kit', 'user name, token or password'],
+  ['https://@github.com/acme/brand-kit', 'user name, token or password'],
   ['gh:acme', 'the owner and the repository'],
-  ['gh:acme/brand-kit/../../etc', 'the folder segment ".."'],
-  ['gh:acme/brand-kit/brands/*', 'the folder segment "*"'],
-  ['gh:acme/brand-kit/-x', 'the folder segment "-x"'],
-  ['gh:acme/brand-kit#--upload-pack=evil', 'the ref "--upload-pack=evil"'],
-  ['gh:acme/brand-kit#a..b', 'the ref "a..b"'],
+  ['gh:acme/brand-kit/../../etc', 'folder segments may hold only'],
+  ['gh:acme/brand-kit/brands/*', 'folder segments may hold only'],
+  ['gh:acme/brand-kit/-x', 'folder segments may hold only'],
+  ['gh:acme/brand-kit#--upload-pack=evil', 'the ref has invalid syntax'],
+  ['gh:acme/brand-kit#a..b', 'the ref has invalid syntax'],
   ['https://github.com/acme/brand-kit/blob/main/brand.ts', 'github.com/owner/repo/tree/'],
   ['https://github.com/acme/brand-kit/tree/main/brands/acme#v2', 'leave out the #ref'],
-  ['-oProxyCommand=evil@host:repo', 'is not a user and host'],
+  ['-oProxyCommand=evil@host:repo', 'needs a valid user and host'],
   ['brands/acme', 'neither gh:owner/repo'],
+];
+
+/**
+ * A synthetic credential used in rejected source components.
+ */
+const MARKER = 'synthetic-brand-credential';
+
+/**
+ * Invalid authority, path, folder and ref spellings that must not echo the credential.
+ */
+const SECRET_SOURCES = [
+  `https://user:${MARKER}@github.com/acme/brand-kit`,
+  `https://${MARKER}@github.com/acme/brand-kit`,
+  `ssh://git:${MARKER}@example.test/acme/brand-kit`,
+  `ssh://git%3A${MARKER}@example.test/acme/brand-kit`,
+  `https://${MARKER}?query@example.test/acme/brand-kit`,
+  `https://example.test?token=${MARKER}/acme/brand-kit`,
+  `https://example.test/acme/brand-kit?token=${MARKER}`,
+  `https://example.test/acme/brand-kit//brand?token=${MARKER}`,
+  `https://github.com/acme/brand-kit/tree/main?token=${MARKER}`,
+  `gh:acme/brand-kit#main?token=${MARKER}`,
+  `git:${MARKER}@example.test:acme/brand-kit`,
+  `git@${MARKER}?query:acme/brand-kit`,
 ];
 
 describe('parseBrandSource', () => {
   it.effect('reads the shorthand, GitHub links and git addresses', () =>
     Effect.gen(function* () {
       for (const [input, expected] of VALID) {
-        expect(yield* parseBrandSource(input), input).toEqual(expected);
+        expect(yield* parseBrandSource(input), input).toEqual({
+          ...expected,
+          display: input.trim(),
+        });
       }
     }),
   );
@@ -81,6 +112,16 @@ describe('parseBrandSource', () => {
         const error = yield* Effect.flip(parseBrandSource(input));
         expect(error.message, input).toContain(reason);
         expect(error.message, input).toContain('deck brand --help');
+      }
+    }),
+  );
+
+  it.effect('omits credentials in rejected source components', () =>
+    Effect.gen(function* () {
+      for (const source of SECRET_SOURCES) {
+        const error = yield* Effect.flip(parseBrandSource(source));
+        expect(error.message).toContain('Invalid brand source');
+        expect(error.message).not.toContain(MARKER);
       }
     }),
   );
