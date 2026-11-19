@@ -1,0 +1,21 @@
+---
+layout: demo
+title: The agent stops before it sends a message
+eyebrow: Agent run trace
+budget: 50s
+---
+
+<RunTrace
+  instruction="Draft a delivery update for WQ-214."
+  calls={[
+    { tool: 'lookup_drop', input: 'WQ-214', observation: 'Brightloaf · due by 09:35 · loop 17.' },
+    { tool: 'read_rider_eta', input: 'Loop 17', observation: 'Aoife expects to reach Weir Street at 09:21.' },
+  ]}
+  checkpoint="Dispatcher must approve"
+  outcome="Draft ready. Your Brightloaf order is due by 09:35. Expected arrival 09:21."
+/>
+
+<Notes>
+`agent-run-trace` pairs each call with its observation and stops at human approval.
+The task is to draft an update. [click] The drop record returns the committed window and loop. [click] The rider record returns the live ETA. [click] The assistant prepares the draft and stops at the human checkpoint. The status says dispatcher approval is required before sending.
+</Notes>

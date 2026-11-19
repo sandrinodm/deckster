@@ -19,8 +19,8 @@ pnpm deck lint lookbook
 pnpm deck lint lookbook --brand nocturne
 ```
 
-The deck has 189 slides and 386 steps in 12 parts. The slide budgets add up to 130 minutes 45
-seconds within the 135-minute runtime. The fictional forty-minute launch talk selects slides
+The deck has 204 slides and 427 steps in 12 parts. The slide budgets add up to 142 minutes 20
+seconds within the 147-minute runtime. The fictional forty-minute launch talk selects slides
 from the lookbook.
 
 ## Parts
@@ -58,6 +58,36 @@ problem. Slide ids say what the slide shows (`split-photo-left-bleed`, `chart-wa
 | Ask an investment committee for a specific decision                | [Investment committee](slides/investment-committee.mdx)          |
 | Connect an opportunity to a measurable test                        | [Opportunity to experiments](slides/opportunity-experiments.mdx) |
 
+### Vision and strategy
+
+| When you need to…                                                   | Copy this slide                                     |
+| ------------------------------------------------------------------- | --------------------------------------------------- |
+| Follow one customer outcome through three human moments             | [Vision storyboard](slides/vision-storyboard.mdx)   |
+| Trace the decisions from a pencil sketch to the shipped design      | [Sketch to ship](slides/sketch-to-ship.mdx)         |
+| Explain the dependency between two workstreams                      | [Transit roadmap](slides/roadmap-transit.mdx)       |
+| Show which scopes are still uncertain and which are ready to build  | [Uncertainty hill roadmap](slides/roadmap-hill.mdx) |
+| Show where to expand and which physical constraint changes the plan | [Opportunity map](slides/opportunity-map.mdx)       |
+| Compare competing offers and explain your strategic tradeoff        | [Strategy canvas](slides/strategy-canvas.mdx)       |
+| Work backward from an illustrated future to one test                | [Future-back plan](slides/future-back.mdx)          |
+
+The [visual patterns guide](../../skills/create-presentation/references/visual-patterns.md)
+includes field shapes, reveal order and source notes for these layouts. The vision storyboard
+draws on customer-experience storyboarding, the hill on Basecamp's work-tracking method and the
+value curves on the Blue Ocean strategy canvas. [Customer storyboards](https://articles.sequoiacap.com/visualizing-customer-experience) · [Basecamp Hill Charts](https://basecamp.com/shapeup/3.4-chapter-13) · [Strategy Canvas](https://www.blueoceanstrategy.com/tools/strategy-canvas/)
+
+### Product and AI demos
+
+| When you need to…                                             | Copy this slide                                   |
+| ------------------------------------------------------------- | ------------------------------------------------- |
+| Zoom in on a single decision within its original screen       | [Browser spotlight](slides/browser-spotlight.mdx) |
+| Compare two versions of one screen in the same position       | [Version wipe](slides/version-wipe.mdx)           |
+| Follow one action from desktop to mobile                      | [Device handoff](slides/device-handoff.mdx)       |
+| Preserve the key frames of a workflow                         | [Demo filmstrip](slides/demo-filmstrip.mdx)       |
+| Show how a keyboard command changes the working view          | [Command palette](slides/command-palette.mdx)     |
+| Let the audience verify a generated answer against its source | [Grounded answer](slides/ai-grounded-answer.mdx)  |
+| Show a proposed change and the human review decision          | [Review diff](slides/ai-review-diff.mdx)          |
+| Make an agent's actions and approval boundary visible         | [Agent run trace](slides/agent-run-trace.mdx)     |
+
 ## What holds it complete
 
 `packages/cli/src/lookbook/lookbook-coverage.test.ts` reads the kit's catalogs and this deck's
@@ -73,6 +103,6 @@ cd packages/cli && pnpm exec vp test run src/lookbook
 ## Pictures
 
 Sources and licences are in [assets/CREDITS.txt](assets/CREDITS.txt). The video and animation
-come from the framework's other sample decks; the logo, portraits, customer logos, product
-screens, map and the eight illustrated scenes of Wrenhaul at work are drawn for this deck, and
-`BRIEF.md` lists what each one shows. The deck has no photographs.
+come from the framework's other sample decks. The logo, portraits, product screens, maps and
+drawn scenes are made for this deck. Four generated editorial photographs illustrate the
+storyboard and the future-back plan. Their subjects and places are fictional. [Picture credits](assets/CREDITS.txt)

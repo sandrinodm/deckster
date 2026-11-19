@@ -1,0 +1,25 @@
+---
+layout: sketch-to-ship
+title: The deadline belongs beside the loop
+eyebrow: From dispatch sketch to release
+budget: 45s
+reveal: true
+sketch:
+  src: ../assets/screens/dispatch-notebook.svg
+  alt: Rough pencil drawing with a deadline on one row and a loop slot below it.
+finished:
+  src: ../assets/screens/dispatch-assignment.svg
+  alt: The original Wrenhaul dispatch assignment view puts the deadline beside the chosen loop.
+annotations:
+  - label: Promised window
+    sketch: { x: 52, y: 28 }
+    finished: { x: 51, y: 30 }
+  - label: Available loop
+    sketch: { x: 54, y: 76 }
+    finished: { x: 53, y: 76 }
+result: Hub leads can check the loop against the window before assigning it.
+---
+
+<Notes>
+`sketch-to-ship` pins the same decisions in an original sketch and the released state. At the drawing stage we wrote the customer promise at the top and put the route choice on its own line. [click] In the released view our hub lead reads both in one glance. The useful change was making those two facts visible at the decision, while a different loop can still be chosen.
+</Notes>

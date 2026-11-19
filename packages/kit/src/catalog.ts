@@ -25,11 +25,13 @@ import { equationLayoutContract } from '#layouts/equation-layout.contract.ts';
 import { exerciseLayoutContract } from '#layouts/exercise-layout.contract.ts';
 import { faqLayoutContract } from '#layouts/faq-layout.contract.ts';
 import { featuresLayoutContract } from '#layouts/features-layout.contract.ts';
+import { futureBackLayoutContract } from '#layouts/future-back-layout.contract.ts';
 import { galleryLayoutContract } from '#layouts/gallery-layout.contract.ts';
 import { imageLayoutContract } from '#layouts/image-layout.contract.ts';
 import { logosLayoutContract } from '#layouts/logos-layout.contract.ts';
 import { marketLayoutContract } from '#layouts/market-layout.contract.ts';
 import { matrixLayoutContract } from '#layouts/matrix-layout.contract.ts';
+import { opportunityMapLayoutContract } from '#layouts/opportunity-map-layout.contract.ts';
 import { personaLayoutContract } from '#layouts/persona-layout.contract.ts';
 import { pricingLayoutContract } from '#layouts/pricing-layout.contract.ts';
 import { productCutawayLayoutContract } from '#layouts/product-cutaway-layout.contract.ts';
@@ -39,21 +41,27 @@ import { quizLayoutContract } from '#layouts/quiz-layout.contract.ts';
 import { quoteLayoutContract } from '#layouts/quote-layout.contract.ts';
 import { recapLayoutContract } from '#layouts/recap-layout.contract.ts';
 import { risksLayoutContract } from '#layouts/risks-layout.contract.ts';
+import { roadmapHillLayoutContract } from '#layouts/roadmap-hill-layout.contract.ts';
+import { roadmapTransitLayoutContract } from '#layouts/roadmap-transit-layout.contract.ts';
 import { scheduleLayoutContract } from '#layouts/schedule-layout.contract.ts';
 import { screenLayoutContract } from '#layouts/screen-layout.contract.ts';
+import { screenStoryLayoutContract } from '#layouts/screen-story-layout.contract.ts';
 import { sectionLayoutContract } from '#layouts/section-layout.contract.ts';
 import { serviceBlueprintLayoutContract } from '#layouts/service-blueprint-layout.contract.ts';
 import { shiftLayoutContract } from '#layouts/shift-layout.contract.ts';
+import { sketchToShipLayoutContract } from '#layouts/sketch-to-ship-layout.contract.ts';
 import { sourcesLayoutContract } from '#layouts/sources-layout.contract.ts';
 import { splitLayoutContract } from '#layouts/split-layout.contract.ts';
 import { statementLayoutContract } from '#layouts/statement-layout.contract.ts';
 import { statsLayoutContract } from '#layouts/stats-layout.contract.ts';
 import { statusLayoutContract } from '#layouts/status-layout.contract.ts';
 import { stepsLayoutContract } from '#layouts/steps-layout.contract.ts';
+import { strategyCanvasLayoutContract } from '#layouts/strategy-canvas-layout.contract.ts';
 import { tableLayoutContract } from '#layouts/table-layout.contract.ts';
 import { teamLayoutContract } from '#layouts/team-layout.contract.ts';
 import { timelineLayoutContract } from '#layouts/timeline-layout.contract.ts';
 import { titleLayoutContract } from '#layouts/title-layout.contract.ts';
+import { visionStoryboardLayoutContract } from '#layouts/vision-storyboard-layout.contract.ts';
 import { voicesLayoutContract } from '#layouts/voices-layout.contract.ts';
 
 export {
@@ -99,6 +107,14 @@ export default defineLayoutCatalog({
     galleryLayoutContract,
     beforeAfterLayoutContract,
     screenLayoutContract,
+    screenStoryLayoutContract,
+    visionStoryboardLayoutContract,
+    sketchToShipLayoutContract,
+    futureBackLayoutContract,
+    roadmapTransitLayoutContract,
+    roadmapHillLayoutContract,
+    opportunityMapLayoutContract,
+    strategyCanvasLayoutContract,
     productCutawayLayoutContract,
     cardsLayoutContract,
     columnsLayoutContract,

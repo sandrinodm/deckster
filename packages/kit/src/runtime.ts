@@ -9,6 +9,10 @@ import { CodeMove } from '#code/code-move.tsx';
 import { CodeStep } from '#code/code-step.tsx';
 import { Code } from '#code/code.tsx';
 import { Cmd, Out, Terminal } from '#code/terminal.tsx';
+import { CommandDemo } from '#demo/command-demo.tsx';
+import { GroundedAnswer } from '#demo/grounded-answer.tsx';
+import { ReviewDiff } from '#demo/review-diff.tsx';
+import { RunTrace } from '#demo/run-trace.tsx';
 import { DIAGRAM_COMPONENTS } from '#diagrams/diagram-components.ts';
 import { MarkdownTable } from '#foundation/markdown-table.tsx';
 import { Icon } from '#icons/icon.tsx';
@@ -38,11 +42,13 @@ import { equationLayout } from '#layouts/equation-layout.tsx';
 import { exerciseLayout } from '#layouts/exercise-layout.tsx';
 import { faqLayout } from '#layouts/faq-layout.tsx';
 import { featuresLayout } from '#layouts/features-layout.tsx';
+import { futureBackLayout } from '#layouts/future-back-layout.tsx';
 import { galleryLayout } from '#layouts/gallery-layout.tsx';
 import { imageLayout } from '#layouts/image-layout.tsx';
 import { logosLayout } from '#layouts/logos-layout.tsx';
 import { marketLayout } from '#layouts/market-layout.tsx';
 import { matrixLayout } from '#layouts/matrix-layout.tsx';
+import { opportunityMapLayout } from '#layouts/opportunity-map-layout.tsx';
 import { personaLayout } from '#layouts/persona-layout.tsx';
 import { pricingLayout } from '#layouts/pricing-layout.tsx';
 import { productCutawayLayout } from '#layouts/product-cutaway-layout.tsx';
@@ -52,21 +58,27 @@ import { quizLayout } from '#layouts/quiz-layout.tsx';
 import { quoteLayout } from '#layouts/quote-layout.tsx';
 import { recapLayout } from '#layouts/recap-layout.tsx';
 import { risksLayout } from '#layouts/risks-layout.tsx';
+import { roadmapHillLayout } from '#layouts/roadmap-hill-layout.tsx';
+import { roadmapTransitLayout } from '#layouts/roadmap-transit-layout.tsx';
 import { scheduleLayout } from '#layouts/schedule-layout.tsx';
 import { screenLayout } from '#layouts/screen-layout.tsx';
+import { screenStoryLayout } from '#layouts/screen-story-layout.tsx';
 import { sectionLayout } from '#layouts/section-layout.tsx';
 import { serviceBlueprintLayout } from '#layouts/service-blueprint-layout.tsx';
 import { shiftLayout } from '#layouts/shift-layout.tsx';
+import { sketchToShipLayout } from '#layouts/sketch-to-ship-layout.tsx';
 import { sourcesLayout } from '#layouts/sources-layout.tsx';
 import { splitLayout } from '#layouts/split-layout.tsx';
 import { statementLayout } from '#layouts/statement-layout.tsx';
 import { statsLayout } from '#layouts/stats-layout.tsx';
 import { statusLayout } from '#layouts/status-layout.tsx';
 import { stepsLayout } from '#layouts/steps-layout.tsx';
+import { strategyCanvasLayout } from '#layouts/strategy-canvas-layout.tsx';
 import { tableLayout } from '#layouts/table-layout.tsx';
 import { teamLayout } from '#layouts/team-layout.tsx';
 import { timelineLayout } from '#layouts/timeline-layout.tsx';
 import { titleLayout } from '#layouts/title-layout.tsx';
+import { visionStoryboardLayout } from '#layouts/vision-storyboard-layout.tsx';
 import { voicesLayout } from '#layouts/voices-layout.tsx';
 import { Button } from '#links/button.tsx';
 import { Download } from '#links/download.tsx';
@@ -128,6 +140,14 @@ export default definePlugin({
     galleryLayout,
     beforeAfterLayout,
     screenLayout,
+    screenStoryLayout,
+    visionStoryboardLayout,
+    sketchToShipLayout,
+    futureBackLayout,
+    roadmapTransitLayout,
+    roadmapHillLayout,
+    opportunityMapLayout,
+    strategyCanvasLayout,
     productCutawayLayout,
     cardsLayout,
     columnsLayout,
@@ -179,6 +199,10 @@ export default definePlugin({
     Icon,
     Live,
     AppFrame,
+    CommandDemo,
+    GroundedAnswer,
+    ReviewDiff,
+    RunTrace,
     ...CHART_COMPONENTS,
     ...DIAGRAM_COMPONENTS,
   },

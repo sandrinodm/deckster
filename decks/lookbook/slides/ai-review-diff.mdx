@@ -1,0 +1,21 @@
+---
+layout: demo
+title: A dispatcher approves the revised message
+eyebrow: Human review
+surface: inverse
+budget: 45s
+---
+
+<ReviewDiff
+  document="Recipient draft · WQ-214"
+  before="Your Brightloaf order "
+  original="will be there soon"
+  suggestion="is due by 09:35"
+  after="."
+  rationale="Use the promised time from the dispatch record."
+/>
+
+<Notes>
+`ai-review-diff` shows one proposed change and the human decision.
+Read the original phrase, will be there soon. [click] The assistant proposes a specific edit using the Dispatch promise. The reviewer can keep the original or accept. [click] The authored decision accepts the edit and shows the exact draft that results. The local demo saves a draft only.
+</Notes>

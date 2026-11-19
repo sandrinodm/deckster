@@ -571,6 +571,89 @@ export const COMPONENT_INFOS = [
       '<AppFrame app="agent-demo" poster="../assets/agent.png" alt="An agent run" chrome="window" />',
   },
   {
+    name: 'CommandDemo',
+    kind: 'app',
+    useWhen: 'A keyboard command opens data. Show the workspace, choice and executed result.',
+    avoid: 'A live application that needs authenticated state or external data.',
+    props: {
+      workspace: prop('string', true, null, 'The workspace name shown in the chrome.'),
+      context: prop('string', true, null, 'What the workspace shows before opening the palette.'),
+      commands: prop(
+        'object[]',
+        true,
+        null,
+        'Supply commands with name, result and rows. The first command is the scripted example.',
+      ),
+      reveal: prop('boolean', false, true, 'Use two deck advances for the palette and result.'),
+    },
+    example:
+      '<CommandDemo workspace="Dispatch" context="Ready" commands={[{name:"List drops",result:"One waiting",rows:[{label:"WQ-214",detail:"Due by 09:35"}]}]} />',
+  },
+  {
+    name: 'GroundedAnswer',
+    kind: 'app',
+    useWhen: 'An answer cites specific source text, and readers can check the exact passage.',
+    avoid: 'An answer without an authored source or an explicit citation.',
+    props: {
+      question: prop('string', true, null, 'The question submitted to the assistant.'),
+      answer: prop('string', true, null, 'The concise answer the evidence supports.'),
+      sourceTitle: prop('string', true, null, 'The name of the document or brief.'),
+      reference: prop('string', true, null, 'The location of the evidence inside the source.'),
+      context: prop('string', true, null, 'Relevant words before the supporting passage.'),
+      evidence: prop('string', true, null, 'The exact words that the citation points to.'),
+      reveal: prop('boolean', false, true, 'Use two deck advances for the answer and evidence.'),
+    },
+    example:
+      '<GroundedAnswer sourceTitle="Dispatch rules" reference="Guide §3" context="Check each parcel." evidence="The bike limit is 25 kg." question="Will 28 kg fit?" answer="No. It exceeds the limit." />',
+  },
+  {
+    name: 'ReviewDiff',
+    kind: 'app',
+    useWhen: 'A human reviews one exact change proposed by an assistant.',
+    avoid: 'A code patch with many changed lines, which belongs in a diff fence.',
+    props: {
+      document: prop('string', true, null, 'The file, document or record being reviewed.'),
+      before: prop('string', true, null, 'Unchanged words preceding the proposed edit.'),
+      original: prop('string', true, null, 'The exact words the assistant proposes removing.'),
+      suggestion: prop('string', true, null, 'The exact words the assistant proposes inserting.'),
+      after: prop('string', true, null, 'Unchanged text following the proposed edit.'),
+      rationale: prop('string', true, null, 'The reason for the suggested change.'),
+      reveal: prop(
+        'boolean',
+        false,
+        true,
+        'Use two advances to show the proposed edit, then approval.',
+      ),
+    },
+    example:
+      '<ReviewDiff document="Draft" before="Arrives " original="soon" suggestion="by 09:35" after="." rationale="Use the committed time." />',
+  },
+  {
+    name: 'RunTrace',
+    kind: 'app',
+    useWhen: 'An assistant makes two observable tool calls, then stops for a person to act.',
+    avoid: 'A technical trace with more than two calls, which belongs in a sequence diagram.',
+    props: {
+      instruction: prop('string', true, null, 'The task the person gave to the assistant.'),
+      calls: prop(
+        'object[]',
+        true,
+        null,
+        'Exactly two calls, each with its tool, input and observation.',
+      ),
+      checkpoint: prop(
+        'string',
+        true,
+        null,
+        'The human judgment needed before an external operation.',
+      ),
+      outcome: prop('string', true, null, 'What the run prepared before that checkpoint.'),
+      reveal: prop('boolean', false, true, 'Use three advances for the calls then the checkpoint.'),
+    },
+    example:
+      '<RunTrace instruction="Draft an update." calls={[{tool:"lookup_drop",input:"WQ-214",observation:"Due by 09:35"},{tool:"read_eta",input:"Loop 17",observation:"ETA 09:21"}]} checkpoint="Approval required" outcome="Draft ready." />',
+  },
+  {
     name: 'Step',
     kind: 'motion',
     useWhen:

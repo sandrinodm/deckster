@@ -61,7 +61,7 @@ Illustrative content: Halden and its numbers are fictional; the framework's own 
 | 41 | week | From brief to stage in five sessions | Five milestones | timeline | 45s | Workflow |
 | 42 | start | Your first deck is four commands away | Four steps, revealed | steps | 45s | Call to action |
 | 43 | links | Everything else is one click away | Link cards, button, download | split | 30s | Follow-up |
-| 44 | recap | This deck used 23 of the 55 layouts and every diagram | Progress bars, real counts | chart | 30s | Evidence, once more |
+| 44 | recap | This deck used 23 of the 63 layouts and every diagram | Progress bars, real counts | chart | 30s | Evidence, once more |
 | 45 | closing | Write the claim, let the deck check | QR and contacts | closing | 1m | Takeaway |
 
 ## Open items

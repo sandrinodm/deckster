@@ -116,7 +116,7 @@ An agent that writes slides needs rules it can read and a check it can run. deck
 Slides fill typed layouts. A layout such as `cards`, `stats` or `comparison` owns the grid, the type
 and the spacing, and its contract says which frontmatter fields and slots it takes and how much
 content fits: words, bullets and items, counted the same in every brand. `pnpm deck layouts
---summary` prints that budget for all 55 layouts, and the `charts`, `diagrams`, `components` and
+--summary` prints that budget for all 63 layouts, and the `charts`, `diagrams`, `components` and
 `icons` commands list the rest. The build fails on an unknown layout, field or icon.
 
 `deck lint` is the check. It renders every step of every slide in Chromium and reports overflow,
@@ -132,7 +132,7 @@ copies it into `brands/`. The reasons behind these choices are in [docs/design.m
 
 ## What it does
 
-- Write MDX or TSX slides on [55 kit layouts](packages/kit/README.md), with code blocks (Shiki,
+- Write MDX or TSX slides on [63 kit layouts](packages/kit/README.md), with code blocks (Shiki,
   line steps, diffs, `<CodeMove>`), `<Terminal>`, images, video with cues, Lottie and icons from
   the brand's icon set.
 - Put numbers on a slide with chart and number components in the brand's chart palette that
@@ -251,7 +251,7 @@ Brands and decks:
 | [brands/default](brands/default/README.md)   | Light, cool grays with a cobalt accent; every deck here uses it                   |
 | [brands/nocturne](brands/nocturne/README.md) | Dark and editorial; the tests render decks in it to check they fit both           |
 | [decks/hello](decks/hello/README.md)         | The 4-slide starter and the default deck of `deck dev`                            |
-| [decks/showcase](decks/showcase/README.md)   | A 45-slide talk about deckster that uses 23 of the 55 layouts                     |
+| [decks/showcase](decks/showcase/README.md)   | A 45-slide talk about deckster that uses 23 of the 63 layouts                     |
 | [decks/lookbook](decks/lookbook/README.md)   | One talk that shows every layout and option, every chart, diagram and component   |
 | [decks/\*](decks/README.md)                  | Six test decks the suites drive, one area of the kit each; run them like any deck |
 

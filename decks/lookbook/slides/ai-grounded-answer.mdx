@@ -1,0 +1,21 @@
+---
+layout: demo
+title: Check the answer against the dispatch rule
+eyebrow: Grounded answer
+surface: gradient
+budget: 45s
+---
+
+<GroundedAnswer
+  sourceTitle="Bike dispatch guide"
+  reference="Dispatch guide · §3"
+  context="Dispatch checks each parcel before grouping nearby orders into a loop."
+  evidence="Cargo bikes may carry a parcel weighing up to 25 kg."
+  question="Can I send a 28 kg box by bike?"
+  answer="No. The box is 3 kg over the bike parcel limit."
+/>
+
+<Notes>
+`ai-grounded-answer` links the answer to the exact sentence in the dispatch guide.
+Show the guide and the question on the same canvas. [click] The answer names the limit and cites section 3. [click] Highlight the exact sentence in the guide so the room can check the claim. A presenter can also activate the citation to jump focus to that evidence.
+</Notes>

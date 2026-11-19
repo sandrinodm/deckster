@@ -1,0 +1,35 @@
+---
+layout: demo
+title: One command opens the waiting drops
+eyebrow: Keyboard command palette
+budget: 40s
+---
+
+<CommandDemo
+  workspace="Flock Dispatch · Old Town"
+  context="Dispatch workspace"
+  commands={[
+    {
+      name: 'Show waiting drops',
+      result: '3 drops waiting at Old Town',
+      rows: [
+        { label: 'WQ-214 · Brightloaf', detail: 'Due by 09:35' },
+        { label: 'WQ-219 · Pantry Lane', detail: 'Due by 09:48' },
+        { label: 'WQ-223 · Calloway Pharmacy', detail: 'Due by 10:00' },
+      ],
+    },
+    {
+      name: 'Show active loops',
+      result: '2 loops out from Old Town',
+      rows: [
+        { label: 'Loop 17 · Aoife', detail: '9 drops · First stop on Weir Street' },
+        { label: 'Loop 18 · Jonas', detail: '9 drops · First stop on Canal Yard' },
+      ],
+    },
+  ]}
+/>
+
+<Notes>
+`command-palette` uses a local keyboard overlay with two commands.
+Start from the Dispatch workspace. [click] Show the command palette with Show waiting drops first. Press Enter on the focused command or [click] advance the deck to show the result. The command opens the queue and returns the three waiting drops with their deadlines. The alternative command has its own local result.
+</Notes>

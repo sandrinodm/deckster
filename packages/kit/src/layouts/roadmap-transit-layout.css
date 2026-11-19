@@ -1,0 +1,103 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-transit-map {
+    position: relative;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .kit-transit-map [data-transit-track='0'] {
+    --kit-transit-ink: var(--brand-color-accent);
+  }
+  .kit-transit-map [data-transit-track='1'] {
+    --kit-transit-ink: var(--brand-color-positive);
+  }
+  .kit-transit-map [data-transit-track='2'] {
+    --kit-transit-ink: var(--brand-color-muted);
+  }
+
+  .kit-transit-line {
+    stroke: var(--kit-transit-ink);
+    stroke-width: 5px;
+  }
+  .kit-transit-line[data-transit-track='1'] {
+    stroke-dasharray: 17 6;
+  }
+  .kit-transit-line[data-transit-track='2'] {
+    stroke-dasharray: 5 8;
+  }
+
+  .kit-transit-transfer {
+    fill: none;
+    stroke: var(--brand-color-fg);
+    stroke-width: 0.24;
+  }
+
+  .kit-transit-periods,
+  .kit-transit-tracks,
+  .kit-transit-tracks li {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kit-transit-map :is(p, h3) {
+    margin: 0;
+  }
+
+  .kit-transit-map
+    :is(.kit-transit-period, .kit-transit-name, .kit-transit-stop, .kit-transit-connection) {
+    position: absolute;
+  }
+
+  .kit-transit-period {
+    color: var(--brand-color-muted);
+    transform: translateX(-50%);
+  }
+
+  .kit-transit-name {
+    max-width: 17%;
+    transform: translateY(-50%);
+  }
+
+  .kit-transit-stop {
+    width: 19%;
+    padding-top: var(--brand-space-sm);
+    text-align: center;
+    transform: translateX(-50%);
+  }
+
+  .kit-transit-stop::before {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--brand-space-sm);
+    height: var(--brand-space-sm);
+    border: 3px solid var(--kit-transit-ink);
+    border-radius: 50%;
+    background: var(--brand-color-bg);
+    content: '';
+    transform: translate(-50%, -50%);
+  }
+
+  .kit-transit-stop p {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-transit-connection {
+    padding: var(--brand-space-2xs) var(--brand-space-xs);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-bg);
+    color: var(--brand-color-accent-text);
+    transform: translate(var(--brand-space-xs), -50%);
+  }
+
+  .kit-transit-milestone {
+    align-self: flex-end;
+    margin: 0;
+    padding: var(--brand-space-xs) 0 var(--brand-space-xs) var(--brand-space-sm);
+    border-inline-start: 3px solid var(--brand-color-accent);
+  }
+}

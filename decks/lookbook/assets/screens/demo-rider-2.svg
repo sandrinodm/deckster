@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 626" width="430" height="626">
+  <g font-family="Arial, sans-serif">
+    <rect x="0" y="0" width="430" height="626" rx="0" fill="#f5efe4"/>
+    <rect x="0" y="0" width="430" height="113" rx="0" fill="#1d2a33"/>
+    <text x="27" y="41" font-size="20" font-weight="700" fill="#fffdf7" text-anchor="start">Rider · Loop 17</text>
+    <text x="27" y="83" font-size="34" font-weight="700" fill="#fffdf7" text-anchor="start">Start handoff</text>
+    <rect x="22" y="136" width="386" height="128" rx="14" fill="#fffdf7" stroke="#dfd5c4"/>
+    <text x="45" y="171" font-size="19" font-weight="700" fill="#8c3b2c" text-anchor="start">PARCEL WQ-214</text>
+    <text x="45" y="216" font-size="28" font-weight="700" fill="#1d2a33" text-anchor="start">Hand the order to Sam</text>
+    <text x="45" y="246" font-size="18" font-weight="500" fill="#665a50" text-anchor="start">Brightloaf · Hand to recipient</text>
+    <rect x="22" y="282" width="386" height="195" rx="14" fill="#f9e1d6"/>
+    <path d="M94 427V312h106v115M93 427h110" fill="none" stroke="#8c3b2c" stroke-width="6" stroke-linecap="round"/>
+    <path d="M161 367h12" fill="none" stroke="#8c3b2c" stroke-width="6" stroke-linecap="round"/>
+    <path d="M206 390l31-19 40 17v43l-32 19-39-17z" fill="#fff6e5" stroke="#8c3b2c" stroke-width="5" stroke-linejoin="round"/>
+    <path d="m206 390 39 18 32-20m-32 20v42" fill="none" stroke="#8c3b2c" stroke-width="5"/>
+    <text x="294" y="364" font-size="15" font-weight="700" fill="#8c3b2c" text-anchor="start">AT THE</text>
+    <text x="294" y="389" font-size="22" font-weight="700" fill="#8c3b2c" text-anchor="start">DOOR</text>
+    <rect x="22" y="505" width="386" height="60" rx="11" fill="#1d2a33"/>
+    <text x="215" y="543" font-size="22" font-weight="700" fill="#fffdf7" text-anchor="middle">Confirm handover</text>
+  </g>
+</svg>

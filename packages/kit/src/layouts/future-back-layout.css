@@ -1,0 +1,88 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-future-chain {
+    display: grid;
+    flex: 1 1 0;
+    grid-template-columns: minmax(0, 24fr) minmax(0, 25fr) minmax(0, 51fr);
+    align-items: center;
+    gap: var(--brand-space-lg);
+    min-height: 0;
+  }
+
+  .kit-future-end {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-row: 1;
+    grid-column: 3;
+    align-self: stretch;
+    gap: var(--brand-space-sm);
+    min-height: 0;
+    margin: 0;
+  }
+
+  .kit-future-art {
+    min-height: 0;
+    overflow: hidden;
+    border-radius: var(--brand-radius-md);
+    background: var(--brand-color-surface);
+  }
+
+  .kit-future-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .kit-future-capabilities {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .kit-future-bet {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .kit-future-chain :is(p, h3, ul) {
+    margin: 0;
+  }
+
+  .kit-future-capabilities ul {
+    display: grid;
+    gap: var(--brand-space-md);
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-future-capabilities li {
+    padding-inline-start: var(--brand-space-sm);
+    border-inline-start: 2px solid var(--brand-color-border);
+  }
+
+  .kit-future-capabilities li p,
+  .kit-future-bet > p:last-child {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-future-chain .kit-future-bridge {
+    display: flex;
+    align-items: center;
+    gap: var(--brand-space-xs);
+    margin-bottom: var(--brand-space-md);
+    padding-bottom: var(--brand-space-xs);
+    border-bottom: 1px solid var(--brand-color-border);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-future-bridge span {
+    color: var(--brand-color-accent);
+    font-size: var(--brand-type-title-size);
+    line-height: 1;
+  }
+
+  .kit-future-chain .kit-future-kicker {
+    margin-bottom: var(--brand-space-2xs);
+    color: var(--brand-color-accent);
+  }
+}

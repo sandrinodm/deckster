@@ -1,0 +1,67 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-storyboard {
+    display: grid;
+    flex: 1 1 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: var(--brand-space-sm);
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-storyboard-scene {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    min-height: 0;
+    padding-top: var(--brand-space-2xs);
+    border-top: 2px solid var(--brand-color-border);
+  }
+
+  .kit-storyboard-scene[data-storyboard-current='true'] {
+    border-color: var(--brand-color-accent);
+  }
+
+  .kit-storyboard-scene figure {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    gap: var(--brand-space-sm);
+    margin: 0;
+  }
+
+  .kit-storyboard-frame {
+    min-height: 0;
+    overflow: hidden;
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-surface);
+  }
+
+  .kit-storyboard-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .kit-storyboard-scene figcaption {
+    min-height: 4.7em;
+  }
+
+  .kit-storyboard-moment {
+    color: var(--brand-color-accent);
+  }
+
+  .kit-storyboard-scene :is(h3, p) {
+    margin: 0;
+  }
+
+  .kit-storyboard-scene p {
+    color: var(--brand-color-muted);
+  }
+}

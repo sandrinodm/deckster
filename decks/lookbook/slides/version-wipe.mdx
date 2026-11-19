@@ -1,0 +1,24 @@
+---
+layout: screen-story
+pattern: wipe
+title: A deadline moves into the dispatch queue
+eyebrow: Version wipe
+address: dispatch.wrenhaul.example
+ratio: 2
+reveal: true
+budget: 35s
+screens:
+  - src: ../assets/screens/demo-queue-before.svg
+    alt: Old dispatch queue showing Same hour for each parcel without an exact deadline
+    label: Before · Service only
+    detail: Dispatch had to open the order to see its promise.
+  - src: ../assets/screens/demo-queue-after.svg
+    alt: Updated queue showing the exact deadlines, including 09:35 for Brightloaf
+    label: After · Exact deadline
+    detail: The promised time is visible in every row.
+---
+
+<Notes>
+`version-wipe` uses two aligned captures of the same Dispatch viewport.
+Start in the earlier queue. The service column says Same hour, so you have to open each order to check the deadline. [click] Wipe to the same viewport in the new version. Keep your eye on that column as the exact times appear.
+</Notes>

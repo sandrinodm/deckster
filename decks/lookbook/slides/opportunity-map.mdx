@@ -1,0 +1,37 @@
+---
+layout: opportunity-map
+title: Open on Saltby’s market side of the river
+eyebrow: Where the first hub belongs
+budget: 55s
+reveal: true
+map:
+  src: ../assets/maps/saltby-expansion.svg
+  alt: Saltby’s dense western market streets meet a tidal river with one short bridge to Mill Green on the eastern bank.
+districts:
+  - label: Market Row
+    point: { x: 28, y: 21 }
+  - label: Mill Green
+    point: { x: 74, y: 25 }
+  - label: South Marsh
+    point: { x: 14, y: 79 }
+proposed:
+  label: Quayside
+  point: { x: 38, y: 58 }
+  detail: Reach the market’s shops from a single short loop on the west bank.
+constraint:
+  label: One short crossing
+  point: { x: 53, y: 44 }
+  detail: Delay Mill Green until bridge queues fit comfortably inside the hour.
+route:
+  - { x: 38, y: 58 }
+  - { x: 32, y: 55 }
+  - { x: 22, y: 48 }
+  - { x: 22, y: 30 }
+  - { x: 28, y: 21 }
+---
+
+<Footnote>Illustrative district map for the Saltby expansion case.</Footnote>
+
+<Notes>
+`opportunity-map` starts with the districts and crossing so the route can be read against geography. The shops that can form a short first loop sit on the west bank. [click] Put the first hub at Quayside and collect along the market route. [click] The short bridge is the constraint. Test queues there before counting Mill Green orders as part of the opening loop. Its proposed autumn hub is a separate decision.
+</Notes>

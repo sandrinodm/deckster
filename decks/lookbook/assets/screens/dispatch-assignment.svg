@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="Released Wrenhaul dispatch assignment view">
+  <defs><linearGradient id="plate" x2="0" y2="1"><stop stop-color="#eff3f8"/><stop offset="1" stop-color="#e6eff5"/></linearGradient></defs>
+  <path fill="url(#plate)" d="M0 0h960v540H0z"/><rect x="41" y="36" width="878" height="468" rx="24" fill="#fff" stroke="#cbd8e1" stroke-width="2"/>
+  <path fill="#18384a" d="M65 36h830q24 0 24 24v50H41V60q0-24 24-24z"/><path d="M77 79h37l12-17h23l-9 11h25l-16 19h-19l7-10h-25l-8 9H77" fill="#9be2b5"/>
+  <g font-family="system-ui,sans-serif" fill="#18384a">
+    <text x="183" y="82" font-size="27" font-weight="650" fill="#fff">Flock Dispatch</text><text x="716" y="80" font-size="19" fill="#b4cdd9">KESTWICK / OLD TOWN</text>
+    <text x="77" y="158" font-size="20" font-weight="650" fill="#526b7b">ASSIGN DROP / WH-512</text><text x="77" y="200" font-size="32" font-weight="700">Brightloaf</text>
+    <path d="M78 237h804m-804 97h804" stroke="#dce7eb" stroke-width="2"/>
+    <text x="78" y="280" font-size="23" fill="#526b7b">Destination</text><text x="78" y="313" font-size="25" font-weight="650">14 Waterside Lane</text>
+    <rect x="474" y="127" width="347" height="91" rx="11" fill="#f4ead6"/><text x="493" y="201" font-size="28" font-weight="690">09:10–09:30</text>
+    <rect x="77" y="362" width="805" height="104" rx="14" fill="#e5f2e9" stroke="#b3d9c0" stroke-width="2"/>
+    <circle cx="110" cy="414" r="16" fill="#176345"/><path d="m103 414 5 6 9-12" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <text x="140" y="407" font-size="26" font-weight="700">Loop 17 / Aoife</text><text x="140" y="441" font-size="22" fill="#355e4c">Due at 09:21 · one slot open</text>
+    <path d="M762 428h71m-14-13 14 13-14 13" fill="none" stroke="#176345" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

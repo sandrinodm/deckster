@@ -402,14 +402,16 @@ retried after 2, 4 and 8 seconds, then hourly for a day. The Dispatch demo: at 0
   these.
 - **Logo:** a small wren in one stroke-like shape, tail up, beside the wordmark "wrenhaul" in
   lower case. The mark alone is used as an app icon.
-- **Scenes** (drawn, see "Scenes" below) are the deck's only pictures of places and people at
-  work; there are no photographs. They take the brand's image treatment like a photo would
+- **Drawn scenes** (see "Scenes" below) take the brand's image treatment like a photograph would
   (rounded in `default`, `tidewater` and `fieldnote`, duotone in `nocturne`, as drawn in
   `kinetic`), so a run of them reads as one set in every brand. The exception is a scene on a
   `bento` tile: at that size the `nocturne` duotone turns the box, the goods and the hub sign to
   mud, so bento picture tiles take `treatment: plain` (the tile keeps its rounded corners from
   the layout). Product screens, whose colours mean something (sage delivered, amber at risk),
   also take `treatment: plain`.
+- **Editorial photographs** illustrate one fictional delivery and one possible December 2027
+  neighborhood. They use the same visual language as the drawings. They depict fictional people
+  and illustrate product scenarios, with the disclosure on the slide.
 - **Screens** are light, cream and white, with ink text, rust for the selected loop or primary
   button, sage for delivered and amber for at risk. Maps are drawn as soft street grids with a
   river, never a real city.
@@ -480,8 +482,26 @@ and `gallery-places`; `what-merchants-send` on `bento-reveal`.
 | `scenes/van-at-the-bollards.svg` | The problem: a van stopped at the bollards and a no-vans sign at the edge of the Old Town, its driver's hand to his forehead, while Aoife rides on | The top third (sky); full-bleed text overlaps the bike, so best in `split`, `gallery` or `bento` | wide: `center`; tall: `22% 55%` / `[22, 55]` (the bike and the van's cab); square: `55% 50%` |
 | `scenes/what-merchants-send.svg` | A still life: an open Wrenhaul box holding a Brightloaf bag, a Calloway pharmacy bag, Fennick flowers and two Thimble books | The left 40% (dark ground), for `image` with `text: left` | wide: `center`; tall: `85% 50%` / `[85, 50]` |
 
+The three `vision-*.jpg` scenes follow one kraft bakery bag. Odile packs the order at 08:42,
+Aoife crosses the canal around 09:02, and the recipient takes it at 09:21. The
+`future-back-district.jpg` image imagines the everyday December 2027 outcome. Its near-term test
+is one shared delivery window across six shops for four weeks, measured in late drops and empty
+loop slots.
+
+For the Saltby opportunity map, Market Row and Quayside share the west bank. Mill Green sits
+across the tidal river, with a single short crossing. Quayside opens first and the bridge queue
+has to fit the hour before Mill Green can share the route. `maps/saltby-expansion.svg` is a drawn
+map of that scenario. For the strategy canvas, the six buyer factors use qualitative offering
+levels from 1 to 5. Wrenhaul focuses on reliable windows and Old Town access, while van couriers
+can take heavier parcels across a wider radius.
+
+The transit roadmap uses January, March, May and July 2027. In May, a live proof feed from Open
+Network would let Hub Operations verify a returns handover and prepare for a July rollout. The
+hill uses two qualitative scope reviews, on 29 October and 12 November 2026. Returns proof moves
+to execution once the team agrees who records the handover. Shop enrollment remains in discovery.
+
 ## Complete lookbook edition
 
-The kit has 55 layouts. This reference edition has 189 slides and 386 steps in twelve parts.
-Slide budgets total 130 minutes 45 seconds within a 135-minute duration. The forty-minute launch
+The kit has 63 layouts. This reference edition has 204 slides and 427 steps in twelve parts.
+Slide budgets total 142 minutes 20 seconds within a 147-minute duration. The forty-minute launch
 talk above selects from this edition.

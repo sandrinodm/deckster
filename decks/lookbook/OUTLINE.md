@@ -32,7 +32,7 @@ slides still follow the story: read a part top to bottom and it makes sense as a
 - **Repetition.** `deck lint` warns on three slides in a row with the same layout on the same
   surface. The order and surfaces below avoid it; if you change a surface, check your neighbours,
   including the first and last slides of the parts beside yours.
-- **Pictures.** There are no photographs: eight drawn scenes (`assets/scenes/`, listed in
+- **Pictures.** The deck uses eight drawn scenes and four generated editorial photographs. The drawn scenes (`assets/scenes/`, listed in
   `BRIEF.md` with each one's calm area and tested `focal`) show Wrenhaul at work, and screens carry
   the product. Use a scene at most once per part, put text only on its calm area, and caption it
   with a place and a time ("Aoife on loop 14, Kestwick Old Town, 08:55"). Scenes take the brand's
@@ -40,7 +40,7 @@ slides still follow the story: read a part top to bottom and it makes sense as a
   screens take `treatment: plain`.
 - **Budgets.** Give every slide a `budget:` (dividers 10s, statements and pictures 20s to 30s,
   evidence 45s to 1m30s). The deck's `duration` is the sum of the budgets rounded up with a little
-  slack (`135m` for 130m45s); review it with each added slide,
+  slack (`147m` for 142m20s); review it with each added slide,
   or `deck lint` reports the deck over time.
 
 ## Dividers
@@ -55,16 +55,16 @@ real dividers.
 
 | # | Part (divider id) | Job | Slides | Group |
 | --- | --- | --- | --- | --- |
-| 1 | Open (`part-open`) | Covers, agendas, the speaker, divider forms | 12 | G1 |
+| 1 | Open (`part-open`) | Covers, agendas, the speaker, divider forms and a storyboard | 13 | G1 |
 | 2 | Say one thing (`part-say`) | Statements, definitions, quotes, a picture across the slide | 14 | G1 |
 | 3 | Explain (`part-explain`) | Text, pictures, analogies, capabilities, questions, processes, exercises and habits | 30 | G2 |
-| 4 | Compare and decide (`part-compare`) | Options, pricing, maps, exact values, risk registers and an investment decision | 18 | G3 |
+| 4 | Compare and decide (`part-compare`) | Options, pricing, maps, exact values, a strategy canvas and an investment decision | 20 | G3 |
 | 5 | Prove it with a number (`part-numbers`) | Big numbers, nested markets, sums, a cost bridge and a profit pool | 18 | G3 |
 | 6 | Show the pattern (`part-charts`) | Single charts and dashboards, including cohort retention and market movement | 14 | G4 |
-| 7 | Show how it works (`part-how`) | Diagrams, conversations, a service blueprint, experiments, code and live demos | 23 | G5 |
-| 8 | Show the product (`part-product`) | Framed screens, galleries, a cutaway, a branching demo, a morph and video | 15 | G6 |
+| 7 | Show how it works (`part-how`) | Diagrams, conversations, a service blueprint, experiments, code and AI demos | 27 | G5 |
+| 8 | Show the product (`part-product`) | Framed screens, galleries, a cutaway, feature demos, a morph and video | 20 | G6 |
 | 9 | People and proof (`part-people`) | Founders, team, testimonials, personas, logos and case studies | 15 | G6 |
-| 10 | Plan ahead and ask (`part-ahead`) | History, roadmap, status reports, schedules, actions and the ask | 14 | G4 |
+| 10 | Plan ahead and ask (`part-ahead`) | History, roadmaps, uncertainty, a future-back plan and the ask | 17 | G4 |
 | 11 | Motion (`part-motion`) | The five step effects side by side, and focus | 7 | G2 |
 | 12 | Close (`part-close`) | Takeaways, references, links, a code to scan, the last slide | 9 | G5 |
 
@@ -79,6 +79,7 @@ Columns: **Id**; **Layout and options** (frontmatter beyond `title`, `eyebrow`, 
 | --- | --- | --- | --- | --- | --- |
 | `cover` | `title`, `<Media>` with an `<Image>` of the rider scene, `focal={[100, 50]}` (`picture: side`, `align: left`, defaults) | Same hour, no van | The cover with a picture bleeding off the right edge, gradient surface | whole | done |
 | `part-open` | `section`, divider form | Open | Divider | whole | done |
+| `vision-storyboard` | `vision-storyboard` with three consecutive photographs | A loaf crosses Old Town in 39 minutes | Three moments following one parcel from the counter to the door | 0 the counter; 1 the ride; 2 handoff | G1 |
 | `title-full` | `title`, `picture: full`, the Old Town from above in `<Media>`, `transition: fade` | Open Network opens today | The picture cover: text over a full-bleed picture on scrims; fade transition | whole | G1 |
 | `title-center` | `title`, `align: center`, `surface: inverse`, no photo | Every shop, every street, within the hour | The type-only keynote cover, centred, on inverse | whole | G1 |
 | `agenda-plan` | `agenda`, four items phrased as questions, with times | Four questions in forty minutes | The plan of the talk, 3 to 4 items | whole | G1 |
@@ -152,11 +153,13 @@ Columns: **Id**; **Layout and options** (frontmatter beyond `title`, `eyebrow`, 
 | `comparison-modes` | `comparison`, three options (own van, van courier, Wrenhaul), four rows with `winner`, `recommended: true` on Wrenhaul | A bike beats a van on every row that matters | Three options, winners per row, the recommended panel | whole | G3 |
 | `shift-window` | `shift`, from "Next day by van" (€6.40) to "Within the hour by bike" (€3.10), `reveal: true`, `transition: wipe` | Shops move from next day to the same hour | The old and new state; the new arrives on a click; wipe transition | 1 the new state | G3 |
 | `matrix-market` | `matrix`, `x` cost per drop (high to low), `y` window (next day to within the hour), four `quadrants` captions, the five alternatives as `items` with Wrenhaul `us: true`, `reveal: true` | Only Wrenhaul is fast and cheap at once | The two-by-two with labelled axis ends, quadrant captions, the subject marked; `reveal: true` | 0 the axes; 1 the alternatives; 2 Wrenhaul and the note | G3 |
+| `strategy-canvas` | `strategy-canvas`, three profiles across six buyer factors | Wrenhaul trades range for a reliable hour | Competing value curves and Wrenhaul’s strength and sacrifice | 0 alternatives; 1 Wrenhaul; 2 choices | G3 |
 | `table-hubs` | `table`, Markdown table of the 14 hubs or the six cities (drops a day, cost, on time), `highlight: { row: ... }`, `numbers: right` (default), `<Aside>` | Density sets the cost of a drop | Numbers right-aligned, a highlighted row, the aside variant | whole | G3 |
 | `comparison-before-after` | `comparison`, two options (Pantry Lane in 2024, in 2026), four rows with true/false and text, `reveal: true` | Pantry Lane now delivers at half the cost | Before and after with checks and dashes; one option per click | 1 the after column | G3 |
 | `pricing-break-even` | `pricing`, two plans (Open Network, hub plan), `recommended: true` on the hub plan, `badge: Above 950 a month`, `reveal: true`, `surface: accent` | Above 950 drops a month, the hub plan wins | Two plans one per click; the recommended plan lit on the inverse surface on an accent slide; a custom badge | 1 Open Network; 2 the hub plan | G3 |
 | `shift-cost` | `shift`, from €6.40 to €3.10 a drop with labels and lines, `surface: inverse` | A drop costs half of what a van costs | The shift on inverse with figures | whole | G3 |
 | `matrix-cities` | `matrix`, `x` drops per km² (low to high), `y` council support (low to high), no quadrant captions, six candidate cities as `items` with Saltby `us: true` | Saltby is the next city to open | The matrix as a decision without quadrant captions | whole | G3 |
+| `opportunity-map` | `opportunity-map` with an original Saltby map | Open on Saltby’s market side of the river | Districts, the Quayside loop and the bridge constraint | 0 geography; 1 proposed hub and route; 2 constraint | G3 |
 | `quadrants-network` | `quadrants`, four SWOT boxes with icons, two items each and `highlight: true` on the third box | Density is our strength and our constraint | Four labelled lists with context and a footnote | whole | G3 |
 | `quadrants-next-city` | `quadrants`, keep/stop/start/try, `highlight: true` on Start, `reveal: true`, `surface: accent` | Open the next city around a dense hub | The emphasized box on inverse within an accent slide, one whole box per click | 1 keep; 2 stop; 3 start; 4 try | G3 |
 | `pricing-plans` | `pricing`, the three price plans with a period and three features each, `recommended: true` on Open Network, a line of context and a footnote | Every plan is a price per drop, with no van | Each plan's price as its hero, the default badge | whole | G3 |
@@ -222,8 +225,10 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `service-blueprint` | `service-blueprint`, Book, Batch, Ride and Confirm with a marked handoff | The hub owns the rider handoff | Customer actions, visible service, backstage work and owners | 0 visible service; 1 backstage; 2 owners and handoff | G5 |
 | `diagram-architecture` | `diagram`, `<Flow>` with `<Node>`s in two `<Group>`s (merchant side, Wrenhaul), `<Edge>` labels, `<Journey path=... focus>` | Every drop crosses five systems on its way to a rider | Flow, Node, Group, Edge; a journey that dims everything off its path | 0 the systems; 1 to 5 the journey, one hop per step | G5 |
 | `code-sdk` | `code`, fenced TypeScript (`@wrenhaul/sdk`, `drops.create`) with `{2-4\|6-8}` and a `title` | Booking a drop is one call | A fenced block with stepped highlights | 1 and 2 one range each | G5 |
+| `command-palette` | `demo` with `<CommandDemo>` | One command opens the waiting drops | An original command palette with query, result and new dispatch view | 0 queue context; 1 command; 2 result | G5 |
 | `diagram-sequence` | `diagram`, `<SequenceDiagram>` with `<Actor>`s (merchant, API, Flock, rider, recipient) and `<Message>`s | A drop is booked, batched and handed over in 52 minutes | A sequence, one message per step | one message per step | G5 |
 | `code-terminal` | `code`, `<Terminal>` with `<Cmd>` and `<Out>` (the `wren` CLI: quote a drop, book it) | You can book a drop from a terminal | A typed session; each command a step | one command per step | G5 |
+| `ai-grounded-answer` | `demo`, `<GroundedAnswer>` on gradient | Check the answer against the dispatch rule | Question, cited answer and inspectable operating rule | 0 question; 1 cited answer; 2 source | G5 |
 | `diagram-events` | `diagram`, `<Flow>` with `<Packet>`s on the event stream, a `<State>` (a webhook endpoint failing, then retried) and `<Focus>` | Every change reaches the merchant within a second, or is retried until it does | Packets, a state change, focus on part of the flow | 0 the flow; 1 packets; 2 the failing state; 3 focus on the retry | G5 |
 | `opportunity-experiments` | `diagram`, `<Tree>` of an opportunity, two possible responses and a field trial | Test one tap to confirm the handoff | Checklist or one-tap receipt, with a two-week test and its measures | 0 opportunity and options; 1 the test | G5 |
 | `code-move` | `code`, `<CodeMove>` between two fenced versions (v1 single drop, v2 with `window`) | Windows are one new field | Tokens moving between versions | 1 the second version | G5 |
@@ -231,8 +236,10 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `code-codestep` | `code`, `<CodeMove>` with two `<CodeStep>`s (a `curl` in bash, then the SDK in TypeScript) | The SDK is the same call, typed | CodeStep across languages | 1 the TypeScript | G5 |
 | `diagram-layers` | `diagram`, `<Layers>` of five `<Layer>`s with `<Item>` chips, `surface: inverse` | Merchants touch one layer; riders another | A stacked architecture, on inverse | one layer per step, top down; Open Network and Streets marked `highlighted`, the two lit at the end | G5 |
 | `code-diff` | `code`, a fenced YAML with `diff` (Flock's interval 300s to 90s) and an `<Aside>` | Batching every 90 seconds was a one-line change | A diff fence beside notes | whole | G5 |
+| `ai-review-diff` | `demo`, `<ReviewDiff>` on inverse | A dispatcher approves the revised message | A reviewable change to a rider message and a human verdict | 0 request; 1 proposed difference; 2 approval | G5 |
 | `diagram-cycle` | `diagram`, `<Cycle steps>` (collect, batch, ride, hand over, return) with an `<Edge>` label on the return | A hub's day is one loop, run 56 times | A loop walked one stage per step | one stage per step | G5 |
 | `code-webhook` | `code`, fenced TypeScript webhook handler with `lineNumbers` and `words`, `surface: inverse` | A webhook tells you the parcel is home | Line numbers and marked words, on inverse | 1 the signature check; 2 the event | G5 |
+| `agent-run-trace` | `demo` with `<RunTrace>` | The agent stops before it sends a message | Workflow stages, explicit hold and completed preparation | 0 request; 1 inspect; 2 draft; 3 stop for approval | G5 |
 | `diagram-tree` | `diagram`, `<Tree>` of the routing decision (bike, partner van, next day) | Flock sends nine drops in ten to a bike | A decision tree, a branch revealed at a step | 1 the overflow branch | G5 |
 | `diagram-cards` | `diagram`, `<Flow>` whose `<Node>`s pick a `card`: three partners on `outline`, Open Network on `solid`, Wrenhaul's own systems on the brand default | Three kinds of partner, and one door into Wrenhaul | Cards picked by name, standard names only, so it reads the same in every brand | 0 the partners and Open Network; 1 the systems behind it | G5 |
 | `diagram-timeline` | `diagram`, `<Timeline>` with `<Milestone>`s of Open Network's rollout (beta to launch, then returns pick-up), `current`, `surface: inverse` | Open Network went from beta to launch in 12 weeks | The diagram timeline (explicit `<Timeline>`/`<Milestone>`, not the timeline layout) | one milestone per step | G5 |
@@ -247,8 +254,12 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `part-product` | `section`, divider form | Show the product | Divider | whole | done |
 | `before-after-street` | `before-after`, `fit: cover`, captions, `reveal: true` | The bollards stopped vans, not deliveries | Equal picture wells and an accented after label | before, then after | G6 |
 | `screen-dispatch` | `screen`, `frame: browser`, `address`, `dispatch.svg`, three or four `callouts`, `reveal: true`, `transition: zoom` | A hub lead runs the whole day from one map | The browser frame with numbered callouts, one per step; zoom transition | one callout per step | G6 |
+| `browser-spotlight` | `screen-story` with `pattern: spotlight` | See the deadline before assigning the loop | A browser view, selected deadline and magnified detail from the same screen | 0 whole queue; 1 deadline detail | G6 |
 | `product-cutaway` | `product-cutaway`, three dispatch-screen layers | One dispatch screen, three jobs | Promised time, route feasibility and rider capacity | 0 delivery promises; 1 routes; 2 riders and takeaway | G6 |
+| `sketch-to-ship` | `sketch-to-ship` with pinned design landmarks | The deadline belongs beside the loop | An original working sketch and the same decisions in the released interface | 0 marked-up sketch; 1 released state | G6 |
+| `version-wipe` | `screen-story` with `pattern: wipe` | A deadline moves into the dispatch queue | An adjustable wipe at a retained screen position | 0 old queue; 1 compare releases | G6 |
 | `split-phones` | `split`, `ratio: 5:7`, `side: right`, `screens/rider-and-track.svg` (the Rider loop and the Track page in two drawn phones, one picture) at `fit: contain`, `treatment: plain`, `transition: slide` | One loop, seen from saddle and door | Two phone screens of one moment side by side; slide transition | whole | G6 |
+| `device-handoff` | `screen-story` with `pattern: handoff` | One assignment sends the next stop to Rider | One dispatch assignment and the matching next stop on a rider phone | 0 browser assignment; 1 phone handoff | G6 |
 | `screen-rider` | `screen`, `frame: phone`, `rider-next-stop.svg`, callouts, `reveal: true` | The rider never has to think about the route | The phone frame | one callout per step | G6 |
 | `before-after-rider` | `before-after`, `fit: contain`, custom labels, `accent: none`, `surface: inverse`, `treatment: plain` | One loop becomes one clear next stop | Whole screens and neutral labels | whole | G6 |
 | `morph-dispatch-overview` | `split`, `ratio: 5:7`, `side: right`, `<Morph id="dispatch">` around `<Image>` of `dispatch.svg` | Dispatch shows every loop at once | The first half of a `<Morph>` pair | whole | G6 |
@@ -256,6 +267,7 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `screen-insights` | `screen`, `frame: laptop`, `insights.svg`, callouts | Merchants see their cost per drop every week | The laptop frame | whole | G6 |
 | `gallery-screens` | `gallery`, four pictures (dispatch, insights, console, a phone) with captions | Four screens run on one stream of events | The four-picture variant with captions | whole | G6 |
 | `screen-console` | `screen`, `frame: none`, `console.svg`, two callouts, `surface: default` | Developers test a drop before they ship | The screen alone without a frame, on default | whole | G6 |
+| `demo-filmstrip` | `screen-story` with `pattern: filmstrip` | Three actions take a parcel to the door | Three screen states following a parcel through the workflow | 0 first frame; 1 second frame; 2 complete strip | G6 |
 | `demo-choose-path` | `choose-path`, two parcel examples with two stages each | How should Flock handle this drop? | A bike loop or partner van, with both routes in exports | Choose a parcel and walk its steps, or return to the choice | G6 |
 | `split-video` | `split`, `ratio: 5:7`, `side: right`, `<Video>` of `aurora.webm` with `cues={[0, 3, 6]}`, a poster and `posters` per part; the words describe the abstract title sequence as it is | The launch film opens in light alone | A cued video in three parts with stills for export | one part per step | G6 |
 | `gallery-places` | `gallery`, three scenes of the loaf the deck follows (the handover as the lead, the hub, the street) with captions, `surface: default` | Booked at 08:42, at the door at 09:21 | Three pictures with captions on the default surface | whole | G6 |
@@ -285,16 +297,19 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | Id | Layout and options | Claim | Shows | Build | Group |
 | --- | --- | --- | --- | --- | --- |
 | `part-ahead` | `section`, divider form | Plan ahead and ask | Divider | whole | done |
+| `future-back` | `future-back`, illustrated outcome on the right | A neighborhood can count on a bike delivery | A future neighborhood, two enabling capabilities and a four-week test | 0 future; 1 capabilities; 2 near-term bet | G4 |
 | `timeline-history` | `timeline`, five milestones March 2022 to September 2026 with `state: success`, `transition: push` | Four years from one hub to six cities | A history, all done; push transition | whole | G4 |
 | `columns-roadmap` | `columns`, Now, Next, Later with notes and items, `current: 1` | We finish the network before we widen it | The board with one column lit | whole | G4 |
 | `status-launch` | `status`, four workstreams with owners and every state, `surface: default` | The network launches today; two decisions remain | Labelled states, owners, context and footnote | whole | G4 |
 | `status-next-wave` | `status`, five workstreams, no owners, `surface: inverse`, `reveal: true` | Sandgate needs power before the February opening | Dated 2026 readiness report with mixed states and a footnote | one workstream per step; source visible throughout | G4 |
 | `timeline-roadmap` | `timeline`, five milestones from today's launch to Q2 2028 (returns pick-up, four cities, 500,000 drops, break-even), `current: 1`, the targets `state: muted`, `reveal: true` | Eighteen months from today's launch to break-even: the plan | `current`, tentative milestones, one per click | one milestone per step | G4 |
+| `roadmap-transit` | `roadmap-transit`, four periods and three workstreams | A live returns feed unlocks the next hub | A cross-track proof dependency and a July rollout milestone | 0 routes; 1 transfer; 2 milestone | G4 |
 | `schedule-openings` | `schedule`, six periods, four lanes, Saltby labelled, `current: 1`, `now: 2` | Six hubs open between April and June | Parallel fit-out and first loops on a shared time grid | whole | G4 |
 | `schedule-quayside` | `schedule`, eight periods, three lanes, `now: 1`, `current: 1`, `reveal: true`, `surface: accent` | Quayside covers its costs by September | Five-month payback duration, current lane arrow and now marker | one lane per step | G4 |
 | `ask-series-a` | `ask`, `amount: €14M`, `label: Series A`, four milestones of what the money buys, one per allocation (`text`, `by`), `funds` (45, 30, 15, 10), `reveal: true` | Fund four new cities, then break-even: the ask | The amount, what it buys and the allocation bar; `reveal: true` | 0 the amount; 1 to 4 the milestones; 5 the bar | G4 |
 | `columns-four` | `columns`, four columns (the four new cities, each with its hubs, riders, merchants and why), `reveal: true`, a footnote on the plan | Four cities and six hubs open between April and June | Four columns, one per step | one column per step | G4 |
 | `timeline-slipped` | `timeline`, four milestones of the 2026 openings, one `state: error` (Calder Bay's second hub) | One opening slipped, and we said so | A slipped milestone next to done ones | whole | G4 |
+| `roadmap-hill` | `roadmap-hill` with two scope reports | The team has a plan for returns proof | Scope marks move across discovery, the crest and execution | 0 earlier review; 1 movement and updated position | G4 |
 | `ask-pilot` | `ask`, `amount: €380k`, `label: Saltby hub`, two or three milestones, no `funds`, `surface: inverse` | Approve Saltby's first hub this month | The ask without the bar, as a board decision | whole | G4 |
 | `actions-launch` | `actions`, three rows, `current: 2`, `reveal: true`, context and footnote | Returns training clears the way to close the round | Action, owner and due columns; current row labelled | one action per step | G4 |
 | `actions-expansion` | `actions`, six rows, `surface: accent`, `current: 2`, no context | Four new cities are ready to launch by June 2027 | Dense list, current row on a full band with an In progress badge | whole | G4 |
@@ -338,8 +353,8 @@ Where each capability lives. The coverage test lists what is still missing; this
   `quiz-routing`, `shift-cost`, `comparison-plans`, `risks-expansion`, `stats-three`,
   `equation-loop`, `chart-area`, `chart-table`, `chart-retention-cohorts`, `dashboard-network`, `diagram-layers`,
   `code-webhook`, `diagram-timeline`, `before-after-rider`, `voices-network`, `proof-st-brenna`,
-  `persona-recipient`, `status-next-wave`, `ask-pilot`, `motion-wipe`, `sources-records`; gradient
-  on `section-numeral-small`, `statement-quote`, `steps-three`, `motion-blur`.
+  `persona-recipient`, `status-next-wave`, `ask-pilot`, `motion-wipe`, `sources-records`, `ai-review-diff`; gradient
+  on `section-numeral-small`, `statement-quote`, `steps-three`, `motion-blur`, `ai-grounded-answer`.
 - **Transitions:** none `statement-giant`; fade `title-full`, `quote-portrait`; slide
   `split-phones`; rise `stats-traction`; push `timeline-history`; cover every divider; wipe
   `shift-window`; zoom `image-alone`, `screen-dispatch`.
@@ -356,7 +371,7 @@ Where each capability lives. The coverage test lists what is still missing; this
   right/left; logos tone mono/color; screen frame browser/phone/laptop/none; `reveal: true` on
   cards, bento, steps, comparison, pricing, shift, timeline, equation, proof, screen, columns,
   matrix, ask, actions, status, risks, quadrants, market, schedule, dashboard, recap, faq, product-cutaway, service-blueprint,
-  features (by row), do-dont (by column), before-after, voices, conversation, quiz (answer); agenda,
+  features (by row), do-dont (by column), before-after, voices, conversation, quiz (answer), and the visual patterns below; agenda,
   steps, actions, columns, timeline and schedule `current`; schedule `now`; quadrants `highlight`
   and `badge`; definition metadata and example; persona portrait and initials; team founders.
 - **Charts:** BigNumber, StatRow, Comparison, Progress, Pictogram, Sparkline, Waterfall and
@@ -367,7 +382,7 @@ Where each capability lives. The coverage test lists what is still missing; this
   Layers, Layer, Item; Cycle; Tree; Timeline, Milestone; Svg.
 - **Slide components:** Code (fences), CodeMove, CodeStep, Terminal, Cmd, Out (part 7); Icon
   (`content-text`), Image (`split-photo-right`), Lottie (`split-lottie`) (part 3); Video,
-  Morph (part 8); Live (TSX), AppFrame (part 7); LinkCard, Download, QR, Button (part 12); Step
+  Morph (part 8); Live (TSX), AppFrame, CommandDemo, GroundedAnswer, ReviewDiff and RunTrace (part 7); LinkCard, Download, QR, Button (part 12); Step
   and Notes everywhere.
 - **TSX slides:** only `demo-live`. **Apps:** only `apps/dispatch-sim` for `demo-appframe`.
 
@@ -395,3 +410,12 @@ Where each capability lives. The coverage test lists what is still missing; this
 - `sources`: `sources-evidence`, `sources-records`.
 - `status`: `status-launch`, `status-next-wave`.
 - `voices`: `voices-merchants`, `voices-network`.
+
+- `vision-storyboard`: `vision-storyboard`.
+- `sketch-to-ship`: `sketch-to-ship`.
+- `roadmap-transit`: `roadmap-transit`.
+- `roadmap-hill`: `roadmap-hill`.
+- `opportunity-map`: `opportunity-map`.
+- `strategy-canvas`: `strategy-canvas`.
+- `future-back`: `future-back`.
+- `screen-story`: `browser-spotlight`, `version-wipe`, `device-handoff`, `demo-filmstrip`.

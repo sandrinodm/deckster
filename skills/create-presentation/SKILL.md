@@ -27,6 +27,7 @@ Steps 1 to 4 need only this file plus the format file. Before the first slide: `
 - `references/narrative.md`: choosing a structure, openings, closings, pacing.
 - `references/audiences.md`: mixed, senior, expert or unfamiliar audiences.
 - `references/data-visuals.md`: any slide with a number, table, chart or diagram.
+- `references/visual-patterns.md`: storyboards, sketch-to-ship, geographical opportunities, strategy canvases, roadmaps and future-back plans.
 - `references/rubric.md`: step 8, the scoring pass. It is part of the work, not an extra: a deck that was not scored is not done.
 - `references/sources.md`: only to answer why the guidance says what it says.
 

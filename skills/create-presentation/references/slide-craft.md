@@ -217,6 +217,33 @@ Controlled research on demos in presentations is thin; this section is practice 
 - **Always have a fallback.** A recorded video or screenshot sequence for when the network, the build or the model fails. Live apps and videos take a `poster` for this reason (static mode and exports show it), and lint reports a demo without one. Tell the presenter in the notes when to switch.
 - **Budget honestly.** Demos run long. Give the demo a time budget and a "skip to" point.
 
+
+Use `screen-story` for authored, offline product screens. `pattern: spotlight` takes one screenshot
+and a rectangle in percentages of that unscaled viewport. Both the outline and the enlarged inset
+come from that image. `wipe` takes two registered screenshots of the same size. A live scrubber moves
+the divider, while a finished handout labels and compares both versions. `handoff` pairs the sender's
+action with the receiver's state. Keep the same record identifier visible on both devices.
+`filmstrip` takes three distinct screens and action labels, and shows the full sequence at the end.
+
+Use these components inside `layout: demo` for scripted AI and keyboard workflows:
+
+- **CommandDemo** shows a workspace, palette and executed result. Give each command a distinct local
+  result so the presenter can demonstrate another choice.
+- **GroundedAnswer** shows the source brief and question, then the cited answer and the exact evidence.
+  Use the source's wording and give the citation a specific page, section or record.
+- **ReviewDiff** accepts the exact original and suggested text plus the shared sentence around it.
+  Keep the human decision visible with the draft it produces.
+- **RunTrace** pairs each observed tool call with its return. Show the draft and a specific human
+  checkpoint before an action could affect anything outside the demo.
+
+Each above uses normal deck advances and has a standalone static frame. Copy the relevant slide from
+`decks/lookbook/slides/` and preview each reveal in both directions.
+
+For production references, watch Stripe introduce a concrete checkout task before handing it to the demo
+operator. Linear documents how command menus surface keyboard shortcuts, and Apple's Handoff shows what
+it means to resume the same task on another device. GitHub pairs an agent session log with the changes
+a human reviews. Apply those ideas to the product and data the audience came to see. [Stripe Sessions product keynote](https://stripe.com/sessions/2026/opening-remarks-and-product) · [Linear contextual menus](https://linear.app/now/invisible-details) · [Apple Handoff](https://support.apple.com/en-us/102426) · [GitHub agent management](https://docs.github.com/en/copilot/concepts/agent-capabilities/choosing-and-delegating-agent-work/agent-management)
+
 ## 11. Speaker notes
 
 There is little direct research on notes. The guidance follows from the redundancy principle (the speaker should say what is not on the slide) and from practice.
