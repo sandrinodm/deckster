@@ -24,8 +24,10 @@ import { docsError, type DocsError } from '#docs-error.ts';
 const JSON_INDENT_SPACES = 2;
 
 /**
- * The deck whose layouts the export lists: the CLI's default deck, which every published deck
- * shares the layout catalog with.
+ * The deck whose layouts the export lists: the CLI's default deck, on the default brand, so the
+ * export lists the kit's layouts only. A published deck on a brand with layouts of its own, such as
+ * `brand-layouts` on `fieldnote`, also has those; they stay out because the site gives every listed
+ * layout a reference page of its own.
  */
 const LAYOUTS_DECK = 'hello';
 
