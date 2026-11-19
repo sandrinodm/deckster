@@ -14,6 +14,7 @@ import { Effect, FileSystem, Option, Stream, type Duration } from 'effect';
 import { ChildProcess, ChildProcessSpawner } from 'effect/process';
 import { randomBytes } from 'node:crypto';
 import path from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 import { shellError, type ShellError } from '#cli-error.ts';
 
@@ -38,6 +39,11 @@ const SLOW_TOOL_TIMEOUT: Duration.Input = '30 seconds';
  * How long every other tool (`plutil`, `ps`) may take.
  */
 const QUICK_TOOL_TIMEOUT: Duration.Input = '10 seconds';
+
+/**
+ * The portable cp used by the task runner reports this when it sees macOS's clone flag.
+ */
+const COPY_CLONE_FLAG_REJECTED = "unexpected argument '-c' found";
 
 /**
  * The result of looking for the branded app.
@@ -264,7 +270,14 @@ const prepareBundle = Effect.fn('prepareBundle')(function* (
   const fileFailure = (action: string) => (cause: { message: string }) =>
     shellError(`Could not ${action}: ${cause.message}`);
   // On APFS `cp -c` clones (no data is copied); elsewhere it copies.
-  yield* runTool('/bin/cp', ['-c', '-R', sources.app, app], SLOW_TOOL_TIMEOUT);
+  const clone = runTool('/bin/cp', ['-c', '-R', sources.app, app], SLOW_TOOL_TIMEOUT);
+  yield* clone.pipe(
+    Effect.catchIf(
+      (error) => stripVTControlCharacters(error.message).includes(COPY_CLONE_FLAG_REJECTED),
+      // Framework symlinks must survive when the copy tool does not support cloning.
+      () => runTool('/bin/cp', ['-R', '-P', sources.app, app], SLOW_TOOL_TIMEOUT),
+    ),
+  );
   for (const rename of plan.renames) {
     yield* fs
       .rename(inApp(rename.from), inApp(rename.to))

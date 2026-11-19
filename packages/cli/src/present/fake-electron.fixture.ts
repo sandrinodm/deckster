@@ -49,11 +49,11 @@ export function writeFakeElectron(electronDir: string): void {
  * way an APFS clone would end), and records every call. `fails` names the calls that exit 1 with a
  * message on standard error, and `hangs` the ones that never exit.
  *
- * @param fails - Whether a call fails.
+ * @param fails - A failure message, true for the default message, or false for success.
  * @param hangs - Whether a call never exits.
  */
 export function fakeToolSpawner(
-  fails: (call: SpawnedCall) => boolean = () => false,
+  fails: (call: SpawnedCall) => boolean | string = () => false,
   hangs: (call: SpawnedCall) => boolean = () => false,
 ): { calls: SpawnedCall[]; layer: Layer.Layer<ChildProcessSpawner.ChildProcessSpawner> } {
   const calls: SpawnedCall[] = [];
@@ -71,15 +71,16 @@ export function fakeToolSpawner(
       );
     }
 
-    const failed = fails(call);
-    if (!failed && command.command === '/bin/cp') {
+    const failure = fails(call);
+    if (failure === false && command.command === '/bin/cp') {
       const [source, destination] = call.args.slice(-2);
       if (source !== undefined && destination !== undefined) {
         cpSync(source, destination, { recursive: true });
       }
     }
 
-    const exitCode = ChildProcessSpawner.ExitCode(failed ? 1 : 0);
+    const exitCode = ChildProcessSpawner.ExitCode(failure === false ? 0 : 1);
+    const stderr = failure === true ? 'boom: it failed\n' : failure;
     return Effect.succeed(
       ChildProcessSpawner.makeHandle({
         pid: ChildProcessSpawner.ProcessId(1),
@@ -88,7 +89,7 @@ export function fakeToolSpawner(
         kill: () => Effect.void,
         stdin: Sink.drain,
         stdout: Stream.empty,
-        stderr: failed ? Stream.make(encoder.encode('boom: it failed\n')) : Stream.empty,
+        stderr: stderr === false ? Stream.empty : Stream.make(encoder.encode(stderr)),
         all: Stream.empty,
         getInputFd: () => Sink.drain,
         getOutputFd: () => Stream.empty,

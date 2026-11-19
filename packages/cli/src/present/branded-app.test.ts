@@ -184,6 +184,27 @@ describe('ensureBrandedApp', () => {
       }).pipe(Effect.scoped),
     );
 
+    it.effect('requests a symlink-preserving copy when cp rejects the clone flag', () =>
+      Effect.gen(function* () {
+        const { root, electronDir } = yield* scratch;
+        const spawner = fakeToolSpawner((call) =>
+          call.command === '/bin/cp' && call.args[0] === '-c'
+            ? "error: unexpected argument \u001b[33m'-c'\u001b[0m found"
+            : false,
+        );
+        const result = yield* ensureBrandedApp(root, electronDir, 'darwin').pipe(
+          Effect.provide(spawner.layer),
+        );
+        expect(result).toMatchObject({ _tag: 'Branded', signing: 'outer', built: true });
+        const copyCalls = spawner.calls.filter((call) => call.command === '/bin/cp');
+        expect(copyCalls.map((call) => call.args.slice(0, 2))).toEqual([
+          ['-c', '-R'],
+          ['-R', '-P'],
+        ]);
+        expect(appFolders(root)).toHaveLength(1);
+      }).pipe(Effect.scoped),
+    );
+
     it.effect('is unavailable when a plist edit fails, and leaves no folder', () =>
       Effect.gen(function* () {
         const { root, electronDir } = yield* scratch;
