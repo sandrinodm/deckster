@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <rect width="800" height="200" rx="18" fill="#f5efe4"/>
+  <g font-family="Arial, sans-serif">
+    <text x="29" y="44" fill="#74675b" font-size="16" font-weight="700" letter-spacing="1.5">LOOP FEASIBILITY</text>
+    <text x="29" y="91" fill="#1d2a33" font-size="35" font-weight="700">2 bike loops</text>
+    <text x="29" y="123" fill="#594b42" font-size="19">9 drops each</text>
+    <text x="29" y="152" fill="#594b42" font-size="19">Both within 75 min</text>
+    <rect x="300" y="20" width="474" height="160" rx="10" fill="#eae4d6"/>
+    <path d="M324 75h430m-430 54h430M389 31v139m74-139v139m74-139v139m74-139v139m74-139v139" fill="none" stroke="#fffdf6" stroke-width="4"/>
+    <path d="M535 98 457 52l-73 24 26 59 66 9 59-46Z" fill="none" stroke="#a34835" stroke-width="5" stroke-linejoin="round"/>
+    <path d="m535 98 81-45 89 22 22 48-87 24-105-49Z" fill="none" stroke="#2c6c64" stroke-width="5" stroke-linejoin="round"/>
+    <g fill="#fffdfa" stroke-width="3">
+      <circle cx="457" cy="52" r="7" stroke="#a34835"/>
+      <circle cx="410" cy="135" r="7" stroke="#a34835"/>
+      <circle cx="616" cy="53" r="7" stroke="#2c6c64"/>
+      <circle cx="705" cy="75" r="7" stroke="#2c6c64"/>
+      <circle cx="640" cy="147" r="7" stroke="#2c6c64"/>
+      <circle cx="535" cy="98" r="9" fill="#1d2a33" stroke="#fffdfa"/>
+    </g>
+  </g>
+</svg>

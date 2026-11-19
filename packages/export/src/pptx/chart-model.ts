@@ -82,7 +82,7 @@ export type NativeSeries = {
   /**
    * The x values of a scatter series, else `null`.
    */
-  x: number[] | null;
+  x: (number | null)[] | null;
 
   /**
    * The fill (bars, areas, slices) or line color, or `null` for an invisible series (a waterfall's

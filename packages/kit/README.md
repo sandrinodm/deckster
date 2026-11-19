@@ -1,6 +1,6 @@
 # @deckster/kit
 
-The layouts and components every deckster deck gets: 52 brand-aware layouts, plus code, media,
+The layouts and components every deckster deck gets: 55 brand-aware layouts, plus code, media,
 link, chart, diagram and mini-app components, and the build-time MDX extension and Vite plugins
 behind them.
 

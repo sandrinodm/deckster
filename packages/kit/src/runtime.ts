@@ -21,6 +21,7 @@ import { bioLayout } from '#layouts/bio-layout.tsx';
 import { brandLayoutDefinitions } from '#layouts/brand-layout.tsx';
 import { cardsLayout } from '#layouts/cards-layout.tsx';
 import { chartLayout } from '#layouts/chart-layout.tsx';
+import { choosePathLayout } from '#layouts/choose-path-layout.tsx';
 import { closingLayout } from '#layouts/closing-layout.tsx';
 import { codeLayout } from '#layouts/code-layout.tsx';
 import { columnsLayout } from '#layouts/columns-layout.tsx';
@@ -44,6 +45,7 @@ import { marketLayout } from '#layouts/market-layout.tsx';
 import { matrixLayout } from '#layouts/matrix-layout.tsx';
 import { personaLayout } from '#layouts/persona-layout.tsx';
 import { pricingLayout } from '#layouts/pricing-layout.tsx';
+import { productCutawayLayout } from '#layouts/product-cutaway-layout.tsx';
 import { proofLayout } from '#layouts/proof-layout.tsx';
 import { quadrantsLayout } from '#layouts/quadrants-layout.tsx';
 import { quizLayout } from '#layouts/quiz-layout.tsx';
@@ -53,6 +55,7 @@ import { risksLayout } from '#layouts/risks-layout.tsx';
 import { scheduleLayout } from '#layouts/schedule-layout.tsx';
 import { screenLayout } from '#layouts/screen-layout.tsx';
 import { sectionLayout } from '#layouts/section-layout.tsx';
+import { serviceBlueprintLayout } from '#layouts/service-blueprint-layout.tsx';
 import { shiftLayout } from '#layouts/shift-layout.tsx';
 import { sourcesLayout } from '#layouts/sources-layout.tsx';
 import { splitLayout } from '#layouts/split-layout.tsx';
@@ -110,8 +113,10 @@ export default definePlugin({
     chartLayout,
     dashboardLayout,
     diagramLayout,
+    serviceBlueprintLayout,
     codeLayout,
     demoLayout,
+    choosePathLayout,
     definitionLayout,
     agendaLayout,
     recapLayout,
@@ -123,6 +128,7 @@ export default definePlugin({
     galleryLayout,
     beforeAfterLayout,
     screenLayout,
+    productCutawayLayout,
     cardsLayout,
     columnsLayout,
     quadrantsLayout,

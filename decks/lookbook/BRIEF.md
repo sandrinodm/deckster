@@ -248,6 +248,21 @@ cities gained 5.4 to 7.3 points, the older three 1.6 to 3.0.
 Revenue by merchant type, October 2026: grocers 38%, pharmacies and health 21%, food and bakery
 17%, parcel partners 14%, other shops 10%.
 
+**Contribution profit by merchant type.** The same shares divide October's €564,200 revenue.
+Contribution margins are 19% for grocers, 45% for pharmacies, 23% for bakeries, 20% for parcel
+partners and 11.2% for other shops. Pharmacies contribute €53,317 and grocers contribute €40,735.
+
+**Retention by signup cohort.** Count the shops from each signup month still sending drops at a
+given elapsed month. April began with 34, retained 28 at month three (82%) and 25 at month six
+(74%). July began with 47 and retained 43 at month three (91%). The August and September cohorts
+are younger than three months as of October. The rates on the slide are rounded from whole-shop
+counts.
+
+**Market movement.** Use monthly snapshots from March, June and October 2026 of merchant price
+per drop and the share delivered inside its window. Wrenhaul moves from €3.52 and 94.5% to €3.31
+and 96.7%, then €3.10 and 97.8%. Compare with van couriers, merchants' own vans and gig apps at
+each observation date. Source the comparison to the operating report and merchant survey.
+
 Merchants who signed up in 2026 (to October): signed up 1,480; connected their shop 910; sent a
 first drop 640; still sending after 90 days 352. The biggest loss is the first step: four in ten
 sign-ups never connect their shop.
@@ -467,6 +482,6 @@ and `gallery-places`; `what-merchants-send` on `bento-reveal`.
 
 ## Complete lookbook edition
 
-The kit has 52 layouts. This reference edition has 180 slides and 364 steps across twelve
-parts. Slide budgets total 122 minutes 35 seconds within a 127-minute duration (4 minutes
-25 seconds of slack). The forty-minute launch talk above selects from this complete edition.
+The kit has 55 layouts. This reference edition has 189 slides and 386 steps in twelve parts.
+Slide budgets total 130 minutes 45 seconds within a 135-minute duration. The forty-minute launch
+talk above selects from this edition.

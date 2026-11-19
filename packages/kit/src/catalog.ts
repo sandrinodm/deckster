@@ -8,6 +8,7 @@ import { bentoLayoutContract } from '#layouts/bento-layout.contract.ts';
 import { bioLayoutContract } from '#layouts/bio-layout.contract.ts';
 import { cardsLayoutContract } from '#layouts/cards-layout.contract.ts';
 import { chartLayoutContract } from '#layouts/chart-layout.contract.ts';
+import { choosePathLayoutContract } from '#layouts/choose-path-layout.contract.ts';
 import { closingLayoutContract } from '#layouts/closing-layout.contract.ts';
 import { codeLayoutContract } from '#layouts/code-layout.contract.ts';
 import { columnsLayoutContract } from '#layouts/columns-layout.contract.ts';
@@ -31,6 +32,7 @@ import { marketLayoutContract } from '#layouts/market-layout.contract.ts';
 import { matrixLayoutContract } from '#layouts/matrix-layout.contract.ts';
 import { personaLayoutContract } from '#layouts/persona-layout.contract.ts';
 import { pricingLayoutContract } from '#layouts/pricing-layout.contract.ts';
+import { productCutawayLayoutContract } from '#layouts/product-cutaway-layout.contract.ts';
 import { proofLayoutContract } from '#layouts/proof-layout.contract.ts';
 import { quadrantsLayoutContract } from '#layouts/quadrants-layout.contract.ts';
 import { quizLayoutContract } from '#layouts/quiz-layout.contract.ts';
@@ -40,6 +42,7 @@ import { risksLayoutContract } from '#layouts/risks-layout.contract.ts';
 import { scheduleLayoutContract } from '#layouts/schedule-layout.contract.ts';
 import { screenLayoutContract } from '#layouts/screen-layout.contract.ts';
 import { sectionLayoutContract } from '#layouts/section-layout.contract.ts';
+import { serviceBlueprintLayoutContract } from '#layouts/service-blueprint-layout.contract.ts';
 import { shiftLayoutContract } from '#layouts/shift-layout.contract.ts';
 import { sourcesLayoutContract } from '#layouts/sources-layout.contract.ts';
 import { splitLayoutContract } from '#layouts/split-layout.contract.ts';
@@ -81,8 +84,10 @@ export default defineLayoutCatalog({
     chartLayoutContract,
     dashboardLayoutContract,
     diagramLayoutContract,
+    serviceBlueprintLayoutContract,
     codeLayoutContract,
     demoLayoutContract,
+    choosePathLayoutContract,
     definitionLayoutContract,
     agendaLayoutContract,
     recapLayoutContract,
@@ -94,6 +99,7 @@ export default defineLayoutCatalog({
     galleryLayoutContract,
     beforeAfterLayoutContract,
     screenLayoutContract,
+    productCutawayLayoutContract,
     cardsLayoutContract,
     columnsLayoutContract,
     quadrantsLayoutContract,

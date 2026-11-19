@@ -1,9 +1,9 @@
 import { defineDeck } from '@deckster/engine/config';
 
 /**
- * The showcase deck: one talk about the framework itself that uses every layout, ten of the sixteen
- * charts, every diagram component, code, media, live apps and the tools around a deck. Halden, its
- * people, clients and numbers are fictional; the framework's own numbers are real.
+ * The showcase deck: one talk about the framework itself that uses 23 kit layouts, ten of the
+ * nineteen charts, every diagram component, code, media, live apps and the tools around a deck.
+ * Halden, its people, clients and numbers are fictional; the framework's own numbers are real.
  */
 export default defineDeck({
   title: 'Slides an agent can write',

@@ -104,6 +104,9 @@ function nativeFor(kind: ChartKind): ChartSpec['native'] {
     }
 
     case 'heatmap':
+    case 'retention-cohorts':
+    case 'profit-pool':
+    case 'market-movement':
     case 'big-number':
     case 'stat-row':
     case 'comparison':

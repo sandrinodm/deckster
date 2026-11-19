@@ -27,7 +27,7 @@ A slide is a file with a claim and its evidence; the brand owns every pixel and 
 
 | Claim the talk needs | Source |
 | --- | --- |
-| 52 layouts, 16 charts and figures, 7 diagram components, 42 lint rules, 776 shared icon names | `pnpm deck layouts --summary`, `charts --json`, `diagrams --json`, `lint --help`, `icons` in this repository |
+| 55 layouts, 19 charts and figures, 7 diagram components, 42 lint rules, 776 shared icon names | `pnpm deck layouts --summary`, `charts --json`, `diagrams --json`, `lint --help`, `icons` in this repository |
 | What lint, shot, export, comments, present and the agent host do | The package READMEs and docs/ in this repository |
 | Terminal output on slides | Copied from real runs of the CLI against this deck |
 | Halden's review rounds, hours, findings | Fictional, labelled illustrative on each slide |

@@ -17,6 +17,11 @@ type ChartStepProps = {
   at: number | undefined;
 
   /**
+   * The step that takes these marks off the plot, if a later layer replaces them.
+   */
+  until?: number | undefined;
+
+  /**
    * Classes for the group.
    */
   className?: string;
@@ -32,8 +37,13 @@ type ChartStepProps = {
  * building in with the kit's chart motion when the deck steps onto it, and in place in static mode
  * and on later visits. The marks inside choose their build with `data-anim`.
  */
-export function ChartStep({ at, className, children }: ChartStepProps): ReactNode {
+export function ChartStep({ at, until, className, children }: ChartStepProps): ReactNode {
   const reveal = useReveal(at);
+  const end = useStepAt(until);
+  if (until !== undefined && end !== 'hidden') {
+    return null;
+  }
+
   if (at === undefined) {
     return <g className={className}>{children}</g>;
   }

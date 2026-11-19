@@ -9,6 +9,9 @@ import { StatRow } from '#charts/figures/stat-row.tsx';
 import { Funnel } from '#charts/funnel/funnel.tsx';
 import { Heatmap } from '#charts/heatmap/heatmap.tsx';
 import { AreaChart, LineChart } from '#charts/line/line-chart.tsx';
+import { MarketMovement } from '#charts/market-movement/market-movement.tsx';
+import { ProfitPool } from '#charts/profit-pool/profit-pool.tsx';
+import { RetentionCohorts } from '#charts/retention-cohorts/retention-cohorts.tsx';
 import { Scatter } from '#charts/scatter/scatter.tsx';
 import { Slope } from '#charts/slope/slope.tsx';
 import { Sparkline } from '#charts/sparkline/sparkline.tsx';
@@ -45,6 +48,11 @@ export const CHART_COMPONENTS = {
   Scatter,
 
   /**
+   * Dated movement on two fixed axes.
+   */
+  MarketMovement,
+
+  /**
    * Change between two points.
    */
   Slope,
@@ -63,6 +71,16 @@ export const CHART_COMPONENTS = {
    * A pattern across two dimensions.
    */
   Heatmap,
+
+  /**
+   * Retention by cohort and elapsed age.
+   */
+  RetentionCohorts,
+
+  /**
+   * Revenue, margin and profit by segment.
+   */
+  ProfitPool,
 
   /**
    * A word-sized trend.

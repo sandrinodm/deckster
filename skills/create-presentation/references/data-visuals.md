@@ -54,6 +54,9 @@ Evidence labels: see the top of `narrative.md`. Sources: `sources.md`.
 | **Distribution, spread, outliers** (distribution)        | `<Scatter>` of the items, `<Heatmap>` for two dimensions, or `<BarChart>` over ordered bins           | An average alone                              | Averages hide the shape; for lay audiences a few example values                             |
 | **Relationship between two measures** (correlation)      | `<Scatter trend>` with the notable points labeled                                                     | Dual-axis lines                               |                                                                                             |
 | **Pattern across two dimensions**                        | `<Heatmap>` with the cell that matters highlighted                                                    | 3D surface                                    |                                                                                             |
+| **Retention at the same age since signup**               | `<RetentionCohorts>`                                                                                 | Comparing cohorts in their latest month      | Include starting counts and leave unobserved months blank                                   |
+| **Profit from both sales and margin**                     | `<ProfitPool>`                                                                                       | Area alone without values or units           | Revenue sets width, contribution margin sets height and profit sets the signed area         |
+| **One entity changes position against peers**             | `<MarketMovement>`                                                                                   | Rescaling the axes at each date              | Keep the two axes fixed and label the selected entity's first and last observations          |
 | **Values against a threshold** (a target, break-even, an SLA) | `<BarChart>` or `<LineChart>` with a `reference` annotation at the threshold, the item on the wrong side highlighted | Plain numbers that leave the threshold to a caption | The line is the message: show it                                              |
 | **Progress to a goal**                                   | `<Progress target>` or `<BigNumber>` with the target as context                                       | Gauge, speedometer                            |                                                                                             |
 | **A proportion that should feel human**                  | `<Pictogram>` ("3 in 10"; `total` is at most 100 units, so reduce 340 of 1,000 to about 1 in 3), on the full-width `chart` layout with no `<Aside>` and a label of about four words                                         | Decimal percentages                           | Icon arrays help low-numeracy audiences grasp risk and proportion; in a narrow column the grid gets cramped |
@@ -210,6 +213,43 @@ Run this on every slide with numbers.
 - If the point is how the saving survives the one-off cost: `<Waterfall>` from today's cost through the one-off and the saving to the first-year cost. Compute every bar from the supplied figures and say in the notes how.
 - Do not draw a multi-year line unless the user gave you the years: a projection you extrapolated is invented data. Offer it as a `[NEEDS]`.
 - If the audience will ask "what if it runs late or over?", answer with a small `<Table>` of scenarios (on plan, late, late and over budget) with the break-even for each and the pessimistic row highlighted. State the assumptions in the `<Footnote>` and the arithmetic in the notes or on a backup slide.
+
+**Retention cohorts.** Each row identifies the signup cohort, elapsed age, starting population
+and observed retention in percentage points. Leave future ages absent or give them a null rate.
+Read one mature row left to right on the first click. On the next click, read down one age column
+so the comparison holds the time since signup constant.
+
+```mdx
+<RetentionCohorts data={retention} sizeLabel="Shops" focus={{ cohort: 'April', age: 3, from: 1 }} />
+```
+
+**Profit pool.** Use positive revenue in a shared currency and scale. Pass contribution margins
+in percentage points so `45` means 45%. Show the size of the sales segments first, then their
+margin heights and finally the highest contributor. Name the profit in money to support the area
+comparison. Include negative margins when segments made a loss.
+
+```mdx
+<ProfitPool data={segments} format="currency" highlight="Pharmacies" buildFrom={1} />
+```
+
+**Market movement.** Supply a row for each measured entity and `YYYY-MM-DD` observation date.
+Choose metrics measured the same way across dates and peers. Advance the observation date, keep
+the axes fixed and connect the selected entity's measured positions. Direct labels at both ends
+keep the final trail interpretable on a still slide.
+
+```mdx
+<MarketMovement
+  data={market}
+  x="price"
+  y="onTime"
+  xLabel="Price per drop"
+  yLabel="On-time delivery"
+  xFormat="currency"
+  format="percent"
+  highlight="Wrenhaul"
+  buildFrom={1}
+/>
+```
 
 ## 13. Putting a figure on a slide: layouts and the chart API
 

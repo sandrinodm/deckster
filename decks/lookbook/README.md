@@ -19,10 +19,9 @@ pnpm deck lint lookbook
 pnpm deck lint lookbook --brand nocturne
 ```
 
-The deck has 180 slides in 12 parts and 364 steps. Its slides' `budget:` values add up to 122
-minutes 35 seconds, so `deck.config.ts` sets `duration: '127m'`, with four minutes of slack. That
-is the lookbook read end to end, not the forty-minute launch talk the story imagines
-(`BRIEF.md`), which would use a few slides from each part.
+The deck has 189 slides and 386 steps in 12 parts. The slide budgets add up to 130 minutes 45
+seconds within the 135-minute runtime. The fictional forty-minute launch talk selects slides
+from the lookbook.
 
 ## Parts
 
@@ -44,6 +43,20 @@ problem. Slide ids say what the slide shows (`split-photo-left-bleed`, `chart-wa
 | 10  | Plan ahead and ask     | History, roadmap, status reports, schedules, actions and the ask                        |
 | 11  | Motion                 | The five step effects side by side, and focus                                           |
 | 12  | Close                  | Takeaways, references, links, a code to scan, the last slide                            |
+
+## Presentation patterns
+
+| When you need to…                                                  | Copy this slide                                                  |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| Compare retention at the same age since signup                     | [Retention cohorts](slides/chart-retention-cohorts.mdx)          |
+| Explain which segments earn the most from their sales              | [Profit pool](slides/chart-profit-pool.mdx)                      |
+| Show a company's changing position against peers                   | [Market movement](slides/chart-market-movement.mdx)              |
+| Walk through the decisions a product screen supports               | [Product cutaway](slides/product-cutaway.mdx)                    |
+| Show ownership and handoffs in a customer journey                  | [Service blueprint](slides/service-blueprint.mdx)                |
+| Let the audience pick and replay a product scenario                | [Choose-your-path demo](slides/demo-choose-path.mdx)             |
+| Explain a new model through a familiar one and name the assumption | [Pitch by analogy](slides/pitch-analogy.mdx)                     |
+| Ask an investment committee for a specific decision                | [Investment committee](slides/investment-committee.mdx)          |
+| Connect an opportunity to a measurable test                        | [Opportunity to experiments](slides/opportunity-experiments.mdx) |
 
 ## What holds it complete
 

@@ -1,0 +1,23 @@
+---
+layout: diagram
+title: Test one tap to confirm the handoff
+eyebrow: Opportunity and experiments
+budget: 50s
+---
+
+<Tree title="Shorter handoffs lead to faster proof at the door, with a checklist and a one-tap receipt as options. The chosen experiment is a two-week pilot." direction="right">
+  <Node id="outcome" title="Shorter handoffs" subtitle="Desired outcome" icon="target">
+    <Node id="opportunity" title="Faster proof at the door" subtitle="Opportunity" icon="clock">
+      <Node id="checklist" title="Pre-drop checklist" subtitle="Alternative" icon="list-check" />
+      <Node id="receipt" title="One-tap receipt" subtitle="Chosen option" icon="pointer">
+        <Node id="experiment" title="Two-week pilot" subtitle="Old Town riders" icon="activity" state="highlighted" at={1} />
+      </Node>
+    </Node>
+  </Node>
+</Tree>
+
+<Footnote>Compare median handoff time and the share of deliveries missing proof against the current Rider flow.</Footnote>
+
+<Notes>
+Opportunity-to-experiment tree using the kit's `<Tree>`. Shorter handoffs are the outcome. The opportunity is reducing the time riders spend recording proof at the door. That gives us two options: a checklist before the ride or a one-tap receipt at the door. Leave the checklist visible for the next decision. [click] Pilot the receipt for two weeks with Old Town riders. Compare median handoff time and missing proofs with the current flow before deciding whether to roll it out.
+</Notes>

@@ -40,7 +40,7 @@ slides still follow the story: read a part top to bottom and it makes sense as a
   screens take `treatment: plain`.
 - **Budgets.** Give every slide a `budget:` (dividers 10s, statements and pictures 20s to 30s,
   evidence 45s to 1m30s). The deck's `duration` is the sum of the budgets rounded up with a little
-  slack (`127m` for 122m35s); review it with each added slide,
+  slack (`135m` for 130m45s); review it with each added slide,
   or `deck lint` reports the deck over time.
 
 ## Dividers
@@ -57,19 +57,16 @@ real dividers.
 | --- | --- | --- | --- | --- |
 | 1 | Open (`part-open`) | Covers, agendas, the speaker, divider forms | 12 | G1 |
 | 2 | Say one thing (`part-say`) | Statements, definitions, quotes, a picture across the slide | 14 | G1 |
-| 3 | Explain (`part-explain`) | Text, pictures, peers, capabilities, questions, processes, exercises, facets and habits | 29 | G2 |
-| 4 | Compare and decide (`part-compare`) | Options, plans and prices, a change, a map, four lists, exact values and risk registers | 17 | G3 |
-| 5 | Prove it with a number (`part-numbers`) | Big numbers, nested markets, before and after, a sum, a cost bridge and quiz | 17 | G3 |
-| 6 | Show the pattern (`part-charts`) | Single charts and dashboards: trend, ranking, flow, spread | 12 | G4 |
-| 7 | Show how it works (`part-how`) | Diagrams, conversations, code, live demos | 21 | G5 |
-| 8 | Show the product (`part-product`) | Framed screens, galleries, before and after, a morph, video | 13 | G6 |
+| 3 | Explain (`part-explain`) | Text, pictures, analogies, capabilities, questions, processes, exercises and habits | 30 | G2 |
+| 4 | Compare and decide (`part-compare`) | Options, pricing, maps, exact values, risk registers and an investment decision | 18 | G3 |
+| 5 | Prove it with a number (`part-numbers`) | Big numbers, nested markets, sums, a cost bridge and a profit pool | 18 | G3 |
+| 6 | Show the pattern (`part-charts`) | Single charts and dashboards, including cohort retention and market movement | 14 | G4 |
+| 7 | Show how it works (`part-how`) | Diagrams, conversations, a service blueprint, experiments, code and live demos | 23 | G5 |
+| 8 | Show the product (`part-product`) | Framed screens, galleries, a cutaway, a branching demo, a morph and video | 15 | G6 |
 | 9 | People and proof (`part-people`) | Founders, team, testimonials, personas, logos and case studies | 15 | G6 |
 | 10 | Plan ahead and ask (`part-ahead`) | History, roadmap, status reports, schedules, actions and the ask | 14 | G4 |
 | 11 | Motion (`part-motion`) | The five step effects side by side, and focus | 7 | G2 |
 | 12 | Close (`part-close`) | Takeaways, references, links, a code to scan, the last slide | 9 | G5 |
-
-Slides to write per group (the cover and dividers are done): G1 23, G2 34, G3 32, G4 24, G5 28,
-G6 26.
 
 ## Slides
 
@@ -122,6 +119,7 @@ Columns: **Id**; **Layout and options** (frontmatter beyond `title`, `eyebrow`, 
 | `split-photo-right` | `split`, `ratio: 1:1`, `side: right` (defaults), `<Image>` of the Old Town from above with `focal` | Riders know their streets by name | Text beside a picture in the brand treatment; the `<Image>` component | whole | G2 |
 | `cards-three` | `cards`, three cards with icons | Open Network does three things for a shop | Three peers with icons | whole | G2 |
 | `features-network` | `features`, six titles, `surface: inverse` | One network covers every part of the drop | Three open columns, icons and titles without details | whole | G2 |
+| `pitch-analogy` | `content` with two reveals in an `<Aside>` | Parcel delivery is moving to a hub network | A familiar consolidation model and the assumption that local volumes can fill loops | 0 airline network; 1 Wrenhaul; 2 the assumption | G2 |
 | `default-list` | `default`, a heading and four bullets, each in `<Step focus>` | Flock makes four decisions every 90 seconds | `focus`: each new point at full strength, earlier ones recede | 1 to 4 one decision each (focus) | G2 |
 | `split-photo-left-bleed` | `split`, `ratio: 7:5`, `side: left`, `bleed: true`, the handover as an `<Image>` with `focal` | People are home when the drop arrives | A picture bled to the slide's edges on the left, 7:5 | whole | G2 |
 | `steps-loop` | `steps`, five steps (collect, batch, ride, hand over, return), `reveal: true` | Every loop runs the same five steps | A process; `reveal: true` | 1 to 4 one step each | G2 |
@@ -167,6 +165,7 @@ Columns: **Id**; **Layout and options** (frontmatter beyond `title`, `eyebrow`, 
 | `table-cities` | `table`, six cities × five columns (live since, hubs, drops a day, cost, on time), highlight a column | Every city is on time above 96% | A wider table, highlighted column | whole | G3 |
 | `risks-launch` | `risks`, three rows, `highlight`, `reveal: true`, `surface: accent` | Missed webhooks are the risk that gates launch | Qualitative levels with filled marks, the most severe row on inverse | 1 to 3 one row per click | G3 |
 | `risks-expansion` | `risks`, five rows, context, footnote, `surface: inverse` | Density is the risk behind four new cities | A full register with an action against every risk | whole | G3 |
+| `investment-committee` | `content` with an `<Aside>` | Approve an €8M lead for expansion | Decision, evidence, density objection and a reconsideration threshold | whole | G3 |
 
 ### Part 5: Prove it with a number (G3)
 
@@ -180,6 +179,7 @@ Columns: **Id**; **Layout and options** (frontmatter beyond `title`, `eyebrow`, 
 | `chart-comparison` | `chart`, `<Comparison>` of our cost per drop, €3.40 to €2.34, `better="down"` | A drop costs us €2.34, a euro less than a year ago | Before and after as one comparison figure | whole | G3 |
 | `chart-waterfall` | `chart`, `<Waterfall>` cost per drop €3.40 to €2.34, `reveal="series"` | Batching saved more than any other change | A bridge between two totals, built totals first | 0 the totals; 1 the changes; 2 Flock batching highlighted, with the aside | G3 |
 | `quiz-cost` | `quiz`, four options, `answer: B`, `explanation`, `reveal: false`, `surface: accent`, context and footnote | What cut the most cost from each drop? | Answered recap, tick and inverse answer panel on accent | whole | G3 |
+| `chart-profit-pool` | `chart`, `<ProfitPool>` with five merchant segments | Pharmacies contribute more profit than grocers | Revenue as width, margin as height and contribution profit as area | 0 revenue; 1 margin; 2 profit and pharmacy emphasis | G3 |
 | `equation-market` | `equation`, three terms (46 cities, 21M drops, €3.10) and €3.0B | The market is €3.0B a year in 46 cities | Bottom-up market size | whole | G3 |
 | `market-reachable` | `market`, two sizes | Kestwick handles a third of our daily drops | Network and Kestwick daily drops | whole | G3 |
 | `market-first` | `market`, three sizes, `surface: accent`, `reveal: true` | We target €18.6M inside a €1.0B market | Total, serviceable and target on accent | one size per step, outside in | G3 |
@@ -207,6 +207,8 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `chart-table` | `chart`, `<Table>` of drops by merchant type (October 2025, October 2026, growth as a bar column), highlight the pharmacies row, `surface: inverse` | Pharmacies grew fastest, four times in a year | The kit `<Table>` with a bar column | whole | G4 |
 | `chart-scatter` | `chart`, `<Scatter>` hub density against cost, `trend`, highlight Old Town and Sandgate | The denser the hub, the cheaper the drop | Correlation with a trend line and labelled points | 0 the points; 1 the trend and highlight | G4 |
 | `chart-heatmap` | `chart`, `<Heatmap>` weekday by time band, highlight Friday 16–18 | Friday from four to six is the busiest two hours of the week | A two-dimensional pattern with one cell outlined | whole | G4 |
+| `chart-retention-cohorts` | `chart`, `<RetentionCohorts>` on inverse | Month-three retention rose from 82% to 91% | Starting counts, observed rates and blank immature cells | 0 all cohorts; 1 April from signup to month six; 2 all mature cohorts at month three | G4 |
+| `chart-market-movement` | `chart`, `<MarketMovement>` of price and on-time delivery | Wrenhaul became more reliable as prices fell | Fixed axes, dated trail endpoints and observed peer positions | 0 March; 1 June; 2 October | G4 |
 | `dashboard-scale` | `dashboard`, two bar charts | Drops tripled while delivery costs fell | Two full-height plots under one takeaway | whole | G4 |
 | `dashboard-network` | `dashboard`, four mixed charts and numbers, `surface: inverse`, `reveal: true` | Riders deliver scale on time | Two-by-two operating review, headings visible throughout | 1 to 4 one plot each | G4 |
 
@@ -217,11 +219,13 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `part-how` | `section`, divider form | Show how it works | Divider | whole | done |
 | `conversation-window` | `conversation`, two messages, no roles | The window is agreed before the rider leaves | A short question and reply at the roomy level | whole | G5 |
 | `conversation-handover` | `conversation`, four messages with roles, `surface: accent`, `reveal: true` | A handover ends with proof at the door | The dense exchange, our replies on inverse | one message per step | G5 |
+| `service-blueprint` | `service-blueprint`, Book, Batch, Ride and Confirm with a marked handoff | The hub owns the rider handoff | Customer actions, visible service, backstage work and owners | 0 visible service; 1 backstage; 2 owners and handoff | G5 |
 | `diagram-architecture` | `diagram`, `<Flow>` with `<Node>`s in two `<Group>`s (merchant side, Wrenhaul), `<Edge>` labels, `<Journey path=... focus>` | Every drop crosses five systems on its way to a rider | Flow, Node, Group, Edge; a journey that dims everything off its path | 0 the systems; 1 to 5 the journey, one hop per step | G5 |
 | `code-sdk` | `code`, fenced TypeScript (`@wrenhaul/sdk`, `drops.create`) with `{2-4\|6-8}` and a `title` | Booking a drop is one call | A fenced block with stepped highlights | 1 and 2 one range each | G5 |
 | `diagram-sequence` | `diagram`, `<SequenceDiagram>` with `<Actor>`s (merchant, API, Flock, rider, recipient) and `<Message>`s | A drop is booked, batched and handed over in 52 minutes | A sequence, one message per step | one message per step | G5 |
 | `code-terminal` | `code`, `<Terminal>` with `<Cmd>` and `<Out>` (the `wren` CLI: quote a drop, book it) | You can book a drop from a terminal | A typed session; each command a step | one command per step | G5 |
 | `diagram-events` | `diagram`, `<Flow>` with `<Packet>`s on the event stream, a `<State>` (a webhook endpoint failing, then retried) and `<Focus>` | Every change reaches the merchant within a second, or is retried until it does | Packets, a state change, focus on part of the flow | 0 the flow; 1 packets; 2 the failing state; 3 focus on the retry | G5 |
+| `opportunity-experiments` | `diagram`, `<Tree>` of an opportunity, two possible responses and a field trial | Test one tap to confirm the handoff | Checklist or one-tap receipt, with a two-week test and its measures | 0 opportunity and options; 1 the test | G5 |
 | `code-move` | `code`, `<CodeMove>` between two fenced versions (v1 single drop, v2 with `window`) | Windows are one new field | Tokens moving between versions | 1 the second version | G5 |
 | `diagram-hops` | `diagram`, `<Flow>` of five nodes in a loop of three rows, a `<Journey>` of `<Hop>` children with their own labels and a reply, the last hop a `path` back through Open Network, an `<Aside>` | A drop's trip from shop to door, hop by hop | Journey with Hop children, labels and a reply; a diagram beside an aside | one hop per step | G5 |
 | `code-codestep` | `code`, `<CodeMove>` with two `<CodeStep>`s (a `curl` in bash, then the SDK in TypeScript) | The SDK is the same call, typed | CodeStep across languages | 1 the TypeScript | G5 |
@@ -243,6 +247,7 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `part-product` | `section`, divider form | Show the product | Divider | whole | done |
 | `before-after-street` | `before-after`, `fit: cover`, captions, `reveal: true` | The bollards stopped vans, not deliveries | Equal picture wells and an accented after label | before, then after | G6 |
 | `screen-dispatch` | `screen`, `frame: browser`, `address`, `dispatch.svg`, three or four `callouts`, `reveal: true`, `transition: zoom` | A hub lead runs the whole day from one map | The browser frame with numbered callouts, one per step; zoom transition | one callout per step | G6 |
+| `product-cutaway` | `product-cutaway`, three dispatch-screen layers | One dispatch screen, three jobs | Promised time, route feasibility and rider capacity | 0 delivery promises; 1 routes; 2 riders and takeaway | G6 |
 | `split-phones` | `split`, `ratio: 5:7`, `side: right`, `screens/rider-and-track.svg` (the Rider loop and the Track page in two drawn phones, one picture) at `fit: contain`, `treatment: plain`, `transition: slide` | One loop, seen from saddle and door | Two phone screens of one moment side by side; slide transition | whole | G6 |
 | `screen-rider` | `screen`, `frame: phone`, `rider-next-stop.svg`, callouts, `reveal: true` | The rider never has to think about the route | The phone frame | one callout per step | G6 |
 | `before-after-rider` | `before-after`, `fit: contain`, custom labels, `accent: none`, `surface: inverse`, `treatment: plain` | One loop becomes one clear next stop | Whole screens and neutral labels | whole | G6 |
@@ -251,6 +256,7 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `screen-insights` | `screen`, `frame: laptop`, `insights.svg`, callouts | Merchants see their cost per drop every week | The laptop frame | whole | G6 |
 | `gallery-screens` | `gallery`, four pictures (dispatch, insights, console, a phone) with captions | Four screens run on one stream of events | The four-picture variant with captions | whole | G6 |
 | `screen-console` | `screen`, `frame: none`, `console.svg`, two callouts, `surface: default` | Developers test a drop before they ship | The screen alone without a frame, on default | whole | G6 |
+| `demo-choose-path` | `choose-path`, two parcel examples with two stages each | How should Flock handle this drop? | A bike loop or partner van, with both routes in exports | Choose a parcel and walk its steps, or return to the choice | G6 |
 | `split-video` | `split`, `ratio: 5:7`, `side: right`, `<Video>` of `aurora.webm` with `cues={[0, 3, 6]}`, a poster and `posters` per part; the words describe the abstract title sequence as it is | The launch film opens in light alone | A cued video in three parts with stills for export | one part per step | G6 |
 | `gallery-places` | `gallery`, three scenes of the loaf the deck follows (the handover as the lead, the hub, the street) with captions, `surface: default` | Booked at 08:42, at the door at 09:21 | Three pictures with captions on the default surface | whole | G6 |
 
@@ -330,7 +336,7 @@ Where each capability lives. The coverage test lists what is still missing; this
   inverse on `title-center`, `agenda-long`, `section-center`, `quote-plain`, `features-network`,
   `steps-current`, `bento-inverse`, `do-dont-routing`, `exercise-first-drop`, `faq-windows`,
   `quiz-routing`, `shift-cost`, `comparison-plans`, `risks-expansion`, `stats-three`,
-  `equation-loop`, `chart-area`, `chart-table`, `dashboard-network`, `diagram-layers`,
+  `equation-loop`, `chart-area`, `chart-table`, `chart-retention-cohorts`, `dashboard-network`, `diagram-layers`,
   `code-webhook`, `diagram-timeline`, `before-after-rider`, `voices-network`, `proof-st-brenna`,
   `persona-recipient`, `status-next-wave`, `ask-pilot`, `motion-wipe`, `sources-records`; gradient
   on `section-numeral-small`, `statement-quote`, `steps-three`, `motion-blur`.
@@ -349,12 +355,13 @@ Where each capability lives. The coverage test lists what is still missing; this
   ratio 1:1, 5:7, 7:5, side left/right, bleed; image text bottom/left/right/none; table numbers
   right/left; logos tone mono/color; screen frame browser/phone/laptop/none; `reveal: true` on
   cards, bento, steps, comparison, pricing, shift, timeline, equation, proof, screen, columns,
-  matrix, ask, actions, status, risks, quadrants, market, schedule, dashboard, recap, faq,
+  matrix, ask, actions, status, risks, quadrants, market, schedule, dashboard, recap, faq, product-cutaway, service-blueprint,
   features (by row), do-dont (by column), before-after, voices, conversation, quiz (answer); agenda,
   steps, actions, columns, timeline and schedule `current`; schedule `now`; quadrants `highlight`
   and `badge`; definition metadata and example; persona portrait and initials; team founders.
-- **Charts:** BigNumber, StatRow, Comparison, Progress, Pictogram, Sparkline, Waterfall (part 5); LineChart,
-  BarChart, Donut, AreaChart, Slope, Funnel, Table, Scatter, Heatmap (part 6).
+- **Charts:** BigNumber, StatRow, Comparison, Progress, Pictogram, Sparkline, Waterfall and
+  ProfitPool (part 5); LineChart, BarChart, Donut, AreaChart, Slope, Funnel, Table, Scatter, Heatmap,
+  RetentionCohorts and MarketMovement (part 6).
 - **Diagram components:** Flow, Node, Group, Edge, Journey (`diagram-architecture`); Packet,
   State, Focus (`diagram-events`); Hop (`diagram-hops`); SequenceDiagram, Actor, Message;
   Layers, Layer, Item; Cycle; Tree; Timeline, Milestone; Svg.
@@ -368,6 +375,7 @@ Where each capability lives. The coverage test lists what is still missing; this
 
 - `actions`: `actions-launch`, `actions-expansion`.
 - `before-after`: `before-after-street`, `before-after-rider`.
+- `choose-path`: `demo-choose-path`.
 - `conversation`: `conversation-window`, `conversation-handover`.
 - `dashboard`: `dashboard-scale`, `dashboard-network`.
 - `definition`: `definition-loop`, `definition-drop`.
@@ -377,11 +385,13 @@ Where each capability lives. The coverage test lists what is still missing; this
 - `features`: `features-network`, `features-operations`.
 - `market`: `market-reachable`, `market-first`.
 - `persona`: `persona-hub-lead`, `persona-recipient`.
+- `product-cutaway`: `product-cutaway`.
 - `quadrants`: `quadrants-network`, `quadrants-next-city`.
 - `quiz`: `quiz-same-hour`, `quiz-routing`, `quiz-loop`, `quiz-cost`.
 - `recap`: `recap-network`, `recap-launch`.
 - `risks`: `risks-launch`, `risks-expansion`.
 - `schedule`: `schedule-openings`, `schedule-quayside`.
+- `service-blueprint`: `service-blueprint`.
 - `sources`: `sources-evidence`, `sources-records`.
 - `status`: `status-launch`, `status-next-wave`.
 - `voices`: `voices-merchants`, `voices-network`.

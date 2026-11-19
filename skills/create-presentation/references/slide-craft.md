@@ -98,6 +98,12 @@ Some jobs have a layout of their own, and the near miss is the layout that comes
 | A programme's readiness, exceptions and who owns them                    | `status`: three to seven workstreams, labelled states, optional owners and one-line notes                                                                     | `table` for arbitrary values, `columns` for task lanes, `timeline` for dated milestones                                                                                       |
 | Several people supporting one point                                      | `voices`: two or three short testimonials with names, roles and optional portraits                                                                            | `quote` for one speaker; `proof` for a customer result with numbers; `team` to introduce people                                                                               |
 
+For these recurring decisions, adapt the corresponding lookbook slide.
+
+- **Pitch by analogy** · Start with a familiar market’s change. Reveal how the same mechanism works for the company, then show the assumption the audience should challenge. [Lookbook example](../../../decks/lookbook/slides/pitch-analogy.mdx)
+- **Investment committee decision** · Put the decision and amount in the title. Pair the thesis with evidence and give the strongest objection a measurable condition for reconsideration. [Lookbook example](../../../decks/lookbook/slides/investment-committee.mdx)
+- **Opportunity to experiment** · Start from the outcome and show the opportunity, competing options, and experiment. Keep alternatives visible when the experiment is revealed. State the measure and the baseline on the slide. [Lookbook example](../../../decks/lookbook/slides/opportunity-experiments.mdx)
+
 ## 4. Cognitive load: what the research supports
 
 Working memory handles only a few items at once, and a listener is already using some of it to follow speech. Mayer's multimedia learning research gives the best-supported design rules. Median effect sizes are from his 2014 handbook review; they come mostly from short lab lessons with novice learners and immediate tests, so treat sizes as indicative, the direction as reliable.

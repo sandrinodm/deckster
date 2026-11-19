@@ -1,0 +1,150 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-choose-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-choose-demo {
+    display: grid;
+    flex: 1 1 0;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: var(--brand-space-sm);
+    min-height: 0;
+  }
+
+  .kit-choose-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--kit-gutter);
+  }
+
+  .kit-choose-prompt {
+    margin: 0 0 var(--brand-space-sm);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-choose-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--brand-space-md);
+    min-width: 0;
+    padding: var(--brand-space-lg);
+    border: 1px solid var(--brand-color-border);
+    border-block-start: 3px solid var(--brand-color-accent);
+    background: var(--brand-color-surface);
+    color: var(--brand-color-fg);
+    text-align: start;
+  }
+
+  .kit-choose-choice {
+    align-items: flex-start;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .kit-choose-choice:hover {
+    background: var(--brand-color-bg);
+    outline: 1px solid var(--brand-color-accent);
+    outline-offset: -1px;
+  }
+
+  .kit-choose-arrow {
+    margin-top: var(--brand-space-sm);
+    color: var(--brand-color-accent);
+    font-size: var(--brand-type-title-size);
+    line-height: 1;
+  }
+
+  .kit-choose-name,
+  .kit-choose-situation {
+    margin: 0;
+    overflow-wrap: break-word;
+  }
+
+  .kit-choose-situation {
+    color: var(--brand-color-muted);
+  }
+
+  .kit-choose-summary {
+    gap: var(--brand-space-xs);
+    padding: var(--brand-space-md);
+  }
+
+  .kit-choose-demo[data-compact] :is(.kit-choose-summary, .kit-choose-outcome) {
+    gap: var(--brand-space-2xs);
+    padding-block: var(--brand-space-xs);
+  }
+
+  .kit-choose-actions {
+    margin: auto 0 0;
+    padding-inline-start: 1.55em;
+    list-style: decimal;
+  }
+
+  .kit-choose-actions li + li {
+    margin-top: var(--brand-space-2xs);
+  }
+
+  .kit-choose-actions li::marker {
+    color: var(--brand-color-accent);
+    font-weight: 700;
+  }
+
+  .kit-choose-outcome {
+    padding-top: var(--brand-space-xs);
+    margin: var(--brand-space-xs) 0 0;
+    border-top: 1px solid var(--brand-color-border);
+  }
+
+  .kit-choose-outcome strong {
+    display: block;
+    margin-bottom: var(--brand-space-2xs);
+    color: var(--brand-color-accent);
+  }
+
+  .kit-choose-workflow {
+    grid-row: 1 / -1;
+    justify-content: center;
+    margin-bottom: var(--brand-space-md);
+    padding-inline: max(var(--brand-space-lg), var(--kit-column));
+  }
+
+  .kit-choose-progress {
+    margin: 0;
+    color: var(--brand-color-accent);
+  }
+
+  .kit-choose-workflow .kit-choose-name {
+    max-width: 28ch;
+  }
+
+  .kit-choose-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--brand-space-md);
+    margin-top: var(--brand-space-md);
+  }
+
+  .kit-choose-controls button {
+    padding: var(--brand-space-xs) var(--brand-space-sm);
+    border: 1px solid var(--brand-color-accent);
+    border-radius: var(--brand-radius-sm);
+    cursor: pointer;
+  }
+
+  .kit-choose-primary {
+    background: var(--brand-color-accent);
+    color: var(--brand-color-accent-fg);
+  }
+
+  .kit-choose-back {
+    background: var(--brand-color-bg);
+    color: var(--brand-color-fg);
+  }
+
+  .kit-choose-demo :is(button, h2):focus-visible {
+    outline: 3px solid var(--brand-color-accent);
+    outline-offset: 4px;
+  }
+}
