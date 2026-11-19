@@ -8,9 +8,15 @@ import { Flow } from '#diagrams/flow.tsx';
 
 /**
  * What the diagram did, in order: `hold:true` and `hold:false` for each of its own ready holds (not
- * its icon loader's), and `elk` for each automatic layout that ran.
+ * its icon loader's), and `elk` for each automatic layout that ran. Each `hold:false` also records
+ * what {@link Released} the committed drawing had then, read by `drawingNow`.
  */
-const events = vi.hoisted(() => ({ log: [] as string[], elkCalls: 0 }));
+const events = vi.hoisted(() => ({
+  log: [] as string[],
+  elkCalls: 0,
+  released: [] as Released[],
+  drawingNow: (): Released => ({ heights: [], labelPlaced: false }),
+}));
 
 vi.mock('@deckster/engine', () => ({
   useReadyHold: (pending: boolean) => {
@@ -19,6 +25,9 @@ vi.mock('@deckster/engine', () => ({
     }
 
     events.log.push(`hold:${pending}`);
+    if (!pending) {
+      events.released.push(events.drawingNow());
+    }
   },
   useSlide: () => ({ isActive: false, state: 'current', direction: 'forward' }),
   useStatic: () => true,
@@ -56,6 +65,21 @@ const BODY_PX = 40;
  * An edge label's size.
  */
 const LABEL_SIZE = { width: 80, height: 20 };
+
+/**
+ * What the committed drawing showed when the diagram released its ready hold.
+ */
+type Released = {
+  /**
+   * Each drawn node's height in pixels, in document order; empty when nothing was drawn yet.
+   */
+  heights: number[];
+
+  /**
+   * Whether the `api->store` edge label had a position.
+   */
+  labelPlaced: boolean;
+};
 
 /**
  * The mounted tree, cleaned up even when an assertion fails.
@@ -149,6 +173,8 @@ beforeEach(() => {
   Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true);
   events.log.length = 0;
   events.elkCalls = 0;
+  events.released.length = 0;
+  events.drawingNow = committedDrawing;
   drawnReads = [];
   extraBodyHeight = 0;
   vi.stubGlobal('ResizeObserver', SilentObserver);
@@ -201,6 +227,21 @@ function heightOf(element: HTMLElement): number {
   }
 
   return BODY_PX;
+}
+
+/**
+ * What the committed drawing shows now, read from inline styles only so that no body is measured.
+ */
+function committedDrawing(): Released {
+  if (container === undefined) {
+    return { heights: [], labelPlaced: false };
+  }
+
+  const label = container.querySelector<HTMLElement>('[data-edge="api->store"].kit-flow-label');
+  return {
+    heights: drawnNodes(container).map((node) => Number.parseFloat(node.style.height)),
+    labelPlaced: label !== null && label.style.left !== '' && label.style.top !== '',
+  };
 }
 
 /**
@@ -311,6 +352,21 @@ describe('a <Flow> with grid cells', () => {
   it('releases its ready hold for good', () => {
     mount(gridFlow);
     expect(releasedForGood()).toBe(true);
+  });
+
+  it('holds ready until the drawing was measured again, with no resize report', () => {
+    const box = mount(gridFlow);
+    const firstDrawn = drawnReads.find((read) => read.id === 'store')?.nodeHeight ?? 0;
+    const expected = BODY_PX + cylinderInset(BODY_PX + cylinderInset(firstDrawn));
+    const final = drawnNodes(box).map((node) => Number.parseFloat(node.style.height));
+    expect(final).toHaveLength(3);
+    expect(holds()[0]).toBe('hold:true');
+    expect(drawnReads.length).toBeGreaterThan(0);
+    expect(events.released[0]?.labelPlaced).toBe(true);
+    expect(events.released[0]?.heights).toEqual(final);
+    for (const height of events.released[0]?.heights ?? []) {
+      expect(height).toBeCloseTo(expected, 1);
+    }
   });
 });
 
