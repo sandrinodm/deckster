@@ -419,6 +419,29 @@ layer(NodeServices.layer)('addBrand', (it) => {
     }),
   );
 
+  it.effect('rejects installed Fontsource packages whose manifests cannot resolve', () =>
+    Effect.gen(function* () {
+      const manifests = [
+        undefined,
+        { name: TEST_FONT, exports: { './package.json': './missing.json' } },
+      ];
+      for (const manifest of manifests) {
+        const root = workspace();
+        const dir = path.join(root, 'node_modules', TEST_FONT);
+        fs.mkdirSync(dir, { recursive: true });
+        if (manifest !== undefined) {
+          fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify(manifest));
+        }
+
+        const error = yield* Effect.flip(addBrand(root, request('//brands/valid-layout')));
+        expect(error).toMatchObject({ source: `brands/${BRAND}/brand.ts` });
+        expect(error.message).toContain(`Could not resolve ${TEST_FONT}`);
+        expect(error.message).not.toContain('is not installed');
+        expect(fs.existsSync(path.join(root, 'brands', BRAND))).toBe(false);
+      }
+    }),
+  );
+
   it.effect('refuses to replace a brand without force, and replaces it with force', () =>
     Effect.gen(function* () {
       const root = workspace();

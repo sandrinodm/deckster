@@ -330,7 +330,7 @@ const fontsourceFaces = Effect.fn('fontsourceFaces')(function* (
 ): Effect.fn.Return<ResolvedFonts, never, FileSystem.FileSystem> {
   const { role, source, brand, packages } = input;
   const field = `typography.families.${role}.source`;
-  const lookup = locatePackage(source.package, packages?.fromDir ?? brand.dir);
+  const lookup = yield* locatePackage(source.package, packages?.fromDir ?? brand.dir);
   if (lookup.kind === 'missing') {
     return missingFontPackage(input, field);
   }
@@ -598,12 +598,17 @@ function unknownValues(
  * @param brandDir - The absolute brand folder.
  * @returns The package folder, or why it could not be loaded.
  */
-function locatePackage(name: string, brandDir: string): PackageLookup {
-  const lookup = resolvePackageFolder(name, path.join(brandDir, 'package.json'));
-  return lookup.kind === 'missing' && FRAMEWORK_INSTALLED
-    ? resolvePackageFolder(name, FRAMEWORK_ANCHOR)
-    : lookup;
-}
+const locatePackage = Effect.fn('locatePackage')(function* (
+  name: string,
+  brandDir: string,
+): Effect.fn.Return<PackageLookup, never, FileSystem.FileSystem> {
+  const lookup = yield* resolvePackageFolder(name, path.join(brandDir, 'package.json'));
+  if (lookup.kind === 'missing' && FRAMEWORK_INSTALLED) {
+    return yield* resolvePackageFolder(name, FRAMEWORK_ANCHOR);
+  }
+
+  return lookup;
+});
 
 /**
  * The folder of a package as Node resolves it from a file.
@@ -611,19 +616,35 @@ function locatePackage(name: string, brandDir: string): PackageLookup {
  * @param name - The package name.
  * @param from - The absolute path of the file that imports it.
  */
-function resolvePackageFolder(name: string, from: string): PackageLookup {
+const resolvePackageFolder = Effect.fn('resolvePackageFolder')(function* (
+  name: string,
+  from: string,
+): Effect.fn.Return<PackageLookup, never, FileSystem.FileSystem> {
+  const resolve = createRequire(from).resolve;
   try {
-    const manifest = createRequire(from).resolve(`${name}/package.json`);
+    const manifest = resolve(`${name}/package.json`);
     return { kind: 'found', dir: path.dirname(manifest) };
   } catch (error) {
     if (Predicate.hasProperty(error, 'code') && error.code === 'MODULE_NOT_FOUND') {
-      return { kind: 'missing' };
+      // A missing manifest or export target also produces MODULE_NOT_FOUND. Only an absent
+      // package may be deferred to installation or resolved from the framework instead.
+      const fs = yield* FileSystem.FileSystem;
+      const candidates = resolve.paths(name) ?? [];
+      const present = yield* Effect.forEach(candidates, (dir) =>
+        fs.exists(path.join(dir, name)),
+      ).pipe(
+        Effect.map((entries) => entries.some(Boolean)),
+        Effect.orElseSucceed(() => true),
+      );
+      if (!present) {
+        return { kind: 'missing' };
+      }
     }
 
     const reason = error instanceof Error ? error.message : String(error);
     return { kind: 'invalid', message: `Could not resolve ${name}: ${reason}` };
   }
-}
+});
 
 /**
  * Whether a package's `unicode.json` gives a usable range: missing (every character) or a valid
