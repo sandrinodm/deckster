@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { addBrand, type AddBrandRequest } from '#brand-add/add-brand.ts';
+import { parseBrandSource } from '#brand-add/brand-source.ts';
 import { NETWORK_PROTOCOLS } from '#brand-add/fetch-brand.ts';
 
 /**
@@ -131,7 +132,7 @@ function makeRemote(): string {
  */
 function request(source: string, options: Partial<AddBrandRequest> = {}): AddBrandRequest {
   return {
-    source: `${ADDRESS}${source}`,
+    source: Effect.runSync(parseBrandSource(`${ADDRESS}${source}`)),
     force: false,
     installed: false,
     protocols: TEST_PROTOCOLS,
@@ -172,7 +173,12 @@ layer(NodeServices.layer)('addBrand', (it) => {
       const root = workspace();
       const added = yield* addBrand(root, request(`//brands/${BRAND}#v1`));
       const dir = path.join(root, 'brands', BRAND);
-      expect(added).toMatchObject({ brand: BRAND, dir: `brands/${BRAND}`, replaced: false });
+      expect(added).toMatchObject({
+        brand: BRAND,
+        dir: `brands/${BRAND}`,
+        replaced: false,
+        source: `${ADDRESS}//brands/${BRAND}#v1`,
+      });
       expect(added.commit).toMatch(/^[0-9a-f]{40}$/);
       expect(added.files).toContain('brand.ts');
       expect(added.written).toEqual(['package.json', 'tsconfig.json']);
@@ -268,7 +274,7 @@ layer(NodeServices.layer)('addBrand', (it) => {
       const error = yield* Effect.flip(
         addBrand(root, request(`//brands/${BRAND}`, { protocols: NETWORK_PROTOCOLS })),
       );
-      expect(error.message).toContain("transport 'file' not allowed");
+      expect(error.message).toContain(`git could not read ${ADDRESS}`);
       expect(fs.existsSync(path.join(root, 'brands'))).toBe(false);
     }),
   );

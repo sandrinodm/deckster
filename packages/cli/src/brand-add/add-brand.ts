@@ -23,8 +23,9 @@ import { Effect, FileSystem, Predicate, type Scope } from 'effect';
 import os from 'node:os';
 import path from 'node:path';
 
+import type { BrandSource } from '#brand-add/brand-source.ts';
+
 import { planBrandFiles, type SkippedFile } from '#brand-add/brand-files.ts';
-import { parseBrandSource } from '#brand-add/brand-source.ts';
 import { fetchBrand, type FetchedBrand, type GitProtocol } from '#brand-add/fetch-brand.ts';
 import {
   catalogPackages,
@@ -67,9 +68,9 @@ const JSON_INDENT_SPACES = 2;
  */
 export type AddBrandRequest = {
   /**
-   * The brand source as written, such as `gh:acme/brand-kit/brands/acme#v2`.
+   * The source accepted by `parseBrandSource`.
    */
-  source: string;
+  source: BrandSource;
 
   /**
    * Whether to replace a brand of the same name that the workspace already has.
@@ -113,7 +114,7 @@ export type AddedBrand = {
   dir: string;
 
   /**
-   * The source as written.
+   * The validated source in the author's chosen syntax.
    */
   source: string;
 
@@ -189,10 +190,9 @@ type ReadBrand = {
  * @param root - The workspace root.
  * @param request - The source, whether to replace an existing brand, and the CLI's kind.
  * @returns What was added and what to run next.
- * @throws CliError in the error channel when the source is not valid, cannot be fetched, is not a
- *   brand folder, is code rather than data, or names a brand the workspace already has (without
- *   `force`); BrandError when the brand fails validation; FileSystemError when it cannot be
- *   written.
+ * @throws CliError in the error channel when the source cannot be fetched, is not a brand folder,
+ *   is code rather than data, or names a brand the workspace already has (without `force`);
+ *   BrandError when the brand fails validation; FileSystemError when it cannot be written.
  */
 export const addBrand = Effect.fn('addBrand')(function* (
   root: string,
@@ -219,34 +219,39 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
   CliError | BrandError | FileSystemError,
   FileSystem.FileSystem | ChildProcessSpawner.ChildProcessSpawner | Scope.Scope
 > {
-  const source = yield* parseBrandSource(request.source);
+  const { source } = request;
   const temporary = yield* makeTemporaryFolder();
   const checkout = yield* makeFolder(path.join(temporary, 'checkout'));
   const fetched = yield* fetchBrand(source, checkout, request.protocols);
-  const plan = yield* planBrandFiles(fetched.files, request.source);
+  const plan = yield* planBrandFiles(fetched.files, source.display);
   const brand = yield* readBrand(fetched);
   const remoteFonts = yield* remoteFontPackages(
     fontsourcePackages(brand.tokens),
     fetched.dir,
     fetched.checkout,
   );
-  const { prepared, replaced } = yield* installBrand(root, brand.name, request, (stageRoot) =>
-    Effect.gen(function* () {
-      const stageDir = brandLocation(stageRoot, brand.name).dir;
-      yield* copyFiles(fetched.dir, stageDir, plan.copy);
-      const written = request.installed
-        ? []
-        : yield* writePackageFiles(root, stageDir, brand.name, remoteFonts);
-      const warnings = yield* validateStaged(stageRoot, brand);
-      return { written, warnings };
-    }),
+  const installOptions = { source: source.display, force: request.force };
+  const { prepared, replaced } = yield* installBrand(
+    root,
+    brand.name,
+    installOptions,
+    (stageRoot) =>
+      Effect.gen(function* () {
+        const stageDir = brandLocation(stageRoot, brand.name).dir;
+        yield* copyFiles(fetched.dir, stageDir, plan.copy);
+        const written = request.installed
+          ? []
+          : yield* writePackageFiles(root, stageDir, brand.name, remoteFonts);
+        const warnings = yield* validateStaged(stageRoot, brand);
+        return { written, warnings };
+      }),
   );
 
   const fonts = yield* checkFonts(root, brand, remoteFonts);
   return {
     brand: brand.name,
     dir: `${BRANDS_DIR}/${brand.name}`,
-    source: request.source,
+    source: source.display,
     commit: fetched.commit,
     replaced,
     files: plan.copy,

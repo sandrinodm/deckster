@@ -65,18 +65,24 @@ const TRAILING_SLASH_PATTERN = /\/$/;
 const GIT_SUFFIX_PATTERN = /\.git$/;
 
 /**
- * Why an address that holds a user name, token or password is refused: it would be printed and
- * saved in git's configuration.
+ * Why credentials must be configured separately from the address.
  */
 const CREDENTIALS_REFUSED =
-  'the address holds a user name, token or password; sign in with `gh auth login` or a ' +
-  'credential helper instead.';
+  'the address holds a user name, token or password. Sign in with `gh auth login` or a ' +
+  'credential helper.';
 
 /**
  * Why a path segment is refused.
  */
 const SEGMENT_RULE =
   'may hold only letters, digits, ".", "_" and "-", and may not start with "." or "-".';
+
+/**
+ * Why a branch, tag or commit is refused.
+ */
+const REF_RULE =
+  `the ref has invalid syntax. Its segments ${SEGMENT_RULE} Separate them with "/"` +
+  ' and omit consecutive dots.';
 
 /**
  * The forms a brand source may take, for error messages.
@@ -88,9 +94,9 @@ const SOURCE_FORMS =
   '`git@github.com:acme/brand-kit.git//brands/acme#v2`.';
 
 /**
- * A brand folder in a git repository, as `deck brand add` fetches it.
+ * The repository, folder and ref checked by the parser.
  */
-export type BrandSource = {
+type SourceParts = {
   /**
    * The repository address handed to git, such as `https://github.com/acme/brand-kit.git`.
    */
@@ -106,6 +112,18 @@ export type BrandSource = {
    */
   ref: string | undefined;
 };
+
+/**
+ * A validated brand source, with the trimmed spelling safe to show in CLI output.
+ */
+export type BrandSource = Readonly<
+  SourceParts & {
+    /**
+     * The validated source, in the author's chosen syntax.
+     */
+    display: string;
+  }
+>;
 
 /**
  * The parts of a source with the ref split off.
@@ -135,15 +153,13 @@ type Located = {
 export const parseBrandSource = Effect.fn('parseBrandSource')(function* (
   input: string,
 ): Effect.fn.Return<BrandSource, CliError> {
-  const source = readSource(input.trim());
+  const display = input.trim();
+  const source = readSource(display);
   if (typeof source === 'string') {
-    return yield* usageError(
-      `"${input}" is not a brand source: ${source}\n${SOURCE_FORMS}`,
-      COMMAND,
-    );
+    return yield* usageError(`Invalid brand source: ${source}\n${SOURCE_FORMS}`, COMMAND);
   }
 
-  return source;
+  return { ...source, display };
 });
 
 /**
@@ -152,10 +168,10 @@ export const parseBrandSource = Effect.fn('parseBrandSource')(function* (
  * @param input - The trimmed source.
  * @returns The source, or why it is not one.
  */
-function readSource(input: string): BrandSource | string {
+function readSource(input: string): SourceParts | string {
   const { location, ref } = splitRef(input);
   if (ref !== undefined && !isRef(ref)) {
-    return refProblem(ref);
+    return REF_RULE;
   }
 
   const prefix = SHORTHAND_PREFIXES.find((candidate) => location.startsWith(candidate));
@@ -194,7 +210,7 @@ function splitRef(input: string): Located {
  * @param path - The path after the prefix.
  * @param ref - The ref after `#`.
  */
-function readShorthand(path: string, ref: string | undefined): BrandSource | string {
+function readShorthand(path: string, ref: string | undefined): SourceParts | string {
   const [owner, repo, ...folder] = path.split('/');
   if (!isSegment(owner) || !isSegment(repo)) {
     return 'the shorthand starts with the owner and the repository, as in gh:owner/repo.';
@@ -210,7 +226,7 @@ function readShorthand(path: string, ref: string | undefined): BrandSource | str
  * @param location - The address without the ref.
  * @param ref - The ref after `#`.
  */
-function readUrl(location: string, ref: string | undefined): BrandSource | string {
+function readUrl(location: string, ref: string | undefined): SourceParts | string {
   const scheme = location.startsWith('https://') ? 'https' : 'ssh';
   const rest = location.slice(`${scheme}://`.length);
   const slash = rest.indexOf('/');
@@ -221,10 +237,11 @@ function readUrl(location: string, ref: string | undefined): BrandSource | strin
     return checked.reason;
   }
 
+  const prefix = `${scheme}://${authority}/`;
   const separator = path.indexOf(FOLDER_SEPARATOR);
   if (separator !== -1) {
     return readRepositoryPath({
-      prefix: `${scheme}://${authority}/`,
+      prefix,
       repository: path.slice(0, separator),
       folder: path.slice(separator + FOLDER_SEPARATOR.length),
       ref,
@@ -232,11 +249,11 @@ function readUrl(location: string, ref: string | undefined): BrandSource | strin
   }
 
   if (checked.host === GITHUB_HOST) {
-    return readGithubLink(path, ref, scheme);
+    return readGithubLink(path, ref, prefix);
   }
 
   return readRepositoryPath({
-    prefix: `${scheme}://${authority}/`,
+    prefix,
     repository: path,
     folder: '',
     ref,
@@ -259,12 +276,16 @@ function readAuthority(authority: string, scheme: 'https' | 'ssh'): Authority {
   const at = authority.lastIndexOf('@');
   const user = at === -1 ? '' : authority.slice(0, at);
   const host = at === -1 ? authority : authority.slice(at + 1);
-  if (user.includes(':') || (scheme === 'https' && user !== '')) {
+  if (at !== -1 && (scheme === 'https' || user.includes(':'))) {
     return { ok: false, reason: CREDENTIALS_REFUSED };
   }
 
+  if (at !== -1 && !SSH_USER_PATTERN.test(user)) {
+    return { ok: false, reason: 'the SSH user name has invalid syntax.' };
+  }
+
   if (!HOST_PATTERN.test(host)) {
-    return { ok: false, reason: `"${host}" is not a host name.` };
+    return { ok: false, reason: 'the host name has invalid syntax.' };
   }
 
   return { ok: true, host: host.replace(PORT_SUFFIX_PATTERN, '') };
@@ -276,13 +297,13 @@ function readAuthority(authority: string, scheme: 'https' | 'ssh'): Authority {
  *
  * @param path - The path after the host.
  * @param ref - The ref after `#`.
- * @param scheme - `https` or `ssh`.
+ * @param prefix - The scheme and validated authority, followed by `/`.
  */
 function readGithubLink(
   path: string,
   ref: string | undefined,
-  scheme: 'https' | 'ssh',
-): BrandSource | string {
+  prefix: string,
+): SourceParts | string {
   const [owner, repoSegment, marker, linkRef, ...folder] = path
     .replace(TRAILING_SLASH_PATTERN, '')
     .split('/');
@@ -291,7 +312,7 @@ function readGithubLink(
     return 'a GitHub link starts with the owner and the repository.';
   }
 
-  const remote = `${scheme}://${GITHUB_HOST}/${owner}/${repo}.git`;
+  const remote = `${prefix}${owner}/${repo}.git`;
   if (marker === undefined) {
     return { remote, folder: '', ref };
   }
@@ -305,7 +326,7 @@ function readGithubLink(
   }
 
   if (!isRef(linkRef)) {
-    return refProblem(linkRef);
+    return REF_RULE;
   }
 
   return withFolder({ remote, ref: linkRef }, folder);
@@ -317,7 +338,7 @@ function readGithubLink(
  * @param location - The address without the ref.
  * @param ref - The ref after `#`.
  */
-function readScpAddress(location: string, ref: string | undefined): BrandSource | string {
+function readScpAddress(location: string, ref: string | undefined): SourceParts | string {
   const at = location.indexOf('@');
   const colon = location.indexOf(':', at + 1);
   if (at <= 0 || colon === -1) {
@@ -326,8 +347,8 @@ function readScpAddress(location: string, ref: string | undefined): BrandSource 
 
   const user = location.slice(0, at);
   const host = location.slice(at + 1, colon);
-  if (!SSH_USER_PATTERN.test(user) || !HOST_PATTERN.test(host) || host.includes(':')) {
-    return `"${user}@${host}" is not a user and host.`;
+  if (!SSH_USER_PATTERN.test(user) || !HOST_PATTERN.test(host)) {
+    return 'an SSH address needs a valid user and host.';
   }
 
   const path = location.slice(colon + 1);
@@ -370,10 +391,10 @@ type RepositoryPath = {
  *
  * @param parts - The address split into its parts.
  */
-function readRepositoryPath(parts: RepositoryPath): BrandSource | string {
+function readRepositoryPath(parts: RepositoryPath): SourceParts | string {
   const segments = parts.repository.split('/');
   if (!segments.every(isSegment)) {
-    return `"${parts.repository}" is not a repository path.`;
+    return 'the repository path has invalid syntax.';
   }
 
   return withFolder(
@@ -389,13 +410,12 @@ function readRepositoryPath(parts: RepositoryPath): BrandSource | string {
  * @param segments - The folder's segments; none for the repository root.
  */
 function withFolder(
-  source: Omit<BrandSource, 'folder'>,
+  source: Omit<SourceParts, 'folder'>,
   segments: readonly string[],
-): BrandSource | string {
+): SourceParts | string {
   const folder = segments.filter((segment) => segment !== '');
-  const bad = folder.find((segment) => !SEGMENT_PATTERN.test(segment));
-  if (bad !== undefined) {
-    return `the folder segment "${bad}" ${SEGMENT_RULE}`;
+  if (!folder.every(isSegment)) {
+    return `folder segments ${SEGMENT_RULE}`;
   }
 
   return { ...source, folder: folder.join('/') };
@@ -417,13 +437,4 @@ function isSegment(segment: string | undefined): segment is string {
  */
 function isRef(ref: string): boolean {
   return REF_PATTERN.test(ref) && !ref.includes('..');
-}
-
-/**
- * Why a ref is refused.
- *
- * @param ref - The ref as written.
- */
-function refProblem(ref: string): string {
-  return `the ref "${ref}" holds segments that each ${SEGMENT_RULE} Segments are joined by "/".`;
 }
