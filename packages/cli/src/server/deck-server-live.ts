@@ -8,6 +8,7 @@ import { createServer, mergeConfig, type ViteDevServer } from 'vite';
 import type { DeckServerOptions, RunningDeckServer } from '#server/deck-server.ts';
 
 import { ViteError } from '#cli-error.ts';
+import { withoutViteExitHandlers } from '#server/shutdown.ts';
 
 /**
  * The name of `@deckster/vite-plugin`'s deck plugin, whose `api` reports each slide's build
@@ -73,7 +74,7 @@ export const startViteServer = Effect.fn('startViteServer')(function* (
   });
   const vite = yield* Effect.acquireRelease(
     Effect.tryPromise({
-      try: () => createServer(config),
+      try: () => withoutViteExitHandlers(() => createServer(config)),
       catch: (cause) => new ViteError({ cause }),
     }),
     closeDevServer,
@@ -81,7 +82,7 @@ export const startViteServer = Effect.fn('startViteServer')(function* (
   yield* Effect.tryPromise({
     try: () => vite.listen(),
     catch: (cause) => new ViteError({ cause }),
-  });
+  }).pipe(Effect.uninterruptible);
   const url = vite.resolvedUrls?.local[0];
   if (url === undefined) {
     return yield* Effect.die(new Error('The deck server started but reported no local URL.'));

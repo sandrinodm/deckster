@@ -1,4 +1,5 @@
-import { Effect } from 'effect';
+import { Effect, type Scope } from 'effect';
+import { emitKeypressEvents } from 'node:readline';
 
 /**
  * Who waits in {@link awaitShutdown}, to be woken by {@link requestShutdown}.
@@ -31,6 +32,48 @@ export const awaitShutdown: Effect.Effect<void> = Effect.callback<void>((resume)
     WAITERS.delete(done);
     process.stdin.off('end', done);
   });
+});
+
+/**
+ * Binds q and Ctrl+C for long-running commands that do not use Vite's terminal shortcuts. On piped
+ * input the binding is skipped, leaving shutdown to the input or the process signals.
+ */
+export const bindQuitKey: Effect.Effect<void, never, Scope.Scope> = Effect.gen(function* () {
+  const input = process.stdin;
+  if (!input.isTTY) {
+    return;
+  }
+
+  const wasRaw = input.isRaw;
+  const wasFlowing = input.readableFlowing === true;
+  /**
+   * Routes q and Ctrl+C through shutdown so scoped cleanup runs.
+   */
+  const press = (character: string | undefined, key: { name?: string; ctrl?: boolean }) => {
+    if (character === 'q') {
+      requestShutdown();
+    }
+
+    if (key.ctrl === true && key.name === 'c') {
+      process.kill(process.pid, 'SIGINT');
+    }
+  };
+  yield* Effect.acquireRelease(
+    Effect.sync(() => {
+      emitKeypressEvents(input);
+      input.setRawMode(true);
+      input.on('keypress', press);
+      input.resume();
+    }),
+    () =>
+      Effect.sync(() => {
+        input.off('keypress', press);
+        input.setRawMode(wasRaw);
+        if (!wasFlowing) {
+          input.pause();
+        }
+      }),
+  );
 });
 
 /**

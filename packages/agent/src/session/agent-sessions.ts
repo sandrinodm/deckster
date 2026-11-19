@@ -249,6 +249,11 @@ export type AgentSessionsApi = {
   readonly idle: Effect.Effect<void>;
 
   /**
+   * Whether a turn is running or queued, for deciding whether leaving the deck needs confirmation.
+   */
+  readonly busy: Effect.Effect<boolean>;
+
+  /**
    * The events of the current conversation so far.
    */
   readonly history: Effect.Effect<readonly AgentEvent[]>;
@@ -1246,6 +1251,7 @@ export const makeAgentSessions = Effect.fn('makeAgentSessions')(function* (
     }),
 
     idle: waitIdle,
+    busy: Effect.sync(() => state.pending > 0),
 
     history: Effect.sync(() => [...state.history]),
 

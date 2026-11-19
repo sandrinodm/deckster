@@ -1,7 +1,7 @@
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * `deck dev`: the Vite dev server for one deck.
+ * `deck dev`: the dev server for a deck or the workspace chooser.
  */
 export const devCommand: Command = {
   /**

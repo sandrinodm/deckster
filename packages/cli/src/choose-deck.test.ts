@@ -1,9 +1,10 @@
 import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it } from '@effect/vitest';
-import { Effect, FileSystem } from 'effect';
+import { ConfigProvider, Effect, FileSystem } from 'effect';
 import path from 'node:path';
 
 import { defaultDeck } from '#choose-deck.ts';
+import { chooseInteractiveDeck } from '#chooser/deck-choice.ts';
 import { runCaptured } from '#cli.fixture.ts';
 
 /**
@@ -50,6 +51,52 @@ describe('defaultDeck', () => {
       expect(yield* defaultDeck(yield* workspaceWith(['a', 'b']))).toBe('hello');
       expect(yield* defaultDeck(yield* workspaceWith([]))).toBe('hello');
     }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
+  );
+});
+
+describe('chooseInteractiveDeck', () => {
+  it.effect('prefers the argument to DECK, and DECK to discovery', () =>
+    Effect.gen(function* () {
+      const root = yield* workspaceWith(['hello', 'talk']);
+      expect(yield* chooseInteractiveDeck(root, 'hello', 'dev')).toEqual({ deck: 'hello' });
+      expect(yield* chooseInteractiveDeck(root, undefined, 'dev')).toEqual({ deck: 'talk' });
+    }).pipe(
+      Effect.scoped,
+      Effect.provide([
+        NodeServices.layer,
+        ConfigProvider.layer(ConfigProvider.fromEnv({ env: { DECK: 'talk' } })),
+      ]),
+    ),
+  );
+
+  it.effect('opens the chooser when hello is one of several discovered decks', () =>
+    Effect.gen(function* () {
+      const root = yield* workspaceWith(['hello', 'talk', 'scratch!']);
+      expect(yield* chooseInteractiveDeck(root, undefined, 'dev')).toEqual({ deck: undefined });
+    }).pipe(
+      Effect.scoped,
+      Effect.provide([
+        NodeServices.layer,
+        ConfigProvider.layer(ConfigProvider.fromEnv({ env: {} })),
+      ]),
+    ),
+  );
+
+  it.effect('uses the only deck and explains how to create one in an empty workspace', () =>
+    Effect.gen(function* () {
+      const only = yield* workspaceWith(['talk', 'scratch!']);
+      expect(yield* chooseInteractiveDeck(only, undefined, 'dev')).toEqual({ deck: 'talk' });
+
+      const empty = yield* workspaceWith([]);
+      const error = yield* Effect.flip(chooseInteractiveDeck(empty, undefined, 'dev'));
+      expect(error.message).toContain('new <name>');
+    }).pipe(
+      Effect.scoped,
+      Effect.provide([
+        NodeServices.layer,
+        ConfigProvider.layer(ConfigProvider.fromEnv({ env: {} })),
+      ]),
+    ),
   );
 });
 

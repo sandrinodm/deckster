@@ -17,6 +17,12 @@ export type OpenDeckPageOptions = {
    * The workspace root, so a deck that fails to start names its files relative to it.
    */
   workspaceRoot?: string;
+
+  /**
+   * Opens the deck at its initial navigation position. Scripts that address every slide leave this
+   * out to start on slide 1 even when it is hidden.
+   */
+  opening?: boolean;
 };
 
 /**

@@ -3,6 +3,7 @@ import type { Page } from 'playwright';
 import { deckCommand } from '@deckster/engine/command';
 import { Effect } from 'effect';
 
+import type { OpenDeckPageOptions } from '#browser/deck-browser.ts';
 import type { RenderErrorSnapshot } from '#lint/types.ts';
 
 import { collectElements, type CollectedPage } from '#browser/collect-snapshot.ts';
@@ -186,22 +187,22 @@ type DeckWindow = {
  *
  * @param page - A fresh page sized to the canvas.
  * @param url - The deck server's URL.
- * @param workspaceRoot - The workspace root, to name files relative to it in errors; `undefined`
- *   names them by absolute path.
+ * @param options - Whether to open the first reachable slide, and the workspace for naming files.
  * @throws CliError in the error channel when the deck does not start, with what the page logged;
  *   BrowserError when Chromium fails.
  */
 export const loadDeckPage = Effect.fn('loadDeckPage')(function* (
   page: Page,
   url: string,
-  workspaceRoot?: string,
+  options: Pick<OpenDeckPageOptions, 'opening' | 'workspaceRoot'> = {},
 ): Effect.fn.Return<DeckPage, CliError | BrowserError> {
   const problems = recordPageProblems(page);
+  const hash = options.opening === true ? '' : '#/1/0';
   yield* Effect.tryPromise({
-    try: () => page.goto(`${url}?static#/1/0`),
+    try: () => page.goto(`${url}?static${hash}`),
     catch: (cause) => browserError('open the deck', cause),
   });
-  yield* waitForDeck(page, problems, workspaceRoot);
+  yield* waitForDeck(page, problems, options.workspaceRoot);
   problems.starting = false;
   const slides = yield* Effect.tryPromise({
     try: () => readSlides(page),
