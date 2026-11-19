@@ -62,6 +62,11 @@ type ChooserPageOptions = {
   readonly active: string | undefined;
 
   /**
+   * The selection shown by the close control, so an older tab cannot close its replacement.
+   */
+  readonly selection: string | undefined;
+
+  /**
    * Whether the current browser can control the selection.
    */
   readonly operator: boolean;
@@ -87,11 +92,11 @@ type ChooserPageOptions = {
  * close decks from this page. Other devices see a link to the currently selected deck.
  */
 export function renderChooser(options: ChooserPageOptions): string {
-  const { base, decks, active, operator, returning, desktop, nonce } = options;
+  const { base, decks, active, selection, operator, returning, desktop, nonce } = options;
   const cards = decks.map((deck) => renderCard(deck, base)).join('\n');
   const label = active === undefined ? '' : `Open deck &middot; ${escapeHtml(active)}`;
   const content = operator
-    ? renderOperator(base, cards, decks.length, label, returning, desktop, nonce)
+    ? renderOperator(base, cards, decks.length, label, selection, returning, desktop, nonce)
     : '<p>Choose a deck on the computer running Deckster.</p>';
   return `<!doctype html>
 <html lang="en">
@@ -119,6 +124,7 @@ function renderOperator(
   cards: string,
   deckCount: number,
   label: string,
+  selection: string | undefined,
   returning: string | undefined,
   desktop: boolean,
   nonce: string,
@@ -126,7 +132,7 @@ function renderOperator(
   const empty = 'No decks found. Run <code>deck new &lt;name&gt;</code> to create one.';
   const protocol = [HTTP_CONFLICT, HTTP_START_FAILED, SELECTION_HEADER] as const;
   const script = chooserClient.toString();
-  const args = [base, returning ?? null, protocol, desktop]
+  const args = [base, selection ?? null, returning ?? null, protocol, desktop]
     .map((value) => JSON.stringify(value))
     .join(', ');
   const list = deckCount === 0 ? `<p class="empty">${empty}</p>` : `<ul class="grid">${cards}</ul>`;
@@ -177,6 +183,7 @@ function renderCard(deck: ChooserCard, base: string): string {
  */
 function chooserClient(
   base: string,
+  selection: string | null,
   returning: string | null,
   [conflict, failed, selectionHeader]: readonly [number, number, string],
   desktop: boolean,
@@ -205,7 +212,11 @@ function chooserClient(
   /**
    * Requests a selection change and prompts before stopping a running agent.
    */
-  async function change(action: string, label: string, selection = returning): Promise<boolean> {
+  async function change(
+    action: string,
+    label: string,
+    expected = returning ?? selection,
+  ): Promise<boolean> {
     if (pending) {
       return false;
     }
@@ -218,8 +229,8 @@ function chooserClient(
     message(label);
     try {
       const route = new URL(base + action, window.location.origin);
-      if (selection !== null && action === 'close') {
-        route.searchParams.set('selection', selection);
+      if (expected !== null && action === 'close') {
+        route.searchParams.set('selection', expected);
       }
 
       let response = await fetch(route, { method: 'POST' });
