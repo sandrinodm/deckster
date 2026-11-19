@@ -32,14 +32,14 @@ The window opens on the primary display, not fullscreen. The terminal keeps a sh
 ## Choose a deck in the desktop gallery
 
 <Aside type="note" title="Unreleased">
-The desktop gallery is in review. See [Desktop presentation gallery](/project/changelog/#desktop-presentation-gallery).
+The desktop gallery is not included in 0.6.1. See [Desktop presentation gallery](/project/changelog/#desktop-presentation-gallery).
 </Aside>
 
 Run `deck present` without a deck argument and with `DECK` unset or empty. With several decks, Deckster shows **Choose a deck**. Pick a card to open the deck in an audience window. A single deck opens directly, and an explicit deck name takes precedence over `DECK`. In 0.6.1, an unnamed invocation still prefers `hello` when it exists.
 
 With two or more displays in extended mode, the gallery stays off the audience display. Mirrored displays show the same view. With one display, the gallery hides while the audience window is open. Use the same display options as for a named deck, such as `deck present --presenter --fullscreen`.
 
-Use **Back to decks** in the presenter window or the **Present** menu to end the current presentation and choose another. With one display and no presenter window, the audience window shows the button when you start a windowed presentation. Cmd/Ctrl+Shift+B also returns to the gallery in fullscreen and kiosk mode. Closing the audience window returns to the gallery. If an agent is working, Deckster asks whether to stop it or keep presenting. Close the gallery, quit Deckster, or press Ctrl+C to end the command.
+Use **Back to decks** in the presenter window or the **Present** menu to end the current presentation and choose another. With one display and no presenter window, the audience window shows the button while the presentation is windowed. Cmd/Ctrl+Shift+B also returns to the gallery in fullscreen and kiosk mode. Closing the audience window returns to the gallery. If an agent is working, Deckster asks whether to stop it or keep presenting. Close the gallery, quit Deckster, or press Ctrl+C to end the command.
 
 `--browser` opens the chooser in the browser. The selected deck replaces the chooser there, with a **Back to decks** link to return. With `--built`, Deckster builds the deck when you select it. `--port <n>` sets the gallery's port and the selected deck runs on a separate port. The restrictions on [built decks](#present-the-built-deck) and [browser presentation](#present-in-a-browser-instead) also apply in gallery mode.
 

@@ -93,12 +93,12 @@ A deck folder needs no `package.json`. Decks copied from the deckster repository
 ### Choose a deck in your browser
 
 <Aside type="note" title="Unreleased">
-The browser chooser is in review. It is listed in the [changelog](/project/changelog/#browser-deck-chooser).
+The browser chooser is not included in 0.6.1. It is listed in the [changelog](/project/changelog/#browser-deck-chooser).
 </Aside>
 
 Run `deck dev` with no deck argument and with `DECK` unset or empty. One deck opens directly, and an empty workspace tells you to create one with `deck new <name>`. With several decks, including workspaces that have `hello`, open the **Deck chooser** URL the terminal prints.
 
-Pick a card by its deck title, folder name or a preview of its first visible slide. If a preview cannot render, you can still select the card by name. The chooser opens one deck at a time. Use **Back to decks** in the lower-right corner to pick another. If an agent is working in the deck, confirm before closing it or switching away. Refresh the chooser to see decks added or removed while it is running.
+Pick a card by its deck title, folder name or a preview of its first visible slide. If a preview cannot render, you can still select the card by name. The chooser opens one deck at a time. Use **Back to decks** in the lower-right corner to pick another. If an agent is working in the deck, confirm before closing it or switching away. Refresh the chooser to see decks added or removed while it is running. If an older tab reports that the selected deck has changed, reload the chooser before trying again; it leaves the current deck open.
 
 `--port` sets the chooser's port, and the selected deck uses a separate port. With `--host`, another device can open the chooser URL using the computer's network IP in place of `127.0.0.1`, then click **Open deck** for the current deck. Select or switch decks on the computer running `deck dev`.
 
