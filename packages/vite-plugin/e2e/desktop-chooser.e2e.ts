@@ -41,7 +41,12 @@ test(
       expect(await chooser.evaluate(() => 'deckShell' in window)).toBe(false);
 
       const galleryOrigin = new URL(chooser.url()).origin;
+      const openingFirst = chooser.waitForResponse((response) =>
+        response.url().endsWith('/open/hello'),
+      );
       await firstCard.click();
+      const firstKey = (await openingFirst).headers()['x-deck-selection'];
+      expect(typeof firstKey).toBe('string');
       const first = await presentation(context, galleryOrigin, 'first');
       await returnButton(chooser).waitFor({ timeout: DESKTOP_READY_MS });
       expect(await returnButton(first.audience).count()).toBe(0);
@@ -80,11 +85,31 @@ test(
       expect(await second.audience.evaluate(() => window.__deck?.position.step)).toBe(0);
       expect(new URL(second.audience.url()).origin).not.toBe(new URL(firstUrl).origin);
       const secondUrl = second.audience.url();
+      const staleReturn = await chooser.evaluate(
+        (selection) =>
+          new Promise((resolve) => {
+            window.dispatchEvent(
+              new CustomEvent('deckster:return-to-chooser', {
+                detail: { selection, done: resolve },
+              }),
+            );
+          }),
+        firstKey,
+      );
+      expect(staleReturn).toBe(false);
+      expect(second.audience.isClosed()).toBe(false);
+      await returnButton(chooser).click();
+      await expect.poll(() => context.pages().length, { timeout: DESKTOP_READY_MS }).toBe(1);
+      await expect.poll(() => serverClosed(secondUrl)).toBe(true);
+      await secondCard.click();
+      const reopened = await presentation(context, galleryOrigin, 'reopened');
+      await returnButton(chooser).waitFor({ timeout: DESKTOP_READY_MS });
+      const reopenedUrl = reopened.audience.url();
       const chooserUrl = chooser.url();
       await chooser.close().catch(() => undefined);
       expect(await workspace.exited).toBe(0);
       expect(await published(workspace.root, 'second')).toBe(false);
-      expect(await serverClosed(secondUrl)).toBe(true);
+      expect(await serverClosed(reopenedUrl)).toBe(true);
       expect(await serverClosed(chooserUrl)).toBe(true);
     } catch (error) {
       const pages = workspace.browser.contexts().flatMap((context) => context.pages());
@@ -100,6 +125,85 @@ test(
           cause: error,
         },
       );
+    } finally {
+      await workspace.cleanup();
+    }
+  },
+);
+
+test(
+  'moves the sole-display return control when a presenter opens and closes',
+  { timeout: WORKFLOW_MS, skip: shell === undefined },
+  async () => {
+    const workspace = await startDesktopChooser([]);
+    try {
+      const [context] = workspace.browser.contexts();
+      if (context === undefined) {
+        throw new Error('Electron did not report a Chromium context.');
+      }
+
+      const chooser = await pageAt(
+        context,
+        'chooser',
+        (url) => url.pathname === '/__deck/chooser/',
+      );
+      await chooser.getByRole('button', { name: 'First deck hello' }).click();
+      const origin = new URL(chooser.url()).origin;
+      const audience = await pageAt(context, 'audience', (url) => url.origin !== origin);
+      const displays = await audience.evaluate(() => window.deckShell?.displays());
+      if (displays?.length === 1) {
+        await returnButton(audience).waitFor();
+      }
+
+      await audience.evaluate(() => window.deckShell?.openPresenter());
+      const presenter = await pageAt(context, 'presenter', (url) =>
+        url.searchParams.has('presenter'),
+      );
+      await returnButton(presenter).waitFor();
+      await returnButton(audience).waitFor({ state: 'detached' });
+      await presenter.close();
+      if (displays?.length === 1) {
+        await returnButton(audience).waitFor();
+        await returnButton(audience).click();
+      } else {
+        await returnButton(chooser).click();
+      }
+
+      await expect.poll(() => context.pages().length, { timeout: DESKTOP_READY_MS }).toBe(1);
+    } finally {
+      await workspace.cleanup();
+    }
+  },
+);
+
+test(
+  'keeps built kiosk controls on the chooser and closes the preview server',
+  { timeout: WORKFLOW_MS, skip: shell === undefined },
+  async () => {
+    const workspace = await startDesktopChooser(['--built', '--kiosk']);
+    try {
+      const [context] = workspace.browser.contexts();
+      if (context === undefined) {
+        throw new Error('Electron did not report a Chromium context.');
+      }
+
+      const chooser = await pageAt(
+        context,
+        'chooser',
+        (url) => url.pathname === '/__deck/chooser/',
+      );
+      await chooser.getByRole('button', { name: 'First deck hello' }).click();
+      const origin = new URL(chooser.url()).origin;
+      const audience = await pageAt(context, 'audience', (url) => url.origin !== origin);
+      await audience.waitForFunction(() => window.__deck !== undefined);
+      await returnButton(chooser).waitFor({ timeout: DESKTOP_READY_MS });
+      expect(await returnButton(audience).count()).toBe(0);
+      expect(await audience.locator('#deck-chooser-link').count()).toBe(0);
+      expect(await audience.locator('.da-textarea').count()).toBe(0);
+      const url = audience.url();
+      await returnButton(chooser).click();
+      await expect.poll(() => context.pages().length, { timeout: DESKTOP_READY_MS }).toBe(1);
+      await expect.poll(() => serverClosed(url)).toBe(true);
     } finally {
       await workspace.cleanup();
     }

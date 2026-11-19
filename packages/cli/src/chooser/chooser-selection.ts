@@ -66,7 +66,7 @@ type Selection = {
  * The outcome of a requested deck switch or close.
  */
 type Change =
-  | { readonly kind: 'opened'; readonly deck: ChooserDeck }
+  | { readonly kind: 'opened'; readonly deck: ChooserDeck; readonly key: string }
   | { readonly kind: 'closed' }
   | { readonly kind: 'busy'; readonly key: string }
   | { readonly kind: 'stale' }
@@ -152,7 +152,7 @@ export const makeChooserSelection = Effect.fn('makeChooserSelection')(function* 
       if (active !== undefined) {
         if (active.name === name) {
           yield* active.deck.focus ?? Effect.void;
-          return { kind: 'opened', deck: active.deck };
+          return { kind: 'opened', deck: active.deck, key: active.key };
         }
 
         const busy = yield* active.deck.busy ?? Effect.succeed(false);
@@ -187,7 +187,7 @@ export const makeChooserSelection = Effect.fn('makeChooserSelection')(function* 
         }
 
         active = { name, key, scope, deck: result.value };
-        return { kind: 'opened', deck: result.value };
+        return { kind: 'opened', deck: result.value, key };
       }),
     );
   }

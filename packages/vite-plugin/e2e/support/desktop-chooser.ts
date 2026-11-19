@@ -58,10 +58,12 @@ type DesktopChooser = {
  * Runs the real CLI with two decks and connects only to the hidden Electron window server. Rejects
  * with the CLI's diagnostics if startup or the CDP connection fails.
  */
-export async function startDesktopChooser(): Promise<DesktopChooser> {
+export async function startDesktopChooser(
+  flags: readonly string[] = ['--presenter', '--agent', 'fake'],
+): Promise<DesktopChooser> {
   const root = await createChooserWorkspace();
   const marker = path.join(root, 'test-electron-profile');
-  const child = spawn(process.execPath, [CLI_ENTRY, 'present', '--presenter', '--agent', 'fake'], {
+  const child = spawn(process.execPath, [CLI_ENTRY, 'present', ...flags], {
     cwd: root,
     stdio: ['ignore', 'pipe', 'pipe'],
     env: {

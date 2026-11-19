@@ -355,6 +355,7 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
     send({ type: 'fullscreen', window: role, on });
     if (!win.isDestroyed()) {
       win.webContents.send('deck-shell:fullscreen', on);
+      deps.updateReturnControl?.(win, role);
     }
   };
 
@@ -478,6 +479,7 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
    */
   const track = (role: ShellWindowRole, win: BrowserWindow): void => {
     windows.set(role, win);
+    deps.audienceMoved?.();
     win.setTitle(windowTitle(need().title, role));
     win.on('page-title-updated', (event) => event.preventDefault());
     let timer: NodeJS.Timeout | undefined;
@@ -504,6 +506,7 @@ export function createWindowManager(deps: WindowManagerDeps): WindowManager {
       clearTimeout(timer);
       if (windows.get(role) === win) {
         windows.delete(role);
+        deps.audienceMoved?.();
       }
 
       power.update(anyFullscreen());

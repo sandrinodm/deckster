@@ -265,6 +265,7 @@ function chooserClient(
 
       if (desktop) {
         const closingDeck = action === 'close';
+        selection = closingDeck ? null : response.headers.get(selectionHeader);
         if (controls !== null) {
           controls.hidden = closingDeck;
         }

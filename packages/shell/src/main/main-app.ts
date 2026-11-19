@@ -275,7 +275,10 @@ function mayReturn(role: ShellWindowRole): boolean {
     return false;
   }
 
-  const operatorOnly = !plan.audience.fullscreen && plan.presenter === undefined && !plan.kiosk;
+  const audience = manager.audience();
+  const fullscreen =
+    audience === undefined ? plan.audience.fullscreen : manager.isFullscreen(audience);
+  const operatorOnly = !fullscreen && manager.window('presenter') === undefined && !plan.kiosk;
   return role === 'presenter' || (operatorOnly && screen.getAllDisplays().length === 1);
 }
 

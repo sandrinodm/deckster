@@ -340,6 +340,7 @@ export const startDeckChooser = Effect.fn('startDeckChooser')(function* <R>(
       });
       switch (change.kind) {
         case 'opened':
+          response.setHeader(SELECTION_HEADER, change.key);
           return replyOpened(response, request, change.deck);
         case 'closed':
           return reply(response, HTTP_NO_CONTENT, '');
