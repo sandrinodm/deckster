@@ -1,3 +1,4 @@
+import type { DeckBuildError } from '@deckster/vite-plugin';
 import type { ChildProcessSpawner } from 'effect/process';
 
 import {
@@ -6,7 +7,6 @@ import {
   resolveBrand,
   SAFE_NAME_RULE,
   type BrandError,
-  type BrandProblem,
   type BrandTokens,
 } from '@deckster/brand';
 import {
@@ -16,7 +16,7 @@ import {
   brandLocation,
   loadBrand,
   readStaticModule,
-  resolveFontFiles,
+  type LoadedBrand,
 } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
 import { Effect, FileSystem, Predicate, type Scope } from 'effect';
@@ -30,12 +30,17 @@ import { fetchBrand, type FetchedBrand, type GitProtocol } from '#brand-add/fetc
 import {
   catalogPackages,
   fontsourcePackages,
-  isMissingFontPackage,
   remoteFontPackages,
   type FontPackage,
 } from '#brand-add/font-packages.ts';
 import { installBrand } from '#brand-add/install-brand.ts';
 import { cliError, fileSystemError, type CliError, type FileSystemError } from '#cli-error.ts';
+import {
+  brandProblemWithFile,
+  checkCatalogLayouts,
+  layoutsDisplayPath,
+  type BrandFileProblem,
+} from '#layouts/check-brand-layouts.ts';
 
 /**
  * The prefix of a brand package's name in the repository checkout: `@deckster/brand-acme`.
@@ -151,7 +156,7 @@ export type AddedBrand = {
   /**
    * Findings that do not stop the brand from loading.
    */
-  warnings: readonly BrandProblem[];
+  warnings: readonly BrandFileProblem[];
 
   /**
    * The commands to run before decks can use the brand, in order.
@@ -172,11 +177,6 @@ type ReadBrand = {
    * The resolved tokens.
    */
   tokens: BrandTokens;
-
-  /**
-   * What resolving the tokens found that does not stop the brand, such as a waived contrast.
-   */
-  warnings: readonly BrandProblem[];
 };
 
 /**
@@ -192,14 +192,15 @@ type ReadBrand = {
  * @returns What was added and what to run next.
  * @throws CliError in the error channel when the source cannot be fetched, is not a brand folder,
  *   is code rather than data, or names a brand the workspace already has (without `force`);
- *   BrandError when the brand fails validation; FileSystemError when it cannot be written.
+ *   BrandError when the brand fails validation; DeckBuildError when the layout catalog cannot load;
+ *   FileSystemError when it cannot be written.
  */
 export const addBrand = Effect.fn('addBrand')(function* (
   root: string,
   request: AddBrandRequest,
 ): Effect.fn.Return<
   AddedBrand,
-  CliError | BrandError | FileSystemError,
+  CliError | BrandError | DeckBuildError | FileSystemError,
   FileSystem.FileSystem | ChildProcessSpawner.ChildProcessSpawner
 > {
   return yield* Effect.scoped(addBrandScoped(root, request));
@@ -216,7 +217,7 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
   request: AddBrandRequest,
 ): Effect.fn.Return<
   AddedBrand,
-  CliError | BrandError | FileSystemError,
+  CliError | BrandError | DeckBuildError | FileSystemError,
   FileSystem.FileSystem | ChildProcessSpawner.ChildProcessSpawner | Scope.Scope
 > {
   const { source } = request;
@@ -230,6 +231,14 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
     fetched.dir,
     fetched.checkout,
   );
+  const dependencies = request.installed
+    ? undefined
+    : yield* checkoutFontDependencies(root, remoteFonts);
+  const fontPackages = {
+    // The new brand has no private node_modules, even when it replaces another brand.
+    fromDir: path.join(root, BRANDS_DIR),
+    allowMissing: new Set(remoteFonts.map((font) => font.name)),
+  };
   const installOptions = { source: source.display, force: request.force };
   const { prepared, replaced } = yield* installBrand(
     root,
@@ -239,15 +248,17 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
       Effect.gen(function* () {
         const stageDir = brandLocation(stageRoot, brand.name).dir;
         yield* copyFiles(fetched.dir, stageDir, plan.copy);
-        const written = request.installed
-          ? []
-          : yield* writePackageFiles(root, stageDir, brand.name, remoteFonts);
-        const warnings = yield* validateStaged(stageRoot, brand);
-        return { written, warnings };
+        const written =
+          dependencies === undefined
+            ? []
+            : yield* writePackageFiles(stageDir, brand.name, dependencies);
+        const staged = yield* loadBrand(stageRoot, brand.name, { read: 'data', fontPackages });
+        const warnings = yield* checkStagedLayouts(staged);
+        return { written, warnings, missingFontPackages: staged.missingFontPackages };
       }),
   );
-
-  const fonts = yield* checkFonts(root, brand, remoteFonts);
+  const missing = new Set(prepared.missingFontPackages);
+  const fonts = remoteFonts.map((font) => ({ ...font, installed: !missing.has(font.name) }));
   return {
     brand: brand.name,
     dir: `${BRANDS_DIR}/${brand.name}`,
@@ -259,7 +270,7 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
     skipped: plan.skipped,
     fonts,
     warnings: prepared.warnings,
-    next: nextSteps(brand.name, fonts, request.installed),
+    next: nextSteps(brand.name, fonts, dependencies),
   };
 });
 
@@ -297,32 +308,33 @@ const readBrand = Effect.fn('readBrand')(function* (
   }
 
   const displayPath = `${BRANDS_DIR}/${name}/${BRAND_FILE}`;
-  const { tokens, warnings } = yield* resolveBrand(read.value, { source: displayPath, file });
-  return { name, tokens, warnings };
+  const { tokens } = yield* resolveBrand(read.value, { source: displayPath, file });
+  return { name, tokens };
 });
 
 /**
- * Loads the staged brand as data, the way decks will load it, and returns its warnings. Problems
- * that installing a font package fixes are left for the next steps; the load stops at them, so the
- * warnings are then the tokens' own, and `deck brand check` after the install checks the rest (the
- * layouts and the compiled CSS).
+ * Checks the staged brand against the deck catalog and attaches the source file to each warning.
  *
- * @param stageRoot - The temporary workspace that holds the staged brand.
- * @param brand - The brand, with the warnings its tokens resolved with.
- * @throws BrandError in the error channel with every other problem.
+ * @param brand - The staged brand, with its files checked and layouts resolved from data.
+ * @throws BrandError in the error channel when its layouts do not fit the catalog.
  */
-const validateStaged = Effect.fn('validateStaged')(function* (
-  stageRoot: string,
-  brand: ReadBrand,
-): Effect.fn.Return<readonly BrandProblem[], BrandError, FileSystem.FileSystem> {
-  return yield* loadBrand(stageRoot, brand.name, { read: 'data' }).pipe(
-    Effect.map((loaded) => loaded.warnings),
-    Effect.catchTag('BrandError', (error) => {
-      const problems = error.problems.filter((problem) => !isMissingFontPackage(problem));
-      return problems.length === 0
-        ? Effect.succeed(brand.warnings)
-        : Effect.fail(brandError({ summary: error.summary, source: error.source, problems }));
-    }),
+const checkStagedLayouts = Effect.fn('checkStagedLayouts')(function* (
+  brand: LoadedBrand,
+): Effect.fn.Return<BrandFileProblem[], BrandError | DeckBuildError> {
+  const file = brand.location.displayPath;
+  const layoutsFile = layoutsDisplayPath(file);
+  const check = yield* checkCatalogLayouts(brand.tokens.layouts);
+  if (check.errors.length > 0) {
+    return yield* brandError({
+      summary: 'Invalid brand layouts',
+      source: layoutsFile,
+      file: brand.layoutsFile,
+      problems: check.errors,
+    });
+  }
+
+  return [...brand.warnings, ...check.warnings].map((warning) =>
+    brandProblemWithFile(warning, { file, layoutsFile }),
   );
 });
 
@@ -349,28 +361,38 @@ const copyFiles = Effect.fn('copyFiles')(function* (
 });
 
 /**
- * Writes the `package.json` and `tsconfig.json` a brand has in the repository checkout. Each
- * Fontsource package uses the workspace catalog when it lists the package, else the version the
- * brand's repository gives; a package with neither is left out, and the font check names it.
+ * Picks the Fontsource dependencies to put in the brand's checkout manifest. A package must be in
+ * the workspace catalog or have a supported version in the fetched brand's manifest.
  *
  * @param root - The workspace root, whose catalog is read.
- * @param stageDir - The staged brand folder.
- * @param name - The brand name.
  * @param fonts - The brand's font packages.
- * @returns The files written, relative to the brand folder.
  */
-const writePackageFiles = Effect.fn('writePackageFiles')(function* (
+const checkoutFontDependencies = Effect.fn('checkoutFontDependencies')(function* (
   root: string,
-  stageDir: string,
-  name: string,
   fonts: readonly FontPackage[],
-): Effect.fn.Return<string[], FileSystemError, FileSystem.FileSystem> {
-  const fs = yield* FileSystem.FileSystem;
+): Effect.fn.Return<ReadonlyMap<string, string>, never, FileSystem.FileSystem> {
   const catalog = yield* catalogPackages(root);
-  const fontDependencies = fonts.flatMap((font) => {
+  const entries = fonts.flatMap((font) => {
     const version = catalog.has(font.name) ? 'catalog:' : font.version;
     return version === undefined ? [] : [[font.name, version] as const];
   });
+  return new Map(entries);
+});
+
+/**
+ * Writes the `package.json` and `tsconfig.json` a brand has in the repository checkout.
+ *
+ * @param stageDir - The staged brand folder.
+ * @param name - The brand name.
+ * @param fontDependencies - Fontsource dependencies and their version specifiers.
+ * @returns The files written, relative to the brand folder.
+ */
+const writePackageFiles = Effect.fn('writePackageFiles')(function* (
+  stageDir: string,
+  name: string,
+  fontDependencies: ReadonlyMap<string, string>,
+): Effect.fn.Return<string[], FileSystemError, FileSystem.FileSystem> {
+  const fs = yield* FileSystem.FileSystem;
   const manifest = {
     name: `${PACKAGE_PREFIX}${name}`,
     version: '0.0.0',
@@ -399,44 +421,33 @@ const writePackageFiles = Effect.fn('writePackageFiles')(function* (
 });
 
 /**
- * Which of the brand's font packages already resolve from its folder in the workspace.
- *
- * @param root - The workspace root.
- * @param brand - The brand.
- * @param fonts - Its font packages, with versions.
- */
-const checkFonts = Effect.fn('checkFonts')(function* (
-  root: string,
-  brand: ReadBrand,
-  fonts: readonly FontPackage[],
-): Effect.fn.Return<AddedFont[], never, FileSystem.FileSystem> {
-  const resolved = yield* resolveFontFiles(
-    brand.tokens.typography,
-    brandLocation(root, brand.name),
-  );
-  const missing = resolved.problems.filter(isMissingFontPackage).map((problem) => problem.message);
-  return fonts.map((font) => ({
-    ...font,
-    installed: !missing.some((message) => message.startsWith(`${font.name} `)),
-  }));
-});
-
-/**
- * The commands to run before decks can use the added brand: in the repository checkout, `pnpm
- * install` links the new brand package (and installs its fonts); in a published CLI's workspace,
- * `npm install` adds the fonts that do not resolve yet. Then `deck brand check`.
+ * The commands to run before decks can use the added brand. A checkout links the new brand package
+ * with `pnpm install` and adds missing fonts without a version from the source or catalog. A
+ * published CLI's workspace installs missing fonts with `npm install`. Then `deck brand check`.
  *
  * @param name - The brand name.
  * @param fonts - Its font packages.
- * @param installed - Whether the CLI is a published copy.
+ * @param dependencies - The dependencies already written for a checkout, if applicable.
  */
-function nextSteps(name: string, fonts: readonly AddedFont[], installed: boolean): string[] {
+function nextSteps(
+  name: string,
+  fonts: readonly AddedFont[],
+  dependencies: ReadonlyMap<string, string> | undefined,
+): string[] {
   const check = `${deckCommand()} brand check ${name}`;
-  if (!installed) {
-    return ['pnpm install', check];
+  const missing = fonts.filter((font) => !font.installed);
+  if (dependencies !== undefined) {
+    const unlisted = missing.filter((font) => !dependencies.has(font.name));
+    const install = ['pnpm install'];
+    if (unlisted.length > 0) {
+      install.push(
+        `pnpm --filter ${PACKAGE_PREFIX}${name} add ${unlisted.map((font) => font.name).join(' ')}`,
+      );
+    }
+
+    return [...install, check];
   }
 
-  const missing = fonts.filter((font) => !font.installed);
   if (missing.length === 0) {
     return [check];
   }

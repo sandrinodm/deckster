@@ -2,13 +2,13 @@ import { describeProblem } from '@deckster/brand';
 import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
 import * as NodeServices from '@effect/platform-node/NodeServices';
-import { Console, Effect } from 'effect';
+import { Console, Effect, Result } from 'effect';
 
 import { addBrand, type AddedBrand } from '#brand-add/add-brand.ts';
 import { parseBrandSource } from '#brand-add/brand-source.ts';
 import { shortCommit } from '#brand-add/fetch-brand.ts';
 import { usageError } from '#cli-error.ts';
-import { EXIT_OK } from '#command.ts';
+import { EXIT_FAILED, EXIT_OK } from '#command.ts';
 import { printJson } from '#json-output.ts';
 import { count } from '#lint/format-report.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
@@ -36,11 +36,30 @@ export const runBrandAdd = Effect.fn('deck.brand.add')(function* (argv: readonly
   const source = yield* parseBrandSource(input);
   const { root } = yield* Workspace;
   yield* Console.error(`Fetching ${source.display} with git...`);
-  const added = yield* addBrand(root, {
+  const result = yield* addBrand(root, {
     source,
     force: values.force,
     installed: FRAMEWORK_INSTALLED,
-  }).pipe(Effect.provide(NodeServices.layer));
+  }).pipe(Effect.provide(NodeServices.layer), Effect.result);
+  if (Result.isFailure(result)) {
+    const error = result.failure;
+    if (values.json && error._tag === 'BrandError') {
+      yield* printJson({
+        ok: false,
+        error: {
+          type: error._tag,
+          message: error.message,
+          file: error.source,
+          problems: error.problems,
+        },
+      });
+      return EXIT_FAILED;
+    }
+
+    return yield* Effect.fail(error);
+  }
+
+  const added = result.success;
   if (values.json) {
     yield* printJson({ ok: true, ...added });
   } else {
@@ -83,7 +102,10 @@ function formatAdded(added: AddedBrand): string {
   }
 
   for (const warning of added.warnings) {
-    lines.push(`  warning ${describeProblem(warning)}`, `          Fix: ${warning.fix}`);
+    lines.push(
+      `  warning ${warning.file}: ${describeProblem(warning)}`,
+      `          Fix: ${warning.fix}`,
+    );
   }
 
   lines.push('Next:', ...added.next.map((command) => `  ${command}`));

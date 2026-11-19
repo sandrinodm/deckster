@@ -12,15 +12,18 @@ import {
 } from '@deckster/brand';
 import { brandTokensJson, loadBrand } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
-import { checkBrandLayouts } from '@deckster/kit/catalog';
-import { loadLayoutCatalog } from '@deckster/vite-plugin';
 import { Console, Effect } from 'effect';
-import path from 'node:path';
 
 import { usageError } from '#cli-error.ts';
 import { EXIT_FAILED, EXIT_OK, type Command } from '#command.ts';
 import { runBrandAdd } from '#commands/brand-add-run.ts';
 import { printJson, withJsonErrors } from '#json-output.ts';
+import {
+  brandProblemWithFile,
+  checkCatalogLayouts,
+  layoutsDisplayPath,
+  type BrandFileProblem,
+} from '#layouts/check-brand-layouts.ts';
 import { count } from '#lint/format-report.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
 import { Workspace } from '#workspace.ts';
@@ -29,11 +32,6 @@ import { Workspace } from '#workspace.ts';
  * The subcommand word that validates a brand instead of printing it.
  */
 const CHECK = 'check';
-
-/**
- * The start of a problem path inside `layouts.ts`.
- */
-const LAYOUTS_PATH_PREFIX = 'layouts[';
 
 /**
  * The subcommand word that adds a brand from a git repository.
@@ -58,12 +56,12 @@ type BrandCheck = {
   /**
    * The problems that stop the brand from loading.
    */
-  errors: readonly BrandProblem[];
+  errors: readonly BrandFileProblem[];
 
   /**
    * The problems that do not.
    */
-  warnings: readonly BrandProblem[];
+  warnings: readonly BrandFileProblem[];
 };
 
 /**
@@ -128,54 +126,38 @@ const printBrand = Effect.fn('printBrand')(function* (name: string, json: boolea
  */
 const checkBrand = Effect.fn('checkBrand')(function* (name: string, json: boolean) {
   const { root } = yield* Workspace;
-  const base = yield* loadLayoutCatalog();
   const result = yield* loadBrand(root, name).pipe(
-    Effect.map((brand): BrandCheck => {
-      const layouts = checkBrandLayouts(
-        brand.tokens.layouts,
-        [...base.values()].map((layout) => layout.contract),
-      );
-      return {
-        file: brand.location.displayPath,
-        ...(brand.layoutsFile === undefined
-          ? {}
-          : { layoutsFile: path.relative(root, brand.layoutsFile) }),
-        errors: layouts.errors,
-        warnings: [...brand.warnings, ...layouts.warnings],
-      };
-    }),
-    Effect.catchTag('BrandError', (error) =>
-      Effect.succeed<BrandCheck>({ file: error.source, errors: error.problems, warnings: [] }),
+    Effect.flatMap((brand) =>
+      Effect.map(checkCatalogLayouts(brand.tokens.layouts), (layouts): BrandCheck => {
+        const file = brand.location.displayPath;
+        const files = {
+          file,
+          ...(brand.layoutsFile === undefined ? {} : { layoutsFile: layoutsDisplayPath(file) }),
+        };
+        return {
+          ...files,
+          errors: layouts.errors.map((problem) => brandProblemWithFile(problem, files)),
+          warnings: [...brand.warnings, ...layouts.warnings].map((problem) =>
+            brandProblemWithFile(problem, files),
+          ),
+        };
+      }),
     ),
+    Effect.catchTag('BrandError', (error) => {
+      const file = error.source;
+      const errors = error.problems.map((problem) => brandProblemWithFile(problem, { file }));
+      return Effect.succeed<BrandCheck>({ file, errors, warnings: [] });
+    }),
   );
   const ok = result.errors.length === 0;
   if (json) {
-    yield* printJson({
-      brand: name,
-      ok,
-      ...result,
-      errors: result.errors.map((problem) => ({ ...problem, file: fileOf(problem, result) })),
-      warnings: result.warnings.map((problem) => ({ ...problem, file: fileOf(problem, result) })),
-    });
+    yield* printJson({ brand: name, ok, ...result });
   } else {
     yield* Console.log(formatCheck(name, result));
   }
 
   return ok ? EXIT_OK : EXIT_FAILED;
 });
-
-/**
- * The file a problem is in: layout problems (paths such as `layouts[2].regions[0].box`) are in
- * `layouts.ts`, every other problem in the brand file.
- *
- * @param problem - One problem.
- * @param check - The check, for its files.
- */
-function fileOf(problem: BrandProblem, check: BrandCheck): string {
-  return problem.path.startsWith(LAYOUTS_PATH_PREFIX) && check.layoutsFile !== undefined
-    ? check.layoutsFile
-    : check.file;
-}
 
 /**
  * The plain-text report `deck brand check` prints: each file with its problems and their fixes, and
@@ -194,7 +176,7 @@ function formatCheck(name: string, check: BrandCheck): string {
       ['error', errors],
       ['warning', warnings],
     ] as const) {
-      for (const problem of problems.filter((entry) => fileOf(entry, check) === file)) {
+      for (const problem of problems.filter((entry) => entry.file === file)) {
         lines.push(`  ${severity.padEnd('warning'.length)} ${describeProblem(problem)}`);
         lines.push(`          Fix: ${problem.fix}`);
       }

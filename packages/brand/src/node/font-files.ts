@@ -1,4 +1,4 @@
-import { Effect, FileSystem, Schema } from 'effect';
+import { Effect, FileSystem, Predicate, Schema } from 'effect';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
@@ -45,6 +45,14 @@ type FontsourceSource = Extract<FamilyTokens['source'], { kind: 'fontsource' }>;
 type FilesSource = Extract<FamilyTokens['source'], { kind: 'files' }>;
 
 /**
+ * Resolving a Fontsource package can find it, miss it or find an unusable package.
+ */
+type PackageLookup =
+  | { kind: 'found'; dir: string }
+  | { kind: 'missing' }
+  | { kind: 'invalid'; message: string };
+
+/**
  * The parts of a Fontsource package's `metadata.json` this module reads.
  */
 const FontsourceMetadata = Schema.Struct({
@@ -74,6 +82,21 @@ const PackageManifest = Schema.Struct({ name: Schema.String });
 const UnicodeRanges = Schema.Record(Schema.String, Schema.String);
 
 /**
+ * Fontsource resolution for a staged brand whose local font files live in its staging folder.
+ */
+export type FontPackageOptions = {
+  /**
+   * The directory to resolve Fontsource packages from, as they will be resolved after publication.
+   */
+  fromDir: string;
+
+  /**
+   * Packages the importer can install later. Problems with packages that resolve still fail.
+   */
+  allowMissing: ReadonlySet<string>;
+};
+
+/**
  * The `@font-face` rules for a brand, and anything that stops its fonts from loading.
  */
 export type ResolvedFonts = {
@@ -91,6 +114,11 @@ export type ResolvedFonts = {
    * Families declared `unavailable`, which render in their fallback stack.
    */
   warnings: BrandProblem[];
+
+  /**
+   * Fontsource packages that could not be resolved, whether or not their absence is allowed.
+   */
+  missingPackages: string[];
 };
 
 /**
@@ -111,6 +139,11 @@ const NO_FONTS: ResolvedFonts = {
    * Nothing to warn about.
    */
   warnings: [],
+
+  /**
+   * No unresolved Fontsource package.
+   */
+  missingPackages: [],
 };
 
 /**
@@ -120,15 +153,17 @@ const NO_FONTS: ResolvedFonts = {
  *
  * @param typography - The brand's resolved typography.
  * @param brand - Where the brand lives.
+ * @param packages - Where and how to resolve Fontsource packages for a staged brand, if applicable.
  * @returns The faces, and problems such as a package that is not installed or a missing file.
  */
 export const resolveFontFiles = Effect.fn('resolveFontFiles')(function* (
   typography: TypographyTokens,
   brand: BrandLocation,
+  packages?: FontPackageOptions,
 ): Effect.fn.Return<ResolvedFonts, never, FileSystem.FileSystem> {
   const results = yield* Effect.forEach(
     FAMILY_ROLES,
-    (role) => familyFaces(role, typography, brand),
+    (role) => familyFaces(role, typography, brand, packages),
     // One per family role: display, body and mono.
     { concurrency: 'unbounded' },
   );
@@ -136,6 +171,7 @@ export const resolveFontFiles = Effect.fn('resolveFontFiles')(function* (
     faces: results.flatMap((result) => result.faces),
     problems: results.flatMap((result) => result.problems),
     warnings: results.flatMap((result) => result.warnings),
+    missingPackages: [...new Set(results.flatMap((result) => result.missingPackages))],
   };
 });
 
@@ -145,11 +181,13 @@ export const resolveFontFiles = Effect.fn('resolveFontFiles')(function* (
  * @param role - The family role.
  * @param typography - The brand's resolved typography.
  * @param brand - Where the brand lives.
+ * @param packages - Where and how to resolve Fontsource packages for a staged brand, if applicable.
  */
 function familyFaces(
   role: FamilyRole,
   typography: TypographyTokens,
   brand: BrandLocation,
+  packages: FontPackageOptions | undefined,
 ): Effect.Effect<ResolvedFonts, never, FileSystem.FileSystem> {
   const family = typography.families[role];
   switch (family.source.kind) {
@@ -172,6 +210,7 @@ function familyFaces(
         source: family.source,
         typography,
         brand,
+        packages,
       });
     }
   }
@@ -242,7 +281,7 @@ const localFaces = Effect.fn('localFaces')(function* (
     style: file.style ?? 'normal',
     unicodeRange: file.unicodeRange,
   }));
-  return { faces, problems, warnings: [] };
+  return { ...NO_FONTS, faces, problems };
 });
 
 /**
@@ -273,6 +312,11 @@ type FontsourceInput = {
    * Where the brand lives; the package resolves from its folder.
    */
   brand: BrandLocation;
+
+  /**
+   * Where and how to resolve Fontsource packages for a staged brand, if applicable.
+   */
+  packages: FontPackageOptions | undefined;
 };
 
 /**
@@ -284,24 +328,11 @@ type FontsourceInput = {
 const fontsourceFaces = Effect.fn('fontsourceFaces')(function* (
   input: FontsourceInput,
 ): Effect.fn.Return<ResolvedFonts, never, FileSystem.FileSystem> {
-  const { role, source, brand } = input;
+  const { role, source, brand, packages } = input;
   const field = `typography.families.${role}.source`;
-  const packageDir = locatePackage(source.package, brand.dir);
-  if (packageDir === undefined) {
-    return {
-      ...NO_FONTS,
-      problems: [
-        {
-          path: `${field}.package`,
-          message: `${source.package} is not installed for ${path.dirname(brand.displayPath)}.`,
-          fix: FRAMEWORK_INSTALLED
-            ? `Install it in the workspace folder, where the brand's fonts resolve from: ` +
-              `npm install ${source.package}.`
-            : `Add "${source.package}" to the dependencies in ` +
-              `${path.dirname(brand.displayPath)}/package.json and run pnpm install.`,
-        },
-      ],
-    };
+  const lookup = yield* locatePackage(source.package, packages?.fromDir ?? brand.dir);
+  if (lookup.kind === 'missing') {
+    return missingFontPackage(input, field);
   }
 
   /**
@@ -319,6 +350,11 @@ const fontsourceFaces = Effect.fn('fontsourceFaces')(function* (
       },
     ],
   });
+  if (lookup.kind === 'invalid') {
+    return packageProblem(lookup.message);
+  }
+
+  const packageDir = lookup.dir;
   const files = yield* readPackageFiles(packageDir, source.package);
   if (typeof files === 'string') {
     return packageProblem(files);
@@ -377,6 +413,7 @@ const fontsourceFaces = Effect.fn('fontsourceFaces')(function* (
   }
 
   return {
+    ...NO_FONTS,
     faces: faces
       .filter((entry) => entry.problem === undefined)
       .map(({ face, file }) => ({
@@ -387,9 +424,31 @@ const fontsourceFaces = Effect.fn('fontsourceFaces')(function* (
         unicodeRange: ownValue(ranges, face.subset),
       })),
     problems,
-    warnings: [],
   };
 });
+
+/**
+ * Records an unresolved Fontsource package and reports an error unless the import can install it.
+ */
+function missingFontPackage(input: FontsourceInput, field: string): ResolvedFonts {
+  const { source, brand, packages } = input;
+  const name = source.package;
+  const result = { ...NO_FONTS, missingPackages: [name] };
+  if (packages?.allowMissing.has(name)) {
+    return result;
+  }
+
+  const dir = path.dirname(brand.displayPath);
+  const problem = {
+    path: `${field}.package`,
+    message: `${name} is not installed for ${dir}.`,
+    fix: FRAMEWORK_INSTALLED
+      ? `Install it in the workspace folder, where the brand's fonts resolve from: ` +
+        `npm install ${name}.`
+      : `Add "${name}" to the dependencies in ${dir}/package.json and run pnpm install.`,
+  };
+  return { ...result, problems: [problem] };
+}
 
 /**
  * One file a Fontsource source loads, before checking that it exists.
@@ -537,14 +596,19 @@ function unknownValues(
  *
  * @param name - The package name.
  * @param brandDir - The absolute brand folder.
- * @returns The folder, or `undefined` when the package is not installed for the brand.
+ * @returns The package folder, or why it could not be loaded.
  */
-function locatePackage(name: string, brandDir: string): string | undefined {
-  return (
-    resolvePackageFolder(name, path.join(brandDir, 'package.json')) ??
-    (FRAMEWORK_INSTALLED ? resolvePackageFolder(name, FRAMEWORK_ANCHOR) : undefined)
-  );
-}
+const locatePackage = Effect.fn('locatePackage')(function* (
+  name: string,
+  brandDir: string,
+): Effect.fn.Return<PackageLookup, never, FileSystem.FileSystem> {
+  const lookup = yield* resolvePackageFolder(name, path.join(brandDir, 'package.json'));
+  if (lookup.kind === 'missing' && FRAMEWORK_INSTALLED) {
+    return yield* resolvePackageFolder(name, FRAMEWORK_ANCHOR);
+  }
+
+  return lookup;
+});
 
 /**
  * The folder of a package as Node resolves it from a file.
@@ -552,13 +616,35 @@ function locatePackage(name: string, brandDir: string): string | undefined {
  * @param name - The package name.
  * @param from - The absolute path of the file that imports it.
  */
-function resolvePackageFolder(name: string, from: string): string | undefined {
+const resolvePackageFolder = Effect.fn('resolvePackageFolder')(function* (
+  name: string,
+  from: string,
+): Effect.fn.Return<PackageLookup, never, FileSystem.FileSystem> {
+  const resolve = createRequire(from).resolve;
   try {
-    return path.dirname(createRequire(from).resolve(`${name}/package.json`));
-  } catch {
-    return undefined;
+    const manifest = resolve(`${name}/package.json`);
+    return { kind: 'found', dir: path.dirname(manifest) };
+  } catch (error) {
+    if (Predicate.hasProperty(error, 'code') && error.code === 'MODULE_NOT_FOUND') {
+      // A missing manifest or export target also produces MODULE_NOT_FOUND. Only an absent
+      // package may be deferred to installation or resolved from the framework instead.
+      const fs = yield* FileSystem.FileSystem;
+      const candidates = resolve.paths(name) ?? [];
+      const present = yield* Effect.forEach(candidates, (dir) =>
+        fs.exists(path.join(dir, name)),
+      ).pipe(
+        Effect.map((entries) => entries.some(Boolean)),
+        Effect.orElseSucceed(() => true),
+      );
+      if (!present) {
+        return { kind: 'missing' };
+      }
+    }
+
+    const reason = error instanceof Error ? error.message : String(error);
+    return { kind: 'invalid', message: `Could not resolve ${name}: ${reason}` };
   }
-}
+});
 
 /**
  * Whether a package's `unicode.json` gives a usable range: missing (every character) or a valid

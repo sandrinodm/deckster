@@ -17,12 +17,46 @@ import { NETWORK_PROTOCOLS } from '#brand-add/fetch-brand.ts';
  * a user's git configuration may send an https address to SSH.
  */
 const ADDRESS = 'https://example.test/acme/brand-kit.git';
+
+/**
+ * The address the CLI uses to exercise its normal SSH transport against the fixture.
+ */
 const SSH_ADDRESS = 'ssh://git@example.test/acme/brand-kit.git';
 
 /**
  * The brand the test repository holds, copied from the framework.
  */
 const BRAND = 'default';
+
+/**
+ * Workspace-relative path where each variant's layouts will be published.
+ */
+const LAYOUTS_FILE = `brands/${BRAND}/layouts.ts`;
+
+/**
+ * A variable Fontsource package that none of the scratch workspaces has installed by default.
+ */
+const TEST_FONT = '@fontsource-variable/deckster-import-fixture';
+
+/**
+ * A layout that fulfils the kit's split layout contract.
+ */
+const SPLIT_LAYOUT = {
+  name: 'acme-split',
+  label: 'Split page',
+  description: 'Text next to a picture.',
+  fallback: 'split',
+  title: { box: [120, 80, 1680, 160] },
+  regions: [
+    { bind: { slot: 'body' }, kind: 'text', box: [120, 300, 720, 600] },
+    { bind: { slot: 'media' }, kind: 'media', box: [920, 300, 880, 600] },
+  ],
+};
+
+/**
+ * The media region drawn as text, which the catalog reports as a warning.
+ */
+const TEXT_MEDIA_REGION = { bind: { slot: 'media' }, kind: 'text', box: [920, 300, 880, 600] };
 
 /**
  * The protocols the tests allow: the network ones and `file`, for the repository on disk.
@@ -114,6 +148,7 @@ function makeRemote(): string {
       '',
     ].join('\n'),
   );
+  writeLayoutVariants(repo, brandDir);
   git(repo, ['init', '--quiet', '--initial-branch=main']);
   git(repo, ['config', 'uploadpack.allowFilter', 'true']);
   git(repo, ['config', 'uploadpack.allowAnySHA1InWant', 'true']);
@@ -122,6 +157,62 @@ function makeRemote(): string {
   git(repo, ['tag', 'v1']);
   git(repo, ['tag', '--annotate', 'v2', '--message', 'v2']);
   return repo;
+}
+
+/**
+ * Gives each fixture folder the same brand name so a broken import can replace a good one.
+ */
+function writeLayoutVariants(repo: string, brandDir: string): void {
+  const variants = {
+    'valid-layout': layoutModule(SPLIT_LAYOUT),
+    'warn-layout': layoutModule({
+      ...SPLIT_LAYOUT,
+      regions: SPLIT_LAYOUT.regions.map((region) =>
+        region.bind.slot === 'media' ? TEXT_MEDIA_REGION : region,
+      ),
+    }),
+    'unknown-fallback': layoutModule({ ...SPLIT_LAYOUT, fallback: 'unknown-fallback' }),
+    'unbound-slot': layoutModule({
+      ...SPLIT_LAYOUT,
+      regions: SPLIT_LAYOUT.regions.filter((region) => region.bind.slot !== 'media'),
+    }),
+    'invalid-layout': layoutModule({ ...SPLIT_LAYOUT, title: { box: [-120, 80, 1680, 160] } }),
+    'code-layout': [
+      `throw new Error('The layouts module was executed');`,
+      layoutModule(SPLIT_LAYOUT),
+    ].join('\n'),
+  };
+  const original = fs.readFileSync(path.join(brandDir, 'brand.ts'), 'utf8');
+  const newFont = original.replace('@fontsource-variable/inter', TEST_FONT);
+  for (const [name, layouts] of Object.entries(variants)) {
+    const dir = path.join(repo, 'brands', name);
+    fs.cpSync(path.join(brandDir, 'logos'), path.join(dir, 'logos'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'brand.ts'), newFont);
+    fs.writeFileSync(path.join(dir, 'layouts.ts'), layouts);
+  }
+
+  const missingAsset = path.join(repo, 'brands', 'missing-asset');
+  fs.cpSync(path.join(repo, 'brands', 'valid-layout'), missingAsset, { recursive: true });
+  fs.rmSync(path.join(missingAsset, 'logos', 'mark.svg'));
+
+  const missingFont = path.join(repo, 'brands', 'missing-font-file');
+  fs.cpSync(path.join(repo, 'brands', 'valid-layout'), missingFont, { recursive: true });
+  const withLocalFont = newFont.replace(
+    "{ kind: 'fontsource', package: '@fontsource-variable/jetbrains-mono' }",
+    "{ kind: 'files', files: [{ path: 'fonts/mono.woff2', weight: [100, 900] }] }",
+  );
+  fs.writeFileSync(path.join(missingFont, 'brand.ts'), withLocalFont);
+}
+
+/**
+ * Writes a layout manifest in the same static syntax an imported module uses.
+ */
+function layoutModule(layout: object): string {
+  return [
+    "import { defineBrandLayouts } from '@deckster/brand';",
+    `export default defineBrandLayouts(${JSON.stringify([layout])});`,
+    '',
+  ].join('\n');
 }
 
 /**
@@ -217,6 +308,140 @@ layer(NodeServices.layer)('addBrand', (it) => {
     }),
   );
 
+  it.effect('publishes a layout that works with its kit fallback and lists fonts to install', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const added = yield* addBrand(root, request('//brands/valid-layout'));
+      expect(added.files).toContain('layouts.ts');
+      expect(fs.readFileSync(path.join(root, LAYOUTS_FILE), 'utf8')).toBe(
+        layoutModule(SPLIT_LAYOUT),
+      );
+      expect(added.fonts).toContainEqual({ name: TEST_FONT, version: undefined, installed: false });
+      expect(added.next).toEqual([
+        'pnpm install',
+        `pnpm --filter @deckster/brand-${BRAND} add ${TEST_FONT}`,
+        `pnpm deck brand check ${BRAND}`,
+      ]);
+      const installed = yield* addBrand(
+        workspace(),
+        request('//brands/valid-layout', { installed: true }),
+      );
+      expect(installed.next[0]).toContain(TEST_FONT);
+      expect(installed.next[0]).toMatch(/^npm install /u);
+    }),
+  );
+
+  it.effect('returns layout warnings even when a Fontsource package needs to be installed', () =>
+    Effect.gen(function* () {
+      const added = yield* addBrand(workspace(), request('//brands/warn-layout'));
+      expect(added.warnings).toContainEqual({
+        file: LAYOUTS_FILE,
+        path: 'layouts[0].regions[1]',
+        message: expect.stringContaining('The text region binds "media"'),
+        fix: expect.stringContaining('kind: "media"'),
+      });
+    }),
+  );
+
+  it.effect('rejects an unknown fallback even when Fontsource packages are missing', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const error = yield* Effect.flip(addBrand(root, request('//brands/unknown-fallback')));
+      expect(error).toMatchObject({
+        _tag: 'BrandError',
+        source: LAYOUTS_FILE,
+        problems: [
+          { path: 'layouts[0].fallback', message: expect.stringContaining('unknown-fallback') },
+        ],
+      });
+      expect(error.message).toContain(LAYOUTS_FILE);
+      expect(fs.existsSync(path.join(root, 'brands', BRAND))).toBe(false);
+    }),
+  );
+
+  it.effect(
+    'leaves an existing brand intact when its forced replacement omits a required slot',
+    () =>
+      Effect.gen(function* () {
+        const root = workspace();
+        yield* addBrand(root, request('//brands/valid-layout'));
+        const layouts = path.join(root, LAYOUTS_FILE);
+        const previous = fs.readFileSync(layouts, 'utf8');
+        const error = yield* Effect.flip(
+          addBrand(root, request('//brands/unbound-slot', { force: true })),
+        );
+        expect(error.message).toContain('requires the slot "media"');
+        expect(fs.readFileSync(layouts, 'utf8')).toBe(previous);
+      }),
+  );
+
+  it.effect(
+    'checks layout geometry and rejects a layout module that contains executable code',
+    () =>
+      Effect.gen(function* () {
+        const root = workspace();
+        const geometry = yield* Effect.flip(addBrand(root, request('//brands/invalid-layout')));
+        expect(geometry).toMatchObject({ source: LAYOUTS_FILE });
+        expect(geometry.message).toContain('layouts[0].title.box');
+        const code = yield* Effect.flip(addBrand(root, request('//brands/code-layout')));
+        expect(code).toMatchObject({ source: LAYOUTS_FILE });
+        expect(code.message).toContain('is read as data without running it');
+        expect(fs.existsSync(path.join(root, 'brands', BRAND))).toBe(false);
+      }),
+  );
+
+  it.effect('rejects missing local assets alongside missing Fontsource packages', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const error = yield* Effect.flip(addBrand(root, request('//brands/missing-asset')));
+      expect(error).toMatchObject({ source: `brands/${BRAND}/brand.ts` });
+      expect(error.message).toContain('logos/mark.svg');
+      expect(error.message).not.toContain('is not installed');
+      expect(fs.existsSync(path.join(root, 'brands', BRAND))).toBe(false);
+
+      const font = yield* Effect.flip(addBrand(root, request('//brands/missing-font-file')));
+      expect(font).toMatchObject({ source: `brands/${BRAND}/brand.ts` });
+      expect(font.message).toContain('fonts/mono.woff2');
+      expect(fs.existsSync(path.join(root, 'brands', BRAND))).toBe(false);
+    }),
+  );
+
+  it.effect('rejects a malformed Fontsource package found in the destination workspace', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const dir = path.join(root, 'node_modules', TEST_FONT);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: TEST_FONT }));
+      const error = yield* Effect.flip(addBrand(root, request('//brands/valid-layout')));
+      expect(error).toMatchObject({ source: `brands/${BRAND}/brand.ts` });
+      expect(error.message).toContain('has no readable metadata.json and unicode.json');
+      expect(fs.existsSync(path.join(root, 'brands', BRAND))).toBe(false);
+    }),
+  );
+
+  it.effect('rejects installed Fontsource packages whose manifests cannot resolve', () =>
+    Effect.gen(function* () {
+      const manifests = [
+        undefined,
+        { name: TEST_FONT, exports: { './package.json': './missing.json' } },
+      ];
+      for (const manifest of manifests) {
+        const root = workspace();
+        const dir = path.join(root, 'node_modules', TEST_FONT);
+        fs.mkdirSync(dir, { recursive: true });
+        if (manifest !== undefined) {
+          fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify(manifest));
+        }
+
+        const error = yield* Effect.flip(addBrand(root, request('//brands/valid-layout')));
+        expect(error).toMatchObject({ source: `brands/${BRAND}/brand.ts` });
+        expect(error.message).toContain(`Could not resolve ${TEST_FONT}`);
+        expect(error.message).not.toContain('is not installed');
+        expect(fs.existsSync(path.join(root, 'brands', BRAND))).toBe(false);
+      }
+    }),
+  );
+
   it.effect('refuses to replace a brand without force, and replaces it with force', () =>
     Effect.gen(function* () {
       const root = workspace();
@@ -298,6 +523,52 @@ type BrandCli = {
 };
 
 describe('deck brand add publication', () => {
+  it(
+    'shows the layouts file in CLI warnings and validation errors',
+    async () => {
+      const warning = `${SSH_ADDRESS}//brands/warn-layout`;
+      const invalid = `${SSH_ADDRESS}//brands/unknown-fallback`;
+      const children = [
+        startBrandCommand(workspace(), [warning, '--json']),
+        startBrandCommand(workspace(), [warning]),
+        startBrandCommand(workspace(), [invalid, '--json']),
+        startBrandCommand(workspace(), [invalid]),
+      ] as const;
+      try {
+        const [json, text, failedJson, failedText] = await Promise.all([
+          children[0].exit,
+          children[1].exit,
+          children[2].exit,
+          children[3].exit,
+        ]);
+        expect(json.code, json.stderr).toBe(0);
+        expect(JSON.parse(json.stdout)).toMatchObject({
+          ok: true,
+          warnings: [
+            expect.objectContaining({ file: LAYOUTS_FILE, path: 'layouts[0].regions[1]' }),
+          ],
+        });
+        expect(text.code, text.stderr).toBe(0);
+        expect(text.stdout).toContain(`warning ${LAYOUTS_FILE}: layouts[0].regions[1]`);
+
+        expect(failedJson.code).toBe(1);
+        expect(JSON.parse(failedJson.stdout)).toMatchObject({
+          ok: false,
+          error: {
+            type: 'BrandError',
+            file: LAYOUTS_FILE,
+            problems: [expect.objectContaining({ path: 'layouts[0].fallback' })],
+          },
+        });
+        expect(failedText.code).toBe(1);
+        expect(failedText.stderr).toContain(`Invalid brand layouts in ${LAYOUTS_FILE}`);
+      } finally {
+        await stopBrandClis(children);
+      }
+    },
+    CHILD_TEST_TIMEOUT_MS,
+  );
+
   it.each([false, true])(
     'rechecks the target after a concurrent add with force=%s',
     async (force) => {
@@ -370,12 +641,16 @@ describe('deck brand add publication', () => {
 
 function startBrandCli(root: string, force: boolean, pauseAt = ''): BrandCli {
   const source = `${SSH_ADDRESS}//brands/${BRAND}#v1`;
-  const args = ['brand', 'add', source, '--json'];
+  const args = [source, '--json'];
   if (force) {
     args.push('--force');
   }
 
-  const child = fork(CLI, args, {
+  return startBrandCommand(root, args, pauseAt);
+}
+
+function startBrandCommand(root: string, args: readonly string[], pauseAt = ''): BrandCli {
+  const child = fork(CLI, ['brand', 'add', ...args], {
     cwd: root,
     execArgv: ['--import', INSTALL_FIXTURE],
     silent: true,

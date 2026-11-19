@@ -1,4 +1,4 @@
-import type { BrandProblem, BrandTokens } from '@deckster/brand';
+import type { BrandTokens } from '@deckster/brand';
 
 import { Effect, FileSystem, Schema } from 'effect';
 import path from 'node:path';
@@ -21,16 +21,6 @@ const DEFAULT_CATALOG = 'default';
  * Git URLs, file paths, tags and `workspace:` specifiers are left out.
  */
 const VERSION_PATTERN = /^[\^~]?\d+(?:\.\d+){0,2}(?:-[0-9A-Za-z.-]+)?$/;
-
-/**
- * The path of a font problem about a Fontsource package: `typography.families.body.source.package`.
- */
-const FONT_PACKAGE_PATH = /^typography\.families\.[a-z]+\.source\.package$/;
-
-/**
- * What the font check says of a package that does not resolve from the brand folder.
- */
-const NOT_INSTALLED = 'is not installed';
 
 /**
  * The parts of a `package.json` this module reads.
@@ -81,16 +71,6 @@ export function fontsourcePackages(tokens: BrandTokens): string[] {
     family.source.kind === 'fontsource' ? [family.source.package] : [],
   );
   return [...new Set(names)];
-}
-
-/**
- * Whether a brand problem is a Fontsource package that is not installed, which installing the
- * package fixes.
- *
- * @param problem - A problem from loading the brand.
- */
-export function isMissingFontPackage(problem: BrandProblem): boolean {
-  return FONT_PACKAGE_PATH.test(problem.path) && problem.message.includes(NOT_INSTALLED);
 }
 
 /**
