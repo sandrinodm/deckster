@@ -31,7 +31,7 @@ You need Node.js 26 or later. You do not need to install pnpm 12.16.1 yourself: 
      ➜  press h + enter to show help
    ```
 
-   `pnpm dev` is a script for `deck dev`, and pnpm echoes it as `$ deck dev hello`. When the workspace has changed since the last install, pnpm first runs an install and prints its progress (cut here as `...`). `hello` is also the deck `deck dev` serves when you name none. Type `q` and press Enter, or press Ctrl+C, to stop it.
+   `pnpm dev` is a script for `deck dev`, and pnpm echoes it as `$ deck dev hello`. When the workspace has changed since the last install, pnpm first runs an install and prints its progress (cut here as `...`). Type `q` and press Enter, or press Ctrl+C, to stop it.
 
 3. Run the two longer decks with `pnpm deck`, which runs the repository's own `deck` CLI:
 
@@ -104,6 +104,6 @@ $ pnpm deck --version
 0.6.1
 ```
 
-To match the release exactly, check out its tag: `git checkout v0.6.1`.
+To match the release exactly, run `git checkout v0.6.1`. At that tag, `pnpm dev` opens `hello` when `DECK` is unset. In the [unreleased chooser](/get-started/workspace-layout/#choose-a-deck-in-your-browser), the same command lists the workspace's decks. `pnpm dev hello` opens the starter deck in both versions.
 
 Before you change anything, read [Contributing](/project/contributing/): it covers the checks, the tests and pull requests. [Packages](/project/packages/) says what each folder under `packages/` is.

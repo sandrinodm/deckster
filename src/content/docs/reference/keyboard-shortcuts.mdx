@@ -47,7 +47,7 @@ The **Window** column says where a key works: the audience window (the deck itse
 
 ## The `deck present` menu
 
-`deck present` opens the deck in its own app, whose menu adds these shortcuts. They work in both windows. With `--kiosk` there is no menu, so none of them work except quitting, and Cmd+Q or Ctrl+Q must be pressed twice within two seconds. In a browser (`deck dev`, `deck present --browser`, a built deck) the browser's own shortcuts apply instead.
+`deck present` opens the deck in its own app, whose menu adds these shortcuts. They work in both windows. In 0.6.1, `--kiosk` removes the menu and keeps only the quit shortcut, which you press twice within two seconds. In a browser (`deck dev`, `deck present --browser`, a built deck) the browser's own shortcuts apply.
 
 | Shortcut (macOS) | Shortcut (Windows, Linux) | Does |
 | --- | --- | --- |
@@ -60,6 +60,8 @@ The **Window** column says where a key works: the audience window (the deck itse
 | Cmd+Q | Ctrl+Q | Quit |
 
 The Edit menu has the system's cut, copy, paste and undo, for typing in a comment or the agent's input.
+
+**Unreleased.** Cmd+Shift+B on macOS or Ctrl+Shift+B on Windows and Linux returns to the desktop gallery, including in kiosk mode. See [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery).
 
 ## Comments
 

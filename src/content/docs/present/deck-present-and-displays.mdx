@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-`deck present <deck>` opens a deck in its own desktop window and serves it with hot reload, so an edit shows at once. With the flags on this page you choose which display shows the audience window and which shows your notes, present the built deck instead of the dev server, or fall back to a browser. Closing the window stops the server; so does Ctrl+C in the terminal.
+`deck present <deck>` opens a deck in its own desktop window and serves it with hot reload, so an edit shows at once. With the flags on this page you choose which display shows the audience window and which shows your notes, present the built deck, or open it in a browser. For a named deck in the desktop app, closing the audience window stops the server. Press Ctrl+C to stop it from the terminal.
 
 ## Download Electron's binary once
 
@@ -28,6 +28,22 @@ Window open on display 0. Close the window or press Ctrl+C to stop.
 ```
 
 The window opens on the primary display, not fullscreen. The terminal keeps a short status; `--verbose` adds the dev server's log. `--port <n>` and `--brand <name>` work as they do for `deck dev`. Inside the window every presenting tool and key works as in a browser: see [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/).
+
+## Choose a deck in the desktop gallery
+
+<Aside type="note" title="Unreleased">
+The desktop gallery is in review. See [Desktop presentation gallery](/project/changelog/#desktop-presentation-gallery).
+</Aside>
+
+Run `deck present` without a deck argument and with `DECK` unset or empty. With several decks, Deckster shows **Choose a deck**. Pick a card to open the deck in an audience window. A single deck opens directly, and an explicit deck name takes precedence over `DECK`. In 0.6.1, an unnamed invocation still prefers `hello` when it exists.
+
+With two or more displays in extended mode, the gallery stays off the audience display. Mirrored displays show the same view. With one display, the gallery hides while the audience window is open. Use the same display options as for a named deck, such as `deck present --presenter --fullscreen`.
+
+Use **Back to decks** in the presenter window or the **Present** menu to end the current presentation and choose another. With one display and no presenter window, the audience window shows the button when you start a windowed presentation. Cmd/Ctrl+Shift+B also returns to the gallery in fullscreen and kiosk mode. Closing the audience window returns to the gallery. If an agent is working, Deckster asks whether to stop it or keep presenting. Close the gallery, quit Deckster, or press Ctrl+C to end the command.
+
+`--browser` opens the chooser in the browser. The selected deck replaces the chooser there, with a **Back to decks** link to return. With `--built`, Deckster builds the deck when you select it. `--port <n>` sets the gallery's port and the selected deck runs on a separate port. The restrictions on [built decks](#present-the-built-deck) and [browser presentation](#present-in-a-browser-instead) also apply in gallery mode.
+
+The desktop gallery runs on the presenting computer and displays only its local chooser page. The audience and presenter windows keep the deck's normal [navigation and download rules](#what-the-window-does-for-you).
 
 ## Put the slides on the projector and the notes on your laptop
 
