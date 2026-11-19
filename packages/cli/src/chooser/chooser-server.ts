@@ -281,6 +281,7 @@ export const startDeckChooser = Effect.fn('startDeckChooser')(function* <R>(
           base: CHOOSER_PATH,
           decks: cards,
           active: active?.name,
+          selection: active?.key,
           operator,
           returning,
           desktop: options.desktop === true,
