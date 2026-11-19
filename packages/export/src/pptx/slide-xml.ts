@@ -954,7 +954,7 @@ function outlinedTextXml(
 
 /**
  * An original image: its file embedded once per package, with its crop, radii and grayscale; SVG
- * files get a PNG fallback captured from the page.
+ * files get a raster fallback sharing the original's crop.
  *
  * @param writer - The slide's state.
  * @param node - The image.

@@ -41,7 +41,6 @@ describe('captureSlide', () => {
   beforeAll(async () => {
     browser = await chromium.launch();
     page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-    await page.setContent(SLIDE);
   }, TIMEOUT_MS);
 
   afterAll(async () => {
@@ -51,6 +50,7 @@ describe('captureSlide', () => {
   it(
     'measures text, lists and code, pictures what needs it and leaves the page as it was',
     async () => {
+      await page.setContent(SLIDE);
       const captured = await Effect.runPromise(
         captureSlide(page, {
           mode: 'hybrid',
@@ -83,6 +83,68 @@ describe('captureSlide', () => {
         style: document.getElementById('deck-export-pseudo-style') !== null,
       }));
       expect(leftovers).toEqual({ stand_ins: 0, ids: 0, style: false });
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    'keeps both source edges in the PNG fallback of a cropped SVG',
+    async () => {
+      const svg = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100">',
+        '<rect width="300" height="100" fill="lime"/>',
+        '<rect width="50" height="100" fill="red"/>',
+        '<rect x="250" width="50" height="100" fill="blue"/>',
+        '</svg>',
+      ].join('');
+      const src = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+      await page.setContent(`<!doctype html><html><body style="margin:0">
+        <div class="deck-canvas" style="width:1920px;height:1080px;background:#fcfcfd">
+          <section data-slide-active="true" data-surface="default"><div data-layout="content">
+            <img src="${src}" style="display:block;width:100px;height:100px;object-fit:cover">
+          </div></section>
+        </div>
+      </body></html>`);
+      await page.locator('img').evaluate((img: HTMLImageElement) => img.decode());
+
+      const captured = await Effect.runPromise(
+        captureSlide(page, {
+          mode: 'hybrid',
+          placeholderSelectors: [],
+          fieldText: {},
+          master: { paint: { kind: 'solid', color: '#fcfcfd' }, texture: null },
+          label: 'slide 1',
+          captureTexture: null,
+          pictureScale: null,
+        }),
+      );
+      const image = captured.scene.nodes.find((node) => node.kind === 'image');
+      expect(image?.crop.left).toBeCloseTo(1 / 3);
+      expect(image?.crop.right).toBeCloseTo(1 / 3);
+      const original = captured.assets.images.get(src);
+      expect(original?.extension).toBe('svg');
+      expect(new TextDecoder().decode(original?.data)).toBe(svg);
+
+      const fallback = image === undefined ? undefined : captured.assets.pictures.get(image.id);
+      expect(fallback).toBeDefined();
+      const png = await page.evaluate(
+        async (base64) => {
+          const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+          const bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const context = canvas.getContext('2d');
+          context?.drawImage(bitmap, 0, 0);
+          return {
+            ratio: bitmap.width / bitmap.height,
+            left: Array.from(context?.getImageData(0, 0, 1, 1).data ?? []),
+            right: Array.from(context?.getImageData(bitmap.width - 1, 0, 1, 1).data ?? []),
+          };
+        },
+        Buffer.from(fallback ?? new Uint8Array()).toString('base64'),
+      );
+      expect(png).toEqual({ ratio: 3, left: [255, 0, 0, 255], right: [0, 0, 255, 255] });
     },
     TIMEOUT_MS,
   );
