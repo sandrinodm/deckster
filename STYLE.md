@@ -11,32 +11,29 @@ page covers and this page decides how it is written; list any conflict in your r
 
 ## The reader
 
-Someone who installed `@deckster/cli` 0.6.0 from npm (`npm install --global @deckster/cli`, Node
+Someone who installed `@deckster/cli` 0.6.1 from npm (`npm install --global @deckster/cli`, Node
 26 or later) and works in a folder of their own with `decks/` and maybe `brands/`. They have never
 seen the deckster repository, and often they are directing an AI agent (Claude Code, Codex) that
 writes the slides while they review. Write for that person: what to type, what they will see,
 what to tell their agent.
 
-## Ground truth: v0.6.0, run it
+## Ground truth: v0.6.1, run it
 
-- The pages describe `@deckster/cli` **0.6.0** as published on npm. The code is the tag
-  `v0.6.0`, on commit `5ee4926` on `main` (the merge of the docs gallery fix, which changes only
-  `scripts/docs/ui-shots.ts` after the brand layouts merge `67418e3`, itself after the version
-  bump `9cc40bc`).
+- The pages describe the npm release `@deckster/cli@0.6.1`. Its tag is `v0.6.1`.
   Read files at the tag
-  (`git -C ../2026-11-13-presentation show v0.6.0:<path>`), because `main` and the working tree
-  move on after a release. Pages written before 0.6.0 were checked against 0.5.0 (commit
+  (`git -C ../2026-11-13-presentation show v0.6.1:<path>`), because `main` and the working tree
+  move on after a release. Earlier pages were checked against 0.6.0 (commit `5ee4926`), 0.5.0 (commit
   `7dc64ea`), 0.4.0 (commit `50e5d19`) or 0.3.0 (commit `4e0b186`); a statement that names one of
   them says which version was measured.
-- **Every command and every output block on a page was run by you against 0.6.0.** Install it
+- **Run new or changed commands against 0.6.1 and verify their output.** Install it
   once in a scratch folder and run it from a fresh workspace:
 
   ```sh
-  npm install --prefix "$TMPDIR/deck-0.6.0" @deckster/cli@0.6.0
+  npm install --prefix "$TMPDIR/deck-0.6.1" @deckster/cli@0.6.1
   mkdir -p "$TMPDIR/talks" && cd "$TMPDIR/talks"
   export DECK_ROOT="$PWD"                      # the CLI climbs to the nearest folder with decks/
-  export PATH="$TMPDIR/deck-0.6.0/node_modules/.bin:$PATH"
-  deck --version                               # 0.6.0
+  export PATH="$TMPDIR/deck-0.6.1/node_modules/.bin:$PATH"
+  deck --version                               # 0.6.1
   ```
 
   Before a release is on npm, pack the CLI as the publish workflow does
@@ -121,14 +118,14 @@ what to tell their agent.
 ## Code and output
 
 - Commands in `sh` fences; command plus output in `console` fences with a `$ ` prompt. Paste
-  output exactly as 0.6.0 printed it. Cut long output with a line `...` and say so in prose. Run
+  output exactly as the documented release printed it. Cut long output with a line `...` and say so in prose. Run
   from inside the workspace, so no `Using the workspace ...` line or scratch path appears; call
   the workspace `talks` and the example deck by a plain name such as `launch-review`.
 - Slide source goes in `mdx` or `tsx` fences. Deck components (`<Notes>`, `<Step>`, `<Flow>`,
   ...) never appear as live tags on a page: the site has its own `Step`, `Steps`, `LinkCard` and
   `Aside`, and the rest are not registered. Inline, write them in backticks: `<Notes>`.
 - Prefer real source: show a slide from a published deck (`slides.json` has every slide's source)
-  over an invented one. If you invent one, lint it with 0.6.0 first.
+  over an invented one. If you invent one, lint it with the documented release first.
 
 ## Site components
 
@@ -175,7 +172,7 @@ From `AGENT.md`: internal links from the site root, no base path, trailing slash
 `/decks/<name>/#/<slide>`; never a bare `/decks/`; source files as
 `https://github.com/sandrinodm/deckster/blob/main/<path>`. Link the first mention of a concept that
 has its own page, once per page. A layout links to its own page, `/reference/layouts/<name>/`, never to an
-anchor on `/reference/layouts/`. Only the nine published decks and five published brands may
+anchor on `/reference/layouts/`. Only the ten published decks and five published brands may
 appear on any page, in examples or screenshots.
 
 ## New in v0.6.0, and newer than the release
@@ -197,9 +194,9 @@ slide's frontmatter, `deck export --include-hidden`, the `hidden` field of `deck
 of `window.__deck.slides`; owned by `/write-slides/hidden-slides/`), and embed mode (`?embed`) and
 diagram looks and cards (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` in `brand.ts`,
 `card="..."` on diagram parts, `diagram-card-missing`) are new in 0.4.0. Every other behaviour you
-describe must be in 0.6.0. Something on `main` that is newer than the release is left out, or,
+describe must be in the documented release. Something on `main` that is newer than the release is left out, or,
 where a brief asks for it, mentioned in one or two sentences inside
-`<Aside type="note" title="Not in v0.6.0">`; if `main` or the working tree differs from the
+`<Aside type="note" title="Not in v0.6.1">`; if `main` or the working tree differs from the
 release, describe the release and report the difference.
 
 ## Your report

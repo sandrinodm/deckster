@@ -49,13 +49,11 @@ jobs:
       # It is the tag of the release the pages document (src/data/meta.json),
       # so the data check below compares the committed src/data with that
       # release, and a later change on main does not fail this branch. The
-      # pages document v0.6.0, whose data was synced from the tag's commit
-      # 5ee4926 (src/data/meta.json); the tag must be on a commit that
-      # generates the same src/data. v0.4.0 was the first release with the docs scripts
+      # pages and generated data must match this tag. v0.4.0 was the first release with the docs scripts
       # (scripts/docs/) and the ?embed mode DeckEmbed loads, so any later tag
       # works here. When the pages move to a new release, change this tag,
       # sync the data against it and commit both together.
-      DECKSTER_REF: v0.6.0
+      DECKSTER_REF: v0.6.1
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

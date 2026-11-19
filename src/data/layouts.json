@@ -5189,7 +5189,7 @@
       "source": "@deckster/kit",
       "fallback": null,
       "label": null,
-      "description": "Four named lists in a full-height, ruled two-by-two grid, from `quadrants:` in reading order: top left, top right, bottom left, bottom right. Each box has a `title`, one to four short `items` as bullets and an optional `icon` from the brand set. Set `highlight: true` on at most one quadrant to give it a nested surface and an accessible highlight label; the headings and bullets identify each category without colour. `reveal: true` brings in one whole box per click. Use it for SWOT, keep/stop/start/try, or any four categories that each need their own list. Use matrix when items are positions on two axes, columns for a board of two to four lanes, cards for equal options with one sentence each, and comparison when options are measured on the same rows.",
+      "description": "Four named lists in a full-height, ruled two-by-two grid, from `quadrants:` in reading order: top left, top right, bottom left, bottom right. Each box has a `title`, one to four short `items` as bullets and an optional `icon` from the brand set. Set `highlight: true` on at most one quadrant to give it a nested surface and an accessible highlight label; the headings and bullets identify each category without colour. `reveal: true` brings in one whole box per click. Use it for SWOT, keep/stop/start/try, or any four categories that each need their own list. Use matrix when items are positions on two axes, columns for a board of two to four lanes, cards for equal options with one sentence each, and comparison when options are measured on the same rows. `labels.highlight` renames the prefix screen readers hear before the highlighted heading, for example `labels: { highlight: Priorität }`.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -5236,6 +5236,20 @@
             "minItems": 4,
             "maxItems": 4
           },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "highlight": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "highlight": "Highlighted"
+            }
+          },
           "reveal": {
             "type": "boolean",
             "default": false
@@ -5262,6 +5276,14 @@
           "default": null,
           "allowed": null,
           "hint": "List exactly 4 boxes in reading order, each with `title` (up to 24 characters), `items` (1 to 4 bullets, each up to 40 characters), and optionally `icon` (a name from the brand set, such as leaf, or tabler:leaf). Give an icon to all four boxes or to none. Set `highlight: true` on at most one box to emphasize it, or omit it for equal weight."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "highlight": "Highlighted"
+          },
+          "allowed": null,
+          "hint": "An optional replacement for `highlight` (Highlighted), the screen-reader prefix of the highlighted box's heading, 1 to 24 characters; it is never drawn. An omitted key keeps its English default. For example, `labels: { highlight: Priorität }`."
         },
         "reveal": {
           "required": false,
@@ -5318,6 +5340,9 @@
         "frontmatter": {
           "title": "Keep the care that makes new trees survive",
           "eyebrow": "Season review",
+          "labels": {
+            "highlight": "Highlighted"
+          },
           "quadrants": [
             {
               "title": "Keep",
@@ -5348,7 +5373,7 @@
           ]
         },
         "body": "The next planting season starts with a funded care plan.\n\n<Footnote>Programme team review of the 2026 season.</Footnote>\n\n<Notes>\nRead keep and stop first, then the two actions for the next season.\n</Notes>\n",
-        "mdx": "---\nlayout: quadrants\ntitle: Keep the care that makes new trees survive\neyebrow: Season review\nquadrants:\n  - title: Keep\n    items:\n      - Three summers of watering\n      - A named street warden\n  - title: Stop\n    items:\n      - Planting without a care budget\n  - title: Start\n    items:\n      - Weekly checks in dry spells\n    highlight: true\n  - title: Try\n    items:\n      - Shared hose carts on each block\n---\n\nThe next planting season starts with a funded care plan.\n\n<Footnote>Programme team review of the 2026 season.</Footnote>\n\n<Notes>\nRead keep and stop first, then the two actions for the next season.\n</Notes>\n"
+        "mdx": "---\nlayout: quadrants\ntitle: Keep the care that makes new trees survive\neyebrow: Season review\nlabels:\n  highlight: Highlighted\nquadrants:\n  - title: Keep\n    items:\n      - Three summers of watering\n      - A named street warden\n  - title: Stop\n    items:\n      - Planting without a care budget\n  - title: Start\n    items:\n      - Weekly checks in dry spells\n    highlight: true\n  - title: Try\n    items:\n      - Shared hose carts on each block\n---\n\nThe next planting season starts with a funded care plan.\n\n<Footnote>Programme team review of the 2026 season.</Footnote>\n\n<Notes>\nRead keep and stop first, then the two actions for the next season.\n</Notes>\n"
       },
       "pptx": {
         "type": "title-only",
@@ -7716,7 +7741,7 @@
       "source": "@deckster/kit",
       "fallback": null,
       "label": null,
-      "description": "A question to the room: the title poses one specific question and `options:` gives two to four short choices, lettered A to D in order. `answer:` names the right letter. All choices show first; the next step marks the answer with an accent panel and a tick, quiets the other choices and shows the optional `explanation:` underneath. The space is reserved so nothing moves when the answer arrives. `reveal` defaults to true; set it to false for an answered recap. Short options use tiles; longer options use full-width rows. A plain export shows the answer; a per-step export (`--steps`) shows the question, then the answer. Use it to test an assumption or invite a quick knowledge check before giving the reason. Use cards for parallel ideas with no right answer, comparison for alternatives measured on shared rows, and content for an open question without fixed choices.",
+      "description": "A question to the room: the title poses one specific question and `options:` gives two to four short choices, lettered A to D in order. `answer:` names the right letter. All choices show first; the next step marks the answer with an accent panel and a tick, quiets the other choices and shows the optional `explanation:` underneath. The space is reserved so nothing moves when the answer arrives. `reveal` defaults to true; set it to false for an answered recap. Short options use tiles; longer options use full-width rows. A plain export shows the answer; a per-step export (`--steps`) shows the question, then the answer. Use it to test an assumption or invite a quick knowledge check before giving the reason. Use cards for parallel ideas with no right answer, comparison for alternatives measured on shared rows, and content for an open question without fixed choices. `labels` renames what screen readers hear for the choice list and the tick, for example `labels: { correct: Richtige Antwort }`.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -7748,6 +7773,26 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 100
+          },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "choices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "correct": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "choices": "Answer choices",
+              "correct": "Correct answer"
+            }
           },
           "reveal": {
             "type": "boolean",
@@ -7793,6 +7838,15 @@
           "default": null,
           "allowed": null,
           "hint": "Give the reason in up to 100 characters; it appears with the answer."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "choices": "Answer choices",
+            "correct": "Correct answer"
+          },
+          "allowed": null,
+          "hint": "Optional replacements for `choices` (Answer choices), the screen-reader name of the choice list, and `correct` (Correct answer), the name of the tick on the answer, each 1 to 24 characters; neither is drawn. Omitted keys keep their English defaults. For example, `labels: { correct: Richtige Antwort }`."
         },
         "reveal": {
           "required": false,
@@ -7856,10 +7910,14 @@
           ],
           "answer": "B",
           "explanation": "Planting starts the work; water and regular checks carry it through the first three summers.",
+          "labels": {
+            "choices": "Answer choices",
+            "correct": "Correct answer"
+          },
           "reveal": true
         },
         "body": "<Notes>Ask for a show of hands, then reveal B and explain the care commitment.</Notes>\n",
-        "mdx": "---\nlayout: quiz\ntitle: \"What keeps a young street tree alive?\"\neyebrow: A question for the room\noptions:\n  - A taller stake\n  - Three summers of watering\n  - A bigger planting day\nanswer: B\nexplanation: \"Planting starts the work; water and regular checks carry it through the first three summers.\"\nreveal: true\n---\n\n<Notes>Ask for a show of hands, then reveal B and explain the care commitment.</Notes>\n"
+        "mdx": "---\nlayout: quiz\ntitle: \"What keeps a young street tree alive?\"\neyebrow: A question for the room\noptions:\n  - A taller stake\n  - Three summers of watering\n  - A bigger planting day\nanswer: B\nexplanation: \"Planting starts the work; water and regular checks carry it through the first three summers.\"\nlabels:\n  choices: Answer choices\n  correct: Correct answer\nreveal: true\n---\n\n<Notes>Ask for a show of hands, then reveal B and explain the care commitment.</Notes>\n"
       },
       "pptx": {
         "type": "title-only",
@@ -8321,7 +8379,7 @@
       "source": "@deckster/kit",
       "fallback": null,
       "label": null,
-      "description": "A plan across time: three to six named lanes share an axis of three to eight labelled periods. Each lane has one or two duration bars, with inclusive one-based from/to period indexes and optional labels above their bars. A labelled now marker sits at the centre of its period; current marks a lane with an arrow and stronger bars. Use it to show parallel delivery, a rollout or overlapping work. Reveal lanes one per click. Use timeline for dated milestones without durations, steps for a sequence without dates, or columns for a Now / Next / Later board without a measured axis. Use table for a timetable with exact dates per row.",
+      "description": "A plan across time: three to six named lanes share an axis of three to eight labelled periods. Each lane has one or two duration bars, with inclusive one-based from/to period indexes and optional labels above their bars. A labelled now marker sits at the centre of its period; current marks a lane with an arrow and stronger bars. Use it to show parallel delivery, a rollout or overlapping work. Reveal lanes one per click. Use timeline for dated milestones without durations, steps for a sequence without dates, or columns for a Now / Next / Later board without a measured axis. Use table for a timetable with exact dates per row. `labels` renames the now marker and the words read to screen readers, for example `labels: { now: Heute }`.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -8400,6 +8458,32 @@
             "minimum": 1,
             "maximum": 6
           },
+          "labels": {
+            "type": "object",
+            "properties": {
+              "now": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 6
+              },
+              "nowPeriod": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "through": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              }
+            },
+            "additionalProperties": true,
+            "default": {
+              "now": "Now",
+              "nowPeriod": "now",
+              "through": "through"
+            }
+          },
           "reveal": {
             "type": "boolean",
             "default": false
@@ -8438,13 +8522,23 @@
           "required": false,
           "default": null,
           "allowed": null,
-          "hint": "Set now to a period index from 1 to 8 within the actual axis to label its centre Now; omit it for no marker."
+          "hint": "Set now to a period index from 1 to 8 within the actual axis to label its centre Now, or `labels.now`; omit it for no marker."
         },
         "current": {
           "required": false,
           "default": null,
           "allowed": null,
           "hint": "Set current to the number of the lane the talk is on, or the one at now, from 1 to 6 within the actual list, to mark it with an arrow and stronger bars."
+        },
+        "labels": {
+          "required": false,
+          "default": {
+            "now": "Now",
+            "nowPeriod": "now",
+            "through": "through"
+          },
+          "allowed": null,
+          "hint": "Optional replacements for `now` (Now), the marker drawn at the now period, 1 to 6 characters; `nowPeriod` (now), read in parentheses after that period; and `through` (through), read between the first and last period of each bar. The two read words are never drawn, 1 to 24 characters each. Omitted keys keep their English defaults. For example, `labels: { now: Heute }`."
         },
         "reveal": {
           "required": false,
@@ -8540,6 +8634,11 @@
           ],
           "current": 2,
           "now": 2,
+          "labels": {
+            "now": "Now",
+            "nowPeriod": "now",
+            "through": "through"
+          },
           "lanes": [
             {
               "name": "Survey",
@@ -8574,7 +8673,7 @@
           ]
         },
         "body": "<Notes>Survey work overlaps the start of planting; care continues after the crews move on.</Notes>\n",
-        "mdx": "---\nlayout: schedule\ntitle: Three crews carry the planting season\nperiods:\n  - Jan\n  - Feb\n  - Mar\n  - Apr\ncurrent: 2\nnow: 2\nlanes:\n  - name: Survey\n    bars:\n      - from: 1\n        to: 2\n        label: Site visits\n  - name: Planting\n    bars:\n      - from: 2\n        to: 4\n        label: Eastgate\n  - name: Tree care\n    bars:\n      - from: 2\n        to: 4\n        label: Watering\n---\n\n<Notes>Survey work overlaps the start of planting; care continues after the crews move on.</Notes>\n"
+        "mdx": "---\nlayout: schedule\ntitle: Three crews carry the planting season\nperiods:\n  - Jan\n  - Feb\n  - Mar\n  - Apr\ncurrent: 2\nnow: 2\nlabels:\n  now: Now\n  nowPeriod: now\n  through: through\nlanes:\n  - name: Survey\n    bars:\n      - from: 1\n        to: 2\n        label: Site visits\n  - name: Planting\n    bars:\n      - from: 2\n        to: 4\n        label: Eastgate\n  - name: Tree care\n    bars:\n      - from: 2\n        to: 4\n        label: Watering\n---\n\n<Notes>Survey work overlaps the start of planting; care continues after the crews move on.</Notes>\n"
       },
       "pptx": {
         "type": "title-only",

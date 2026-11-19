@@ -38,6 +38,8 @@ Not `deck.config.ts` itself, stylesheets, `.ts` helper modules, the brand or any
 
 ## After the turn
 
+With `@deckster/cli` 0.6.1, editing an existing slide in place keeps the deck page open. You can watch the updated slide and keep the agent panel open through the edit and Undo. Adding, removing or renaming a slide file changes the slide list, so the dev server reloads the manifest. Changing the deck config also triggers a reload. If the page loaded the config or brand while a turn held that code, the server reloads it when the hold ends.
+
 The deck is linted, and the result is compared with the lint from before the turn, so findings that were already there are not blamed on it. When the turn brought new errors, one follow-up turn is queued to fix them, never a second one.
 
 ## Undo

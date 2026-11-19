@@ -121,7 +121,7 @@ It also refuses to replace a folder that has files in it but no `.deck-site` mar
 A built deck or site is plain HTML, JavaScript, CSS, fonts and pictures. Any static host can serve it, including GitHub Pages, Cloudflare Pages, Netlify and Vercel: give the host the output folder (`site/`, or `decks/<deck>/dist/`) as what to publish. You can upload a folder you built locally, or let the host build it with your workspace's own commands:
 
 ```sh
-npm install --global @deckster/cli@0.6.0
+npm install --global @deckster/cli@0.6.1
 npx playwright@1.65.0 install chromium
 deck build --all --out site
 ```
@@ -151,7 +151,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 26
-      - run: npm install --global @deckster/cli@0.6.0
+      - run: npm install --global @deckster/cli@0.6.1
       - run: npx playwright@1.65.0 install chromium --with-deps
       - run: deck build --all --out site
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
@@ -181,6 +181,17 @@ A hosted deck has no login. Anyone with the URL can open it, and a site's galler
 
 A build keeps the presenter tools, such as the presenter window, the sidebar and the overview (see [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/)); only reordering slides in the sidebar is limited to `deck dev`. It leaves out everything that needs the dev server: review comments and comment mode, the agent panel and the tools agents connect to. Nobody who opens a hosted deck can leave comments or change it.
 
-<Aside type="note" title="New in v0.4.0">
-A built deck opened with `?embed` in its address, before the `#` (`?embed#/3` opens slide 3), is meant for an iframe on another page: it shows the slides without the presenter tools, with a small previous and next control and a link that opens the whole deck in a new tab. [Deck URL and `window.__deck`](/reference/deck-api/#query-parameters) has the details.
-</Aside>
+## Embed a slide on another page
+
+Embed mode is available from v0.4.0. Use the hosted deck address as the iframe source, put `?embed` before the hash, and use a slide ID to keep the link pointing at that slide when you reorder the deck. This example opens the Fieldnote part divider on this site:
+
+```html
+<iframe
+  title="Street trees, ten years on"
+  src="https://sandrinodm.github.io/deckster/decks/brand-layouts/?embed#/part-one"
+  loading="lazy"
+  style="width: 100%; aspect-ratio: 16 / 9; border: 0;"
+></iframe>
+```
+
+Readers can step through the deck using the previous and next buttons or focus the deck to use the arrow keys. **Open full deck** opens the current position in a new tab. To start at a particular build, append the zero-based step to the slide ID, for example `?embed#/part-one/0`. See [deck URL parameters](/reference/deck-api/#query-parameters).
