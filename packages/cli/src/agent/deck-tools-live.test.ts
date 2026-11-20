@@ -64,8 +64,14 @@ const writingBrowser = Layer.effect(
  * @param root - The workspace.
  * @param deck - The deck folder name.
  * @param browser - The fake browser.
+ * @param brand - The live session's brand override.
  */
-function tools(root: string, deck: string, browser: Layer.Layer<DeckBrowser> = writingBrowser) {
+function tools(
+  root: string,
+  deck: string,
+  browser: Layer.Layer<DeckBrowser> = writingBrowser,
+  brand?: string,
+) {
   const pageLink = createPageLink();
   const listeners = new Map<string, PageListener>();
   pageLink.attach({
@@ -92,7 +98,7 @@ function tools(root: string, deck: string, browser: Layer.Layer<DeckBrowser> = w
   };
   const api = deckToolsLive({
     deck,
-    brand: undefined,
+    brand,
     pageLink,
     server: { url: () => 'http://127.0.0.1:1/', compile: () => Effect.succeed([]) },
   }).pipe(
@@ -430,6 +436,38 @@ describe('live deck tools that need the page or write files', () => {
       expect(afterMissing.message).toContain('no slide "zzz"');
       fs.rmSync(root, { recursive: true, force: true });
     }).pipe(Effect.provide(NodeServices.layer)),
+  );
+
+  it.effect('scaffolds a layout from the live session’s brand override', () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        const brand = 'weak-accent';
+        const root = scratchWorkspace('deck-tools-brand-override-', [brand]);
+        yield* Effect.addFinalizer(() =>
+          Effect.sync(() => fs.rmSync(root, { recursive: true, force: true })),
+        );
+        const layout = {
+          name: 'brand-note',
+          description: 'A note with room for body text.',
+          fallback: 'default',
+          title: { box: [120, 80, 1680, 160] },
+          regions: [{ bind: { slot: 'body' }, box: [120, 300, 1680, 600] }],
+        };
+        fs.writeFileSync(
+          path.join(root, 'brands', brand, 'layouts.ts'),
+          `export default ${JSON.stringify([layout])};\n`,
+        );
+        yield* createDeck(root, 'demo', 'Demo');
+        const live = yield* tools(root, 'demo', writingBrowser, brand).api;
+        const slide = yield* live.newSlide({ layout: layout.name, id: 'note' });
+        expect(fs.readFileSync(path.join(root, slide.file), 'utf8')).toContain(
+          'layout: brand-note',
+        );
+        const config = fs.readFileSync(path.join(root, 'decks/demo/deck.config.ts'), 'utf8');
+        expect(config).toContain("brand: 'default'");
+        expect(config).toContain("'note'");
+      }),
+    ).pipe(Effect.provide(NodeServices.layer)),
   );
 
   it.effect('brings the agent turn’s working copy into the deck before lint reads it', () =>
