@@ -1,6 +1,7 @@
 import { useReadyHold, useSlide, useStatic, useStep } from '@deckster/engine';
 import { Children, isValidElement, useId, useMemo, useRef, type ReactNode } from 'react';
 
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { NodeExtras } from '#diagrams/flow-children.ts';
 import type { DiagramState, FlowEdgeSpec, FlowNodeSpec, PlayMode } from '#diagrams/flow-spec.ts';
 import type { Point } from '#diagrams/geometry.ts';
@@ -14,7 +15,9 @@ import {
   type DescribeInput,
   type DescribeNode,
 } from '#diagrams/describe-diagram.ts';
+import { preferredNodeWidths } from '#diagrams/diagram-design.ts';
 import { DiagramFrame } from '#diagrams/diagram-frame.tsx';
+import { diagramIcon } from '#diagrams/diagram-icons.tsx';
 import { assertDiagramProps, formatProblems, normalizeState } from '#diagrams/diagram-props.ts';
 import { count } from '#diagrams/diagram-summary.ts';
 import {
@@ -43,7 +46,7 @@ import {
 } from '#diagrams/sequence-layout.ts';
 import { useDiagramDescription } from '#diagrams/use-description.ts';
 import { useElementSize, type ElementSize } from '#diagrams/use-element-size.ts';
-import { useKindIcons } from '#diagrams/use-kind-icons.ts';
+import { useNodeIcons } from '#diagrams/use-kind-icons.ts';
 import { useMeasurementEffect, useMeasurementState } from '#diagrams/use-measurements.ts';
 import { useMotionPlans } from '#diagrams/use-motion-plans.ts';
 import { smartPunctuation } from '#foundation/smart-punctuation.ts';
@@ -58,6 +61,11 @@ const NON_ID_CHARACTERS = /[^a-z0-9]/gi;
  * Props of {@link SequenceDiagram}.
  */
 export type SequenceDiagramProps = {
+  /**
+   * Horizontal placement of a compact drawing; otherwise follows the brand.
+   */
+  align?: DiagramAlign;
+
   /**
    * An id for the export description.
    */
@@ -104,35 +112,13 @@ export function SequenceDiagram({
   id,
   title,
   height,
+  align,
   card,
   children,
 }: SequenceDiagramProps): ReactNode {
   const parsed = useMemo(() => parseSequence(children), [children]);
   const { actors, messages } = parsed;
-  const kindIcons = useKindIcons(
-    actors.map((actor) => {
-      const extra = parsed.extras.get(actor.id);
-      return { kind: actor.kind, settled: extra?.icon !== undefined || extra?.iconless === true };
-    }),
-  );
-  const extras = useMemo(() => {
-    if (kindIcons.size === 0) {
-      return parsed.extras;
-    }
-
-    return new Map(
-      actors.map((actor) => {
-        const extra = parsed.extras.get(actor.id) ?? {};
-        const icon = kindIcons.get(actor.kind);
-        return [
-          actor.id,
-          extra.icon === undefined && extra.iconless !== true && icon !== undefined
-            ? { ...extra, icon }
-            : extra,
-        ];
-      }),
-    );
-  }, [actors, parsed.extras, kindIcons]);
+  const extras = useNodeIcons(actors, parsed.extras);
   const step = useStep();
   const isStatic = useStatic();
   const { isActive } = useSlide();
@@ -141,7 +127,11 @@ export function SequenceDiagram({
   const tokens = useDiagramTokens(root);
   const cards = useMemo(() => actorCards(actors, tokens, card), [actors, tokens, card]);
   const key = JSON.stringify({ actors, messages });
-  const boxWidth = measuredActorWidth(actors.length, size, tokens);
+  const boxWidth = measuredActorWidth(actors, size, tokens);
+  const actorWidths = useMemo(
+    () => preferredNodeWidths(actors, tokens?.node.width ?? 0, actorWidth(tokens)),
+    [actors, tokens],
+  );
   const cardNames =
     tokens === undefined ? '' : [...cards.values()].map((one) => one.name).join(' ');
   const measureKey = `${key}|${Math.round(boxWidth)}|${cardNames}`;
@@ -151,18 +141,16 @@ export function SequenceDiagram({
       return undefined;
     }
 
-    return layoutSequence(
-      actors.map((actor) => actor.id),
+    return placeSequence({
+      actors,
       messages,
       size,
-      {
-        ...actorSpacing(tokens),
-        actorHeight: measurements.nodeHeight,
-        rowMax: tokens.type.caption * ROW_MAX_CAPTIONS,
-        loopWidth: tokens.space.xl,
-      },
-    );
-  }, [actors, messages, size, tokens, measurements]);
+      tokens,
+      actorWidths,
+      measuredHeight: measurements.nodeHeight,
+      align: align ?? tokens.align,
+    });
+  }, [actors, messages, size, tokens, measurements, align, actorWidths]);
   useMeasurementEffect(root, measureKey, layout, dispatch);
   useReadyHold(layout === undefined || !settled);
   const reduced = useReducedMotion();
@@ -226,7 +214,14 @@ export function SequenceDiagram({
         ]}
       />
       {layout === undefined || tokens === undefined ? (
-        <MeasureActors actors={actors} cards={cards} extras={extras} width={boxWidth} />
+        <MeasureActors
+          actors={actors}
+          cards={cards}
+          extras={extras}
+          width={boxWidth}
+          widths={actorWidths}
+          subtitleStep={tokens?.text.subtitle ?? 'caption'}
+        />
       ) : (
         <SequenceDrawing
           actors={actors}
@@ -346,8 +341,53 @@ function actorWidth(tokens: DiagramTokens | undefined): number {
  *
  * @param tokens - The brand's values.
  */
-function actorSpacing(tokens: DiagramTokens): { actorMaxWidth: number; gutter: number } {
-  return { actorMaxWidth: actorWidth(tokens), gutter: tokens.space.xl };
+function actorSpacing(
+  tokens: DiagramTokens,
+  actors: readonly FlowNodeSpec[],
+): { actorMaxWidth: number; gutter: number } {
+  const width = tokens.node.width || actorWidth(tokens);
+  const actorMaxWidth =
+    actors.length === 0 ? width : Math.max(...actors.map((actor) => actor.width ?? width));
+  return { actorMaxWidth, gutter: tokens.space.xl };
+}
+
+/**
+ * Places the sequence with its measured actor heights and reserves room for labels when compact.
+ */
+function placeSequence(input: {
+  actors: readonly FlowNodeSpec[];
+  messages: readonly ParsedMessage[];
+  size: ElementSize;
+  tokens: DiagramTokens;
+  actorWidths: ReadonlyMap<string, number>;
+  measuredHeight: number;
+  align: DiagramAlign | undefined;
+}): SequenceLayout {
+  const { actors, messages, size, tokens, actorWidths, measuredHeight, align } = input;
+  const actorsById = actors.map((actor) => actor.id);
+  const layoutMessages =
+    align === undefined
+      ? messages
+      : messages.map((message) => {
+          const labelWidth =
+            message.label === undefined
+              ? 0
+              : tokens.measureEdgeLabel(smartPunctuation(message.label)) + 2 * tokens.space.xs;
+          return { ...message, labelWidth };
+        });
+  const actorHeight = Math.max(
+    measuredHeight,
+    ...actors.map((actor) => actor.height ?? tokens.node.height),
+  );
+  return layoutSequence(actorsById, layoutMessages, size, {
+    ...actorSpacing(tokens, actors),
+    align,
+    actorWidths,
+    actorHeight,
+    rowMax: tokens.type.caption * ROW_MAX_CAPTIONS,
+    loopWidth: tokens.space.xl,
+    loopLabelGap: tokens.space.xs,
+  });
 }
 
 /**
@@ -360,7 +400,7 @@ function actorSpacing(tokens: DiagramTokens): { actorMaxWidth: number; gutter: n
  * @param tokens - The brand's values, once read.
  */
 function measuredActorWidth(
-  actorCount: number,
+  actors: readonly FlowNodeSpec[],
   size: ElementSize | undefined,
   tokens: DiagramTokens | undefined,
 ): number {
@@ -368,7 +408,7 @@ function measuredActorWidth(
     return actorWidth(tokens);
   }
 
-  return sequenceActorWidth(actorCount, size.width, actorSpacing(tokens));
+  return sequenceActorWidth(actors.length, size.width, actorSpacing(tokens, actors));
 }
 
 /**
@@ -380,6 +420,16 @@ const DEFAULT_CAPTION_PX = 24;
  * Props of {@link MeasureActors}.
  */
 type MeasureActorsProps = {
+  /**
+   * Typography step used by default for actor subtitles.
+   */
+  subtitleStep: DiagramTokens['text']['subtitle'];
+
+  /**
+   * Any actor-specific caps on the width of a track.
+   */
+  widths: ReadonlyMap<string, number>;
+
   /**
    * The actors.
    */
@@ -404,7 +454,14 @@ type MeasureActorsProps = {
 /**
  * Renders every actor, hidden, so the first layout knows how tall the actor boxes are.
  */
-function MeasureActors({ actors, cards, extras, width }: MeasureActorsProps): ReactNode {
+function MeasureActors({
+  actors,
+  cards,
+  extras,
+  width,
+  widths,
+  subtitleStep,
+}: MeasureActorsProps): ReactNode {
   return (
     <div className="kit-flow-html" aria-hidden="true" data-measuring="true">
       {actors.map((actor) => (
@@ -413,10 +470,16 @@ function MeasureActors({ actors, cards, extras, width }: MeasureActorsProps): Re
           node={actor}
           card={cardOf(cards, actor)}
           extras={extras.get(actor.id)}
-          rect={{ x: 0, y: 0, width, height: 0 }}
+          rect={{
+            x: 0,
+            y: 0,
+            width: Math.min(width, widths.get(actor.id) ?? width),
+            height: 0,
+          }}
           inset={{ top: 0, right: 0, bottom: 0, left: 0 }}
           frame={{ visible: false, state: 'default', arrival: false }}
           dimmed={false}
+          subtitleStep={subtitleStep}
           arrivalDelay={0}
         />
       ))}
@@ -557,6 +620,7 @@ function SequenceDrawing({
               frame={{ visible: shown(message), tone: messageTone(message, index, state.current) }}
               dimmed={false}
               stroke={tokens.edge.stroke}
+              lineStyle={tokens.edge.lineStyle}
               arrow={tokens.edge.arrow}
             />
           );
@@ -601,6 +665,7 @@ function SequenceDrawing({
               extras={extras.get(actor.id)}
               rect={placed.rect}
               inset={placed.geometry.inset}
+              subtitleStep={tokens.text.subtitle}
               frame={actorFrame(actor, playing)}
               dimmed={false}
               arrivalDelay={state.arrival}
@@ -809,11 +874,13 @@ function parseSequence(children: ReactNode): {
         kind: (props.kind === undefined ? undefined : resolveNodeKind(props.kind)) ?? 'node',
         title: props.title ?? props.id,
         ...optional('subtitle', props.subtitle),
+        ...optional('width', props.width),
+        ...optional('height', props.height),
         state: 'default',
         ...optional('card', props.card),
       });
       extras.set(props.id, {
-        ...optional('icon', typeof props.icon === 'function' ? props.icon : undefined),
+        ...optional('icon', diagramIcon(props.icon)),
         ...(props.icon === 'none' ? { iconless: true } : {}),
       });
       continue;
@@ -828,6 +895,8 @@ function parseSequence(children: ReactNode): {
         to: props.to,
         ...optional('label', props.label),
         dashed: props.reply === true || props.async === true,
+        ...optional('lineStyle', props.lineStyle),
+        ...optional('strokeWidth', props.strokeWidth),
         route: 'orthogonal',
         arrow: 'end',
         ...optional('at', props.at),

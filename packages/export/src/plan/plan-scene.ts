@@ -2,6 +2,7 @@ import type { ChartPlan } from '#pptx/chart-model.ts';
 import type {
   BoxNode,
   ChartNode,
+  ImageNode,
   RasterHint,
   SceneNode,
   ScenePaint,
@@ -80,6 +81,11 @@ export type PlanItem =
        * The node.
        */
       node: SceneNode;
+
+      /**
+       * Image icons and picture fallbacks placed within the diagram's native shapes.
+       */
+      diagramIcons?: readonly PlanItem[];
     }
   | {
       /**
@@ -263,7 +269,8 @@ export function planScene(
       continue;
     }
 
-    items.push(...planNode(node, mode, notes, charts));
+    const icons = node.kind === 'diagram' ? diagramAssets(node.id, scene.nodes, byId) : [];
+    items.push(...planNode(node, mode, notes, charts, icons));
   }
 
   return { items, background, notes };
@@ -276,12 +283,14 @@ export function planScene(
  * @param mode - The export mode.
  * @param notes - Collects notes.
  * @param charts - How each chart is drawn.
+ * @param icons - Any icons in this diagram needing image assets.
  */
 function planNode(
   node: SceneNode,
   mode: ExportMode,
   notes: PlanNote[],
   charts: ChartPlans,
+  icons: readonly (ImageNode | SvgNode)[] = [],
 ): PlanItem[] {
   const dropped = node.hints.filter((hint) => hint.scope === 'subtree');
   if (dropped.length > 0) {
@@ -316,7 +325,12 @@ function planNode(
     case 'diagram': {
       const planned = diagramPlanNote(node.diagram);
       notes.push(note(node, planned.outcome, planned.why));
-      return isDrawableDiagram(node.diagram) ? [{ kind: 'native', node }] : [];
+      if (!isDrawableDiagram(node.diagram)) {
+        return [];
+      }
+
+      const diagramIcons = icons.flatMap((icon) => planNode(icon, mode, notes, charts));
+      return [{ kind: 'native', node, ...(diagramIcons.length === 0 ? {} : { diagramIcons }) }];
     }
 
     case 'media': {
@@ -329,6 +343,27 @@ function planNode(
       return [{ kind: 'native', node }];
     }
   }
+}
+
+/**
+ * Finds marked artwork the native diagram writer needs the image pipeline for.
+ *
+ * @param diagramId - The id of the diagram's scene node.
+ * @param nodes - The scene's nodes.
+ * @param byId - Finds an element's parent.
+ */
+function diagramAssets(
+  diagramId: number,
+  nodes: readonly SceneNode[],
+  byId: ParentOf,
+): (ImageNode | SvgNode)[] {
+  const diagram = new Set([Math.floor(diagramId)]);
+  return nodes.filter(
+    (node): node is ImageNode | SvgNode =>
+      (node.kind === 'image' || (node.kind === 'svg' && node.shapes === null)) &&
+      node.diagramIcon === true &&
+      isInside(node, diagram, byId),
+  );
 }
 
 /**

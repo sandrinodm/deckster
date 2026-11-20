@@ -797,6 +797,11 @@ const EDGE_OPTIONS: readonly DiagramCatalogEntry[] = [
     example: '<Edge from="orders" to="events" async />',
   },
   {
+    name: 'lineStyle / strokeWidth',
+    useWhen: "Vary an ordinary connector's line pattern or width in canvas pixels.",
+    example: '<Edge from="checkout" to="dispatch" lineStyle="dotted" strokeWidth={3} />',
+  },
+  {
     name: `route: ${EDGE_ROUTES.join(' | ')}`,
     useWhen:
       'orthogonal (the default) routes around nodes with rounded corners; ' +
@@ -867,9 +872,9 @@ const TSX: DiagramTsxGuide = {
    */
   icons:
     "`kind` icons resolve at run time from the brand's icon set, as in MDX. " +
-    '`icon` takes an icon component (`import Rocket from ' +
-    '\'~icons/lucide/rocket\'`) or "none"; a name string is resolved only in ' +
-    'MDX.',
+    "`icon` takes a component (`import Rocket from '~icons/lucide/rocket'`), an imported image " +
+    'URL (`import mark from \'./mark.svg?url\'`), an HTTPS image URL, or "none". ' +
+    'MDX also resolves Iconify names and bundles relative image paths.',
 
   /**
    * How mistakes are reported.

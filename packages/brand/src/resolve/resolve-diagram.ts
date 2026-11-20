@@ -1,6 +1,7 @@
 import type {
   CardSurfaceTokens,
   CardTokens,
+  DiagramTextTokens,
   DiagramTokens,
   Hex,
   ShadowTokens,
@@ -29,6 +30,7 @@ import {
   type CardShape,
   type DiagramCard,
   type DiagramRadius,
+  type DiagramTextSpec,
   type StandardCard,
   type SurfaceCardColors,
 } from '#schema/diagram-schema.ts';
@@ -111,7 +113,7 @@ const DIAGRAM_DEFAULTS = {
   /**
    * A hairline outline, solid, with the brand's large radius.
    */
-  groups: { stroke: 'hairline', dashed: false, radius: 'lg' },
+  groups: { stroke: 'hairline', radius: 'lg' },
 
   /**
    * Text on a knock-out.
@@ -122,7 +124,7 @@ const DIAGRAM_DEFAULTS = {
 /**
  * The built-in look of the standard `default` card: today's node, drawn from the surface's diagram
  * theme. A card of the brand's own starts from this look too (not from the brand's `default` entry,
- * which lends every card only its stroke, radius and title; see {@link cardTokens}).
+ * which lends every card its border geometry and typography; see {@link cardTokens}).
  */
 const DEFAULT_LOOK: CardLook = {
   /**
@@ -317,14 +319,13 @@ export function diagramCardNames(diagram: BrandDiagram | undefined): string[] {
 /**
  * Fills in the brand's `diagram` look from {@link DIAGRAM_DEFAULTS} and every card from its
  * built-in look (the standard `default` card's built-in look, for a card of the brand's own), with
- * only outline width, radius and title type inherited from the brand's `default` entry, turning
- * stroke and radius names into canvas pixels. A title family the brand does not have falls back to
- * the `title` step's family, and a `kinds` entry naming an unknown kind or card is left out; the
- * reference checks report both.
+ * border geometry and typography inherited from the brand's `default` entry. Stroke and radius
+ * names resolve to canvas pixels. Unknown family roles fall back to the type step's family, and a
+ * `kinds` entry naming an unknown kind or card is left out; the reference checks report both.
  *
  * @param diagram - The brand's `diagram` section, or `undefined` when it leaves it out.
  * @param shape - The brand's resolved shape, for strokes and radii.
- * @param typography - The brand's resolved typography, for title defaults and font stacks.
+ * @param typography - The brand's resolved typography, for defaults and font stacks.
  */
 export function resolveDiagram(
   diagram: BrandDiagram | undefined,
@@ -341,13 +342,27 @@ export function resolveDiagram(
     ([kind, card]) => KINDS.has(kind) && Object.hasOwn(cards, card),
   );
   return {
-    edges: { ...edges, stroke: shape.stroke[edges.stroke] },
+    align: diagram?.align,
+    edges: {
+      ...edges,
+      stroke: strokePx(edges.stroke, shape),
+      lineStyle: edges.lineStyle,
+      timelineStroke: typeof edges.stroke === 'number' ? edges.stroke : undefined,
+    },
     groups: {
-      stroke: groups.stroke === 'none' ? 0 : shape.stroke[groups.stroke],
-      dashed: groups.dashed,
+      stroke: groups.stroke === 'none' ? 0 : strokePx(groups.stroke, shape),
+      lineStyle: groups.lineStyle,
+      dashed:
+        groups.lineStyle === undefined ? groups.dashed === true : groups.lineStyle === 'dashed',
       radius: radiusPx(groups.radius, shape),
     },
     labels: { ...DIAGRAM_DEFAULTS.labels, ...diagram?.labels },
+    nodes: {
+      width: diagram?.nodes?.width ?? 0,
+      height: diagram?.nodes?.height ?? 0,
+      subtitle: textTokens(textSpec(diagram?.nodes?.subtitle), typography),
+    },
+    notes: textTokens(diagram?.notes ?? {}, typography),
     kinds: Object.fromEntries(kinds),
     cards,
   };
@@ -363,6 +378,7 @@ export const CARD_COLOR_FIELDS = [
   'subtext',
   'icon.color',
   'icon.fill',
+  'icon.border',
   'accent.color',
 ] as const;
 
@@ -502,10 +518,8 @@ function baseLook(name: string): CardLook {
 }
 
 /**
- * One card's geometry and title type. Paint, shadow, icon, accent and shape come from the card's
- * own entry over its base look. Outline width, radius and each title field come, last one winning,
- * from the built-in base, the brand's `default` entry, the fields a standard card sets for itself
- * ({@link STANDARD_GEOMETRY}) and the card's own entry, so a brand sets them once on `default`.
+ * One card's geometry and typography. Paint, shadow, icon, accent and shape come from the card's
+ * own entry over its base look. Outline geometry and text settings can be set once on `default`.
  *
  * @param name - The card name.
  * @param diagram - The brand's `diagram` section.
@@ -527,12 +541,18 @@ function cardTokens(
   const family = FAMILY_ROLES.find((role) => role === title.family) ?? titleStep.family;
   const stroke = card.stroke ?? standard.stroke ?? inherited.stroke ?? BASE_GEOMETRY.stroke;
   const radius = card.radius ?? standard.radius ?? inherited.radius ?? BASE_GEOMETRY.radius;
+  const iconBorderWidth = card.icon?.borderWidth;
+  const subtitle =
+    card.subtitle === null ? {} : { ...textSpec(inherited.subtitle), ...textSpec(card.subtitle) };
   return {
     stroke: shape.stroke[stroke],
+    borderStyle: card.borderStyle ?? inherited.borderStyle,
     radius: radiusPx(radius, shape),
     shape: card.shape ?? look.shape,
     shadow: card.shadow ?? look.shadow,
     icon: card.icon?.style ?? look.icon,
+    iconBorderWidth: iconBorderWidth === undefined ? undefined : strokePx(iconBorderWidth, shape),
+    iconBorderStyle: card.icon?.borderStyle,
     accent: {
       side: card.accent === undefined ? 'none' : (card.accent.side ?? DEFAULT_ACCENT_SIDE),
       width: shape.stroke[card.accent?.width ?? DEFAULT_ACCENT_WIDTH],
@@ -545,7 +565,28 @@ function cardTokens(
       tracking: title.tracking ?? titleStep.tracking,
       case: title.case ?? 'none',
     },
+    subtitle: textTokens(subtitle, typography),
   };
+}
+
+/**
+ * Normalizes a subtitle's type shorthand. Missing and cleared settings have no overrides.
+ */
+function textSpec(input: DiagramCard['subtitle']): DiagramTextSpec {
+  return typeof input === 'string' ? { type: input } : (input ?? {});
+}
+
+/**
+ * Resolves a written family role to its font stack and leaves other overrides optional.
+ */
+function textTokens(written: DiagramTextSpec, typography: TypographyTokens): DiagramTextTokens {
+  const { family: name, ...style } = written;
+  const family = FAMILY_ROLES.find((role) => role === name);
+  if (family === undefined) {
+    return style;
+  }
+
+  return { ...style, family: { name: family, stack: typography.families[family].stack } };
 }
 
 /**
@@ -566,6 +607,13 @@ function writtenCard(diagram: BrandDiagram | undefined, name: string): DiagramCa
  */
 function radiusPx(radius: DiagramRadius, shape: ShapeTokens): number {
   return radius === 'none' ? 0 : shape.radius[radius];
+}
+
+/**
+ * Resolves a named stroke or returns an explicit width in canvas pixels.
+ */
+function strokePx(stroke: StrokeName | number, shape: ShapeTokens): number {
+  return typeof stroke === 'number' ? stroke : shape.stroke[stroke];
 }
 
 /**
@@ -628,15 +676,18 @@ function cardColors(input: SurfaceCardsInput, name: string, card: CardTokens): C
       );
   const border = paint('border', look.border);
   const subtext = text('subtext', look.subtext);
+  const detail = border ?? subtext;
   return {
     nodeFill: keepsNodeFill,
     fill,
     border,
     text: text('text', look.text),
     subtext,
-    detail: border ?? subtext,
+    detail,
     iconColor,
     iconFill,
+    iconBorder:
+      written['icon.border'] === undefined ? undefined : color('icon.border', look.border),
     accent: color('accent.color', look.accent),
     shadow:
       card.shadow === 'none'
@@ -666,6 +717,10 @@ function colorField(card: SurfaceCardColors, field: CardColorField): string | un
 
     case 'icon.fill': {
       return card.icon?.fill;
+    }
+
+    case 'icon.border': {
+      return card.icon?.border;
     }
 
     case 'accent.color': {

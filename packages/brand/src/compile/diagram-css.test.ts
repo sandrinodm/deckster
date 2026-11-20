@@ -24,9 +24,12 @@ const DIAGRAM_BRAND = testBrand({
     { y: 1, blur: 2, color: 'gray.900/20', inset: true },
   ],
   diagram: {
-    edges: { stroke: 'bold', corners: 'sharp', arrow: 'open' },
-    groups: { stroke: 'none', dashed: true, radius: 'none' },
+    align: 'left',
+    edges: { stroke: 'bold', lineStyle: 'dotted', corners: 'sharp', arrow: 'open' },
+    groups: { stroke: 'none', lineStyle: 'dashed', radius: 'none' },
     labels: { style: 'chip', type: 'label' },
+    nodes: { width: 180, height: 84, subtitle: 'small' },
+    notes: { type: 'body', family: 'mono', weight: 650, tracking: 0.02, case: 'upper' },
     kinds: { database: 'tint', external: 'spotlight' },
     cards: {
       spotlight: {
@@ -34,12 +37,14 @@ const DIAGRAM_BRAND = testBrand({
         border: 'none',
         shadow: 'md',
         shape: 'pill',
-        icon: { style: 'solid' },
+        icon: { style: 'solid', border: 'accent', borderWidth: 1.5, borderStyle: 'dashed' },
         accent: { side: 'top' },
         title: { family: 'mono', weight: 500, tracking: 0.04, case: 'upper' },
+        subtitle: { family: 'body', weight: 550, tracking: 0, case: 'none' },
       },
     },
   },
+  'color.surfaces.inverse': { diagram: { cards: { spotlight: { icon: { border: 'fg' } } } } },
 });
 
 /**
@@ -86,28 +91,72 @@ describe('diagram CSS', () => {
       '  --brand-diagram-cards: default outline solid tint raised spotlight;',
       '  --brand-diagram-kind-database: tint;',
       '  --brand-diagram-kind-external: spotlight;',
+      '  --brand-diagram-align: left;',
       '  --brand-diagram-edge-stroke: 4px;',
+      '  --brand-diagram-edge-style: dotted;',
       '  --brand-diagram-edge-corners: sharp;',
       '  --brand-diagram-edge-arrow: open;',
       '  --brand-diagram-group-stroke: 0px;',
+      '  --brand-diagram-group-style: dashed;',
       '  --brand-diagram-group-dashed: true;',
       '  --brand-diagram-group-radius: 0px;',
       '  --brand-diagram-label-style: chip;',
       '  --brand-diagram-label-type: label;',
+      '  --brand-diagram-node-width: 180px;',
+      '  --brand-diagram-node-height: 84px;',
+      '  --brand-diagram-subtitle-type: small;',
+      '  --brand-diagram-note-type: body;',
+      '  --brand-diagram-note-family: Mono, monospace;',
+      '  --brand-diagram-note-weight: 650;',
+      '  --brand-diagram-note-tracking: 0.02em;',
+      '  --brand-diagram-note-case: uppercase;',
       '  --brand-diagram-card-spotlight-title-own: true;',
       '  --brand-diagram-card-default-title-own: false;',
       '  --brand-diagram-card-spotlight-shape: pill;',
       '  --brand-diagram-card-spotlight-icon: solid;',
+      '  --brand-diagram-card-spotlight-icon-border-width: 1.5px;',
+      '  --brand-diagram-card-spotlight-icon-border-style: dashed;',
       '  --brand-diagram-card-spotlight-accent-side: top;',
       '  --brand-diagram-card-spotlight-accent-width: 4px;',
       '  --brand-diagram-card-spotlight-title-family: Mono, monospace;',
       '  --brand-diagram-card-spotlight-title-weight: 500;',
       '  --brand-diagram-card-spotlight-title-tracking: 0.04em;',
       '  --brand-diagram-card-spotlight-title-case: uppercase;',
+      '  --brand-diagram-card-spotlight-subtitle-family: Body, sans-serif;',
+      '  --brand-diagram-card-spotlight-subtitle-weight: 550;',
+      '  --brand-diagram-card-spotlight-subtitle-tracking: 0em;',
+      '  --brand-diagram-card-spotlight-subtitle-case: none;',
       '  --brand-diagram-card-default-accent-side: none;',
     ]) {
       expect(root).toContain(line);
     }
+  });
+
+  it('writes explicit icon border colors on each surface', () => {
+    const tokens = validTokens(DIAGRAM_BRAND);
+    for (const [surface, role] of [
+      ['default', 'accent'],
+      ['inverse', 'fg'],
+    ] as const) {
+      const color = tokens.surfaces[surface]?.roles[role];
+      expect(surfaceRule(css, surface)).toContain(
+        `  --brand-diagram-card-spotlight-icon-border: ${color};`,
+      );
+    }
+  });
+
+  it('keeps legacy group dash spacing and timeline width unless a new stroke is written', () => {
+    const legacy = brandCss(
+      validTokens(testBrand({ diagram: { edges: { stroke: 'bold' }, groups: { dashed: true } } })),
+    );
+    expect(legacy).toContain('--brand-diagram-group-dashed: true;');
+    expect(legacy).not.toContain('--brand-diagram-group-style:');
+    expect(legacy).not.toContain('--brand-diagram-edge-style:');
+    expect(legacy).not.toContain('--brand-diagram-timeline-stroke:');
+
+    const numeric = brandCss(validTokens(testBrand({ diagram: { edges: { stroke: 0 } } })));
+    expect(numeric).toContain('--brand-diagram-edge-stroke: 0px;');
+    expect(numeric).toContain('--brand-diagram-timeline-stroke: 0px;');
   });
 
   it('writes every variable for every card, standard and custom, on the root and each surface', () => {
@@ -161,6 +210,9 @@ describe('diagram CSS', () => {
     expect(plain).toContain('  --brand-diagram-cards: default outline solid tint raised;');
     expect(plain).not.toContain('--brand-diagram-kind-');
     expect(plain).toContain('  --brand-diagram-label-type: caption;');
+    expect(plain).not.toContain('--brand-diagram-align:');
+    expect(plain).not.toContain('--brand-diagram-note-family:');
+    expect(plain).not.toContain('--brand-diagram-card-default-icon-border-width:');
   });
 });
 

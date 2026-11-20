@@ -59,7 +59,7 @@ describe('the diagram section', () => {
                   border: 'accent',
                   text: 'fg',
                   subtext: 'muted',
-                  icon: { color: 'accent-fg', fill: 'blue.600' },
+                  icon: { color: 'accent-fg', fill: 'blue.600', border: 'accent' },
                   accent: { color: 'orange.600' },
                 },
               },
@@ -103,7 +103,7 @@ describe('the diagram section', () => {
           'cannot set it.',
         fix:
           'Set it on the card itself, `diagram.cards.tint.stroke`, or recolor the card here with ' +
-          'fill, border, text, subtext, icon { color, fill } or accent { color }.',
+          'fill, border, text, subtext, icon { color, fill, border } or accent { color }.',
       },
     ]);
   });
@@ -117,6 +117,34 @@ describe('the diagram section', () => {
         fix: 'Use "caption" (today) or "label" (the brand\'s label step: its family, case and tracking).',
       },
     ]);
+  });
+
+  it('rejects invalid dimensions, connector styles and diagram font settings', () => {
+    const problems = problemsOf(
+      testBrand({
+        diagram: {
+          align: 'middle',
+          edges: { stroke: -1, lineStyle: 'wavy' },
+          groups: { stroke: Infinity },
+          nodes: { width: 1921 },
+          notes: { type: 'hero', weight: 1001 },
+          cards: { tint: { icon: { borderWidth: '3px', borderStyle: 'double' } } },
+        },
+      }),
+    );
+    expect(problems.map((problem) => problem.path)).toEqual(
+      expect.arrayContaining([
+        'diagram.align',
+        'diagram.edges.stroke',
+        'diagram.edges.lineStyle',
+        'diagram.groups.stroke',
+        'diagram.nodes.width',
+        'diagram.notes.type',
+        'diagram.notes.weight',
+        'diagram.cards.tint.icon.borderWidth',
+        'diagram.cards.tint.icon.borderStyle',
+      ]),
+    );
   });
 
   it('names the field and the fix for a mistyped card field', () => {

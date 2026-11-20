@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode, SVGProps } from 'react';
 
+import type { DiagramLineStyle } from '#diagrams/diagram-design.ts';
 import type { FlowPartName } from '#diagrams/flow-spec-builder.ts';
 import type {
   DiagramState,
@@ -62,6 +63,16 @@ type CellProps = {
  */
 export type NodeProps = CellProps & {
   /**
+   * Preferred width in canvas pixels.
+   */
+  width?: number;
+
+  /**
+   * Minimum measured height in canvas pixels.
+   */
+  height?: number;
+
+  /**
    * The id edges and packets name it by.
    */
   id: string;
@@ -107,8 +118,7 @@ export type NodeProps = CellProps & {
   card?: string;
 
   /**
-   * An icon from the brand's set by name (resolved at build time in MDX), an icon component in TSX,
-   * or `none` to drop the kind's icon.
+   * An Iconify name (MDX), icon component, image URL, or `none` to omit the icon.
    */
   icon?: string | IconComponent;
 
@@ -133,6 +143,16 @@ export function Node(_props: NodeProps): ReactNode {
  * Props of {@link Group}.
  */
 export type GroupProps = CellProps & {
+  /**
+   * Outline width in canvas pixels; zero hides the outline.
+   */
+  strokeWidth?: number;
+
+  /**
+   * The outline pattern.
+   */
+  lineStyle?: DiagramLineStyle;
+
   /**
    * Its id; made from the label when left out.
    */
@@ -201,6 +221,16 @@ export type EdgeFlowProps = {
  * Props of {@link Edge}.
  */
 export type EdgeProps = {
+  /**
+   * Connector width in canvas pixels.
+   */
+  strokeWidth?: number;
+
+  /**
+   * The connector pattern for ordinary edges.
+   */
+  lineStyle?: DiagramLineStyle;
+
   /**
    * Its id, for `<State edge>`; `from->to` when left out.
    */

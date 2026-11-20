@@ -587,6 +587,11 @@ export type ImageNode = SceneNodeBase & {
   kind: 'image';
 
   /**
+   * Whether this image is the artwork inside a kit diagram's icon frame.
+   */
+  diagramIcon?: true;
+
+  /**
    * The image URL as the page loaded it.
    */
   src: string;
@@ -678,6 +683,11 @@ export type SvgNode = SceneNodeBase & {
    * The node kind.
    */
   kind: 'svg';
+
+  /**
+   * Whether this drawing is the artwork inside a kit diagram's icon frame.
+   */
+  diagramIcon?: true;
 
   /**
    * Standalone SVG markup sized to the node, with computed colors inlined.

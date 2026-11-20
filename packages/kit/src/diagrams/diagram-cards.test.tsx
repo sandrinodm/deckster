@@ -6,13 +6,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { Cycle } from '#diagrams/cycle.tsx';
 import { FALLBACK, readDiagramTokens } from '#diagrams/diagram-tokens.ts';
 import { NodeBody, NodeShadow, NodeShape } from '#diagrams/flow-node-view.tsx';
-import { Node } from '#diagrams/flow-parts.tsx';
+import { Edge, Group, Node } from '#diagrams/flow-parts.tsx';
 import { Flow } from '#diagrams/flow.tsx';
-import { Actor, Item, Layer, Message } from '#diagrams/form-parts.tsx';
+import { Actor, Item, Layer, Message, Milestone } from '#diagrams/form-parts.tsx';
 import { Layers } from '#diagrams/layers.tsx';
 import { resolveCard } from '#diagrams/node-cards.ts';
 import { nodeGeometry } from '#diagrams/node-shapes.ts';
 import { SequenceDiagram } from '#diagrams/sequence.tsx';
+import { Timeline } from '#diagrams/timeline.tsx';
 import { Tree } from '#diagrams/tree.tsx';
 
 vi.mock('@deckster/engine', () => ({
@@ -63,6 +64,7 @@ afterEach(() => {
   container?.remove();
   container = undefined;
   document.head.replaceChildren();
+  vi.restoreAllMocks();
 });
 
 /**
@@ -352,5 +354,99 @@ describe('cards on <Layers>', () => {
     expect(plain?.getAttribute('data-card')).toBe('default');
     expect(plain?.style.getPropertyValue('--kit-chip-radius')).toBe('');
     expect(named?.style.getPropertyValue('--kit-chip-radius')).toBe('0px');
+  });
+});
+
+describe('diagram design controls', () => {
+  it('draws an image icon and chooses line widths, patterns, and per-card subtitle steps', () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1600);
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600);
+    const image = 'data:image/svg+xml,%3Csvg%20xmlns="http://www.w3.org/2000/svg"/%3E';
+    const box = mount(
+      <Flow title="Dispatch handoff">
+        <Group label="Parcelwise" lineStyle="dashed" strokeWidth={2}>
+          <Node
+            id="a"
+            kind="external"
+            title="Booking"
+            subtitle="Ready"
+            icon={image}
+            col={1}
+            row={1}
+          />
+          <Node
+            id="b"
+            card="spotlight"
+            title="Dispatch"
+            subtitle="Accepted"
+            icon={image}
+            col={2}
+            row={1}
+          />
+        </Group>
+        <Edge id="request" from="a" to="b" strokeWidth={3.5} />
+        <Edge id="response" from="b" to="a" strokeWidth={0} async />
+      </Flow>,
+      {
+        ...CARDS,
+        '--brand-diagram-edge-style': 'dotted',
+        '--brand-diagram-node-height': '120px',
+        '--brand-diagram-card-spotlight-border-style': 'dotted',
+        '--brand-diagram-card-spotlight-icon-border-width': '4px',
+        '--brand-diagram-card-spotlight-subtitle-type': 'label',
+        '--brand-diagram-subtitle-type': 'small',
+      },
+    );
+    expect(box.querySelector('img')?.getAttribute('src')).toBe(image);
+    expect(box.querySelector('img')?.getAttribute('alt')).toBe('');
+    expect(box.querySelector('svg image')).toBeNull();
+    expect(
+      box
+        .querySelector('[data-node="a"] .kit-flow-node-subtitle')
+        ?.classList.contains('kit-type-small'),
+    ).toBe(true);
+    expect(
+      box
+        .querySelector('[data-node="b"] .kit-flow-node-subtitle')
+        ?.classList.contains('kit-type-label'),
+    ).toBe(true);
+    expect(
+      box
+        .querySelector('[data-node="b"] .kit-flow-outline-stroke')
+        ?.getAttribute('data-line-style'),
+    ).toBe('dotted');
+    expect(
+      box
+        .querySelector('[data-node="a"][data-diagram-part="node-shape"]')
+        ?.getAttribute('data-dashed'),
+    ).toBe('true');
+    expect(box.querySelector('[data-edge="request"]')?.getAttribute('data-line-style')).toBe(
+      'dotted',
+    );
+    expect(
+      box
+        .querySelector<SVGGElement>('[data-edge="request"]')
+        ?.style.getPropertyValue('--kit-edge-stroke'),
+    ).toBe('3.5px');
+    expect(box.querySelector('[data-edge="response"]')?.getAttribute('data-line-style')).toBe(
+      'dashed',
+    );
+    expect(box.querySelector('[data-edge="response"] .kit-flow-arrow')).toBeNull();
+    expect(box.querySelector('.kit-flow-group')?.getAttribute('data-line-style')).toBe('dashed');
+  });
+
+  it('uses the brand note step for visible timeline details', () => {
+    const box = mount(
+      <Timeline title="Dispatch process">
+        <Milestone date="07:00" title="Intake">
+          The first parcel is accepted.
+        </Milestone>
+      </Timeline>,
+      { '--brand-diagram-note-type': 'body', '--brand-diagram-align': 'right' },
+    );
+    expect(box.querySelector('.kit-timeline')?.getAttribute('data-align')).toBe('right');
+    expect(box.querySelector('.kit-timeline-detail.kit-type-body')?.textContent).toBe(
+      'The first parcel is accepted.',
+    );
   });
 });

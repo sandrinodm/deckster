@@ -1,12 +1,14 @@
 import { Children, isValidElement, useMemo, type ReactNode } from 'react';
 
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { DiagramTokens } from '#diagrams/diagram-tokens.ts';
 import type { EdgeLayout } from '#diagrams/flow-layout.ts';
-import type { IconComponent, NodeProps } from '#diagrams/flow-parts.tsx';
+import type { NodeProps } from '#diagrams/flow-parts.tsx';
 import type { RoutedEdge } from '#diagrams/flow-route.ts';
 import type { FlowSpec } from '#diagrams/flow-spec.ts';
 import type { Point, Rect, Side } from '#diagrams/geometry.ts';
 
+import { diagramIcon } from '#diagrams/diagram-icons.tsx';
 import { assertDiagramProps, formatProblems } from '#diagrams/diagram-props.ts';
 import { edgeCornerRadius } from '#diagrams/diagram-tokens.ts';
 import { type NodeExtras, type ParsedFlow } from '#diagrams/flow-children.ts';
@@ -59,6 +61,11 @@ const GROWTH_SIDES: Readonly<Record<'down' | 'right', GrowthSides>> = {
  */
 export type TreeProps = {
   /**
+   * Horizontal placement of a compact drawing; otherwise follows the brand.
+   */
+  align?: DiagramAlign;
+
+  /**
    * An id for the export description.
    */
   id?: string;
@@ -109,6 +116,7 @@ export function Tree({
   title,
   direction = 'down',
   height,
+  align,
   card,
   children,
 }: TreeProps): ReactNode {
@@ -133,6 +141,7 @@ export function Tree({
       reshape={reshape}
       {...optional('id', id)}
       {...optional('height', height)}
+      {...optional('align', align)}
       {...optional('card', card)}
     />
   );
@@ -268,8 +277,7 @@ function readNodes(children: ReactNode, extras: Map<string, NodeExtras>): TreeEl
 
     assertDiagramProps('Node', child.props as Record<string, unknown>);
     const props = child.props as NodeProps;
-    const icon: IconComponent | undefined =
-      typeof props.icon === 'function' ? props.icon : undefined;
+    const icon = diagramIcon(props.icon);
     extras.set(props.id, {
       ...optional('icon', icon),
       ...(props.icon === 'none' ? { iconless: true } : {}),

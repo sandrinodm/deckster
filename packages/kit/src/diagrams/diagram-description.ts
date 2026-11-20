@@ -44,6 +44,11 @@ export type DiagramKind = 'flow' | 'sequence' | 'timeline' | 'layers' | 'cycle' 
 export type DescribedColor = string | null;
 
 /**
+ * The pattern of a visible stroke. Older descriptions carry only a `dashed` flag.
+ */
+export type DescribedLineStyle = 'solid' | 'dashed' | 'dotted';
+
+/**
  * A box in canvas pixels.
  */
 export type DescribedBox = {
@@ -149,9 +154,14 @@ export type DescribedPaint = {
   strokeWidth: number;
 
   /**
-   * Whether the outline is dashed.
+   * Whether the outline is patterned. Read this as a dashed outline when `lineStyle` is absent.
    */
   dashed: boolean;
+
+  /**
+   * The outline's pattern when known.
+   */
+  lineStyle?: DescribedLineStyle;
 
   /**
    * The shape's opacity, 0 to 1, after dimming.
@@ -390,9 +400,14 @@ export type DescribedLine = {
   width: number;
 
   /**
-   * Whether it is dashed.
+   * Whether the line is patterned. Read this as dashed when `lineStyle` is absent.
    */
   dashed: boolean;
+
+  /**
+   * The line's pattern when known.
+   */
+  lineStyle?: DescribedLineStyle;
 
   /**
    * Its opacity, 0 to 1.
@@ -401,7 +416,7 @@ export type DescribedLine = {
 };
 
 /**
- * An icon: its box, its color and its SVG markup, with `currentColor` resolved.
+ * An icon: its box, its color and either SVG markup or an image source.
  */
 export type DescribedIcon = {
   /**
@@ -415,9 +430,15 @@ export type DescribedIcon = {
   color: DescribedColor;
 
   /**
-   * A standalone `<svg>` document of the icon, colors resolved, sized to its box.
+   * A standalone `<svg>` document of the icon, colors resolved, sized to its box. Empty for an
+   * image icon.
    */
   svg: string;
+
+  /**
+   * The source URL of an image icon. Absent for inline SVG icons.
+   */
+  src?: string;
 };
 
 /**
@@ -506,9 +527,14 @@ export type DescribedEdge = {
   width: number;
 
   /**
-   * Whether the line is dashed.
+   * Whether the line is patterned. Read this as dashed when `lineStyle` is absent.
    */
   dashed: boolean;
+
+  /**
+   * The line's pattern when known.
+   */
+  lineStyle?: DescribedLineStyle;
 
   /**
    * Whether an arrowhead sits at the start.

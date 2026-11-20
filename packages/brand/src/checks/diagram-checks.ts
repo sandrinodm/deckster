@@ -1,7 +1,13 @@
 import type { Brand } from '#schema/brand-schema.ts';
+import type { BrandDiagram, DiagramTextSpec } from '#schema/diagram-schema.ts';
 import type { BrandProblem } from '#validate/brand-error.ts';
 
-import { CARD_ROOT_PROPERTIES, CARD_SURFACE_PROPERTIES } from '#compile/variable-names.ts';
+import {
+  CARD_OPTIONAL_ROOT_PROPERTIES,
+  CARD_OPTIONAL_SURFACE_PROPERTIES,
+  CARD_ROOT_PROPERTIES,
+  CARD_SURFACE_PROPERTIES,
+} from '#compile/variable-names.ts';
 import { ownValue } from '#resolve/own-value.ts';
 import { diagramCardNames } from '#resolve/resolve-diagram.ts';
 import {
@@ -18,22 +24,27 @@ import { pickFrom } from '#validate/suggest.ts';
 const KINDS: ReadonlySet<string> = new Set(DIAGRAM_NODE_KINDS);
 
 /**
- * Family roles a card title may name, for lookups.
+ * Family roles diagram text may name, for lookups.
  */
 const FAMILIES: ReadonlySet<string> = new Set(FAMILY_ROLES);
 
 /**
  * Every property a card has a variable for, to find card names whose variables would collide.
  */
-const CARD_PROPERTIES: readonly string[] = [...CARD_ROOT_PROPERTIES, ...CARD_SURFACE_PROPERTIES];
+const CARD_PROPERTIES: readonly string[] = [
+  ...CARD_ROOT_PROPERTIES,
+  ...CARD_OPTIONAL_ROOT_PROPERTIES,
+  ...CARD_SURFACE_PROPERTIES,
+  ...CARD_OPTIONAL_SURFACE_PROPERTIES,
+];
 
 /**
  * Checks the names the brand's `diagram` section uses, and the cards its surfaces recolor: no more
  * than {@link MAX_DIAGRAM_CARDS} cards, `kinds` keys that are node kinds the kit draws and values
- * that are cards the brand has (standard or its own), recolored cards that the brand has, card
- * title families that are family roles, and no two cards whose CSS variables would share a name
- * (`tint` and `tint-icon` both write `--brand-diagram-card-tint-icon-fill`). Card colors naming a
- * role that does not exist are reported while the cards resolve.
+ * that are cards the brand has (standard or its own), recolored cards that the brand has, card text
+ * families that are family roles, and no two cards whose CSS variables would share a name (`tint`
+ * and `tint-icon` both write `--brand-diagram-card-tint-icon-fill`). Card colors naming a role that
+ * does not exist are reported while the cards resolve.
  *
  * @param brand - The decoded brand.
  * @returns Every problem found; empty for a brand that writes no cards, kinds or recolorings.
@@ -50,7 +61,7 @@ export function checkDiagramNames(brand: Brand): BrandProblem[] {
     ...recolors,
     ...checkCardCount(Object.keys(diagram.cards ?? {})),
     ...checkKinds(diagram.kinds ?? {}, cards),
-    ...checkTitleFamilies(diagram.cards ?? {}),
+    ...checkTextFamilies(diagram),
     ...checkCardCollisions(cards),
   ];
 }
@@ -155,27 +166,39 @@ function kindFix(kind: string): string {
 }
 
 /**
- * A card's title family must be one of the brand's family roles.
+ * Diagram text must use one of the brand's font family roles when it specifies a family.
  *
- * @param cards - The cards as written.
+ * @param diagram - The diagram as written.
  */
-function checkTitleFamilies(
-  cards: Readonly<Record<string, { title?: { family?: string } }>>,
-): BrandProblem[] {
-  return Object.entries(cards).flatMap(([name, card]) => {
-    const family = card.title?.family;
-    if (family === undefined || FAMILIES.has(family)) {
-      return [];
-    }
+function checkTextFamilies(diagram: BrandDiagram): BrandProblem[] {
+  const topLevel = [
+    checkFamily(diagram.nodes?.subtitle, 'diagram.nodes.subtitle'),
+    checkFamily(diagram.notes, 'diagram.notes'),
+  ];
+  const cards = Object.entries(diagram.cards ?? {}).flatMap(([name, card]) => [
+    checkFamily(card.title, `diagram.cards.${name}.title`),
+    checkFamily(card.subtitle, `diagram.cards.${name}.subtitle`),
+  ]);
+  return [...topLevel, ...cards].filter((problem) => problem !== undefined);
+}
 
-    return [
-      {
-        path: `diagram.cards.${name}.title.family`,
-        message: `There is no family role named "${family}".`,
-        fix: pickFrom(family, FAMILY_ROLES, 'family role'),
-      },
-    ];
-  });
+/**
+ * Reports an unknown family at its written field. A shorthand step names no family.
+ */
+function checkFamily(
+  text: DiagramTextSpec | string | null | undefined,
+  path: string,
+): BrandProblem | undefined {
+  const family = typeof text === 'string' ? undefined : text?.family;
+  if (family === undefined || FAMILIES.has(family)) {
+    return undefined;
+  }
+
+  return {
+    path: `${path}.family`,
+    message: `There is no family role named "${family}".`,
+    fix: pickFrom(family, FAMILY_ROLES, 'family role'),
+  };
 }
 
 /**

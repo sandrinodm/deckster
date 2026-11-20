@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import type { DiagramLineStyle } from '#diagrams/diagram-design.ts';
 import type { IconComponent } from '#diagrams/flow-parts.tsx';
 import type { DiagramState, PlayMode } from '#diagrams/flow-spec.ts';
 
@@ -7,6 +8,16 @@ import type { DiagramState, PlayMode } from '#diagrams/flow-spec.ts';
  * Props of {@link Actor}.
  */
 export type ActorProps = {
+  /**
+   * Preferred width in canvas pixels.
+   */
+  width?: number;
+
+  /**
+   * Minimum measured height in canvas pixels.
+   */
+  height?: number;
+
   /**
    * The id messages name it by.
    */
@@ -28,7 +39,7 @@ export type ActorProps = {
   subtitle?: string;
 
   /**
-   * An icon from the brand's set by name, or a component in TSX.
+   * An Iconify name (MDX), icon component, image URL, or `none` to omit the icon.
    */
   icon?: string | IconComponent;
 
@@ -51,6 +62,16 @@ export function Actor(_props: ActorProps): ReactNode {
  * Props of {@link Message}.
  */
 export type MessageProps = {
+  /**
+   * Connector width in canvas pixels.
+   */
+  strokeWidth?: number;
+
+  /**
+   * The connector pattern for ordinary messages.
+   */
+  lineStyle?: DiagramLineStyle;
+
   /**
    * The actor it leaves.
    */
@@ -129,7 +150,7 @@ export type MilestoneProps = {
   state?: DiagramState;
 
   /**
-   * An icon from the brand's set, by name (resolved at build time in MDX) or as a component.
+   * An Iconify name (MDX), icon component, image URL, or `none` to omit the icon.
    */
   icon?: string | IconComponent;
 
@@ -161,7 +182,7 @@ export type ItemProps = {
   title: string;
 
   /**
-   * An icon from the brand's set by name, or a component in TSX; overrides the kind's.
+   * An Iconify name (MDX), icon component, image URL, or `none` to omit the icon.
    */
   icon?: string | IconComponent;
 

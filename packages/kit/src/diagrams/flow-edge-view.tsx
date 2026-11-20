@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import type { EdgeFrame } from '#diagrams/choreography.ts';
+import type { DiagramLineStyle } from '#diagrams/diagram-design.ts';
 import type { ArrowStyle, LabelType } from '#diagrams/diagram-tokens.ts';
 import type { PlacedLabel } from '#diagrams/flow-labels.ts';
 import type { RoutedEdge } from '#diagrams/flow-route.ts';
@@ -76,6 +77,11 @@ type EdgePathProps = {
   stroke: number;
 
   /**
+   * The brand's pattern for ordinary lines.
+   */
+  lineStyle?: DiagramLineStyle | undefined;
+
+  /**
    * The brand's arrowhead: a filled triangle (the default), an open chevron or a dot.
    */
   arrow?: ArrowStyle;
@@ -91,11 +97,14 @@ export function EdgePath({
   path,
   frame,
   dimmed,
-  stroke,
+  stroke: defaultStroke,
+  lineStyle,
   arrow = 'triangle',
 }: EdgePathProps): ReactNode {
-  const arrowAtEnd = edge.arrow === 'end' || edge.arrow === 'both';
-  const arrowAtStart = edge.arrow === 'start' || edge.arrow === 'both';
+  const stroke = edge.strokeWidth ?? defaultStroke;
+  const style = edge.dashed || frame.tone === 'error' ? 'dashed' : (edge.lineStyle ?? lineStyle);
+  const arrowAtEnd = stroke > 0 && (edge.arrow === 'end' || edge.arrow === 'both');
+  const arrowAtStart = stroke > 0 && (edge.arrow === 'start' || edge.arrow === 'both');
   return (
     <g
       className="kit-flow-edge"
@@ -106,6 +115,8 @@ export function EdgePath({
       data-edge-label={edge.label}
       data-tone={frame.tone}
       data-dashed={flag(edge.dashed)}
+      data-line-style={style}
+      style={{ '--kit-edge-stroke': `${stroke}px` } as CSSProperties}
       data-dimmed={flag(dimmed)}
       data-decorative={presence(dimmed)}
       data-visible={String(frame.visible)}>

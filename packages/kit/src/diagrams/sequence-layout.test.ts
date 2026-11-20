@@ -22,6 +22,37 @@ describe('sequenceActorWidth', () => {
 });
 
 describe('layoutSequence', () => {
+  it('aligns the actors, lifelines and messages as one compact scene', () => {
+    const layout = layoutSequence(
+      ['client', 'service'],
+      [{ from: 'client', to: 'service' }],
+      { width: 1250, height: 600 },
+      {
+        ...METRICS,
+        align: 'right',
+        actorWidths: new Map([
+          ['client', 200],
+          ['service', 100],
+        ]),
+      },
+    );
+    expect(layout.actors.get('client')?.width).toBe(200);
+    expect(layout.actors.get('service')?.x).toBe(1150);
+    expect(layout.lifelines.get('service')?.from.x).toBe(1200);
+    expect(layout.messages[0]?.[1]?.x).toBe(1200);
+  });
+
+  it('keeps a self-message label inside the compact scene', () => {
+    const layout = layoutSequence(
+      ['actor'],
+      [{ from: 'actor', to: 'actor', labelWidth: 160 }],
+      { width: 1250, height: 600 },
+      { ...METRICS, actorMaxWidth: 100, align: 'right', loopLabelGap: 8 },
+    );
+    const loop = layout.messages[0]?.[1];
+    expect(loop?.x).toBe(1082);
+  });
+
   it('draws every actor box at the width the actors are measured at', () => {
     const actors = ['shop', 'api', 'flock', 'rider', 'recipient'];
     const layout = layoutSequence(

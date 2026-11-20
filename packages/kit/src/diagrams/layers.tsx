@@ -9,12 +9,13 @@ import {
   type ReactNode,
 } from 'react';
 
-import type { IconComponent } from '#diagrams/flow-parts.tsx';
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { DiagramState } from '#diagrams/flow-spec.ts';
 
 import { StepMarks } from '#code/step-marks.tsx';
 import { describeDiagram, type DescribeBox } from '#diagrams/describe-diagram.ts';
 import { DiagramFrame } from '#diagrams/diagram-frame.tsx';
+import { DiagramIcon, diagramIcon, type DiagramIconSource } from '#diagrams/diagram-icons.tsx';
 import { assertDiagramProps, normalizeState } from '#diagrams/diagram-props.ts';
 import { count } from '#diagrams/diagram-summary.ts';
 import { FALLBACK, useDiagramTokens, type DiagramTokens } from '#diagrams/diagram-tokens.ts';
@@ -41,6 +42,11 @@ const NON_ID_CHARACTERS = /[^a-z0-9]/gi;
  * Props of {@link Layers}.
  */
 export type LayersProps = {
+  /**
+   * Horizontal placement of a compact drawing; otherwise follows the brand.
+   */
+  align?: DiagramAlign;
+
   /**
    * An id for the export description.
    */
@@ -85,7 +91,7 @@ export type LayersProps = {
  * </Layers>
  * ```
  */
-export function Layers({ id, title, height, card, children }: LayersProps): ReactNode {
+export function Layers({ id, title, height, align, card, children }: LayersProps): ReactNode {
   const layers = useMemo(() => readLayers(children), [children]);
   const step = useStep();
   const root = useRef<HTMLElement | null>(null);
@@ -118,7 +124,7 @@ export function Layers({ id, title, height, card, children }: LayersProps): Reac
       <StepMarks
         ats={[...new Set(layers.flatMap((layer) => (layer.at === undefined ? [] : [layer.at])))]}
       />
-      <div className="kit-layers">
+      <div className="kit-layers" data-align={align ?? tokens?.align}>
         {layers.map((layer, index) => (
           <section
             key={`${layer.title}-${index}`}
@@ -132,7 +138,8 @@ export function Layers({ id, title, height, card, children }: LayersProps): Reac
                 {smartPunctuation(layer.title)}
               </span>
               {layer.subtitle === undefined ? null : (
-                <span className="kit-layer-subtitle kit-type-caption">
+                <span
+                  className={`kit-layer-subtitle kit-type-${bandSubtitleStep(layer.card, tokens)}`}>
                   {smartPunctuation(layer.subtitle)}
                 </span>
               )}
@@ -144,7 +151,7 @@ export function Layers({ id, title, height, card, children }: LayersProps): Reac
                   diagram: card,
                   kind: item.kind === undefined ? undefined : resolveNodeKind(item.kind),
                 });
-                const Icon = itemCard.tokens.icon === 'none' ? undefined : item.icon;
+                const icon = itemCard.tokens.icon === 'none' ? undefined : item.icon;
                 return (
                   <div
                     key={`${item.title}-${itemIndex}`}
@@ -153,9 +160,12 @@ export function Layers({ id, title, height, card, children }: LayersProps): Reac
                     {...cardData(itemCard)}
                     {...cardLook(itemCard)}
                     data-state={item.state ?? 'default'}>
-                    {Icon === undefined ? null : (
-                      <span className="kit-flow-node-icon" aria-hidden="true">
-                        <Icon aria-hidden="true" focusable="false" />
+                    {icon === undefined ? null : (
+                      <span
+                        className="kit-flow-node-icon"
+                        data-diagram-part="icon"
+                        aria-hidden="true">
+                        <DiagramIcon source={icon} />
                       </span>
                     )}
                     <span className="kit-layer-item-title kit-type-caption">
@@ -189,21 +199,17 @@ function cardLook(card: ResolvedCard): {
   'data-card-title'?: string;
 } {
   const { icon, accent, shape, radius } = card.tokens;
+  const chipRadius = shape === 'pill' ? '999px' : `${radius}px`;
+  const shadow = card.tokens.shadow
+    ? `var(--brand-diagram-card-${card.name}-box-shadow)`
+    : '0 0 transparent';
   const style = {
     ...cardStyle(card),
     ...(card.defined && accent.side !== 'none'
       ? { '--kit-card-accent-width': `${accent.width}px` }
       : {}),
-    ...(card.defined && card.named
-      ? { '--kit-chip-radius': shape === 'pill' ? '999px' : `${radius}px` }
-      : {}),
-    ...(card.defined
-      ? {
-          '--kit-card-box-shadow': card.tokens.shadow
-            ? `var(--brand-diagram-card-${card.name}-box-shadow)`
-            : '0 0 transparent',
-        }
-      : {}),
+    ...(card.defined && card.named ? { '--kit-chip-radius': chipRadius } : {}),
+    ...(card.defined ? { '--kit-card-box-shadow': shadow } : {}),
   } as CSSProperties;
   return {
     style,
@@ -221,6 +227,16 @@ function cardLook(card: ResolvedCard): {
  */
 function titleOwn(card: ResolvedCard): { 'data-card-title'?: string } {
   return card.defined && card.tokens.titleOwn ? { 'data-card-title': 'own' } : {};
+}
+
+/**
+ * The subtitle step on the band's card, falling back to the brand's diagram setting.
+ */
+function bandSubtitleStep(
+  name: string | undefined,
+  tokens: DiagramTokens | undefined,
+): DiagramTokens['text']['subtitle'] {
+  return tokens?.cards.cards.get(name ?? '')?.subtitleStep ?? tokens?.text.subtitle ?? 'caption';
 }
 
 /**
@@ -367,7 +383,7 @@ type ParsedLayer = Omit<LayerProps, 'children'> & {
   /**
    * Its items, icons resolved.
    */
-  items: (Omit<ItemProps, 'icon'> & { icon?: IconComponent })[];
+  items: (Omit<ItemProps, 'icon'> & { icon?: DiagramIconSource })[];
 };
 
 /**
@@ -405,10 +421,9 @@ function readLayers(children: ReactNode): ParsedLayer[] {
       }
 
       assertDiagramProps('Item', item.props as Record<string, unknown>);
-      const { icon, state: itemState, ...fields } = item.props as ItemProps;
-      return [
-        { ...fields, ...stateProp(itemState), ...(typeof icon === 'function' ? { icon } : {}) },
-      ];
+      const { icon: writtenIcon, state: itemState, ...fields } = item.props as ItemProps;
+      const icon = diagramIcon(writtenIcon);
+      return [{ ...fields, ...stateProp(itemState), ...(icon === undefined ? {} : { icon }) }];
     });
     return [{ ...props, items }];
   });

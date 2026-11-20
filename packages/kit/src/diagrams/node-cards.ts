@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 
+import type { DiagramLineStyle, DiagramTextStep } from '#diagrams/diagram-design.ts';
 import type { NodeKind } from '#diagrams/node-kinds.ts';
 
 /**
@@ -73,6 +74,26 @@ export type CardTokens = {
    * The outline's width in canvas pixels.
    */
   stroke: number;
+
+  /**
+   * Pattern of the node's outline, absent for a legacy outline.
+   */
+  borderStyle?: DiagramLineStyle | undefined;
+
+  /**
+   * Whether the brand supplies a visible icon frame for an otherwise borderless mode.
+   */
+  iconBorder?: boolean;
+
+  /**
+   * Typography step of the subtitle.
+   */
+  subtitleStep?: DiagramTextStep;
+
+  /**
+   * Width of subtitle text, in canvas pixels.
+   */
+  measureSubtitle?: (text: string) => number;
 
   /**
    * The corner radius in canvas pixels.
@@ -248,6 +269,46 @@ const PAINT_VARIABLES = {
   '--kit-card-icon-fill': 'icon-fill',
 
   /**
+   * The icon frame color.
+   */
+  '--kit-card-icon-border': 'icon-border',
+
+  /**
+   * The icon frame width.
+   */
+  '--kit-card-icon-border-width': 'icon-border-width',
+
+  /**
+   * The icon frame pattern.
+   */
+  '--kit-card-icon-border-style': 'icon-border-style',
+
+  /**
+   * The card outline pattern.
+   */
+  '--kit-card-border-style': 'border-style',
+
+  /**
+   * The subtitle font family.
+   */
+  '--kit-card-subtitle-family': 'subtitle-family',
+
+  /**
+   * The subtitle font weight.
+   */
+  '--kit-card-subtitle-weight': 'subtitle-weight',
+
+  /**
+   * The subtitle letter spacing.
+   */
+  '--kit-card-subtitle-tracking': 'subtitle-tracking',
+
+  /**
+   * The subtitle case.
+   */
+  '--kit-card-subtitle-case': 'subtitle-case',
+
+  /**
    * The accent stripe's colour.
    */
   '--kit-card-accent': 'accent',
@@ -293,6 +354,10 @@ export function cardStyle(card: ResolvedCard): CSSProperties {
 
   return {
     ...cardVariables(card.name),
+    '--kit-card-icon-border-fallback':
+      card.tokens.iconBorder === true ? 'var(--kit-card-detail)' : 'initial',
+    '--kit-card-icon-border-default-width':
+      card.tokens.iconBorder === true ? 'var(--brand-stroke-regular)' : 'initial',
     '--kit-card-stroke': `${card.tokens.stroke}px`,
     '--kit-card-radius': `${card.tokens.radius}px`,
   } as CSSProperties;

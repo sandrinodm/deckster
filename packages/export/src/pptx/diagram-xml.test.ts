@@ -316,6 +316,45 @@ describe('diagramXml', () => {
     expect(open).toContain('<a:tailEnd type="arrow" w="lg" len="lg"/>');
     expect(write()).toContain('<a:tailEnd type="triangle" w="lg" len="lg"/>');
   });
+
+  it('keeps explicit dotted and solid strokes alongside legacy dashed lines', () => {
+    const base = describedCardDiagram();
+    const [first, second, third] = base.edges;
+    expect(first && second && third).toBeDefined();
+    if (first === undefined || second === undefined || third === undefined) {
+      return;
+    }
+
+    const diagram = {
+      ...base,
+      edges: [
+        { ...first, width: 7, dashed: true, lineStyle: 'dotted' as const },
+        { ...second, width: 8, dashed: true },
+        { ...third, width: 9, dashed: true, lineStyle: 'solid' as const },
+      ],
+      lines: [
+        {
+          role: 'axis' as const,
+          node: null,
+          points: [
+            { x: 100, y: 800 },
+            { x: 800, y: 800 },
+          ],
+          color: '#000000',
+          width: 6,
+          dashed: true,
+          lineStyle: 'dotted' as const,
+          opacity: 1,
+        },
+      ],
+    };
+    const xml = write(diagram);
+    expect(xml).toMatch(/<a:ln w="44450" cap="rnd">.*?<a:prstDash val="sysDot"\/>/);
+    expect(xml).toMatch(/<a:ln w="50800">.*?<a:prstDash val="dash"\/>/);
+    expect(xml).toMatch(/<a:ln w="57150">.*?<a:prstDash val="solid"\/>/);
+    expect(xml).toMatch(/<a:ln w="38100" cap="rnd">.*?<a:prstDash val="sysDot"\/>/);
+    expect(decodeDiagramDescription(JSON.stringify(diagram))).toEqual(diagram);
+  });
 });
 
 describe('withOpacity', () => {

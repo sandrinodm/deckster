@@ -81,9 +81,20 @@ export function offsetWithin(element: Element, ancestor: HTMLElement): Described
     return { x, y, width: element.offsetWidth, height: element.offsetHeight };
   }
 
+  return drawnWithin(element, ancestor);
+}
+
+/**
+ * Measures the element's drawn box in unscaled canvas pixels relative to an ancestor's box. Use
+ * this for positioned descendants whose containing block includes a border.
+ *
+ * @param element - The element.
+ * @param ancestor - An ancestor of it.
+ */
+export function drawnWithin(element: Element, ancestor: HTMLElement): DescribedBox {
   const own = element.getBoundingClientRect();
   const base = ancestor.getBoundingClientRect();
-  const scale = ancestor.offsetWidth === 0 ? 1 : base.width / ancestor.offsetWidth;
+  const scale = ancestor.offsetWidth === 0 ? 1 : base.width / ancestor.offsetWidth || 1;
   return {
     x: (own.x - base.x) / scale,
     y: (own.y - base.y) / scale,

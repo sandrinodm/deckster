@@ -3,7 +3,7 @@
  * MDX slides get the same components without imports. The diagram components load their code on
  * first use (and ELK only for an automatic layout); the parts are tiny descriptors the diagrams
  * read. In TSX a node's `kind` icon is resolved at run time from the brand's icon set; give `icon`
- * an icon component (`import Rocket from '~icons/lucide/rocket'`) for another one, or `"none"`.
+ * an icon component, an image URL or `"none"`.
  */
 export {
   Cycle,
@@ -54,3 +54,5 @@ export type { SequenceDiagramProps } from '#diagrams/sequence.tsx';
 export type { SvgProps } from '#diagrams/svg.tsx';
 export type { TimelineProps } from '#diagrams/timeline.tsx';
 export type { TreeProps } from '#diagrams/tree.tsx';
+
+export type { DiagramAlign, DiagramLineStyle, DiagramTextStep } from '#diagrams/diagram-design.ts';

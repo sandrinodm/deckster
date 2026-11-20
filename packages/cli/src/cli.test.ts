@@ -6,6 +6,7 @@ import path from 'node:path';
 
 import { fakeDeckLayer, pageSlide } from '#browser/fake-deck.fixture.ts';
 import { runCaptured } from '#cli.fixture.ts';
+import { FIXTURE_BRANDS, fixtureBrandSource } from '#lint/fixture-brands.fixture.ts';
 import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
 import { collectedPage } from '#lint/snapshot.fixture.ts';
 
@@ -161,6 +162,44 @@ describe('runCli', () => {
       expect(missing.output).toContain(
         'Fix: Use one of: default, fieldnote, kinetic, nocturne, tidewater',
       );
+    }),
+  );
+
+  it.effect('prints customized diagram geometry, typography and outlines', () =>
+    Effect.gen(function* () {
+      const name = 'weak-accent';
+      const root = scratchWorkspace('deck-cli-diagram-brand-', [name]);
+      try {
+        const brand = {
+          ...FIXTURE_BRANDS[name],
+          diagram: {
+            align: 'right',
+            edges: { stroke: 2.5, lineStyle: 'dotted' },
+            groups: { stroke: 1.5, lineStyle: 'dashed' },
+            nodes: { width: 180, height: 70, subtitle: 'label' },
+            notes: { type: 'small', family: 'mono', weight: 650 },
+            cards: {
+              default: {
+                borderStyle: 'dashed',
+                icon: { border: 'accent', borderWidth: 2, borderStyle: 'dotted' },
+                subtitle: { family: 'body', weight: 500 },
+              },
+            },
+          },
+        };
+        fs.writeFileSync(path.join(root, 'brands', name, 'brand.ts'), fixtureBrandSource(brand));
+        const summary = yield* runCaptured(['brand', name], { root });
+        expect(summary.code).toBe(0);
+        expect(summary.output).toContain('edges 2.5px dotted');
+        expect(summary.output).toContain('groups 1.5px dashed');
+        expect(summary.output).toContain('align right, node width 180px, node minimum height 70px');
+        expect(summary.output).toContain('subtitle label, notes small mono 650');
+        expect(summary.output).toMatch(/default: .*border #[\da-f]+ 2px dashed/u);
+        expect(summary.output).toContain('icon border #4f6ffa 2px dotted');
+        expect(summary.output).toContain('subtitle body 500');
+      } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+      }
     }),
   );
 
