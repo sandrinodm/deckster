@@ -52,7 +52,7 @@ Every slide takes seven keys, whatever its layout:
 | `transition` | How the slide comes in. See [transitions and morphs](/write-slides/transitions-and-morphs/). |
 | `hidden` | `true` keeps the slide in the deck and skips it in a talk. New in 0.5.0. See [hidden slides](/write-slides/hidden-slides/). |
 
-Every other key belongs to the layout: `eyebrow`, `cards`, `ratio`, `align` and so on. Each layout's fields, limits and slots are on its page under [layouts](/reference/layouts/), and every common key in full on [slide frontmatter](/reference/slide-frontmatter/).
+Every other key belongs to the layout, such as `eyebrow`, `cards` or `ratio`. Find a layout for your slide in [Choose a layout](/reference/layouts/#choose-a-layout), then open its page for fields, slots and limits. See the common keys in [slide frontmatter](/reference/slide-frontmatter/).
 
 Whether `title:` appears on the slide depends on the layout. Content layouts such as `cards`, `content` and `split` set it as the slide's heading. The `statement` layout shows only the statement: its `title:` names the slide in the outline. The `default` layout takes its heading from the body (`#` or `##`).
 
@@ -64,7 +64,7 @@ The body is GitHub-flavoured Markdown: headings, `*emphasis*` and `**strong**`, 
 ![A residential street under a full summer canopy](../assets/street.jpg)
 ```
 
-What fits in the body, and how long it may be, is the layout's budget; see [text and fitting](/write-slides/text-and-fitting/) and, for why budgets count words, [layouts and slots](/concepts/layouts-and-slots/).
+The layout's budget says how much content the body can hold. Brand layouts only accept body content if they have a region bound to `body`. [Text and fitting](/write-slides/text-and-fitting/) · [Layouts and slots](/concepts/layouts-and-slots/) · [MDX body content in brand layouts](/brands/brand-layouts/#mdx-body-content)
 
 ## Components and data
 

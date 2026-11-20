@@ -36,7 +36,7 @@ This is everything the `stats` layout promises and asks for, from its catalog en
 
 ## Slots
 
-A slot is a named place in a layout. Every layout has the `body` slot, which holds whatever the slide writes outside any slot tag. Other slots are filled with a tag named after the slot at the top level of the slide: `<Media>`, `<Aside>`, `<Footnote>`, `<Attribution>` and `<Caption>` in the kit's layouts. A TSX slide fills them by exporting a function with the same name.
+A slot is a named place in a layout. In MDX, slide content outside the named slot tags fills `body`. A [brand layout](/brands/brand-layouts/#mdx-body-content) only has a `body` slot if it binds a region to it. Other slots are filled with a tag named after the slot at the top level of the slide: `<Media>`, `<Aside>`, `<Footnote>`, `<Attribution>` and `<Caption>` in the kit's layouts. A TSX slide fills them by exporting a function with the same name.
 
 This `content` slide puts its bullets in the body and its sources in `<Footnote>`, which the layout sets on the bottom line:
 
@@ -73,9 +73,9 @@ Whether the text fits a brand's type is a separate question, which the overflow 
 
 ## Choosing a layout
 
-If the deck's brand brings [layouts of its own](/brands/brand-layouts/) (new in 0.6.0), `deck layouts --summary` lists them first, and they are the organisation's template: use one when it fits the slide. Otherwise start from what the slide has to say, not from how it should look. One claim on its own is a `statement`. Two to four numbers are `stats`. A point with its evidence beside it is `split`. A takeaway proved by one chart is `chart`. Then check that the content fits the layout's budget.
+Start with what the audience needs from the slide. Use the chooser to find a layout for that job, then check its slots and budgets. [Choose a layout](/reference/layouts/#choose-a-layout)
 
-`deck layouts --summary` prints one entry per layout: its default surface, its title limit, its slots (`*` marks a required one) with what each accepts, and its budget. The first entries:
+`deck layouts --summary` lists the deck's [brand layouts](/brands/brand-layouts/) first, followed by the kit layouts. Each entry lists its default surface, title limit, slots with what they accept, and budget. An asterisk marks a required slot. A workspace using the default brand starts with these entries.
 
 ```console
 $ deck layouts launch-review --summary

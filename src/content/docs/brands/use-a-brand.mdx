@@ -91,6 +91,16 @@ Point at the folder that holds brand.ts, such as gh:owner/repo/brands/<name>.
 
 `--json` prints `{ ok, brand, dir, source, commit, replaced, files, written, skipped, fonts, warnings, next }`: `skipped` has each left-out file with its reason, `fonts` each font package with its version and whether it is `installed`, and `next` the commands to run. The full help is under [`deck brand`](/reference/cli/#cli-brand).
 
+### SVG artwork during installation
+
+<Aside type="note" title="Unreleased">
+  This behavior requires a development build with [PR #31](https://github.com/sandrinodm/deckster/pull/31). It applies to SVGs installed with `deck brand add`.
+</Aside>
+
+The importer cleans SVG files in the staged brand before installing it. It preserves intrinsic dimensions and supported references within the same SVG, such as gradients and clip paths. It strips scripts, event handlers, and external references. When it removes unsupported markup, it warns with the asset's path. Preview the brand after import to check the artwork.
+
+An SVG must be well-formed UTF-8 XML with one SVG root. A file the importer cannot read as SVG stops the install and leaves the previous brand in place when replacing it. Fix or re-export the named asset in the source repository, then retry with the corrected ref.
+
 ### Authenticate to a private repository
 
 For HTTPS, use your git credential helper. For GitHub you can sign in with `gh auth login` and choose HTTPS and Git authentication when prompted. For SSH, load the key your git host accepts into your SSH agent. Use a source address without a token or password. HTTPS sources omit the user name, and SSH sources can include the account name, such as `git@`.

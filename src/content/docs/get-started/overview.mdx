@@ -23,7 +23,7 @@ deckster is a slide framework where every slide is a file: MDX or TSX, filling a
 
 **A slide** is one file in the deck's `slides/` folder. An MDX slide is frontmatter plus Markdown and components such as `<Step>` and `<Notes>`; a TSX slide is a React component for slides that need real code. The example above is the whole of `slides/steps.mdx`.
 
-**A layout** is picked by each slide's `layout:` field. There are 52, such as `stats`, `cards` and `comparison`. The layout owns the grid, the type and the spacing, and its contract says which fields and slots it takes and how much content fits. See [Layouts and slots](/concepts/layouts-and-slots/).
+**A layout** is picked by each slide's `layout:` field. The kit includes 63, such as `stats`, `cards` and `comparison`. The layout sets the grid, type and spacing. Its contract lists the fields and slots it takes and how much content fits. [Choose a layout](/reference/layouts/#choose-a-layout) · [Layouts and slots](/concepts/layouts-and-slots/)
 
 **A brand** is a typed `brand.ts` with colours, surfaces, fonts, icons, motion and chart palettes. Slides hold no colours or pixel positions, so the same deck renders in another brand without an edit. The `default` brand comes with the CLI.
 

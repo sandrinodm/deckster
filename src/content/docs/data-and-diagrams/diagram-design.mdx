@@ -91,4 +91,6 @@ Save an SVG, PNG, JPEG, GIF, WebP or AVIF in your deck and write its path relati
 
 You can also give `icon` an HTTPS image URL, such as `icon="https://cdn.example.com/parcel-mark.svg"`. The browser loads it when it renders the deck, so the URL has to work from the presentation or export environment. Use a bundled file for offline decks. MDX still accepts Iconify icon names such as `package`, and `icon="none"` hides an icon.
 
-In native and hybrid [PowerPoint exports](/export-and-publish/powerpoint/), diagram shapes, connectors and icon borders stay editable. Image icons are embedded as pictures. If an original cannot be embedded, the exporter uses a PNG of the browser rendering where available. The browser has to be able to load the icon for that rendering.
+In native and hybrid PowerPoint exports, node shapes and icon borders remain editable. For a line that follows its nodes when you move them, use a flow edge with a straight or supported right-angle route whose endpoints meet the nodes. Curved or complex routes export as freeform lines, and paths inside imported SVG artwork carry no node attachments. Check the dry run for simplified routes and move a node in the exported slide to confirm the connection. [PowerPoint export](/export-and-publish/powerpoint/)
+
+Image icons are embedded as pictures. If an original cannot be embedded, the exporter uses a PNG of the browser rendering where available. The browser has to be able to load the icon for that rendering.

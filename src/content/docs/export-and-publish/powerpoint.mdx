@@ -73,7 +73,7 @@ A slide-number field in the PowerPoint file follows its position in that file. F
 | Mode | What you get |
 | --- | --- |
 | `hybrid` (default) | Native wherever it is faithful, a picture where it is not. |
-| `native` | Never a picture: what cannot be drawn natively is dropped, and the dry run and export report it. |
+| `native` | Writes supported PowerPoint objects, including pictures for authored images. Unsupported elements are dropped and reported in the dry run. |
 | `image` | One picture per slide, with the speaker notes and clickable link areas. Nothing is editable, everything looks right. |
 
 On the components deck from the repository (copied into the workspace without its `package.json` and `tsconfig.json`, as on [the hello deck](/examples/hello/)), the dry run shows a Lottie animation on the `deploy` slide as a picture in `hybrid` mode and dropped in `native` mode:
@@ -97,13 +97,13 @@ The output is cut to the `deploy` slide.
 ## What comes across
 
 - **A theme and a slide master per brand surface the deck uses**, with the brand's chrome and a slide number (the `masters:` list in the output).
-- **The deck's layouts** as PowerPoint layouts, with placeholders placed and styled as the deck sets them. A [brand layout](/brands/brand-layouts/) (new in 0.6.0) becomes a slide layout of its own, named after its `label`, with its art placed once in the layout and its media regions as picture placeholders; the dry run marks its slides `art in layout`.
+- **The deck's layouts** as PowerPoint layouts, with placeholders placed and styled as the deck sets them. A brand layout (new in 0.6.0) becomes a slide layout named after its `label`, with its art placed once in the layout. The first media region bound to a slot becomes a picture placeholder. The dry run marks its slides `art in layout`. The unreleased exporter also writes separate placeholders for both bodies of a brand layout mapped to PowerPoint's two-content layout. [Brand layouts in PowerPoint](/brands/brand-layouts/#in-powerpoint)
 - **Editable text** that wraps where the web wraps.
 - **Shapes, gradients and pictures**; a picture is stored once and as JPEG when it is opaque.
 - **SVG image files** keep their vector original when the exporter can embed it. The file also carries a PNG for viewers that use a raster copy. As of v0.6.1, a cropped SVG uses the same crop on both versions. If an image source cannot be fetched, the exporter captures the visible image and keeps that framing.
 - **Tables** as PowerPoint tables.
 - **Charts as native charts**: bar charts for `<BarChart>`, `<Comparison>`, `<Progress>`, `<Waterfall>` and `<Funnel>`, line charts for `<LineChart>`, `<Slope>` and `<Sparkline>`, and native area, doughnut and scatter charts for `<AreaChart>`, `<Donut>` and `<Scatter>`. `<BigNumber>`, `<StatRow>`, `<Pictogram>` and `<Heatmap>` have no native chart type; the dry run shows how each is drawn. Which chart to use is on [Choosing a chart](/data-and-diagrams/choosing-a-chart/).
-- **Diagrams** as native shapes and connectors, with the brand's cards: fills, borders, corner radii, shadows and accent stripes, and the arrowhead style of the edges. PowerPoint draws one outer shadow per shape, so a card's shadow keeps only its strongest layer, and a `dot` arrowhead is centred on the line's end, where the slide draws it a little before the end.
+- **Diagrams** as native shapes and connectors, with the brand's cards: fills, borders, corner radii, shadows and accent stripes, and the arrowhead style of the edges. PowerPoint draws one outer shadow per shape, so a card's shadow keeps only its strongest layer, and a `dot` arrowhead is centred on the line's end, where the slide draws it a little before the end. Straight and supported right-angle connectors can stay attached to their nodes. Curved or complex routes become freeform lines. The unreleased diagram controls preserve connector widths and patterns and embed image icons as pictures. [Design controls for diagrams](/data-and-diagrams/diagram-design/)
 - **Speaker notes** in the notes pane, and **links**.
 - **Step reveals as click animations**, in the order of the [steps](/concepts/steps/). `--no-animations` turns that off.
 

@@ -11,6 +11,19 @@ sidebar:
 
 Brands can set connector widths and patterns, drawing alignment, node sizes, subtitle and note typography, and icon borders. Slides can override placement, node dimensions and connector strokes, and use bundled or HTTPS image icons. Asynchronous calls, replies and error connectors still draw dashed. Timelines use the brand's regular width when the edge stroke is a named step. PowerPoint keeps diagram shapes editable and embeds image icons as pictures. [Design controls for diagrams](/data-and-diagrams/diagram-design/) · [PR #29](https://github.com/sandrinodm/deckster/pull/29)
 
+### Brand imports and custom layouts
+
+- `deck brand add` cleans SVG artwork while staging a Git import. It warns when it removes unsupported markup and stops the install when an SVG is invalid. [SVG artwork during installation](/brands/use-a-brand/#svg-artwork-during-installation)
+- The active brand's `layouts.ts` is read as static data. The build reports MDX slide content outside named slots if the brand layout lacks a body region. [Write layouts.ts](/brands/brand-layouts/#write-layoutsts) · [MDX body content](/brands/brand-layouts/#mdx-body-content)
+- The agent's `new_slide` tool uses the live session's brand when it looks up a layout and scaffolds its example. [Scaffold a slide in the session brand](/ai-agents/mcp-tools/#scaffold-a-slide-in-the-session-brand)
+- A PowerPoint export writes two distinct body placeholders for a brand layout mapped to two-content. [Brand layouts in PowerPoint](/brands/brand-layouts/#in-powerpoint)
+
+[PR #31](https://github.com/sandrinodm/deckster/pull/31)
+
+### Choosing layouts and importing templates
+
+The presentation skill pairs each of the 63 built-in layouts with a reason to choose it. The brand-import skill shows how to map template placeholders to regions and choose a fallback layout. Both guides explain how to check which diagram and export features the installed CLI supports. [Choose a layout](/reference/layouts/#choose-a-layout) · [Use the skills](/ai-agents/skills/) · [PR #32](https://github.com/sandrinodm/deckster/pull/32)
+
 ## v0.7.0
 
 The lookbook adds 24 examples for product demos, pitches, roadmaps and strategy reviews. Eleven reusable layouts, three charts and four interactive demo components have new reference entries. [Explore the examples](/examples/presentation-patterns/) · [PR #26](https://github.com/sandrinodm/deckster/pull/26)

@@ -108,7 +108,15 @@ These steps use `fieldnote` in a workspace called `talks` with a deck called `la
 
 A brand layout takes the slots and fields its boxes show, with the fallback's descriptions, limits and checks, so `fieldnote-section` takes `number` and the body but not `eyebrow` or `numeral`, which `section` also has. Its budgets are the fallback's or tighter. A slide's `surface` overrides the layout's default surface as on any layout.
 
-Each box is fixed: the text steps down until it fits its box, but a box holds what it holds. A kit layout sets its content in the brand's margins and grid instead, and adapts to more or less of it. Use the brand's layouts for the slides its template has, and kit layouts for the rest.
+The layout's boxes stay fixed as the text steps down to fit them. Kit layouts adapt to their contents within the brand's margins and grid. Use a brand layout when its regions and budgets fit the slide's message. [Choose a kit layout](/reference/layouts/#choose-a-layout)
+
+### MDX body content
+
+Content outside named slot tags fills `body`. To see whether a brand layout draws that content, look for a region with `bind: { slot: 'body' }` in `layouts.ts`. You can also use the example from `deck layouts <deck> --json` as a starting point. The catalog includes a generic `slots.body` entry even for layouts with no body region. For example, a cover can bind a title and a byline without drawing a body.
+
+<Aside type="note" title="Unreleased">
+  The build reports MDX slide content outside named slots when a brand layout has no body region. The same check runs during `deck lint`. Speaker notes, Markdown definitions, and MDX comments still work on a slide with no body region. Move the content into a supported named slot, choose another layout, or add a region with `bind: { slot: 'body' }` when the fallback offers that slot. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
+</Aside>
 
 ## In another brand: the fallback
 
@@ -151,7 +159,11 @@ export default defineBrandLayouts([
 ]);
 ```
 
-Every box is `[x, y, width, height]` in pixels on the 1920x1080 canvas, measured from its top-left corner, not inside the brand's margins. A file holds up to 64 layouts. Each layout has:
+<Aside type="note" title="Unreleased">
+  Deckster reads `layouts.ts` as static data for the active brand as well as for fallback lookup. If your workspace builds the array with variables, spreads or helper functions, put the final values directly inside `defineBrandLayouts([...])`, then run `deck brand check <name>`. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
+</Aside>
+
+Every box is `[x, y, width, height]` in pixels on the 1920x1080 canvas, measured from its top-left corner. A file holds up to 64 layouts. Each layout has the following fields.
 
 | Field | Takes |
 | --- | --- |
@@ -192,7 +204,7 @@ The other errors: a fallback that is not a kit or engine layout; a field in `fie
 
 ## In PowerPoint
 
-`deck export --pptx` writes each brand layout the deck uses as a PowerPoint slide layout of its own, named after its `label` (`Fieldnote section`), with the art placed once in the slide layout and media regions as picture placeholders, so a slide's text stays editable on the template's own layout. The dry run counts the art:
+`deck export --pptx` writes each brand layout the deck uses as a PowerPoint slide layout named after its `label`, such as `Fieldnote section`. The text stays editable on the template's layout, and the first media region bound to a slot becomes a picture placeholder. The exporter places the art once in the slide layout. The dry run counts it.
 
 ```console
 $ deck export launch-review --pptx --dry-run
@@ -201,6 +213,10 @@ PPTX dry run (hybrid mode): native / picture / simplified / dropped
 02 part-one [fieldnote-section, art in layout: 1]: 6 / 0 / 0 / 0
 Total: 10 native, 0 picture, 0 simplified, 0 dropped.
 ```
+
+<Aside type="note" title="Unreleased">
+  A brand layout that maps to PowerPoint's two-content layout exports the first two body regions as distinct body placeholders, in the order of their regions in `layouts.ts`. For example, `fieldnote-columns` maps `body` and `aside` to separate placeholders. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
+</Aside>
 
 The rest of the export is on [PowerPoint](/export-and-publish/powerpoint/).
 
