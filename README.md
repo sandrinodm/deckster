@@ -22,6 +22,10 @@ npm run sync                                  # stills and decks from the deckst
 npm run dev                                   # http://localhost:4321/deckster/
 ```
 
+The sync uses a temporary copy of the example decks to render slide stills, step stills and
+built decks in Fieldnote. Brand comparisons render each published brand, and product UI
+shots use their original setups. Release data is generated from the source checkout.
+
 The build reads slide stills and built decks that are generated, not committed, so a fresh clone
 does not build until `npm run sync` has run. It uses the deckster checkout at `DECKSTER_REPO`,
 else `../2026-11-13-presentation`, else `../deckster`; that checkout needs `pnpm install` and

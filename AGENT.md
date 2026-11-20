@@ -51,6 +51,8 @@ MDX globals for deckster content, in `src/components/deck/` and registered in `s
 
 **Sync.** `npm run sync` refreshes the generated inputs from a deckster checkout: `DECKSTER_REPO`, else `../2026-11-13-presentation`, else `../deckster`, with its dependencies installed (`pnpm install`, plus Chromium for the stills). It runs that checkout's `scripts/docs/data.ts`, `shots.ts`, `ui-shots.ts` and `decks.ts` into scratch folders and installs the results; `--data`, `--shots` or `--decks` runs one part. A part whose script fails is not installed and the sync exits 1.
 
+For slide and step stills and built decks, `scripts/preview-workspace.mjs` copies the allowlisted decks and brands into a temporary workspace and selects Fieldnote in the copied deck configs. Brand comparison stills use their explicit brand overrides. Product UI shots and release data are generated from the source checkout, so their authored brands and metadata are preserved. Keep tutorial screenshots in the brand the tutorial commands select.
+
 | Output | From | In git |
 |---|---|---|
 | `src/data/*.json` | `data.ts` | committed: small, and its diffs show what changed on `main` |

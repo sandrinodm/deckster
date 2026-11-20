@@ -33,9 +33,9 @@
  * leaves its staging (`.<target>.sync-<pid>`) or old copy (`.<target>.old-<pid>`) behind; the next
  * sync puts back an old copy whose target is missing and deletes the rest.
  *
- * The checkout's tracked files are never written. Its decks.ts does build each deck into
- * decks/<deck>/dist inside the checkout, and its data.ts packs the CLI into packages/cli/dist (with
- * pnpm, so pnpm must be on the PATH), both of which git ignores.
+ * Slide and step stills and embedded decks use Fieldnote in temporary copies of the deck configs.
+ * Brand comparison shots and product UI shots keep their own themes. Data comes from the source
+ * checkout, where data.ts packs the CLI into the gitignored packages/cli/dist using pnpm.
  */
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -45,11 +45,9 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import sharp from "sharp";
 import { componentUses, literalValue, where } from "../src/components/deck/mdx-source.ts";
+import { DOCS_SCRIPTS_DIR as SCRIPTS_DIR, withPreviewWorkspace } from "./preview-workspace.mjs";
 
 const SITE_ROOT = path.resolve(import.meta.dirname, "..");
-
-/** Where a deckster checkout keeps its docs scripts, relative to the checkout. */
-const SCRIPTS_DIR = "scripts/docs";
 
 /** Stills are scaled to this width; the slides are 1920x1080 and UI shots 1440x900. */
 const SHOT_WIDTH = 1280;
@@ -182,7 +180,9 @@ async function syncData(repo) {
  */
 async function syncShots(repo) {
   const required = requiredUiShots();
-  const slidesOut = await runScript(repo, "shots.ts");
+  const slidesOut = await withPreviewWorkspace(repo, (workspace) => {
+    return runScript(workspace, "shots.ts");
+  });
   let uiOut;
   let uiProblem;
   try {
@@ -293,7 +293,7 @@ async function previousUiShots() {
 
 /** public/decks/<deck>/: the built decks, replaced as a whole. */
 async function syncDecks(repo) {
-  const out = await runScript(repo, "decks.ts");
+  const out = await withPreviewWorkspace(repo, (workspace) => runScript(workspace, "decks.ts"));
   const decks = (await readdir(out, { withFileTypes: true })).filter((d) => d.isDirectory());
   if (decks.length === 0) throw new Error(`decks.ts built no deck in ${out}`);
   const stage = await stageFor(TARGETS.decks);
