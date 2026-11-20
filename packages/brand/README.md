@@ -93,6 +93,10 @@ Type: display 168px, headline 84px, title 56px, lead 38px, body 34px, small 26px
   look sets them; paint and shape are not inherited. A surface recolors a card under
   `color.surfaces.<name>.diagram.cards.<card>` (colors only), for a fixed fill that does not work
   on that surface.
+  The [diagram design controls](https://github.com/sandrinodm/deckster/pull/29) extend this schema
+  with horizontal alignment, preferred node width and minimum height, subtitle and timeline detail
+  typography, connector widths and patterns, and icon borders. On a build with these controls,
+  set shared defaults in the brand and use a slide override for a one-off layout or connector.
 - **Motion the kit reads.** The easings and durations are open records, but the kit's entrance,
   step reveals, chart builds and count-ups read `standard`, `emphasized` and `exit`
   (`MOTION_EASING_NAMES`) and `fast`, `base` and `slow` (`MOTION_DURATION_NAMES`). A brand should

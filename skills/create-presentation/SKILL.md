@@ -1,6 +1,6 @@
 ---
 name: create-presentation
-description: "Plan, build and adapt presentations with the deckster `deck` CLI: audience, narrative, assertion-led outlines, MDX slides, speaker notes and data visuals. Use for decks, talks, pitches, training, executive briefings, turning documents or numbers into slides, changing a deck’s audience or duration, and writing talk tracks. Excludes brand imports, framework development, standalone diagrams, document-only memos, export-only requests and simple typo fixes."
+description: "Plan, build and adapt presentations with the deckster `deck` CLI: audience, narrative, assertion-led outlines, layout selection, MDX slides, speaker notes and data visuals. Use for decks, talks, pitches, training, executive briefings, turning documents or numbers into slides, changing a deck’s audience or duration, and writing talk tracks. Excludes brand imports, framework development, standalone diagrams, document-only memos, export-only requests and simple typo fixes."
 ---
 
 # Create a presentation
@@ -21,13 +21,13 @@ Ask only for missing information that changes the result. Honor an explicit requ
 
 ## What to read when
 
-Steps 1 to 4 need only this file plus the format file. Before the first slide: `references/framework.md` and `references/slide-craft.md`. Read the rest only when the deck needs it:
+For the outline, read the matching format and the [layout chooser](references/slide-craft.md#3-choosing-the-evidence). Read [Framework](references/framework.md) before scaffolding and [Slide craft](references/slide-craft.md) before writing slides. Use these references when the deck calls for them.
 
 - `references/formats/*.md`: the one matching the format (step 3).
 - `references/narrative.md`: choosing a structure, openings, closings, pacing.
 - `references/audiences.md`: mixed, senior, expert or unfamiliar audiences.
-- `references/data-visuals.md`: any slide with a number, table, chart or diagram.
-- `references/visual-patterns.md`: storyboards, sketch-to-ship, geographical opportunities, strategy canvases, roadmaps and future-back plans.
+- [Data visuals](references/data-visuals.md) for numbers, tables, charts and diagrams. See [Diagram controls](references/data-visuals.md#diagram-design-controls) for design options and image icons, and [PowerPoint connectors](references/data-visuals.md#keep-connectors-attached-in-powerpoint) for editable diagrams.
+- [Visual patterns](references/visual-patterns.md) for screenshot stories, product cutaways, service blueprints, branching demos, storyboards and strategy or roadmap patterns.
 - `references/rubric.md`: step 8, the scoring pass. It is part of the work, not an extra: a deck that was not scored is not done.
 - `references/sources.md`: only to answer why the guidance says what it says.
 
@@ -145,7 +145,7 @@ Expand the storyline into a slide-by-slide outline and save it as `OUTLINE.md`:
 
 - **Assertion:** a full sentence the audience could repeat, ideally 12 words or fewer. "Q3 results" is a topic; "Q3 revenue grew 18% while headcount stayed flat" is an assertion. Titles such as Agenda, Overview, Background, Results and Next steps are signs the thinking is unfinished. Structural slides (title, section, closing) are exempt.
 - **Evidence:** what the audience looks at while the speaker makes the point: a chart, diagram, screenshot, demo, quote, code, big number, or two to four short supporting lines. Prefer a visual to bullets when one exists. If the evidence is a number or dataset, or the claim is about how something works or flows, decide the form now using `references/data-visuals.md` (which chart for which message; when a diagram beats bullets).
-- **Layout:** read `deck layouts <deck> --summary` before filling this column (the catalog commands need a deck to read; if the workspace has none and an outline must not create one, scaffold a throwaway one in a scratch folder: `export DECK_ROOT=$(mktemp -d)`, `deck new probe`, `deck layouts probe --summary`, then unset `DECK_ROOT`). The set of layouts grows, each has a title length and a content budget, and an outline written against layouts that do not exist, or with sentence titles in layouts whose title is one short line, has to be redone. Several jobs have a layout of their own (a product screen, a competitor map, a market size, the ask, a customer's result); `references/slide-craft.md` (section 3) lists them with the near misses they replace.
+- **Layout.** Choose from the installed catalog with `deck layouts <deck> --summary` and use the [layout chooser](references/slide-craft.md#3-choosing-the-evidence) to match each slide's evidence to a layout. Check the title limit, required slots and item counts before committing to the outline. For an outline in a workspace without a deck, create a probe in a temporary workspace with `probe_root=$(mktemp -d)`, `DECK_ROOT="$probe_root" deck new probe` and `DECK_ROOT="$probe_root" deck layouts probe --summary`. Add `--brand <name>` when inspecting another available brand.
 - **Build:** what arrives at each step, in the order the notes will explain it, or "whole". A chart builds from its context to its highlight, a diagram along the path the notes walk, code through the lines being discussed, a list the speaker walks through one `focus` item at a time; a photo, a quote, a statement or a single number stays whole. `references/slide-craft.md` (section 7) says when a build helps and when it is noise. Deciding it here keeps the notes and the slide in step, and a column of "whole" down a talk full of charts and diagrams is a sign the deck will show everything at once.
 - **Read-through test:** read only the assertion column top to bottom. It should tell the whole story with no gaps and no repeats. Fix the outline, not the slides, until it does.
 - **Budget:** seconds per slide, summing to the time budget from step 3. There is no reliable "minutes per slide" rule; a big-number slide takes 20 seconds and a demo takes five minutes. Budget by content, then sanity-check the pace: a slide with a table, a comparison or several numbers needs 90 seconds or more with a senior audience, and if most slides sit under a minute the talk will feel rushed however the total adds up. Cut slides before you cut seconds.
@@ -156,7 +156,7 @@ Keep the user's load small: at most three questions, only ones whose answer woul
 
 ## Step 5: Build the slides
 
-Scaffold the deck with `deck new <deck> --title "…" --brand <name> --duration <length>` if it does not exist (it passes `deck lint` as created and needs no install step), then read `references/framework.md`: it is the authoring loop (scaffold, catalogs, write, lint, shoot, look, fix) and the slide file format. Layouts and components are read from the catalogs at run time, never from memory, because the framework keeps adding them:
+Scaffold the deck with `deck new <deck> --title "…" --brand <name> --duration <length>` if it does not exist. Read [Framework](references/framework.md) for the authoring loop. Use the catalogs from the installed CLI to verify each layout and component before writing.
 
 ```
 deck layouts <deck> --summary       # first look: the brand's own layouts first, then every kit layout, with title limit, slots and budgets
@@ -170,9 +170,9 @@ deck icons --brand a,b       # icon names every brand of the deck has (add --sea
 
 Then write one file per slide, following `references/slide-craft.md`:
 
-- Pick the layout that fits the evidence, not the other way round. Stay inside its title length and content budget; when content does not fit, split the slide or move words to notes rather than shrinking anything. `decks/lookbook` in the deckster repository shows every layout and option in use.
-- If the deck's brand has layouts of its own, `deck layouts <deck> --summary` lists them first, under a heading that names the brand. They are the organisation's template: prefer one when it fits the slide (a cover, a section divider, a photo slide). Use kit layouts for what the template lacks. A brand layout holds what its fixed boxes hold, so stay inside its budget. Switching the deck to another brand turns its brand-layout slides into the kit layouts they fall back to, and `deck lint` warns (`brand-layout-fallback`); so choose the brand before you choose layouts, and re-check the slides if it changes.
-- Never write raw colors, fonts, sizes or positions. The brand owns those, and lint rejects them.
+- Match the layout to the evidence. Read its title limit, required slots, accepted content, field limits and tighter variants. Scaffold it with `deck new slide <deck> <id> --layout <name>` or use its `example.mdx` in the JSON catalog. Split a crowded slide or move detail into notes. See the [lookbook](https://sandrinodm.github.io/deckster/examples/lookbook/) for rendered examples.
+- Prefer the deck's brand layout when its fixed regions fit the slide's purpose and evidence. Read [Brand layouts](references/framework.md#brand-layouts) for slot bindings, alternate brands and scaffold behavior.
+- Use the brand's tokens and the layout's documented options for styling. Layout fields and component props can define content geometry, such as screenshot callout coordinates or diagram node dimensions when the installed build supports them.
 - Vary layouts and surfaces to give the deck rhythm, and show the audience where they are: section slides in a long deck (all with the same options, such as `numeral: large`), eyebrows in a deck of about twelve slides or fewer. Put the peak on a surface its neighbours do not have. A run of slides that look alike is the most common way a correct deck ends up dull.
 - Give every slide enough to look at. A slide whose evidence is one short line or a three-box strip leaves most of the canvas empty and reads as unfinished; give the claim its evidence, or fold it into a neighbour.
 - For any slide carrying numbers, follow `references/data-visuals.md`: choose the form from the message, highlight the one thing, title with the takeaway, caption with the measure and period.
