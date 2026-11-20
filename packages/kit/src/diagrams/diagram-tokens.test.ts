@@ -51,6 +51,31 @@ describe('the fallback tokens', () => {
 });
 
 describe('readDiagramTokens', () => {
+  it.each([
+    { fast: '200ms', base: '380ms', slow: '640ms' },
+    { fast: '.2s', base: '.38s', slow: '.64s' },
+  ])('reads $slow and the other motion durations in milliseconds', ({ fast, base, slow }) => {
+    const tokens = readDiagramTokens(
+      elementWith({
+        '--brand-duration-fast': fast,
+        '--brand-duration-base': base,
+        '--brand-duration-slow': slow,
+      }),
+    );
+    expect(tokens.motion).toMatchObject({ fast: 200, base: 380, slow: 640 });
+  });
+
+  it('preserves zero durations and falls back for missing or invalid values', () => {
+    const tokens = readDiagramTokens(
+      elementWith({ '--brand-duration-fast': '12px', '--brand-duration-slow': '0s' }),
+    );
+    expect(tokens.motion).toMatchObject({
+      fast: FALLBACK.motion.fast,
+      base: FALLBACK.motion.base,
+      slow: 0,
+    });
+  });
+
   it("reads today's look from a stylesheet without the diagram look or cards", () => {
     const tokens = readDiagramTokens(
       elementWith({ '--brand-stroke-regular': '3px', '--brand-radius-lg': '24px' }),
