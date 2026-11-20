@@ -17,8 +17,8 @@ There are three ways to work with an agent, and they combine:
 
 ## The two skills
 
-- **`create-presentation`** plans a talk from its audience and outcome to a storyline and an outline with one claim per slide, then writes the slides, speaker notes and charts with `deck new`, `deck lint` and `deck shot`, looks at every screenshot, and scores the result against a rubric before it hands the deck over.
-- **`brand-import`** turns a PPTX, PDF, Google Slides link, website, guidelines document or screenshots into a draft `brands/<name>/brand.ts`, checks it with `deck brand check` and compares renders with the source. The workflow is on [Import a brand](/brands/import-a-brand/).
+- **`create-presentation`** plans a storyline and an outline with one claim per slide. The agent uses `deck layouts <deck> --summary` to pick a layout for each slide's job, including brand layouts where they fit. It then writes the slides and notes and checks the rendered result with `deck lint` and `deck shot`. [Choose a layout](/reference/layouts/#choose-a-layout)
+- **`brand-import`** turns a PowerPoint template, PDF, Google Slides link, website, guidelines or screenshots into a draft `brands/<name>/brand.ts`. When a template supplies slide layouts, the agent maps the placeholders to slots and fields, chooses kit fallbacks, and compares the rendered layouts with the source. [Import a brand](/brands/import-a-brand/) · [Brand layouts from a template](/brands/brand-layouts/#from-a-template)
 
 ```console
 $ npx skills add sandrinodm/deckster --list
@@ -27,7 +27,7 @@ $ npx skills add sandrinodm/deckster --list
 │
 │    brand-import
 │
-│      Extract or recreate a brand for the deckster `deck` CLI from PPTX, PDF, Google Slides, a website, guidelines or screenshots. Use when asked to match an existing look, identify its fonts and colours, or create brand.ts with palettes, surfaces, typography, assets and data styling. Validate the brand and compare framework renders with the source. Excludes writing presentation content and restyling a single slide.
+│      Extract or recreate a brand for the deckster `deck` CLI from PPTX or POTX templates, PDF, Google Slides, a website, guidelines or screenshots. Use when asked to match an existing look, identify its fonts and colours, import a template's slide layouts, or create brand.ts (and layouts.ts) with palettes, surfaces, typography, assets and data styling. Validate the brand and compare framework renders with the source. Excludes writing presentation content and restyling a single slide.
 │
 │    create-presentation
 │
@@ -36,7 +36,7 @@ $ npx skills add sandrinodm/deckster --list
 └  Use --skill <name> to install specific skills
 ```
 
-The cloning progress at the top is cut. The skills come from the deckster repository on GitHub.
+The cloning progress at the top is cut. Skill updates come from the Deckster repository on GitHub. The workspace layout catalog comes from your installed version of the CLI.
 
 ## What they need
 
@@ -97,13 +97,18 @@ Start your agent in the folder that holds `decks/` and say what you want, who it
 $ cd talks
 $ claude
 > Make a 10-minute deck about our Q3 reliability numbers for the leadership team. We want them to
-  approve the on-call staffing change. Use the default brand.
+  approve the on-call staffing change. Use the default brand. In the outline, say which layout
+  serves each slide's claim. Show the strongest evidence for the recommendation.
 ```
 
-For a brand, hand it the source:
+## Ask for a brand from a template
+
+Provide the source template and the slide types you reuse.
 
 ```console
-> Import our brand from ~/Downloads/company-template.pptx and the site https://example.com.
+> Import our brand from ~/Downloads/company-template.potx and the site https://example.com.
+  Keep the cover, divider and two-column content layout. Show how the title and content
+  placeholders map to slots or fields, name the kit fallbacks, and compare the renders.
 ```
 
 ## Review what it made

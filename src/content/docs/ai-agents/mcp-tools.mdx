@@ -104,6 +104,12 @@ For example, `new_slide` with `{"layout": "statement", "id": "why-now", "after":
 }
 ```
 
+### Scaffold a slide in the session brand
+
+<Aside type="note" title="Unreleased">
+  The `new_slide` tool uses the running session's brand to find the layout and its example. If you start `deck dev launch-review --brand fieldnote --mcp`, use `catalog` with `kind: layouts` to see the session's layouts, then ask the agent to create a slide in `fieldnote-section`. A later render under another brand may use the layout's fallback. [Brand layouts](/brands/brand-layouts/#in-another-brand-the-fallback) · [PR #31](https://github.com/sandrinodm/deckster/pull/31)
+</Aside>
+
 ## A terminal workflow
 
 1. Terminal one: `deck dev launch-review --mcp`, with the deck open in a browser.

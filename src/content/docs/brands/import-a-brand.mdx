@@ -17,7 +17,7 @@ $ claude
 > Import our brand from ~/Downloads/company-template.pptx and the site https://example.com.
 ```
 
-If it isn't obvious, the agent first asks what the brand is called (that becomes the folder name) and whether a better source exists. A PPTX keeps more than the PDF made from it.
+Give the agent the brand name to use for its folder. If the template has several masters or similar layouts, name the ones you use. For each layout the skill keeps, review the source placeholders, the Deckster slots and fields they fill, and the kit fallback used when another brand renders the slide. [Brand layouts](/brands/brand-layouts/)
 
 ## What it needs
 
@@ -55,7 +55,9 @@ A PPTX is the best single source. Several sources together are better, such as a
 - the contact sheet and side-by-side images of source pages and specimen slides
 - a handover that ends with **Needs a human**, at most ten questions, most important first: font licences and the substitute picked for each family, colours the check forced it to change (source value, new value, ratio) and every waiver, missing logo variants, and values it guessed rather than found
 
-Try the brand on your own decks with `--brand <name>`, as in [use a brand](/brands/use-a-brand/). Before you adopt it, run the checks in [check a brand](/brands/check-a-brand/). From then on `brand.ts` is yours to edit by hand, as in [create a brand](/brands/create-a-brand/).
+To try the draft on your own decks, pass `--brand <name>`. To install a finished brand folder from Git, use `deck brand add`. [Try a brand](/brands/use-a-brand/#render-a-deck-in-another-brand) · [Install from Git](/brands/use-a-brand/#add-a-brand-from-another-repository)
+
+Before you adopt it, run the checks in [check a brand](/brands/check-a-brand/). From then on `brand.ts` is yours to edit by hand, as in [create a brand](/brands/create-a-brand/).
 
 ## How it treats the source
 

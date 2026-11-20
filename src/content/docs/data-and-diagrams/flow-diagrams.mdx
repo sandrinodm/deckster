@@ -7,11 +7,13 @@ sidebar:
 
 `<Flow>` draws boxes and arrows: an architecture, a request path, a pipeline. This page shows you how to place the nodes, connect and group them, mark the nodes that matter with a card, make the diagram build one step at a time as you explain it, and stay inside the limits `deck lint` checks. Every prop is on [the diagram reference](/reference/diagrams/); in the terminal, `deck diagrams` prints the components, node kinds, edge options, cards and animation parts with an example each, and `deck diagrams --json` gives an agent the same as data.
 
+For development builds, see the unreleased [diagram design controls](/data-and-diagrams/diagram-design/).
+
 ## Place the nodes
 
 Put a `<Flow>` in the `diagram` layout, under a title that states what it shows, with an optional `<Aside>` for what to notice. Its `title` prop is its accessible name; the build fails without one.
 
-Give every node a grid cell with `col` and `row`, counted from 1. `colSpan` and `rowSpan` widen a node across cells, and `cols` and `rows` on the `<Flow>` set the least size of the grid. You never write pixels: the diagram scales to its region and the text stays at the brand's sizes.
+Give every node a grid cell with `col` and `row`, counted from 1. `colSpan` and `rowSpan` widen a node across cells, and `cols` and `rows` on the `<Flow>` set the least size of the grid. The diagram scales to its region and the text stays at the brand's sizes.
 
 ```mdx
 <Flow title="Checkout request path">

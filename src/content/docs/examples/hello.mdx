@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Hello is the smallest complete deck: four slides, one on each surface of the `default` brand, that show frontmatter, speaker notes, steps, a TSX slide and an image. Read it to see every part a deck has in one sitting, then copy it into your workspace to try it.
+Hello is the smallest complete deck. Its four slides use one surface each and show frontmatter, speaker notes, steps, a TSX slide and an image. The preview uses Fieldnote. The source config uses the CLI's `default` brand when you run it locally.
 
 <DeckEmbed deck="hello" slide="title" />
 
@@ -80,4 +80,4 @@ deck dev hello
 
 Delete those two files: in the repository every deck is a workspace package, and they point into the monorepo. Left in place, every slide fails with `schema` errors that read "Transform failed with 1 error".
 
-The comment in `deck.config.ts` suggests switching `brand` to `nocturne`. That brand is not part of the npm package; [Use a brand](/brands/use-a-brand/) shows how to add it first.
+To match the preview, [add Fieldnote to the workspace](/brands/use-a-brand/#add-a-published-brand) and run `deck dev hello --brand fieldnote`. The source comment also suggests `nocturne`, another brand you can install the same way.

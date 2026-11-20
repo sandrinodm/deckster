@@ -23,17 +23,17 @@ The `default` brand is the only one that ships with the npm CLI. To use another,
 
 ## Surfaces
 
-A surface is a named set of roles. On `default` the background is near-white and the text dark; on `inverse` the same roles are near-black and light. A slide asks for `text-muted` or `bg-surface` and gets the colour that role has on the surface it sits on. Every brand has `default`, `inverse`, `accent` and `gradient`, so `surface: accent` works in every brand, and a brand may add more.
+A surface is a named set of roles. A slide asks for `text-muted` or `bg-surface` and gets the colour that role has on its surface. Every brand has `default`, `inverse`, `accent` and `gradient` surfaces and can add more.
 
-The four slides of the `hello` deck use one surface each, in the `default` brand:
+The four slides of the `hello` deck use one surface each. The site renders them in Fieldnote, whose `default` surface has a cream background and whose `inverse` has a deep green background.
 
-<SlideShot deck="hello" slide="title" alt="The title slide 'Hello, deck' on the gradient surface: white text over a cobalt gradient that darkens towards the bottom right." />
+<SlideShot deck="hello" slide="title" alt="The title slide 'Hello, deck' sets light text on a forest-green gradient with a large botanical sprig in the lower right." />
 
-<SlideShot deck="hello" slide="steps" alt="The slide 'How steps work' on the default surface: dark text and three bullets with cobalt markers on a near-white background, with the logo top right and '2 / 4' bottom right." />
+<SlideShot deck="hello" slide="steps" alt="The slide 'How steps work' shows three green bullets on a cream background, with the Fieldnote logo at the bottom left and page number 2 at the bottom right." />
 
-<SlideShot deck="hello" slide="live-counter" alt="The slide 'A TSX slide' on the accent surface: white text on solid cobalt, reading 'This slide is on step 1.'" />
+<SlideShot deck="hello" slide="live-counter" alt="The slide 'A TSX slide' sets light text on terracotta, reading 'This slide is on step 1.'" />
 
-<SlideShot deck="hello" slide="closing" alt="The closing slide 'Thank you' on the inverse surface: light text and the white deck mark on a near-black background." />
+<SlideShot deck="hello" slide="closing" alt="The closing slide 'Thank you' shows a white deck mark in a black square on a deep green background." />
 
 Each [layout](/concepts/layouts-and-slots/) has a default surface: `title` and `closing` are on `gradient`, `section` on `accent`, `statement` and `image` on `inverse`, most others on `default`. A slide picks another with `surface:` in its frontmatter, and a surface the brand doesn't have fails the build:
 

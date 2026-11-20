@@ -7,17 +7,38 @@ sidebar:
     label: "Layouts"
 ---
 
-Use this page to choose a layout for a slide, then open its page to check what it takes before you fill it. Every slide names one in its frontmatter (`layout: stats`); a slide that names none uses `default`. The index below shows each of the 63 layouts as it renders, with what it is for; each links to the layout's own page. For how layouts and slots fit together, read [layouts and slots](/concepts/layouts-and-slots/); for how to fill them in a slide file, [MDX slides](/write-slides/mdx-slides/).
+Pick a layout for what the slide needs to say or show. Set its name in frontmatter, for example `layout: stats`. A slide with no `layout` uses `default`. Each of the 63 kit layouts has its own page with a rendered example, the source, and the fields, slots and budgets. See [Layouts and slots](/concepts/layouts-and-slots/) for how the contract works and [MDX slides](/write-slides/mdx-slides/) for how to fill it.
+
+## Choose a layout
+
+If your brand brings a template, run `deck layouts <deck> --summary` to see its layouts first. Use a brand layout if its fixed regions fit the slide's message and content. The kit layouts cover the other slides. [Brand layouts](/brands/brand-layouts/)
+
+| What the audience needs | Which layout to try |
+| --- | --- |
+| Where they are in the talk | Use [`title`](/reference/layouts/title/) for the cover, [`section`](/reference/layouts/section/) for a part divider, or [`agenda`](/reference/layouts/agenda/) to preview the order. |
+| One idea to take in | Use [`statement`](/reference/layouts/statement/) for a single sentence on its own, [`content`](/reference/layouts/content/) for a headline with a short explanation, or [`split`](/reference/layouts/split/) when a visual needs to sit beside that explanation. |
+| A set of related ideas | Use [`cards`](/reference/layouts/cards/) for two to four ideas with equal weight, [`bento`](/reference/layouts/bento/) when one facet needs the most space, or [`columns`](/reference/layouts/columns/) for short lists under separate headings. |
+| Evidence for a takeaway | Use [`stats`](/reference/layouts/stats/) when two to four headline numbers carry the point, [`chart`](/reference/layouts/chart/) when a single figure shows the pattern, or [`dashboard`](/reference/layouts/dashboard/) when the point depends on several figures. [Choosing a chart](/data-and-diagrams/choosing-a-chart/) |
+| A comparison or change | Use [`comparison`](/reference/layouts/comparison/) to assess two or three options against the same criteria, [`shift`](/reference/layouts/shift/) to argue for a move from one state to another, or [`before-after`](/reference/layouts/before-after/) to show the change in two pictures. |
+| How something works | Use [`steps`](/reference/layouts/steps/) for a short ordered procedure, [`diagram`](/reference/layouts/diagram/) for a flow, sequence or structure, or [`service-blueprint`](/reference/layouts/service-blueprint/) to show who owns a handoff across a customer journey. |
+| A product screen or demo | Use [`screen`](/reference/layouts/screen/) for one whole screenshot, [`screen-story`](/reference/layouts/screen-story/) to focus on a detail, show a handoff or walk through a short workflow, or [`demo`](/reference/layouts/demo/) for an interactive component. [Presentation patterns](/examples/presentation-patterns/) |
+| How the plan unfolds | Use [`timeline`](/reference/layouts/timeline/) for dated milestones, [`schedule`](/reference/layouts/schedule/) for durations across lanes, [`roadmap-transit`](/reference/layouts/roadmap-transit/) for dependencies between workstreams, or [`roadmap-hill`](/reference/layouts/roadmap-hill/) for how certain the approach is. |
+| Something to recall or practise | Use [`recap`](/reference/layouts/recap/) to leave two to four takeaways, [`quiz`](/reference/layouts/quiz/) to check an answer, or [`exercise`](/reference/layouts/exercise/) to give the audience a timed task. |
+| What to decide or do next | Use [`ask`](/reference/layouts/ask/) for one resource request with milestones, [`actions`](/reference/layouts/actions/) to name owners and due dates, or [`closing`](/reference/layouts/closing/) for the final takeaway and how to follow up. |
+
+Open the layout's page before writing the slide. Check the title limit, required fields, slot types and budgets. If the slide needs to carry two takeaways, give each its own slide. For a brand layout, start with its example from `deck layouts <deck> --json` and check which slots its regions bind in `layouts.ts`. [MDX body content in brand layouts](/brands/brand-layouts/#mdx-body-content)
+
+## Visual catalog
 
 <Aside type="note" title="New in v0.6.0">
 Twenty layouts need `@deckster/cli` 0.6.0 or later: `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`. Each of their pages says so; in 0.5.0, `deck lint` reports `There is no "<name>" layout.` for a slide that names one.
 </Aside>
 
-Version 0.7.0 adds the 11 layouts in the first three groups below. See them in use alongside the new chart and demo components. [Presentation patterns](/examples/presentation-patterns/)
+Version 0.7.0 adds the 11 layouts in the first three groups under [Layouts by purpose](#layouts-by-purpose). See them alongside the new chart and demo components. [Presentation patterns](/examples/presentation-patterns/)
+
+The grid shows the kit layouts in Fieldnote, in the order that `deck layouts` prints them. Your deck applies its own brand when it renders the same slide source.
 
 <LayoutIndex />
-
-The grid follows the catalog order, the order `deck layouts` prints; the table below groups the layouts by purpose.
 
 ## Layouts by purpose
 

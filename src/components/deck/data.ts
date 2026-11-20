@@ -299,7 +299,7 @@ export function deckUrl(deck: string, slide?: string, step?: number, embed = fal
 
 export type Still = { entry: ShotEntry; image: StillImage };
 
-/** The still of a whole slide, finished (every step shown), in the deck's own brand. */
+/** The still of a whole slide, finished (every step shown), in the docs preview brand. */
 export function slideStill(c: Caller, deck: string, slide: string): Still {
   const entry = shotIndex().files.find((f) => f.kind === "slide" && f.deck === deck && f.slide === slide);
   if (!entry) {

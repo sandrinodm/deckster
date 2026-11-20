@@ -7,6 +7,8 @@ sidebar:
 
 A brand decides how its diagrams look: the edges and their arrowheads, the outlines of groups, the edge labels, and named **cards**, the node styles a slide picks with `card="..."`. This page shows you what the `diagram` section of `brand.ts` holds, how the five standard cards and your own cards are filled in, and how to give a brand of your own a diagram look that passes `deck brand check`. Picking a card on a slide is on [flow diagrams](/data-and-diagrams/flow-diagrams/#pick-a-card).
 
+For development builds, see the unreleased [diagram design controls](/data-and-diagrams/diagram-design/#set-defaults-in-a-brand).
+
 <Aside type="note" title="New in v0.4.0">
 The diagram look and cards need `@deckster/cli` 0.4.0 or later. `deck brand check` in 0.3.0 rejects `edges`, `groups`, `kinds` and `cards` as unknown fields of `diagram`, and a slide with `card` fails with "`card` is not a prop of `<Node>`".
 </Aside>
@@ -66,7 +68,7 @@ The output is cut to the diagram lines. `--json` adds each card's colours on eve
 
 Every brand has `default`, `outline`, `solid`, `tint` and `raised`, whether it writes them or not:
 
-<SlideShot deck="diagrams-demo" slide="card-reference" alt="Five service nodes in a row in the default brand, each labelled with its card: default is a pale grey box, outline has a border and no fill, solid is filled in blue with white text, tint is a light blue fill with a blue border, and raised is a pale box with a soft shadow." />
+<SlideShot deck="diagrams-demo" slide="card-reference" alt="Five service nodes in a row in Fieldnote. The default card is cream with a thin border, outline has a border and no fill, solid is forest green with light text, tint has a pale green fill, and raised has a soft shadow." />
 
 An entry with a standard name is merged over that card field by field, so `solid: { shadow: 'md' }` keeps the accent fill and adds a shadow. An entry with any other kebab-case name is a card of the brand's own, and it starts from the standard `default` look (the diagram node colours, a chip icon, no shadow), not from your restyled `default`.
 
