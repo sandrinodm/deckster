@@ -12,6 +12,16 @@ import {
 } from '#diagrams/svg-allowlist.ts';
 
 /**
+ * The namespace URI for the elements of a standalone SVG.
+ */
+export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+/**
+ * The namespace URI for legacy SVG links.
+ */
+export const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
+
+/**
  * An SVG made safe to inline, and what was taken out of it.
  */
 export type SanitizedSvg = {
@@ -176,6 +186,12 @@ const NAMESPACE_DECLARATION = /^xmlns(?::|$)/;
 const USER_UNITS = /^\s*(\d+(?:\.\d+)?|\.\d+)(?:px)?\s*$/i;
 
 /**
+ * Characters that cannot appear in a standalone XML document, including unpaired surrogates.
+ */
+// eslint-disable-next-line no-control-regex
+const INVALID_XML_CHARACTER = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\ud800-\udfff\ufffe\uffff]/u;
+
+/**
  * Cleans a parsed drawing with an allowlist and serialises it from the tree: keeps only the root
  * `<svg>` elements, the SVG elements of {@link SVG_ELEMENTS} (anything else, HTML elements
  * included, is removed with its content), and their allow-listed attributes: presentation
@@ -192,6 +208,44 @@ const USER_UNITS = /^\s*(\d+(?:\.\d+)?|\.\d+)(?:px)?\s*$/i;
  */
 export function sanitizeSvgTree(nodes: readonly SvgNode[]): SanitizedSvg {
   const dropped: string[] = [];
+  const [first, ...rest] = cleanSvgRoots(nodes, dropped);
+  const sized = first === undefined ? [] : [withViewBox(first), ...rest];
+  return { markup: sized.map(serializeNode).join(''), dropped };
+}
+
+/**
+ * Serializes a cleaned SVG as a standalone XML file, with fixed namespaces and its original size.
+ * Returns `undefined` when the input lacks a single SVG root or the output has invalid characters.
+ *
+ * @param nodes - The parsed top-level nodes.
+ * @returns The standalone SVG and what was dropped, if it can be serialized as XML.
+ */
+export function sanitizeSvgAssetTree(nodes: readonly SvgNode[]): SanitizedSvg | undefined {
+  const dropped: string[] = [];
+  const roots = cleanSvgRoots(nodes, dropped);
+  const [root] = roots;
+  if (root === undefined || roots.length !== 1) {
+    return undefined;
+  }
+
+  const markup = serializeNode({
+    ...root,
+    attributes: [
+      { name: 'xmlns', value: SVG_NAMESPACE },
+      { name: 'xmlns:xlink', value: XLINK_NAMESPACE },
+      ...root.attributes,
+    ],
+  });
+  return INVALID_XML_CHARACTER.test(markup) ? undefined : { markup, dropped };
+}
+
+/**
+ * Keeps the cleaned SVG roots and records any other top-level elements that were removed.
+ *
+ * @param nodes - The parsed top-level nodes.
+ * @param dropped - What was dropped, added to in place.
+ */
+function cleanSvgRoots(nodes: readonly SvgNode[], dropped: string[]): SvgElementNode[] {
   const roots: SvgElementNode[] = [];
   for (const node of nodes) {
     if (node.type !== 'element') {
@@ -205,9 +259,7 @@ export function sanitizeSvgTree(nodes: readonly SvgNode[]): SanitizedSvg {
     }
   }
 
-  const [first, ...rest] = roots;
-  const sized = first === undefined ? [] : [withViewBox(first), ...rest];
-  return { markup: sized.map(serializeNode).join(''), dropped };
+  return roots;
 }
 
 /**

@@ -34,6 +34,31 @@ const BRAND = 'default';
 const LAYOUTS_FILE = `brands/${BRAND}/layouts.ts`;
 
 /**
+ * The relative path of the fixture used to check standalone artwork and extension casing.
+ */
+const ARTWORK_FILE = 'logos/panel.SVG';
+
+/**
+ * An SVG with prefixed namespaces, intrinsic dimensions, a gradient, a clip, and readable text.
+ */
+const ARTWORK = [
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" xmlns:ns1="http://www.w3.org/1999/xlink"',
+  '     width="160" height="90">',
+  '  <ns0:style>.unused { opacity: 0.8; }</ns0:style>',
+  '  <ns0:defs>',
+  '    <ns0:linearGradient id="paint">',
+  '      <ns0:stop offset="0" stop-color="#3464bf"/>',
+  '    </ns0:linearGradient>',
+  '    <ns0:clipPath id="frame"><ns0:rect width="150" height="80"/></ns0:clipPath>',
+  '    <ns0:rect id="panel" width="160" height="90"/>',
+  '  </ns0:defs>',
+  '  <ns0:use ns1:href="#panel" fill="url(#paint)" clip-path="url(#frame)"/>',
+  '  <ns0:text x="20" y="40" xml:lang="en">Shapes &amp; text</ns0:text>',
+  '</ns0:svg>',
+].join('\n');
+
+/**
  * A variable Fontsource package that none of the scratch workspaces has installed by default.
  */
 const TEST_FONT = '@fontsource-variable/deckster-import-fixture';
@@ -149,6 +174,7 @@ function makeRemote(): string {
     ].join('\n'),
   );
   writeLayoutVariants(repo, brandDir);
+  fs.writeFileSync(path.join(brandDir, ARTWORK_FILE), ARTWORK);
   git(repo, ['init', '--quiet', '--initial-branch=main']);
   git(repo, ['config', 'uploadpack.allowFilter', 'true']);
   git(repo, ['config', 'uploadpack.allowAnySHA1InWant', 'true']);
@@ -165,6 +191,7 @@ function makeRemote(): string {
 function writeLayoutVariants(repo: string, brandDir: string): void {
   const variants = {
     'valid-layout': layoutModule(SPLIT_LAYOUT),
+    'invalid-artwork': layoutModule(SPLIT_LAYOUT),
     'warn-layout': layoutModule({
       ...SPLIT_LAYOUT,
       regions: SPLIT_LAYOUT.regions.map((region) =>
@@ -190,6 +217,8 @@ function writeLayoutVariants(repo: string, brandDir: string): void {
     fs.writeFileSync(path.join(dir, 'brand.ts'), newFont);
     fs.writeFileSync(path.join(dir, 'layouts.ts'), layouts);
   }
+
+  fs.writeFileSync(path.join(repo, 'brands', 'invalid-artwork', ARTWORK_FILE), 'Plain text\n');
 
   const missingAsset = path.join(repo, 'brands', 'missing-asset');
   fs.cpSync(path.join(repo, 'brands', 'valid-layout'), missingAsset, { recursive: true });
@@ -305,6 +334,44 @@ layer(NodeServices.layer)('addBrand', (it) => {
       expect(added.written).toEqual([]);
       expect(added.next.at(-1)).toBe(`pnpm deck brand check ${BRAND}`);
       expect(fs.existsSync(path.join(root, 'brands', BRAND, 'package.json'))).toBe(false);
+    }),
+  );
+
+  it.effect('writes sanitized standalone SVGs with their dimensions and local artwork intact', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const added = yield* addBrand(root, request(`//brands/${BRAND}`));
+      const file = path.posix.join(added.dir, ARTWORK_FILE);
+      const artwork = fs.readFileSync(path.join(root, file), 'utf8');
+      expect(added.files).toContain(ARTWORK_FILE);
+      expect(added.warnings).toContainEqual({
+        file,
+        path: '',
+        message: 'Removed unsupported SVG markup during import.',
+        fix: 'Check the appearance of the imported artwork.',
+      });
+      expect(artwork).toContain('<svg xmlns="http://www.w3.org/2000/svg"');
+      expect(artwork).toContain('xmlns:xlink="http://www.w3.org/1999/xlink"');
+      expect(artwork).toContain('width="160" height="90"');
+      expect(artwork).toContain('<linearGradient id="paint">');
+      expect(artwork).toContain('<clipPath id="frame">');
+      expect(artwork).toContain('xlink:href="#panel" fill="url(#paint)" clip-path="url(#frame)"');
+      expect(artwork).toContain('<text x="20" y="40" xml:lang="en">Shapes &amp; text</text>');
+      expect(artwork).not.toContain('<style>');
+    }),
+  );
+
+  it.effect('preserves an imported brand when its replacement has an invalid SVG', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const added = yield* addBrand(root, request(`//brands/${BRAND}`));
+      const file = path.join(root, added.dir, ARTWORK_FILE);
+      const previous = fs.readFileSync(file, 'utf8');
+      const error = yield* Effect.flip(
+        addBrand(root, request('//brands/invalid-artwork', { force: true })),
+      );
+      expect(error.message).toContain(`Could not import "${added.dir}/${ARTWORK_FILE}" as an SVG.`);
+      expect(fs.readFileSync(file, 'utf8')).toBe(previous);
     }),
   );
 

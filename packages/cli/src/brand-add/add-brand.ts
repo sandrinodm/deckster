@@ -16,9 +16,11 @@ import {
   brandLocation,
   loadBrand,
   readStaticModule,
+  type BrandLocation,
   type LoadedBrand,
 } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
+import { sanitizeSvgAsset } from '@deckster/kit/svg-sanitize-asset';
 import { Effect, FileSystem, Predicate, type Scope } from 'effect';
 import os from 'node:os';
 import path from 'node:path';
@@ -183,17 +185,17 @@ type ReadBrand = {
  * Fetches a brand folder from a git repository and adds it to the workspace as `brands/<name>`,
  * named by the brand's own `name`. `brand.ts` is read as data and never run, and the brand is
  * validated in a staging folder before it is installed; only its data, images, fonts and documents
- * are copied (see `planBrandFiles`). In the repository checkout the brand also gets a
- * `package.json` and `tsconfig.json` like the other brands. Fontsource packages are not installed;
- * the result names the command that installs them.
+ * are copied (see `planBrandFiles`). SVG artwork is sanitized before it is written. In the
+ * repository checkout the brand also gets a `package.json` and `tsconfig.json`. Fontsource packages
+ * are not installed; the result names the command that installs them.
  *
  * @param root - The workspace root.
  * @param request - The source, whether to replace an existing brand, and the CLI's kind.
  * @returns What was added and what to run next.
  * @throws CliError in the error channel when the source cannot be fetched, is not a brand folder,
- *   is code rather than data, or names a brand the workspace already has (without `force`);
- *   BrandError when the brand fails validation; DeckBuildError when the layout catalog cannot load;
- *   FileSystemError when it cannot be written.
+ *   is code rather than data, contains an invalid SVG, or names a brand the workspace already has
+ *   (without `force`); BrandError when the brand fails validation; DeckBuildError when the layout
+ *   catalog cannot load; FileSystemError when it cannot be written.
  */
 export const addBrand = Effect.fn('addBrand')(function* (
   root: string,
@@ -246,15 +248,19 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
     installOptions,
     (stageRoot) =>
       Effect.gen(function* () {
-        const stageDir = brandLocation(stageRoot, brand.name).dir;
-        yield* copyFiles(fetched.dir, stageDir, plan.copy);
+        const location = brandLocation(stageRoot, brand.name);
+        const assetWarnings = yield* copyFiles(fetched.dir, location, plan.copy);
         const written =
           dependencies === undefined
             ? []
-            : yield* writePackageFiles(stageDir, brand.name, dependencies);
+            : yield* writePackageFiles(location.dir, brand.name, dependencies);
         const staged = yield* loadBrand(stageRoot, brand.name, { read: 'data', fontPackages });
-        const warnings = yield* checkStagedLayouts(staged);
-        return { written, warnings, missingFontPackages: staged.missingFontPackages };
+        const brandWarnings = yield* checkStagedLayouts(staged);
+        return {
+          written,
+          warnings: [...assetWarnings, ...brandWarnings],
+          missingFontPackages: staged.missingFontPackages,
+        };
       }),
   );
   const missing = new Set(prepared.missingFontPackages);
@@ -339,26 +345,98 @@ const checkStagedLayouts = Effect.fn('checkStagedLayouts')(function* (
 });
 
 /**
- * Copies the planned files of the fetched brand into a folder.
+ * Copies the planned files of the fetched brand, sanitizing SVG artwork before writing it.
  *
  * @param fromDir - The fetched brand folder.
- * @param toDir - The folder to create.
+ * @param location - The staged brand's location.
  * @param files - The paths to copy, relative to the brand folder.
+ * @returns Warnings for SVGs that had unsupported markup removed.
+ * @throws CliError in the error channel for an invalid SVG; FileSystemError for an I/O failure.
  */
 const copyFiles = Effect.fn('copyFiles')(function* (
   fromDir: string,
-  toDir: string,
+  location: BrandLocation,
   files: readonly string[],
-): Effect.fn.Return<void, FileSystemError, FileSystem.FileSystem> {
+): Effect.fn.Return<BrandFileProblem[], CliError | FileSystemError, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
+  const warnings: BrandFileProblem[] = [];
   for (const file of files) {
-    const to = path.join(toDir, file);
+    const from = path.join(fromDir, file);
+    const to = path.join(location.dir, file);
     yield* makeFolder(path.dirname(to));
-    yield* fs
-      .copyFile(path.join(fromDir, file), to)
-      .pipe(Effect.mapError((error) => fileSystemError('copy', to, error, RETRY_FIX)));
+    if (path.extname(file).toLowerCase() === '.svg') {
+      const displayPath = path.posix.join(path.posix.dirname(location.displayPath), file);
+      const warning = yield* copyBrandSvg(from, to, displayPath);
+      if (warning !== undefined) {
+        warnings.push(warning);
+      }
+    } else {
+      yield* fs
+        .copyFile(from, to)
+        .pipe(Effect.mapError((error) => fileSystemError('copy', to, error, RETRY_FIX)));
+    }
   }
+
+  return warnings;
 });
+
+/**
+ * Reads UTF-8 SVG artwork and writes its standalone sanitized form to the stage.
+ *
+ * @param from - The fetched asset path.
+ * @param to - The staged asset path.
+ * @param displayPath - The asset path relative to the workspace, for messages.
+ * @returns A warning if unsupported markup was removed.
+ * @throws CliError in the error channel for an invalid SVG; FileSystemError for an I/O failure.
+ */
+const copyBrandSvg = Effect.fn('copyBrandSvg')(function* (
+  from: string,
+  to: string,
+  displayPath: string,
+): Effect.fn.Return<
+  BrandFileProblem | undefined,
+  CliError | FileSystemError,
+  FileSystem.FileSystem
+> {
+  const fs = yield* FileSystem.FileSystem;
+  const input = yield* fs
+    .readFile(from)
+    .pipe(Effect.mapError((error) => fileSystemError('read', from, error, RETRY_FIX)));
+
+  const svg = yield* Effect.try({
+    try: () => sanitizeSvgAsset(new TextDecoder('utf-8', { fatal: true }).decode(input)),
+    catch: () => invalidBrandSvg(displayPath),
+  });
+  if (svg === undefined) {
+    return yield* invalidBrandSvg(displayPath);
+  }
+
+  yield* fs
+    .writeFileString(to, svg.markup)
+    .pipe(Effect.mapError((error) => fileSystemError('write', to, error, RETRY_FIX)));
+  if (svg.dropped.length === 0) {
+    return undefined;
+  }
+
+  return {
+    file: displayPath,
+    path: '',
+    message: 'Removed unsupported SVG markup during import.',
+    fix: 'Check the appearance of the imported artwork.',
+  };
+});
+
+/**
+ * Reports an SVG that could not be read and sanitized, without echoing its contents.
+ *
+ * @param displayPath - The asset path relative to the workspace.
+ */
+function invalidBrandSvg(displayPath: string): CliError {
+  return cliError(
+    `Could not import ${JSON.stringify(displayPath)} as an SVG. ` +
+      'Ask its authors for a valid UTF-8 SVG file with one root element.',
+  );
+}
 
 /**
  * Picks the Fontsource dependencies to put in the brand's checkout manifest. A package must be in
