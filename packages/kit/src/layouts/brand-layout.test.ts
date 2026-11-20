@@ -225,7 +225,14 @@ describe('brandLayoutContract', () => {
         { kind: 'subtitle', from: { slot: 'body' } },
       ],
     });
-    expect(brandLayoutContract(TWO_UP_LAYOUT, kitLayout('content')).pptx?.type).toBe('two-content');
+    expect(brandLayoutContract(TWO_UP_LAYOUT, kitLayout('content')).pptx).toEqual({
+      type: 'two-content',
+      placeholders: [
+        { kind: 'title', from: { selector: '.kit-brand-title' } },
+        { kind: 'body', from: { slot: 'body' } },
+        { kind: 'body', from: { slot: 'aside' } },
+      ],
+    });
     const titleOnly = variant(COVER_LAYOUT, { regions: [COVER_LAYOUT.regions[1]!] });
     expect(brandLayoutContract(titleOnly, kitLayout('title')).pptx).toEqual({
       type: 'title',

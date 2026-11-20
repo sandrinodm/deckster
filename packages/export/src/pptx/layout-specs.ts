@@ -2,7 +2,9 @@ import type { BrandLayoutTokens } from '@deckster/brand';
 import type {
   AnyLayoutContract,
   PptxLayoutType,
+  PptxPlaceholder,
   PptxPlaceholderKind,
+  PptxPlaceholderSource,
 } from '@deckster/engine/layout';
 
 import type { ExportMode } from '#plan/plan-scene.ts';
@@ -30,9 +32,14 @@ export const FALLBACK_LAYOUT = 'default';
 const TITLE_LINES = 2;
 
 /**
- * A placeholder mapping of a layout contract: its kind and where its text comes from.
+ * A placeholder from a layout contract with its PowerPoint reference.
  */
-type PlaceholderMapping = NonNullable<AnyLayoutContract['pptx']>['placeholders'][number];
+type LayoutPlaceholder = PptxPlaceholder & {
+  /**
+   * Its type and index.
+   */
+  ref: PlaceholderRef;
+};
 
 /**
  * The slide layout types every slide master offers, so a slide inserted in PowerPoint can start
@@ -77,17 +84,7 @@ const PLACEHOLDER_TYPES: Readonly<
 /**
  * A placeholder on a layout: what it holds, where it sits and the text style its runs inherit.
  */
-export type PlaceholderSpec = {
-  /**
-   * What it holds.
-   */
-  kind: PptxPlaceholderKind;
-
-  /**
-   * Its type and index.
-   */
-  ref: PlaceholderRef;
-
+export type PlaceholderSpec = LayoutPlaceholder & {
   /**
    * Where it sits.
    */
@@ -327,18 +324,9 @@ function layoutSpec(
     };
   }
 
-  const refs = placeholderRefs(
-    mapping.type,
-    mapping.placeholders.map((placeholder) => placeholder.kind),
+  const placeholders = layoutPlaceholders(mapping.type, mapping.placeholders).map((placeholder) =>
+    placeholderSpec(input, contract, placeholder, theme, context, brandLayout),
   );
-  const placeholders = mapping.placeholders.flatMap((placeholder): PlaceholderSpec[] => {
-    const ref = refs.get(placeholder.kind);
-    if (ref === undefined) {
-      return [];
-    }
-
-    return [placeholderSpec(input, contract, placeholder, ref, theme, context, brandLayout)];
-  });
   return {
     name: contract.name,
     label,
@@ -358,8 +346,7 @@ function layoutSpec(
  *
  * @param input - The deck.
  * @param contract - The layout contract.
- * @param placeholder - The placeholder's mapping in the contract.
- * @param ref - The placeholder's reference on the layout.
+ * @param placeholder - The placeholder's mapping and reference on the layout.
  * @param theme - The master's theme.
  * @param context - The fonts.
  * @param brandLayout - The brand layout the contract comes from, whose boxes place the placeholder.
@@ -367,20 +354,18 @@ function layoutSpec(
 function placeholderSpec(
   input: Pick<PptxDeckInput, 'slides' | 'brand'>,
   contract: AnyLayoutContract,
-  placeholder: PlaceholderMapping,
-  ref: PlaceholderRef,
+  placeholder: LayoutPlaceholder,
   theme: SurfaceTheme,
   context: SpecContext,
   brandLayout: BrandLayoutTokens | undefined,
 ): PlaceholderSpec {
-  const measured = measuredFrame(input, contract, placeholder.kind, theme);
+  const measured = measuredFrame(input, contract, placeholder.from, theme);
   const offSlide = 'field' in placeholder.from;
   const textContext = specTextContext(theme, input, context);
   const layout = measured === null ? null : layoutFrame(measured.frame.paragraphs);
   const defaults = layout === null ? null : textDefaults(layout, textContext);
   return {
-    kind: placeholder.kind,
-    ref,
+    ...placeholder,
     rect:
       (brandLayout === undefined ? null : brandRect(brandLayout, placeholder)) ??
       layout?.rect ??
@@ -400,7 +385,7 @@ function placeholderSpec(
  * @param placeholder - The placeholder's mapping in the layout's contract.
  * @returns The box in canvas pixels, or `null` when the layout has no such region.
  */
-function brandRect(layout: BrandLayoutTokens, placeholder: PlaceholderMapping): SceneRect | null {
+function brandRect(layout: BrandLayoutTokens, placeholder: PptxPlaceholder): SceneRect | null {
   const box = brandBox(layout, placeholder);
   if (box === undefined) {
     return null;
@@ -418,7 +403,7 @@ function brandRect(layout: BrandLayoutTokens, placeholder: PlaceholderMapping): 
  */
 function brandBox(
   layout: BrandLayoutTokens,
-  placeholder: PlaceholderMapping,
+  placeholder: PptxPlaceholder,
 ): BrandLayoutTokens['regions'][number]['box'] | undefined {
   if (placeholder.kind === 'title') {
     return layout.title === false ? undefined : layout.title.box;
@@ -505,17 +490,16 @@ function slideNumberSpec(
  *
  * @param input - The deck.
  * @param contract - The layout contract.
- * @param kind - The placeholder kind.
+ * @param source - Where the placeholder's text is on the slide.
  * @param theme - The master's theme.
  */
 function measuredFrame(
   input: Pick<PptxDeckInput, 'slides'>,
   contract: AnyLayoutContract,
-  kind: PptxPlaceholderKind,
+  source: PptxPlaceholderSource,
   theme: SurfaceTheme,
 ): { frame: TextNode; sameSurface: boolean } | null {
-  const source = contract.pptx?.placeholders.find((placeholder) => placeholder.kind === kind)?.from;
-  if (source === undefined || 'field' in source) {
+  if ('field' in source) {
     return null;
   }
 
@@ -543,10 +527,7 @@ function measuredFrame(
  * @param frame - The frame.
  * @param source - The source.
  */
-export function matchesSource(
-  frame: TextNode,
-  source: { slot: string } | { selector: string } | { field: string },
-): boolean {
+export function matchesSource(frame: TextNode, source: PptxPlaceholderSource): boolean {
   if ('slot' in source) {
     return frame.slot === source.slot && frame.matches.length === 0;
   }
@@ -555,29 +536,31 @@ export function matchesSource(
 }
 
 /**
- * The placeholder reference for each kind on a layout of a type: a title slide's title is
- * `ctrTitle`, a subtitle takes index 1 and a body the next free index.
+ * Assigns each placeholder a reference. Title placeholders use their type, and every other
+ * placeholder gets a distinct index in the order of the layout's mapping.
  *
  * @param type - The layout type.
- * @param kinds - The kinds the layout maps, in order.
- * @returns A reference per kind.
+ * @param placeholders - The placeholders the layout maps, in order.
+ * @returns The mappings with their assigned references.
  */
-export function placeholderRefs(
+export function layoutPlaceholders(
   type: PptxLayoutType,
-  kinds: readonly PptxPlaceholderKind[],
-): Map<PptxPlaceholderKind, PlaceholderRef> {
-  const refs = new Map<PptxPlaceholderKind, PlaceholderRef>();
+  placeholders: readonly PptxPlaceholder[],
+): LayoutPlaceholder[] {
   let idx = 1;
-  for (const kind of kinds) {
-    if (kind === 'title') {
-      refs.set(kind, { type: type === 'title' ? 'ctrTitle' : 'title', idx: undefined });
-    } else {
-      refs.set(kind, { type: PLACEHOLDER_TYPES[kind], idx });
-      idx += 1;
+  return placeholders.map((placeholder) => {
+    if (placeholder.kind === 'title') {
+      const ref: PlaceholderRef = {
+        type: type === 'title' ? 'ctrTitle' : 'title',
+        idx: undefined,
+      };
+      return { ...placeholder, ref };
     }
-  }
 
-  return refs;
+    const ref = { type: PLACEHOLDER_TYPES[placeholder.kind], idx };
+    idx += 1;
+    return { ...placeholder, ref };
+  });
 }
 
 /**

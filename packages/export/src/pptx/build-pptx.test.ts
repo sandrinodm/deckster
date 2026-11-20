@@ -2,6 +2,7 @@ import type { BrandLayoutTokens, BrandTokens } from '@deckster/brand';
 import type { AnyLayoutContract } from '@deckster/engine/layout';
 
 import { loadBrand } from '@deckster/brand/node';
+import kit, { brandLayoutCatalog } from '@deckster/kit/catalog';
 import { NodeServices } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
 import { Effect } from 'effect';
@@ -170,6 +171,39 @@ function slideNumberField(xml: string): string | null {
 }
 
 layer(NodeServices.layer)('buildPptx', (it) => {
+  it.effect('writes and fills both body placeholders of a brand two-content layout', () =>
+    Effect.gen(function* () {
+      const brand = yield* loadBrand(WORKSPACE_ROOT, 'fieldnote');
+      const { layouts } = brandLayoutCatalog(brand.tokens, kit.layouts);
+      const left = textNode(10, paragraph([line('Left column', 380)]), { slot: 'body' });
+      const right = textNode(11, paragraph([line('Right column', 380)]), { slot: 'aside' });
+      const slides = [
+        slideInput(0, [left, right], { layout: 'fieldnote-columns' }),
+        slideInput(1, [right], { layout: 'fieldnote-columns' }),
+      ];
+      const result = yield* buildPptx(deckInput(brand.tokens, slides, { layouts, mode: 'native' }));
+      const parts = partsOf(result.bytes);
+      const layoutXml = Object.values(parts).find((xml) =>
+        xml.includes('<p:cSld name="Fieldnote two columns"'),
+      );
+      expect(layoutXml).toContain('type="twoObj"');
+      expect(layoutXml).toContain('<p:ph type="body" idx="1"/>');
+      expect(layoutXml).toContain('<p:ph type="body" idx="2"/>');
+
+      const filled = parts['ppt/slides/slide1.xml'];
+      const bodies = filled
+        ?.match(/<p:sp>.*?<\/p:sp>/gsu)
+        ?.filter((shape) => shape.includes('<p:ph type="body"'));
+      expect(bodies).toHaveLength(2);
+      expect(bodies?.[0]).toContain('<p:ph type="body" idx="1"/>');
+      expect(bodies?.[0]).toContain('<a:t>Left column</a:t>');
+      expect(bodies?.[1]).toContain('<p:ph type="body" idx="2"/>');
+      expect(bodies?.[1]).toContain('<a:t>Right column</a:t>');
+      expect(parts['ppt/slides/slide2.xml']).not.toContain('<p:ph type="body" idx="1"/>');
+      expect(parts['ppt/slides/slide2.xml']).toContain('<p:ph type="body" idx="2"/>');
+    }),
+  );
+
   it.effect(
     'writes a brand layout as a layout part with its label, art and picture placeholder',
     () =>

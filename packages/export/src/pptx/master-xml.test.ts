@@ -34,6 +34,7 @@ function layout(): LayoutSpec {
     placeholders: [
       {
         kind: 'title',
+        from: { selector: '.kit-title' },
         ref: { type: 'title', idx: undefined },
         rect: { x: 128, y: 150, width: 1664, height: 100 },
         defaults: {

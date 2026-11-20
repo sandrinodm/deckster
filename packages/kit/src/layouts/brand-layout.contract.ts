@@ -697,12 +697,11 @@ const NON_BODY_STEPS: ReadonlySet<string> = new Set(['caption', 'label', 'small'
 
 /**
  * The PowerPoint mapping of a brand layout: the title placeholder when the layout has a title, the
- * first body slot as the body (the subtitle on a layout that falls back to a title slide), the
- * first field region as the subtitle when there is no body, and the first media region bound to a
- * slot as the picture. The type is the fallback's when it is a title or a section layout; else it
- * follows from the body slots, which exclude captions, labels, small print and stats: a title alone
- * is `title-only`, one body `content`, more than one `two-content`, and no title `content` or
- * `blank`.
+ * first two body slots on a two-content slide or the first one on other layouts. The first body
+ * slot is the subtitle on a title fallback; when there is no body, the first field region is the
+ * subtitle. The first media region bound to a slot is the picture. A title or section fallback
+ * keeps its type when the layout has a title. Otherwise one body gives `content`, two or more give
+ * `two-content`, and a layout without body slots uses `title`, `title-only` or `blank`.
  *
  * @param layout - The layout.
  * @param bound - The layout's bindings.
@@ -715,7 +714,7 @@ function pptxMapping(
 ): PptxMapping {
   const hasTitle = layout.title !== false;
   const bodies = bodySlots(layout);
-  const [firstBody] = bodies;
+  const [firstBody, secondBody] = bodies;
   const field = bound.fields[0];
   const titleSlide = hasTitle && fallbackType === 'title';
   const placeholders: PptxPlaceholder[] = [];
@@ -729,16 +728,18 @@ function pptxMapping(
     placeholders.push({ kind: 'subtitle', from: { selector: fieldSelector(field) } });
   }
 
+  const hasSubtitle = placeholders.some((placeholder) => placeholder.kind === 'subtitle');
+  const type = layoutType({ hasTitle, bodies: bodies.length, hasSubtitle, fallbackType });
+  if (type === 'two-content' && secondBody !== undefined) {
+    placeholders.push({ kind: 'body', from: { slot: secondBody } });
+  }
+
   const picture = layout.regions.find((region) => region.kind === 'media' && 'slot' in region.bind);
   if (picture !== undefined && 'slot' in picture.bind) {
     placeholders.push({ kind: 'picture', from: { slot: picture.bind.slot } });
   }
 
-  const hasSubtitle = placeholders.some((placeholder) => placeholder.kind === 'subtitle');
-  return {
-    type: layoutType({ hasTitle, bodies: bodies.length, hasSubtitle, fallbackType }),
-    placeholders,
-  };
+  return { type, placeholders };
 }
 
 /**

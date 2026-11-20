@@ -6,7 +6,7 @@ import type { LayoutSpec } from '#pptx/layout-specs.ts';
 import type { SlideWriteOptions } from '#pptx/slide-xml.ts';
 
 import { createPackage } from '#ooxml/opc-package.ts';
-import { contentContract, PIXEL_PNG, logoNode, slideInput, titleNode } from '#pptx/deck.fixture.ts';
+import { PIXEL_PNG, logoNode, slideInput, titleNode } from '#pptx/deck.fixture.ts';
 import { slideXml } from '#pptx/slide-xml.ts';
 import { layoutFrame } from '#pptx/text-xml.ts';
 import { surfaceThemeFixture } from '#pptx/theme.fixture.ts';
@@ -29,6 +29,7 @@ function layout(): LayoutSpec {
     placeholders: [
       {
         kind: 'title',
+        from: { selector: '.kit-title' },
         ref: { type: 'title', idx: undefined },
         rect: layoutFrame(TITLE.paragraphs).rect,
         defaults: null,
@@ -51,7 +52,6 @@ function options(overrides: Partial<SlideWriteOptions> = {}): SlideWriteOptions 
     brand: { label: 'Default' } as BrandTokens,
     theme: surfaceThemeFixture(),
     placeholders: layout(),
-    contract: contentContract(),
     animate: true,
     outlineFonts: null,
     slideNumber: 3,
