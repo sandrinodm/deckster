@@ -111,7 +111,7 @@ export const loadLayoutCatalog = Effect.fn('loadLayoutCatalog')(function* (
 
     const exported = brandLayoutCatalog(brand, base) as unknown;
     const fallbacks = new Map(brand.layouts.map((layout) => [layout.name, layout.fallback]));
-    for (const layout of yield* readCatalog(exported, ref)) {
+    for (const layout of yield* readCatalog(exported, ref, 'brand')) {
       const fallback = fallbacks.get(layout.contract.name);
       layouts.set(layout.contract.name, fallback === undefined ? layout : { ...layout, fallback });
     }
@@ -149,10 +149,12 @@ const importCatalog = Effect.fn('importCatalog')(function* (
  *
  * @param exported - The default export.
  * @param ref - The catalog file.
+ * @param kind - Whether the catalog was generated from the brand's regions or loaded as a module.
  */
 const readCatalog = Effect.fn('readCatalog')(function* (
   exported: unknown,
   ref: FileRef,
+  kind: 'module' | 'brand' = 'module',
 ): Effect.fn.Return<CatalogLayout[], DeckBuildError> {
   if (
     !Predicate.isObject(exported) ||
@@ -169,7 +171,9 @@ const readCatalog = Effect.fn('readCatalog')(function* (
     ]);
   }
 
-  const problems: Problem[] = exported.layouts.flatMap(checkContract);
+  const problems: Problem[] = exported.layouts.flatMap((contract) =>
+    checkContract(contract, kind === 'brand'),
+  );
   if (problems.length > 0) {
     return yield* invalidLayoutCatalog(ref, problems);
   }

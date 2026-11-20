@@ -77,9 +77,11 @@ export function slideHintsFor(contract: AnyLayoutContract): Readonly<Record<stri
  * example whose frontmatter does not decode.
  *
  * @param value - The contract as the catalog module exports it.
+ * @param generated - Whether the contract is generated from a brand layout. Its example can have an
+ *   empty body when every slot is optional or the layout has no slots.
  * @returns The problems; empty for a valid contract.
  */
-export function checkContract(value: unknown): Problem[] {
+export function checkContract(value: unknown, generated = false): Problem[] {
   if (!isContractShape(value)) {
     return [
       {
@@ -103,7 +105,7 @@ export function checkContract(value: unknown): Problem[] {
     ...variantProblems(value, where),
     ...titleProblems(value, where),
     ...checksProblems(value, where),
-    ...exampleProblems(value, where),
+    ...exampleProblems(value, where, generated),
   ];
 }
 
@@ -391,11 +393,17 @@ function titleProblems(contract: AnyLayoutContract, where: string): Problem[] {
  *
  * @param contract - The contract.
  * @param where - The layout, for messages.
+ * @param generated - Whether the example was generated from the brand layout's regions.
  */
-function exampleProblems(contract: AnyLayoutContract, where: string): Problem[] {
+function exampleProblems(
+  contract: AnyLayoutContract,
+  where: string,
+  generated: boolean,
+): Problem[] {
   const { example } = contract;
   const problems: Problem[] = [];
-  if (typeof example.body !== 'string' || example.body.trim() === '') {
+  const bodyMayBeBlank = generated && !Object.values(contract.slots).some((slot) => slot?.required);
+  if (typeof example.body !== 'string' || (!bodyMayBeBlank && example.body.trim() === '')) {
     problems.push({
       message: `${where}: the example has no body.`,
       fix: 'Write the MDX of a slide that uses the layout well in `example.body`.',

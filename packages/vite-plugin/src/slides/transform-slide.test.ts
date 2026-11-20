@@ -1,8 +1,12 @@
 import { defineLayoutContract } from '@deckster/engine/layout';
+import { NodeFileSystem } from '@effect/platform-node';
 import { Effect, Schema } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 
+import { loadDeckBrand } from '#brand/load-deck-brand.ts';
 import { DeckBuildError } from '#errors.ts';
+import { FIXTURE_WORKSPACE } from '#layouts/brand-workspace.fixture.ts';
+import { DEFAULT_LAYOUT_CATALOGS, loadLayoutCatalog } from '#layouts/load-layout-catalog.ts';
 import { TEST_CATALOG } from '#layouts/test-catalog.fixture.ts';
 import {
   readSlideMeta,
@@ -335,6 +339,37 @@ describe("a layout's default surface", () => {
       layout: 'divider',
       surface: 'inverse',
     });
+  });
+});
+
+describe('MDX on a brand layout without a body region', () => {
+  const coverCatalog = Effect.gen(function* () {
+    const { tokens } = yield* loadDeckBrand(FIXTURE_WORKSPACE, 'fx-brand');
+    const [cover] = tokens.layouts;
+    const brand = { ...tokens, layouts: [{ ...cover!, regions: [] }] };
+    return yield* loadLayoutCatalog(DEFAULT_LAYOUT_CATALOGS, { brand });
+  }).pipe(Effect.provide(NodeFileSystem.layer));
+  const frontmatter = '---\nlayout: fx-cover\ntitle: Hello\n---\n\n';
+
+  it('rejects unbound prose and explains how to give it a region', async () => {
+    const layouts = await Effect.runPromise(coverCatalog);
+    const source = { ...slide('s', 'mdx', `${frontmatter}A subtitle.\n`), layouts };
+    await expect(Effect.runPromise(transformMdxSlide(source, false))).rejects.toThrow(
+      /The fx-cover brand layout has no body region[\s\S]*bind: \{ slot: 'body' \}/,
+    );
+  });
+
+  it('keeps a frontmatter title and speaker notes on a title-only layout', async () => {
+    const layouts = await Effect.runPromise(coverCatalog);
+    const body = [
+      '{/* Pause here. */}',
+      '<>{/* Empty fragment. */}</>',
+      '<Notes>Say hello.</Notes>',
+      '[^unused]: A note from the draft.',
+    ].join('\n\n');
+    const source = { ...slide('s', 'mdx', frontmatter + body), layouts };
+    const code = await Effect.runPromise(transformMdxSlide(source, false));
+    expect(metaOf(code)).toMatchObject({ title: 'Hello', notes: 'Say hello.', slots: [] });
   });
 });
 
