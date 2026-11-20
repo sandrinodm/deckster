@@ -9,6 +9,10 @@ import type { CodeMoveProps } from '#code/code-move.tsx';
 import type { CodeStepProps } from '#code/code-step.tsx';
 import type { CodeProps } from '#code/code.tsx';
 import type { CmdProps, OutProps, TerminalProps } from '#code/terminal.tsx';
+import type { CommandDemoProps } from '#demo/command-demo.tsx';
+import type { GroundedAnswerProps } from '#demo/grounded-answer.tsx';
+import type { ReviewDiffProps } from '#demo/review-diff.tsx';
+import type { RunTraceProps } from '#demo/run-trace.tsx';
 import type { IconProps } from '#icons/icon.tsx';
 import type { ButtonProps } from '#links/button.tsx';
 import type { DownloadProps } from '#links/download.tsx';
@@ -75,6 +79,10 @@ const AGREE: Record<string, true> = {
   QR: true satisfies Agrees<QRProps, 'QR'>,
   Live: true satisfies Agrees<LiveProps, 'Live'>,
   AppFrame: true satisfies Agrees<AppFrameProps, 'AppFrame'>,
+  CommandDemo: true satisfies Agrees<CommandDemoProps, 'CommandDemo'>,
+  GroundedAnswer: true satisfies Agrees<GroundedAnswerProps, 'GroundedAnswer'>,
+  ReviewDiff: true satisfies Agrees<ReviewDiffProps, 'ReviewDiff'>,
+  RunTrace: true satisfies Agrees<RunTraceProps, 'RunTrace'>,
   Step: true satisfies Agrees<KitStepProps, 'Step'>,
   Morph: true satisfies Agrees<MorphProps, 'Morph'>,
   Notes: true satisfies Agrees<NotesProps, 'Notes'>,

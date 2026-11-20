@@ -1,0 +1,38 @@
+---
+layout: chart
+title: Wrenhaul became more reliable as prices fell
+eyebrow: Price and on-time delivery
+budget: 1m
+---
+
+<MarketMovement
+  data={[
+    { date: '2026-03-31', entity: 'Wrenhaul', price: 3.52, onTime: 94.5 },
+    { date: '2026-03-31', entity: 'Van couriers', price: 4.7, onTime: 87.5 },
+    { date: '2026-03-31', entity: 'Own vans', price: 6.15, onTime: 91.7 },
+    { date: '2026-03-31', entity: 'Gig apps', price: 7.2, onTime: 94.8 },
+    { date: '2026-06-30', entity: 'Wrenhaul', price: 3.31, onTime: 96.7 },
+    { date: '2026-06-30', entity: 'Van couriers', price: 4.8, onTime: 87.9 },
+    { date: '2026-06-30', entity: 'Own vans', price: 6.3, onTime: 92.1 },
+    { date: '2026-06-30', entity: 'Gig apps', price: 7.4, onTime: 95.2 },
+    { date: '2026-10-31', entity: 'Wrenhaul', price: 3.1, onTime: 97.8 },
+    { date: '2026-10-31', entity: 'Van couriers', price: 4.8, onTime: 88 },
+    { date: '2026-10-31', entity: 'Own vans', price: 6.4, onTime: 92.4 },
+    { date: '2026-10-31', entity: 'Gig apps', price: 7.5, onTime: 95.3 },
+  ]}
+  x="price"
+  y="onTime"
+  xLabel="Price per drop"
+  yLabel="Drops inside their window"
+  xFormat={{ style: 'currency', currency: 'EUR', digits: 1 }}
+  format="percent"
+  highlight="Wrenhaul"
+  buildFrom={1}
+  caption="Merchant price per drop and share of drops inside their window, March–October 2026"
+  source="Wrenhaul operating report and merchant survey, October 2026"
+/>
+
+<Notes>
+`chart` with a `<MarketMovement>` trail on two quantitative axes. Advance one observation date at a time while keeping peers visible at their measured positions.
+The dot goes left as a drop gets cheaper and up as more drops reach the door inside their window. In March we were at €3.52 and 94.5 percent. [click] By June we were already on time more often than gig apps in this sample. [click] In October we were at €3.10 and 97.8 percent. Keep your eye on the start of Wrenhaul's trail. It tells you how far we moved with the same measures on both axes.
+</Notes>

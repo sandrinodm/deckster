@@ -1,0 +1,26 @@
+---
+layout: chart
+title: Pharmacies contribute more profit than grocers
+eyebrow: Where contribution comes from
+budget: 1m
+---
+
+<ProfitPool
+  data={[
+    { segment: 'Grocers', revenue: 214396, margin: 19 },
+    { segment: 'Pharmacies', revenue: 118482, margin: 45 },
+    { segment: 'Bakeries', revenue: 95914, margin: 23 },
+    { segment: 'Parcel partners', revenue: 78988, margin: 20 },
+    { segment: 'Other shops', revenue: 56420, margin: 11.2 },
+  ]}
+  highlight="Pharmacies"
+  format={{ style: 'currency', currency: 'EUR', digits: 1 }}
+  buildFrom={1}
+  caption="October 2026 contribution profit (area), from revenue (width) and contribution margin (height)"
+  source="Wrenhaul operating report, October 2026"
+/>
+
+<Notes>
+`chart` with a `<ProfitPool>` and `buildFrom`. Start with the width of each segment's sales before bringing in margin and spotlighting profit.
+Start with the widths. Of every euro we brought in during October, 38 cents came from grocers and 21 from pharmacies. [click] Give those widths a height. Pharmacies keep 45 cents in contribution from each euro they bring in, compared with 19 cents for grocers. [click] Read the area as profit. The narrower pharmacy segment made about €53,000, ahead of grocers at €41,000. That earns pharmacies a place in the first sales call for each new hub.
+</Notes>

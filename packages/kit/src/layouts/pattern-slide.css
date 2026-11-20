@@ -1,0 +1,68 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-pattern-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-pattern-region [data-pattern-visible] {
+    transition:
+      opacity var(--brand-duration-base) var(--brand-ease-standard),
+      visibility 0s linear;
+  }
+
+  .kit-pattern-region [data-pattern-visible='false'] {
+    visibility: hidden;
+    opacity: 0;
+    transition-delay: 0s, var(--brand-duration-base);
+  }
+
+  .kit-frame[data-pattern-static='true'] .kit-pattern-region [data-pattern-visible] {
+    transition: none;
+  }
+
+  .kit-pattern-region .kit-pattern-plot {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .kit-pattern-plot :is(path, polyline, line, polygon) {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .kit-pattern-plot [data-pattern-draw] {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    vector-effect: none;
+    transition: stroke-dashoffset var(--brand-duration-slow) var(--brand-ease-standard);
+  }
+
+  .kit-pattern-plot [data-pattern-draw='true'] {
+    stroke-dashoffset: 0;
+  }
+
+  .kit-frame[data-pattern-static='true'] .kit-pattern-plot [data-pattern-draw] {
+    transition: none;
+  }
+
+  .kit-pattern-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kit-pattern-region [data-pattern-visible],
+    .kit-pattern-plot [data-pattern-draw] {
+      transition: none;
+    }
+  }
+}

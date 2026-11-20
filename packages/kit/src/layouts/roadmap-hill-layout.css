@@ -1,0 +1,151 @@
+@layer theme, base, components, utilities;
+
+@property --kit-hill-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@layer components {
+  .kit-hill-caption {
+    display: flex;
+    gap: var(--brand-space-sm);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-hill-date {
+    color: var(--brand-color-accent-text);
+  }
+
+  .kit-hill {
+    position: relative;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .kit-hill-fill {
+    fill: var(--brand-color-surface);
+  }
+
+  .kit-hill-curve {
+    fill: none;
+    stroke: var(--brand-color-border);
+    stroke-width: 4px;
+  }
+
+  .kit-hill-summit {
+    stroke: var(--brand-color-muted);
+    stroke-opacity: 0.45;
+    stroke-width: 2px;
+    stroke-dasharray: 6 6;
+  }
+
+  .kit-hill-trail {
+    fill: none;
+    stroke: var(--brand-color-accent);
+    stroke-width: 5px;
+    stroke-linecap: round;
+  }
+
+  .kit-hill-apex {
+    position: absolute;
+    top: 9%;
+    left: 50%;
+    margin: 0;
+    color: var(--brand-color-muted);
+    transform: translateX(-50%);
+  }
+
+  .kit-hill-scopes,
+  .kit-hill-scope {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-hill-scope {
+    transition: --kit-hill-progress var(--brand-duration-slow) var(--brand-ease-standard);
+  }
+
+  .kit-hill-position {
+    --kit-hill-rise: sin(calc(var(--kit-hill-progress) * 180deg));
+
+    top: calc(
+      (
+          var(--kit-hill-base) - var(--kit-hill-height) * var(--kit-hill-rise) *
+            var(--kit-hill-rise)
+        ) *
+        1%
+    );
+    left: calc((var(--kit-hill-left) + var(--kit-hill-width) * var(--kit-hill-progress)) * 1%);
+  }
+
+  .kit-hill-marker {
+    position: absolute;
+    width: var(--brand-space-sm);
+    height: var(--brand-space-sm);
+    border: 3px solid var(--brand-color-accent);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .kit-hill-before {
+    background: var(--brand-color-bg);
+  }
+  .kit-hill-now {
+    background: var(--brand-color-accent);
+  }
+
+  .kit-hill-name {
+    position: absolute;
+    width: max-content;
+    max-width: 14cqw;
+    color: var(--brand-color-fg);
+    text-align: center;
+    transform: translate(-50%, calc(-100% - var(--brand-space-sm)));
+  }
+
+  .kit-hill-name[data-hill-align='left'] {
+    transform: translateY(calc(-100% - var(--brand-space-sm)));
+  }
+  .kit-hill-name[data-hill-align='right'] {
+    transform: translate(-100%, calc(-100% - var(--brand-space-sm)));
+  }
+
+  .kit-frame[data-pattern-static='true'] .kit-hill-scope {
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kit-hill-scope {
+      transition: none;
+    }
+  }
+
+  .kit-hill-phases {
+    position: absolute;
+    right: 6%;
+    bottom: 5%;
+    left: 6%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--brand-color-border);
+    text-align: center;
+  }
+
+  .kit-hill-phases span {
+    padding-top: var(--brand-space-xs);
+    color: var(--brand-color-muted);
+  }
+  .kit-hill-phases span + span {
+    border-inline-start: 1px solid var(--brand-color-border);
+  }
+
+  .kit-hill-takeaway {
+    margin: 0;
+    padding-inline-start: var(--brand-space-sm);
+    border-inline-start: 3px solid var(--brand-color-accent);
+  }
+}

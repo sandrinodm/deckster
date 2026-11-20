@@ -18,7 +18,7 @@ Three decks are meant to be read and copied:
 | Deck                           | What it is                                                                                                                                                                                                        |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [hello](hello/README.md)       | The 4-slide starter and the default deck of `deck dev`                                                                                                                                                            |
-| [showcase](showcase/README.md) | A 45-slide talk about deckster that uses 23 of 52 layouts                                                                                                                                                         |
+| [showcase](showcase/README.md) | A 45-slide talk about deckster that uses 23 of 63 layouts                                                                                                                                                         |
 | [lookbook](lookbook/README.md) | Every layout and every layout option, every chart, diagram and component, every surface, transition and step effect, told as the launch-day talk of a fictional cargo-bike delivery company; copy a slide from it |
 
 `packages/cli/src/lookbook/lookbook-coverage.test.ts` fails when the lookbook lacks a layout,

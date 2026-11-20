@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="Pencil working sketch of a dispatch decision in a notebook">
+  <defs>
+    <pattern id="ruled" width="960" height="31" patternUnits="userSpaceOnUse"><path d="M0 30h960" stroke="#927d66" stroke-opacity=".15"/></pattern>
+    <filter id="pencil" x="-4%" y="-4%" width="108%" height="108%"><feTurbulence baseFrequency=".035" numOctaves="3" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="2.5" xChannelSelector="R" yChannelSelector="G"/></filter>
+  </defs>
+  <path fill="#eee2c5" d="M0 0h960v540H0z"/><path fill="url(#ruled)" d="M0 0h960v540H0z"/><path d="M68 0v540" stroke="#b76157" stroke-opacity=".35" stroke-width="2"/>
+  <g fill="none" stroke="#4c443b" stroke-linecap="round" stroke-linejoin="round" filter="url(#pencil)">
+    <path stroke-width="4" d="M98 63q348-10 781 1l-4 412q-460 6-776-2zM100 104q430-5 779-3M125 247q362 7 709-3M123 352q367-6 719 4M127 424q264 3 402 1"/>
+    <path stroke-width="2" stroke-opacity=".52" d="M95 68q409-11 780-4M102 478l773-4M127 249q348-2 704 0M126 351l714 5M882 62l-5 418M128 424l397 4"/>
+    <path stroke-width="4" d="M206 161q0-22 22-26t27 28q-1 22-25 24t-24-26zM230 145l1 16 13 8M273 145l147-2M273 171l94-1M140 279l144 2M140 313l72 2M467 288l115-1M469 317l86 1M168 380l37 1 11 20 27-32M264 387l120-2M264 403l89-1M147 453l94 3"/>
+    <path stroke-width="3" d="M484 137q111-13 157 4t-12 45q-120 18-157-2t12-47zM514 151l16 18 14-22m14 20l11-17 9 21m15 1l3-23m15 0l15 21M418 403q85-18 112 5"/>
+  </g>
+  <g font-family="Georgia,serif" font-style="italic" font-size="29" fill="#514536"><text x="113" y="91" transform="rotate(-1 113 91)">dispatch / promise + loop</text><text x="135" y="233" transform="rotate(-1 135 233)">which route fits?</text></g>
+  <path d="M794 214q-29-17-57-25t-61-20m0 0 15 19m-15-19 25 1M811 446q-77-5-121-20m0 0 18 16m-18-16 23-3" fill="none" stroke="#9c4738" stroke-width="5" stroke-linecap="round" filter="url(#pencil)"/>
+</svg>

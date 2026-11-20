@@ -1,0 +1,28 @@
+---
+layout: choose-path
+title: How should Flock handle this drop?
+eyebrow: Choose a workflow
+budget: 1m
+prompt: The Old Town hub has a new booking. Which parcel should Flock route?
+branches:
+  - name: 4 kg bakery bag
+    situation: Brightloaf needs a bread order delivered within the hour.
+    steps:
+      - action: Check the bike limit
+        detail: The bag fits in a bike box and weighs less than 25 kg.
+      - action: Add to the bike loop
+        detail: Loop 17 has room for the bag and can keep the promised window.
+    outcome: Aoife takes the bag on loop 17 and keeps the same-hour window.
+  - name: 28 kg flour box
+    situation: Pantry Lane needs to send a single box of flour across town.
+    steps:
+      - action: Check the bike limit
+        detail: The box is over the 25 kg limit, so Flock looks for a partner van.
+      - action: Confirm the van booking
+        detail: A partner has capacity and can make the promised window.
+    outcome: The partner van takes the box and keeps the same-hour window.
+---
+
+<Notes>
+`choose-path` gives the room two cases to pick from. Ask for the bakery bag or the flour box. Follow the two buttons for the branch they pick, read the outcome, and use Back to choices to run the other case. The bike cap is the same in both cases and the action changes with the parcel. The still shows the two workflows and both outcomes side by side.
+</Notes>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-label="Illustrative map of the Saltby river and market districts">
+  <defs>
+    <pattern id="plots" width="31" height="23" patternUnits="userSpaceOnUse" patternTransform="rotate(11)"><path d="M1 1h25v17H1z" fill="#a8a396" opacity=".22"/></pattern>
+    <pattern id="east" width="43" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(-15)"><path d="M2 2h32v26H2z" fill="#a8a396" opacity=".25"/></pattern>
+    <pattern id="waters" width="43" height="36" patternUnits="userSpaceOnUse"><path d="M4 17h17m5 0h8M15 27h11" fill="none" stroke="#96b1b2" stroke-opacity=".60" stroke-linecap="round" stroke-width="2"/></pattern>
+    <pattern id="marsh" width="31" height="26" patternUnits="userSpaceOnUse"><path d="m7 18-1-5m2 3 5-7m-3 8 7-4m6 4 3-5" fill="none" stroke="#879579" stroke-opacity=".55" stroke-linecap="round" stroke-width="1.5"/></pattern>
+    <linearGradient id="paper" x2="1" y2="1"><stop stop-color="#f0eadb"/><stop offset="1" stop-color="#ded6c0"/></linearGradient>
+  </defs>
+  <path fill="url(#paper)" d="M0 0h1280v720H0z"/>
+  <path d="M18 461C138 483 176 574 301 575c103 2 173-70 235-38l53 183H0V478z" fill="#b4bda0"/><path d="M18 461C138 483 176 574 301 575c103 2 173-70 235-38l53 183H0V478z" fill="url(#marsh)"/>
+  <path d="M951 480c84-129 171-89 251-142l78 52v330H949z" fill="#bec6a8"/><path d="M951 480c84-129 171-89 251-142l78 52v330H949z" fill="url(#marsh)"/>
+  <path d="M716-30C710 88 701 119 653 174c-41 46-55 82-47 140 12 84 71 117 70 187-1 94-88 167-94 219h254c17-115 44-158 27-227-17-66-80-110-100-184-12-47-1-82 32-124C853 110 887 44 878-30z" fill="#a8c4c4" stroke="#759ba2" stroke-width="3"/>
+  <path d="M716-30C710 88 701 119 653 174c-41 46-55 82-47 140 12 84 71 117 70 187-1 94-88 167-94 219h254c17-115 44-158 27-227-17-66-80-110-100-184-12-47-1-82 32-124C853 110 887 44 878-30z" fill="url(#waters)"/>
+  <path d="M28 76 555 14l89 132-78 158 55 191-201 15-370-73z" fill="url(#plots)"/>
+  <path d="m920 33 360-15v254l-326 103-104-98z" fill="url(#east)"/>
+  <g fill="none" stroke="#928576" stroke-opacity=".34" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 153 345 129l192 23 77 62M26 230l252-13 259 63 86 19M-4 336l293 1 292 87M57 433l243-85 126 49 156 24M98 58l10 153 38 121 42 113M213 40l37 131 29 45 2 133 129 49 80 19M394 31l-19 126 41 92 36 143M524 40l-37 125 30 116 20 118 26 90M868 329l191-136 223-25M938 29l32 160 75 101M1073 36l12 106 72 103M1164 44l14 90 102 28M1241 29l8 95M848 351l230-4 202-60"/>
+  </g>
+  <g fill="none" stroke="#fbf7eb" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 153 345 129l192 23 77 62M26 230l252-13 259 63 86 19M-4 336l293 1 292 87M57 433l243-85 126 49 156 24M98 58l10 153 38 121 42 113M213 40l37 131 29 45 2 133 129 49 80 19M394 31l-19 126 41 92 36 143M524 40l-37 125 30 116 20 118 26 90M868 329l191-136 223-25M938 29l32 160 75 101M1073 36l12 106 72 103M1164 44l14 90 102 28M1241 29l8 95M848 351l230-4 202-60"/>
+  </g>
+  <path d="M583 281l43 18 150 40 72 13" fill="none" stroke="#8f7d68" stroke-width="32" stroke-linecap="round"/><path d="M583 281l43 18 150 40 72 13" fill="none" stroke="#f7f0e1" stroke-width="18" stroke-linecap="round"/>
+  <g fill="none" stroke="#776e61" stroke-width="2"><path d="M1186 597v65m-15-44 15-21 15 21M1157 662h58"/><path d="M41 670h108m-108-6v12m108-12v12" opacity=".7"/></g>
+</svg>

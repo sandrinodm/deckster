@@ -1,0 +1,98 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-opportunity {
+    display: grid;
+    flex: 1 1 0;
+    grid-template-columns: minmax(0, 73fr) minmax(0, 27fr);
+    align-items: center;
+    gap: var(--brand-space-xl);
+    min-height: 0;
+    container-type: size;
+  }
+
+  .kit-opportunity-map {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    width: min(100%, calc(100cqh * 16 / 9));
+    min-width: 0;
+    margin: 0;
+  }
+
+  .kit-opportunity-map img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--brand-radius-md);
+    object-fit: fill;
+  }
+
+  .kit-opportunity-route {
+    fill: none;
+    stroke: var(--brand-color-accent);
+    stroke-width: 0.58;
+    stroke-linejoin: round;
+  }
+
+  .kit-opportunity-labels {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .kit-opportunity-pin {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: var(--brand-space-2xs);
+    padding: var(--brand-space-2xs) var(--brand-space-xs);
+    border: 1px solid var(--brand-color-border);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-bg);
+    color: var(--brand-color-fg);
+    white-space: nowrap;
+    transform: translate(calc(-1 * (var(--brand-space-xs) + 0.25em)), -50%);
+  }
+
+  .kit-opportunity-pin::before {
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 50%;
+    background: var(--brand-color-muted);
+    content: '';
+  }
+
+  .kit-opportunity-pin[data-map-kind='proposed']::before {
+    background: var(--brand-color-accent);
+  }
+  .kit-opportunity-pin[data-map-kind='constraint']::before {
+    border-radius: 1px;
+    background: var(--brand-color-negative);
+    transform: rotate(45deg);
+  }
+
+  .kit-opportunity-reading {
+    display: grid;
+    gap: var(--brand-space-lg);
+  }
+
+  .kit-opportunity-reading > div {
+    padding: var(--brand-space-sm) 0;
+    border-top: 2px solid var(--brand-color-border);
+  }
+
+  .kit-opportunity-reading :is(h3, p) {
+    margin: 0;
+  }
+  .kit-opportunity-reading p:last-child {
+    color: var(--brand-color-muted);
+  }
+  .kit-opportunity-kicker {
+    color: var(--brand-color-accent-text);
+  }
+  .kit-opportunity-constraint {
+    color: var(--brand-color-negative);
+  }
+}

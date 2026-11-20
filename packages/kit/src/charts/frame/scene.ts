@@ -245,6 +245,11 @@ export type TextItem = ItemCommon & {
   background?: string;
 
   /**
+   * The mark color behind the label before its highlight comes in.
+   */
+  backgroundBefore?: string;
+
+  /**
    * The whole text, when the lines had to cut it short to fit. Written as `data-truncated`, which
    * `deck lint` reports (`text-truncated`): a chart never cuts a label silently.
    */
@@ -264,6 +269,11 @@ export type SceneLayer = {
    * The step that reveals the layer; shown from the start when left out.
    */
   at: number | undefined;
+
+  /**
+   * The step that removes this layer from the plot, if its content is replaced by a later layer.
+   */
+  until?: number;
 
   /**
    * The items, drawn in order.

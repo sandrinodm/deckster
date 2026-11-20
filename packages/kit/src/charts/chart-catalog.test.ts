@@ -15,6 +15,9 @@ import { REVEAL_BY } from '#charts/frame/reveal.ts';
 import { FUNNEL_PROPS } from '#charts/funnel/funnel.tsx';
 import { HEATMAP_PROPS } from '#charts/heatmap/heatmap.tsx';
 import { AREA_CHART_PROPS, LINE_CHART_PROPS } from '#charts/line/line-chart.tsx';
+import { MARKET_MOVEMENT_PROPS } from '#charts/market-movement/market-movement.tsx';
+import { PROFIT_POOL_PROPS } from '#charts/profit-pool/profit-pool.tsx';
+import { RETENTION_COHORTS_PROPS } from '#charts/retention-cohorts/retention-cohorts.tsx';
 import { SCATTER_PROPS } from '#charts/scatter/scatter.tsx';
 import { SLOPE_PROPS } from '#charts/slope/slope.tsx';
 import { SPARKLINE_PROPS } from '#charts/sparkline/sparkline.tsx';
@@ -30,10 +33,13 @@ const DECLARED: Readonly<Record<string, readonly string[]>> = {
   AreaChart: AREA_CHART_PROPS,
   Donut: DONUT_PROPS,
   Scatter: SCATTER_PROPS,
+  MarketMovement: MARKET_MOVEMENT_PROPS,
   Slope: SLOPE_PROPS,
   Waterfall: WATERFALL_PROPS,
   Funnel: FUNNEL_PROPS,
   Heatmap: HEATMAP_PROPS,
+  RetentionCohorts: RETENTION_COHORTS_PROPS,
+  ProfitPool: PROFIT_POOL_PROPS,
   Sparkline: SPARKLINE_PROPS,
   BigNumber: BIG_NUMBER_PROPS,
   StatRow: STAT_ROW_PROPS,
