@@ -13,6 +13,9 @@ import type {
   CardAccentSide,
   CardIconStyle,
   CardShape,
+  DiagramAlignment,
+  DiagramLineStyle,
+  DiagramTextType,
   EdgeArrow,
   EdgeCorners,
   LabelStyle,
@@ -963,21 +966,48 @@ export type ChartLineTokens = {
  */
 export type DiagramTokens = {
   /**
-   * Edges: line width in canvas pixels, how bends are drawn and the arrowhead.
+   * The horizontal alignment when the brand sets it.
    */
-  edges: { stroke: number; corners: EdgeCorners; arrow: EdgeArrow };
+  align: DiagramAlignment | undefined;
 
   /**
-   * Group boxes: outline width in canvas pixels (0 for none), whether the outline is dashed and the
-   * corner radius in canvas pixels.
+   * Edges: line width in canvas pixels, optional stroke pattern, corner treatment and arrowhead. A
+   * timeline track inherits the edge width when the brand writes it in canvas pixels.
    */
-  groups: { stroke: number; dashed: boolean; radius: number };
+  edges: {
+    stroke: number;
+    lineStyle: DiagramLineStyle | undefined;
+    timelineStroke: number | undefined;
+    corners: EdgeCorners;
+    arrow: EdgeArrow;
+  };
+
+  /**
+   * Group boxes: outline width (0 for none) and radius in canvas pixels, plus optional stroke
+   * pattern. Without a pattern, the legacy `dashed` flag controls the outline.
+   */
+  groups: {
+    stroke: number;
+    lineStyle: DiagramLineStyle | undefined;
+    dashed: boolean;
+    radius: number;
+  };
 
   /**
    * Edge labels: plain text on a knock-out or a bordered chip, set in the `caption` or the `label`
    * type step.
    */
   labels: { style: LabelStyle; type: LabelType };
+
+  /**
+   * Preferred node width and minimum height in canvas pixels, with 0 for intrinsic sizing.
+   */
+  nodes: { width: number; height: number; subtitle: DiagramTextTokens };
+
+  /**
+   * Typography applied to diagram notes.
+   */
+  notes: DiagramTextTokens;
 
   /**
    * The card a node kind uses when neither the node nor its diagram names one, for the kinds the
@@ -993,6 +1023,36 @@ export type DiagramTokens = {
 };
 
 /**
+ * Explicit font properties for a subtitle or note. Omitted properties come from its type step.
+ */
+export type DiagramTextTokens = {
+  /**
+   * The brand typography step that supplies the default size and other font settings.
+   */
+  type?: DiagramTextType;
+
+  /**
+   * The chosen family role and its resolved CSS font stack.
+   */
+  family?: { name: FamilyRole; stack: string };
+
+  /**
+   * The font weight on the CSS scale from 1 to 1000.
+   */
+  weight?: number;
+
+  /**
+   * The additional space between characters in em.
+   */
+  tracking?: number;
+
+  /**
+   * Whether to set the text in uppercase or keep its written case.
+   */
+  case?: 'none' | 'upper';
+};
+
+/**
  * A card's geometry and title type, the same on every surface.
  */
 export type CardTokens = {
@@ -1000,6 +1060,11 @@ export type CardTokens = {
    * Outline width in canvas pixels.
    */
   stroke: number;
+
+  /**
+   * The outline pattern when set. Otherwise the node kind supplies its pattern.
+   */
+  borderStyle: DiagramLineStyle | undefined;
 
   /**
    * Corner radius in canvas pixels.
@@ -1021,6 +1086,16 @@ export type CardTokens = {
    * How the icon is drawn.
    */
   icon: CardIconStyle;
+
+  /**
+   * The icon outline's width in canvas pixels, or `undefined` for the icon style's default.
+   */
+  iconBorderWidth: number | undefined;
+
+  /**
+   * The icon outline pattern when set. Existing icon styles use a solid outline.
+   */
+  iconBorderStyle: DiagramLineStyle | undefined;
 
   /**
    * The accent stripe: its side (`none` when the card has no stripe) and its width in canvas
@@ -1045,6 +1120,11 @@ export type CardTokens = {
     tracking: number;
     case: 'none' | 'upper';
   };
+
+  /**
+   * The card's subtitle settings, which take precedence over the diagram's settings.
+   */
+  subtitle: DiagramTextTokens;
 };
 
 /**
@@ -1089,6 +1169,11 @@ export type CardSurfaceTokens = {
    * The tile color of a `solid` icon.
    */
   iconFill: Hex;
+
+  /**
+   * The explicit color of the icon's outline. Unspecified outlines use the detail color.
+   */
+  iconBorder: Hex | undefined;
 
   /**
    * The color of a shape's detail lines (a cylinder's lid, a function's lines) and a chip icon's

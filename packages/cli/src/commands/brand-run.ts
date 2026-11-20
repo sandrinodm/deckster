@@ -8,6 +8,8 @@ import {
   type BrandTokens,
   type CardSurfaceTokens,
   type CardTokens,
+  type DiagramLineStyle,
+  type DiagramTextTokens,
   type SurfaceTokens,
 } from '@deckster/brand';
 import { brandTokensJson, loadBrand } from '@deckster/brand/node';
@@ -266,17 +268,29 @@ function smallTextNote(surface: SurfaceTokens): string {
  * @param tokens - The resolved tokens.
  */
 function diagramLines(tokens: BrandTokens): string[] {
-  const { edges, groups, labels, kinds, cards } = tokens.diagram;
+  const { align, edges, groups, labels, kinds, cards, nodes, notes } = tokens.diagram;
   const kindLine = Object.entries(kinds)
     .map(([kind, card]) => `${kind} ${card}`)
     .join(', ');
-  const outline = groups.dashed ? `${groups.stroke}px dashed` : `${groups.stroke}px`;
+  const groupStyle = groups.lineStyle ?? (groups.dashed ? 'dashed' : undefined);
+  const outline = groups.stroke === 0 ? 'no outline' : strokeSummary(groups.stroke, groupStyle);
   const surface = tokens.surfaces[DEFAULT_SURFACE] ?? Object.values(tokens.surfaces)[0];
+  const geometry = [
+    align === undefined ? undefined : `align ${align}`,
+    nodes.width === 0 ? undefined : `node width ${nodes.width}px`,
+    nodes.height === 0 ? undefined : `node minimum height ${nodes.height}px`,
+    textSummary('subtitle', nodes.subtitle),
+    textSummary('notes', notes),
+  ].filter((part) => part !== undefined);
+  const summary =
+    `Diagrams: edges ${strokeSummary(edges.stroke, edges.lineStyle)}, ` +
+    `${edges.corners} corners, ${edges.arrow} arrowheads; ` +
+    `groups ${outline}, radius ${groups.radius}px; ` +
+    `${labels.style} edge labels${labels.type === 'label' ? ' in the label step' : ''}` +
+    (kindLine === '' ? '' : `; kinds: ${kindLine}`);
   return [
-    `Diagrams: edges ${edges.stroke}px, ${edges.corners} corners, ${edges.arrow} arrowheads; ` +
-      `groups ${groups.stroke === 0 ? 'no outline' : outline}, radius ${groups.radius}px; ` +
-      `${labels.style} edge labels${labels.type === 'label' ? ' in the label step' : ''}` +
-      (kindLine === '' ? '' : `; kinds: ${kindLine}`),
+    summary,
+    ...(geometry.length === 0 ? [] : [`  ${geometry.join(', ')}`]),
     `Cards (colors on the ${surface?.name ?? DEFAULT_SURFACE} surface):`,
     ...Object.entries(cards).map(([name, card]) => {
       const own = (STANDARD_CARDS as readonly string[]).includes(name) ? '' : " (the brand's own)";
@@ -287,7 +301,7 @@ function diagramLines(tokens: BrandTokens): string[] {
 
 /**
  * One card for the summary: its fill, outline, corner radius, shape, shadow, icon, accent stripe
- * and title type.
+ * and title and subtitle typography.
  *
  * @param card - The card's geometry and title type.
  * @param colors - Its colors on the surface shown, if the surface has it.
@@ -295,16 +309,56 @@ function diagramLines(tokens: BrandTokens): string[] {
 function cardSummary(card: CardTokens, colors: CardSurfaceTokens | undefined): string {
   const { title, accent } = card;
   const fill = colors?.fill === null ? 'no fill' : `fill ${colors?.fill ?? '?'}`;
+  const borderPattern = card.borderStyle === undefined ? '' : ` ${card.borderStyle}`;
   const border =
-    colors?.border === null ? 'no border' : `border ${colors?.border ?? '?'} ${card.stroke}px`;
+    colors?.border === null
+      ? 'no border'
+      : `border ${colors?.border ?? '?'} ${card.stroke}px${borderPattern}`;
+  const iconBorder = iconBorderSummary(card, colors?.iconBorder);
+  const subtitle = textSummary('subtitle', card.subtitle);
   const parts = [
     ...(colors === undefined ? [] : [fill, border]),
     `radius ${card.radius}px`,
     ...(card.shape === 'kind' ? [] : [`${card.shape} shape`]),
     ...(card.shadow === 'none' ? [] : [`${card.shadow} shadow`]),
     `${card.icon} icon`,
+    iconBorder,
     ...(accent.side === 'none' ? [] : [`${accent.side} accent ${accent.width}px`]),
     `title ${title.family} ${title.weight}${title.case === 'upper' ? ' upper' : ''}`,
+    subtitle,
   ];
-  return parts.join(', ');
+  return parts.filter((part) => part !== undefined).join(', ');
+}
+
+/**
+ * Shows the pattern only when it changes the usual solid stroke.
+ */
+function strokeSummary(width: number, style: DiagramLineStyle | undefined): string {
+  return style === undefined || style === 'solid' ? `${width}px` : `${width}px ${style}`;
+}
+
+/**
+ * Reports only icon border overrides written by the brand.
+ */
+function iconBorderSummary(card: CardTokens, color: string | undefined): string | undefined {
+  const { iconBorderStyle: style, iconBorderWidth: width } = card;
+  const parts = [color, width === undefined ? undefined : `${width}px`, style].filter(
+    (part) => part !== undefined,
+  );
+  return parts.length === 0 ? undefined : `icon border ${parts.join(' ')}`;
+}
+
+/**
+ * Reports only typography overrides written by the brand.
+ */
+function textSummary(name: string, text: DiagramTextTokens): string | undefined {
+  const { type, family, weight, tracking } = text;
+  const parts = [
+    type,
+    family?.name,
+    weight,
+    tracking === undefined ? undefined : `${tracking}em`,
+    text.case,
+  ].filter((part) => part !== undefined);
+  return parts.length === 0 ? undefined : `${name} ${parts.join(' ')}`;
 }

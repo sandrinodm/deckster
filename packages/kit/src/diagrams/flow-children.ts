@@ -1,8 +1,9 @@
 import { Children, Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
 
-import type { IconComponent, NodeProps } from '#diagrams/flow-parts.tsx';
+import type { NodeProps } from '#diagrams/flow-parts.tsx';
 import type { FlowSpec } from '#diagrams/flow-spec.ts';
 
+import { diagramIcon, type DiagramIconSource } from '#diagrams/diagram-icons.tsx';
 import { assertDiagramProps } from '#diagrams/diagram-props.ts';
 import { PART_NAMES } from '#diagrams/flow-parts.tsx';
 import { buildFlowSpec, optional, type FlowPart } from '#diagrams/flow-spec-builder.ts';
@@ -15,7 +16,7 @@ export type NodeExtras = {
   /**
    * The resolved icon component, if any.
    */
-  icon?: IconComponent;
+  icon?: DiagramIconSource;
 
   /**
    * Whether the node asked for no icon (`icon="none"`), so its kind's icon is not drawn either.
@@ -100,7 +101,7 @@ function toParts(children: ReactNode, extras: Map<string, NodeExtras>): FlowPart
 
     if (part === 'Node') {
       const node = props as NodeProps;
-      const icon = typeof node.icon === 'function' ? node.icon : undefined;
+      const icon = diagramIcon(node.icon);
       extras.set(node.id, {
         ...optional('icon', icon),
         ...(node.icon === 'none' ? { iconless: true } : {}),

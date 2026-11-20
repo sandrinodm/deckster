@@ -33,9 +33,23 @@ function surfaceOf(tokens: BrandTokens, name: string) {
 describe('diagram tokens', () => {
   it('default the look to today’s diagrams and list the standard cards', () => {
     const tokens = tokensOf();
-    expect(tokens.diagram.edges).toEqual({ stroke: 2, corners: 'round', arrow: 'triangle' });
-    expect(tokens.diagram.groups).toEqual({ stroke: 1, dashed: false, radius: 16 });
+    expect(tokens.diagram.edges).toEqual({
+      stroke: 2,
+      lineStyle: undefined,
+      timelineStroke: undefined,
+      corners: 'round',
+      arrow: 'triangle',
+    });
+    expect(tokens.diagram.groups).toEqual({
+      stroke: 1,
+      lineStyle: undefined,
+      dashed: false,
+      radius: 16,
+    });
     expect(tokens.diagram.labels).toEqual({ style: 'plain', type: 'caption' });
+    expect(tokens.diagram.align).toBeUndefined();
+    expect(tokens.diagram.nodes).toEqual({ width: 0, height: 0, subtitle: {} });
+    expect(tokens.diagram.notes).toEqual({});
     expect(tokens.diagram.kinds).toEqual({});
     expect(Object.keys(tokens.diagram.cards)).toEqual([
       'default',
@@ -47,10 +61,13 @@ describe('diagram tokens', () => {
     expect(tokens.diagram.cards['default']).toEqual({
       titleOwn: false,
       stroke: 2,
+      borderStyle: undefined,
       radius: 8,
       shape: 'kind',
       shadow: 'none',
       icon: 'chip',
+      iconBorderWidth: undefined,
+      iconBorderStyle: undefined,
       accent: { side: 'none', width: 4 },
       title: {
         family: 'display',
@@ -59,6 +76,7 @@ describe('diagram tokens', () => {
         tracking: -0.01,
         case: 'none',
       },
+      subtitle: {},
     });
   });
 
@@ -242,9 +260,67 @@ describe('diagram tokens', () => {
         labels: { style: 'chip', type: 'label' },
       },
     });
-    expect(tokens.diagram.edges).toEqual({ stroke: 4, corners: 'sharp', arrow: 'dot' });
-    expect(tokens.diagram.groups).toEqual({ stroke: 0, dashed: true, radius: 4 });
+    expect(tokens.diagram.edges).toEqual({
+      stroke: 4,
+      lineStyle: undefined,
+      timelineStroke: undefined,
+      corners: 'sharp',
+      arrow: 'dot',
+    });
+    expect(tokens.diagram.groups).toEqual({
+      stroke: 0,
+      lineStyle: undefined,
+      dashed: true,
+      radius: 4,
+    });
     expect(tokens.diagram.labels).toEqual({ style: 'chip', type: 'label' });
+  });
+
+  it('resolves explicit dimensions, text properties and surface-specific icon borders', () => {
+    const tokens = tokensOf({
+      diagram: {
+        align: 'right',
+        edges: { stroke: 3.75, lineStyle: 'dotted' },
+        groups: { stroke: 2.5, lineStyle: 'solid', dashed: true },
+        nodes: { width: 180, height: 88, subtitle: { type: 'label', tracking: 0.04 } },
+        notes: { type: 'body', family: 'mono', weight: 700, case: 'upper' },
+        cards: {
+          default: {
+            borderStyle: 'dashed',
+            subtitle: { type: 'small', family: 'mono', weight: 500 },
+          },
+          outline: { subtitle: { weight: 550 } },
+          raised: {
+            subtitle: 'body',
+            icon: { border: 'accent', borderWidth: 1.5, borderStyle: 'dotted' },
+          },
+          tint: { borderStyle: 'solid', subtitle: null, icon: { borderWidth: 0 } },
+        },
+      },
+      'color.surfaces.inverse': { diagram: { cards: { raised: { icon: { border: 'fg' } } } } },
+    });
+    const { align, edges, groups, nodes, notes, cards } = tokens.diagram;
+    const mono = { name: 'mono', stack: 'Mono, monospace' };
+    expect(align).toBe('right');
+    expect(edges).toMatchObject({ stroke: 3.75, lineStyle: 'dotted', timelineStroke: 3.75 });
+    expect(groups).toMatchObject({ stroke: 2.5, lineStyle: 'solid', dashed: false });
+    expect(nodes).toEqual({ width: 180, height: 88, subtitle: { type: 'label', tracking: 0.04 } });
+    expect(notes).toEqual({ type: 'body', family: mono, weight: 700, case: 'upper' });
+    expect(cards['outline']).toMatchObject({
+      borderStyle: 'dashed',
+      subtitle: { type: 'small', family: mono, weight: 550 },
+    });
+    expect(cards['raised']).toMatchObject({
+      iconBorderWidth: 1.5,
+      iconBorderStyle: 'dotted',
+      subtitle: { type: 'body', family: mono, weight: 500 },
+    });
+    expect(cards['tint']).toMatchObject({ borderStyle: 'solid', iconBorderWidth: 0 });
+    expect(cards['tint']?.subtitle).toEqual({});
+    const light = surfaceOf(tokens, 'default');
+    const dark = surfaceOf(tokens, 'inverse');
+    expect(light.diagramCards['raised']?.iconBorder).toBe(light.roles.accent);
+    expect(dark.diagramCards['raised']?.iconBorder).toBe(dark.roles.fg);
   });
 
   it('inherit stroke, radius and title from the brand’s default card, in order', () => {

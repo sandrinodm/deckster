@@ -4,7 +4,9 @@ import type {
   DescribedDecoration,
   DescribedEdge,
   DescribedGroup,
+  DescribedIcon,
   DescribedLine,
+  DescribedLineStyle,
   DescribedNode,
   DescribedPacket,
   DescribedPaint,
@@ -20,6 +22,7 @@ import {
   canvasOrigin,
   cssColorToHex,
   describeText,
+  drawnWithin,
   iconMarkup,
   offsetWithin,
   opacityWithin,
@@ -112,6 +115,16 @@ const ACCENT_SIDES: readonly DescribedAccent['side'][] = ['left', 'top', 'right'
  * The arrowhead styles a `data-arrow` can name besides the default filled triangle.
  */
 const ARROW_STYLES: readonly NonNullable<DescribedEdge['arrow']>[] = ['open', 'dot'];
+
+/**
+ * The frame around icon artwork in both the SVG-backed and HTML diagrams.
+ */
+const ICON_FRAME_SELECTOR = '[data-diagram-part="icon"]';
+
+/**
+ * The pattern fields shared by descriptions of paint and lines.
+ */
+type StrokePattern = Pick<DescribedPaint, 'dashed' | 'lineStyle'>;
 
 /**
  * A node to describe: where the layout put it and how it is drawn.
@@ -439,14 +452,12 @@ function describeFlowNode(
     radius,
   );
   const geometry = shapeGeometry(node.shape, shiftRect(node.rect, origin), cardRadius);
-  const icon = body.querySelector('.kit-flow-node-icon svg');
   const card = cardName(shapeElement);
   const shadow = castShadow(
     element.querySelector(`.kit-flow-shadow[data-node="${CSS.escape(node.id)}"]`),
     element,
   );
   const accent = stripeOf(shapeElement.querySelector('.kit-flow-accent'), element, origin);
-  const color = icon === null ? null : cssColorToHex(getComputedStyle(icon).color);
   return [
     {
       id: node.id,
@@ -456,7 +467,7 @@ function describeFlowNode(
       path: geometry.outline,
       box: shiftBox(node.rect, origin),
       radius: round2(geometry.radius),
-      paint: paintOf(outline, element),
+      paint: outlinePaint(shapeElement, outline, element),
       texts: [
         describeText(body.querySelector('.kit-flow-node-title'), element, origin),
         describeText(body.querySelector('.kit-flow-node-subtitle'), element, origin),
@@ -468,19 +479,62 @@ function describeFlowNode(
           origin,
         ),
       ].filter((text) => text !== null),
-      icon:
-        icon instanceof SVGSVGElement
-          ? {
-              box: shiftBox(offsetWithin(icon, element), origin),
-              color,
-              svg: iconMarkup(icon, color),
-            }
-          : null,
+      icon: describeIcon(body.querySelector(ICON_FRAME_SELECTOR), element, origin),
       group: node.group ?? null,
       decorations: nodeDecorations(shapeElement, geometry, element),
       ...cardFields(card, shadow, accent),
     },
   ];
+}
+
+/**
+ * Reads the stroke above a clipped accent and the fill beneath it when the outline is split.
+ *
+ * @param shape - The node's SVG group.
+ * @param outline - The outline, or its fill when the node has an accent.
+ * @param root - The diagram's root.
+ */
+function outlinePaint(shape: Element, outline: Element, root: HTMLElement): DescribedPaint {
+  const stroke = shape.querySelector('.kit-flow-outline-stroke');
+  if (stroke === null) {
+    return paintOf(outline, root);
+  }
+
+  return { ...paintOf(stroke, root), fill: cssColorToHex(getComputedStyle(outline).fill) };
+}
+
+/**
+ * Describes icon artwork from its frame. Images keep the browser's selected source URL.
+ *
+ * @param frame - The element around the icon's artwork.
+ * @param root - The diagram's root.
+ * @param origin - Its place on the canvas.
+ */
+function describeIcon(
+  frame: Element | null,
+  root: HTMLElement,
+  origin: Point,
+): DescribedIcon | null {
+  const artwork = frame?.querySelector('svg, img');
+  if (artwork instanceof SVGSVGElement) {
+    const color = cssColorToHex(getComputedStyle(artwork).color);
+    return {
+      box: shiftBox(offsetWithin(artwork, root), origin),
+      color,
+      svg: iconMarkup(artwork, color),
+    };
+  }
+
+  if (artwork instanceof HTMLImageElement) {
+    return {
+      box: shiftBox(drawnWithin(artwork, root), origin),
+      color: null,
+      svg: '',
+      src: artwork.currentSrc || artwork.src,
+    };
+  }
+
+  return null;
 }
 
 /**
@@ -714,6 +768,9 @@ function describeBox(box: DescribeBox, element: HTMLElement, origin: Point): Des
   const radius = Number.parseFloat(style.borderTopLeftRadius) || 0;
   const shifted = shiftBox(rect, origin);
   const card = cardName(box.shape);
+  const iconFrame = box.shape.matches(ICON_FRAME_SELECTOR)
+    ? box.shape
+    : box.shape.querySelector(`:scope > ${ICON_FRAME_SELECTOR}`);
   return {
     id: box.id,
     kind: box.kind,
@@ -729,13 +786,13 @@ function describeBox(box: DescribeBox, element: HTMLElement, origin: Point): Des
       fill: cssColorToHex(style.backgroundColor),
       stroke: cssColorToHex(style.borderTopColor),
       strokeWidth: Number.parseFloat(style.borderTopWidth) || 0,
-      dashed: style.borderTopStyle === 'dashed',
+      ...borderPattern(style.borderTopStyle),
       opacity: opacityWithin(box.shape, element),
     },
     texts: box.texts
       .map((text) => describeText(text, element, origin))
       .filter((text): text is DescribedText => text !== null),
-    icon: null,
+    icon: describeIcon(iconFrame, element, origin),
     group: box.group ?? null,
     decorations: [],
     ...(card === null
@@ -811,18 +868,45 @@ function describeLine(
   element: HTMLElement,
   origin: Point,
 ): DescribedLine {
-  const style = getComputedStyle(line.element);
-  const html = line.element instanceof HTMLElement;
   return {
     role: line.role,
     node: line.node ?? null,
     points: line.points.map((point) => shiftPoint(point, origin)),
-    color: cssColorToHex(html ? style.backgroundColor : style.stroke),
-    width: html
-      ? round2((line.element as HTMLElement).offsetHeight)
-      : Number.parseFloat(style.strokeWidth) || 0,
-    dashed: !html && style.strokeDasharray !== 'none' && style.strokeDasharray !== '',
+    ...linePaint(line.element),
     opacity: opacityWithin(line.element, element),
+  };
+}
+
+/**
+ * Reads an SVG stroke or an HTML axis, which may be drawn as a border or a background strip.
+ *
+ * @param element - The element that draws the line.
+ */
+function linePaint(
+  element: Element,
+): Pick<DescribedLine, 'color' | 'width' | 'dashed' | 'lineStyle'> {
+  const style = getComputedStyle(element);
+  if (!(element instanceof HTMLElement)) {
+    return {
+      color: cssColorToHex(style.stroke),
+      width: Number.parseFloat(style.strokeWidth) || 0,
+      ...strokePattern(element, style),
+    };
+  }
+
+  const borderWidth = Number.parseFloat(style.borderTopWidth) || 0;
+  if (borderWidth > 0) {
+    return {
+      color: cssColorToHex(style.borderTopColor),
+      width: borderWidth,
+      ...borderPattern(style.borderTopStyle),
+    };
+  }
+
+  return {
+    color: cssColorToHex(style.backgroundColor),
+    width: round2(element.offsetHeight),
+    dashed: false,
   };
 }
 
@@ -1007,7 +1091,7 @@ function describeEdge(
       cornerRadius: edge.route === 'orthogonal' ? cornerRadius : 0,
       color: cssColorToHex(style.stroke),
       width: Number.parseFloat(style.strokeWidth),
-      dashed: style.strokeDasharray !== 'none' && style.strokeDasharray !== '',
+      ...strokePattern(line, style),
       arrowStart: edge.arrow === 'start' || edge.arrow === 'both',
       arrowEnd: edge.arrow === 'end' || edge.arrow === 'both',
       ...(arrow === 'triangle' ? {} : { arrow }),
@@ -1071,9 +1155,48 @@ function paintOf(shape: Element, root: HTMLElement): DescribedPaint {
     fill: cssColorToHex(style.fill),
     stroke: cssColorToHex(style.stroke),
     strokeWidth: Number.parseFloat(style.strokeWidth) || 0,
-    dashed: style.strokeDasharray !== 'none' && style.strokeDasharray !== '',
+    ...strokePattern(shape, style),
     opacity: opacityWithin(shape, root),
   };
+}
+
+/**
+ * Reads an SVG line's explicit pattern, or its computed dash array on older diagrams.
+ *
+ * @param element - The painted element or a child of the group that sets its pattern.
+ * @param style - Its computed style.
+ */
+function strokePattern(element: Element, style: CSSStyleDeclaration): StrokePattern {
+  const specified = element.closest('[data-line-style]')?.getAttribute('data-line-style');
+  const lineStyle = knownLineStyle(specified);
+  if (lineStyle !== undefined) {
+    return { lineStyle, dashed: lineStyle !== 'solid' };
+  }
+
+  return { dashed: style.strokeDasharray !== 'none' && style.strokeDasharray !== '' };
+}
+
+/**
+ * Reads a CSS border pattern. Other CSS border styles keep the legacy solid fallback.
+ *
+ * @param value - The computed border style.
+ */
+function borderPattern(value: string): StrokePattern {
+  const lineStyle = knownLineStyle(value);
+  return lineStyle === undefined ? { dashed: false } : { lineStyle, dashed: lineStyle !== 'solid' };
+}
+
+/**
+ * Matches the three patterns diagrams and DrawingML both support.
+ *
+ * @param value - The rendered pattern name, when set.
+ */
+function knownLineStyle(value: string | null | undefined): DescribedLineStyle | undefined {
+  if (value === 'solid' || value === 'dashed' || value === 'dotted') {
+    return value;
+  }
+
+  return undefined;
 }
 
 /**

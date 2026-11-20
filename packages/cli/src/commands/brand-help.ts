@@ -12,14 +12,14 @@ from a git repository.
 
   deck brand [name]        A summary of brands/<name>: families, type scale, spacing, each
                            surface's roles, with the small-text color of a role that reaches only
-                           3:1, the diagram look (edges, groups, edge labels, the card each mapped
-                           node kind uses) and every diagram card with its colors on the default
+                           3:1, the diagram look (edges, groups, labels, geometry, text and kind
+                           mappings) and every diagram card with its colors on the default
                            surface. Default: "${DEFAULT_BRAND}". With --json, every resolved token:
                            palette, surfaces (roles, text colors, backdrop, background layers,
                            code, diagram, diagramCards, data with the chart plate, charts,
                            shadows), gradients, typography, shape, spacing, logo, chrome, motion,
-                           data, charts and diagram. diagram is { edges, groups, labels: { style,
-                           type }, kinds, cards }: cards has each card's geometry and title type
+                           data, charts and diagram. diagram includes align, edges, groups, labels,
+                           nodes, notes, kinds and cards. Cards gives geometry and typography
                            by name, the five standard cards first, with titleOwn (the brand wrote
                            the title type, on the card or its default card); a surface's
                            diagramCards holds each card's colors and shadow there, after any

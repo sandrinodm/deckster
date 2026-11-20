@@ -4,6 +4,7 @@ import type {
   DescribedShadow,
   DescribedGroup,
   DescribedLine,
+  DescribedLineStyle,
   DescribedNode,
   DescribedPaint,
   DescribedPacket,
@@ -11,7 +12,7 @@ import type {
   DiagramDescription,
 } from '@deckster/kit/diagram-description';
 
-import type { DiagramParts } from '#diagram/diagram-parts.ts';
+import type { DiagramIconNode, DiagramParts } from '#diagram/diagram-parts.ts';
 import type { ConnectionSite } from '#diagram/diagram-sites.ts';
 import type { IdAllocator } from '#pptx/shape-xml.ts';
 import type { TextContext } from '#pptx/text-xml.ts';
@@ -22,7 +23,6 @@ import type {
   SceneRect,
   SceneShadow,
   SlideScene,
-  SvgNode,
 } from '#scene/scene.ts';
 import type { PathCommand, Point } from '#vector/svg-path.ts';
 
@@ -199,6 +199,26 @@ const INSIDE_SLACK_PX = 4;
 const NAME_ATTRIBUTE = /name="[^"]*"/;
 
 /**
+ * The nearest DrawingML preset for each diagram stroke pattern.
+ */
+const STROKE_DASH = {
+  /**
+   * Continuous stroke.
+   */
+  solid: 'solid',
+
+  /**
+   * Elongated dashes.
+   */
+  dashed: 'dash',
+
+  /**
+   * Short marks with rounded caps, like the source SVG.
+   */
+  dotted: 'sysDot',
+} satisfies Readonly<Record<DescribedLineStyle, string>>;
+
+/**
  * What the diagram writer needs.
  */
 export type DiagramWriteInput = {
@@ -227,6 +247,11 @@ export type DiagramWriteInput = {
    * The slide's theme, fonts and links.
    */
   context: TextContext;
+
+  /**
+   * Writes an image icon or the picture of a complex inline SVG from the captured slide assets.
+   */
+  iconPicture?: (icon: DiagramIconNode) => string;
 };
 
 /**
@@ -285,7 +310,7 @@ export function diagramXml(input: DiagramWriteInput): string {
     ...diagram.nodes.flatMap((node) => nodeXml(writer, node)),
     ...parts.extraBoxes.map((box) => boxXml(box, input.nextId, context.theme)),
     ...diagram.nodes.map((node) => iconXml(writer, node)),
-    ...parts.extraIcons.map((icon) => iconShapesXml(writer, icon, 'Icon')),
+    ...parts.extraIcons.map((icon) => iconArtworkXml(writer, icon, 'Icon')),
     ...diagram.edges.map((edge) => edgeLabelXml(writer, edge)),
     ...diagram.packets.map((packet) => packetXml(writer, packet)),
     ...diagram.nodes.flatMap((node) =>
@@ -420,18 +445,18 @@ function nodeXml(writer: DiagramWriter, node: DescribedNode): string[] {
   const own = castsItself(node) ? (node.shadow ?? null) : null;
   const cast = node.shadow?.fill ?? null;
   const flattens = cast !== null && node.paint.fill !== null && !isOpaqueFill(node.paint);
+  const accent = accentXml(writer, node);
   const main = shapeXml(writer, {
     id: shape.id,
     name: `Node: ${nodeTitle(node)}`,
     box: node.box,
     geometry,
-    paint: node.paint,
+    paint: accent === '' ? node.paint : { ...node.paint, stroke: null },
     texts: stackedTexts(node),
     textInset: shape.preset === 'roundRect' ? roundedTextInset(node.box, cornerRadius(node)) : 0,
     effects: own === null ? '' : shadowEffectXml(writer, own, node.box),
     ...(cast !== null && flattens ? { fill: flattenedFill(writer, node, cast) } : {}),
   });
-  const accent = accentXml(writer, node);
   return [
     ring,
     ...drawn('under'),
@@ -1160,25 +1185,29 @@ function stackedTexts(node: DescribedNode): DescribedText[] {
 }
 
 /**
- * A node's icon as vector shapes, from the drawing the page measured for it.
+ * A node's icon, from the artwork the page measured for it.
  *
  * @param writer - The diagram's state.
  * @param node - The node.
  */
 function iconXml(writer: DiagramWriter, node: DescribedNode): string {
   const icon = writer.parts.icons.get(node.id);
-  return icon === undefined ? '' : iconShapesXml(writer, icon, `Icon: ${nodeTitle(node)}`);
+  return icon === undefined ? '' : iconArtworkXml(writer, icon, `Icon: ${nodeTitle(node)}`);
 }
 
 /**
- * The vector shapes of an icon the page drew, one shape each, not grouped.
+ * Preserves an icon's editable vector shapes or places the captured picture of its artwork.
  *
  * @param writer - The diagram's state.
- * @param icon - The icon's drawing.
+ * @param icon - The icon's artwork.
  * @param name - The shapes' name.
  */
-function iconShapesXml(writer: DiagramWriter, icon: SvgNode, name: string): string {
-  return (icon.shapes ?? [])
+function iconArtworkXml(writer: DiagramWriter, icon: DiagramIconNode, name: string): string {
+  if (icon.kind === 'image' || icon.shapes === null) {
+    return writer.input.iconPicture?.(icon) ?? '';
+  }
+
+  return icon.shapes
     .map((shape) =>
       vectorGroupXml([shape], icon.rect, name, writer.input.nextId, theme(writer), null).replace(
         'name="Vector"',
@@ -1197,13 +1226,7 @@ function iconShapesXml(writer: DiagramWriter, icon: SvgNode, name: string): stri
  */
 function edgeXml(writer: DiagramWriter, edge: DescribedEdge): string {
   const name = `Connector: ${titleOf(writer, edge.from)} → ${titleOf(writer, edge.to)}`;
-  const paint: DescribedPaint = {
-    fill: null,
-    stroke: edge.color,
-    strokeWidth: edge.width,
-    dashed: edge.dashed,
-    opacity: edge.opacity,
-  };
+  const paint = lineAsPaint(edge);
   const arrows = { start: edge.arrowStart, end: edge.arrowEnd, style: edge.arrow ?? 'triangle' };
   const geometry = edge.route === 'curved' ? null : connectorGeometry(edge.points);
   if (geometry === null) {
@@ -1248,13 +1271,7 @@ function glue(
  * @param line - The line.
  */
 function plainLineXml(writer: DiagramWriter, line: DescribedLine): string {
-  const paint: DescribedPaint = {
-    fill: null,
-    stroke: line.color,
-    strokeWidth: line.width,
-    dashed: line.dashed,
-    opacity: line.opacity,
-  };
+  const paint = lineAsPaint(line);
   const name = `Line: ${line.role}`;
   const geometry = connectorGeometry(line.points);
   if (geometry?.preset === 'straightConnector1') {
@@ -1265,6 +1282,22 @@ function plainLineXml(writer: DiagramWriter, line: DescribedLine): string {
     index === 0 ? { type: 'M', points: [point] } : { type: 'L', points: [point] },
   );
   return freeformXml(writer, commands, paint, { name, arrows: null });
+}
+
+/**
+ * Applies a connector or axis's resolved line properties to a shape's stroke.
+ *
+ * @param line - The described line.
+ */
+function lineAsPaint(line: DescribedEdge | DescribedLine): DescribedPaint {
+  return {
+    fill: null,
+    stroke: line.color,
+    strokeWidth: line.width,
+    dashed: line.dashed,
+    opacity: line.opacity,
+    ...(line.lineStyle === undefined ? {} : { lineStyle: line.lineStyle }),
+  };
 }
 
 /**
@@ -1428,11 +1461,12 @@ function outlineXml(
   }
 
   const arrow = ARROW_ENDS[arrows?.style ?? 'triangle'];
+  const style = paint.lineStyle ?? (paint.dashed ? 'dashed' : 'solid');
   return el(
     'a:ln',
-    { w: pxToEmu(strokeWidth) },
+    { w: pxToEmu(strokeWidth), cap: style === 'dotted' ? 'rnd' : undefined },
     el('a:solidFill', {}, colorXml(withOpacity(paint.stroke, paint.opacity), theme(writer))),
-    el('a:prstDash', { val: paint.dashed ? 'dash' : 'solid' }),
+    el('a:prstDash', { val: STROKE_DASH[style] }),
     el('a:round'),
     arrows?.start === true ? el('a:headEnd', arrow) : '',
     arrows?.end === true ? el('a:tailEnd', arrow) : '',

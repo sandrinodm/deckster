@@ -1,8 +1,10 @@
 import { getBrand } from '@deckster/brand/runtime';
 import { useReadyHold } from '@deckster/engine';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
+import type { NodeExtras } from '#diagrams/flow-children.ts';
 import type { IconComponent } from '#diagrams/flow-parts.tsx';
+import type { FlowNodeSpec } from '#diagrams/flow-spec.ts';
 
 import { NODE_KINDS, type NodeKind } from '#diagrams/node-kinds.ts';
 
@@ -57,6 +59,41 @@ export function useKindIcons(
     return settleIconLoad(loadKindIcons, { loaded: setIcons, failed: () => setFailed(true) });
   }, [needed, icons, failed]);
   return needed ? icons : NONE;
+}
+
+/**
+ * Adds default icons to nodes and sequence actors with no icon of their own.
+ */
+export function useNodeIcons(
+  nodes: readonly FlowNodeSpec[],
+  extras: ReadonlyMap<string, NodeExtras>,
+): ReadonlyMap<string, NodeExtras> {
+  const icons = useKindIcons(
+    nodes.map((node) => {
+      const extra = extras.get(node.id);
+      return {
+        kind: node.kind,
+        settled:
+          extra?.icon !== undefined || extra?.iconless === true || extra?.content !== undefined,
+      };
+    }),
+  );
+  return useMemo(() => {
+    if (icons.size === 0) {
+      return extras;
+    }
+
+    const result = new Map(extras);
+    for (const node of nodes) {
+      const extra = extras.get(node.id);
+      const icon = icons.get(node.kind);
+      if (icon !== undefined && extra?.icon === undefined && extra?.iconless !== true) {
+        result.set(node.id, { ...extra, icon });
+      }
+    }
+
+    return result;
+  }, [nodes, extras, icons]);
 }
 
 /**

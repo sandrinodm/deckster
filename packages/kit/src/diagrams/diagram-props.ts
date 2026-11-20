@@ -1,5 +1,6 @@
 import type { DiagramProblem } from '#diagrams/flow-validate.ts';
 
+import { DIAGRAM_ALIGNS, DIAGRAM_LINE_STYLES } from '#diagrams/diagram-design.ts';
 import { DIAGRAM_HARD_LIMITS } from '#diagrams/diagram-limits.ts';
 import {
   AUTO_LAYOUTS,
@@ -259,6 +260,11 @@ const STEP_RANGE = [0, DIAGRAM_HARD_LIMITS.maxStep] as const;
 const GRID_RANGE = [0, DIAGRAM_HARD_LIMITS.maxGridIndex] as const;
 
 /**
+ * The widest useful line, in canvas pixels.
+ */
+const STROKE_MAX = 64;
+
+/**
  * The range of a count of grid columns or rows covered.
  */
 const SPAN_RANGE = [1, DIAGRAM_HARD_LIMITS.maxGridIndex] as const;
@@ -307,6 +313,27 @@ const KIND_VALUES: readonly string[] = [...NODE_KIND_NAMES, ...Object.keys(NODE_
  * The props several components and parts share, described once.
  */
 export const SHARED_DIAGRAM_PROPS = {
+  /**
+   * Horizontal placement in the diagram region.
+   */
+  align: oneOf(DIAGRAM_ALIGNS, 'Place a compact drawing to the left, center or right.', {
+    noun: 'alignment',
+  }),
+
+  /**
+   * Pattern of a line or outline.
+   */
+  lineStyle: oneOf(DIAGRAM_LINE_STYLES, 'The line pattern; uses the brand when omitted.', {
+    noun: 'line style',
+  }),
+
+  /**
+   * Width of a connector.
+   */
+  strokeWidth: prop('number', ['number'], 'The connector width in canvas pixels.', {
+    range: [0, STROKE_MAX],
+  }),
+
   /**
    * The id other elements name it by.
    */
@@ -380,7 +407,7 @@ export const SHARED_DIAGRAM_PROPS = {
   icon: prop(
     'string | IconComponent',
     ['string', 'function'],
-    "An icon from the brand's set by name (resolved at build time in MDX), \"none\" to drop the kind's icon, or in TSX an icon component (`import Rocket from '~icons/lucide/rocket'`).",
+    'An Iconify name (MDX), an icon component, a local image or an HTTPS image URL. Use "none" to omit the icon.',
   ),
 
   /**
@@ -469,6 +496,30 @@ export type SharedDiagramPropName = keyof typeof SHARED_DIAGRAM_PROPS;
 const S = SHARED_DIAGRAM_PROPS;
 
 /**
+ * The physical size options actors and nodes share.
+ */
+const NODE_DIMENSIONS = {
+  /**
+   * Desired width, subject to available space.
+   */
+  width: prop(
+    'number',
+    ['number'],
+    'Preferred width in canvas pixels, reduced to fit the region.',
+    {
+      range: [1, DIAGRAM_HARD_LIMITS.maxHeight],
+    },
+  ),
+
+  /**
+   * Height to reserve even when the content is shorter.
+   */
+  height: prop('number', ['number'], 'Minimum height in canvas pixels; grows to fit the text.', {
+    range: [1, DIAGRAM_HARD_LIMITS.maxHeight],
+  }),
+};
+
+/**
  * Children of a component, described.
  *
  * @param description - What goes inside.
@@ -486,6 +537,7 @@ function propTables() {
    * The props of `<Flow>`.
    */
   const FLOW = {
+    align: S.align,
     id: S.id,
     title: S.title,
     cols: prop(
@@ -514,6 +566,7 @@ function propTables() {
    * The props of `<Node>`.
    */
   const NODE = {
+    ...NODE_DIMENSIONS,
     id: prop('string', ['string'], 'The id edges and packets name it by.', { required: true }),
     kind: S.kind,
     title: prop(
@@ -544,6 +597,10 @@ function propTables() {
    * The props of `<Group>`.
    */
   const GROUP = {
+    strokeWidth: prop('number', ['number'], 'The outline width in canvas pixels; zero hides it.', {
+      range: [0, STROKE_MAX],
+    }),
+    lineStyle: S.lineStyle,
     id: prop('string', ['string'], 'Its id; made from the label when left out.'),
     label: prop('string', ['string'], 'The label in its top-left corner, such as `VPC`.', {
       required: true,
@@ -587,6 +644,8 @@ function propTables() {
       ['string'],
       'Text beside the line, such as `HTTPS`. Wraps after about 18 characters to two lines, then is cut with an ellipsis.',
     ),
+    strokeWidth: S.strokeWidth,
+    lineStyle: S.lineStyle,
     dashed: prop('boolean', ['boolean'], 'A dashed line, for asynchronous or optional links.', {
       default: false,
     }),
@@ -741,6 +800,7 @@ function propTables() {
    * The props of `<SequenceDiagram>`.
    */
   const SEQUENCE = {
+    align: S.align,
     id: S.id,
     title: S.title,
     height: S.height,
@@ -752,6 +812,7 @@ function propTables() {
    * The props of `<Actor>`.
    */
   const ACTOR = {
+    ...NODE_DIMENSIONS,
     id: prop('string', ['string'], 'The id messages name it by.', { required: true }),
     kind: S.kind,
     title: prop('string', ['string'], 'Its name; the id when left out.'),
@@ -764,6 +825,8 @@ function propTables() {
    * The props of `<Message>`.
    */
   const MESSAGE = {
+    strokeWidth: S.strokeWidth,
+    lineStyle: S.lineStyle,
     from: prop('string', ['string'], 'The actor it leaves.', { required: true }),
     to: prop(
       'string',
@@ -794,6 +857,7 @@ function propTables() {
    * The props of `<Timeline>`.
    */
   const TIMELINE = {
+    align: S.align,
     id: S.id,
     title: S.title,
     height: S.height,
@@ -824,6 +888,7 @@ function propTables() {
    * The props of `<Layers>`.
    */
   const LAYERS = {
+    align: S.align,
     id: S.id,
     title: S.title,
     height: S.height,
@@ -868,6 +933,7 @@ function propTables() {
    * The props of `<Cycle>`.
    */
   const CYCLE = {
+    align: S.align,
     id: S.id,
     title: S.title,
     steps: prop('boolean', ['boolean'], 'Walk the loop one stage per step.', { default: false }),
@@ -885,6 +951,7 @@ function propTables() {
    * The props of `<Tree>`.
    */
   const TREE = {
+    align: S.align,
     id: S.id,
     title: S.title,
     direction: oneOf(['down', 'right'], 'Which way it grows.', {

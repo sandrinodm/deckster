@@ -10,15 +10,17 @@ import {
 } from 'react';
 
 import type { DiagramDescription } from '#diagrams/diagram-description.ts';
-import type { IconComponent } from '#diagrams/flow-parts.tsx';
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { DiagramState } from '#diagrams/flow-spec.ts';
 
 import { StepMarks } from '#code/step-marks.tsx';
 import { describeDiagram, type DescribeInput } from '#diagrams/describe-diagram.ts';
-import { offsetWithin } from '#diagrams/describe-dom.ts';
+import { drawnWithin, offsetWithin } from '#diagrams/describe-dom.ts';
 import { DiagramFrame } from '#diagrams/diagram-frame.tsx';
+import { DiagramIcon, diagramIcon, type DiagramIconSource } from '#diagrams/diagram-icons.tsx';
 import { assertDiagramProps, normalizeState } from '#diagrams/diagram-props.ts';
 import { count } from '#diagrams/diagram-summary.ts';
+import { useDiagramTokens } from '#diagrams/diagram-tokens.ts';
 import { Milestone, type MilestoneProps } from '#diagrams/form-parts.tsx';
 import { useDiagramDescription } from '#diagrams/use-description.ts';
 import { useElementSize } from '#diagrams/use-element-size.ts';
@@ -33,6 +35,11 @@ const NON_ID_CHARACTERS = /[^a-z0-9]/gi;
  * Props of {@link Timeline}.
  */
 export type TimelineProps = {
+  /**
+   * Horizontal placement of a compact drawing; otherwise follows the brand.
+   */
+  align?: DiagramAlign;
+
   /**
    * An id for the export description.
    */
@@ -66,12 +73,15 @@ export type TimelineProps = {
  * </Timeline>
  * ```
  */
-export function Timeline({ id, title, height, children }: TimelineProps): ReactNode {
+export function Timeline({ id, title, height, align, children }: TimelineProps): ReactNode {
   const milestones = useMemo(() => readMilestones(children), [children]);
   const step = useStep();
   const root = useRef<HTMLElement | null>(null);
   const size = useElementSize(root);
-  useReadyHold(size === undefined);
+  const tokens = useDiagramTokens(root);
+  useReadyHold(size === undefined || tokens === undefined);
+  const hasStyledAxis =
+    tokens?.edge.timelineStroke !== undefined || tokens?.edge.lineStyle !== undefined;
   const shown = milestones.map((milestone) => milestone.at === undefined || milestone.at <= step);
   const latest = shown.lastIndexOf(true);
   const current = currentIndex(milestones, shown, latest, step);
@@ -83,7 +93,7 @@ export function Timeline({ id, title, height, children }: TimelineProps): ReactN
   const generated = useId();
   const diagramId = id ?? `timeline-${generated.replace(NON_ID_CHARACTERS, '')}`;
   const describe =
-    size === undefined
+    size === undefined || tokens === undefined
       ? undefined
       : () => describeTimeline(root.current as HTMLElement, { id: diagramId, step, summary });
   useDiagramDescription(root, describe);
@@ -93,7 +103,7 @@ export function Timeline({ id, title, height, children }: TimelineProps): ReactN
       kind="timeline"
       title={title}
       summary={summary}
-      ready={size !== undefined}
+      ready={size !== undefined && tokens !== undefined}
       height={height}
       live={milestones[current] === undefined ? undefined : `Now: ${milestones[current]?.title}.`}
       data={{
@@ -109,10 +119,12 @@ export function Timeline({ id, title, height, children }: TimelineProps): ReactN
       />
       <div
         className="kit-timeline"
+        data-align={align ?? tokens?.align}
         style={{ '--kit-timeline-count': milestones.length } as CSSProperties}>
         {latest < 1 ? null : (
           <div
             className="kit-timeline-axis"
+            data-styled-axis={hasStyledAxis ? '' : undefined}
             aria-hidden="true"
             style={{ '--kit-timeline-last': latest } as CSSProperties}>
             <div
@@ -122,7 +134,7 @@ export function Timeline({ id, title, height, children }: TimelineProps): ReactN
           </div>
         )}
         {milestones.map((milestone, index) => {
-          const Icon = milestone.icon;
+          const icon = milestone.icon;
           return (
             <div
               key={`${milestone.date}-${index}`}
@@ -131,15 +143,21 @@ export function Timeline({ id, title, height, children }: TimelineProps): ReactN
               data-state={milestoneState(index, current, milestone.state)}
               data-visible={String(shown[index] === true)}>
               <span className="kit-timeline-date kit-type-label">{milestone.date}</span>
-              <span className="kit-timeline-dot" aria-hidden="true">
-                {Icon === undefined ? null : <Icon aria-hidden="true" focusable="false" />}
+              <span
+                className="kit-timeline-dot"
+                data-diagram-part={icon === undefined ? undefined : 'icon'}
+                aria-hidden="true">
+                {icon === undefined ? null : <DiagramIcon source={icon} />}
               </span>
               <div className="kit-timeline-text">
                 <span className="kit-timeline-title kit-type-small">
                   {smartPunctuation(milestone.title)}
                 </span>
                 {milestone.children === undefined ? null : (
-                  <span className="kit-timeline-detail kit-type-caption">{milestone.children}</span>
+                  <span
+                    className={`kit-timeline-detail kit-type-${tokens?.text.note ?? 'caption'}`}>
+                    {milestone.children}
+                  </span>
                 )}
               </div>
             </div>
@@ -157,7 +175,7 @@ type ParsedMilestone = Omit<MilestoneProps, 'icon'> & {
   /**
    * The resolved icon.
    */
-  icon?: IconComponent;
+  icon?: DiagramIconSource;
 };
 
 /**
@@ -179,13 +197,14 @@ function readMilestones(children: ReactNode): ParsedMilestone[] {
     }
 
     assertDiagramProps('Milestone', child.props as Record<string, unknown>);
-    const { icon, state, ...props } = child.props as MilestoneProps;
+    const { icon: writtenIcon, state, ...props } = child.props as MilestoneProps;
+    const icon = diagramIcon(writtenIcon);
     const normalized = normalizeState(state) as DiagramState | undefined;
     return [
       {
         ...props,
         ...(normalized === undefined ? {} : { state: normalized }),
-        ...(typeof icon === 'function' ? { icon } : {}),
+        ...(icon === undefined ? {} : { icon }),
       },
     ];
   });
@@ -338,7 +357,10 @@ function axisLines(element: HTMLElement): NonNullable<DescribeInput['lines']> {
       return [];
     }
 
-    const box = offsetWithin(line, element);
+    const box =
+      line.closest('[data-styled-axis]') === null
+        ? offsetWithin(line, element)
+        : drawnWithin(line, element);
     const y = box.y + box.height / 2;
     return [
       {

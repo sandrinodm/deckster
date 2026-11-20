@@ -1,3 +1,4 @@
+import type { DiagramLineStyle } from '#diagrams/diagram-design.ts';
 import type { Side } from '#diagrams/geometry.ts';
 import type { NodeKind } from '#diagrams/node-kinds.ts';
 
@@ -119,6 +120,16 @@ export type GridCell = {
  */
 export type FlowNodeSpec = {
   /**
+   * Desired width in canvas pixels.
+   */
+  width?: number;
+
+  /**
+   * Minimum height in canvas pixels.
+   */
+  height?: number;
+
+  /**
    * The id edges and packets name it by.
    */
   id: string;
@@ -174,6 +185,16 @@ export type FlowNodeSpec = {
  * A labelled container that nodes sit in, such as a VPC or "Client side".
  */
 export type FlowGroupSpec = {
+  /**
+   * Outline or connector width in canvas pixels.
+   */
+  strokeWidth?: number;
+
+  /**
+   * Pattern to apply where no semantic style takes precedence.
+   */
+  lineStyle?: DiagramLineStyle;
+
   /**
    * Its id; generated from the label when not given.
    */
@@ -234,6 +255,16 @@ export type FlowTraffic = {
  * A connection between two nodes.
  */
 export type FlowEdgeSpec = {
+  /**
+   * Outline or connector width in canvas pixels.
+   */
+  strokeWidth?: number;
+
+  /**
+   * Pattern to apply where no semantic style takes precedence.
+   */
+  lineStyle?: DiagramLineStyle;
+
   /**
    * Its id: given, else `from->to` (with a counter when two edges join the same nodes).
    */

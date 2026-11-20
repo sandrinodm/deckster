@@ -62,6 +62,11 @@ const SLIDE = {
    * The TSX deploy gates, an automatic layout.
    */
   deployGates: 13,
+
+  /**
+   * The right-aligned dispatch handoff with a bundled icon.
+   */
+  handoff: 16,
 } as const;
 
 /**
@@ -525,5 +530,62 @@ describe('brands', () => {
     expect(light.stroke).not.toBe(night.stroke);
     expect(light.family).not.toBe(night.family);
     expect(light.token).not.toBe(night.token);
+  });
+});
+
+describe('diagram design controls', () => {
+  test('draws and describes a right-aligned handoff with custom line styles and a local icon', async (fixtures) => {
+    const { browser } = fixtures;
+    await open(fixtures, { slide: SLIDE.handoff, step: 0 });
+    await expect
+      .poll(() =>
+        browser.evaluate((active) => {
+          const image = document.querySelector<HTMLImageElement>(
+            `${active} [data-node="dispatch"] img`,
+          );
+          return image?.complete === true && image.naturalWidth > 0;
+        }, ACTIVE),
+      )
+      .toBe(true);
+
+    const design = await browser.evaluate((active) => {
+      const figure = document.querySelector<HTMLElement>(`${active} [data-diagram="flow"]`);
+      const dispatch = figure?.querySelector<HTMLElement>('.kit-flow-node[data-node="dispatch"]');
+      const depot = figure?.querySelector<HTMLElement>('.kit-flow-node[data-node="depot"]');
+      const group = figure?.querySelector('.kit-flow-group');
+      const edge = figure?.querySelector('.kit-flow-edge-line');
+      return {
+        rightAligned: (dispatch?.offsetLeft ?? 0) > (figure?.offsetWidth ?? 0) / 2,
+        dispatchWidth: dispatch?.offsetWidth ?? 0,
+        dispatchHeight: dispatch?.offsetHeight ?? 0,
+        depotWidth: depot?.offsetWidth ?? 0,
+        groupDash:
+          group === null || group === undefined ? null : getComputedStyle(group).strokeDasharray,
+        edgeDash:
+          edge === null || edge === undefined ? null : getComputedStyle(edge).strokeDasharray,
+        description: JSON.parse(figure?.getAttribute('data-diagram-description') ?? 'null'),
+      };
+    }, ACTIVE);
+    expect(design).toMatchObject({
+      rightAligned: true,
+      dispatchWidth: 252,
+      depotWidth: 220,
+      groupDash: '7px, 6px',
+      edgeDash: '0px, 7.5px',
+    });
+    expect(design.dispatchHeight).toBeGreaterThanOrEqual(120);
+    expect(design.description.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'dispatch',
+          box: expect.objectContaining({ width: design.dispatchWidth }),
+        }),
+      ]),
+    );
+    expect(design.description.edges[0]).toMatchObject({ width: 3, lineStyle: 'dotted' });
+    expect(design.description.groups[0].paint).toMatchObject({
+      strokeWidth: 2,
+      lineStyle: 'dashed',
+    });
   });
 });

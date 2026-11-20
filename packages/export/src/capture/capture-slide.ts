@@ -226,8 +226,12 @@ const captureAssets = Effect.fn('captureAssets')(function* (
   }
 
   const pictures = new Map<number, Uint8Array>();
-  yield* pictureElements(capture, plan, options, pictures);
-  const imageNodes = imageNodesOf(plan);
+  const iconItems = plan.items.flatMap((item) =>
+    item.kind === 'native' ? (item.diagramIcons ?? []) : [],
+  );
+  const assetPlan = { ...plan, items: [...plan.items, ...iconItems] };
+  yield* pictureElements(capture, assetPlan, options, pictures);
+  const imageNodes = imageNodesOf(assetPlan);
   const images = yield* fetchImages(page, imageNodes, plan, options.label);
   yield* pictureImageFallbacks(capture, imageNodes, images, pictures);
   const background = yield* pictureBackdrop(capture, plan, options);

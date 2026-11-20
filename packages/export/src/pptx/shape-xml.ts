@@ -655,7 +655,7 @@ export function lineXml(border: SceneBorder, theme: SurfaceTheme | null): string
   const dash = { solid: 'solid', dashed: 'dash', dotted: 'sysDot' }[border.style];
   return el(
     'a:ln',
-    { w: pxToEmu(border.width) },
+    { w: pxToEmu(border.width), cap: border.style === 'dotted' ? 'rnd' : undefined },
     el('a:solidFill', {}, colorXml(border.color, theme)),
     el('a:prstDash', { val: dash }),
   );

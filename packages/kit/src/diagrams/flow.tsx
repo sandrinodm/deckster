@@ -1,6 +1,7 @@
 import { useReadyHold, useSlide, useStatic, useStep } from '@deckster/engine';
-import { useId, useMemo, useRef, type ReactNode } from 'react';
+import { useId, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
 
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { AutoPositions } from '#diagrams/elk-layout.ts';
 import type { FlowMetrics } from '#diagrams/flow-grid.ts';
 import type { RoutedEdge } from '#diagrams/flow-route.ts';
@@ -11,6 +12,7 @@ import { StepMarks } from '#code/step-marks.tsx';
 import { flowFrame, flowSteps } from '#diagrams/choreography.ts';
 import { flag } from '#diagrams/data-flags.ts';
 import { describeDiagram, type DescribeInput } from '#diagrams/describe-diagram.ts';
+import { preferredNodeWidths } from '#diagrams/diagram-design.ts';
 import { DiagramFrame } from '#diagrams/diagram-frame.tsx';
 import { LABEL_MAX_CHARS } from '#diagrams/diagram-limits.ts';
 import { flowLiveNote, flowSummary } from '#diagrams/diagram-summary.ts';
@@ -22,7 +24,7 @@ import {
   type DiagramTokens,
 } from '#diagrams/diagram-tokens.ts';
 import { placeBadges } from '#diagrams/flow-badges.ts';
-import { parseFlowChildren, type NodeExtras, type ParsedFlow } from '#diagrams/flow-children.ts';
+import { parseFlowChildren, type ParsedFlow } from '#diagrams/flow-children.ts';
 import { EdgeLabel, EdgePath } from '#diagrams/flow-edge-view.tsx';
 import {
   cellsFromCentres,
@@ -51,7 +53,7 @@ import { movesAt } from '#diagrams/packet-motion.ts';
 import { useAutoLayout, type AutoCandidate } from '#diagrams/use-auto-layout.ts';
 import { useDiagramDescription } from '#diagrams/use-description.ts';
 import { useElementSize } from '#diagrams/use-element-size.ts';
-import { useKindIcons } from '#diagrams/use-kind-icons.ts';
+import { useNodeIcons } from '#diagrams/use-kind-icons.ts';
 import { useMeasurementEffect, useMeasurementState } from '#diagrams/use-measurements.ts';
 import { useMotionPlans } from '#diagrams/use-motion-plans.ts';
 import { widestWord } from '#diagrams/word-breaks.ts';
@@ -61,6 +63,11 @@ import { maxOf } from '#foundation/lists.ts';
  * Props of {@link Flow}.
  */
 export type FlowProps = {
+  /**
+   * Horizontal placement of a compact drawing; otherwise follows the brand.
+   */
+  align?: DiagramAlign;
+
   /**
    * An id for the diagram, used in its export description.
    */
@@ -202,6 +209,7 @@ export function Flow({
   layout: algorithm = 'layered',
   direction = 'right',
   height,
+  align,
   positions,
   card,
   children,
@@ -218,6 +226,7 @@ export function Flow({
       {...optional('cols', cols)}
       {...optional('rows', rows)}
       {...optional('height', height)}
+      {...optional('align', align)}
       {...optional('positions', positions)}
       {...optional('card', card)}
     />
@@ -228,6 +237,11 @@ export function Flow({
  * Props of {@link FlowView}.
  */
 export type FlowViewProps = {
+  /**
+   * Horizontal placement of a compact drawing; otherwise follows the brand.
+   */
+  align?: DiagramAlign;
+
   /**
    * The declaration and the nodes' icons and content.
    */
@@ -314,6 +328,7 @@ export function FlowView({
   algorithm,
   direction,
   height,
+  align,
   centres: fixedCentres,
   tips,
   reshape,
@@ -322,20 +337,7 @@ export function FlowView({
 }: FlowViewProps): ReactNode {
   const specKey = JSON.stringify(parsed.spec);
   const spec = useMemo(() => validSpec(specKey), [specKey]);
-  const kindIcons = useKindIcons(
-    spec.nodes.map((node) => {
-      const extra = parsed.extras.get(node.id);
-      return {
-        kind: node.kind,
-        settled:
-          extra?.icon !== undefined || extra?.iconless === true || extra?.content !== undefined,
-      };
-    }),
-  );
-  const extras = useMemo(
-    () => withKindIcons(spec, parsed.extras, kindIcons),
-    [spec, parsed.extras, kindIcons],
-  );
+  const extras = useNodeIcons(spec.nodes, parsed.extras);
   const step = useStep();
   const isStatic = useStatic();
   const { isActive } = useSlide();
@@ -344,8 +346,8 @@ export function FlowView({
   const tokens = useDiagramTokens(root);
   const cards = useMemo(() => nodeCards(spec, tokens ?? FALLBACK, card), [spec, tokens, card]);
   const metrics = useMemo(
-    () => (tokens === undefined ? undefined : flowMetrics(tokens, spec, cards)),
-    [tokens, spec, cards],
+    () => (tokens === undefined ? undefined : flowMetrics(tokens, spec, cards, align)),
+    [tokens, spec, cards, align],
   );
   const isAuto = spec.nodes.length > 0 && spec.nodes.every((node) => node.cell === undefined);
   const grid = gridSize(
@@ -355,13 +357,32 @@ export function FlowView({
   const nodeWidth = singleNodeWidth(size, metrics, isAuto ? undefined : grid.cols, spec);
   const measureKey = `${specKey}|${Math.round(nodeWidth)}|${[...cards.values()].map((one) => one.name).join(' ')}`;
   const { measurements, settled, dispatch } = useMeasurementState(measureKey);
-  const measured = useMemo(
+  const nodeWidths = useMemo(
     () =>
-      metrics === undefined
-        ? undefined
-        : { ...metrics, nodeHeight: measurements?.nodeHeight ?? metrics.nodeHeight },
-    [metrics, measurements],
+      preferredNodeWidths(
+        spec.nodes,
+        tokens?.node.width ?? 0,
+        (tokens ?? FALLBACK).type.caption * NODE_MAX_CAPTIONS,
+      ),
+    [spec, tokens],
   );
+  const nodeHeights = useMemo(
+    () => measuredNodeHeights(spec, measurements?.nodeHeights, tokens?.node.height ?? 0),
+    [spec, measurements, tokens],
+  );
+  const measured = useMemo(() => {
+    if (metrics === undefined) {
+      return undefined;
+    }
+
+    const fallback = measurements?.nodeHeight ?? metrics.nodeHeight;
+    return { ...metrics, nodeHeight: maxOf([...nodeHeights.values()], fallback) };
+  }, [metrics, measurements, nodeHeights]);
+  const usesPreferredSize =
+    (tokens?.node.width ?? 0) > 0 ||
+    (tokens?.node.height ?? 0) > 0 ||
+    spec.nodes.some((node) => node.width !== undefined || node.height !== undefined);
+  const preparedPositions = usesPreferredSize ? undefined : positions;
   const candidates = useAutoLayout(
     isAuto && fixedCentres === undefined && measured !== undefined && measurements !== undefined
       ? {
@@ -371,7 +392,7 @@ export function FlowView({
           algorithm,
           direction,
           spacing: measured.gutterY,
-          ...optional('positions', positions),
+          ...optional('positions', preparedPositions),
         }
       : undefined,
   );
@@ -398,10 +419,18 @@ export function FlowView({
         radius: edgeCornerRadius(tokens, tokens.radius.lg),
         portSpacing: tokens.space.md,
         arrowGap: tokens.edge.stroke * ARROW_GAP_STROKES,
+        arrowGaps: new Map(
+          spec.edges.flatMap((edge) =>
+            edge.strokeWidth === undefined
+              ? []
+              : [[edge.id, edge.strokeWidth * ARROW_GAP_STROKES] as const],
+          ),
+        ),
       },
       grid: { cols: grid.cols, rows: grid.rows },
       ...(centres === undefined ? {} : { centres, snap }),
-      ...(measurements === undefined ? {} : { nodeHeights: measurements.nodeHeights }),
+      nodeHeights,
+      nodeWidths,
       ...(tips === undefined ? {} : { tips }),
       shapes: new Map(
         spec.nodes.map((node) => [
@@ -424,6 +453,8 @@ export function FlowView({
     centres,
     snap,
     measurements,
+    nodeHeights,
+    nodeWidths,
     tips,
     reshape,
     cards,
@@ -546,7 +577,14 @@ export function FlowView({
         />
       )}
       {layout === undefined || layout.nodes.size === 0 ? (
-        <MeasureNodes spec={spec} cards={cards} extras={extras} width={nodeWidth} />
+        <MeasureNodes
+          spec={spec}
+          cards={cards}
+          extras={extras}
+          width={nodeWidth}
+          widths={nodeWidths}
+          subtitleStep={tokens?.text.subtitle ?? 'caption'}
+        />
       ) : null}
     </DiagramFrame>
   );
@@ -762,14 +800,28 @@ function FlowDrawing({
         <g className="kit-flow-groups">
           {spec.groups.map((group) => {
             const box = layout.groups.get(group.id);
-            return box === undefined ? null : (
+            if (box === undefined) {
+              return null;
+            }
+
+            const style =
+              group.strokeWidth === undefined
+                ? undefined
+                : ({ '--kit-group-stroke': `${group.strokeWidth}px` } as CSSProperties);
+            return (
               <path
                 key={group.id}
                 className="kit-flow-group"
                 data-diagram-part="group"
                 data-group={group.id}
                 data-depth={box.depth}
-                data-dashed={flag(tokens.group.dashed)}
+                data-dashed={flag(
+                  tokens.group.dashed &&
+                    group.lineStyle === undefined &&
+                    tokens.group.lineStyle === undefined,
+                )}
+                data-line-style={group.lineStyle ?? tokens.group.lineStyle}
+                style={style}
                 data-visible={String(frame.groups.get(group.id) === true)}
                 d={roundRect(box.rect, tokens.group.radius)}
               />
@@ -808,6 +860,7 @@ function FlowDrawing({
                 frame={edgeFrame}
                 dimmed={frame.dimmed.has(edge.id)}
                 stroke={tokens.edge.stroke}
+                lineStyle={tokens.edge.lineStyle}
                 arrow={tokens.edge.arrow}
               />
             );
@@ -889,6 +942,7 @@ function FlowDrawing({
               extras={extras.get(node.id)}
               rect={rect}
               inset={geometry.inset}
+              subtitleStep={tokens.text.subtitle}
               frame={nodeFrame}
               dimmed={frame.dimmed.has(node.id)}
               arrivalDelay={arrivalOf(scene, still, node.id)}
@@ -921,6 +975,16 @@ function FlowDrawing({
  */
 type MeasureNodesProps = {
   /**
+   * Typography of node subtitles without a card override.
+   */
+  subtitleStep: DiagramTokens['text']['subtitle'];
+
+  /**
+   * Any node-specific caps on the width of a track.
+   */
+  widths: ReadonlyMap<string, number>;
+
+  /**
    * The diagram.
    */
   spec: FlowSpec;
@@ -945,7 +1009,14 @@ type MeasureNodesProps = {
  * Renders every node body, hidden, at the width nodes will get, so the first layout knows how tall
  * nodes are.
  */
-function MeasureNodes({ spec, cards, extras, width }: MeasureNodesProps): ReactNode {
+function MeasureNodes({
+  spec,
+  cards,
+  extras,
+  width,
+  widths,
+  subtitleStep,
+}: MeasureNodesProps): ReactNode {
   const hidden = { visible: false, state: 'default' as const, arrival: false };
   return (
     <div className="kit-flow-html" aria-hidden="true" data-measuring="true">
@@ -955,7 +1026,13 @@ function MeasureNodes({ spec, cards, extras, width }: MeasureNodesProps): ReactN
           node={node}
           card={cardOf(cards, node)}
           extras={extras.get(node.id)}
-          rect={{ x: 0, y: 0, width, height: 0 }}
+          rect={{
+            x: 0,
+            y: 0,
+            width: Math.min(width, widths.get(node.id) ?? width),
+            height: 0,
+          }}
+          subtitleStep={subtitleStep}
           inset={{ top: 0, right: 0, bottom: 0, left: 0 }}
           frame={hidden}
           dimmed={false}
@@ -974,12 +1051,14 @@ function MeasureNodes({ spec, cards, extras, width }: MeasureNodesProps): ReactN
  *
  * @param tokens - The brand's values.
  * @param spec - The diagram, for its edge labels.
- * @param cards - Each node's card, by id, for its title font and shape; today's node without one.
+ * @param cards - Each node's card, by id, for its title font and shape.
+ * @param align - An authored placement, which overrides the brand.
  */
 export function flowMetrics(
   tokens: DiagramTokens,
   spec: FlowSpec,
   cards?: ReadonlyMap<string, ResolvedCard>,
+  align?: DiagramAlign,
 ): FlowMetrics & { labelMaxWidth: number } {
   const { caption } = tokens.type;
   const padding = 2 * tokens.space.xs;
@@ -993,12 +1072,19 @@ export function flowMetrics(
   );
   const labelRoom = widest === 0 ? 0 : widest + padding + 2 * LABEL_GUTTER_CLEARANCE;
   const shortLabel = tokens.measureEdgeLabel(LABEL_SAMPLE.slice(0, SHORT_LABEL_CHARS));
+  const preferredWidth = tokens.node.width || caption * NODE_MAX_CAPTIONS;
+  const nodeMaxWidth = maxOf(
+    spec.nodes.map((node) => node.width ?? preferredWidth),
+    spec.nodes.length === 0 ? preferredWidth : 0,
+  );
+  const minWidth = tokens.node.width || caption * NODE_MIN_CAPTIONS;
   return {
+    align: align ?? tokens.align,
     wordWidths: wordWidthsOf(tokens, spec, cards),
     ...(widest === 0 ? {} : { labelGutterMin: shortLabel + padding + 2 * LABEL_GUTTER_CLEARANCE }),
-    nodeMinWidth: caption * NODE_MIN_CAPTIONS,
-    nodeMaxWidth: caption * NODE_MAX_CAPTIONS,
-    nodeHeight: caption * ESTIMATED_NODE_HEIGHT,
+    nodeMinWidth: Math.min(minWidth, nodeMaxWidth),
+    nodeMaxWidth,
+    nodeHeight: Math.max(tokens.node.height, caption * ESTIMATED_NODE_HEIGHT),
     gutterX: Math.max(tokens.space.xl, labelRoom),
     minGutterX: Math.max(tokens.space.lg, 2 * tokens.space.md),
     gutterY: tokens.space.xl,
@@ -1102,7 +1188,7 @@ function longTextOf(
     const room = rect.width - chrome - inset.left - inset.right;
     return [
       ['title', node.title, card.measureTitle] as const,
-      ['subtitle', node.subtitle ?? '', tokens.measureCaption] as const,
+      ['subtitle', node.subtitle ?? '', card.measureSubtitle ?? tokens.measureSubtitle] as const,
     ].flatMap(([part, text, measure]) =>
       widestWord(text, measure) > room ? [`the node ${part} "${text}"`] : [],
     );
@@ -1140,7 +1226,7 @@ export function wordWidthsOf(
     const card = cardOf(cards, node).tokens;
     const word = Math.max(
       widestWord(node.title, card.measureTitle),
-      widestWord(node.subtitle ?? '', tokens.measureCaption),
+      widestWord(node.subtitle ?? '', card.measureSubtitle ?? tokens.measureSubtitle),
     );
     const sample = { x: 0, y: 0, width: NARROW_NODE_WIDTH, height: tokens.type.caption * 4 };
     const { inset } = nodeGeometry(NODE_KINDS[node.kind].shape, card, sample);
@@ -1295,6 +1381,22 @@ function arrivalOf(
 }
 
 /**
+ * The minimum space each node needs, considering authored dimensions and measured content.
+ */
+function measuredNodeHeights(
+  spec: FlowSpec,
+  measured: ReadonlyMap<string, number> | undefined,
+  minimum: number,
+): Map<string, number> {
+  return new Map(
+    spec.nodes.flatMap((node) => {
+      const height = Math.max(node.height ?? minimum, measured?.get(node.id) ?? 0);
+      return height > 0 ? [[node.id, height] as const] : [];
+    }),
+  );
+}
+
+/**
  * The width a one-column node gets, as the grid will give it ({@link columnSizes}); the widest for
  * an automatic layout.
  *
@@ -1355,34 +1457,6 @@ function fittingCandidate(
     return !columnSizes(size.width, cols, metrics).cramped && tall <= size.height;
   };
   return candidates.find(fits) ?? candidates[0];
-}
-
-/**
- * Node extras with each kind's icon added where a node written in TSX has none of its own.
- *
- * @param spec - The diagram.
- * @param extras - Icons and content by node id, as written.
- * @param icons - The kinds' icons, once loaded.
- */
-function withKindIcons(
-  spec: FlowSpec,
-  extras: ParsedFlow['extras'],
-  icons: ReadonlyMap<string, NodeExtras['icon']>,
-): ParsedFlow['extras'] {
-  if (icons.size === 0) {
-    return extras;
-  }
-
-  const result = new Map(extras);
-  for (const node of spec.nodes) {
-    const extra = extras.get(node.id);
-    const icon = icons.get(node.kind);
-    if (icon !== undefined && extra?.icon === undefined && extra?.iconless !== true) {
-      result.set(node.id, { ...extra, icon });
-    }
-  }
-
-  return result;
 }
 
 /**

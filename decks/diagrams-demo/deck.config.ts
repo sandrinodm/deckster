@@ -28,5 +28,6 @@ export default defineDeck({
     'deploy-gates',
     'money-path',
     'card-reference',
+    'dispatch-handoff',
   ],
 });

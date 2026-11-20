@@ -1,10 +1,12 @@
 import type {
   DescribedBox,
+  DescribedIcon,
+  DescribedLine,
   DescribedText,
   DiagramDescription,
 } from '@deckster/kit/diagram-description';
 
-import type { BoxNode, SceneNode, SlideScene, SvgNode, TextNode } from '#scene/scene.ts';
+import type { BoxNode, ImageNode, SceneNode, SlideScene, SvgNode, TextNode } from '#scene/scene.ts';
 
 import { parentLookup } from '#plan/plan-scene.ts';
 
@@ -31,6 +33,11 @@ const TEXT_REACH_PX = MATCH_TOLERANCE_PX * 4;
 const WHITESPACE_RUN = /\s+/g;
 
 /**
+ * The collected artwork of a diagram icon.
+ */
+export type DiagramIconNode = SvgNode | ImageNode;
+
+/**
  * The page elements a described diagram was drawn with, matched to what the description names: the
  * measured text of each described text (its runs carry the font, axes and spacing the description
  * leaves out), the drawing of each node's icon, and the painted boxes of nodes and groups. What the
@@ -46,7 +53,7 @@ export type DiagramParts = {
   /**
    * The drawing of a node's icon, by node id.
    */
-  icons: ReadonlyMap<string, SvgNode>;
+  icons: ReadonlyMap<string, DiagramIconNode>;
 
   /**
    * The painted box measured for a described node or group, by its id.
@@ -67,7 +74,7 @@ export type DiagramParts = {
    * Small drawings inside the diagram the description does not name (icons it leaves out), in paint
    * order.
    */
-  extraIcons: readonly SvgNode[];
+  extraIcons: readonly DiagramIconNode[];
 
   /**
    * Text inside the diagram the description does not name, in paint order.
@@ -94,8 +101,10 @@ export function matchDiagramParts(
   const texts = matchTexts(textNodes, diagram);
   const usedTexts = new Set(texts.values());
 
-  const svgs = subtree.filter((node): node is SvgNode => node.kind === 'svg');
-  const icons = matchIcons(svgs, diagram);
+  const artwork = subtree.filter(
+    (node): node is DiagramIconNode => node.kind === 'svg' || isDiagramImage(node),
+  );
+  const icons = matchIcons(artwork, diagram);
   const usedIcons = new Set(icons.values());
 
   const boxNodes = subtree.filter((node): node is BoxNode => node.kind === 'box');
@@ -104,6 +113,7 @@ export function matchDiagramParts(
   const extraBoxes = boxNodes.filter(
     (node) =>
       !usedBoxes.has(node) &&
+      !(diagram.lines ?? []).some((line) => isTimelineLineBox(node.rect, line)) &&
       !textNodes.some((text) => usedTexts.has(text) && isOwnBox(node, text)),
   );
   return {
@@ -112,15 +122,29 @@ export function matchDiagramParts(
     boxes,
     chips,
     extraBoxes,
-    extraIcons: svgs.filter(
-      (node) =>
-        !usedIcons.has(node) &&
-        node.shapes !== null &&
-        node.rect.width <= ICON_SIZE_PX &&
-        node.rect.height <= ICON_SIZE_PX,
-    ),
+    extraIcons: artwork.filter((node) => !usedIcons.has(node) && isExtraIcon(node)),
     extraTexts: textNodes.filter((node) => !usedTexts.has(node)),
   };
+}
+
+/**
+ * Matches the HTML strip or border already described by the timeline's native line.
+ *
+ * @param rect - A painted element's box.
+ * @param line - A line in the diagram description.
+ */
+function isTimelineLineBox(rect: DescribedBox, line: DescribedLine): boolean {
+  const [start, end] = line.points;
+  if (line.role === 'lifeline' || start === undefined || end === undefined || line.width <= 0) {
+    return false;
+  }
+
+  return sameBox(rect, {
+    x: start.x,
+    y: start.y - line.width / 2,
+    width: end.x - start.x,
+    height: line.width,
+  });
 }
 
 /**
@@ -169,21 +193,76 @@ function matchTexts(
 /**
  * Matches each node's icon to the drawing at the icon's box.
  *
- * @param svgs - The drawings inside the diagram.
+ * @param artwork - The artwork inside the diagram.
  * @param diagram - The description.
  */
-function matchIcons(svgs: readonly SvgNode[], diagram: DiagramDescription): Map<string, SvgNode> {
-  const icons = new Map<string, SvgNode>();
+function matchIcons(
+  artwork: readonly DiagramIconNode[],
+  diagram: DiagramDescription,
+): Map<string, DiagramIconNode> {
+  const icons = new Map<string, DiagramIconNode>();
+  const used = new Set<DiagramIconNode>();
   for (const node of diagram.nodes) {
     const icon = node.icon;
-    const found =
-      icon === null ? undefined : svgs.find((candidate) => sameBox(candidate.rect, icon.box));
+    if (icon === null) {
+      continue;
+    }
+
+    const found = artwork.find((candidate) => !used.has(candidate) && matchesIcon(candidate, icon));
     if (found !== undefined) {
       icons.set(node.id, found);
+      used.add(found);
     }
   }
 
   return icons;
+}
+
+/**
+ * Matches the art to a described icon. An image fitted inside its box keeps its center.
+ *
+ * @param candidate - The artwork collected from the DOM.
+ * @param icon - The icon in the description.
+ */
+function matchesIcon(candidate: DiagramIconNode, icon: DescribedIcon): boolean {
+  if (candidate.kind === 'svg') {
+    return icon.src === undefined && sameBox(candidate.rect, icon.box);
+  }
+
+  const { rect } = candidate;
+  const { box } = icon;
+  return (
+    icon.src === candidate.src &&
+    Math.abs(rect.x + rect.width / 2 - (box.x + box.width / 2)) <= MATCH_TOLERANCE_PX &&
+    Math.abs(rect.y + rect.height / 2 - (box.y + box.height / 2)) <= MATCH_TOLERANCE_PX
+  );
+}
+
+/**
+ * Matches image icons collected from the diagram's marked frames.
+ *
+ * @param node - A scene node inside the diagram.
+ */
+function isDiagramImage(node: SceneNode): node is ImageNode {
+  return node.kind === 'image' && node.diagramIcon === true;
+}
+
+/**
+ * Preserves explicitly marked icons and small vector icons from older diagram descriptions.
+ *
+ * @param node - The unmatched artwork.
+ */
+function isExtraIcon(node: DiagramIconNode): boolean {
+  if (node.diagramIcon === true) {
+    return true;
+  }
+
+  return (
+    node.kind === 'svg' &&
+    node.shapes !== null &&
+    node.rect.width <= ICON_SIZE_PX &&
+    node.rect.height <= ICON_SIZE_PX
+  );
 }
 
 /**

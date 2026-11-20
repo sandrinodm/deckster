@@ -19,7 +19,15 @@ const EXCESS_PROPERTY_MESSAGE = 'Expected no excess property';
 /**
  * The diagram look keys only the brand-wide `diagram` section takes.
  */
-const SURFACE_LOOK_KEYS = new Set(['edges', 'groups', 'labels', 'kinds']);
+const SURFACE_LOOK_KEYS = new Set([
+  'align',
+  'edges',
+  'groups',
+  'labels',
+  'nodes',
+  'notes',
+  'kinds',
+]);
 
 /**
  * Path segments to a field of a surface's `diagram`: `color.surfaces.<name>.diagram.<field>`.
@@ -123,8 +131,8 @@ function issueProblem(keys: readonly PropertyKey[], message: string, input: unkn
 
 /**
  * The problem for a diagram field written on a surface that only the brand-wide `diagram` section
- * takes: the look keys (`edges`, `groups`, `labels`, `kinds`) and a card's non-color fields. A
- * close field name would be the wrong fix, so this wins over the unknown-field suggestion.
+ * takes: the diagram look and a card's non-color fields. A close field name would be the wrong fix,
+ * so this wins over the unknown-field suggestion.
  *
  * @param keys - The path to the unknown field.
  * @returns The problem, or `undefined` for any other unknown field.
@@ -156,7 +164,7 @@ function misplacedFieldProblem(keys: readonly PropertyKey[]): BrandProblem | und
         `${surface} surface cannot set it.`,
       fix:
         `Set it on the card itself, \`diagram.cards.${card}.${cardField}\`, or recolor the ` +
-        'card here with fill, border, text, subtext, icon { color, fill } or accent { color }.',
+        'card here with fill, border, text, subtext, icon { color, fill, border } or accent { color }.',
     };
   }
 
