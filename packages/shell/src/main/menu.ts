@@ -33,6 +33,11 @@ export type MenuActions = {
    * Quits the shell.
    */
   quit: () => void;
+
+  /**
+   * Returns to the chooser during a workspace presentation, if available.
+   */
+  backToDecks?: () => void;
 };
 
 /**
@@ -59,6 +64,16 @@ export function buildMenuTemplate(
     accelerator: 'CmdOrCtrl+Q',
     click: actions.quit,
   };
+  const backToDecks: MenuItemConstructorOptions[] =
+    actions.backToDecks === undefined
+      ? []
+      : [
+          {
+            label: 'Back to decks',
+            accelerator: 'CmdOrCtrl+Shift+B',
+            click: actions.backToDecks,
+          },
+        ];
   const app: MenuItemConstructorOptions[] =
     platform === 'darwin' ? [{ label: appName, submenu: [quit] }] : [];
   return [
@@ -71,6 +86,7 @@ export function buildMenuTemplate(
     {
       label: 'Present',
       submenu: [
+        ...backToDecks,
         {
           label: 'Toggle Fullscreen',
           accelerator: platform === 'darwin' ? 'Ctrl+Cmd+F' : 'F11',

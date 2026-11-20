@@ -10,6 +10,13 @@ covers the tools inside the window; and
 messages `deck present` prints. This page keeps the details for working on `deck present` in this
 repository.
 
+Run `deck present` without a name to open the gallery when the workspace contains several decks.
+A name on the command line takes precedence over `DECK`, and a workspace with just one deck
+opens it directly. In gallery mode, use **Back to decks** to stop the current presentation and
+choose another. The gallery uses an operator display when one is available. With a single display in fullscreen or kiosk
+mode, **Cmd/Ctrl+Shift+B** returns to the gallery. Closing the gallery or quitting
+Deckster stops the command.
+
 ## Set-up in a clone
 
 ```sh

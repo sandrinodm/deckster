@@ -100,6 +100,24 @@ export function presenterDisplay(
 }
 
 /**
+ * Chooses a display for the gallery. Prefer the requested operator display, then the primary or
+ * another display, always excluding the audience when possible. An empty inventory has no choice.
+ */
+export function operatorDisplay(
+  displays: readonly ShellDisplay[],
+  audienceId: number,
+  preferredId: number | undefined,
+): ShellDisplay | undefined {
+  const separate = displays.filter((display) => display.id !== audienceId);
+  return (
+    findDisplay(separate, preferredId) ??
+    separate.find((display) => display.primary) ??
+    separate[0] ??
+    displays[0]
+  );
+}
+
+/**
  * The display after the given one, wrapping around; for "move to next display".
  *
  * @param displays - The connected displays.

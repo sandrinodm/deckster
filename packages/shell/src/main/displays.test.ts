@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import type { ShellDisplay } from '#protocol/shell-messages.ts';
 
-import { findDisplay, listDisplays, nextDisplay, presenterDisplay } from '#main/displays.ts';
+import {
+  findDisplay,
+  listDisplays,
+  nextDisplay,
+  operatorDisplay,
+  presenterDisplay,
+} from '#main/displays.ts';
 
 const RECT = { x: 0, y: 0, width: 100, height: 100 };
 
@@ -38,6 +44,18 @@ describe('displays', () => {
     expect(presenterDisplay(displays, 1)?.id).toBe(2);
     expect(presenterDisplay(displays, 2)?.id).toBe(1);
     expect(presenterDisplay([display(1, true)], 1)?.id).toBe(1);
+  });
+
+  it('keeps the gallery off the planned audience display when there is an alternative', () => {
+    const primary = display(2, true);
+    const projector = display(1, false);
+    const extra = display(3, false);
+    const displays = [projector, primary, extra];
+    expect(operatorDisplay(displays, projector.id, projector.id)).toBe(primary);
+    expect(operatorDisplay(displays, projector.id, extra.id)).toBe(extra);
+    expect(operatorDisplay(displays, primary.id, undefined)).toBe(projector);
+    expect(operatorDisplay([primary], primary.id, primary.id)).toBe(primary);
+    expect(operatorDisplay([], projector.id, primary.id)).toBeUndefined();
   });
 
   it('cycles to the next display', () => {

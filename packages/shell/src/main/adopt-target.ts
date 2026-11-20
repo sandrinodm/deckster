@@ -62,6 +62,7 @@ export type AdoptDeps<Session> = {
 export async function adoptTarget<Session>(
   target: ShellTarget,
   deps: AdoptDeps<Session>,
+  stateKey?: string,
 ): Promise<void> {
   const origin = new URL(target.url).origin;
   deps.setName(appTitle(target.title));
@@ -75,6 +76,7 @@ export async function adoptTarget<Session>(
     title: target.title,
     backgroundColor: target.backgroundColor,
     partition,
+    ...(stateKey === undefined ? {} : { stateKey }),
     ...(target.agentCode === undefined ? {} : { agentCode: target.agentCode }),
   });
 }

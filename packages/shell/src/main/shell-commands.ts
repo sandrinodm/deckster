@@ -1,4 +1,5 @@
 import type {
+  ShellChooserTarget,
   ShellCommand,
   ShellDisplay,
   ShellEvent,
@@ -18,7 +19,7 @@ export type CommandWindows<Win> = {
    *
    * @param plan - Where the windows go.
    */
-  open: (plan: ShellPlan) => Promise<void>;
+  open: (plan: ShellPlan, requestId?: string) => Promise<void>;
 
   /**
    * Opens or focuses the presenter window.
@@ -75,7 +76,22 @@ export type CommandTarget<Win> = {
    *
    * @param target - The deck.
    */
-  adoptTarget: (target: ShellTarget) => Promise<void>;
+  adoptTarget: (target: ShellTarget, stateKey?: string) => Promise<void>;
+
+  /**
+   * Opens a launcher on the operator display.
+   */
+  openChooser?: (target: ShellChooserTarget) => Promise<number>;
+
+  /**
+   * Opens or places the deck windows after the chooser is active.
+   */
+  placeChooser?: (plan: ShellPlan, requestId: string) => void;
+
+  /**
+   * Retires the windows and session associated with the desktop selection.
+   */
+  closeDeck?: () => Promise<void>;
 
   /**
    * Whether the shell is already leaving, in which case nothing opens.
@@ -129,6 +145,57 @@ export function createCommandHandler<Win>(
 ): (command: ShellCommand) => void {
   const { windows, send } = target;
   let opening = false;
+  let desktop = false;
+  let selected: string | undefined;
+  let changes = Promise.resolve();
+  /**
+   * Reports a selection error without terminating the gallery.
+   */
+  const report = (error: unknown, requestId: string): void => {
+    const message = error instanceof Error ? error.message : String(error);
+    send({ type: 'error', message, requestId });
+  };
+
+  /**
+   * Adopts the selected deck, enters its window plan and reports selection-specific errors.
+   */
+  const openSelection = async (command: Extract<ShellCommand, { type: 'open' }>): Promise<void> => {
+    const { plan, requestId, stateKey } = command;
+    if (requestId === undefined || command.target === undefined) {
+      send({ type: 'error', message: 'A chooser selection needs a request ID and deck target.' });
+      return;
+    }
+
+    if (selected !== undefined) {
+      report('Close the previous selection before opening a deck.', requestId);
+      return;
+    }
+
+    selected = requestId;
+    try {
+      await target.adoptTarget(command.target, stateKey);
+      if (target.leaving()) {
+        return;
+      }
+
+      target.installMenu(plan.kiosk);
+      target.placeChooser?.(plan, requestId);
+      await windows.open(plan, requestId);
+    } catch (error) {
+      report(error, requestId);
+    }
+  };
+  /**
+   * Retires only the matching selection and acknowledges completion.
+   */
+  const closeSelection = async (requestId: string): Promise<void> => {
+    if (requestId === selected) {
+      await target.closeDeck?.();
+      selected = undefined;
+    }
+
+    send({ type: 'deck-closed', requestId });
+  };
   /**
    * Adopts the deck, then opens the windows; any failure is fatal.
    */
@@ -150,7 +217,34 @@ export function createCommandHandler<Win>(
   };
   return (command) => {
     switch (command.type) {
+      case 'open-chooser': {
+        const openChooser = target.openChooser;
+        if (desktop || opening || target.hasTarget() || openChooser === undefined) {
+          send({ type: 'error', message: 'The shell is already open.' });
+          return;
+        }
+
+        desktop = true;
+        changes = openChooser(command.target)
+          .then((displayId) => send({ type: 'chooser-ready', displayId }))
+          .catch((error: unknown) => target.fail(String(error)));
+        return;
+      }
+
+      case 'close-deck':
+        if (desktop) {
+          changes = changes
+            .then(() => (target.leaving() ? undefined : closeSelection(command.requestId)))
+            .catch((error: unknown) => report(error, command.requestId));
+        }
+
+        return;
       case 'open':
+        if (desktop) {
+          changes = changes.then(() => (target.leaving() ? undefined : openSelection(command)));
+          return;
+        }
+
         if (opening || windows.window('audience') !== undefined) {
           send({
             type: 'error',

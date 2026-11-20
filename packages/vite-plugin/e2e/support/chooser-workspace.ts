@@ -53,8 +53,7 @@ export type ChooserWorkspace = {
  * Starts the real CLI in a two-deck workspace; rejects if the chooser does not start.
  */
 export async function startChooser(port: number): Promise<ChooserWorkspace> {
-  const base = await realpath(await mkdtemp(path.join(tmpdir(), 'deck-chooser-test-')));
-  await setUpWorkspace(base);
+  const base = await createChooserWorkspace();
 
   const cli = path.join(FRAMEWORK, 'packages/cli/src/bin.ts');
   const child = spawn(process.execPath, [cli, 'dev', '--agent', 'fake', '--port', String(port)], {
@@ -116,9 +115,12 @@ export async function startChooser(port: number): Promise<ChooserWorkspace> {
 }
 
 /**
- * Copies a test brand and creates two independent decks in the temporary workspace.
+ * Copies a test brand and creates two independent decks in a temporary workspace. Rejects if the
+ * fixture cannot be prepared.
  */
-async function setUpWorkspace(root: string): Promise<void> {
+export async function createChooserWorkspace(): Promise<string> {
+  const root = await realpath(await mkdtemp(path.join(tmpdir(), 'deck-chooser-test-')));
+  await writeFile(path.join(root, 'package.json'), '{"type":"module"}\n');
   await symlink(path.join(FRAMEWORK, 'packages/cli/node_modules'), path.join(root, 'node_modules'));
   await mkdir(path.join(root, 'brands'));
   await cp(path.join(FRAMEWORK, 'brands/default'), path.join(root, 'brands/default'), {
@@ -129,6 +131,7 @@ async function setUpWorkspace(root: string): Promise<void> {
     makeDeck(root, 'hello', 'First deck', FIRST_COVER),
     makeDeck(root, 'second', 'Second deck', SECOND_COVER),
   ]);
+  return root;
 }
 
 /**
@@ -160,6 +163,8 @@ async function writeOpening(root: string, id: string, title: string): Promise<vo
     `# ${title}`,
     '',
     '<Step at={1}>Later content</Step>',
+    '',
+    `<Notes>Speaker notes for ${title}</Notes>`,
     '',
     `<div style={{ background: '${PAINT}', width: 160, height: 160 }} />`,
     '',

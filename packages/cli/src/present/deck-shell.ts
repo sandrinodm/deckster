@@ -1,4 +1,9 @@
-import type { ShellCommand, ShellDisplay, ShellEvent } from '@deckster/shell/protocol';
+import type {
+  ShellChooserTarget,
+  ShellCommand,
+  ShellDisplay,
+  ShellEvent,
+} from '@deckster/shell/protocol';
 
 import { Context, Effect, Layer, type Duration, FileSystem, type Scope, type Stream } from 'effect';
 import { ChildProcessSpawner } from 'effect/process';
@@ -75,6 +80,11 @@ export type ShellOpenOptions = {
    * dev server as the `X-Deck-Agent-Code` header, never in the URL; leave out for none.
    */
   agentCode?: string;
+
+  /**
+   * Identifies an interactive selection and its saved window bounds.
+   */
+  selection?: { readonly key: string; readonly deck: string };
 };
 
 /**
@@ -163,10 +173,17 @@ export type ShellSession = {
  */
 export type StartedShell = {
   /**
-   * The displays the shell reports. Waits for the first report, which the start timeout limits from
-   * the spawn; fails when the shell exits or times out first. Memoised.
+   * The latest display report. Waits for the first report, which the start timeout limits from the
+   * spawn; fails when the shell exits or times out first.
    */
   readonly displays: Effect.Effect<readonly ShellDisplay[], ShellError>;
+
+  /**
+   * Opens the independent chooser, then completes when the shell exits.
+   */
+  readonly openChooser: (
+    target: ShellChooserTarget,
+  ) => Effect.Effect<{ readonly closed: Effect.Effect<void, ShellError> }, ShellError>;
 
   /**
    * Plans the windows from the displays, opens them on the deck and waits for the audience page to

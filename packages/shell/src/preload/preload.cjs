@@ -17,3 +17,10 @@ contextBridge.exposeInMainWorld('deckShell', {
   },
   moveToDisplay: (displayId) => ipcRenderer.invoke('deck-shell:move-to-display', displayId),
 });
+
+document.addEventListener('click', (event) => {
+  if (event.isTrusted && event.target?.id === 'deck-shell-back-to-decks') {
+    event.preventDefault();
+    void ipcRenderer.invoke('deck-shell:back-to-decks').catch(() => undefined);
+  }
+});
