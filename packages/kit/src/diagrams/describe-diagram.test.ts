@@ -154,6 +154,68 @@ describe('describeDiagram', () => {
     expect(diagram.edges[0]).not.toHaveProperty('arrow');
   });
 
+  it('reads a split outline, a dotted connector, styled note text, and image artwork', () => {
+    const element = renderedFlow(true);
+    const outline = element.querySelector('.kit-flow-outline');
+    outline?.setAttribute('style', 'fill: rgb(244, 245, 248); stroke: none');
+    outline?.insertAdjacentHTML(
+      'afterend',
+      '<path class="kit-flow-outline kit-flow-outline-stroke" data-line-style="dotted" ' +
+        'style="stroke: rgb(217, 220, 228); stroke-width: 6px; stroke-dasharray: 0 12px" />',
+    );
+    element.querySelector('.kit-flow-edge')?.setAttribute('data-line-style', 'dashed');
+    element
+      .querySelector('.kit-flow-node')
+      ?.insertAdjacentHTML(
+        'beforeend',
+        '<span data-diagram-part="icon"><img src="https://example.test/source.png" alt="" /></span>' +
+          '<span class="kit-flow-node-subtitle" style="font: 700 28px Georgia">Build status</span>',
+      );
+    const diagram = describeDiagram(input(element));
+    expect(diagram.nodes[0]).toMatchObject({
+      paint: {
+        fill: '#f4f5f8',
+        stroke: '#d9dce4',
+        strokeWidth: 6,
+        dashed: true,
+        lineStyle: 'dotted',
+      },
+      icon: { src: 'https://example.test/source.png', color: null, svg: '' },
+      texts: [expect.anything(), { text: 'Build status', fontFamily: 'Georgia', fontSizePx: 28 }],
+    });
+    expect(diagram.edges[0]).toMatchObject({ width: 3, dashed: true, lineStyle: 'dashed' });
+  });
+
+  it('reads the border when the timeline axis is drawn as a patterned HTML line', () => {
+    const element = document.createElement('div');
+    const axis = document.createElement('div');
+    axis.style.borderTop = '5px dotted rgb(45, 74, 224)';
+    element.append(axis);
+    document.body.append(element);
+    const diagram = describeDiagram({
+      ...input(element),
+      kind: 'timeline',
+      nodes: [],
+      edges: [],
+      lines: [
+        {
+          role: 'axis',
+          element: axis,
+          points: [
+            { x: 0, y: 0 },
+            { x: 30, y: 0 },
+          ],
+        },
+      ],
+    });
+    expect(diagram.lines?.[0]).toMatchObject({
+      width: 5,
+      color: '#2d4ae0',
+      dashed: true,
+      lineStyle: 'dotted',
+    });
+  });
+
   it('reads the shadow and accent of a band drawn in HTML from its box shadows', () => {
     const element = document.createElement('div');
     const band = document.createElement('section');

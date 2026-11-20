@@ -2,6 +2,7 @@ import { Fragment, useId, type CSSProperties, type ReactNode } from 'react';
 
 import type { BadgeCorner } from '#diagrams/badge-placement.ts';
 import type { NodeFrame } from '#diagrams/choreography.ts';
+import type { DiagramTextStep } from '#diagrams/diagram-design.ts';
 import type { NodeExtras } from '#diagrams/flow-children.ts';
 import type { FlowNodeSpec } from '#diagrams/flow-spec.ts';
 import type { Rect } from '#diagrams/geometry.ts';
@@ -10,6 +11,7 @@ import type { ShapeGeometry } from '#diagrams/node-shapes.ts';
 
 import { BADGE_ON_EDGE_MIN_WIDTH } from '#diagrams/badge-placement.ts';
 import { flag, presence } from '#diagrams/data-flags.ts';
+import { DiagramIcon } from '#diagrams/diagram-icons.tsx';
 import { cardData, cardStyle } from '#diagrams/node-cards.ts';
 import { NODE_KINDS } from '#diagrams/node-kinds.ts';
 import { cardShape } from '#diagrams/node-shapes.ts';
@@ -128,9 +130,19 @@ export function NodeShape({
       data-visible={String(frame.visible)}
       data-dashed={flag(geometry.dashed)}>
       <path className="kit-flow-halo" d={geometry.outline} />
-      {geometry.under === '' ? null : <path className="kit-flow-under" d={geometry.under} />}
+      {geometry.under === '' ? null : (
+        <path
+          className="kit-flow-under"
+          data-line-style={card.tokens.borderStyle}
+          d={geometry.under}
+        />
+      )}
       {accent === undefined ? (
-        <path className="kit-flow-outline" d={geometry.outline} />
+        <path
+          className="kit-flow-outline"
+          data-line-style={card.tokens.borderStyle}
+          d={geometry.outline}
+        />
       ) : (
         <>
           <path className="kit-flow-outline kit-flow-outline-fill" d={geometry.outline} />
@@ -147,7 +159,11 @@ export function NodeShape({
             width={accent.width}
             height={accent.height}
           />
-          <path className="kit-flow-outline kit-flow-outline-stroke" d={geometry.outline} />
+          <path
+            className="kit-flow-outline kit-flow-outline-stroke"
+            data-line-style={card.tokens.borderStyle}
+            d={geometry.outline}
+          />
         </>
       )}
       {geometry.details === '' ? null : <path className="kit-flow-details" d={geometry.details} />}
@@ -297,6 +313,11 @@ export function NodeShadow({
  */
 type NodeBodyProps = {
   /**
+   * The diagram's default subtitle typography step.
+   */
+  subtitleStep?: DiagramTextStep;
+
+  /**
    * The node.
    */
   node: FlowNodeSpec;
@@ -350,8 +371,9 @@ export function NodeBody({
   frame,
   dimmed,
   arrivalDelay,
+  subtitleStep = 'caption',
 }: NodeBodyProps): ReactNode {
-  const Icon = card.tokens.icon === 'none' ? undefined : extras?.icon;
+  const icon = card.tokens.icon === 'none' ? undefined : extras?.icon;
   const shape = cardShape(NODE_KINDS[node.kind].shape, card.tokens.shape);
   const style = {
     ...cardStyle(card),
@@ -386,12 +408,16 @@ export function NodeBody({
           marginBottom: inset.bottom,
           marginLeft: inset.left,
         }}>
-        {Icon === undefined ? null : (
-          <span className="kit-flow-node-icon" data-diagram-part="icon">
-            <Icon aria-hidden="true" focusable="false" />
+        {icon === undefined ? null : (
+          <span className="kit-flow-node-icon" data-diagram-part="icon" aria-hidden="true">
+            <DiagramIcon source={icon} />
           </span>
         )}
-        <span className="kit-flow-node-text">{extras?.content ?? <NodeTitle node={node} />}</span>
+        <span className="kit-flow-node-text">
+          {extras?.content ?? (
+            <NodeTitle node={node} subtitleStep={card.tokens.subtitleStep ?? subtitleStep} />
+          )}
+        </span>
       </div>
     </div>
   );
@@ -402,6 +428,11 @@ export function NodeBody({
  */
 type NodeTitleProps = {
   /**
+   * Which typography step the subtitle uses.
+   */
+  subtitleStep: DiagramTextStep;
+
+  /**
    * The node.
    */
   node: FlowNodeSpec;
@@ -410,14 +441,14 @@ type NodeTitleProps = {
 /**
  * A node's title and its quieter subtitle.
  */
-function NodeTitle({ node }: NodeTitleProps): ReactNode {
+function NodeTitle({ node, subtitleStep }: NodeTitleProps): ReactNode {
   return (
     <>
       <span className="kit-flow-node-title kit-type-small">
         <BreakableText text={smartPunctuation(node.title)} />
       </span>
       {node.subtitle === undefined ? null : (
-        <span className="kit-flow-node-subtitle kit-type-caption">
+        <span className={`kit-flow-node-subtitle kit-type-${subtitleStep}`}>
           <BreakableText text={smartPunctuation(node.subtitle)} />
         </span>
       )}

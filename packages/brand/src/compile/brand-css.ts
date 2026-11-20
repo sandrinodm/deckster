@@ -1,7 +1,9 @@
 import type {
   BrandTokens,
   CardSurfaceTokens,
+  CardTokens,
   DataTokens,
+  DiagramTextTokens,
   DiagramTokens,
   Hex,
   SurfaceTokens,
@@ -23,6 +25,9 @@ import {
   CARD_ACCENT_SIDES,
   CARD_ICON_STYLES,
   CARD_SHAPES,
+  DIAGRAM_ALIGNMENTS,
+  DIAGRAM_LINE_STYLES,
+  DIAGRAM_TEXT_TYPES,
   EDGE_ARROWS,
   EDGE_CORNERS,
   LABEL_STYLES,
@@ -257,8 +262,8 @@ function motionDeclarations(tokens: BrandTokens): Declaration[] {
  * @param diagram - The brand's resolved diagram look.
  */
 function diagramDeclarations(diagram: DiagramTokens): Declaration[] {
-  const { edges, groups, labels } = diagram;
-  return [
+  const { align, edges, groups, labels, nodes, notes } = diagram;
+  const declarations: Declaration[] = [
     [v.diagramCards, Object.keys(diagram.cards).map(cssName).join(' ')],
     ...Object.entries(diagram.kinds).map(([kind, card]): Declaration => [
       v.diagramKind(cssName(kind)),
@@ -272,23 +277,104 @@ function diagramDeclarations(diagram: DiagramTokens): Declaration[] {
     [v.diagramLook('group-radius'), cssPx(groups.radius)],
     [v.diagramLook('label-style'), keyword(labels.style, LABEL_STYLES)],
     [v.diagramLook('label-type'), keyword(labels.type, LABEL_TYPES)],
-    ...Object.entries(diagram.cards).flatMap(([name, card]): Declaration[] => {
-      const c = cssName(name);
-      return [
-        [v.card(c, 'stroke'), cssPx(card.stroke)],
-        [v.card(c, 'radius'), cssPx(card.radius)],
-        [v.card(c, 'shape'), keyword(card.shape, CARD_SHAPES)],
-        [v.card(c, 'icon'), keyword(card.icon, CARD_ICON_STYLES)],
-        [v.card(c, 'accent-side'), keyword(card.accent.side, ACCENT_SIDES)],
-        [v.card(c, 'accent-width'), cssPx(card.accent.width)],
-        [v.card(c, 'title-family'), card.title.stack],
-        [v.card(c, 'title-weight'), cssNumber(card.title.weight)],
-        [v.card(c, 'title-tracking'), `${cssNumber(card.title.tracking)}em`],
-        [v.card(c, 'title-case'), card.title.case === 'upper' ? 'uppercase' : 'none'],
-        [v.card(c, 'title-own'), keyword(String(card.titleOwn), BOOLEANS)],
-      ];
-    }),
+    [v.diagramLook('node-width'), cssPx(nodes.width)],
+    [v.diagramLook('node-height'), cssPx(nodes.height)],
+    ...textDeclarations(nodes.subtitle, (field) => v.diagramLook(`subtitle-${field}`)),
+    ...textDeclarations(notes, (field) => v.diagramLook(`note-${field}`)),
+    ...Object.entries(diagram.cards).flatMap(([name, card]) =>
+      cardDeclarations(cssName(name), card),
+    ),
   ];
+  if (align !== undefined) {
+    declarations.push([v.diagramLook('align'), keyword(align, DIAGRAM_ALIGNMENTS)]);
+  }
+
+  if (edges.lineStyle !== undefined) {
+    declarations.push([v.diagramLook('edge-style'), keyword(edges.lineStyle, DIAGRAM_LINE_STYLES)]);
+  }
+
+  if (edges.timelineStroke !== undefined) {
+    declarations.push([v.diagramLook('timeline-stroke'), cssPx(edges.timelineStroke)]);
+  }
+
+  if (groups.lineStyle !== undefined) {
+    declarations.push([
+      v.diagramLook('group-style'),
+      keyword(groups.lineStyle, DIAGRAM_LINE_STYLES),
+    ]);
+  }
+
+  return declarations;
+}
+
+/**
+ * One card's geometry and typography shared across surfaces.
+ */
+function cardDeclarations(name: string, card: CardTokens): Declaration[] {
+  const declarations: Declaration[] = [
+    [v.card(name, 'stroke'), cssPx(card.stroke)],
+    [v.card(name, 'radius'), cssPx(card.radius)],
+    [v.card(name, 'shape'), keyword(card.shape, CARD_SHAPES)],
+    [v.card(name, 'icon'), keyword(card.icon, CARD_ICON_STYLES)],
+    [v.card(name, 'accent-side'), keyword(card.accent.side, ACCENT_SIDES)],
+    [v.card(name, 'accent-width'), cssPx(card.accent.width)],
+    [v.card(name, 'title-family'), card.title.stack],
+    [v.card(name, 'title-weight'), cssNumber(card.title.weight)],
+    [v.card(name, 'title-tracking'), `${cssNumber(card.title.tracking)}em`],
+    [v.card(name, 'title-case'), card.title.case === 'upper' ? 'uppercase' : 'none'],
+    [v.card(name, 'title-own'), keyword(String(card.titleOwn), BOOLEANS)],
+    ...textDeclarations(card.subtitle, (field) => v.card(name, `subtitle-${field}`)),
+  ];
+  if (card.borderStyle !== undefined) {
+    declarations.push([
+      v.card(name, 'border-style'),
+      keyword(card.borderStyle, DIAGRAM_LINE_STYLES),
+    ]);
+  }
+
+  if (card.iconBorderStyle !== undefined) {
+    declarations.push([
+      v.card(name, 'icon-border-style'),
+      keyword(card.iconBorderStyle, DIAGRAM_LINE_STYLES),
+    ]);
+  }
+
+  if (card.iconBorderWidth !== undefined) {
+    declarations.push([v.card(name, 'icon-border-width'), cssPx(card.iconBorderWidth)]);
+  }
+
+  return declarations;
+}
+
+/**
+ * Emits only explicit typography overrides so the component can fall back to its type step.
+ */
+function textDeclarations(
+  text: DiagramTextTokens,
+  variable: (field: keyof DiagramTextTokens) => string,
+): Declaration[] {
+  const declarations: Declaration[] = [];
+  if (text.type !== undefined) {
+    declarations.push([variable('type'), keyword(text.type, DIAGRAM_TEXT_TYPES)]);
+  }
+
+  if (text.family !== undefined) {
+    declarations.push([variable('family'), text.family.stack]);
+  }
+
+  if (text.weight !== undefined) {
+    declarations.push([variable('weight'), cssNumber(text.weight)]);
+  }
+
+  if (text.tracking !== undefined) {
+    declarations.push([variable('tracking'), `${cssNumber(text.tracking)}em`]);
+  }
+
+  if (text.case !== undefined) {
+    declarations.push([variable('case'), text.case === 'upper' ? 'uppercase' : 'none']);
+  }
+
+  return declarations;
 }
 
 /**
@@ -298,7 +384,7 @@ function diagramDeclarations(diagram: DiagramTokens): Declaration[] {
  * @param card - The card's colors and shadow on the surface.
  */
 function cardSurfaceDeclarations(name: string, card: CardSurfaceTokens): Declaration[] {
-  return [
+  const declarations: Declaration[] = [
     [v.card(name, 'node-fill'), keyword(String(card.nodeFill), BOOLEANS)],
     [v.card(name, 'fill'), paint(card.fill)],
     [v.card(name, 'border'), paint(card.border)],
@@ -311,6 +397,11 @@ function cardSurfaceDeclarations(name: string, card: CardSurfaceTokens): Declara
     [v.card(name, 'box-shadow'), card.shadow.boxShadow],
     [v.card(name, 'detail'), cssColor(card.detail)],
   ];
+  if (card.iconBorder !== undefined) {
+    declarations.push([v.card(name, 'icon-border'), cssColor(card.iconBorder)]);
+  }
+
+  return declarations;
 }
 
 /**

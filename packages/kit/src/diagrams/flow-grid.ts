@@ -1,6 +1,8 @@
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { FlowSpec, GridCell } from '#diagrams/flow-spec.ts';
 
-import { inflate, unionOf, type Point, type Rect } from '#diagrams/geometry.ts';
+import { alignedOffset } from '#diagrams/diagram-design.ts';
+import { EPSILON, inflate, unionOf, type Point, type Rect } from '#diagrams/geometry.ts';
 import { maxOf, minOf } from '#foundation/lists.ts';
 
 /**
@@ -8,6 +10,11 @@ import { maxOf, minOf } from '#foundation/lists.ts';
  * and never scale; these are the boxes around them.
  */
 export type FlowMetrics = {
+  /**
+   * Explicit alignment also lets gutters stay compact when the region is wider than the scene.
+   */
+  align?: DiagramAlign | undefined;
+
   /**
    * The narrowest a node may get before the diagram counts as cramped.
    */
@@ -212,7 +219,8 @@ export function placeOnGrid(
     rows?: number;
     insets?: Insets;
     heights?: ReadonlyMap<string, number>;
-    align?: 'start' | 'center';
+    widths?: ReadonlyMap<string, number>;
+    align?: DiagramAlign | 'start';
   } = {},
 ): GridPlacement {
   const { cols, rows } = gridSize([...cells.values()], options);
@@ -224,7 +232,8 @@ export function placeOnGrid(
   const { nodeWidth, cellWidth } = columns;
   const tracks = rowTracks(rowHeights, height);
   const used = (cols - 1) * cellWidth + nodeWidth;
-  const left = options.align === 'center' ? (width - used) / 2 : 0;
+  const alignment = options.align ?? metrics.align ?? 'left';
+  const left = alignment === 'start' ? 0 : alignedOffset(width - used, alignment);
   const bounds = {
     x: insets.left + left - (cellWidth - nodeWidth) / 2,
     y: insets.top + (height - tracks.total) / 2,
@@ -233,7 +242,9 @@ export function placeOnGrid(
   };
   const nodes = new Map<string, Rect>();
   for (const [id, cell] of cells) {
-    nodes.set(id, cellRect(cell, bounds, { cellWidth, nodeWidth, tracks, rowHeights }));
+    const rect = cellRect(cell, bounds, { cellWidth, nodeWidth, tracks, rowHeights });
+    const preferred = options.widths?.get(id);
+    nodes.set(id, preferred === undefined ? rect : withWidth(rect, preferred));
   }
 
   const cramped = columns.cramped || tracks.gap < metrics.gutterY * CRAMPED_GUTTER_SHARE;
@@ -281,7 +292,10 @@ export function columnSizes(
   }
 
   const fill = (width - nodeWidth) / (cols - 1);
-  const comfortable = Math.max(nodeWidth * MAX_CELL_WIDTH_RATIO, nodeWidth + metrics.gutterX);
+  const comfortable =
+    metrics.align === undefined
+      ? Math.max(nodeWidth * MAX_CELL_WIDTH_RATIO, nodeWidth + metrics.gutterX)
+      : nodeWidth + metrics.gutterX;
   const cellWidth = Math.min(fill, comfortable);
   return { nodeWidth, cellWidth, gutter: cellWidth - nodeWidth, cramped };
 }
@@ -326,34 +340,43 @@ export function placeAtCentres(
   size: { width: number; height: number },
   metrics: FlowMetrics,
   insets: Insets = NO_INSETS,
+  widths?: ReadonlyMap<string, number>,
 ): GridPlacement {
   const points = [...centres.values()];
   const minX = minOf(points.map((point) => point.x));
   const maxX = maxOf(points.map((point) => point.x));
   const minY = minOf(points.map((point) => point.y));
   const maxY = maxOf(points.map((point) => point.y));
-  const nodeWidth = metrics.nodeMaxWidth;
-  const usableWidth = Math.max(size.width - insets.left - insets.right - nodeWidth, 0);
+  const innerWidth = Math.max(size.width - insets.left - insets.right, 1);
+  const nodeWidth = widths?.size
+    ? Math.min(metrics.nodeMaxWidth, innerWidth)
+    : metrics.nodeMaxWidth;
+  const usableWidth = Math.max(innerWidth - nodeWidth, 0);
   const usableHeight = Math.max(size.height - insets.top - insets.bottom - metrics.nodeHeight, 0);
   const spanX = maxX - minX;
   const spanY = maxY - minY;
   const fitX = spanX <= 0 ? 0 : usableWidth / spanX;
   const fitY = spanY <= 0 ? 0 : usableHeight / spanY;
   const squeezed = (spanX > 0 && fitX < 1) || (spanY > 0 && fitY < 1);
-  const scaleX = squeezed ? 1 : fitX;
   const scaleY = squeezed ? 1 : fitY;
-  const offsetX = insets.left + nodeWidth / 2 + (usableWidth - spanX * scaleX) / 2;
+  const scaleX = centreScaleX(points, metrics, scaleY, squeezed ? 1 : fitX, spanX);
+  const extraWidth = usableWidth - spanX * scaleX;
+  const left =
+    metrics.align === undefined ? extraWidth / 2 : alignedOffset(extraWidth, metrics.align);
+  const offsetX = insets.left + nodeWidth / 2 + left;
   const offsetY = insets.top + metrics.nodeHeight / 2 + (usableHeight - spanY * scaleY) / 2;
   const nodes = new Map<string, Rect>();
   for (const [id, point] of centres) {
     const cx = offsetX + (point.x - minX) * scaleX;
     const cy = offsetY + (point.y - minY) * scaleY;
-    nodes.set(id, {
+    const rect = {
       x: cx - nodeWidth / 2,
       y: cy - metrics.nodeHeight / 2,
       width: nodeWidth,
       height: metrics.nodeHeight,
-    });
+    };
+    const preferred = widths?.get(id);
+    nodes.set(id, preferred === undefined ? rect : withWidth(rect, preferred));
   }
 
   const rects = [...nodes.values()];
@@ -361,6 +384,47 @@ export function placeAtCentres(
     squeezed ||
     rects.some((a, index) => rects.slice(index + 1).some((b) => tooClose(a, b, metrics)));
   return { nodes, bounds: unionOf(rects), cramped };
+}
+
+/**
+ * Compacts the horizontal span while keeping the gutter between nearby boxes.
+ */
+function centreScaleX(
+  points: readonly Point[],
+  metrics: FlowMetrics,
+  scaleY: number,
+  fit: number,
+  spanX: number,
+): number {
+  if (metrics.align === undefined) {
+    return fit;
+  }
+
+  const span = metrics.nodeMaxWidth + metrics.gutterX;
+  if (spanX < EPSILON) {
+    return 0;
+  }
+
+  let minimum = span / spanX;
+  for (const [index, point] of points.entries()) {
+    for (const other of points.slice(index + 1)) {
+      const dx = Math.abs(point.x - other.x);
+      const dy = Math.abs(point.y - other.y) * scaleY;
+      if (dx > 0 && dy < metrics.nodeHeight + metrics.gutterY) {
+        minimum = Math.max(minimum, span / dx);
+      }
+    }
+  }
+
+  return Math.min(fit, minimum);
+}
+
+/**
+ * Narrows a node to its preferred width inside the allocated track, preserving its center.
+ */
+function withWidth(rect: Rect, preferred: number): Rect {
+  const width = Math.min(rect.width, preferred);
+  return { ...rect, x: rect.x + (rect.width - width) / 2, width };
 }
 
 /**

@@ -186,14 +186,30 @@ export const brandVariables = {
  * The diagram look's properties, on the brand root.
  */
 export const DIAGRAM_LOOK_PROPERTIES = [
+  'align',
   'edge-stroke',
+  'edge-style',
   'edge-corners',
   'edge-arrow',
+  'timeline-stroke',
   'group-stroke',
+  'group-style',
   'group-dashed',
   'group-radius',
   'label-style',
   'label-type',
+  'node-width',
+  'node-height',
+  'subtitle-type',
+  'subtitle-family',
+  'subtitle-weight',
+  'subtitle-tracking',
+  'subtitle-case',
+  'note-type',
+  'note-family',
+  'note-weight',
+  'note-tracking',
+  'note-case',
 ] as const;
 
 /**
@@ -219,6 +235,20 @@ export const CARD_ROOT_PROPERTIES = [
 ] as const;
 
 /**
+ * Geometry and font overrides emitted only on cards that define them.
+ */
+export const CARD_OPTIONAL_ROOT_PROPERTIES = [
+  'border-style',
+  'icon-border-style',
+  'icon-border-width',
+  'subtitle-type',
+  'subtitle-family',
+  'subtitle-weight',
+  'subtitle-tracking',
+  'subtitle-case',
+] as const;
+
+/**
  * A card's properties that change with the surface, in each surface's rule.
  */
 export const CARD_SURFACE_PROPERTIES = [
@@ -236,10 +266,17 @@ export const CARD_SURFACE_PROPERTIES = [
 ] as const;
 
 /**
+ * Surface overrides emitted only when a card or its surface specifies them.
+ */
+export const CARD_OPTIONAL_SURFACE_PROPERTIES = ['icon-border'] as const;
+
+/**
  * A card property.
  */
 export type CardProperty =
   | (typeof CARD_ROOT_PROPERTIES)[number]
+  | (typeof CARD_OPTIONAL_ROOT_PROPERTIES)[number]
+  | (typeof CARD_OPTIONAL_SURFACE_PROPERTIES)[number]
   | (typeof CARD_SURFACE_PROPERTIES)[number];
 
 /**

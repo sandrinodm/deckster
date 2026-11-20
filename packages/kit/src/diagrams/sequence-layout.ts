@@ -1,3 +1,4 @@
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { Point, Rect } from '#diagrams/geometry.ts';
 
 /**
@@ -13,7 +14,14 @@ export type SequenceMessage = {
    * The actor it reaches; the same as `from` for a note to self.
    */
   to: string;
+
+  /**
+   * The label width in canvas pixels, including padding, when measuring a compact scene.
+   */
+  labelWidth?: number;
 };
+
+import { alignedOffset } from '#diagrams/diagram-design.ts';
 
 /**
  * Sizes a sequence diagram is laid out with, in canvas pixels.
@@ -23,6 +31,16 @@ export type SequenceMetrics = {
    * The widest an actor box gets.
    */
   actorMaxWidth: number;
+
+  /**
+   * Alignment of the compact scene.
+   */
+  align?: DiagramAlign | undefined;
+
+  /**
+   * Preferred widths of actors.
+   */
+  actorWidths?: ReadonlyMap<string, number>;
 
   /**
    * The height of the actor boxes.
@@ -43,6 +61,11 @@ export type SequenceMetrics = {
    * How far a message to self loops out to the right.
    */
   loopWidth: number;
+
+  /**
+   * Room between a self-loop and its label.
+   */
+  loopLabelGap?: number;
 };
 
 /**
@@ -101,7 +124,7 @@ export function sequenceActorWidth(
   metrics: Pick<SequenceMetrics, 'actorMaxWidth' | 'gutter'>,
 ): number {
   const cell = width / Math.max(actorCount, 1);
-  return Math.min(metrics.actorMaxWidth, cell - metrics.gutter);
+  return Math.max(0, Math.min(metrics.actorMaxWidth, cell - metrics.gutter));
 }
 
 /**
@@ -121,20 +144,28 @@ export function layoutSequence(
   size: { width: number; height: number },
   metrics: SequenceMetrics,
 ): SequenceLayout {
-  const cell = size.width / Math.max(actors.length, 1);
   const width = sequenceActorWidth(actors.length, size.width, metrics);
+  const { cell, first } = actorTracks(actors, messages, size.width, width, metrics);
   const top = metrics.actorHeight + metrics.gutter / 2;
   const row = Math.min(
     metrics.rowMax,
-    (size.height - top) / Math.max(messages.length + TRAILING_ROWS, 1),
+    Math.max(0, size.height - top) / Math.max(messages.length + TRAILING_ROWS, 1),
   );
   const bottom = top + row * (messages.length + TRAILING_ROWS);
-  const centres = new Map(actors.map((id, index) => [id, (index + 0.5) * cell]));
+  const centres = new Map(actors.map((id, index) => [id, first + index * cell]));
   const boxes = new Map(
-    actors.map((id) => [
-      id,
-      { x: (centres.get(id) ?? 0) - width / 2, y: 0, width, height: metrics.actorHeight },
-    ]),
+    actors.map((id) => {
+      const boxWidth = actorBoxWidth(id, width, metrics);
+      return [
+        id,
+        {
+          x: (centres.get(id) ?? 0) - boxWidth / 2,
+          y: 0,
+          width: boxWidth,
+          height: metrics.actorHeight,
+        },
+      ];
+    }),
   );
   const lifelines = new Map(
     actors.map((id) => {
@@ -162,4 +193,51 @@ export function layoutSequence(
     ];
   });
   return { actors: boxes, lifelines, messages: paths, row };
+}
+
+/**
+ * Allocates actor centers and keeps the final self-message inside a compact scene.
+ */
+function actorTracks(
+  actors: readonly string[],
+  messages: readonly SequenceMessage[],
+  regionWidth: number,
+  boxWidth: number,
+  metrics: SequenceMetrics,
+): { cell: number; first: number } {
+  const fullCell = regionWidth / Math.max(actors.length, 1);
+  if (metrics.align === undefined) {
+    return { cell: fullCell, first: fullCell / 2 };
+  }
+
+  const last = actors.at(-1);
+  const cell = Math.min(fullCell, boxWidth + metrics.gutter);
+  let left = -actorBoxWidth(actors[0], boxWidth, metrics) / 2;
+  let right = cell * Math.max(0, actors.length - 1) + actorBoxWidth(last, boxWidth, metrics) / 2;
+  const centres = new Map(actors.map((id, index) => [id, index * cell]));
+  for (const message of messages) {
+    const from = centres.get(message.from) ?? 0;
+    const to = centres.get(message.to) ?? 0;
+    const labelWidth = message.labelWidth ?? 0;
+    if (message.from === message.to) {
+      const label = from + metrics.loopWidth + (labelWidth > 0 ? (metrics.loopLabelGap ?? 0) : 0);
+      right = Math.max(right, label + labelWidth);
+      continue;
+    }
+
+    const center = (from + to) / 2;
+    left = Math.min(left, center - labelWidth / 2);
+    right = Math.max(right, center + labelWidth / 2);
+  }
+
+  const content = right - left;
+  return { cell, first: alignedOffset(regionWidth - content, metrics.align) - left };
+}
+
+/**
+ * The width of one actor in its allocated column.
+ */
+function actorBoxWidth(id: string | undefined, width: number, metrics: SequenceMetrics): number {
+  const preferred = id === undefined ? undefined : metrics.actorWidths?.get(id);
+  return Math.min(preferred ?? width, width);
 }

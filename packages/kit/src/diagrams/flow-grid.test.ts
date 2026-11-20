@@ -148,6 +148,23 @@ describe('columnSizes', () => {
 });
 
 describe('placeAtCentres', () => {
+  it('keeps a legacy wide layout centered when it overflows its region', () => {
+    const centres = new Map([
+      ['a', { x: 0, y: 0 }],
+      ['b', { x: 200, y: 0 }],
+    ]);
+    const placed = placeAtCentres(
+      centres,
+      { width: 200, height: 400 },
+      {
+        ...TEST_METRICS,
+        nodeMaxWidth: 100,
+      },
+    );
+    expect(placed.nodes.get('a')?.x).toBe(-50);
+    expect(placed.nodes.get('b')?.x).toBe(150);
+  });
+
   it('never squeezes a layout below its own spacing: it keeps the spacing and is cramped', () => {
     const centres = new Map(
       Array.from({ length: 7 }, (_, index) => [`n${index}`, { x: 0, y: index * 160 }]),

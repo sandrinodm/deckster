@@ -1,14 +1,14 @@
 # @deckster/deck-diagrams-demo
 
 Test deck for the diagram components, told as a platform team walking a new hire through how
-their system handles a request, one diagram per slide. 15 slides, 64 steps. Parcelwise and its
-systems are fictional.
+their system handles a request, one diagram per slide. The [deck configuration](deck.config.ts)
+lists the slides in talk order. Parcelwise and its systems are fictional.
 
 Run these from the repository root:
 
 ```sh
 pnpm deck dev diagrams-demo
-pnpm deck lint diagrams-demo    # diagrams-demo: no problems in 15 slides (64 steps checked).
+pnpm deck lint diagrams-demo
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures.
@@ -27,6 +27,10 @@ pnpm deck lint diagrams-demo    # diagrams-demo: no problems in 15 slides (64 st
 | `deploy-gates`                  | A flow written in TSX                                          |
 | `money-path`                    | A `<Flow>` whose nodes pick the `solid` and `outline` cards    |
 | `card-reference`                | The five standard cards side by side, one `card` each          |
+
+For a branded handoff, see the [dispatch example](https://github.com/sandrinodm/deckster/blob/be8cc95edb8db522f084f7f8b3a89ef46e9efd5b/decks/diagrams-demo/slides/dispatch-handoff.mdx)
+from the diagram design PR. Its two nodes sit on the right, with a dotted connector, a dashed
+group outline and a bundled parcel icon. It requires a build with those controls.
 
 Used by:
 

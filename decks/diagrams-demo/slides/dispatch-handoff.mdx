@@ -1,0 +1,20 @@
+---
+layout: diagram
+title: Dispatch sends every accepted parcel to the depot
+eyebrow: Dispatch handoff
+budget: 1m
+---
+
+import parcelMark from '../assets/parcel-mark.svg?url&no-inline';
+
+<Flow title="Dispatch hands accepted parcels to the depot" align="right">
+  <Group label="Parcelwise" lineStyle="dashed" strokeWidth={2}>
+    <Node id="dispatch" icon={parcelMark} title="Dispatch" subtitle="Accepts the parcel" width={252} height={120} col={1} row={1} />
+    <Node id="depot" kind="storage" title="Depot" subtitle="Scans it in" width={220} col={2} row={1} />
+  </Group>
+  <Edge from="dispatch" to="depot" label="Parcel ready" lineStyle="dotted" strokeWidth={3} />
+</Flow>
+
+<Notes>
+Dispatch issues a parcel-ready event as soon as it accepts a parcel. The depot scans the parcel into stock and uses the event to match the scan to the booking.
+</Notes>

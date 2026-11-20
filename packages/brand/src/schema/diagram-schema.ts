@@ -1,7 +1,7 @@
 import { Schema } from 'effect';
 
 import { isColorLiteral } from '#color/color.ts';
-import { FiniteBetween, KebabName, PALETTE_REF_PATTERN } from '#schema/primitives.ts';
+import { FiniteBetween, KebabName, PALETTE_REF_PATTERN, Pixels } from '#schema/primitives.ts';
 import { SHADOW_NAMES, STROKE_NAMES } from '#schema/shape-schema.ts';
 import { DiagramColors } from '#schema/theme-schema.ts';
 
@@ -172,6 +172,36 @@ export const EDGE_ARROWS = ['triangle', 'open', 'dot'] as const;
 export type EdgeArrow = (typeof EDGE_ARROWS)[number];
 
 /**
+ * The stroke patterns available for connectors and outlines.
+ */
+export const DIAGRAM_LINE_STYLES = ['solid', 'dashed', 'dotted'] as const;
+
+/**
+ * A diagram stroke pattern.
+ */
+export type DiagramLineStyle = (typeof DIAGRAM_LINE_STYLES)[number];
+
+/**
+ * The horizontal positions a diagram can take within its layout.
+ */
+export const DIAGRAM_ALIGNMENTS = ['left', 'center', 'right'] as const;
+
+/**
+ * A diagram's horizontal position.
+ */
+export type DiagramAlignment = (typeof DIAGRAM_ALIGNMENTS)[number];
+
+/**
+ * Brand typography steps available for subtitles and notes.
+ */
+export const DIAGRAM_TEXT_TYPES = ['caption', 'label', 'small', 'body'] as const;
+
+/**
+ * A brand typography step for a diagram subtitle or note.
+ */
+export type DiagramTextType = (typeof DIAGRAM_TEXT_TYPES)[number];
+
+/**
  * Edge label styles: `plain` text on a knock-out, or a bordered `chip`.
  */
 export const LABEL_STYLES = ['plain', 'chip'] as const;
@@ -274,17 +304,35 @@ const CardPaint = Schema.String.check(
 const StrokeName = Schema.Literals(STROKE_NAMES);
 
 /**
+ * A named stroke width or an explicit width in canvas pixels.
+ */
+const StrokeWidth = Schema.Union([StrokeName, Pixels]);
+
+/**
+ * The available connector and outline patterns.
+ */
+const LineStyle = Schema.Literals(DIAGRAM_LINE_STYLES);
+
+/**
+ * The available typography steps for diagram subtitles and notes.
+ */
+const DiagramTextStep = Schema.Literals(DIAGRAM_TEXT_TYPES);
+
+/**
  * A radius name from `shape.radius`, or `none`.
  */
 const RadiusName = Schema.Literals(DIAGRAM_RADII);
 
 /**
- * A card's icon: its style, the glyph's color and the tile color of a `solid` icon.
+ * A card's icon and its glyph, tile and border settings.
  */
 const CardIcon = Schema.Struct({
   style: Schema.optionalKey(Schema.Literals(CARD_ICON_STYLES)),
   color: Schema.optionalKey(CardColor),
   fill: Schema.optionalKey(CardColor),
+  border: Schema.optionalKey(CardColor),
+  borderWidth: Schema.optionalKey(StrokeWidth),
+  borderStyle: Schema.optionalKey(LineStyle),
 });
 
 /**
@@ -297,10 +345,10 @@ const CardAccent = Schema.Struct({
 });
 
 /**
- * How a card sets the node title. The size stays the brand's `small` step; the family is one of the
- * brand's family roles, checked after decoding so a typo names the ones that exist.
+ * Individual font properties shared by node titles, subtitles and notes. The family role is checked
+ * after decoding so a typo names the roles that exist.
  */
-const CardTitle = Schema.Struct({
+const DiagramTextOverrides = Schema.Struct({
   family: Schema.optionalKey(KebabName('family role', 'mono')),
   weight: Schema.optionalKey(FiniteBetween(1, 1000, 'Expected a font weight from 1 to 1000')),
   tracking: Schema.optionalKey(
@@ -310,15 +358,35 @@ const CardTitle = Schema.Struct({
 });
 
 /**
+ * The base typography step for a note or subtitle plus individual font overrides.
+ */
+const DiagramTextSpec = Schema.Struct({
+  type: Schema.optionalKey(DiagramTextStep),
+  ...DiagramTextOverrides.fields,
+});
+
+/**
+ * A subtitle accepts a typography step as shorthand for an object with `type`.
+ */
+const SubtitleSpec = Schema.Union([DiagramTextStep, DiagramTextSpec]);
+
+/**
+ * Decoded text settings for a diagram subtitle or note.
+ */
+export type DiagramTextSpec = typeof DiagramTextSpec.Type;
+
+/**
  * A named node style. Every field is optional. A standard card fills what the brand leaves out from
  * its own built-in look; a card of the brand's own starts from the built-in look of the standard
  * `default` card (today's node: its paint, shadow, shape and icon), not from the brand's `default`
- * entry. Only `stroke`, `radius` and the `title` fields are taken from the brand's `default` entry,
- * by every card; nothing else is inherited from it.
+ * entry. All cards inherit `stroke`, `radius`, `borderStyle`, `subtitle` and the `title` fields
+ * from the brand's `default` entry. `subtitle: null` skips the default card's subtitle settings and
+ * uses the diagram's node subtitle settings.
  */
 export const DiagramCard = Schema.Struct({
   fill: Schema.optionalKey(CardPaint),
   border: Schema.optionalKey(CardPaint),
+  borderStyle: Schema.optionalKey(LineStyle),
   stroke: Schema.optionalKey(StrokeName),
   radius: Schema.optionalKey(RadiusName),
   shadow: Schema.optionalKey(Schema.Literals(['none', ...SHADOW_NAMES])),
@@ -327,7 +395,8 @@ export const DiagramCard = Schema.Struct({
   subtext: Schema.optionalKey(CardColor),
   icon: Schema.optionalKey(CardIcon),
   accent: Schema.optionalKey(CardAccent),
-  title: Schema.optionalKey(CardTitle),
+  title: Schema.optionalKey(DiagramTextOverrides),
+  subtitle: Schema.optionalKey(Schema.NullOr(SubtitleSpec)),
 });
 
 /**
@@ -348,6 +417,7 @@ export const SurfaceCardColors = Schema.Struct({
     Schema.Struct({
       color: Schema.optionalKey(CardColor),
       fill: Schema.optionalKey(CardColor),
+      border: Schema.optionalKey(CardColor),
     }),
   ),
   accent: Schema.optionalKey(Schema.Struct({ color: Schema.optionalKey(CardColor) })),
@@ -369,21 +439,24 @@ export const SurfaceDiagram = Schema.Struct({
 
 /**
  * The top-level `diagram` section of a brand: the nine theme color overrides, plus the look of
- * edges, groups and edge labels, the brand's cards and the card each node kind uses by default.
- * Every key is optional; without them diagrams look as the roles and shape derive them.
+ * edges, groups, nodes, notes and edge labels, plus the brand's cards and kind assignments. Every
+ * key is optional; without them diagrams look as the roles and shape derive them.
  */
 export const BrandDiagram = Schema.Struct({
   ...DiagramColors.fields,
+  align: Schema.optionalKey(Schema.Literals(DIAGRAM_ALIGNMENTS)),
   edges: Schema.optionalKey(
     Schema.Struct({
-      stroke: Schema.optionalKey(StrokeName),
+      stroke: Schema.optionalKey(StrokeWidth),
+      lineStyle: Schema.optionalKey(LineStyle),
       corners: Schema.optionalKey(Schema.Literals(EDGE_CORNERS)),
       arrow: Schema.optionalKey(Schema.Literals(EDGE_ARROWS)),
     }),
   ),
   groups: Schema.optionalKey(
     Schema.Struct({
-      stroke: Schema.optionalKey(Schema.Literals(['none', ...STROKE_NAMES])),
+      stroke: Schema.optionalKey(Schema.Union([Schema.Literal('none'), StrokeWidth])),
+      lineStyle: Schema.optionalKey(LineStyle),
       dashed: Schema.optionalKey(Schema.Boolean),
       radius: Schema.optionalKey(RadiusName),
     }),
@@ -394,6 +467,14 @@ export const BrandDiagram = Schema.Struct({
       type: Schema.optionalKey(Schema.Literals(LABEL_TYPES)),
     }),
   ),
+  nodes: Schema.optionalKey(
+    Schema.Struct({
+      width: Schema.optionalKey(Pixels),
+      height: Schema.optionalKey(Pixels),
+      subtitle: Schema.optionalKey(SubtitleSpec),
+    }),
+  ),
+  notes: Schema.optionalKey(DiagramTextSpec),
   kinds: Schema.optionalKey(
     Schema.Record(KebabName('node kind', 'database'), KebabName('card name', 'tint')),
   ),

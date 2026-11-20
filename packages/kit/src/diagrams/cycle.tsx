@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { DiagramTokens } from '#diagrams/diagram-tokens.ts';
 import type { EdgeLayout } from '#diagrams/flow-layout.ts';
 import type { RoutedEdge } from '#diagrams/flow-route.ts';
@@ -21,6 +22,11 @@ const ARROW_GAP_IN_STROKES = 1.5;
  * Props of {@link Cycle}.
  */
 export type CycleProps = {
+  /**
+   * Horizontal placement of a compact drawing; otherwise follows the brand.
+   */
+  align?: DiagramAlign;
+
   /**
    * An id for the export description.
    */
@@ -79,6 +85,7 @@ export function Cycle({
   steps = false,
   spin = false,
   height,
+  align,
   card,
   children,
 }: CycleProps): ReactNode {
@@ -89,7 +96,7 @@ export function Cycle({
   const centres = useMemo(() => ringCentres(parsed.spec.nodes.map((node) => node.id)), [parsed]);
   const reshape = useMemo(
     () => (layout: EdgeLayout, tokens: DiagramTokens) =>
-      arcEdges(layout, parsed.spec, centres, tokens.edge.stroke * ARROW_GAP_IN_STROKES),
+      arcEdges(layout, parsed.spec, centres, tokens.edge.stroke),
     [parsed, centres],
   );
   return (
@@ -103,6 +110,7 @@ export function Cycle({
       reshape={reshape}
       {...optional('id', id)}
       {...optional('height', height)}
+      {...optional('align', align)}
       {...optional('card', card)}
     />
   );
@@ -228,13 +236,13 @@ function ringHops(pairs: readonly RingPair[]) {
  * @param layout - The placed stages and routed edges.
  * @param spec - The cycle, for its edges.
  * @param unit - Each stage's place on the unit circle.
- * @param gap - Room before an arrowhead's tip.
+ * @param stroke - The brand's default edge width, used to set arrow clearance.
  */
 function arcEdges(
   layout: EdgeLayout,
   spec: FlowSpec,
   unit: ReadonlyMap<string, Point>,
-  gap: number,
+  stroke: number,
 ): Map<string, RoutedEdge> {
   const ellipse = ringEllipse(unit, layout.nodes);
   const edges = new Map<string, RoutedEdge>(layout.edges);
@@ -254,6 +262,7 @@ function arcEdges(
       continue;
     }
 
+    const gap = (edge.strokeWidth ?? stroke) * ARROW_GAP_IN_STROKES;
     const arc = ringArc(ellipse, from, to, { start: gap, end: gap });
     if (arc !== undefined) {
       edges.set(edge.id, { ...routed, points: arc.points, segments: arc.segments });

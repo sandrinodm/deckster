@@ -65,44 +65,108 @@ Pictures must be evidence. Decorative stock imagery adds processing without addi
 
 Show the product rather than describing it: one screen per slide, as large as the slide allows, with at most a few callouts on the parts the notes talk about. Ten thumbnails on one slide is a screenshot dump; nobody can read any of them.
 
-Some jobs have a layout of their own, and the near miss is the layout that comes to mind first. `deck layouts <deck> --json` has the fields and limits; `decks/lookbook` in the deckster repository shows every layout and option in use.
+Choose a layout by what the audience needs to read, compare, or do. If the deck lists a brand layout for that job, start there and check that its fixed regions hold the evidence. Otherwise use the kit choices below. Confirm the name in `deck layouts <deck> --summary`, then open its full catalog entry for the exact fields, slots, limits and example. The [layout reference](https://sandrinodm.github.io/deckster/reference/layouts/) shows the rendered layouts. The installed catalog determines which ones you can use.
 
-| The slide's job                                                          | Layout                                                                                                                                                        | Not                                                                                                                                                                           |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------                                        | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| One product screen and what to look at on it                             | `screen`: a `browser`, `phone` or `laptop` frame (or `none`), up to four numbered callouts                                                                    | A screenshot in `split` (right only when the text matters as much) or `image`; two to four screens of one flow are a `gallery`; two states of one screen are a `before-after` |
-| You and the alternatives on two trade-offs                               | `matrix`: positions by judgement, the subject marked `us`                                                                                                     | A `<Scatter>` with invented numbers; it is for positions that were measured                                                                                                   |
-| A number built from its parts: customers × price, bookings × take rate   | `equation`: two to four terms and the result                                                                                                                  | `stats`, whose figures stand side by side without adding up; `market` for nested market sizes                                                                                 |
-| A request with an amount: money, headcount, a date to commit to          | `ask`: one `amount` and the two to four dated `milestones` it buys                                                                                            | A range; the amount alone in a `statement` or on the `closing` slide                                                                                                          |
-| A named customer's result                                                | `proof`: their words beside one to three before-and-after `metrics`                                                                                           | A `quote` and then a `stats` slide; a `logos` wall                                                                                                                            |
-| Plans or tiers, each with its own price and what it includes             | `pricing`: two to four plans, the price as each column's hero, one plan `recommended`                                                                         | `comparison` (options measured on the same rows), a `table` of every feature, `cards` without prices                                                                          |
-| Short items in groups: now, next and later, or work by status            | `columns`, with `current:` on the group that matters now                                                                                                      | `cards` (one line per idea), `steps` (stages of one process), `timeline` (dated)                                                                                              |
-| One to five words that should fill the slide                             | `statement` with `size: giant`, at most once a part                                                                                                           | A plain `statement`, which sets a sentence                                                                                                                                    |
-| The founders, and why they are the ones to do it                         | `team` with an `edge` line (and `previously`) on each of two to four people                                                                                   | Names and past employers alone; a `bio` for each                                                                                                                              |
-| Accountable next steps with a person and a deadline                      | `actions`, with `owner` and `due` on every row and `current:` for work in progress                                                                            | `steps` (process stages), `columns` (groups without owners or dates), `timeline` (dated milestones), `table` (figures, more columns), `agenda` (meeting order)                |
-| Visual evidence of one change                                            | `before-after`: two equal pictures, persistent labels and optional captions; shared contain or cover fit                                                      | `gallery` for an unpaired collection with a lead; `shift` for words and figures                                                                                               |
-| An exchange whose replies demonstrate the point                          | `conversation`: two to four messages with `name`, our side lit on the right, optionally one per click                                                         | `quote` for one testimony, `steps` for a process, a sequence diagram for system traffic                                                                                       |
-| Several measures together prove one takeaway                             | `dashboard`: two to four headed charts or numbers in an even grid                                                                                             | `chart` for one detailed plot; `stats` if every panel is a number                                                                                                             |
-| One term whose meaning the audience needs to share                       | `definition`: a display term, its meaning, optional pronunciation, kind and example                                                                           | `statement` for a claim without a term/meaning structure; `cards` or `table` for a glossary of several terms; `content` for a longer explanation                              |
-| Practical habits to follow and avoid                                     | `do-dont`: two columns of two to four examples, tick and cross marks, optional headings and column reveal                                                     | `comparison` for measured options, `shift` for one old-to-new change, `columns` for neutral groups                                                                            |
-| A task the audience completes within a timebox                           | `exercise`: a hero `duration`, two to five numbered `instructions`, a concrete `output` and optional `groups`                                                 | `steps` (explaining a process), `agenda` (the session plan)                                                                                                                   |
-| Recurring questions or practical objections with short answers           | `faq`: two to four `questions:` pairs (`q`, `a`), revealed pair by pair                                                                                       | `cards` for claims, `comparison` for shared criteria, `content` for a long explanation                                                                                        |
-| A compact inventory of capabilities, each with an icon and a short title | `features`: six to twelve peers, three open columns for six or nine and four otherwise, detail for up to nine items, titles only at ten to twelve, row reveal | `cards` for two to four fuller ideas, `steps` for a sequence, `comparison` for alternatives                                                                                   |
-| A whole market and the nested part within reach                          | `market`: two or three sizes, outermost first; proportional circles and stacked figures                                                                       | `equation` for the arithmetic, `stats` for independent figures                                                                                                                |
-| A research participant’s needs                                           | `persona`: a portrait, their words, `goals` and `frustrations`                                                                                                | `bio` for a speaker; `quote` for words alone; `proof` for measured outcomes                                                                                                   |
-| Four categories, each with a short list: SWOT or keep/stop/start/try     | `quadrants`: exactly four named lists, one to four bullets each; at most one `quadrants[].highlight: true`                                                    | `matrix` for positions on axes; `comparison` for shared measurement rows                                                                                                      |
-| A question with one right answer among fixed choices                     | `quiz`: two to four lettered options, a tick and an optional reason on the next step                                                                          | `cards` for peers without a right answer; `comparison` for options measured on shared rows                                                                                    |
-| Takeaways at the end of a part or talk                                   | `recap`: two to four numbered sentences with optional detail                                                                                                  | `cards` (icons and bodies), `steps` (a process), `agenda` (what comes next), a `statement` for one takeaway, `closing` (ask and contacts)                                     |
-| What could go wrong and the action against each risk                     | `risks`: three to five risks, likelihood and impact as levels, one mitigation each                                                                            | `table` for owners, dates or scores; `matrix` for continuous axes; `steps` for a sequence of actions                                                                          |
-| Parallel work with durations on a shared time axis                       | `schedule`, with `periods`, `lanes`, optional `now` and `current`                                                                                             | `timeline` (milestones without durations), `columns` (groups without measured time), `steps` (a sequence without dates)                                                       |
-| References the audience can follow after the talk                        | `sources`: three to eight numbered citations, in one or two columns                                                                                           | `default` for a plain list; a footnote for the source of one claim                                                                                                            |
-| A programme's readiness, exceptions and who owns them                    | `status`: three to seven workstreams, labelled states, optional owners and one-line notes                                                                     | `table` for arbitrary values, `columns` for task lanes, `timeline` for dated milestones                                                                                       |
-| Several people supporting one point                                      | `voices`: two or three short testimonials with names, roles and optional portraits                                                                            | `quote` for one speaker; `proof` for a customer result with numbers; `team` to introduce people                                                                               |
+### Open, orient and close
+
+| Layout | Use it when |
+| --- | --- |
+| `title` | You need a cover with the talk title, a short subtitle, presenter and date. |
+| `section` | A new part needs a divider. Repeat the same divider treatment at each part. |
+| `agenda` | The audience needs the order or timing of the session. Use `current` on a repeated agenda to show where they are. |
+| `bio` | One speaker or guest needs an introduction that explains why they are here. |
+| `recap` | People should leave a section remembering two to four points. Use `statement` for one line that needs the whole slide. |
+| `sources` | Readers need a list of references they can follow. Cite a single claim in the slide's footnote where supported. |
+| `closing` | The final slide should leave one prompt, takeaway or next step with ways to follow up. Use `ask` earlier for a decision tied to an amount. |
+
+### Explain one idea or organise several
+
+| Layout | Use it when |
+| --- | --- |
+| `statement` | One short claim needs the slide to itself. Use `size: giant` for a few memorable words and `quote` when a speaker's attribution is central. |
+| `definition` | The audience needs a shared meaning for one term before the argument can proceed. |
+| `default` | You need a plain Markdown heading and short body for material without a more specific structure. |
+| `content` | The title makes a claim and prose or a short list supports it, with an optional aside. |
+| `split` | The explanation and its visual evidence both matter enough to read side by side. Give a single dominant plot or drawing the space of `chart` or `diagram`. |
+| `cards` | A few ideas are peers and each merits its own label, icon and explanation. |
+| `features` | The audience needs to scan a wider inventory of capabilities with compact names and icons. |
+| `bento` | One subject has facets of unequal importance, and a figure, visual or idea needs a larger tile. |
+| `columns` | Several headed groups contain short lists, as in now, next and later. Use `status` to report each workstream's state. |
+| `steps` | The audience needs an ordered procedure with a brief instruction at each stage. Use `diagram` when branching, connections or handoffs carry the point. |
+| `faq` | The audience has recurring questions or objections with brief, direct answers. |
+
+### Compare, quantify and decide
+
+| Layout | Use it when |
+| --- | --- |
+| `stats` | A few independent headline figures make one point without needing a plot. Use `chart` with `BigNumber` for a single figure. |
+| `equation` | The audience should see the arithmetic behind a figure, such as bookings × take rate = revenue. |
+| `market` | The point is the relationship between nested market sizes, such as total and reachable demand. |
+| `chart` | One quantitative pattern, figure or data table needs most of the slide. Choose the component by the message in [Data visuals](data-visuals.md). |
+| `dashboard` | A small set of plots or mixed measures jointly supports the same conclusion. Give a detailed plot its own `chart` slide. |
+| `table` | Readers need to look up or compare exact entries in a compact table. Use Markdown for text or the kit `Table` for formatted data. |
+| `comparison` | Alternatives are evaluated against the same rows. Mark row winners where the evidence supports them, including tradeoffs the recommendation loses. |
+| `pricing` | Each plan has a price and an inclusion list. Use `comparison` when the choice turns on comparing the same criteria row by row. |
+| `matrix` | Named options need qualitative positions along two explicit axes. Use a scatter chart for measured coordinates. |
+| `quadrants` | Content belongs in exactly four named groups, such as a SWOT, with a short list in each. |
+| `strategy-canvas` | A few offers differ across shared buyer factors, and their profiles make a deliberate emphasis or tradeoff visible. |
+| `shift` | Words or figures express one change between the old and new states. Use `before-after` when matched pictures are the evidence. |
+| `risks` | A short risk register needs likelihood, impact and a mitigation for each item. Use `table` for exact scores or extra lookup columns. |
+
+### Show how something works or looks
+
+| Layout | Use it when |
+| --- | --- |
+| `diagram` | A flow, sequence, hierarchy, loop, stack or handoff is the evidence. Choose the component in [Data visuals](data-visuals.md#15-diagrams-when-a-picture-of-the-mechanism-beats-bullets). |
+| `service-blueprint` | The audience should see where a customer's journey meets frontstage and backstage work and who owns the handoff. |
+| `code` | A short snippet, diff or terminal session proves a technical point. |
+| `demo` | A live or scripted component should do the work in front of the audience. Prepare its still or poster for preview and export. |
+| `choose-path` | The presenter should be able to select either of two authored workflows and show its outcome. The static view shows both paths. |
+| `image` | One photo should convey place, scale or a moment at full bleed. Use `split` if the explanation needs more space. |
+| `screen` | One interface should be readable whole, in a device or browser frame with optional callouts. |
+| `gallery` | Several separate views belong together and one deserves the largest frame. |
+| `before-after` | Two visual states need equal weight in a side-by-side comparison. |
+| `screen-story` | An offline product demo needs a magnified detail (`spotlight`), a registered before-and-after wipe (`wipe`), a desktop-to-phone transfer (`handoff`) or three sequential screens (`filmstrip`). |
+| `vision-storyboard` | Three illustrated moments show what a future experience changes for one person. |
+| `sketch-to-ship` | The claim is about how specific design choices moved from a working sketch to the finished result. Pin the same landmarks in both. |
+| `product-cutaway` | Aligned artwork can separate the layers of a product to reveal what its parts do together. |
+
+### Teach or demonstrate with people
+
+| Layout | Use it when |
+| --- | --- |
+| `do-dont` | Learners need concrete examples of a practice to follow and a mistake to avoid. |
+| `quiz` | The room should choose among fixed answers and then see the correct choice and its rationale. |
+| `exercise` | Learners should produce something during a timebox. Give them instructions and name the expected output. |
+| `conversation` | The order and wording of an actual exchange make the point. Use a sequence diagram for messages between systems. |
+| `quote` | An attributed quotation from one person carries the point. |
+| `voices` | Several brief testimonies establish a shared experience. |
+| `proof` | One named customer's experience and measured result belong together in a case study. |
+| `persona` | A research-grounded user's goals and frustrations explain a design decision. |
+| `team` | The audience needs to meet the people behind the work. In a founder pitch, explain why each person is suited to the job. |
+| `logos` | Named relationships with customers, partners or funders are the evidence. Use `proof` if the claim is a customer's measured outcome. |
+
+### Plan work, make commitments and ask
+
+| Layout | Use it when |
+| --- | --- |
+| `timeline` | A few dated milestones show what happens when without showing durations. |
+| `schedule` | Several workstreams run for different durations on a shared time axis. |
+| `roadmap-transit` | The plan turns on a specific dependency between parallel workstreams and a milestone it enables. |
+| `roadmap-hill` | The discussion is about movement from discovering an approach to executing it, using two reviews of the same scopes. |
+| `opportunity-map` | A site, route or expansion decision depends on a real or illustrative geographic constraint. |
+| `future-back` | Start from a dated future outcome, trace the capabilities it requires, then land on a near-term test. |
+| `status` | A review needs each workstream's state and any exceptions requiring attention. |
+| `actions` | The audience needs to leave with an owner and deadline for each next action. |
+| `ask` | A specific amount or commitment should buy concrete dated milestones. State the decision and what it enables. |
+
+For build and artwork guidance on the product and strategy layouts, see [Visual patterns](visual-patterns.md).
 
 For these recurring decisions, adapt the corresponding lookbook slide.
 
-- **Pitch by analogy** · Start with a familiar market’s change. Reveal how the same mechanism works for the company, then show the assumption the audience should challenge. [Lookbook example](../../../decks/lookbook/slides/pitch-analogy.mdx)
-- **Investment committee decision** · Put the decision and amount in the title. Pair the thesis with evidence and give the strongest objection a measurable condition for reconsideration. [Lookbook example](../../../decks/lookbook/slides/investment-committee.mdx)
-- **Opportunity to experiment** · Start from the outcome and show the opportunity, competing options, and experiment. Keep alternatives visible when the experiment is revealed. State the measure and the baseline on the slide. [Lookbook example](../../../decks/lookbook/slides/opportunity-experiments.mdx)
+- **Pitch by analogy.** Start with a familiar market’s change. Reveal how the same mechanism works for the company, then show the assumption the audience should challenge. [Lookbook example](https://github.com/sandrinodm/deckster/blob/v0.7.0/decks/lookbook/slides/pitch-analogy.mdx)
+- **Investment committee decision.** Put the decision and amount in the title. Pair the thesis with evidence and give the strongest objection a measurable condition for reconsideration. [Lookbook example](https://github.com/sandrinodm/deckster/blob/v0.7.0/decks/lookbook/slides/investment-committee.mdx)
+- **Opportunity to experiment.** Start from the outcome and show the opportunity, competing options, and experiment. Keep alternatives visible when the experiment is revealed. State the measure and the baseline on the slide. [Lookbook example](https://github.com/sandrinodm/deckster/blob/v0.7.0/decks/lookbook/slides/opportunity-experiments.mdx)
 
 ## 4. Cognitive load: what the research supports
 

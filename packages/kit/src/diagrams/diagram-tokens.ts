@@ -3,6 +3,14 @@ import { useEffect, useLayoutEffect, useState, type RefObject } from 'react';
 import type { MotionTokens } from '#diagrams/packet-motion.ts';
 
 import {
+  DIAGRAM_ALIGNS,
+  DIAGRAM_LINE_STYLES,
+  DIAGRAM_TEXT_STEPS,
+  type DiagramAlign,
+  type DiagramLineStyle,
+  type DiagramTextStep,
+} from '#diagrams/diagram-design.ts';
+import {
   ACCENT_SIDES,
   CARD_ICONS,
   CARD_SHAPES,
@@ -118,13 +126,48 @@ export type DiagramTokens = {
    * How edges are drawn: the line width in canvas pixels, whether corners are rounded or square,
    * and the arrowhead.
    */
-  edge: { stroke: number; corners: (typeof EDGE_CORNERS)[number]; arrow: ArrowStyle };
+  edge: {
+    stroke: number;
+    corners: (typeof EDGE_CORNERS)[number];
+    arrow: ArrowStyle;
+    lineStyle?: DiagramLineStyle | undefined;
+
+    /**
+     * An explicit numeric stroke for timeline axes, which otherwise use the regular stroke.
+     */
+    timelineStroke?: number | undefined;
+  };
+
+  /**
+   * The explicit horizontal placement, when a brand chooses one.
+   */
+  align?: DiagramAlign | undefined;
+
+  /**
+   * Preferred width and minimum height, in canvas pixels (0 keeps intrinsic sizing).
+   */
+  node: { width: number; height: number };
+
+  /**
+   * The step used by all node subtitles and supporting notes.
+   */
+  text: { subtitle: DiagramTextStep; note: DiagramTextStep };
+
+  /**
+   * Width of subtitle text using the diagram's font, in canvas pixels.
+   */
+  measureSubtitle: (text: string) => number;
 
   /**
    * How groups are drawn: the outline's width (0 for none), whether it is dashed, and the corner
    * radius, in canvas pixels.
    */
-  group: { stroke: number; dashed: boolean; radius: number };
+  group: {
+    stroke: number;
+    dashed: boolean;
+    radius: number;
+    lineStyle?: DiagramLineStyle | undefined;
+  };
 
   /**
    * How edge labels are set.
@@ -254,6 +297,21 @@ export const FALLBACK: DiagramTokens = {
    * Today's edges: the regular line, rounded corners, a filled arrowhead.
    */
   edge: { stroke: 2, corners: 'round', arrow: 'triangle' },
+
+  /**
+   * With no explicit dimensions, the layout uses its intrinsic sizes.
+   */
+  node: { width: 0, height: 0 },
+
+  /**
+   * Both types of supporting text use the caption step.
+   */
+  text: { subtitle: 'caption', note: 'caption' },
+
+  /**
+   * Estimate subtitle widths as captions without a live document.
+   */
+  measureSubtitle: (text) => text.length * FALLBACK_CAPTION_SIZE * ESTIMATED_CHAR_WIDTH,
 
   /**
    * Today's groups: a hairline, solid, with the large radius.
@@ -404,6 +462,9 @@ export function readDiagramTokens(element: Element): DiagramTokens {
     ['kit-type-label'],
     read('--brand-type-label-size', FALLBACK.type.label),
   );
+  const subtitle = keyword(style, '--brand-diagram-subtitle-type', DIAGRAM_TEXT_STEPS, 'caption');
+  const note = keyword(style, '--brand-diagram-note-type', DIAGRAM_TEXT_STEPS, 'caption');
+  const timelineStroke = read('--brand-diagram-timeline-stroke', Number.NaN);
   const labelType = keyword(style, '--brand-diagram-label-type', LABEL_TYPES, 'caption');
   return {
     motion: {
@@ -429,16 +490,26 @@ export function readDiagramTokens(element: Element): DiagramTokens {
     measureLabel,
     measureTitle,
     cards: {
-      cards: readCards(element, style, { radius, stroke }, smallSize),
+      cards: readCards(element, style, { radius, stroke }, smallSize, subtitle),
       kinds: readKinds(style),
       fallback: plainCard({ radius, stroke }, measureTitle),
     },
+    align: keyword(style, '--brand-diagram-align', DIAGRAM_ALIGNS),
+    node: {
+      width: read('--brand-diagram-node-width', 0),
+      height: read('--brand-diagram-node-height', 0),
+    },
+    text: { subtitle, note },
+    measureSubtitle: textMeasurer(element, subtitleProbe(subtitle), subtitleSize(style, subtitle)),
     edge: {
+      lineStyle: keyword(style, '--brand-diagram-edge-style', DIAGRAM_LINE_STYLES),
+      timelineStroke: Number.isFinite(timelineStroke) ? timelineStroke : undefined,
       stroke: read('--brand-diagram-edge-stroke', stroke.regular),
       corners: keyword(style, '--brand-diagram-edge-corners', EDGE_CORNERS, 'round'),
       arrow: keyword(style, '--brand-diagram-edge-arrow', ARROW_STYLES, 'triangle'),
     },
     group: {
+      lineStyle: keyword(style, '--brand-diagram-group-style', DIAGRAM_LINE_STYLES),
       stroke: read('--brand-diagram-group-stroke', stroke.hairline),
       dashed: style.getPropertyValue('--brand-diagram-group-dashed').trim() === 'true',
       radius: read('--brand-diagram-group-radius', radius.lg),
@@ -468,8 +539,27 @@ function keyword<Value extends string>(
   style: CSSStyleDeclaration,
   name: string,
   values: readonly Value[],
+): Value | undefined;
+
+/**
+ * Reads a keyword or returns a fallback when its CSS value is missing or invalid.
+ */
+function keyword<Value extends string>(
+  style: CSSStyleDeclaration,
+  name: string,
+  values: readonly Value[],
   fallback: Value,
-): Value {
+): Value;
+
+/**
+ * Checks the computed value against the supported keywords.
+ */
+function keyword<Value extends string>(
+  style: CSSStyleDeclaration,
+  name: string,
+  values: readonly Value[],
+  fallback?: Value,
+): Value | undefined {
   const value = style.getPropertyValue(name).trim();
   return (values as readonly string[]).includes(value) ? (value as Value) : fallback;
 }
@@ -497,12 +587,14 @@ function readKinds(style: CSSStyleDeclaration): Map<string, string> {
  * @param style - Its computed style.
  * @param steps - The brand's radius and stroke steps.
  * @param smallSize - The small step's size, for the estimate without a canvas.
+ * @param subtitle - The diagram's subtitle step, for a card without its own.
  */
 function readCards(
   element: Element,
   style: CSSStyleDeclaration,
   steps: Pick<DiagramTokens, 'radius' | 'stroke'>,
   smallSize: number,
+  subtitle: DiagramTextStep,
 ): Map<string, CardTokens> {
   const names = [
     ...new Set(style.getPropertyValue('--brand-diagram-cards').trim().split(WHITESPACE)),
@@ -528,10 +620,23 @@ function readCards(
       return Number.isFinite(parsed) ? parsed : fallback;
     };
     const shadow = value('shadow');
+    const step = keyword(style, `--brand-diagram-card-${name}-subtitle-type`, DIAGRAM_TEXT_STEPS);
+    const subtitleStep = step ?? subtitle;
     cards.set(name, {
       name,
       stroke: length('stroke', steps.stroke.regular),
       radius: length('radius', steps.radius.md),
+      borderStyle: keyword(style, `--brand-diagram-card-${name}-border-style`, DIAGRAM_LINE_STYLES),
+      iconBorder: value('icon-border-style') !== '' || value('icon-border-width') !== '',
+      subtitleStep,
+      measureSubtitle: lazyMeasurer(() =>
+        textMeasurer(
+          element,
+          subtitleProbe(subtitleStep),
+          subtitleSize(style, subtitleStep),
+          cardVariables(name),
+        ),
+      ),
       shape: keyword(style, `--brand-diagram-card-${name}-shape`, CARD_SHAPES, 'kind'),
       icon: keyword(style, `--brand-diagram-card-${name}-icon`, CARD_ICONS, 'chip'),
       accent: {
@@ -551,10 +656,23 @@ function readCards(
 }
 
 /**
- * A measure built on its first use and kept, so reading the tokens puts no probe on the page for a
- * card no node measures with.
- *
- * @param build - Builds the measure.
+ * The class names for a hidden subtitle probe, with the selected brand type step.
+ */
+function subtitleProbe(step: DiagramTextStep): readonly string[] {
+  return ['kit-flow-node', `kit-flow-node-subtitle kit-type-${step}`];
+}
+
+/**
+ * The fallback size used to measure a subtitle when there is no canvas.
+ */
+function subtitleSize(style: CSSStyleDeclaration, step: DiagramTextStep): number {
+  return (
+    Number.parseFloat(style.getPropertyValue(`--brand-type-${step}-size`)) || FALLBACK_CAPTION_SIZE
+  );
+}
+
+/**
+ * A text measure allocated on first use, because only some of a brand's cards appear in a slide.
  */
 function lazyMeasurer(build: () => (text: string) => number): (text: string) => number {
   let measure: ((text: string) => number) | undefined;

@@ -132,6 +132,35 @@ describe('remarkKitDiagrams', () => {
     expect(root.children?.[0]?.value).toBe('import kitDiagramIcon0 from "~icons/tabler/server-2"');
   });
 
+  it('imports relative images and leaves HTTPS images as URL strings', () => {
+    const local = element('Node', { id: 'parcel', icon: '../assets/parcel.svg', col: 1, row: 1 });
+    const remote = element('Node', {
+      id: 'depot',
+      icon: 'https://example.test/depot.png',
+      col: 2,
+      row: 1,
+    });
+    const edge = element('Edge', {
+      from: 'parcel',
+      to: 'depot',
+      lineStyle: 'dotted',
+      strokeWidth: 3.5,
+    });
+    const diagram = element('Flow', { title: 'Dispatch flow', align: 'right' }, [
+      local,
+      remote,
+      edge,
+    ]);
+    const root: MdastNode = { type: 'root', children: [diagram] };
+    expect(run(root).failure).toBeUndefined();
+    expect(root.children?.[0]?.value).toBe(
+      'import kitDiagramIcon0 from "../assets/parcel.svg?url"',
+    );
+    expect(remote.attributes?.find((attribute) => attribute.name === 'icon')?.value).toBe(
+      'https://example.test/depot.png',
+    );
+  });
+
   it('keeps icon="none" as written, so the component draws no kind icon', () => {
     const node = element('Node', { id: 'db', kind: 'database', icon: 'none' });
     run({ type: 'root', children: [flow([node])] });

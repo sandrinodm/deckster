@@ -27,6 +27,11 @@ const Point = Schema.Struct({ x: Schema.Number, y: Schema.Number });
 const Color = Schema.NullOr(Schema.String);
 
 /**
+ * A stroke pattern, added in a later revision of version 1.
+ */
+const LineStyle = Schema.optionalKey(Schema.Literals(['solid', 'dashed', 'dotted']));
+
+/**
  * Text as the diagram sets it.
  */
 const Text = Schema.Struct({
@@ -48,6 +53,7 @@ const Paint = Schema.Struct({
   stroke: Color,
   strokeWidth: Schema.Number,
   dashed: Schema.Boolean,
+  lineStyle: LineStyle,
   opacity: Schema.Number,
 });
 
@@ -105,7 +111,14 @@ const Node = Schema.Struct({
       }),
     ),
   ),
-  icon: Schema.NullOr(Schema.Struct({ box: Box, color: Color, svg: Schema.String })),
+  icon: Schema.NullOr(
+    Schema.Struct({
+      box: Box,
+      color: Color,
+      svg: Schema.String,
+      src: Schema.optionalKey(Schema.String),
+    }),
+  ),
   group: Schema.NullOr(Schema.String),
   card: Schema.optionalKey(Schema.String),
   shadow: Schema.optionalKey(Schema.NullOr(Shadow)),
@@ -138,6 +151,7 @@ const Edge = Schema.Struct({
   color: Color,
   width: Schema.Number,
   dashed: Schema.Boolean,
+  lineStyle: LineStyle,
   arrowStart: Schema.Boolean,
   arrowEnd: Schema.Boolean,
   arrow: Schema.optionalKey(Schema.Literals(['triangle', 'open', 'dot'])),
@@ -168,6 +182,7 @@ const Line = Schema.Struct({
   color: Color,
   width: Schema.Number,
   dashed: Schema.Boolean,
+  lineStyle: LineStyle,
   opacity: Schema.Number,
 });
 

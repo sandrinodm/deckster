@@ -15,6 +15,20 @@ function problemsOf(diagram: unknown) {
 }
 
 describe('diagram names', () => {
+  it('reports unknown note and subtitle families on the written fields', () => {
+    expect(
+      problemsOf({
+        nodes: { subtitle: { family: 'bod' } },
+        notes: { family: 'monoos' },
+        cards: { solid: { subtitle: { family: 'displa' } } },
+      }).map((problem) => [problem.path, problem.fix]),
+    ).toEqual([
+      ['diagram.nodes.subtitle.family', 'Use "body".'],
+      ['diagram.notes.family', 'Use "mono".'],
+      ['diagram.cards.solid.subtitle.family', 'Use "display".'],
+    ]);
+  });
+
   it('accept kinds mapped to standard cards and the brand’s own', () => {
     expect(
       problemsOf({
@@ -191,15 +205,16 @@ describe('diagram names', () => {
   });
 
   it('refuse two cards whose variables would share a name', () => {
-    expect(problemsOf({ cards: { 'tint-icon': {} } })).toEqual([
-      {
+    const problems = problemsOf({ cards: { 'tint-icon': {} } });
+    for (const property of ['fill', 'border', 'border-style']) {
+      expect(problems).toContainEqual({
         path: 'diagram.cards.tint-icon',
         message:
           'The cards "tint" and "tint-icon" would both write ' +
-          '--brand-diagram-card-tint-icon-fill, so one would hide the other.',
+          `--brand-diagram-card-tint-icon-${property}, so one would hide the other.`,
         fix: 'Rename "tint-icon" so it does not start with "tint-".',
-      },
-    ]);
+      });
+    }
   });
 });
 

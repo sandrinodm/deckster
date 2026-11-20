@@ -1,5 +1,8 @@
+import type { DiagramAlign } from '#diagrams/diagram-design.ts';
 import type { FlowSpec, GridCell } from '#diagrams/flow-spec.ts';
+import type { PathSegment } from '#diagrams/path-geometry.ts';
 
+import { alignedOffset } from '#diagrams/diagram-design.ts';
 import {
   cellsFromCentres,
   groupDepth,
@@ -15,6 +18,8 @@ import { collinearOverlaps, routeEdges, type RoutedEdge } from '#diagrams/flow-r
 import { isInGroup } from '#diagrams/flow-validate.ts';
 import { inflate, intersects, type Point, type Rect, type Side } from '#diagrams/geometry.ts';
 import { NODE_KINDS, type NodeShape } from '#diagrams/node-kinds.ts';
+import { flattenPath } from '#diagrams/path-geometry.ts';
+import { maxOf, minOf } from '#foundation/lists.ts';
 
 /**
  * How far two boxes must overlap each way, in pixels, to count as drawn on top of each other.
@@ -70,6 +75,11 @@ export type RouteMetrics = {
    * Room left between an arrowhead's tip and the node it points at.
    */
   arrowGap: number;
+
+  /**
+   * Per-edge overrides of the arrow gap, in canvas pixels.
+   */
+  arrowGaps?: ReadonlyMap<string, number>;
 };
 
 /**
@@ -106,6 +116,11 @@ export type FlowLayoutInput = {
    * Each node's measured content height, so a grid row takes the height of its tallest node.
    */
   nodeHeights?: ReadonlyMap<string, number>;
+
+  /**
+   * Preferred widths of individual nodes.
+   */
+  nodeWidths?: ReadonlyMap<string, number>;
 
   /**
    * Node centres from an automatic layout, used when the nodes have no cells.
@@ -259,7 +274,7 @@ export function layoutFlow(input: FlowLayoutInput): FlowLayout {
     bounds,
     [...edges.values()].map((edge) => ({ id: edge.id, points: edge.points })),
   );
-  return {
+  const layout: FlowLayout = {
     size,
     nodes: placement.nodes,
     groups,
@@ -269,6 +284,79 @@ export function layoutFlow(input: FlowLayoutInput): FlowLayout {
     overlaps: overlapsOf(spec, placement.nodes, groups),
     edgeOverlaps: edgeOverlapsOf(spec, edges),
   };
+  return metrics.align === undefined ? layout : alignScene(layout, metrics.align);
+}
+
+/**
+ * Positions every part together after labels and paths have found room around the nodes.
+ */
+function alignScene(layout: FlowLayout, align: DiagramAlign): FlowLayout {
+  const boxes = [
+    ...layout.nodes.values(),
+    ...[...layout.groups.values()].flatMap((group) => [group.rect, group.label]),
+    ...[...layout.labels.values()].map((label) => label.rect),
+  ];
+  const paths = [...layout.edges.values()].flatMap((edge) => flattenPath(edge.segments));
+  const positions = paths.map((point) => point.x);
+  const left = minOf(
+    boxes.map((box) => box.x),
+    minOf(positions),
+  );
+  const right = maxOf(
+    boxes.map((box) => box.x + box.width),
+    maxOf(positions),
+  );
+  if (!Number.isFinite(left) || !Number.isFinite(right)) {
+    return layout;
+  }
+
+  const offset = alignedOffset(layout.size.width - (right - left), align) - left;
+  /**
+   * Shifts any point or box while retaining additional dimensions.
+   */
+  const move = <T extends Point>(point: T): T => ({ ...point, x: point.x + offset });
+  return {
+    ...layout,
+    nodes: new Map([...layout.nodes].map(([id, box]) => [id, move(box)])),
+    groups: new Map(
+      [...layout.groups].map(([id, group]) => [
+        id,
+        {
+          ...group,
+          rect: move(group.rect),
+          label: move(group.label),
+        },
+      ]),
+    ),
+    labels: new Map(
+      [...layout.labels].map(([id, label]) => [id, { ...label, rect: move(label.rect) }]),
+    ),
+    edges: new Map(
+      [...layout.edges].map(([id, edge]) => [
+        id,
+        {
+          ...edge,
+          points: edge.points.map(move),
+          segments: edge.segments.map((segment) => moveSegment(segment, move)),
+        },
+      ]),
+    ),
+  };
+}
+
+/**
+ * Translates a path segment and its control points.
+ */
+function moveSegment(segment: PathSegment, move: (point: Point) => Point): PathSegment {
+  const endpoints = { from: move(segment.from), to: move(segment.to) };
+  switch (segment.kind) {
+    case 'line':
+      return { ...segment, ...endpoints };
+    case 'quad':
+      return { ...segment, ...endpoints, control: move(segment.control) };
+    case 'cubic':
+      return { ...segment, ...endpoints, c1: move(segment.c1), c2: move(segment.c2) };
+  }
 }
 
 /**
@@ -376,7 +464,15 @@ function groupOverlaps(
  * @param insets - Room kept at the edges for group borders.
  */
 function placeNodes(input: FlowLayoutInput, insets: Insets): GridPlacement {
-  const { spec, size, metrics } = input;
+  const { spec, size } = input;
+  const metrics =
+    input.metrics.align === undefined
+      ? input.metrics
+      : { ...input.metrics, align: 'center' as const };
+  const dimensions = {
+    ...(input.nodeHeights === undefined ? {} : { heights: input.nodeHeights }),
+    ...(input.nodeWidths === undefined ? {} : { widths: input.nodeWidths }),
+  };
   const cells = new Map<string, GridCell>();
   for (const node of spec.nodes) {
     if (node.cell !== undefined) {
@@ -394,7 +490,7 @@ function placeNodes(input: FlowLayoutInput, insets: Insets): GridPlacement {
     return placeOnGrid(cells, size, metrics, {
       ...input.grid,
       insets,
-      ...(input.nodeHeights === undefined ? {} : { heights: input.nodeHeights }),
+      ...dimensions,
     });
   }
 
@@ -402,11 +498,10 @@ function placeNodes(input: FlowLayoutInput, insets: Insets): GridPlacement {
     const node = { width: metrics.nodeMaxWidth, height: metrics.nodeHeight };
     const snapped = input.snap === true ? cellsFromCentres(input.centres, node) : undefined;
     if (snapped === undefined) {
-      return placeAtCentres(input.centres, size, metrics, insets);
+      return placeAtCentres(input.centres, size, metrics, insets, input.nodeWidths);
     }
 
-    const heights = input.nodeHeights === undefined ? {} : { heights: input.nodeHeights };
-    return placeOnGrid(snapped, size, metrics, { insets, ...heights });
+    return placeOnGrid(snapped, size, metrics, { insets, ...dimensions });
   }
 
   return { nodes: new Map(), bounds: { x: 0, y: 0, width: 0, height: 0 }, cramped: false };
@@ -498,16 +593,19 @@ function routeAll(
 ): ReadonlyMap<string, RoutedEdge> {
   const { spec, size, route } = input;
   const routed = routeEdges(
-    spec.edges.map((edge) => ({
-      id: edge.id,
-      from: edge.from,
-      to: edge.to,
-      route: edge.route,
-      ...(edge.fromSide === undefined ? {} : { fromSide: edge.fromSide }),
-      ...(edge.toSide === undefined ? {} : { toSide: edge.toSide }),
-      startGap: edge.arrow === 'start' || edge.arrow === 'both' ? route.arrowGap : 0,
-      endGap: edge.arrow === 'end' || edge.arrow === 'both' ? route.arrowGap : 0,
-    })),
+    spec.edges.map((edge) => {
+      const gap = route.arrowGaps?.get(edge.id) ?? route.arrowGap;
+      return {
+        id: edge.id,
+        from: edge.from,
+        to: edge.to,
+        route: edge.route,
+        ...(edge.fromSide === undefined ? {} : { fromSide: edge.fromSide }),
+        ...(edge.toSide === undefined ? {} : { toSide: edge.toSide }),
+        startGap: edge.arrow === 'start' || edge.arrow === 'both' ? gap : 0,
+        endGap: edge.arrow === 'end' || edge.arrow === 'both' ? gap : 0,
+      };
+    }),
     placement.nodes,
     {
       margin: route.margin,

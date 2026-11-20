@@ -76,11 +76,21 @@
   .kit-flow-group {
     fill: var(--brand-diagram-group);
     stroke: var(--brand-diagram-node-border);
-    stroke-width: var(--brand-diagram-group-stroke, var(--brand-stroke-hairline));
+    --kit-group-stroke: var(--brand-diagram-group-stroke, var(--brand-stroke-hairline));
+    stroke-width: var(--kit-group-stroke);
   }
 
   .kit-flow-group[data-dashed='true'] {
     stroke-dasharray: calc(var(--brand-stroke-regular) * 3) calc(var(--brand-stroke-regular) * 2.5);
+  }
+
+  .kit-flow-group[data-line-style='dashed'] {
+    stroke-dasharray: calc(var(--kit-group-stroke) * 3.5) calc(var(--kit-group-stroke) * 3);
+  }
+
+  .kit-flow-group[data-line-style='dotted'] {
+    stroke-linecap: round;
+    stroke-dasharray: 0 calc(var(--kit-group-stroke) * 2.5);
   }
 
   .kit-flow-group-label {
@@ -93,7 +103,7 @@
   .kit-flow-edge-line {
     fill: none;
     stroke: var(--brand-diagram-edge);
-    stroke-width: var(--brand-diagram-edge-stroke, var(--brand-stroke-regular));
+    stroke-width: var(--kit-edge-stroke, var(--brand-stroke-regular));
     stroke-linejoin: round;
   }
 
@@ -105,15 +115,18 @@
   .kit-flow-arrow[data-arrow='open'] {
     fill: none;
     stroke: var(--brand-diagram-edge);
-    stroke-width: var(--brand-diagram-edge-stroke, var(--brand-stroke-regular));
+    stroke-width: var(--kit-edge-stroke, var(--brand-stroke-regular));
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
-  .kit-flow-edge[data-dashed='true'] .kit-flow-edge-line,
-  .kit-flow-edge[data-tone='error'] .kit-flow-edge-line {
-    stroke-dasharray: calc(var(--brand-diagram-edge-stroke, var(--brand-stroke-regular)) * 3.5)
-      calc(var(--brand-diagram-edge-stroke, var(--brand-stroke-regular)) * 3);
+  .kit-flow-edge[data-line-style='dashed'] .kit-flow-edge-line {
+    stroke-dasharray: calc(var(--kit-edge-stroke) * 3.5) calc(var(--kit-edge-stroke) * 3);
+  }
+
+  .kit-flow-edge[data-line-style='dotted'] .kit-flow-edge-line {
+    stroke-linecap: round;
+    stroke-dasharray: 0 calc(var(--kit-edge-stroke) * 2.5);
   }
 
   .kit-flow-edge:is([data-tone='active'], [data-tone='highlighted'], [data-tone='trail']) {
@@ -272,8 +285,17 @@
     opacity: 0;
   }
 
-  .kit-flow-shape[data-dashed='true'] .kit-flow-outline {
+  .kit-flow-shape[data-dashed='true'] .kit-flow-outline:not([data-line-style]) {
     stroke-dasharray: calc(var(--brand-stroke-regular) * 3.5) calc(var(--brand-stroke-regular) * 3);
+  }
+
+  :is(.kit-flow-outline, .kit-flow-under)[data-line-style='dashed'] {
+    stroke-dasharray: calc(var(--kit-card-stroke) * 3.5) calc(var(--kit-card-stroke) * 3);
+  }
+
+  :is(.kit-flow-outline, .kit-flow-under)[data-line-style='dotted'] {
+    stroke-linecap: round;
+    stroke-dasharray: 0 calc(var(--kit-card-stroke) * 2.5);
   }
 
   .kit-flow-shape[data-state='highlighted'],
@@ -340,8 +362,11 @@
     place-items: center;
     width: 2em;
     height: 2em;
-    border: var(--brand-stroke-regular) solid
-      var(--kit-card-detail, var(--brand-diagram-node-border));
+    --kit-icon-default-border: var(--kit-card-detail, var(--brand-diagram-node-border));
+
+    border: var(--kit-card-icon-border-width, var(--brand-stroke-regular))
+      var(--kit-card-icon-border-style, solid)
+      var(--kit-card-icon-border, var(--kit-icon-default-border));
     border-radius: var(--brand-radius-sm);
     background: var(--brand-color-bg);
     color: var(--kit-card-icon-color, var(--brand-diagram-node-text));
@@ -351,13 +376,17 @@
   /* A card's icon as a filled tile, or the bare glyph; the border stays, clear, so sizes match. */
   .kit-flow-node[data-icon='solid'] .kit-flow-node-icon,
   .kit-layer-item[data-icon='solid'] .kit-flow-node-icon {
-    border-color: transparent;
+    --kit-icon-default-border: transparent;
+    border-color: var(--kit-card-icon-border, var(--kit-card-icon-border-fallback, transparent));
+    border-width: var(--kit-card-icon-border-width, var(--brand-stroke-regular));
     background: var(--kit-card-icon-fill, var(--brand-diagram-highlight));
   }
 
   .kit-flow-node[data-icon='plain'] .kit-flow-node-icon,
   .kit-layer-item[data-icon='plain'] .kit-flow-node-icon {
-    border-color: transparent;
+    --kit-icon-default-border: transparent;
+    border-color: var(--kit-card-icon-border, var(--kit-card-icon-border-fallback, transparent));
+    border-width: var(--kit-card-icon-border-width, var(--brand-stroke-regular));
     background: none;
   }
 
@@ -365,9 +394,14 @@
     border-radius: 50%;
   }
 
-  .kit-flow-node-icon svg {
+  .kit-flow-node-icon :is(svg, img) {
     width: 1.1em;
     height: 1.1em;
+  }
+
+  :is(.kit-flow-node-icon, .kit-timeline-dot) img {
+    display: block;
+    object-fit: contain;
   }
 
   .kit-flow-node-icon [stroke-width],
@@ -444,6 +478,25 @@
 
     color: var(--kit-card-text, var(--brand-diagram-node-text));
     text-wrap: balance;
+  }
+
+  .kit-diagram :is(.kit-flow-node-subtitle, .kit-layer-subtitle) {
+    font-family: var(
+      --kit-card-subtitle-family,
+      var(--brand-diagram-subtitle-family, var(--kit-step-family))
+    );
+    font-weight: var(
+      --kit-card-subtitle-weight,
+      var(--brand-diagram-subtitle-weight, var(--kit-step-weight))
+    );
+    letter-spacing: var(
+      --kit-card-subtitle-tracking,
+      var(--brand-diagram-subtitle-tracking, var(--kit-step-tracking))
+    );
+    text-transform: var(
+      --kit-card-subtitle-case,
+      var(--brand-diagram-subtitle-case, var(--kit-step-case))
+    );
   }
 
   .kit-flow-node-subtitle {
@@ -640,6 +693,30 @@
     align-items: center;
   }
 
+  :is(.kit-timeline, .kit-layers)[data-align] {
+    max-width: 100%;
+  }
+
+  .kit-timeline[data-align] {
+    width: min(100%, calc(var(--brand-type-caption-size) * 12 * var(--kit-timeline-count)));
+  }
+
+  .kit-layers[data-align] {
+    width: fit-content;
+  }
+
+  :is(.kit-timeline, .kit-layers)[data-align='left'] {
+    margin-inline: 0 auto;
+  }
+
+  :is(.kit-timeline, .kit-layers)[data-align='center'] {
+    margin-inline: auto;
+  }
+
+  :is(.kit-timeline, .kit-layers)[data-align='right'] {
+    margin-inline: auto 0;
+  }
+
   /* The line runs from the first milestone to the last one shown, never ahead of them. */
   .kit-timeline-axis {
     position: absolute;
@@ -654,6 +731,24 @@
     width: calc(var(--kit-timeline-share) * 100%);
     height: 100%;
     background: var(--brand-diagram-highlight);
+  }
+
+  .kit-timeline-axis[data-styled-axis] {
+    --kit-timeline-stroke: var(--brand-diagram-timeline-stroke, var(--brand-stroke-regular));
+
+    height: 0;
+    border-top: var(--kit-timeline-stroke) var(--brand-diagram-edge-style, solid)
+      var(--brand-diagram-edge);
+    background: none;
+  }
+
+  .kit-timeline-axis[data-styled-axis] .kit-timeline-progress {
+    position: absolute;
+    bottom: 0;
+    height: 0;
+    border-top: var(--kit-timeline-stroke) var(--brand-diagram-edge-style, solid)
+      var(--brand-diagram-highlight);
+    background: none;
   }
 
   .kit-timeline-item {
@@ -685,7 +780,7 @@
     color: var(--brand-diagram-node-text);
   }
 
-  .kit-timeline-dot svg {
+  .kit-timeline-dot :is(svg, img) {
     width: 60%;
     height: 60%;
   }
@@ -723,6 +818,13 @@
 
     color: var(--brand-diagram-node-text);
     text-wrap: balance;
+  }
+
+  .kit-timeline .kit-timeline-detail {
+    font-family: var(--brand-diagram-note-family, var(--kit-step-family));
+    font-weight: var(--brand-diagram-note-weight, var(--kit-step-weight));
+    letter-spacing: var(--brand-diagram-note-tracking, var(--kit-step-tracking));
+    text-transform: var(--brand-diagram-note-case, var(--kit-step-case));
   }
 
   .kit-timeline-detail {
@@ -768,7 +870,7 @@
 
   /* A band whose <Layer> names a card takes the card's look instead of the stack's. */
   .kit-layer[data-card] {
-    border: var(--kit-card-stroke) solid var(--kit-card-border);
+    border: var(--kit-card-stroke) var(--kit-card-border-style, solid) var(--kit-card-border);
     border-radius: var(--kit-card-radius);
     background: var(--kit-card-fill);
   }
@@ -865,7 +967,7 @@
     gap: var(--brand-space-xs);
     align-items: center;
     padding: var(--brand-space-xs) var(--brand-space-sm) var(--brand-space-xs) var(--brand-space-xs);
-    border: var(--kit-card-stroke, var(--brand-stroke-regular)) solid
+    border: var(--kit-card-stroke, var(--brand-stroke-regular)) var(--kit-card-border-style, solid)
       var(--kit-card-border, var(--brand-diagram-node-border));
     border-radius: var(--kit-chip-radius, var(--brand-radius-sm));
     background: var(--kit-card-fill, var(--brand-diagram-node));
@@ -875,7 +977,7 @@
   .kit-layer-item .kit-flow-node-icon {
     width: 1.6em;
     height: 1.6em;
-    border: none;
+    border-width: var(--kit-card-icon-border-width, var(--kit-card-icon-border-default-width, 0));
   }
 
   .kit-layer[data-state='highlighted'] .kit-layer-item {

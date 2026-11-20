@@ -70,6 +70,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
   // This function runs in the page and cannot import DIAGRAM_DESCRIPTION_ATTRIBUTE from
   // @deckster/kit/diagram-description.
   const DIAGRAM_ATTRIBUTE = 'data-diagram-description';
+  const DIAGRAM_ICON_SELECTOR = '[data-diagram-part="icon"]';
   const canvasRect = canvasElement.getBoundingClientRect();
   const scale = canvasRect.width / canvas.width;
   const ROUNDING_FACTOR = 100;
@@ -2309,6 +2310,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
           markup: svgMarkup(element, rect),
           shapes: readVectorShapes(element, opacity),
           href: hrefOf(element),
+          ...(element.closest(DIAGRAM_ICON_SELECTOR) === null ? {} : { diagramIcon: true }),
           ...(svgRadii.some((radius) => radius > 0) ? { radii: svgRadii } : {}),
         },
         layer,
@@ -2341,6 +2343,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
           vector: SVG_SOURCE_PATTERN.test(src),
           grayscale: style.filter === 'grayscale(1)',
           href: hrefOf(element),
+          ...(element.closest(DIAGRAM_ICON_SELECTOR) === null ? {} : { diagramIcon: true }),
         },
         layer,
         id,

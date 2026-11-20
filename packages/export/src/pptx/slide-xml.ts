@@ -668,6 +668,7 @@ function itemXml(
 
     case 'diagram': {
       writer.counts.diagrams += 1;
+      const icons = new Map(item.diagramIcons?.map((icon) => [icon.node.id, icon]));
       const { xml, ids } = tracked(writer, (allocate) =>
         diagramXml({
           diagram: node.diagram,
@@ -675,6 +676,10 @@ function itemXml(
           scene: writer.slide.scene,
           nextId: allocate,
           context: writer.context,
+          iconPicture: (icon) => {
+            const planned = icons.get(icon.id);
+            return planned === undefined ? '' : itemXml(writer, planned, assigned);
+          },
         }),
       );
       ids.forEach((id) => recordReveal(writer, node, id, false));

@@ -1,6 +1,6 @@
 # The deck framework: how to build, check and ship slides
 
-This is the one file in the skill that knows the workspace layout and the `deck` CLI. It is deliberately short: the CLI prints the catalogs, and the catalogs are the source of truth. If anything here disagrees with what a command prints, the command wins.
+Use the installed CLI's catalogs and help to check the layouts, props and flags available in the workspace. This guide covers v0.7.0 and calls out development behavior that requires a build with the relevant changes.
 
 All commands run from the user's workspace (the folder that holds `decks/` and `brands/`) as `deck <command>`. Every command has `--help`, and `deck <command> --json` prints clean JSON.
 
@@ -22,19 +22,19 @@ Work in small batches: write three or four slides, lint and shoot them (`deck sh
 
 ## Read the catalogs, never guess
 
-Layouts and components are still being added, so never rely on a list from memory or from this file.
+For layout choice, start with the [layout chooser](slide-craft.md#3-choosing-the-evidence). Confirm the name in the deck's catalog, then read the full entry before you author the slide.
 
-| Command                         | What it tells you                                                                                                                                                                                                                        |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `deck layouts <deck> --summary` | A compact first look: the deck's brand's own layouts first (its template), then each kit layout's use, title limit, slots with budgets, item counts (`--json` too)                                                                                                                                     |
-| `deck layouts <deck> --json`    | The full catalog, for the layout you are writing. Every layout: when to use it, its frontmatter fields, slots, title length (`title.maxChars`), content `budget`, `variants` that tighten it, default `surface`, and an `example` in MDX |
-| `deck charts --json`            | Chart and number components: `messages` (which form for which message), `useWhen`, `avoid`, props, `limits`, example                                                                                                                     |
-| `deck diagrams --json`          | Diagram components and parts, node kinds, edge options, animation primitives, limits, example                                                                                                                                            |
-| `deck components --json`        | Code, terminal, image, video, icon, link, QR, live demo, `Step`, `Notes`                                                                                                                                                                 |
-| `deck brand <name> --json`      | The brand: surfaces and their roles, palettes, data palettes, type scale, icon set                                                                                                                                                       |
-| `deck icons --brand a,b`        | Icon names every listed brand's set has (default: all brands; `--search text`, `--json`); never guess a name                                                                                                                             |
+| Command | What it tells you |
+| --- | --- |
+| `deck layouts <deck> --summary` | The deck's brand layouts first, then the kit layouts with purpose, title limit, required slots, budgets and item counts. |
+| `deck layouts <deck> --json` | The full contract, including frontmatter, fields, slots, `title.maxChars`, `budget`, `variants`, default `surface`, `example.mdx` and `pptx`. |
+| `deck charts --json` | The chart and number components, their `messages` map, `useWhen`, `avoid`, props, limits and examples. |
+| `deck diagrams --json` | Diagram components and parts, node kinds, edge options, animation and limits. |
+| `deck components --json` | Code, terminal, image, video, icon, link, QR, live demo, `Step` and `Notes`. |
+| `deck brand <name> --json` | The brand's surfaces, palettes, type scale, icon set and resolved diagram defaults. |
+| `deck icons --brand a,b` | Icon names the listed brands have in common. Add `--search <text>` to narrow the list. |
 
-The full JSON is large (about 50 KB each), so read an overview first and then the full entry of what you will use. The output is clean JSON, so it can be piped:
+Use the summary for a first pass. Filter the full JSON to the entries you will use.
 
 ```
 deck layouts <deck> --summary                                                          # every layout, compact
@@ -42,17 +42,13 @@ deck layouts <deck> --json | jq '.layouts[] | select(.name == "split")'        #
 deck charts --json | jq '.messages, (.charts[] | {name, useWhen, avoid})'
 deck charts --json | jq '.charts[] | select(.name == "Waterfall")'
 deck diagrams --json | jq '.components[] | {name, useWhen}'
-deck diagrams --json | jq '.components[] | select(.name == "Flow" or .name == "Node" or .name == "Edge" or .name == "Journey") | {name, props, example}'
+deck diagrams --json | jq '.shared, (.components[] | select(.name == "Flow" or .name == "Node" or .name == "Edge" or .name == "Journey") | {name, shared, props, example})'
 deck components --json | jq '.components[] | {name, kind, useWhen}'
 ```
 
-Read a component's full entry before you use it: a prop name the component does not list fails the build, naming the closest one.
+Check each component's own `props` and the names it lists under `shared`. Definitions for those names live at the top level of the diagram catalog under `shared`. `deck --version` identifies the release, and the catalogs help distinguish development builds that report the same version. For example, `align` in Flow's `shared` list and `width` in Node's `props` indicate support for those controls. If the installed catalog lacks a prop, use the existing layout or component options.
 
-Every catalog entry carries a working `example`, and `deck new slide <deck> <id> --layout <name>` writes a slide from the layout's example. Start from those and change the content, not the structure.
-
-- Use `product-cutaway` to reveal two or three aligned, equally sized illustrations of a product. Order them front to back and put the product face first. With `reveal: true`, the first advance exposes the next layer and a second advance exposes an optional third. The takeaway appears with the finished cutaway.
-- Use `service-blueprint` for a two- to four-stage customer journey. Give every stage visible work, backstage work and an owner. Pick the stage where those roles meet in `handoff:`. Set `reveal: true` to show the visible service first, then backstage work, then the owners and highlighted handoff.
-- Use `choose-path` for two authored workflows, each with a scenario, two or three actions and its own outcome. In the live deck the presenter selects a branch and can return to the choices. Previews and exports show both workflows and outcomes side by side.
+`deck new slide <deck> <id> --layout <name>` writes the catalog's example and appends the slide to the deck. Replace its example content and media with the user's evidence. Check the new title, required fields and slots, and add speaker notes. For a different brand's catalog use `deck layouts <deck> --brand <name> --summary`.
 
 ## Where a deck lives
 
@@ -65,8 +61,8 @@ decks/<deck>/
   apps/<name>/       mini apps for live demos (`deck new app`)
 ```
 
-- Only slides listed in `deck.config.ts` are slides, in that order. Reordering is a one-line change. `deck new slide <deck> <id> --layout <name>` creates a slide from the layout's example and appends it to the list.
-- `deck new` writes the cover (title layout, from its example) and the config with `brand` and `duration`; edit neither by hand to fix the scaffold. The cover title takes at most 36 characters (the error says so): put the longer talk title in the subtitle line (the body under the title) or the `eyebrow`, or shorten the deck title. `byline` is at most 40 characters and `date` 24.
+- The `slides` list in `deck.config.ts` determines which files are slides and their order.
+- `deck new` writes the cover using `title` and sets `brand` and `duration` in the config. Check the title layout's field limits in the catalog. If the display title is too long, shorten it and move detail into the subtitle. The installed CLI scaffolds a standalone workspace. In the framework checkout, follow the command's instructions to link the new workspace package.
 - `brand` in the config names a folder under `brands/`. Making a brand is the `brand-import` skill's job.
 - `duration: '20m'` is the speaking time. Set it: the presenter view paces against it, and lint fails the deck (`time-budget`) when the slides' budgets add up to more.
 
@@ -91,20 +87,28 @@ What the presenter says, cues, the transition. If asked: the source and caveats.
 ```
 
 - **Frontmatter.** Every slide takes `layout`, `title`, `surface`, `budget` (`45s`, `2m`, `1m30s`) and `transition` (one of `none fade slide rise push cover wipe zoom`, for the move between this slide and the one before it, both ways; leave it out to keep the brand's) and `hidden` (`true` keeps the slide in the deck but skips it in a talk and in exports; see Time budgets). The layout adds its own fields (`eyebrow`, `ratio`, `stats`, …), listed in the catalog. An unknown key fails the build, so a typo never passes silently.
-- **Title length is per layout, and the numbers move.** Read `title.maxChars` for each layout from `deck layouts <deck> --json`; several were lowered when the layouts were recalibrated, and a number remembered from an earlier deck is probably wrong. As an order of magnitude at the time of writing: a sentence title fits the full-width layouts such as `content`, `chart`, `diagram`, `stats` and `table` (90 characters), the multi-item layouts take less (50 to 72), the layouts with a narrow title column such as `split`, `image`, `code` and `demo` take about half (44 to 48), and `title`, `section`, `closing`, `bento` and `ask` take a short line (36 to 40). The same goes for each slot's word, bullet and line budget and for the `variants` that tighten it. Check `title.maxChars` before you outline a slide into a layout; when the assertion does not fit, shorten it to its core claim or choose a layout with a full-width title. Do not cut the verb to make it fit.
-- **Slots.** A layout's named slots are top-level tags (`<Aside>`, `<Media>`, `<Footnote>`, …); everything outside them is the `body`. Each slot says what it `accepts` (text, bullets, chart, image, …) and has a word, bullet and line budget; check `accepts` before putting a list or a table in a slot, because the same slot name takes different things in different layouts (one layout's `<Aside>` takes bullets, another's only text). Leave a blank line between a slot tag and markdown inside it. Layout fields have limits of their own too (an `eyebrow` is a few words), and a frontmatter value containing a colon needs quotes. Staying inside the budget is not a formality: text over it will not fit the slide at a readable size, so split the slide or move words to the notes.
-- **Brand layouts.** A brand may bring layouts of its own (`brands/<name>/layouts.ts`, such as `fieldnote-cover`). `deck layouts <deck> --summary` lists them first (the full catalog and `--json` put them after the kit's), and in `--json` each has `source: "brand:<name>"`, a `fallback` (the kit layout it renders as in another brand) and a `label`. They are the organisation's template, so prefer them when one fits, and fall back to kit layouts for what the template lacks. They take slots and fields like any layout, with a budget at most as large as the fallback's, and their boxes are fixed, so stay inside the budget. If the deck moves to a brand without the layout, the slide renders with the fallback and `deck lint` warns (`brand-layout-fallback`): pick a layout from the new brand's catalog, or move the deck back. `deck new slide <deck> <id> --layout <brand-layout>` scaffolds from the layout's example.
+- **Title and fields.** Check `title.required` and `title.maxChars` for the chosen layout. Read its `fields` for required keys, choices and defaults. Shorten an assertion to its core claim or switch to a layout with room for it. A frontmatter value containing a colon needs quotes.
+- **Slots.** Each entry gives the tag, whether the slot is required, what it accepts, and its budget. Write each named tag once, at the top level of the MDX. Leave blank lines around Markdown inside it. Visible content outside the tags fills `body` when the layout has that region. In TSX, the default export is the body and named exports fill named slots. When the example and catalog look ambiguous for a custom layout, check its actual region bindings.
+- **Validation.** The compiler checks fields and slot structure. `deck lint` checks the types of content in rendered slots, per-slot budgets and overflow. Check all matching `variants` for tighter limits. A short word count can still overflow in a fixed region. Shorten or split the slide and re-render.
 - **Surfaces.** `surface` names one of the brand's surfaces (list them with `deck brand <name> --json`; a brand typically has a light one, an inverse one, an accent one and a gradient one). Some layouts default to one (cover, section and statement slides). Surfaces are how a deck gets rhythm: use the non-default ones for the cover, section breaks and the one or two moments that should land, not at random. Lint warns when three slides in a row use the same layout on the same surface.
 - **Steps.** A slide has an integer step that starts at 0, and each click moves to the next. How to build a slide in steps, and how to check it, is the next section.
 - **Brand findings.** Lint also reports problems in the brand itself (`slide: null`, a path in `brands/…`). They are not yours to fix in a deck: report them in the handoff and carry on.
 - **Notes.** `<Notes>` holds the speaker notes, in markdown. Every slide has them (lint warns otherwise).
-- **No raw styling.** Colors, fonts, sizes and positions belong to the brand and the layouts; lint reports anything else as `off-brand`. If a slide seems to need custom styling, it wants a different layout or component.
+- **Styling.** Use brand tokens and the layout's documented fields. For layout geometry such as diagram node sizes, use the component's supported props. If the layout does not fit the slide, pick another instead of working around its region with CSS.
 - **Comparison rows.** The `comparison` layout's rows take an optional `winner: <option number, from 1>` marking who wins that row. Set it on the rows the recommended option loses too, so the slide is honest about the trade.
 - **Terminal.** Each `<Cmd>` adds a step, and with the default `at={1}` step 0 shows only the prompt; count the steps in the notes.
 - **Flow badges.** A `<State badge>` takes a free corner of its node; when none is free `deck lint` warns `diagram-badge-overlap`: reroute the edge with `fromSide`/`toSide`.
-- **Tables.** A small table of words (a practice exercise, a before-and-after list) is a markdown table in a layout whose body accepts one. `<Table>` from the chart catalog is for data: numbers, formats, a highlighted row; it belongs on the `chart` layout and lint expects it to highlight something.
+- **Tables.** Use the `table` layout when exact entries are the evidence. It accepts Markdown tables and the chart catalog's `<Table>` for formatted data with a highlight. `chart` also accepts `<Table>`.
 - **Media.** Reference only files that exist under the deck (lint reports a missing or low-resolution image). Do not invent a photo: use a chart, diagram, number or statement instead, and note in the handoff where a real image would help. A product screenshot goes on a `screen` slide, cut to the app itself, since the frame draws the browser bar or the device. Icons come from the brand's set (`<Icon name>`); list names with `deck icons --brand <all the deck's brands>`, so one that exists in one set but not the other never ships.
 - **Live demos** need a `poster`, which static mode and exports show instead of the live thing.
+
+## Brand layouts
+
+`deck layouts <deck> --summary` lists the active brand's layouts first. In the full JSON, `source: "brand:<name>"` identifies them, `label` names the template, and `fallback` names the kit layout used when another brand lacks it. A fallback can rearrange the slide, so run lint and view screenshots under every requested brand. Lint reports `brand-layout-fallback` when it uses one. If a layout you expect is missing from the active brand's catalog, read the catalog warnings and run `deck brand check <name>`.
+
+A custom layout in `brands/<name>/layouts.ts` uses a fixed set of regions. It inherits the fallback's contract for the fields and slots it binds. The development build with brand-layout validation updates reads the active brand's `layouts.ts` as static data. When a slide needs body prose, confirm a region has `bind: { slot: 'body' }`. A generic `body` entry in the CLI listing can appear even when the template has no such region. That build rejects visible MDX outside the named slots in that case. Move the content into an accepted named slot or choose a layout with a body region. Title-only and field-only templates can have empty example bodies when their slots are optional or absent. `<Notes>`, MDX comments and Markdown definitions can still appear in MDX with no body region. Use the brand-import skill for changes to the layout definition.
+
+The CLI scaffolds slides from the brand saved in `deck.config.ts`. A development build with the live scaffolding fix also lets the in-deck `new_slide` tool scaffold layouts from the live brand override. That tool adds the slide but keeps the saved brand, so verify how the slide looks when opening the deck with the configured brand too.
 
 ## Builds, transitions and morphs
 
@@ -167,6 +171,7 @@ Fix what you see and shoot again. To see the deck in another brand without editi
 
 - A reviewer leaves comments in the browser (`deck dev <deck>`, press `c`). `deck comments <deck> --json` lists the open ones, each with the `location` (file and line) to edit, the text, an excerpt and a screenshot. Make the change, check it with `shot` or `lint`, then `deck comments resolve <deck> <id> --note "what changed"`. If a comment is unclear, leave a question with `deck comments add` instead of guessing.
 - `deck export <deck>` writes a PDF and a PowerPoint file to `.deck/exports/<deck>/` (`--pdf`, `--pptx`, `--png` choose; `--notes` adds notes pages to the PDF; `--steps` exports one page per step). Hidden slides are left out of all three unless `--include-hidden` is given (the PowerPoint then marks them hidden); `--slides` names slides by number, which counts every slide. Offer it in the handoff when the deck will be sent or presented elsewhere.
+- When the user needs an editable PowerPoint, read the layout's `pptx` mapping. On a development build with the brand-layout export fix, a custom two-content layout maps its first two body text regions to separate editable placeholders in region order. A slide that fills only the second region keeps that placeholder. Inspect the generated file when the two columns matter. Use `deck export <deck> --pptx --dry-run` to check which elements will be native, pictured, simplified or dropped, then `deck export <deck> --pptx --verify` where available. [PowerPoint export](https://sandrinodm.github.io/deckster/export-and-publish/powerpoint/)
 - `deck dev <deck> --port <n>` serves the deck for the user to present or review. If you start it yourself, pick a port the user is not using and stop it when you are done.
 
 ## When something fails

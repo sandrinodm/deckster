@@ -5,6 +5,7 @@ import { chromium } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 
 import { captureSlide } from '#capture/capture-slide.ts';
+import { describedDiagram } from '#diagram/diagram.fixture.ts';
 
 /**
  * Captures run in Chromium.
@@ -145,6 +146,46 @@ describe('captureSlide', () => {
         Buffer.from(fallback ?? new Uint8Array()).toString('base64'),
       );
       expect(png).toEqual({ ratio: 3, left: [255, 0, 0, 255], right: [0, 0, 255, 255] });
+    },
+    TIMEOUT_MS,
+  );
+
+  it(
+    'captures the original image of a native diagram icon',
+    async () => {
+      const src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      const diagram = JSON.stringify(describedDiagram()).replaceAll('"', '&quot;');
+      await page.setContent(`<!doctype html><html><body style="margin:0">
+        <div class="deck-canvas" style="width:1920px;height:1080px;background:#fcfcfd">
+          <section data-slide-active="true" data-surface="default"><div data-layout="content">
+            <figure data-diagram-description="${diagram}">
+              <span data-diagram-part="icon" style="display:inline-grid;border:2px dotted blue">
+                <img src="${src}" style="width:32px;height:32px">
+              </span>
+            </figure>
+          </div></section>
+        </div>
+      </body></html>`);
+      await page.locator('img').evaluate((img: HTMLImageElement) => img.decode());
+      const captured = await Effect.runPromise(
+        captureSlide(page, {
+          mode: 'native',
+          placeholderSelectors: [],
+          fieldText: {},
+          master: { paint: { kind: 'solid', color: '#fcfcfd' }, texture: null },
+          label: 'diagram icon',
+          captureTexture: null,
+          pictureScale: null,
+        }),
+      );
+      expect(captured.plan.items).toMatchObject([
+        {
+          kind: 'native',
+          node: { kind: 'diagram' },
+          diagramIcons: [{ node: { kind: 'image', src } }],
+        },
+      ]);
+      expect(captured.assets.images.get(src)?.extension).toBe('gif');
     },
     TIMEOUT_MS,
   );

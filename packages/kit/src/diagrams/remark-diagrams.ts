@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import type { FlowSpec } from '#diagrams/flow-spec.ts';
 import type { DiagramProblem } from '#diagrams/flow-validate.ts';
 
+import { isIconImage, isRelativeIconImage } from '#diagrams/diagram-icon-source.ts';
 import {
   checkDiagramProps,
   DIAGRAM_PROPS as DIAGRAM_PROPS_BY_NAME,
@@ -265,8 +266,8 @@ const NO_ICON = 'none';
  *   that do not exist, packets between nodes no edge joins, nodes sharing a grid cell, nodes
  *   outside their group or inside a group they are not in. Each problem fails the build with its
  *   fix and the slide's line.
- * - A literal `<Flow>` without grid cells is laid out here with ELK, and the result passed as its
- *   `positions` prop, so the browser never loads ELK for an MDX slide.
+ * - A literal `<Flow>` without grid cells gets an ELK layout as its `positions` prop. The browser
+ *   reuses those positions with intrinsic sizing and recalculates them with authored dimensions.
  *
  * @param options - The brand's icon set.
  */
@@ -280,13 +281,12 @@ export function remarkKitDiagrams(
     /**
      * The local name of an icon import, adding the import the first time.
      */
-    const importFor = (set: string, icon: string): string => {
-      const id = `${set}/${icon}`;
+    const importFor = (id: string): string => {
       let local = locals.get(id);
       if (local === undefined) {
         local = `kitDiagramIcon${locals.size}`;
         locals.set(id, local);
-        imports.push(defaultImport(local, `~icons/${id}`));
+        imports.push(defaultImport(local, id));
       }
 
       return local;
@@ -348,7 +348,7 @@ function resolveIcon(
   node: MdastNode,
   brandSet: string,
   file: DiagramFile,
-  importFor: (set: string, icon: string) => string,
+  importFor: (id: string) => string,
 ): void {
   const written = attributeValue(node, 'icon');
   const kind = attributeValue(node, 'kind');
@@ -357,10 +357,20 @@ function resolveIcon(
   }
 
   if (typeof written === 'string') {
+    if (isRelativeIconImage(written)) {
+      removeAttribute(node, 'icon');
+      node.attributes?.push(identifierAttribute('icon', importFor(`${written}?url`)));
+      return;
+    }
+
+    if (isIconImage(written)) {
+      return;
+    }
+
     const { set, icon } = splitName(written, brandSet);
     checkIconName(node, set, icon, written, file);
     removeAttribute(node, 'icon');
-    node.attributes?.push(identifierAttribute('icon', importFor(set, icon)));
+    node.attributes?.push(identifierAttribute('icon', importFor(`~icons/${set}/${icon}`)));
     return;
   }
 
@@ -388,7 +398,7 @@ function resolveIcon(
     return;
   }
 
-  node.attributes?.push(identifierAttribute('icon', importFor(brandSet, icon)));
+  node.attributes?.push(identifierAttribute('icon', importFor(`~icons/${brandSet}/${icon}`)));
 }
 
 /**

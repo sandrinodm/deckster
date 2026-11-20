@@ -182,6 +182,7 @@ function cardColors(card: CardSurfaceTokens): string[] {
     card.subtext,
     card.iconColor,
     card.iconFill,
+    ...(card.iconBorder === undefined ? [] : [card.iconBorder]),
     card.accent,
     ...card.shadow.layers.map((layer) => layer.color),
   ];

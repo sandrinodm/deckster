@@ -14,6 +14,7 @@ How to turn `extraction.json`, `analysis.json` and what you saw on the pages int
 - [Fonts: identifying, sourcing, substituting](#fonts-identifying-sourcing-substituting)
 - [Shape and spacing](#shape-and-spacing)
 - [Diagrams](#diagrams)
+- [Applying expanded diagram controls](#applying-expanded-diagram-controls)
 - [Logo, icons, imagery, chrome](#logo-icons-imagery-chrome)
 - [Motion](#motion)
 - [Layout archetypes](#layout-archetypes)
@@ -153,7 +154,7 @@ Only when the source has diagrams: architecture boxes, flows, org charts, proces
 
 - **Boxes become cards.** A card is a node style: `fill` and `border` (a role such as `surface`, a role with an opacity such as `accent/12`, a palette reference, a hex, or `none`), `stroke` (`hairline`, `regular`, `bold`), `radius` (`none`, `sm` to `xl`), `shadow` (`none`, `sm`, `md`, `lg`: the brand's shadows), `shape` (`kind`, `box`, `pill`), `icon.style` (`chip` bordered tile, `solid` filled tile, `plain` glyph, `none`), an `accent` stripe (`side`, `color`, `width`) and `title` (`family` role, `weight`, `tracking`, `case: upper`). Prefer roles to hexes: a role follows the slide's surface, so the card also works on the inverse surface.
 - **The plain box restyles `default`.** Most boxes in a source share one look; that is the `default` card. A highlighted box (filled in the brand colour, outlined in the accent, lifted with a shadow) restyles `solid`, `tint`, `outline` or `raised`, whichever is closest: decks name those five, so they must look like this brand. Add a card of the brand's own only for a treatment none of the five can carry (a sticky note, a box with a coloured edge), at most twelve entries in all.
-- **Write shared geometry once, on `default`.** Every card takes its `stroke`, `radius` and `title` from the brand's `default` card unless the card sets its own (the standard `raised` keeps its hairline). So write the source's corner radius, outline weight and box title type on `default`, and on another card only where it differs. Paint (`fill`, `border`, `shadow`, `icon`, `accent`) and `shape` are not inherited: each card keeps its own standard look for those.
+- **Write shared geometry once, on `default`.** The brand's `default` card supplies shared `stroke`, `radius` and `title` settings. A card can supply its own values, and a standard card can have a built-in setting such as `raised`'s hairline. Write the source's shared geometry and title type on `default`. Other cards use their own standard paint and shape.
 - **Kinds.** When the source draws one kind of thing the same way every time (databases tinted, third parties dashed or outlined), map it: `kinds: { "database": "tint" }`. The kinds are the kit's (`deck diagrams --json`, `nodeKinds`).
 - **Lines and labels.** `edges.stroke`, `edges.corners` (`round` or `sharp` bends), `edges.arrow` (`triangle`, `open` chevron, `dot`); `groups.stroke` (or `none`), `groups.dashed`, `groups.radius`; `labels.style` (`plain` text, or `chip` for labels in a bordered box) and `labels.type` (`caption`, the default, or `label` when connector labels are set like the source's small uppercase labels: the brand's `label` step).
 - **Text colours.** Leave `text`, `subtext` and `icon.color` out unless the source is clear: the framework derives them to read on the card's fill on every surface. A colour you write is checked for contrast on every surface, and so is a fill that no text colour reads on (a translucent fill over a mid-tone gradient can fail; `deck brand check` names the card, the surface and the ratio, and suggests recolouring the card on that surface).
@@ -192,6 +193,39 @@ and on the inverse surface, next to its roles:
 
 `deck brand <name>` then lists the look and every card with its colours on the default surface; check it against the source before you shoot.
 
+### Applying expanded diagram controls
+
+Use the source crops to distinguish settings that recur across diagrams from choices made for a single drawing. Record the measured values in the draft's `diagram` and surface sections, with their provenance. Measure line widths, node boxes and icon tile outlines in canvas pixels. Use `diagram.align` only when whole-drawing alignment is consistent. Measure subtitles separately from node titles, and use `diagram.notes` for the text under a timeline milestone.
+
+These controls require a build that includes the expanded diagram schema. The bundled emitter understands the earlier schema and can omit newer keys or reject their values, including numeric `edges.stroke` and `groups.stroke`. For the emission pass, use named strokes and `groups.dashed` as compatible baseline values. After the final emit, apply the newer settings as static fields in `brand.ts` from the recorded measurements. On an earlier build, record the values the target cannot represent in the handover. See [Diagram design controls](brand-schema.md#diagram-design-controls) for accepted values.
+
+For example, the following override represents a centered family of diagrams with dotted connectors, dashed groups and a consistent subtitle style. Merge its fields into the emitted `diagram` object, keeping the existing card definitions.
+
+```ts
+diagram: {
+  align: 'center',
+  edges: { stroke: 3.5, lineStyle: 'dotted' },
+  groups: { stroke: 'hairline', lineStyle: 'dashed' },
+  nodes: {
+    width: 224,
+    height: 96,
+    subtitle: { type: 'small', family: 'mono', weight: 500 },
+  },
+  notes: { type: 'caption', family: 'body', weight: 450 },
+  cards: {
+    default: {
+      borderStyle: 'solid',
+      icon: { style: 'chip', border: 'accent', borderWidth: 2, borderStyle: 'solid' },
+    },
+    callout: { borderStyle: 'dashed', subtitle: 'body' },
+  },
+},
+```
+
+Source-specific diagram symbols belong with the specimen or deck. On a compatible build use an approved, bundled image icon where the component supports it. An MDX asset path such as `icon="../assets/parcel-mark.svg"` or a `?url` import keeps the icon available to local rendering and export. Use `diagram.cards.<name>.icon` for the tile's shared treatment. Use slide-level adjustments only for differences specific to that drawing, such as a wider node or a single dotted edge. Check `deck diagrams --json` for the target build's component props and inspect the rendered slide.
+
+Run `deck brand check <name> --json` and read the resolved values with `deck brand <name> --json`. Compare a representative diagram on its source surface and on any other surfaces that use those cards. For a native or hybrid PowerPoint handoff, verify editability, connector attachment and image icons in the exported file. Supported straight and bent routes can attach to node connection sites. Curved or unusual routes appear as editable freeform lines. Image icons are embedded pictures.
+
 ## Logo, icons, imagery, chrome
 
 - **Logo.** Take the highest-scoring candidate, then check it on the pages. Prefer SVG. An SVG whose wordmark is live `<text>` (common for inline website logos) loses its font when loaded as an image: convert the text to outlines with the real font if it is open, or keep the PNG and ask for the official file. Look for `rare_variant` entries too: a reversed logo may appear only on the title and closing pages. From a PDF, `assets/chrome/*.svg` is a vector crop that includes the page background and anything else in the box: open it and strip those out. Record each variant with the backgrounds it is used on (`on: ["default"]`). A logo that is only ever seen on light pages has no dark-background variant: do not recolour it yourself; put "need a reversed logo" on the review list. Record placement (corner), height in canvas pixels, and clear space if a guidelines document states it (otherwise the height of the mark).
@@ -216,33 +250,7 @@ Always write the full set the kit animates with: easings `standard` (fades and c
 
 ## Layout archetypes
 
-Goal: say which kit layouts the source uses, how each is treated, and where the kit's default would not look like the source.
-
-1. **Cluster the pages.** Use the contact sheet. PPTX layout names and placeholder types give a first cut (`Title Slide`, `Section Header`, `Two Content`), but decks are full of "Title Only" slides with hand-placed content, so look at what is on the slide, not what the layout is called. `layout_hints` label obvious cases.
-2. **Map each cluster to a layout the framework has.** Run `deck layouts <deck> --json` and use its names and descriptions; the set is growing, so do not assume one exists. A cluster with no match gets `maps_to: null` and a note describing the structure. Chart pages map to the `chart` layout (or to `split` beside text) holding a chart component.
-3. **For each archetype record**: source pages, the surface it uses, alignment (left or centred), where the title sits, and what is distinctive (an eyebrow above every headline, rules between bullets, numbers in cards, a coloured bar under the title).
-4. **Decide `override_needed`.** True only when the difference is structural and typical of the brand (titles always bottom-left on a full-bleed gradient; section numbers set huge behind the title). Colour, type and spacing differences are tokens, not overrides.
-5. **A template's own layouts** are not archetypes: `brand_tools.py propose-layouts` turns every layout of a `.potx`/`.pptx` into a brand layout spec (`references/brand-draft-format.md`, Layout specs). Keep the archetype notes for the kit layouts the brand's pages map to; the specs carry the layouts the brand brings.
-6. Archetypes the source does not have need no entry. The kit's defaults, themed by the tokens, cover them.
-
-Recognising archetypes from an image, quickly:
-
-| Looks like | Archetype |
-|---|---|
-| One large line, lots of space, maybe a subtitle and logo, first page | title |
-| One large line on a contrasting background mid-deck, often numbered | section |
-| A sentence filling the slide, no bullets | statement |
-| Headline plus bullets or paragraphs | content |
-| Text one side, image/chart/panel the other | split |
-| Two to four big numbers with labels | stats |
-| Quotation marks, attribution line | quote |
-| Two columns with parallel structure, "before / after" | comparison |
-| Bars, lines, axes | chart on content or split |
-| Rows and columns of text | table |
-| Monospace block on a dark panel | code |
-| Photo edge to edge with text over it | full-bleed image |
-| Grid of logos or faces | logo wall, team |
-| Last page: thanks, contact, URL | closing |
+Use [Choosing layouts](choosing-layouts.md) to map source page families to layouts in the target catalog and to select a kit or engine fallback for custom template geometry. Record the source pages, their surface, alignment, title position and any distinctive structure. Leave archetypes that the source does not use out of the draft. Preserve template layout specs separately from the archetype notes within `layouts[]`.
 
 ## Provenance and confidence
 

@@ -4,8 +4,11 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import type { LayoutSpec } from '#pptx/layout-specs.ts';
 import type { SlideWriteOptions } from '#pptx/slide-xml.ts';
+import type { DiagramNode, ImageNode, SvgNode } from '#scene/scene.ts';
 
+import { describedDiagram, describedNode } from '#diagram/diagram.fixture.ts';
 import { createPackage } from '#ooxml/opc-package.ts';
+import { planScene } from '#plan/plan-scene.ts';
 import { PIXEL_PNG, logoNode, slideInput, titleNode } from '#pptx/deck.fixture.ts';
 import { slideXml } from '#pptx/slide-xml.ts';
 import { layoutFrame } from '#pptx/text-xml.ts';
@@ -102,6 +105,66 @@ describe('slideXml', () => {
     expect(written.counts.images).toBe(2);
     expect(written.xml.match(/<a:srcRect [^>]*\/>/g)).toEqual(['<a:srcRect t="7000" b="7000"/>']);
   });
+
+  it.each(['native', 'hybrid'] as const)(
+    'places diagram image icons and their editable frames in %s mode',
+    (mode) => {
+      const rect = { x: 120, y: 326, width: 26, height: 26 };
+      const image: ImageNode = {
+        ...logoNode(22),
+        parent: 21,
+        rect: { ...rect, y: 330, height: 18 },
+        selector: 'img.diagram-icon',
+        diagramIcon: true,
+      };
+      const border = { width: 3, style: 'dotted', color: '#448899' } as const;
+      const frame = boxNode(21, {
+        parent: 20,
+        rect: { x: 112, y: 318, width: 42, height: 42 },
+        borders: [border, border, border, border],
+        radii: [12, 12, 12, 12],
+      });
+      const complex: SvgNode = {
+        ...boxNode(23),
+        parent: 20,
+        rect: { x: 190, y: 340, width: 26, height: 26 },
+        kind: 'svg',
+        diagramIcon: true,
+        shapes: null,
+        markup: '<svg xmlns="http://www.w3.org/2000/svg"><text>Icon</text></svg>',
+        href: null,
+      };
+      const api = describedNode('api', { x: 100, y: 300, width: 200, height: 100 });
+      const diagram: DiagramNode = {
+        ...boxNode(20),
+        kind: 'diagram',
+        diagram: describedDiagram({
+          edges: [],
+          nodes: [{ ...api, icon: { box: rect, color: null, svg: '', src: image.src } }],
+        }),
+      };
+      const slide = slideInput(0, [diagram, frame, image, complex]);
+      const plan = planScene(slide.scene, mode, {
+        paint: { kind: 'solid', color: '#fcfcfd' },
+        texture: null,
+      });
+      const pictures = new Map([[complex.id, PIXEL_PNG]]);
+      const written = slideXml(
+        createPackage(),
+        'ppt/slides/slide1.xml',
+        { ...slide, plan, assets: { ...slide.assets, pictures } },
+        options({ mode }),
+      );
+      expect(plan.items).toHaveLength(1);
+      expect(written.xml).toContain('name="Node: API"');
+      expect(written.xml).toMatch(
+        /name="Panel".*?<a:ln w="19050" cap="rnd">.*?<a:prstDash val="sysDot"\/>/,
+      );
+      expect(written.xml).toContain('descr="Picture (logo.png)"');
+      expect(written.counts.images).toBe(1);
+      expect(written.counts.rasterised).toBe(mode === 'native' ? 0 : 1);
+    },
+  );
 
   it('marks shapes that appear at a step for click animations', () => {
     const box = boxNode(30, { step: 1 });

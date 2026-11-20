@@ -23,6 +23,26 @@ const PIXELS_FIX = 'Write a number of canvas pixels (the canvas is 1920x1080), f
 const STROKE_FIX = 'Name a stroke width from `shape.stroke`: "hairline", "regular" or "bold".';
 
 /**
+ * The fix for a stroke width that also accepts a numeric value.
+ */
+const STROKE_WIDTH_FIX = 'Use "hairline", "regular", "bold" or a width in canvas pixels.';
+
+/**
+ * The fix for a connector or outline pattern.
+ */
+const LINE_STYLE_FIX = 'Use "solid", "dashed" or "dotted".';
+
+/**
+ * The fix for a subtitle or note typography step.
+ */
+const TEXT_STEP_FIX = 'Use the brand’s "caption", "label", "small" or "body" step.';
+
+/**
+ * The individual typography settings a diagram note or subtitle accepts.
+ */
+const DIAGRAM_TEXT_FIX = `${TEXT_STEP_FIX} Set the type field in an object with optional family, weight, tracking and case.`;
+
+/**
  * The fix for any diagram field that takes a radius name.
  */
 const RADIUS_FIX = 'Name a radius from `shape.radius`, "sm", "md", "lg" or "xl", or "none".';
@@ -138,7 +158,7 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
    * One card a surface recolors.
    */
   'color.surfaces.*.diagram.cards.*':
-    'Set any of fill, border, text, subtext, icon { color, fill } and accent { color }; ' +
+    'Set any of fill, border, text, subtext, icon { color, fill, border } and accent { color }; ' +
     "a surface changes only a card's colors.",
 
   /**
@@ -170,6 +190,11 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
    * A recolored card's solid icon tile color.
    */
   'color.surfaces.*.diagram.cards.*.icon.fill': CARD_COLOR_FIX,
+
+  /**
+   * A recolored card's icon outline color.
+   */
+  'color.surfaces.*.diagram.cards.*.icon.border': CARD_COLOR_FIX,
 
   /**
    * A surface's diagram theme color.
@@ -485,7 +510,7 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
    * The diagram section.
    */
   diagram:
-    'Override diagram theme colors, set edges, groups, labels, kinds and cards, or leave ' +
+    'Override diagram theme colors, set alignment, edges, groups, labels, nodes, notes and cards, or leave ' +
     '`diagram` out to derive everything from the roles.',
 
   /**
@@ -494,15 +519,25 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
   'diagram.*': COLOR_FIX,
 
   /**
+   * The drawing's horizontal placement.
+   */
+  'diagram.align': 'Use "left", "center" or "right".',
+
+  /**
    * The edge look.
    */
   'diagram.edges':
-    'Write { stroke: "regular", corners: "round", arrow: "triangle" }, each optional.',
+    'Write { stroke: "regular", lineStyle: "solid", corners: "round", arrow: "triangle" }, each optional.',
 
   /**
    * An edge's stroke width.
    */
-  'diagram.edges.stroke': STROKE_FIX,
+  'diagram.edges.stroke': STROKE_WIDTH_FIX,
+
+  /**
+   * The pattern of an edge stroke.
+   */
+  'diagram.edges.lineStyle': LINE_STYLE_FIX,
 
   /**
    * How edges bend.
@@ -517,12 +552,18 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
   /**
    * The group look.
    */
-  'diagram.groups': 'Write { stroke: "hairline", dashed: false, radius: "lg" }, each optional.',
+  'diagram.groups':
+    'Write { stroke: "hairline", lineStyle: "solid", radius: "lg" }, each optional.',
 
   /**
    * A group's outline width.
    */
-  'diagram.groups.stroke': 'Use "none", "hairline", "regular" or "bold".',
+  'diagram.groups.stroke': 'Use "none", "hairline", "regular", "bold" or a width in canvas pixels.',
+
+  /**
+   * The pattern of a group outline.
+   */
+  'diagram.groups.lineStyle': LINE_STYLE_FIX,
 
   /**
    * Whether group outlines are dashed.
@@ -551,6 +592,41 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
   'diagram.labels.style': 'Use "plain" (text on a knock-out) or "chip" (a bordered chip).',
 
   /**
+   * The dimensions and subtitle typography shared by nodes.
+   */
+  'diagram.nodes': 'Set the preferred width, minimum height, or subtitle typography.',
+
+  /**
+   * The preferred node width.
+   */
+  'diagram.nodes.width': PIXELS_FIX,
+
+  /**
+   * The minimum node height.
+   */
+  'diagram.nodes.height': PIXELS_FIX,
+
+  /**
+   * The typography of node subtitles.
+   */
+  'diagram.nodes.subtitle': DIAGRAM_TEXT_FIX,
+
+  /**
+   * The brand typography step used for node subtitles.
+   */
+  'diagram.nodes.subtitle.type': TEXT_STEP_FIX,
+
+  /**
+   * The typography of diagram notes.
+   */
+  'diagram.notes': DIAGRAM_TEXT_FIX,
+
+  /**
+   * The brand typography step used for diagram notes.
+   */
+  'diagram.notes.type': TEXT_STEP_FIX,
+
+  /**
    * The card each node kind uses.
    */
   'diagram.kinds':
@@ -574,8 +650,8 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
    * One card.
    */
   'diagram.cards.*':
-    'Set any of fill, border, stroke, radius, shadow, shape, text, subtext, icon, accent and ' +
-    'title; leave a field out to keep the standard look.',
+    'Set any of fill, border, borderStyle, stroke, radius, shadow, shape, text, subtext, icon, ' +
+    'accent, title and subtitle; leave a field out to keep the standard look.',
 
   /**
    * A card's fill.
@@ -586,6 +662,11 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
    * A card's outline color.
    */
   'diagram.cards.*.border': CARD_PAINT_FIX,
+
+  /**
+   * A card's outline pattern.
+   */
+  'diagram.cards.*.borderStyle': LINE_STYLE_FIX,
 
   /**
    * A card's outline width.
@@ -618,10 +699,20 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
   'diagram.cards.*.subtext': CARD_COLOR_FIX,
 
   /**
+   * The typography of a card's subtitle.
+   */
+  'diagram.cards.*.subtitle': `${DIAGRAM_TEXT_FIX} Set this to null to use the diagram’s node settings.`,
+
+  /**
+   * The brand typography step used for a card subtitle.
+   */
+  'diagram.cards.*.subtitle.type': TEXT_STEP_FIX,
+
+  /**
    * A card's icon.
    */
   'diagram.cards.*.icon':
-    'Write { style: "chip" | "solid" | "plain" | "none", color, fill }, each optional.',
+    'Write { style, color, fill, border, borderWidth, borderStyle }, each optional.',
 
   /**
    * A card's icon style.
@@ -637,6 +728,21 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
    * A card's solid icon tile color.
    */
   'diagram.cards.*.icon.fill': CARD_COLOR_FIX,
+
+  /**
+   * A card's icon outline color.
+   */
+  'diagram.cards.*.icon.border': CARD_COLOR_FIX,
+
+  /**
+   * A card's icon outline width.
+   */
+  'diagram.cards.*.icon.borderWidth': STROKE_WIDTH_FIX,
+
+  /**
+   * A card's icon outline pattern.
+   */
+  'diagram.cards.*.icon.borderStyle': LINE_STYLE_FIX,
 
   /**
    * A card's accent stripe.

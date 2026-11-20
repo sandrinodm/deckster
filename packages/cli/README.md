@@ -96,6 +96,12 @@ Run `deck --help` for all commands, or `deck <command> --help` for full flags.
 - **Workspace discovery**: `deck` uses the nearest parent directory containing `decks/` (or `DECK_ROOT`), and refuses to use `$HOME` or `/`.
 - **Hidden slides**: a slide with `hidden: true` in its frontmatter stays in the deck, and a talk skips it. `deck shot` and `deck lint` cover it (`deck shot --json` marks each file with `hidden`; `deck lint` checks it like any slide, but `time-budget`, `few-builds` and `layout-repetition` count the slides the talk shows). `deck export` leaves hidden slides out of the PDF, PNGs, and PPTX and says how many; `--include-hidden` puts them in (as native hidden slides in the PPTX), and a hidden slide named in `--slides`, or inside a range there, is exported (the summary then reports none left out): as an ordinary page in the PDF and a PNG, and still marked hidden in the PPTX. Slide numbers in `--slides`, file names, and the URL count every slide.
 - **Brand layouts**: a brand may bring layouts of its own in `brands/<name>/layouts.ts`. `deck layouts` lists them with the kit's, shows each one's `source` (`brand:<name>`) and `fallback` (the kit layout a deck on another brand renders it with) and, with `--json`, its `label` (the layout's name in the source template). With `--summary` the brand's layouts come first under their own heading. `--brand <name>` lists another brand's. `deck new slide <deck> <id> --layout <name>` takes a brand layout, and `deck brand check <name>` reports a layout's problems against `layouts.ts`. When a slide names a layout only another brand defines, the build renders the fallback and `deck lint` reports `brand-layout-fallback` (a warning) for the slide.
+
+  With the [brand import and layout changes](https://github.com/sandrinodm/deckster/pull/31),
+  a live agent session uses its active brand override when its `new_slide` tool scaffolds a slide.
+  A Git brand install also checks each SVG before replacing the installed brand. If an install
+  succeeds with an artwork warning, render a specimen slide and compare the imported artwork with its source. If an SVG prevents installation, fix the source artwork and retry.
+
 - **Exit codes**: `0` on success, `1` on command/lint/diff failure, `129` on `SIGHUP`.
 
 ## Optional dependencies
