@@ -114,7 +114,7 @@ The layout's boxes stay fixed as the text steps down to fit them. Kit layouts ad
 
 Content outside named slot tags fills `body`. To see whether a brand layout draws that content, look for a region with `bind: { slot: 'body' }` in `layouts.ts`. You can also use the example from `deck layouts <deck> --json` as a starting point. The catalog includes a generic `slots.body` entry even for layouts with no body region. For example, a cover can bind a title and a byline without drawing a body.
 
-<Aside type="note" title="Unreleased">
+<Aside type="note" title="New in v0.8.0">
   The build reports MDX slide content outside named slots when a brand layout has no body region. The same check runs during `deck lint`. Speaker notes, Markdown definitions, and MDX comments still work on a slide with no body region. Move the content into a supported named slot, choose another layout, or add a region with `bind: { slot: 'body' }` when the fallback offers that slot. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
 </Aside>
 
@@ -159,7 +159,7 @@ export default defineBrandLayouts([
 ]);
 ```
 
-<Aside type="note" title="Unreleased">
+<Aside type="note" title="New in v0.8.0">
   Deckster reads `layouts.ts` as static data for the active brand as well as for fallback lookup. If your workspace builds the array with variables, spreads or helper functions, put the final values directly inside `defineBrandLayouts([...])`, then run `deck brand check <name>`. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
 </Aside>
 
@@ -214,7 +214,7 @@ PPTX dry run (hybrid mode): native / picture / simplified / dropped
 Total: 10 native, 0 picture, 0 simplified, 0 dropped.
 ```
 
-<Aside type="note" title="Unreleased">
+<Aside type="note" title="New in v0.8.0">
   A brand layout that maps to PowerPoint's two-content layout exports the first two body regions as distinct body placeholders, in the order of their regions in `layouts.ts`. For example, `fieldnote-columns` maps `body` and `aside` to separate placeholders. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
 </Aside>
 

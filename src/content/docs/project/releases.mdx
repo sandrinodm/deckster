@@ -9,14 +9,14 @@ Use this page to see which version of deckster these docs describe, upgrade to t
 
 ## The version these pages describe
 
-These pages describe **@deckster/cli 0.7.0**. Check the version installed in your workspace with this command.
+These pages describe **@deckster/cli 0.8.0**. Check the version installed in your workspace with this command.
 
 ```console
 $ deck --version
-0.7.0
+0.8.0
 ```
 
-The guides mark new features with the version that introduced them. See the [changelog](/project/changelog/) for the deck choosers, brand imports and 24 presentation patterns.
+The guides mark new features with the version that introduced them. See the [changelog](/project/changelog/) for diagram design controls, brand layout fixes and updated authoring skills.
 
 ## Published versions
 
@@ -24,7 +24,7 @@ The guides mark new features with the version that introduced them. See the [cha
 npm view @deckster/cli versions
 ```
 
-The npm `latest` tag points at 0.7.0. Run `npm view @deckster/cli dist-tags.latest` to check it. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
+The npm `latest` tag points at 0.8.0. Run `npm view @deckster/cli dist-tags.latest` to check it. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
 
 ## Upgrade
 
@@ -41,12 +41,14 @@ Then run `deck types` in your workspace again: the `tsconfig.json` it writes poi
 $ deck types
 tsconfig.json
 .deck/env.d.ts
-Mapped 70 @deckster/* entry points. The paths name this install: run `deck types` again after upgrading @deckster/cli.
+Mapped 71 @deckster/* entry points. The paths name this install: run `deck types` again after upgrading @deckster/cli.
 ```
 
 For a first install, see [quickstart](/get-started/quickstart/).
 
 ## What changed
+
+[0.8.0](https://github.com/sandrinodm/deckster/releases/tag/v0.8.0) adds [diagram design controls](/data-and-diagrams/diagram-design/), SVG sanitization for Git brand imports, and separate PowerPoint placeholders for two-content brand layouts. The [changelog](/project/changelog/#v080) also covers static layout files and slide authoring in the live session brand.
 
 [0.7.0](https://github.com/sandrinodm/deckster/releases/tag/v0.7.0) adds 24 [presentation patterns](/examples/presentation-patterns/) as well as first-slide previews and deck switching to `deck dev` and `deck present`. Brand imports protect credentials, recover interrupted replacements and check layouts before installation. The [changelog](/project/changelog/) links each change to its guide and pull request.
 

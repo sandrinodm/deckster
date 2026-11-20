@@ -1,5 +1,33 @@
 {
   "shared": {
+    "align": {
+      "type": "\"left\" | \"center\" | \"right\"",
+      "required": false,
+      "default": null,
+      "description": "Place a compact drawing to the left, center or right.",
+      "values": [
+        "left",
+        "center",
+        "right"
+      ]
+    },
+    "lineStyle": {
+      "type": "\"solid\" | \"dashed\" | \"dotted\"",
+      "required": false,
+      "default": null,
+      "description": "The line pattern; uses the brand when omitted.",
+      "values": [
+        "solid",
+        "dashed",
+        "dotted"
+      ]
+    },
+    "strokeWidth": {
+      "type": "number",
+      "required": false,
+      "default": null,
+      "description": "The connector width in canvas pixels."
+    },
     "id": {
       "type": "string",
       "required": false,
@@ -92,7 +120,7 @@
       "type": "string | IconComponent",
       "required": false,
       "default": null,
-      "description": "An icon from the brand's set by name (resolved at build time in MDX), \"none\" to drop the kind's icon, or in TSX an icon component (`import Rocket from '~icons/lucide/rocket'`)."
+      "description": "An Iconify name (MDX), an icon component, a local image or an HTTPS image URL. Use \"none\" to omit the icon."
     },
     "card": {
       "type": "string",
@@ -183,6 +211,7 @@
       "useWhen": "Any system of boxes and arrows: an architecture, a request path, a pipeline. Place nodes with col/row (spans for wide nodes) or leave cells out for an automatic layout (`layout`, `direction`).",
       "example": "<Flow title=\"Checkout request path\">\n  <Node id=\"web\" kind=\"client\" title=\"Web app\" col={1} row={1} />\n  <Node id=\"api\" kind=\"service\" title=\"Orders API\" col={2} row={1} />\n  <Node id=\"db\" kind=\"database\" title=\"Orders DB\" col={3} row={1} />\n  <Edge from=\"web\" to=\"api\" label=\"HTTPS\" />\n  <Edge from=\"api\" to=\"db\" label=\"SQL\" />\n  <Journey at={1} path=\"web api db\" back />\n</Flow>",
       "shared": [
+        "align",
         "id",
         "title",
         "height"
@@ -263,6 +292,7 @@
       "useWhen": "Who calls whom, in order: a protocol, an API handshake, a retry. <Actor>s across the top, <Message>s top to bottom; the current message animates.",
       "example": "<SequenceDiagram title=\"Charging once\">\n  <Actor id=\"web\" kind=\"client\" title=\"Web app\" />\n  <Actor id=\"api\" kind=\"service\" title=\"Payments API\" />\n  <Message from=\"web\" to=\"api\" label=\"POST /charges\" at={1} />\n  <Message from=\"api\" to=\"web\" label=\"201 Created\" reply at={2} />\n</SequenceDiagram>",
       "shared": [
+        "align",
         "id",
         "title",
         "height"
@@ -295,6 +325,7 @@
       "useWhen": "Milestones in time order, with where we are now: a roadmap, a migration, a history. The line fills up to the latest milestone shown, or the one marked `current`.",
       "example": "<Timeline title=\"Migration\">\n  <Milestone date=\"Q1\" title=\"Split checkout\" at={1}>Orders live</Milestone>\n  <Milestone date=\"Q2\" title=\"Move payments\" at={2} current />\n</Timeline>",
       "shared": [
+        "align",
         "id",
         "title",
         "height"
@@ -320,6 +351,7 @@
       "useWhen": "A stacked architecture or ownership map: <Layer> bands top to bottom, each with <Item> chips.",
       "example": "<Layers title=\"Platform\">\n  <Layer title=\"Edge\" subtitle=\"Platform team\" at={1}>\n    <Item kind=\"gateway\" title=\"API gateway\" />\n  </Layer>\n</Layers>",
       "shared": [
+        "align",
         "id",
         "title",
         "height"
@@ -352,6 +384,7 @@
       "useWhen": "A loop of stages that repeats: an incident loop, a feedback cycle, an agent loop. `steps` walks it one stage per step; `spin` keeps a packet circling; an <Edge> between consecutive stages labels that arc.",
       "example": "<Cycle title=\"Incident loop\" steps>\n  <Node id=\"detect\" title=\"Detect\" />\n  <Node id=\"respond\" title=\"Respond\" />\n  <Node id=\"learn\" title=\"Learn\" />\n  <Edge from=\"learn\" to=\"detect\" label=\"new alert\" />\n</Cycle>",
       "shared": [
+        "align",
         "id",
         "title",
         "height"
@@ -394,6 +427,7 @@
       "useWhen": "A hierarchy: an org chart, a decision tree, a module tree. Nest <Node>s; `direction` down or right; `at` on a node reveals its branch.",
       "example": "<Tree title=\"Pricing rules\">\n  <Node id=\"price\" kind=\"decision\" title=\"Price?\">\n    <Node id=\"zone\" title=\"Zone\" />\n    <Node id=\"weight\" title=\"Weight\" at={1} />\n  </Node>\n</Tree>",
       "shared": [
+        "align",
         "id",
         "title",
         "height"
@@ -492,6 +526,18 @@
         "rowSpan"
       ],
       "props": {
+        "width": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Preferred width in canvas pixels, reduced to fit the region."
+        },
+        "height": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Minimum height in canvas pixels; grows to fit the text."
+        },
         "id": {
           "type": "string",
           "required": true,
@@ -535,6 +581,7 @@
       "useWhen": "A labelled container (a VPC, a region, \"Client side\"): nest the nodes in it; it wraps them, or takes its own col/row/colSpan/rowSpan.",
       "example": "<Group label=\"Production VPC\">\n  <Node id=\"api\" kind=\"service\" title=\"API\" col={2} row={1} />\n</Group>",
       "shared": [
+        "lineStyle",
         "at",
         "col",
         "row",
@@ -542,6 +589,12 @@
         "rowSpan"
       ],
       "props": {
+        "strokeWidth": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "The outline width in canvas pixels; zero hides it."
+        },
         "id": {
           "type": "string",
           "required": false,
@@ -572,6 +625,8 @@
       "useWhen": "A connection between two nodes; `to` equal to `from` draws a small loop on the node (a retry). In a <Cycle>, an <Edge> between consecutive stages labels or styles that arc.",
       "example": "<Edge from=\"api\" to=\"db\" label=\"SQL\" />\n<Edge from=\"worker\" to=\"worker\" label=\"retry\" />",
       "shared": [
+        "strokeWidth",
+        "lineStyle",
         "at",
         "state"
       ],
@@ -949,6 +1004,18 @@
         "card"
       ],
       "props": {
+        "width": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Preferred width in canvas pixels, reduced to fit the region."
+        },
+        "height": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Minimum height in canvas pixels; grows to fit the text."
+        },
         "id": {
           "type": "string",
           "required": true,
@@ -978,6 +1045,8 @@
       "useWhen": "An arrow between lifelines; `reply` for a response, `async` for fire-and-forget, from = to for a call to itself.",
       "example": "<Message from=\"web\" to=\"api\" label=\"POST /charges\" at={1} />",
       "shared": [
+        "strokeWidth",
+        "lineStyle",
         "play",
         "state"
       ],
@@ -1356,6 +1425,11 @@
       "example": "<Edge from=\"orders\" to=\"events\" async />"
     },
     {
+      "name": "lineStyle / strokeWidth",
+      "useWhen": "Vary an ordinary connector's line pattern or width in canvas pixels.",
+      "example": "<Edge from=\"checkout\" to=\"dispatch\" lineStyle=\"dotted\" strokeWidth={3} />"
+    },
+    {
       "name": "route: orthogonal | straight | curved",
       "useWhen": "orthogonal (the default) routes around nodes with rounded corners; straight runs centre to centre; curved bends gently between ports.",
       "example": "<Edge from=\"a\" to=\"b\" route=\"curved\" />"
@@ -1542,7 +1616,7 @@
   "longText": "Node titles and subtitles wrap between words, up to 3 lines for a title; a node first widens (up to fourteen captions, taking room from the gutters down to their least, every one-column node keeping one width) until its widest whole word fits, and only a word wider than that breaks: at a camelCase boundary or after -, _, . or /, else with a hyphen, never leaving fewer than 3 characters on a line. Edge labels take about 18 characters a line (less between two columns the nodes widened into), at most 2 lines, broken the same way; what still does not fit is cut with an ellipsis, one identifier keeping its start and end (OrderCancelled…Event), several words ending after a whole word. The full text stays in the accessible summary; `deck lint` warns (diagram-long-word) for every text broken inside a word or cut. Keep labels to a word or two (HTTPS, publish) and titles to about 20 characters.",
   "tsx": {
     "import": "import { Edge, Flow, Node } from '@deckster/kit/diagrams';",
-    "icons": "`kind` icons resolve at run time from the brand's icon set, as in MDX. `icon` takes an icon component (`import Rocket from '~icons/lucide/rocket'`) or \"none\"; a name string is resolved only in MDX.",
+    "icons": "`kind` icons resolve at run time from the brand's icon set, as in MDX. `icon` takes a component (`import Rocket from '~icons/lucide/rocket'`), an imported image URL (`import mark from './mark.svg?url'`), an HTTPS image URL, or \"none\". MDX also resolves Iconify names and bundles relative image paths.",
     "errors": "TSX props are checked when the slide renders: an unknown prop or a value outside its set throws an error naming the closest one, shown on the slide in place of the diagram.",
     "example": "import { Edge, Flow, Node } from '@deckster/kit/diagrams';\n\nexport const frontmatter = { layout: 'diagram', title: 'Orders talk to the database over SQL' };\n\nexport default function Slide() {\n  return (\n    <Flow title=\"Orders and its database\">\n      <Node id=\"api\" kind=\"service\" title=\"Orders API\" col={1} row={1} />\n      <Node id=\"db\" kind=\"database\" title=\"Orders DB\" col={2} row={1} />\n      <Edge from=\"api\" to=\"db\" label=\"SQL\" />\n    </Flow>\n  );\n}"
   },

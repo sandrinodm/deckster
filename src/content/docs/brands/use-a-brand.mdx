@@ -93,8 +93,8 @@ Point at the folder that holds brand.ts, such as gh:owner/repo/brands/<name>.
 
 ### SVG artwork during installation
 
-<Aside type="note" title="Unreleased">
-  This behavior requires a development build with [PR #31](https://github.com/sandrinodm/deckster/pull/31). It applies to SVGs installed with `deck brand add`.
+<Aside type="note" title="New in v0.8.0">
+  Starting in v0.8.0, `deck brand add` checks SVG artwork before installing it. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
 </Aside>
 
 The importer cleans SVG files in the staged brand before installing it. It preserves intrinsic dimensions and supported references within the same SVG, such as gradients and clip paths. It strips scripts, event handlers, and external references. When it removes unsupported markup, it warns with the asset's path. Preview the brand after import to check the artwork.

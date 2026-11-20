@@ -3501,6 +3501,14 @@
           "layout": "diagram",
           "file": "decks/diagrams-demo/slides/card-reference.mdx",
           "source": "---\nlayout: diagram\ntitle: Five standard cards, and each one means something on a slide\neyebrow: Cards\nbudget: 45s\n---\n\n<Flow title=\"The five standard cards side by side, each on the same service node\">\n  <Node id=\"default\" kind=\"service\" title=\"default\" subtitle=\"Most nodes\" card=\"default\" col={1} row={1} />\n  <Node id=\"outline\" kind=\"service\" title=\"outline\" subtitle=\"Outside our system\" card=\"outline\" col={2} row={1} />\n  <Node id=\"solid\" kind=\"service\" title=\"solid\" subtitle=\"The one that matters\" card=\"solid\" col={3} row={1} />\n  <Node id=\"tint\" kind=\"service\" title=\"tint\" subtitle=\"Belongs together\" card=\"tint\" col={4} row={1} />\n  <Node id=\"raised\" kind=\"service\" title=\"raised\" subtitle=\"Looked at closely\" card=\"raised\" col={5} row={1} />\n</Flow>\n\n<Notes>\nThis is the reference for the card prop. Every brand has these five names and draws them in its own way, so a deck that uses only these names moves between brands without edits. Use one or two of them on a slide besides the default, and pick each for a reason.\n</Notes>\n"
+        },
+        {
+          "id": "dispatch-handoff",
+          "number": 16,
+          "title": "Dispatch sends every accepted parcel to the depot",
+          "layout": "diagram",
+          "file": "decks/diagrams-demo/slides/dispatch-handoff.mdx",
+          "source": "---\nlayout: diagram\ntitle: Dispatch sends every accepted parcel to the depot\neyebrow: Dispatch handoff\nbudget: 1m\n---\n\nimport parcelMark from '../assets/parcel-mark.svg?url&no-inline';\n\n<Flow title=\"Dispatch hands accepted parcels to the depot\" align=\"right\">\n  <Group label=\"Parcelwise\" lineStyle=\"dashed\" strokeWidth={2}>\n    <Node id=\"dispatch\" icon={parcelMark} title=\"Dispatch\" subtitle=\"Accepts the parcel\" width={252} height={120} col={1} row={1} />\n    <Node id=\"depot\" kind=\"storage\" title=\"Depot\" subtitle=\"Scans it in\" width={220} col={2} row={1} />\n  </Group>\n  <Edge from=\"dispatch\" to=\"depot\" label=\"Parcel ready\" lineStyle=\"dotted\" strokeWidth={3} />\n</Flow>\n\n<Notes>\nDispatch issues a parcel-ready event as soon as it accepts a parcel. The depot scans the parcel into stock and uses the event to match the scan to the booking.\n</Notes>\n"
         }
       ]
     },
