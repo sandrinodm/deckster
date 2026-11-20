@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Use this page to look up the exact arguments and flags of a `deck` command. Each section shows the command's summary, its usage lines and, folded, the full `deck <command> --help` as `@deckster/cli` 0.6.1 prints it. `deck --help` lists the commands in the same order:
+Use this page to look up the exact arguments and flags of a `deck` command. Each section shows the command's summary, its usage lines and, folded, the full `deck <command> --help` as `@deckster/cli` 0.7.0 prints it. `deck --help` lists the commands in the same order:
 
 ```console
 $ deck --help
@@ -45,7 +45,7 @@ $ cd ~ && deck layouts
 Make a project folder (`mkdir talks && cd talks`) and run the command there, or set DECK_ROOT to the folder you mean.
 ```
 
-**Deck name.** A deck is named by its folder under `decks/`. In 0.6.1, when the deck argument is left out, `dev`, `present` and `layouts` use `DECK`, else `hello` when the workspace has it, else the workspace's only deck. `preview` and `mcp` use `DECK`, else `hello`, so name the deck when the workspace has no `hello`. `build` builds every deck (or the one in `DECK`). Others, such as `deck lint`, need the deck named and print `Which deck? Name one, for example` and an example when it is missing.
+**Deck name.** A deck is named by its folder under `decks/`. When the deck argument is left out, `dev` and `present` use a nonempty `DECK`, open the only deck, or show the chooser when several decks exist. `layouts` uses `DECK`, then `hello` if present, then the workspace's only deck. `preview` and `mcp` use `DECK`, else `hello`, so name the deck when the workspace has no `hello`. `build` builds every deck (or the one in `DECK`). Others, such as `deck lint`, need the deck named and print `Which deck? Name one, for example` and an example when it is missing.
 
 **`--brand <name>`.** On `dev`, `present`, `shot`, `lint`, `diff` and `export` it renders with `brands/<name>` instead of the brand in `deck.config.ts`. On `new` it is the brand written into the new deck's config, and on `icons` it takes a comma-separated list of brands to share names between.
 
@@ -78,7 +78,7 @@ $ deck lint nope --json
 
 <CliCommand name="dev" />
 
-**Unreleased.** `deck dev` uses the deck argument first, then nonempty `DECK`, then the only deck in the workspace. With several decks it prints the chooser URL even if one of them is `hello`. With no decks it asks you to create one. See [Choose a deck in your browser](/get-started/workspace-layout/#choose-a-deck-in-your-browser).
+**New in v0.7.0.** `deck dev` uses the deck argument first, then nonempty `DECK`, then the only deck in the workspace. With several decks it prints the chooser URL even if one of them is `hello`. With no decks it asks you to create one. See [Choose a deck in your browser](/get-started/workspace-layout/#choose-a-deck-in-your-browser).
 
 Guide: [quickstart](/get-started/quickstart/).
 
@@ -86,7 +86,7 @@ Guide: [quickstart](/get-started/quickstart/).
 
 <CliCommand name="present" />
 
-**Unreleased.** `deck present` uses the same deck-selection order as the unreleased `deck dev`. With several decks and neither a name nor `DECK`, it opens the gallery in Deckster, or in your browser with `--browser`. See [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery).
+**New in v0.7.0.** `deck present` uses the same deck-selection order as `deck dev`. With several decks and neither a name nor `DECK`, it opens the gallery in Deckster, or in your browser with `--browser`. See [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery).
 
 Guide: [`deck present` and displays](/present/deck-present-and-displays/).
 
@@ -162,7 +162,7 @@ Every component's props: [components reference](/reference/components/).
 
 To install a brand from git, see [Use a brand](/brands/use-a-brand/#add-a-brand-from-another-repository). See also [Check a brand](/brands/check-a-brand/) and [Diagram look and cards](/brands/diagram-look-and-cards/) for the diagram lines of the summary.
 
-**Unreleased.** With `deck brand add <source> --json`, a brand validation failure includes the file and its problems. See [Layout checks during installation](/brands/check-a-brand/#layout-checks-during-installation).
+**New in v0.7.0.** With `deck brand add <source> --json`, a brand validation failure includes the file and its problems. See [Layout checks during installation](/brands/check-a-brand/#layout-checks-during-installation).
 
 ## deck new
 

@@ -41,7 +41,7 @@ These steps make a brand called `acme` in a workspace called `talks`.
 1. Get a copy of the [repository](https://github.com/sandrinodm/deckster/tree/main/brands) once, with git or as a ZIP download from GitHub:
 
    ```sh
-   git clone --depth 1 --branch v0.6.1 https://github.com/sandrinodm/deckster.git ~/deckster
+   git clone --depth 1 --branch v0.7.0 https://github.com/sandrinodm/deckster.git ~/deckster
    ```
 
 2. Copy a published brand from it into `brands/acme/`. `default` is the plainest starting point. Delete `package.json` and `tsconfig.json`, which point into the monorepo.
@@ -84,7 +84,7 @@ These steps make a brand called `acme` in a workspace called `talks`.
    acme: cannot be used (1 error, 0 warnings).
    ```
 
-8. Set `icons.set` to `lucide` or `tabler`, the two Iconify sets the 0.6.1 CLI carries, and `icons.strokeWidth` to a value from 0.5 to 4.
+8. Set `icons.set` to `lucide` or `tabler`, the two Iconify sets the 0.7.0 CLI carries, and `icons.strokeWidth` to a value from 0.5 to 4.
 
 9. Give diagrams the brand's look in `diagram`: the edges, group outlines, edge labels and the cards nodes are drawn with. Restyle the `default` card first, since every card takes its corner radius, outline width and title type from it. [Diagram look and cards](/brands/diagram-look-and-cards/) walks through it. Leave the section out and diagrams take a look derived from the roles and `shape`.
 
@@ -102,7 +102,7 @@ These steps make a brand called `acme` in a workspace called `talks`.
 </Steps>
 
 <Aside type="caution" title="Icon sets">
-`deck brand check` accepts any Iconify set name in `icons.set`, but the CLI reads icon data from the folder it's installed in, and 0.6.1 ships only `lucide` and `tabler`. With another set, such as `ph`, the first `<Icon>`, layout `icon` or diagram node `icon` makes `deck lint` and `deck dev` fail with `needs the "ph" icon set, which is not installed`. Installing `@iconify-json/ph` in the workspace doesn't fix it for a globally installed CLI. When the CLI is installed in the workspace, `npm install @iconify-json/ph` next to it makes `deck lint` pass.
+`deck brand check` accepts any Iconify set name in `icons.set`, but the CLI reads icon data from the folder it's installed in, and 0.7.0 ships only `lucide` and `tabler`. With another set, such as `ph`, the first `<Icon>`, layout `icon` or diagram node `icon` makes `deck lint` and `deck dev` fail with `needs the "ph" icon set, which is not installed`. Installing `@iconify-json/ph` in the workspace doesn't fix it for a globally installed CLI. When the CLI is installed in the workspace, `npm install @iconify-json/ph` next to it makes `deck lint` pass.
 </Aside>
 
 ## What stops a brand from loading

@@ -1333,6 +1333,87 @@
       "native": "scatter"
     },
     {
+      "name": "MarketMovement",
+      "kind": "market-movement",
+      "useWhen": "One entity changes position over dated observations against peers on two fixed axes.",
+      "messages": [
+        "trend",
+        "change between two points",
+        "correlation"
+      ],
+      "avoid": "Movement in only one measure (use LineChart) or a single snapshot (use Scatter).",
+      "data": "Long rows with an entity name, ISO calendar date and two numeric measures.",
+      "nulls": "A row missing either measure has no position. Peers appear only on their observation dates.",
+      "shared": [
+        "at",
+        "caption",
+        "source",
+        "label",
+        "data",
+        "format"
+      ],
+      "props": {
+        "entity": {
+          "type": "string",
+          "required": false,
+          "default": "entity",
+          "description": "The entity name field."
+        },
+        "date": {
+          "type": "string",
+          "required": false,
+          "default": "date",
+          "description": "The YYYY-MM-DD date field."
+        },
+        "x": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The horizontal measure field."
+        },
+        "y": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The vertical measure field."
+        },
+        "xLabel": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The horizontal axis title."
+        },
+        "yLabel": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The vertical axis title."
+        },
+        "xFormat": {
+          "type": "Format",
+          "required": false,
+          "default": null,
+          "description": "The horizontal axis number format. The shared format is for y."
+        },
+        "highlight": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The entity whose positions form the trail."
+        },
+        "buildFrom": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "The step for the second date. Each later date adds one step."
+        }
+      },
+      "limits": {},
+      "example": "<MarketMovement data={market} x=\"density\" y=\"onTime\" highlight=\"Wrenhaul\" buildFrom={1} />",
+      "accessibility": "The static chart labels the trail endpoints. The summary lists positions by date.",
+      "native": null
+    },
+    {
       "name": "Heatmap",
       "kind": "heatmap",
       "useWhen": "A pattern across two dimensions (weekday by hour), with the cell that matters outlined.",
@@ -1390,6 +1471,131 @@
       "limits": {},
       "example": "<Heatmap data={load} x=\"hour\" y=\"day\" value=\"tickets\" highlight={{ x: '9–12', y: 'Mon' }} />",
       "accessibility": "The summary gives the range and the highest cell; values are printed in cells with room.",
+      "native": null
+    },
+    {
+      "name": "RetentionCohorts",
+      "kind": "retention-cohorts",
+      "useWhen": "Retention by signup cohort and elapsed age, with the starting populations beside the rates.",
+      "messages": [
+        "comparison",
+        "trend"
+      ],
+      "avoid": "Calendar-period activity (use Heatmap or LineChart).",
+      "data": "Long rows with a cohort name, a whole elapsed age, a starting population and retention in percent.",
+      "nulls": "Absent or explicitly null rates stay blank. An observed zero is printed as 0%.",
+      "shared": [
+        "at",
+        "caption",
+        "source",
+        "label",
+        "data"
+      ],
+      "props": {
+        "cohort": {
+          "type": "string",
+          "required": false,
+          "default": "cohort",
+          "description": "The cohort name field."
+        },
+        "age": {
+          "type": "string",
+          "required": false,
+          "default": "age",
+          "description": "The elapsed age field, a nonnegative whole number."
+        },
+        "ageUnit": {
+          "type": "string",
+          "required": false,
+          "default": "Month",
+          "description": "The heading prefix for each age."
+        },
+        "value": {
+          "type": "string",
+          "required": false,
+          "default": "retained",
+          "description": "The retention field. Pass 82 for 82%."
+        },
+        "size": {
+          "type": "string",
+          "required": false,
+          "default": "size",
+          "description": "The starting population field."
+        },
+        "sizeLabel": {
+          "type": "string",
+          "required": false,
+          "default": "Size",
+          "description": "The heading of the starting population column."
+        },
+        "focus": {
+          "type": "{ cohort: string; age: number; from?: number }",
+          "required": false,
+          "default": null,
+          "description": "Outline the cohort at `from`, then compare cohorts at `age` one step later. Leave out `from` for a static comparison at `age`."
+        }
+      },
+      "limits": {},
+      "example": "<RetentionCohorts data={retention} focus={{ cohort: \"April\", age: 3, from: 1 }} />",
+      "accessibility": "The summary names the starting populations, observed rates and focus age. Blank cells are unobserved.",
+      "native": null
+    },
+    {
+      "name": "ProfitPool",
+      "kind": "profit-pool",
+      "useWhen": "Segment revenue is a width and contribution margin a height, making area represent profit.",
+      "messages": [
+        "part-to-whole",
+        "ranking",
+        "comparison"
+      ],
+      "avoid": "Profit is the only measure that matters (use BarChart).",
+      "data": "One row per segment with positive revenue and a margin in percent. A margin may be negative.",
+      "nulls": "Revenue and margin are required to calculate profit. A zero margin has zero area.",
+      "shared": [
+        "at",
+        "caption",
+        "source",
+        "label",
+        "data",
+        "format",
+        "unit"
+      ],
+      "props": {
+        "segment": {
+          "type": "string",
+          "required": false,
+          "default": "segment",
+          "description": "The segment name field."
+        },
+        "revenue": {
+          "type": "string",
+          "required": false,
+          "default": "revenue",
+          "description": "The revenue field. All rows must use the same currency and scale."
+        },
+        "margin": {
+          "type": "string",
+          "required": false,
+          "default": "margin",
+          "description": "The contribution margin field. Pass 25 for 25%."
+        },
+        "highlight": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "The segment to emphasize. Defaults to the largest profit contributor."
+        },
+        "buildFrom": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "The margin step. Before it the chart shows revenue only, and the next step highlights profit."
+        }
+      },
+      "limits": {},
+      "example": "<ProfitPool data={segments} highlight=\"Memberships\" format=\"currency\" buildFrom={1} />",
+      "accessibility": "The summary gives revenue, margin and profit for every segment.",
       "native": null
     },
     {
@@ -1508,33 +1714,41 @@
       "Slope",
       "Waterfall",
       "Heatmap",
+      "RetentionCohorts",
+      "ProfitPool",
       "Table"
     ],
     "ranking": [
-      "BarChart"
+      "BarChart",
+      "ProfitPool"
     ],
     "trend": [
       "BarChart",
       "LineChart",
       "AreaChart",
+      "MarketMovement",
+      "RetentionCohorts",
       "Sparkline"
     ],
     "change between two points": [
       "Comparison",
-      "Slope"
+      "Slope",
+      "MarketMovement"
     ],
     "part-to-whole": [
       "AreaChart",
       "Donut",
       "Pictogram",
-      "Progress"
+      "Progress",
+      "ProfitPool"
     ],
     "distribution": [
       "Scatter",
       "Heatmap"
     ],
     "correlation": [
-      "Scatter"
+      "Scatter",
+      "MarketMovement"
     ],
     "flow": [
       "Waterfall",

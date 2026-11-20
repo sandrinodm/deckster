@@ -5,7 +5,7 @@ sidebar:
   order: 37
 ---
 
-The `demo` layout gives a live demo the slide under a one-line title: a mini app in an `<AppFrame>` or a React widget in a `<Live>`, with up to three short notes beside it. Use it when the room should watch the product move, or try it.
+Use the `demo` layout to give a product demonstration the space under a one-line title, with room for up to three short notes beside it. The body can hold a mini app, a React widget or an authored demo that runs from the data in the slide.
 
 ## Example
 
@@ -21,9 +21,11 @@ Without `<Aside>` the demo takes all twelve columns. With it, the demo takes eig
 
 - **Something has to run in front of the room.** For a still screen, use [`screen`](/reference/layouts/screen/). For a terminal session or code that changes, use [`code`](/reference/layouts/code/).
 - **The title says what to watch for**, in one line of up to 48 characters: "Watch Flock build a loop", not "Demo".
-- **The body is one element.** One `<AppFrame>` or one `<Live>`, nothing else; it fills the region. Which one to pick is on [live components](/write-slides/live-components/) and [mini apps](/write-slides/mini-apps/).
+- **The body is one element.** Use `<AppFrame>` for a mini app or `<Live>` for a React widget. To stage a product or AI interaction from data in the slide, use `<CommandDemo>`, `<GroundedAnswer>`, `<ReviewDiff>` or `<RunTrace>`. Each has its own deck steps and stills for export. [Demo components](/reference/components/#product-and-ai-demonstrations) · [Live components](/write-slides/live-components/) · [Mini apps](/write-slides/mini-apps/)
 - **Notes are a few words each.** `<Aside>` takes up to three bullets and 34 words. What you will say while it runs goes in `<Notes>`.
 - **A source or caveat** goes in `<Footnote>`, up to 30 words.
+
+The command palette example shows how to author the available commands and the output each one returns. [Live command palette](/decks/lookbook/#/command-palette) · [Presentation patterns](/examples/presentation-patterns/)
 
 ## Reference
 

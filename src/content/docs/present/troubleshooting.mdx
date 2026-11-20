@@ -37,11 +37,11 @@ A related line, `Warning: the window loaded the page, but no deck is running in 
 
 ## A deck fails to open from the gallery
 
-**Unreleased.** Read the message in the chooser. To diagnose a deck that fails to load, open it by folder name with `deck present <deck> --browser`. If the failure occurred with `--built`, run `deck build <deck>` to see the build errors. Fix the error, then select the deck again. See [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery).
+Read the message in the chooser. To diagnose a deck that fails to load, open it by folder name with `deck present <deck> --browser`. If the failure occurred with `--built`, run `deck build <deck>` to see the build errors. Fix the error, then select the deck again. See [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery).
 
 ## "Could not prepare Deckster.app (...); the window will show as "Electron""
 
-On macOS, `deck present` builds a copy of Electron's app named Deckster in `.deck/shell/app/`. When that fails (the reason is in the brackets), it runs Electron's own app instead: the deck works, but the Dock and the menu bar say Electron. In v0.6.1 the CLI retries with a recursive copy that preserves framework links if the copy tool rejects the macOS clone option. If you saw that warning on an earlier version, upgrade the CLI and run `deck present` again. For other failures, fix the reported cause, or delete `.deck/shell/app` so the next `deck present` builds it again.
+On macOS, `deck present` builds a copy of Electron's app named Deckster in `.deck/shell/app/`. When that fails (the reason is in the brackets), it runs Electron's own app instead: the deck works, but the Dock and the menu bar say Electron. Since v0.6.1 the CLI retries with a recursive copy that preserves framework links if the copy tool rejects the macOS clone option. If you saw that warning on an earlier version, upgrade the CLI and run `deck present` again. For other failures, fix the reported cause, or delete `.deck/shell/app` so the next `deck present` builds it again.
 
 ## The window stays blank
 

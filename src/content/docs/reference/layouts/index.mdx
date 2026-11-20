@@ -7,11 +7,13 @@ sidebar:
     label: "Layouts"
 ---
 
-Use this page to choose a layout for a slide, then open its page to check what it takes before you fill it. Every slide names one in its frontmatter (`layout: stats`); a slide that names none uses `default`. The index below shows each of the 52 layouts as it renders, with what it is for; each links to the layout's own page. For how layouts and slots fit together, read [layouts and slots](/concepts/layouts-and-slots/); for how to fill them in a slide file, [MDX slides](/write-slides/mdx-slides/).
+Use this page to choose a layout for a slide, then open its page to check what it takes before you fill it. Every slide names one in its frontmatter (`layout: stats`); a slide that names none uses `default`. The index below shows each of the 63 layouts as it renders, with what it is for; each links to the layout's own page. For how layouts and slots fit together, read [layouts and slots](/concepts/layouts-and-slots/); for how to fill them in a slide file, [MDX slides](/write-slides/mdx-slides/).
 
 <Aside type="note" title="New in v0.6.0">
-Twenty of the 52 layouts need `@deckster/cli` 0.6.0 or later: `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`. Each of their pages says so; in 0.5.0, `deck lint` reports `There is no "<name>" layout.` for a slide that names one.
+Twenty layouts need `@deckster/cli` 0.6.0 or later: `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`. Each of their pages says so; in 0.5.0, `deck lint` reports `There is no "<name>" layout.` for a slide that names one.
 </Aside>
+
+Version 0.7.0 adds the 11 layouts in the first three groups below. See them in use alongside the new chart and demo components. [Presentation patterns](/examples/presentation-patterns/)
 
 <LayoutIndex />
 
@@ -19,10 +21,13 @@ The grid follows the catalog order, the order `deck layouts` prints; the table b
 
 ## Layouts by purpose
 
-The groups follow the parts of the [lookbook](/examples/lookbook/) deck, which shows every layout in the order of a talk; the last column names the part. The sidebar lists the layout pages in this order.
+The groups follow the parts of the [lookbook](/examples/lookbook/) deck, which shows every layout in the order of a talk; the last column names the part. The [presentation patterns](/examples/presentation-patterns/) guide shows how to use the product, roadmap and investment examples.
 
 | Group | Layouts | Lookbook part |
 | --- | --- | --- |
+| Product demos and service design | [`screen-story`](/reference/layouts/screen-story/), [`product-cutaway`](/reference/layouts/product-cutaway/), [`service-blueprint`](/reference/layouts/service-blueprint/), [`choose-path`](/reference/layouts/choose-path/) | Show how it works, Show the product |
+| Vision and product design | [`vision-storyboard`](/reference/layouts/vision-storyboard/), [`sketch-to-ship`](/reference/layouts/sketch-to-ship/), [`future-back`](/reference/layouts/future-back/) | Open, Show the product, Plan ahead and ask |
+| Roadmaps and strategy | [`roadmap-transit`](/reference/layouts/roadmap-transit/), [`roadmap-hill`](/reference/layouts/roadmap-hill/), [`opportunity-map`](/reference/layouts/opportunity-map/), [`strategy-canvas`](/reference/layouts/strategy-canvas/) | Compare and decide, Plan ahead and ask |
 | Openers and closers | [`title`](/reference/layouts/title/), [`section`](/reference/layouts/section/), [`agenda`](/reference/layouts/agenda/), [`bio`](/reference/layouts/bio/), [`recap`](/reference/layouts/recap/), [`sources`](/reference/layouts/sources/), [`closing`](/reference/layouts/closing/) | Open, Close |
 | Statements | [`statement`](/reference/layouts/statement/), [`quote`](/reference/layouts/quote/), [`image`](/reference/layouts/image/), [`definition`](/reference/layouts/definition/) | Say one thing |
 | Content | [`default`](/reference/layouts/default/), [`content`](/reference/layouts/content/), [`split`](/reference/layouts/split/), [`cards`](/reference/layouts/cards/), [`features`](/reference/layouts/features/), [`steps`](/reference/layouts/steps/), [`bento`](/reference/layouts/bento/), [`do-dont`](/reference/layouts/do-dont/), [`faq`](/reference/layouts/faq/) | Explain |
@@ -36,7 +41,7 @@ The groups follow the parts of the [lookbook](/examples/lookbook/) deck, which s
 
 ## How to read a layout page
 
-Each layout page opens with a published slide in that layout and the file that made it (a slide of the lookbook deck), says when to use the layout, gives its reference entry, lists common mistakes and links related layouts. The reference entry has these parts:
+Each layout page explains when to use the layout and shows a lookbook slide with the source file that made it. The reference entry lists the fields, slots and budgets to keep at hand while you author a slide.
 
 - **Frontmatter, surface, title.** The line to write, the surface the slide gets unless its frontmatter sets `surface`, and whether `title:` is required and how many characters it may have. "Optional" with no limit means the title names the slide in the outline and may not be shown.
 - **PowerPoint.** The PowerPoint slide layout `deck export --pptx` maps the slide to, so its title and body stay editable placeholders.

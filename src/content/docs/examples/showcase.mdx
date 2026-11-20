@@ -9,7 +9,7 @@ The showcase is "Slides an agent can write", a 45-slide talk about deckster buil
 
 <DeckEmbed deck="showcase" slide="cover" />
 
-The whole deck is at [/decks/showcase/](/decks/showcase/). It uses 23 of the 52 layouts; ten of the sixteen chart and number components; flow, sequence, layers, cycle and tree diagrams and an imported SVG; code, video, a Lottie animation and two live React demos. Its `deck.config.ts` sets `duration: '45m'`, and every slide has speaker notes and a time `budget`.
+The whole deck is at [/decks/showcase/](/decks/showcase/). It uses 23 of the 63 layouts; ten of the nineteen chart and number components; flow, sequence, layers, cycle and tree diagrams and an imported SVG; code, video, a Lottie animation and two live React demos. Its `deck.config.ts` sets `duration: '45m'`, and every slide has speaker notes and a time `budget`.
 
 **The content is illustrative.** Halden, its people, its clients and every Halden number are fictional, and each chart of Halden data says so in a footnote. The portraits and logos are drawn stand-ins. Numbers about deckster itself (layouts, charts, rules, terminal output) were read from the repository.
 
@@ -100,7 +100,7 @@ The deck is a folder in the repository, `decks/showcase/`. Besides `slides/` (42
 To run it with the npm CLI, copy the folder into your workspace and delete the two files that tie it to the monorepo:
 
 ```sh
-git clone --depth 1 --branch v0.6.1 https://github.com/sandrinodm/deckster.git ../deckster
+git clone --depth 1 --branch v0.7.0 https://github.com/sandrinodm/deckster.git ../deckster
 cp -R ../deckster/decks/showcase decks/
 rm decks/showcase/package.json decks/showcase/tsconfig.json
 ```
