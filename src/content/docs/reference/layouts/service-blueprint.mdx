@@ -1,0 +1,22 @@
+---
+title: "service-blueprint"
+description: "Show who owns a customer handoff."
+sidebar:
+  order: 71
+---
+
+A customer can see a new arrival time without seeing the dispatch team change a rider’s route. The blueprint puts those two actions in the same column and names the team accountable for the handoff.
+
+## Author the slide
+
+Write two to four `stages` in journey order. For each stage, fill in `customer`, `frontstage`, `backstage` and `owner`. Point `handoff.stage` at the column where the responsibility moves, counting from one. With `reveal: true`, the first advance shows backstage work and the second adds owners and highlights the handoff.
+
+## Example
+
+<SlideExample deck="lookbook" slide="service-blueprint" />
+
+## Reference
+
+<LayoutReference name="service-blueprint" />
+
+See the [presentation patterns guide](/examples/presentation-patterns/) for related slides and their source files.

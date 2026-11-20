@@ -88,13 +88,11 @@ A deck folder needs no `package.json`. Decks copied from the deckster repository
 
 ## How deck dev picks a deck
 
-`deck dev launch-review` opens that folder. Leave the name out and `deck dev` uses `DECK` if it is set and nonempty. In 0.6.1, without either, it opens `hello` if the workspace has one, then tries the workspace's only deck. If you have several decks and no `hello`, name the one you want.
+`deck dev launch-review` opens that folder. Leave the name out and `deck dev` uses `DECK` if it is set and nonempty. With neither a name nor `DECK`, it opens the only deck in the workspace or offers a choice when there are several.
 
 ### Choose a deck in your browser
 
-<Aside type="note" title="Unreleased">
-The browser chooser is not included in 0.6.1. It is listed in the [changelog](/project/changelog/#browser-deck-chooser).
-</Aside>
+New in v0.7.0. In a workspace with several decks, use `deck dev hello` to open the starter deck directly. [Browser chooser changelog](/project/changelog/#browser-deck-chooser).
 
 Run `deck dev` with no deck argument and with `DECK` unset or empty. One deck opens directly, and an empty workspace tells you to create one with `deck new <name>`. With several decks, including workspaces that have `hello`, open the **Deck chooser** URL the terminal prints.
 
@@ -117,7 +115,7 @@ Generated files go to `.deck/` at the workspace root, one folder per deck inside
 | `.deck/baseline/<deck>/` | `deck diff --save-baseline` | The pictures later diffs compare against |
 | `.deck/diff/<deck>/` | `deck diff` | The report, `index.html`, and its pictures |
 | `.deck/agent/<deck>/` | `deck dev --mcp` or `--agent` | `server.json` with the port and the per-run bearer token (mode 0600) while the server runs, and the working copies of agent turns; see [How a turn runs](/ai-agents/how-a-turn-runs/) |
-| `.deck/chooser/previews/` | Deck chooser (unreleased) | Cached previews of the decks' opening slides |
+| `.deck/chooser/previews/` | Deck chooser | Cached previews of the decks' opening slides |
 | `.deck/shell/` | `deck present` | The window positions (`windows.json`) and browser profile of the presenter app, and on macOS a branded copy of the Electron app (`app/`) |
 | `.deck/env.d.ts` | `deck types` | Type declarations for your editor |
 

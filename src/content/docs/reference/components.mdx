@@ -106,6 +106,34 @@ Live React components and mini apps: [live components](/write-slides/live-compon
 
 <PropsTable of="AppFrame" />
 
+## Product and AI demonstrations
+
+These v0.7.0 components use data you write in the slide. Put one in the body of a `demo` slide. Each includes a default sequence of deck steps and renders its own still for export. [Demo layout](/reference/layouts/demo/) · [Presentation patterns](/examples/presentation-patterns/)
+
+### CommandDemo
+
+Put the command you want to run with the deck’s advance key first in `commands`. In the open palette you can also select another command and read its authored result. [Command palette example](/decks/lookbook/#/command-palette)
+
+<PropsTable of="CommandDemo" />
+
+### GroundedAnswer
+
+Use `context` for the surrounding text and `evidence` for the exact supporting words. Activating the citation moves keyboard focus to that passage. [Grounded answer example](/decks/lookbook/#/ai-grounded-answer)
+
+<PropsTable of="GroundedAnswer" />
+
+### ReviewDiff
+
+Supply the original words and the replacement with their surrounding text. Choose **Accept edit** or **Keep original** in the live slide to read the whole draft with that choice applied. [Review example](/decks/lookbook/#/ai-review-diff)
+
+<PropsTable of="ReviewDiff" />
+
+### RunTrace
+
+Give each call the input the audience should see and the observation it returns. Use `checkpoint` to say what a person must decide and `outcome` to show what is ready for review. [Run trace example](/decks/lookbook/#/agent-run-trace)
+
+<PropsTable of="RunTrace" />
+
 ## Motion
 
 Steps and morphs: [builds](/write-slides/builds/) and [transitions and morphs](/write-slides/transitions-and-morphs/).

@@ -762,6 +762,184 @@
       "shared": []
     },
     {
+      "name": "CommandDemo",
+      "kind": "app",
+      "useWhen": "A keyboard command opens data. Show the workspace, choice and executed result.",
+      "avoid": "A live application that needs authenticated state or external data.",
+      "props": {
+        "workspace": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The workspace name shown in the chrome."
+        },
+        "context": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What the workspace shows before opening the palette."
+        },
+        "commands": {
+          "type": "object[]",
+          "required": true,
+          "default": null,
+          "description": "Supply commands with name, result and rows. The first command is the scripted example."
+        },
+        "reveal": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Use two deck advances for the palette and result."
+        }
+      },
+      "example": "<CommandDemo workspace=\"Dispatch\" context=\"Ready\" commands={[{name:\"List drops\",result:\"One waiting\",rows:[{label:\"WQ-214\",detail:\"Due by 09:35\"}]}]} />",
+      "shared": []
+    },
+    {
+      "name": "GroundedAnswer",
+      "kind": "app",
+      "useWhen": "An answer cites specific source text, and readers can check the exact passage.",
+      "avoid": "An answer without an authored source or an explicit citation.",
+      "props": {
+        "question": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The question submitted to the assistant."
+        },
+        "answer": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The concise answer the evidence supports."
+        },
+        "sourceTitle": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The name of the document or brief."
+        },
+        "reference": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The location of the evidence inside the source."
+        },
+        "context": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Relevant words before the supporting passage."
+        },
+        "evidence": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The exact words that the citation points to."
+        },
+        "reveal": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Use two deck advances for the answer and evidence."
+        }
+      },
+      "example": "<GroundedAnswer sourceTitle=\"Dispatch rules\" reference=\"Guide §3\" context=\"Check each parcel.\" evidence=\"The bike limit is 25 kg.\" question=\"Will 28 kg fit?\" answer=\"No. It exceeds the limit.\" />",
+      "shared": []
+    },
+    {
+      "name": "ReviewDiff",
+      "kind": "app",
+      "useWhen": "A human reviews one exact change proposed by an assistant.",
+      "avoid": "A code patch with many changed lines, which belongs in a diff fence.",
+      "props": {
+        "document": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The file, document or record being reviewed."
+        },
+        "before": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Unchanged words preceding the proposed edit."
+        },
+        "original": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The exact words the assistant proposes removing."
+        },
+        "suggestion": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The exact words the assistant proposes inserting."
+        },
+        "after": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "Unchanged text following the proposed edit."
+        },
+        "rationale": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The reason for the suggested change."
+        },
+        "reveal": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Use two advances to show the proposed edit, then approval."
+        }
+      },
+      "example": "<ReviewDiff document=\"Draft\" before=\"Arrives \" original=\"soon\" suggestion=\"by 09:35\" after=\".\" rationale=\"Use the committed time.\" />",
+      "shared": []
+    },
+    {
+      "name": "RunTrace",
+      "kind": "app",
+      "useWhen": "An assistant makes two observable tool calls, then stops for a person to act.",
+      "avoid": "A technical trace with more than two calls, which belongs in a sequence diagram.",
+      "props": {
+        "instruction": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The task the person gave to the assistant."
+        },
+        "calls": {
+          "type": "object[]",
+          "required": true,
+          "default": null,
+          "description": "Exactly two calls, each with its tool, input and observation."
+        },
+        "checkpoint": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The human judgment needed before an external operation."
+        },
+        "outcome": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "What the run prepared before that checkpoint."
+        },
+        "reveal": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Use three advances for the calls then the checkpoint."
+        }
+      },
+      "example": "<RunTrace instruction=\"Draft an update.\" calls={[{tool:\"lookup_drop\",input:\"WQ-214\",observation:\"Due by 09:35\"},{tool:\"read_eta\",input:\"Loop 17\",observation:\"ETA 09:21\"}]} checkpoint=\"Approval required\" outcome=\"Draft ready.\" />",
+      "shared": []
+    },
+    {
       "name": "Step",
       "kind": "motion",
       "useWhen": "Segment an explanation: reveal the part the speaker is about to talk about at a later step; it keeps its space while hidden. Give each step of a run you walk through (points, cards) `focus`, so the one just revealed is at full strength and earlier ones recede to the muted color: that signals where to look.",

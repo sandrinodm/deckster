@@ -94,11 +94,9 @@ The checks run in stages. A stage that finds a problem reports all of its proble
 
 ## Layout checks during installation
 
-<Aside type="note" title="Unreleased">
-These checks in `deck brand add` are not included in 0.6.1. See [Brand layout validation before install](/project/changelog/#brand-layout-validation-before-install).
-</Aside>
+New in v0.7.0. [Brand layout validation changelog](/project/changelog/#brand-layout-validation-before-install).
 
-In 0.6.1, run `deck brand check <name>` after adding a brand to check its layouts against the deckster layout catalog. The unreleased importer runs that catalog check before publishing the brand, including when you pass `--force`. It checks layout names, fallbacks and slot and field bindings. Errors prevent the install and keep the previous brand in place. Warnings name the source file and include a fix.
+The importer checks the brand against the layout catalog before writing it to the workspace, including when you pass `--force`. Run `deck brand check <name>` to check the installed brand again after local edits. It checks layout names, fallbacks and slot and field bindings. Errors prevent the install and keep the previous brand in place. Warnings name the source file and include a fix.
 
 To fix a layout failure, use the reported field path and fix in the source repository's `layouts.ts`, then import the corrected ref. With `deck brand add <source> --json`, a brand validation failure returns `{ ok: false, error: { type, message, file, problems } }`. For a catalog failure, `file` points to `brands/<name>/layouts.ts`. See [Brand layouts](/brands/brand-layouts/#check-it) for what each check means.
 

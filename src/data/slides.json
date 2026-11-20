@@ -146,7 +146,7 @@
           "title": "Most slides need no new component",
           "layout": "stats",
           "file": "decks/showcase/slides/kit-numbers.mdx",
-          "source": "---\nlayout: stats\ntitle: Most slides need no new component\neyebrow: What ships\nsurface: inverse\nstats:\n  - value: \"52\"\n    label: layouts, each with a budget\n  - value: \"16\"\n    label: charts and number figures\n  - value: \"7\"\n    label: diagram components\n  - value: \"42\"\n    label: lint rules, each with a fix\n    highlight: true\nbudget: 45s\n---\n\n<Footnote>Counted from the catalogs and the lint help that the deck command prints in this repository.</Footnote>\n\n<Notes>\nReal numbers, counted from the CLI this morning. Fifty-two layouts, sixteen charts and figures, seven diagram components. And the one I care about most: forty-two lint rules, each of which names its fix.\n\nThis deck uses twenty-three of the layouts. Count them if you get bored.\n\nTransition: part two is what those components look like with something to say.\n</Notes>\n"
+          "source": "---\nlayout: stats\ntitle: Most slides need no new component\neyebrow: What ships\nsurface: inverse\nstats:\n  - value: \"63\"\n    label: layouts, each with a budget\n  - value: \"19\"\n    label: charts and number figures\n  - value: \"7\"\n    label: diagram components\n  - value: \"42\"\n    label: lint rules, each with a fix\n    highlight: true\nbudget: 45s\n---\n\n<Footnote>Counted from the catalogs and the lint help that the deck command prints in this repository.</Footnote>\n\n<Notes>\nReal numbers, counted from the CLI this morning. Sixty-three layouts, nineteen charts and figures, seven diagram components. And the one I care about most: forty-two lint rules, each of which names its fix.\n\nThis deck uses twenty-three of the layouts. Count them if you get bored.\n\nTransition: part two is what those components look like with something to say.\n</Notes>\n"
         },
         {
           "id": "part-evidence",
@@ -391,10 +391,10 @@
         {
           "id": "recap",
           "number": 44,
-          "title": "This deck used 23 of the 52 layouts and every diagram component in the kit",
+          "title": "This deck used 23 of the 63 layouts and every diagram component in the kit",
           "layout": "chart",
           "file": "decks/showcase/slides/recap.mdx",
-          "source": "---\nlayout: chart\ntitle: This deck used 23 of the 52 layouts and every diagram component in the kit\neyebrow: The evidence, once more\nbudget: 30s\n---\n\n<Progress\n  items={[\n    { label: 'Layouts used, of 52', value: 23, max: 52, unit: 'layouts', highlight: true },\n    { label: 'Diagram components used, of 7', value: 7, max: 7, unit: 'components' },\n    { label: 'Chart and figure components used, of 16', value: 10, max: 16, unit: 'components' },\n  ]}\n/>\n\n<Footnote>Counted against the catalogs in this repository. Lint reports no problems for this deck in either brand.</Footnote>\n\n<Notes>\nOne last piece of evidence, and it is the deck itself. Twenty-three of the fifty-two layouts. All seven diagram components. Ten of the sixteen charts, because six more would have been showing off.\n\nAnd the linter is clean in both brands.\n\nTransition: which leaves one thing to say.\n</Notes>\n"
+          "source": "---\nlayout: chart\ntitle: This deck used 23 of the 63 layouts and every diagram component in the kit\neyebrow: The evidence, once more\nbudget: 30s\n---\n\n<Progress\n  items={[\n    { label: 'Layouts used, of 63', value: 23, max: 63, unit: 'layouts', highlight: true },\n    { label: 'Diagram components used, of 7', value: 7, max: 7, unit: 'components' },\n    { label: 'Chart and figure components used, of 19', value: 10, max: 19, unit: 'components' },\n  ]}\n/>\n\n<Footnote>Counted against the catalogs in this repository. Lint reports no problems for this deck in either brand.</Footnote>\n\n<Notes>\nOne last piece of evidence, and it is the deck itself. Twenty-three of the sixty-three layouts. All seven diagram components. Ten of the nineteen chart and figure components.\n\nAnd the linter is clean in both brands.\n\nTransition: which leaves one thing to say.\n</Notes>\n"
         },
         {
           "id": "closing",
@@ -428,8 +428,16 @@
           "source": "---\nlayout: section\ntitle: Open\nnumber: 1\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nLaunch day, the plan, and who is speaking.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nThe talk opens: the cover, the plan for the next forty minutes and the person on stage.\n</Notes>\n"
         },
         {
-          "id": "title-full",
+          "id": "vision-storyboard",
           "number": 3,
+          "title": "A loaf crosses Old Town in 39 minutes",
+          "layout": "vision-storyboard",
+          "file": "decks/lookbook/slides/vision-storyboard.mdx",
+          "source": "---\nlayout: vision-storyboard\ntitle: A loaf crosses Old Town in 39 minutes\neyebrow: A Friday morning in Kestwick\nbudget: 50s\nreveal: true\nscenes:\n  - moment: '08:42'\n    action: Brightloaf packs the order\n    detail: Odile ties the same kraft bag she uses for customers at the counter.\n    image:\n      src: ../assets/scenes/vision-counter.jpg\n      alt: A grey-haired baker in a rust jumper and cream apron ties a kraft bag at her bakery counter.\n      focal: center 52%\n  - moment: '09:02'\n    action: Aoife crosses the canal\n    detail: The bag rides with other nearby orders in the cargo box.\n    image:\n      src: ../assets/scenes/vision-ride.jpg\n      alt: A rider wearing a teal jacket pedals a cargo bike over a stone canal bridge.\n  - moment: '09:21'\n    action: The loaf reaches the door\n    detail: The recipient takes the bag in the window she chose.\n    image:\n      src: ../assets/scenes/vision-door.jpg\n      alt: The teal-jacketed rider hands the tied kraft bag to a recipient at a sage-green door.\n---\n\n<Footnote>Illustrated scenario with generated photographs of fictional people.</Footnote>\n\n<Notes>\n`vision-storyboard` follows one object across three illustrated moments. In the bakery, you would barely know this was a delivery order. Odile ties a bag as she would for anyone standing across the counter. [click] Aoife collects it with nearby orders. They share the canal crossing and split near their doors. [click] Thirty-nine minutes after booking, the bag is in the recipient’s hands. Each stop runs on the ordinary rhythm of the people already there.\n</Notes>\n"
+        },
+        {
+          "id": "title-full",
+          "number": 4,
           "title": "Open Network opens today",
           "layout": "title",
           "file": "decks/lookbook/slides/title-full.mdx",
@@ -437,7 +445,7 @@
         },
         {
           "id": "title-center",
-          "number": 4,
+          "number": 5,
           "title": "Every shop, every street, same hour",
           "layout": "title",
           "file": "decks/lookbook/slides/title-center.mdx",
@@ -445,7 +453,7 @@
         },
         {
           "id": "agenda-plan",
-          "number": 5,
+          "number": 6,
           "title": "Four questions in forty minutes",
           "layout": "agenda",
           "file": "decks/lookbook/slides/agenda-plan.mdx",
@@ -453,7 +461,7 @@
         },
         {
           "id": "agenda-long",
-          "number": 6,
+          "number": 7,
           "title": "The launch day, hour by hour",
           "layout": "agenda",
           "file": "decks/lookbook/slides/agenda-long.mdx",
@@ -461,7 +469,7 @@
         },
         {
           "id": "bio-founder",
-          "number": 7,
+          "number": 8,
           "title": "Ines Kowalczyk, who presents",
           "layout": "bio",
           "file": "decks/lookbook/slides/bio-founder.mdx",
@@ -469,7 +477,7 @@
         },
         {
           "id": "agenda-current",
-          "number": 8,
+          "number": 9,
           "title": "Part three: the proof",
           "layout": "agenda",
           "file": "decks/lookbook/slides/agenda-current.mdx",
@@ -477,7 +485,7 @@
         },
         {
           "id": "section-numeral-small",
-          "number": 9,
+          "number": 10,
           "title": "The first hub, March 2022",
           "layout": "section",
           "file": "decks/lookbook/slides/section-numeral-small.mdx",
@@ -485,7 +493,7 @@
         },
         {
           "id": "bio-initials",
-          "number": 10,
+          "number": 11,
           "title": "Aoife Brennan, the first rider",
           "layout": "bio",
           "file": "decks/lookbook/slides/bio-initials.mdx",
@@ -493,7 +501,7 @@
         },
         {
           "id": "section-center",
-          "number": 11,
+          "number": 12,
           "title": "Why the last mile is a bike ride",
           "layout": "section",
           "file": "decks/lookbook/slides/section-center.mdx",
@@ -501,7 +509,7 @@
         },
         {
           "id": "section-photo",
-          "number": 12,
+          "number": 13,
           "title": "The hub on the square",
           "layout": "section",
           "file": "decks/lookbook/slides/section-photo.mdx",
@@ -509,7 +517,7 @@
         },
         {
           "id": "part-say",
-          "number": 13,
+          "number": 14,
           "title": "Say one thing",
           "layout": "section",
           "file": "decks/lookbook/slides/part-say.mdx",
@@ -517,7 +525,7 @@
         },
         {
           "id": "statement-claim",
-          "number": 14,
+          "number": 15,
           "title": "A shop should promise the same hour without owning a van",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-claim.mdx",
@@ -525,7 +533,7 @@
         },
         {
           "id": "definition-loop",
-          "number": 15,
+          "number": 16,
           "title": "A loop is the unit Flock plans",
           "layout": "definition",
           "file": "decks/lookbook/slides/definition-loop.mdx",
@@ -533,7 +541,7 @@
         },
         {
           "id": "definition-drop",
-          "number": 16,
+          "number": 17,
           "title": "Every figure from here counts one unit: the drop",
           "layout": "definition",
           "file": "decks/lookbook/slides/definition-drop.mdx",
@@ -541,7 +549,7 @@
         },
         {
           "id": "quote-portrait",
-          "number": 17,
+          "number": 18,
           "title": "Bread that arrives warm is a different product",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-portrait.mdx",
@@ -549,7 +557,7 @@
         },
         {
           "id": "image-bottom",
-          "number": 18,
+          "number": 19,
           "title": "A rider stops at nine doors an hour",
           "layout": "image",
           "file": "decks/lookbook/slides/image-bottom.mdx",
@@ -557,7 +565,7 @@
         },
         {
           "id": "statement-center",
-          "number": 19,
+          "number": 20,
           "title": "Vans are leaving the old towns, deliveries are not",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-center.mdx",
@@ -565,7 +573,7 @@
         },
         {
           "id": "quote-plain",
-          "number": 20,
+          "number": 21,
           "title": "A sample used to wait for the van",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-plain.mdx",
@@ -573,7 +581,7 @@
         },
         {
           "id": "image-left",
-          "number": 21,
+          "number": 22,
           "title": "We deliver until nine at night",
           "layout": "image",
           "file": "decks/lookbook/slides/image-left.mdx",
@@ -581,7 +589,7 @@
         },
         {
           "id": "statement-giant",
-          "number": 22,
+          "number": 23,
           "title": "Same hour, no van",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-giant.mdx",
@@ -589,7 +597,7 @@
         },
         {
           "id": "image-right",
-          "number": 23,
+          "number": 24,
           "title": "Every parcel leaves the hub in its own slot",
           "layout": "image",
           "file": "decks/lookbook/slides/image-right.mdx",
@@ -597,7 +605,7 @@
         },
         {
           "id": "statement-quote",
-          "number": 24,
+          "number": 25,
           "title": "The Old Town got its streets back and its shops kept their customers",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-quote.mdx",
@@ -605,7 +613,7 @@
         },
         {
           "id": "quote-accent",
-          "number": 25,
+          "number": 26,
           "title": "We stopped turning down same-day orders at noon",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-accent.mdx",
@@ -613,7 +621,7 @@
         },
         {
           "id": "image-alone",
-          "number": 26,
+          "number": 27,
           "title": "The van stops here, the bike rides on",
           "layout": "image",
           "file": "decks/lookbook/slides/image-alone.mdx",
@@ -621,7 +629,7 @@
         },
         {
           "id": "part-explain",
-          "number": 27,
+          "number": 28,
           "title": "Explain",
           "layout": "section",
           "file": "decks/lookbook/slides/part-explain.mdx",
@@ -629,7 +637,7 @@
         },
         {
           "id": "default-heading",
-          "number": 28,
+          "number": 29,
           "title": "A drop is one parcel, one door, one promised window",
           "layout": "default",
           "file": "decks/lookbook/slides/default-heading.mdx",
@@ -637,7 +645,7 @@
         },
         {
           "id": "content-text",
-          "number": 29,
+          "number": 30,
           "title": "A hub is a shop front, not a warehouse",
           "layout": "content",
           "file": "decks/lookbook/slides/content-text.mdx",
@@ -645,7 +653,7 @@
         },
         {
           "id": "split-photo-right",
-          "number": 30,
+          "number": 31,
           "title": "Riders know their streets by name",
           "layout": "split",
           "file": "decks/lookbook/slides/split-photo-right.mdx",
@@ -653,7 +661,7 @@
         },
         {
           "id": "cards-three",
-          "number": 31,
+          "number": 32,
           "title": "Open Network does three things for a shop",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-three.mdx",
@@ -661,15 +669,23 @@
         },
         {
           "id": "features-network",
-          "number": 32,
+          "number": 33,
           "title": "One network covers every part of the drop",
           "layout": "features",
           "file": "decks/lookbook/slides/features-network.mdx",
           "source": "---\nlayout: features\ntitle: One network covers every part of the drop\nsurface: inverse\nfeatures:\n  - icon: plug\n    title: Booking API\n  - icon: clock\n    title: Delivery windows\n  - icon: route\n    title: Flock batching\n  - icon: bike\n    title: Rider app\n  - icon: map-pin\n    title: Live tracking\n  - icon: chart-bar\n    title: Insights\nbudget: 30s\n---\n\n<Notes>\n`features` with six titles and no details, in three open columns on inverse; use it for a capability overview that needs no paragraphs.\nSix parts of one network: the Booking API, Delivery windows, Flock batching, the Rider app, Live tracking and Insights. Open Network puts all six behind one API.\n</Notes>\n"
         },
         {
+          "id": "pitch-analogy",
+          "number": 34,
+          "title": "Parcel delivery is moving to a hub network",
+          "layout": "content",
+          "file": "decks/lookbook/slides/pitch-analogy.mdx",
+          "source": "---\nlayout: content\ntitle: Parcel delivery is moving to a hub network\neyebrow: Pitch by analogy\nbudget: 45s\n---\n\n### Airlines pooled passengers at hubs\n\nA direct flight needs enough passengers for one city pair. At a hub, passengers from many origins fill the same onward flight.\n\n<Aside>\n\n<Step at={1} effect=\"fade\">\n\n### Wrenhaul pools parcels at hubs\n\nNearby drops share a rider and a bike loop.\n\n</Step>\n\n<Step at={2} effect=\"fade\">\n\n### Open assumption\n\nCan each new hub reach 250 drops a day?\n\n</Step>\n\n</Aside>\n\n<Footnote>Source for the threshold: Wrenhaul’s hub model.</Footnote>\n\n<Notes>\nPitch by analogy using `content` and two `<Step>` reveals in the aside. Start with a familiar change: airline hubs pool passengers, which makes more city pairs viable. [click] Wrenhaul pools nearby drops so one rider can make nine stops on the same loop. [click] The relevant assumption is density. If a hub cannot reach roughly 250 drops a day, pooling will not pay for the hub.\n</Notes>\n"
+        },
+        {
           "id": "default-list",
-          "number": 33,
+          "number": 35,
           "title": "Flock makes four decisions every 90 seconds",
           "layout": "default",
           "file": "decks/lookbook/slides/default-list.mdx",
@@ -677,7 +693,7 @@
         },
         {
           "id": "split-photo-left-bleed",
-          "number": 34,
+          "number": 36,
           "title": "People are home when the drop arrives",
           "layout": "split",
           "file": "decks/lookbook/slides/split-photo-left-bleed.mdx",
@@ -685,7 +701,7 @@
         },
         {
           "id": "steps-loop",
-          "number": 35,
+          "number": 37,
           "title": "Every loop runs the same five steps",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-loop.mdx",
@@ -693,7 +709,7 @@
         },
         {
           "id": "content-aside",
-          "number": 36,
+          "number": 38,
           "title": "A loop is the unit we plan, staff and cost",
           "layout": "content",
           "file": "decks/lookbook/slides/content-aside.mdx",
@@ -701,7 +717,7 @@
         },
         {
           "id": "cards-four-reveal",
-          "number": 37,
+          "number": 39,
           "title": "Riders are staff, with everything that comes with it",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-four-reveal.mdx",
@@ -709,7 +725,7 @@
         },
         {
           "id": "split-screen",
-          "number": 38,
+          "number": 40,
           "title": "The rider sees one stop at a time",
           "layout": "split",
           "file": "decks/lookbook/slides/split-screen.mdx",
@@ -717,7 +733,7 @@
         },
         {
           "id": "bento-hub",
-          "number": 39,
+          "number": 41,
           "title": "One hub, Old Town, seen from four sides",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-hub.mdx",
@@ -725,7 +741,7 @@
         },
         {
           "id": "steps-current",
-          "number": 40,
+          "number": 42,
           "title": "A new merchant sends a first drop in four steps",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-current.mdx",
@@ -733,7 +749,7 @@
         },
         {
           "id": "split-lottie",
-          "number": 41,
+          "number": 43,
           "title": "Every handover ends with a check",
           "layout": "split",
           "file": "decks/lookbook/slides/split-lottie.mdx",
@@ -741,7 +757,7 @@
         },
         {
           "id": "cards-accent",
-          "number": 42,
+          "number": 44,
           "title": "Three windows cover every kind of shop",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-accent.mdx",
@@ -749,7 +765,7 @@
         },
         {
           "id": "features-operations",
-          "number": 43,
+          "number": 45,
           "title": "Every drop has the tools to reach the door",
           "layout": "features",
           "file": "decks/lookbook/slides/features-operations.mdx",
@@ -757,7 +773,7 @@
         },
         {
           "id": "bento-reveal",
-          "number": 44,
+          "number": 46,
           "title": "Open Network opens in six cities today",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-reveal.mdx",
@@ -765,7 +781,7 @@
         },
         {
           "id": "steps-three",
-          "number": 45,
+          "number": 47,
           "title": "A new hub takes three steps and five months",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-three.mdx",
@@ -773,7 +789,7 @@
         },
         {
           "id": "bento-inverse",
-          "number": 46,
+          "number": 48,
           "title": "A rider's day is six loops",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-inverse.mdx",
@@ -781,7 +797,7 @@
         },
         {
           "id": "do-dont-handover",
-          "number": 47,
+          "number": 49,
           "title": "A handover ends with the recipient",
           "layout": "do-dont",
           "file": "decks/lookbook/slides/do-dont-handover.mdx",
@@ -789,7 +805,7 @@
         },
         {
           "id": "do-dont-routing",
-          "number": 48,
+          "number": 50,
           "title": "Keep the promise when a drop will not fit",
           "layout": "do-dont",
           "file": "decks/lookbook/slides/do-dont-routing.mdx",
@@ -797,7 +813,7 @@
         },
         {
           "id": "exercise-window",
-          "number": 49,
+          "number": 51,
           "title": "Choose the window your customers need",
           "layout": "exercise",
           "file": "decks/lookbook/slides/exercise-window.mdx",
@@ -805,7 +821,7 @@
         },
         {
           "id": "exercise-first-drop",
-          "number": 50,
+          "number": 52,
           "title": "Plan Brightloaf's first Open Network drop",
           "layout": "exercise",
           "file": "decks/lookbook/slides/exercise-first-drop.mdx",
@@ -813,7 +829,7 @@
         },
         {
           "id": "faq-booking",
-          "number": 51,
+          "number": 53,
           "title": "Any shop can book a drop today",
           "layout": "faq",
           "file": "decks/lookbook/slides/faq-booking.mdx",
@@ -821,7 +837,7 @@
         },
         {
           "id": "faq-windows",
-          "number": 52,
+          "number": 54,
           "title": "Every window has a route to the door",
           "layout": "faq",
           "file": "decks/lookbook/slides/faq-windows.mdx",
@@ -829,7 +845,7 @@
         },
         {
           "id": "quiz-same-hour",
-          "number": 53,
+          "number": 55,
           "title": "Do most recipients choose the same-hour window?",
           "layout": "quiz",
           "file": "decks/lookbook/slides/quiz-same-hour.mdx",
@@ -837,7 +853,7 @@
         },
         {
           "id": "quiz-routing",
-          "number": 54,
+          "number": 56,
           "title": "What share of drops go on a bike loop?",
           "layout": "quiz",
           "file": "decks/lookbook/slides/quiz-routing.mdx",
@@ -845,7 +861,7 @@
         },
         {
           "id": "quiz-loop",
-          "number": 55,
+          "number": 57,
           "title": "How many drops can Flock put in one loop?",
           "layout": "quiz",
           "file": "decks/lookbook/slides/quiz-loop.mdx",
@@ -853,7 +869,7 @@
         },
         {
           "id": "part-compare",
-          "number": 56,
+          "number": 58,
           "title": "Compare and decide",
           "layout": "section",
           "file": "decks/lookbook/slides/part-compare.mdx",
@@ -861,7 +877,7 @@
         },
         {
           "id": "comparison-modes",
-          "number": 57,
+          "number": 59,
           "title": "A bike beats a van on every row but one",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-modes.mdx",
@@ -869,7 +885,7 @@
         },
         {
           "id": "shift-window",
-          "number": 58,
+          "number": 60,
           "title": "Shops move from next day to the same hour",
           "layout": "shift",
           "file": "decks/lookbook/slides/shift-window.mdx",
@@ -877,15 +893,23 @@
         },
         {
           "id": "matrix-market",
-          "number": 59,
+          "number": 61,
           "title": "Only Wrenhaul is fast and cheap at once",
           "layout": "matrix",
           "file": "decks/lookbook/slides/matrix-market.mdx",
           "source": "---\nlayout: matrix\ntitle: Only Wrenhaul is fast and cheap at once\neyebrow: The market\nreveal: true\nbudget: 1m\nx:\n  low: Costs more\n  high: Costs less\ny:\n  low: Next day\n  high: Within the hour\nquadrants:\n  - Fast but costly\n  - Fast and affordable\n  - Slow and costly\n  - Cheap but slow\nitems:\n  - name: Gig apps\n    x: 16\n    y: 76\n  - name: Own van\n    x: 26\n    y: 40\n  - name: Van couriers\n    x: 56\n    y: 24\n  - name: Parcel lockers\n    x: 82\n    y: 18\n  - name: Wrenhaul\n    x: 74\n    y: 78\n    us: true\n---\n\nGig apps sell the hour at €7.50 a drop; lockers are cheaper, but the recipient walks. We deliver within the hour for €3.10.\n\n<Footnote>Placed by cost per drop and delivery window; costs from our merchant survey, n = 112.</Footnote>\n\n<Notes>\n`matrix` with captions in all four quadrants, the subject marked `us: true` and `reveal: true`; use it when two trade-offs frame a market.\n[click] Four ways a shop delivers today. Each buys speed with money, or saves money and loses the day.\n[click] Then us: within the hour, at €3.10 a drop. The top right is empty without us.\n</Notes>\n"
         },
         {
+          "id": "strategy-canvas",
+          "number": 62,
+          "title": "Wrenhaul trades range for a reliable hour",
+          "layout": "strategy-canvas",
+          "file": "decks/lookbook/slides/strategy-canvas.mdx",
+          "source": "---\nlayout: strategy-canvas\ntitle: Wrenhaul trades range for a reliable hour\neyebrow: What we choose to offer\nbudget: 55s\nreveal: true\nfactors: [Speed, Reliable window, Lower price, Old Town access, Parcel weight, Wide radius]\nalternatives:\n  - name: Van couriers\n    levels: [2, 3, 3, 1, 5, 5]\n  - name: Gig apps\n    levels: [4, 3, 1, 3, 2, 3]\noffer:\n  name: Wrenhaul\n  levels: [5, 5, 4, 5, 2, 1]\nemphasize: A predictable hour within dense districts\ntradeoff: Heavy loads and far-out drops\n---\n\n<Footnote>Illustrative buyer offering, scored from 1 (low) to 5 (high).</Footnote>\n\n<Notes>\n`strategy-canvas` compares the way alternative providers serve buying factors on the same qualitative scale. Van couriers can carry heavy parcels farther. Gig apps move quickly where there is someone nearby. [click] Wrenhaul puts its effort into a window shops can promise and a route riders can use inside the old town. [click] That leaves heavy and outlying drops to other services. A plan that tried to lead on every factor would take density away from the hour.\n</Notes>\n"
+        },
+        {
           "id": "table-hubs",
-          "number": 60,
+          "number": 63,
           "title": "Density sets the cost of a drop",
           "layout": "table",
           "file": "decks/lookbook/slides/table-hubs.mdx",
@@ -893,7 +917,7 @@
         },
         {
           "id": "comparison-before-after",
-          "number": 61,
+          "number": 64,
           "title": "Pantry Lane now delivers at half the cost",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-before-after.mdx",
@@ -901,7 +925,7 @@
         },
         {
           "id": "pricing-break-even",
-          "number": 62,
+          "number": 65,
           "title": "Above 950 drops a month, the hub plan wins",
           "layout": "pricing",
           "file": "decks/lookbook/slides/pricing-break-even.mdx",
@@ -909,7 +933,7 @@
         },
         {
           "id": "shift-cost",
-          "number": 63,
+          "number": 66,
           "title": "A drop costs half of what a van costs",
           "layout": "shift",
           "file": "decks/lookbook/slides/shift-cost.mdx",
@@ -917,15 +941,23 @@
         },
         {
           "id": "matrix-cities",
-          "number": 64,
+          "number": 67,
           "title": "Saltby is the next city to open",
           "layout": "matrix",
           "file": "decks/lookbook/slides/matrix-cities.mdx",
           "source": "---\nlayout: matrix\ntitle: Saltby is the next city to open\neyebrow: Where we go next\nbudget: 45s\nx:\n  low: Spread out\n  high: Dense centre\ny:\n  low: Council wary\n  high: Council backing\nitems:\n  - name: Saltby\n    x: 82\n    y: 82\n    us: true\n  - name: Ardwen\n    x: 68\n    y: 58\n  - name: Fallowmere\n    x: 58\n    y: 72\n  - name: Tarnock\n    x: 72\n    y: 38\n  - name: Wexholm\n    x: 18\n    y: 64\n  - name: Brindlemoor\n    x: 14\n    y: 26\n---\n\nSaltby has the densest centre of the six and the council keenest to close it to vans. It opens in April; Ardwen and Fallowmere follow in May, Tarnock in June.\n\n<Footnote>Placed by the hubs team from city density data and meetings with each council, 2026.</Footnote>\n\n<Notes>\n`matrix` without quadrant captions, as a decision between named candidates; use it when the axes say enough and the corners need no names.\nTwo things decide a city: how many drops fit in a square kilometre, and whether the council is with us. Saltby leads on both. Wexholm and Brindlemoor wait.\n</Notes>\n"
         },
         {
+          "id": "opportunity-map",
+          "number": 68,
+          "title": "Open on Saltby’s market side of the river",
+          "layout": "opportunity-map",
+          "file": "decks/lookbook/slides/opportunity-map.mdx",
+          "source": "---\nlayout: opportunity-map\ntitle: Open on Saltby’s market side of the river\neyebrow: Where the first hub belongs\nbudget: 55s\nreveal: true\nmap:\n  src: ../assets/maps/saltby-expansion.svg\n  alt: Saltby’s dense western market streets meet a tidal river with one short bridge to Mill Green on the eastern bank.\ndistricts:\n  - label: Market Row\n    point: { x: 28, y: 21 }\n  - label: Mill Green\n    point: { x: 74, y: 25 }\n  - label: South Marsh\n    point: { x: 14, y: 79 }\nproposed:\n  label: Quayside\n  point: { x: 38, y: 58 }\n  detail: Reach the market’s shops from a single short loop on the west bank.\nconstraint:\n  label: One short crossing\n  point: { x: 53, y: 44 }\n  detail: Delay Mill Green until bridge queues fit comfortably inside the hour.\nroute:\n  - { x: 38, y: 58 }\n  - { x: 32, y: 55 }\n  - { x: 22, y: 48 }\n  - { x: 22, y: 30 }\n  - { x: 28, y: 21 }\n---\n\n<Footnote>Illustrative district map for the Saltby expansion case.</Footnote>\n\n<Notes>\n`opportunity-map` starts with the districts and crossing so the route can be read against geography. The shops that can form a short first loop sit on the west bank. [click] Put the first hub at Quayside and collect along the market route. [click] The short bridge is the constraint. Test queues there before counting Mill Green orders as part of the opening loop. Its proposed autumn hub is a separate decision.\n</Notes>\n"
+        },
+        {
           "id": "quadrants-network",
-          "number": 65,
+          "number": 69,
           "title": "Density is our strength and our constraint",
           "layout": "quadrants",
           "file": "decks/lookbook/slides/quadrants-network.mdx",
@@ -933,7 +965,7 @@
         },
         {
           "id": "quadrants-next-city",
-          "number": 66,
+          "number": 70,
           "title": "Open the next city around a dense hub",
           "layout": "quadrants",
           "file": "decks/lookbook/slides/quadrants-next-city.mdx",
@@ -941,7 +973,7 @@
         },
         {
           "id": "pricing-plans",
-          "number": 67,
+          "number": 71,
           "title": "Every plan is a price per drop, with no van",
           "layout": "pricing",
           "file": "decks/lookbook/slides/pricing-plans.mdx",
@@ -949,7 +981,7 @@
         },
         {
           "id": "table-plans",
-          "number": 68,
+          "number": 72,
           "title": "Three ways to pay, and each is a price per drop",
           "layout": "table",
           "file": "decks/lookbook/slides/table-plans.mdx",
@@ -957,7 +989,7 @@
         },
         {
           "id": "comparison-plans",
-          "number": 69,
+          "number": 73,
           "title": "Most merchants should start on Open Network",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-plans.mdx",
@@ -965,7 +997,7 @@
         },
         {
           "id": "table-cities",
-          "number": 70,
+          "number": 74,
           "title": "Every city is on time above 96%",
           "layout": "table",
           "file": "decks/lookbook/slides/table-cities.mdx",
@@ -973,7 +1005,7 @@
         },
         {
           "id": "risks-launch",
-          "number": 71,
+          "number": 75,
           "title": "Missed webhooks are the risk that gates launch",
           "layout": "risks",
           "file": "decks/lookbook/slides/risks-launch.mdx",
@@ -981,15 +1013,23 @@
         },
         {
           "id": "risks-expansion",
-          "number": 72,
+          "number": 76,
           "title": "Density is the risk behind four new cities",
           "layout": "risks",
           "file": "decks/lookbook/slides/risks-expansion.mdx",
           "source": "---\nlayout: risks\ntitle: Density is the risk behind four new cities\neyebrow: Expansion decision\nsurface: inverse\nbudget: 50s\nrisks:\n  - name: Thin early demand\n    likelihood: medium\n    impact: high\n    mitigation: Sign anchor shops before the lease\n    highlight: true\n  - name: Premises delayed\n    likelihood: medium\n    impact: medium\n    mitigation: Keep a second site in each city\n  - name: Rider vacancies\n    likelihood: high\n    impact: medium\n    mitigation: Train with Aoife before opening\n  - name: Council reversal\n    likelihood: low\n    impact: high\n    mitigation: Agree street access before hiring\n  - name: Bike downtime\n    likelihood: medium\n    impact: low\n    mitigation: Hold spare bikes at every new hub\n---\n\nSaltby, Ardwen, Fallowmere and Tarnock each need a dense first catchment.\n\n<Footnote>Planning assessment for the four 2027 cities; levels are qualitative judgements.</Footnote>\n\n<Notes>\n`risks` with five rows, context and footnote on inverse; use it when each risk needs the same two levels and one concrete action.\nA hub pays off above about 250 drops a day. We sign anchor shops before signing a lease. The remaining risks have an action too, but density is the one that could undermine all four openings.\n</Notes>\n"
         },
         {
+          "id": "investment-committee",
+          "number": 77,
+          "title": "Approve an €8M lead for expansion",
+          "layout": "content",
+          "file": "decks/lookbook/slides/investment-committee.mdx",
+          "source": "---\nlayout: content\ntitle: Approve an €8M lead for expansion\neyebrow: Saltglass investment committee\nbudget: 1m\n---\n\n**Thesis.** Dense hubs make same-hour delivery cheaper. Lead Wrenhaul’s €14M round to open six hubs across four new cities.\n\n### Why invest\n\n- **Demand is growing.** Monthly drops tripled to 182,000 in October.\n- **Full loops lower cost.** The median loop carries nine drops. Cost per drop fell from €3.40 to €2.34 in a year.\n\n<Aside>\n### Reconsider if\n\nNew hubs may take too long to fill, erasing the cost advantage.\n\nReview the expansion if either of the first two hubs averages fewer than six drops per loop at week 12.\n</Aside>\n\n<Footnote>October 2026 operating report. Saltglass’s review threshold is illustrative.</Footnote>\n\n<Notes>\nInvestment committee decision using `content` with an aside. Put the commitment to a vote: €8M of the €14M round. The demand and cost evidence justify testing the thesis in more cities. The strongest objection is that the density of the existing network may not carry over. Agree to revisit expansion if either of the first two new hubs averages fewer than six drops per loop at week twelve.\n</Notes>\n"
+        },
+        {
           "id": "part-numbers",
-          "number": 73,
+          "number": 78,
           "title": "Prove it with a number",
           "layout": "section",
           "file": "decks/lookbook/slides/part-numbers.mdx",
@@ -997,7 +1037,7 @@
         },
         {
           "id": "stats-traction",
-          "number": 74,
+          "number": 79,
           "title": "Revenue grew 3.2× in a year, faster than the drops",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-traction.mdx",
@@ -1005,7 +1045,7 @@
         },
         {
           "id": "chart-bignumber",
-          "number": 75,
+          "number": 80,
           "title": "2.4 million drops since the first loaf in 2022",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-bignumber.mdx",
@@ -1013,7 +1053,7 @@
         },
         {
           "id": "equation-arr",
-          "number": 76,
+          "number": 81,
           "title": "Our revenue is drops times €3.10",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-arr.mdx",
@@ -1021,7 +1061,7 @@
         },
         {
           "id": "stats-three",
-          "number": 77,
+          "number": 82,
           "title": "Riders stay because the job is a job",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-three.mdx",
@@ -1029,7 +1069,7 @@
         },
         {
           "id": "chart-comparison",
-          "number": 78,
+          "number": 83,
           "title": "A drop costs us €2.34, a euro less than a year ago",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-comparison.mdx",
@@ -1037,7 +1077,7 @@
         },
         {
           "id": "chart-waterfall",
-          "number": 79,
+          "number": 84,
           "title": "Batching cut €0.58 a drop, more than any other change",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-waterfall.mdx",
@@ -1045,15 +1085,23 @@
         },
         {
           "id": "quiz-cost",
-          "number": 80,
+          "number": 85,
           "title": "What cut the most cost from each drop?",
           "layout": "quiz",
           "file": "decks/lookbook/slides/quiz-cost.mdx",
           "source": "---\nlayout: quiz\ntitle: What cut the most cost from each drop?\neyebrow: From €3.40 to €2.34\nsurface: accent\noptions:\n  - Denser hubs\n  - Flock batching\n  - Faster handovers\n  - Lower rider pay\nanswer: B\nexplanation: Flock saved €0.58 a drop; rider pay rose while total cost fell.\nreveal: false\nbudget: 30s\n---\n\nThe October cost bridge gives one lever the largest saving.\n\n<Footnote>Cost per drop, October 2025 to October 2026; rider pay added €0.15.</Footnote>\n\n<Notes>\n`quiz` with four options, an explanation and `reveal: false` on the accent surface; use it as an answered recap.\nFlock batching is the largest saving at fifty-eight cents a drop. Denser hubs save forty-one cents and faster handovers twenty-two. Rider pay rose by fifteen cents; the savings came from the work around the rider.\n</Notes>\n"
         },
         {
+          "id": "chart-profit-pool",
+          "number": 86,
+          "title": "Pharmacies contribute more profit than grocers",
+          "layout": "chart",
+          "file": "decks/lookbook/slides/chart-profit-pool.mdx",
+          "source": "---\nlayout: chart\ntitle: Pharmacies contribute more profit than grocers\neyebrow: Where contribution comes from\nbudget: 1m\n---\n\n<ProfitPool\n  data={[\n    { segment: 'Grocers', revenue: 214396, margin: 19 },\n    { segment: 'Pharmacies', revenue: 118482, margin: 45 },\n    { segment: 'Bakeries', revenue: 95914, margin: 23 },\n    { segment: 'Parcel partners', revenue: 78988, margin: 20 },\n    { segment: 'Other shops', revenue: 56420, margin: 11.2 },\n  ]}\n  highlight=\"Pharmacies\"\n  format={{ style: 'currency', currency: 'EUR', digits: 1 }}\n  buildFrom={1}\n  caption=\"October 2026 contribution profit (area), from revenue (width) and contribution margin (height)\"\n  source=\"Wrenhaul operating report, October 2026\"\n/>\n\n<Notes>\n`chart` with a `<ProfitPool>` and `buildFrom`. Start with the width of each segment's sales before bringing in margin and spotlighting profit.\nStart with the widths. Of every euro we brought in during October, 38 cents came from grocers and 21 from pharmacies. [click] Give those widths a height. Pharmacies keep 45 cents in contribution from each euro they bring in, compared with 19 cents for grocers. [click] Read the area as profit. The narrower pharmacy segment made about €53,000, ahead of grocers at €41,000. That earns pharmacies a place in the first sales call for each new hub.\n</Notes>\n"
+        },
+        {
           "id": "equation-market",
-          "number": 81,
+          "number": 87,
           "title": "The market is €3.0B a year in 46 cities",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-market.mdx",
@@ -1061,7 +1109,7 @@
         },
         {
           "id": "market-reachable",
-          "number": 82,
+          "number": 88,
           "title": "Kestwick handles a third of our daily drops",
           "layout": "market",
           "file": "decks/lookbook/slides/market-reachable.mdx",
@@ -1069,7 +1117,7 @@
         },
         {
           "id": "market-first",
-          "number": 83,
+          "number": 89,
           "title": "We target €18.6M inside a €1.0B market",
           "layout": "market",
           "file": "decks/lookbook/slides/market-first.mdx",
@@ -1077,7 +1125,7 @@
         },
         {
           "id": "content-statrow",
-          "number": 84,
+          "number": 90,
           "title": "Every number moved the right way this year",
           "layout": "content",
           "file": "decks/lookbook/slides/content-statrow.mdx",
@@ -1085,7 +1133,7 @@
         },
         {
           "id": "split-pictogram",
-          "number": 85,
+          "number": 91,
           "title": "Given the choice, people pick the hour",
           "layout": "split",
           "file": "decks/lookbook/slides/split-pictogram.mdx",
@@ -1093,7 +1141,7 @@
         },
         {
           "id": "stats-two",
-          "number": 86,
+          "number": 92,
           "title": "Fast and clean are the same promise",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-two.mdx",
@@ -1101,7 +1149,7 @@
         },
         {
           "id": "chart-progress",
-          "number": 87,
+          "number": 93,
           "title": "€8M of the €14M is committed",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-progress.mdx",
@@ -1109,7 +1157,7 @@
         },
         {
           "id": "content-sparkline",
-          "number": 88,
+          "number": 94,
           "title": "Rider turnover fell every month this year",
           "layout": "content",
           "file": "decks/lookbook/slides/content-sparkline.mdx",
@@ -1117,7 +1165,7 @@
         },
         {
           "id": "equation-loop",
-          "number": 89,
+          "number": 95,
           "title": "Every loop earns €6.84 before overheads",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-loop.mdx",
@@ -1125,7 +1173,7 @@
         },
         {
           "id": "part-charts",
-          "number": 90,
+          "number": 96,
           "title": "Show the pattern",
           "layout": "section",
           "file": "decks/lookbook/slides/part-charts.mdx",
@@ -1133,7 +1181,7 @@
         },
         {
           "id": "chart-line",
-          "number": 91,
+          "number": 97,
           "title": "Drops tripled in a year, and the Open Network beta bent the curve",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-line.mdx",
@@ -1141,7 +1189,7 @@
         },
         {
           "id": "chart-bar",
-          "number": 92,
+          "number": 98,
           "title": "A rider makes 9.4 stops an hour, nearly twice a merchant's own van",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-bar.mdx",
@@ -1149,7 +1197,7 @@
         },
         {
           "id": "split-donut",
-          "number": 93,
+          "number": 99,
           "title": "Two kinds of shop pay 59%",
           "layout": "split",
           "file": "decks/lookbook/slides/split-donut.mdx",
@@ -1157,7 +1205,7 @@
         },
         {
           "id": "chart-area",
-          "number": 94,
+          "number": 100,
           "title": "Same-hour drops tripled this year, faster than any other window",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-area.mdx",
@@ -1165,7 +1213,7 @@
         },
         {
           "id": "chart-slope",
-          "number": 95,
+          "number": 101,
           "title": "The three newest cities closed the gap by October",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-slope.mdx",
@@ -1173,7 +1221,7 @@
         },
         {
           "id": "chart-funnel",
-          "number": 96,
+          "number": 102,
           "title": "Four in ten sign-ups never connect their shop",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-funnel.mdx",
@@ -1181,7 +1229,7 @@
         },
         {
           "id": "chart-table",
-          "number": 97,
+          "number": 103,
           "title": "Pharmacies grew fastest, four times in a year",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-table.mdx",
@@ -1189,7 +1237,7 @@
         },
         {
           "id": "chart-scatter",
-          "number": 98,
+          "number": 104,
           "title": "The denser the hub, the cheaper the drop",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-scatter.mdx",
@@ -1197,15 +1245,31 @@
         },
         {
           "id": "chart-heatmap",
-          "number": 99,
+          "number": 105,
           "title": "Friday from four to six is the busiest two hours of the week",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-heatmap.mdx",
           "source": "---\nlayout: chart\ntitle: Friday from four to six is the busiest two hours of the week\neyebrow: When Kestwick orders\nbudget: 45s\n---\n\nimport load from '../data/kestwick-load.csv';\n\n<Heatmap\n  data={load}\n  x=\"band\"\n  y=\"day\"\n  value=\"drops\"\n  highlight={{ x: '16–18', y: 'Fri' }}\n  scale={['Quiet', 'Busy']}\n  caption=\"Average drops per two-hour band, Kestwick, October 2026\"\n  source=\"Wrenhaul operating report, October 2026\"\n/>\n\n<Notes>\n`chart` with a `<Heatmap>` of weekday by time, one cell outlined; use it for a pattern across two dimensions.\nRead it like a rota. Every weekday builds to the late afternoon, and Friday from four to six is the peak of the week: 510 drops on average, from offices and households ordering for the weekend. Saturday is the exception: it peaks at lunchtime and is quiet by six. We roster riders to this picture.\n</Notes>\n"
         },
         {
+          "id": "chart-retention-cohorts",
+          "number": 106,
+          "title": "Month-three retention rose from 82% to 91%",
+          "layout": "chart",
+          "file": "decks/lookbook/slides/chart-retention-cohorts.mdx",
+          "source": "---\nlayout: chart\ntitle: Month-three retention rose from 82% to 91%\neyebrow: Merchant signup cohorts\nsurface: inverse\nbudget: 1m\n---\n\n<RetentionCohorts\n  data={[\n    { cohort: 'April', counts: [34, 31, 29, 28, 27, 26, 25] },\n    { cohort: 'May', counts: [36, 34, 32, 31, 30, 29] },\n    { cohort: 'June', counts: [40, 38, 36, 35, 34] },\n    { cohort: 'July', counts: [47, 45, 44, 43] },\n    { cohort: 'August', counts: [52, 50, 49] },\n    { cohort: 'September', counts: [61, 59] },\n  ].flatMap(({ cohort, counts: [size, ...later] }) => [size, ...later].map((count, age) => ({\n    cohort, size, age, retained: Math.round(count * 100 / size),\n  })))}\n  sizeLabel=\"Shops\"\n  focus={{ cohort: 'April', age: 3, from: 1 }}\n  caption=\"Share of each signup cohort still sending drops, through October 2026. Blank cells have yet to mature.\"\n  source=\"Wrenhaul operating report, October 2026\"\n/>\n\n<Notes>\n`chart` with `<RetentionCohorts>` and a two-step focus. Read across one signup cohort first, then compare cohorts at the same elapsed age.\nEach row starts with the shops that sent their first drop that month. The empty cells tell you how much time has passed since signup. [click] Start with April. Thirty-four shops joined, and 25 were still sending drops six months later. [click] Move down the month-three column. July reached 91 percent at the same age when April was at 82. That is a better test of our onboarding than comparing all six rows at their latest month.\n</Notes>\n"
+        },
+        {
+          "id": "chart-market-movement",
+          "number": 107,
+          "title": "Wrenhaul became more reliable as prices fell",
+          "layout": "chart",
+          "file": "decks/lookbook/slides/chart-market-movement.mdx",
+          "source": "---\nlayout: chart\ntitle: Wrenhaul became more reliable as prices fell\neyebrow: Price and on-time delivery\nbudget: 1m\n---\n\n<MarketMovement\n  data={[\n    { date: '2026-03-31', entity: 'Wrenhaul', price: 3.52, onTime: 94.5 },\n    { date: '2026-03-31', entity: 'Van couriers', price: 4.7, onTime: 87.5 },\n    { date: '2026-03-31', entity: 'Own vans', price: 6.15, onTime: 91.7 },\n    { date: '2026-03-31', entity: 'Gig apps', price: 7.2, onTime: 94.8 },\n    { date: '2026-06-30', entity: 'Wrenhaul', price: 3.31, onTime: 96.7 },\n    { date: '2026-06-30', entity: 'Van couriers', price: 4.8, onTime: 87.9 },\n    { date: '2026-06-30', entity: 'Own vans', price: 6.3, onTime: 92.1 },\n    { date: '2026-06-30', entity: 'Gig apps', price: 7.4, onTime: 95.2 },\n    { date: '2026-10-31', entity: 'Wrenhaul', price: 3.1, onTime: 97.8 },\n    { date: '2026-10-31', entity: 'Van couriers', price: 4.8, onTime: 88 },\n    { date: '2026-10-31', entity: 'Own vans', price: 6.4, onTime: 92.4 },\n    { date: '2026-10-31', entity: 'Gig apps', price: 7.5, onTime: 95.3 },\n  ]}\n  x=\"price\"\n  y=\"onTime\"\n  xLabel=\"Price per drop\"\n  yLabel=\"Drops inside their window\"\n  xFormat={{ style: 'currency', currency: 'EUR', digits: 1 }}\n  format=\"percent\"\n  highlight=\"Wrenhaul\"\n  buildFrom={1}\n  caption=\"Merchant price per drop and share of drops inside their window, March–October 2026\"\n  source=\"Wrenhaul operating report and merchant survey, October 2026\"\n/>\n\n<Notes>\n`chart` with a `<MarketMovement>` trail on two quantitative axes. Advance one observation date at a time while keeping peers visible at their measured positions.\nThe dot goes left as a drop gets cheaper and up as more drops reach the door inside their window. In March we were at €3.52 and 94.5 percent. [click] By June we were already on time more often than gig apps in this sample. [click] In October we were at €3.10 and 97.8 percent. Keep your eye on the start of Wrenhaul's trail. It tells you how far we moved with the same measures on both axes.\n</Notes>\n"
+        },
+        {
           "id": "dashboard-scale",
-          "number": 100,
+          "number": 108,
           "title": "Drops tripled while delivery costs fell",
           "layout": "dashboard",
           "file": "decks/lookbook/slides/dashboard-scale.mdx",
@@ -1213,7 +1277,7 @@
         },
         {
           "id": "dashboard-network",
-          "number": 101,
+          "number": 109,
           "title": "Riders deliver scale on time",
           "layout": "dashboard",
           "file": "decks/lookbook/slides/dashboard-network.mdx",
@@ -1221,7 +1285,7 @@
         },
         {
           "id": "part-how",
-          "number": 102,
+          "number": 110,
           "title": "Show how it works",
           "layout": "section",
           "file": "decks/lookbook/slides/part-how.mdx",
@@ -1229,7 +1293,7 @@
         },
         {
           "id": "conversation-window",
-          "number": 103,
+          "number": 111,
           "title": "The window is agreed before the rider leaves",
           "layout": "conversation",
           "file": "decks/lookbook/slides/conversation-window.mdx",
@@ -1237,15 +1301,23 @@
         },
         {
           "id": "conversation-handover",
-          "number": 104,
+          "number": 112,
           "title": "A handover ends with proof at the door",
           "layout": "conversation",
           "file": "decks/lookbook/slides/conversation-handover.mdx",
           "source": "---\nlayout: conversation\ntitle: A handover ends with proof at the door\neyebrow: Inside the loop\nsurface: accent\nreveal: true\nbudget: 50s\nmessages:\n  - name: Odile Ferrand\n    role: Brightloaf\n    side: left\n    text: The loaf is packed. What happens next?\n  - name: Wrenhaul\n    role: Merchant support\n    side: right\n    text: Flock batches drops into loops every 90 seconds.\n  - name: Odile Ferrand\n    role: Brightloaf\n    side: left\n    text: Can the recipient follow the rider, and how do I know the loaf reached the door?\n  - name: Wrenhaul\n    role: Merchant support\n    side: right\n    text: Track shows the rider and minutes to go. A check at the door sends drop.delivered back to the shop.\n---\n\nOne parcel, one door, one promised window.\n\n<Footnote>Illustrative exchange; Wrenhaul and Brightloaf Bakery are fictional.</Footnote>\n\n<Notes>\n`conversation` with four messages, speaker `role` labels and `reveal: true` on accent; use it to walk a room through an exchange, one turn per click.\n[click] The loaf is ready. [click] Flock batches the waiting drops every ninety seconds. [click] Odile asks about visibility and proof. [click] Track follows the rider; the check at the door closes the loop and sends the event back to the shop.\n</Notes>\n"
         },
         {
+          "id": "service-blueprint",
+          "number": 113,
+          "title": "The hub owns the rider handoff",
+          "layout": "service-blueprint",
+          "file": "decks/lookbook/slides/service-blueprint.mdx",
+          "source": "---\nlayout: service-blueprint\ntitle: The hub owns the rider handoff\neyebrow: Service blueprint\nreveal: true\nbudget: 50s\nstages:\n  - title: Book\n    customer: Picks a delivery window\n    frontstage: Shop confirms the window\n    backstage: Flock queues the drop\n    owner: Merchant support\n  - title: Batch\n    customer: Checks the promised time\n    frontstage: Tracking shows the window\n    backstage: Flock groups nearby drops\n    owner: Dispatch\n  - title: Ride\n    customer: Gets a rider ETA\n    frontstage: Rider heads to the door\n    backstage: Hub lead reprioritises stops\n    owner: Hub lead\n  - title: Confirm\n    customer: Accepts the parcel\n    frontstage: Rider records the handover\n    backstage: Proof closes the order\n    owner: Rider\nhandoff:\n  stage: 3\n  label: Loop to rider\n---\n\n<Notes>\n`service-blueprint` traces Wrenhaul's delivery across the line of visibility. Read the visible service across the top. [click] Show the work below the line that keeps the service moving. [click] When the loop becomes a rider's route, the hub lead can still change the stop order and is accountable for the handoff. The recipient sees the resulting ETA.\n</Notes>\n"
+        },
+        {
           "id": "diagram-architecture",
-          "number": 105,
+          "number": 114,
           "title": "Every drop crosses five systems on its way to a rider",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-architecture.mdx",
@@ -1253,15 +1325,23 @@
         },
         {
           "id": "code-sdk",
-          "number": 106,
+          "number": 115,
           "title": "Booking a drop is one call",
           "layout": "code",
           "file": "decks/lookbook/slides/code-sdk.mdx",
           "source": "---\nlayout: code\ntitle: Booking a drop is one call\neyebrow: Open Network SDK\nbudget: 1m\n---\n\n```ts title=\"checkout.ts\" {4-7|4-10}\nimport { Wrenhaul } from '@wrenhaul/sdk';\n\nconst wren = new Wrenhaul({ apiKey: process.env.WREN_KEY });\nconst drop = await wren.drops.create({\n  pickup: 'hub:old-town',\n  dropoff: '14 Weir Street',\n});\n\ndrop.status;   // 'batching'\ndrop.doorEta;  // '09:24', inside the same-hour window\n```\n\n<Notes>\n`code` with a fenced block, a `title` and stepped highlights (`{4-7|4-10}`); use it when the code has two points and you talk through them in order.\nThis is the whole integration for a shop's checkout. [click] One call with where the parcel is and where it goes; leave the window out and you get the same hour. [click] And what comes back with it: the drop is already waiting for the next batch, and you get the time it will be at the door, which you can show your customer straight away.\nIf asked: the API key comes from the Open Network console; test keys never reach a rider.\n</Notes>\n"
         },
         {
+          "id": "command-palette",
+          "number": 116,
+          "title": "One command opens the waiting drops",
+          "layout": "demo",
+          "file": "decks/lookbook/slides/command-palette.mdx",
+          "source": "---\nlayout: demo\ntitle: One command opens the waiting drops\neyebrow: Keyboard command palette\nbudget: 40s\n---\n\n<CommandDemo\n  workspace=\"Flock Dispatch · Old Town\"\n  context=\"Dispatch workspace\"\n  commands={[\n    {\n      name: 'Show waiting drops',\n      result: '3 drops waiting at Old Town',\n      rows: [\n        { label: 'WQ-214 · Brightloaf', detail: 'Due by 09:35' },\n        { label: 'WQ-219 · Pantry Lane', detail: 'Due by 09:48' },\n        { label: 'WQ-223 · Calloway Pharmacy', detail: 'Due by 10:00' },\n      ],\n    },\n    {\n      name: 'Show active loops',\n      result: '2 loops out from Old Town',\n      rows: [\n        { label: 'Loop 17 · Aoife', detail: '9 drops · First stop on Weir Street' },\n        { label: 'Loop 18 · Jonas', detail: '9 drops · First stop on Canal Yard' },\n      ],\n    },\n  ]}\n/>\n\n<Notes>\n`command-palette` uses a local keyboard overlay with two commands.\nStart from the Dispatch workspace. [click] Show the command palette with Show waiting drops first. Press Enter on the focused command or [click] advance the deck to show the result. The command opens the queue and returns the three waiting drops with their deadlines. The alternative command has its own local result.\n</Notes>\n"
+        },
+        {
           "id": "diagram-sequence",
-          "number": 107,
+          "number": 117,
           "title": "A drop is booked, batched and handed over in 52 minutes",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-sequence.mdx",
@@ -1269,23 +1349,39 @@
         },
         {
           "id": "code-terminal",
-          "number": 108,
+          "number": 118,
           "title": "You can book a drop from a terminal",
           "layout": "code",
           "file": "decks/lookbook/slides/code-terminal.mdx",
           "source": "---\nlayout: code\ntitle: You can book a drop from a terminal\neyebrow: The wren CLI\nbudget: 1m\n---\n\n<Terminal title=\"~/brightloaf\">\n  <Cmd>wren quote --dropoff \"14 Weir Street\" --window same_hour</Cmd>\n  <Out tone=\"muted\">€3.10 · at the door by 09:24</Out>\n  <Cmd>wren drops create --dropoff \"14 Weir Street\"</Cmd>\n  <Out tone=\"success\">drp_7Hq2 booked · batching</Out>\n  <Cmd>wren drops watch drp_7Hq2</Cmd>\n  <Out tone=\"muted\">08:42 batched into loop 14 with Aoife</Out>\n  <Out tone=\"success\">09:21 delivered, 3 minutes early</Out>\n</Terminal>\n\n<Aside>\n- The same API key as the SDK\n- `--json` on every command, for scripts\n</Aside>\n\n<Notes>\n`code` with a `<Terminal>`, one `<Cmd>` per step and its `<Out>` lines after it; use it when the demo is a few commands typed in order.\nNot every shop has a developer, so the same calls work from a terminal. [click] Ask for a price first: €3.10, and the time it would be at the door. [click] Book it: the drop has an id and is already waiting for a batch. [click] Then watch it: batched into Aoife's loop, and at the door three minutes early.\n</Notes>\n"
         },
         {
+          "id": "ai-grounded-answer",
+          "number": 119,
+          "title": "Check the answer against the dispatch rule",
+          "layout": "demo",
+          "file": "decks/lookbook/slides/ai-grounded-answer.mdx",
+          "source": "---\nlayout: demo\ntitle: Check the answer against the dispatch rule\neyebrow: Grounded answer\nsurface: gradient\nbudget: 45s\n---\n\n<GroundedAnswer\n  sourceTitle=\"Bike dispatch guide\"\n  reference=\"Dispatch guide · §3\"\n  context=\"Dispatch checks each parcel before grouping nearby orders into a loop.\"\n  evidence=\"Cargo bikes may carry a parcel weighing up to 25 kg.\"\n  question=\"Can I send a 28 kg box by bike?\"\n  answer=\"No. The box is 3 kg over the bike parcel limit.\"\n/>\n\n<Notes>\n`ai-grounded-answer` links the answer to the exact sentence in the dispatch guide.\nShow the guide and the question on the same canvas. [click] The answer names the limit and cites section 3. [click] Highlight the exact sentence in the guide so the room can check the claim. A presenter can also activate the citation to jump focus to that evidence.\n</Notes>\n"
+        },
+        {
           "id": "diagram-events",
-          "number": 109,
+          "number": 120,
           "title": "Every change reaches the merchant within a second, or is retried until it does",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-events.mdx",
           "source": "---\nlayout: diagram\ntitle: Every change reaches the merchant within a second, or is retried until it does\neyebrow: Events and webhooks\nbudget: 1m30s\n---\n\n<Flow title=\"A delivery event on the event stream, fanned out to Track, Insights and the merchant's webhook, which fails once and is retried\">\n  <Node id=\"rider\" kind=\"mobile\" icon=\"bike\" title=\"Rider app\" col={1} row={2} />\n  <Node id=\"stream\" kind=\"queue\" title=\"Event stream\" col={2} row={2} />\n  <Node id=\"track\" kind=\"client\" title=\"Track page\" col={3} row={1} />\n  <Node id=\"hooks\" kind=\"function\" title=\"Webhooks\" col={3} row={2} />\n  <Node id=\"insights\" kind=\"service\" title=\"Insights\" col={3} row={3} />\n  <Node id=\"shop\" kind=\"external\" title=\"Pantry Lane\" subtitle=\"/hooks\" col={4} row={2} />\n  <Edge from=\"rider\" to=\"stream\" label=\"drop.delivered\" />\n  <Edge from=\"stream\" to=\"track\" async />\n  <Edge from=\"stream\" to=\"hooks\" async />\n  <Edge from=\"stream\" to=\"insights\" async />\n  <Edge id=\"post\" from=\"hooks\" to=\"shop\" label=\"POST\" />\n  <Edge from=\"hooks\" to=\"hooks\" label=\"retry in 2 s\" at={3} />\n  <Packet path=\"rider stream hooks shop\" at={1} label=\"0.4 s\" />\n  <Packet path=\"stream track\" at={1} />\n  <Packet path=\"stream insights\" at={1} />\n  <State node=\"shop\" at={2} until={3} is=\"error\" badge=\"500\" />\n  <State edge=\"post\" at={2} until={3} is=\"error\" />\n  <Focus at={3} nodes=\"hooks shop\" />\n  <Packet from=\"hooks\" to=\"shop\" at={3} play=\"once\" reply=\"200\" />\n  <State node=\"shop\" at={3} is=\"success\" badge=\"200\" />\n</Flow>\n\n<Notes>\n`diagram` with a `<Flow>`, `<Packet>`s on the stream, a `<State>` that fails and recovers, and `<Focus>` on the retry; use it when the story is what happens when something breaks.\nEvery change a rider makes goes on the event stream once, and everything that cares reads it from there. [click] The rider taps delivered: Track updates, Insights counts it, and the merchant's webhook gets it, 0.4 seconds after the tap at the median. [click] Sometimes the merchant's server is down and answers 500. [click] We do not drop the event: the webhook is retried after two seconds, and again with longer gaps, until the merchant answers 200.\nIf asked: retries back off to two, four and eight seconds, then hourly for a day; the console's webhook log shows every attempt.\n</Notes>\n"
         },
         {
+          "id": "opportunity-experiments",
+          "number": 121,
+          "title": "Test one tap to confirm the handoff",
+          "layout": "diagram",
+          "file": "decks/lookbook/slides/opportunity-experiments.mdx",
+          "source": "---\nlayout: diagram\ntitle: Test one tap to confirm the handoff\neyebrow: Opportunity and experiments\nbudget: 50s\n---\n\n<Tree title=\"Shorter handoffs lead to faster proof at the door, with a checklist and a one-tap receipt as options. The chosen experiment is a two-week pilot.\" direction=\"right\">\n  <Node id=\"outcome\" title=\"Shorter handoffs\" subtitle=\"Desired outcome\" icon=\"target\">\n    <Node id=\"opportunity\" title=\"Faster proof at the door\" subtitle=\"Opportunity\" icon=\"clock\">\n      <Node id=\"checklist\" title=\"Pre-drop checklist\" subtitle=\"Alternative\" icon=\"list-check\" />\n      <Node id=\"receipt\" title=\"One-tap receipt\" subtitle=\"Chosen option\" icon=\"pointer\">\n        <Node id=\"experiment\" title=\"Two-week pilot\" subtitle=\"Old Town riders\" icon=\"activity\" state=\"highlighted\" at={1} />\n      </Node>\n    </Node>\n  </Node>\n</Tree>\n\n<Footnote>Compare median handoff time and the share of deliveries missing proof against the current Rider flow.</Footnote>\n\n<Notes>\nOpportunity-to-experiment tree using the kit's `<Tree>`. Shorter handoffs are the outcome. The opportunity is reducing the time riders spend recording proof at the door. That gives us two options: a checklist before the ride or a one-tap receipt at the door. Leave the checklist visible for the next decision. [click] Pilot the receipt for two weeks with Old Town riders. Compare median handoff time and missing proofs with the current flow before deciding whether to roll it out.\n</Notes>\n"
+        },
+        {
           "id": "code-move",
-          "number": 110,
+          "number": 122,
           "title": "Windows are one new field",
           "layout": "code",
           "file": "decks/lookbook/slides/code-move.mdx",
@@ -1293,7 +1389,7 @@
         },
         {
           "id": "diagram-hops",
-          "number": 111,
+          "number": 123,
           "title": "A drop's trip from shop to door, hop by hop",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-hops.mdx",
@@ -1301,7 +1397,7 @@
         },
         {
           "id": "code-codestep",
-          "number": 112,
+          "number": 124,
           "title": "The SDK is the same call, typed",
           "layout": "code",
           "file": "decks/lookbook/slides/code-codestep.mdx",
@@ -1309,7 +1405,7 @@
         },
         {
           "id": "diagram-layers",
-          "number": 113,
+          "number": 125,
           "title": "Merchants touch one layer; riders another",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-layers.mdx",
@@ -1317,15 +1413,23 @@
         },
         {
           "id": "code-diff",
-          "number": 114,
+          "number": 126,
           "title": "Batching every 90 seconds was a one-line change",
           "layout": "code",
           "file": "decks/lookbook/slides/code-diff.mdx",
           "source": "---\nlayout: code\ntitle: Batching every 90 seconds was a one-line change\neyebrow: Flock's config\nbudget: 45s\n---\n\n```yaml title=\"flock.yaml\" diff lineNumbers\nbatching:\n-  interval: 300s\n+  interval: 90s\n  max_drops_per_loop: 9\n  max_loop_minutes: 75\n  overflow: partner_van\n```\n\n<Aside>\n- Drops wait at most 90 seconds for a loop, not five minutes\n- Hana Sato's team made the solver fast enough first\n</Aside>\n\n<Notes>\n`code` with a fenced YAML block marked `diff` and an `<Aside>`; use it when the change itself is the news.\nThe change that made the same-hour window work was one line. Flock used to batch every five minutes; now it batches every 90 seconds, so a drop waits at most a minute and a half before it is on a loop. The line was the easy part: Hana Sato's team first had to make the solver plan a hub's loops inside that time.\n</Notes>\n"
         },
         {
+          "id": "ai-review-diff",
+          "number": 127,
+          "title": "A dispatcher approves the revised message",
+          "layout": "demo",
+          "file": "decks/lookbook/slides/ai-review-diff.mdx",
+          "source": "---\nlayout: demo\ntitle: A dispatcher approves the revised message\neyebrow: Human review\nsurface: inverse\nbudget: 45s\n---\n\n<ReviewDiff\n  document=\"Recipient draft · WQ-214\"\n  before=\"Your Brightloaf order \"\n  original=\"will be there soon\"\n  suggestion=\"is due by 09:35\"\n  after=\".\"\n  rationale=\"Use the promised time from the dispatch record.\"\n/>\n\n<Notes>\n`ai-review-diff` shows one proposed change and the human decision.\nRead the original phrase, will be there soon. [click] The assistant proposes a specific edit using the Dispatch promise. The reviewer can keep the original or accept. [click] The authored decision accepts the edit and shows the exact draft that results. The local demo saves a draft only.\n</Notes>\n"
+        },
+        {
           "id": "diagram-cycle",
-          "number": 115,
+          "number": 128,
           "title": "A hub's day is one loop, run 56 times",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-cycle.mdx",
@@ -1333,15 +1437,23 @@
         },
         {
           "id": "code-webhook",
-          "number": 116,
+          "number": 129,
           "title": "A webhook tells you the parcel is home",
           "layout": "code",
           "file": "decks/lookbook/slides/code-webhook.mdx",
           "source": "---\nlayout: code\ntitle: A webhook tells you the parcel is home\neyebrow: Webhooks\nsurface: inverse\nbudget: 1m\n---\n\n```ts title=\"webhooks.ts\" {2-3|5-8} lineNumbers /verify/ /drop.delivered/\napp.post('/hooks', async (req, res) => {\n  const signature = req.header('wren-signature');\n  if (!wren.webhooks.verify(req.body, signature)) return res.sendStatus(401);\n\n  const event = JSON.parse(req.body);\n  if (event.type === 'drop.delivered') {\n    await orders.markDelivered(event.drop.reference);\n  }\n  res.sendStatus(200);\n});\n```\n\n<Notes>\n`code` with a fenced block, `lineNumbers`, marked words and two highlight steps, on inverse and without an aside, so the code takes the full width; use it when a reader should find the same words in their own code later.\nThis is Pantry Lane's whole webhook handler. [click] First it verifies the signature, so nobody else can tell their shop a parcel arrived. [click] Then it reads the event: when a drop is delivered, it marks their own order as delivered, by their own order number. The answer is 200, and we stop retrying.\n</Notes>\n"
         },
         {
+          "id": "agent-run-trace",
+          "number": 130,
+          "title": "The agent stops before it sends a message",
+          "layout": "demo",
+          "file": "decks/lookbook/slides/agent-run-trace.mdx",
+          "source": "---\nlayout: demo\ntitle: The agent stops before it sends a message\neyebrow: Agent run trace\nbudget: 50s\n---\n\n<RunTrace\n  instruction=\"Draft a delivery update for WQ-214.\"\n  calls={[\n    { tool: 'lookup_drop', input: 'WQ-214', observation: 'Brightloaf · due by 09:35 · loop 17.' },\n    { tool: 'read_rider_eta', input: 'Loop 17', observation: 'Aoife expects to reach Weir Street at 09:21.' },\n  ]}\n  checkpoint=\"Dispatcher must approve\"\n  outcome=\"Draft ready. Your Brightloaf order is due by 09:35. Expected arrival 09:21.\"\n/>\n\n<Notes>\n`agent-run-trace` pairs each call with its observation and stops at human approval.\nThe task is to draft an update. [click] The drop record returns the committed window and loop. [click] The rider record returns the live ETA. [click] The assistant prepares the draft and stops at the human checkpoint. The status says dispatcher approval is required before sending.\n</Notes>\n"
+        },
+        {
           "id": "diagram-tree",
-          "number": 117,
+          "number": 131,
           "title": "Flock sends nine drops in ten to a bike",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-tree.mdx",
@@ -1349,7 +1461,7 @@
         },
         {
           "id": "diagram-cards",
-          "number": 118,
+          "number": 132,
           "title": "Three kinds of partner, and one door into Wrenhaul",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-cards.mdx",
@@ -1357,7 +1469,7 @@
         },
         {
           "id": "diagram-timeline",
-          "number": 119,
+          "number": 133,
           "title": "Open Network went from beta to launch in 12 weeks",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-timeline.mdx",
@@ -1365,7 +1477,7 @@
         },
         {
           "id": "diagram-svg",
-          "number": 120,
+          "number": 134,
           "title": "Three loops cover the Old Town from one hub",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-svg.mdx",
@@ -1373,7 +1485,7 @@
         },
         {
           "id": "demo-appframe",
-          "number": 121,
+          "number": 135,
           "title": "Watch Flock build a loop",
           "layout": "demo",
           "file": "decks/lookbook/slides/demo-appframe.mdx",
@@ -1381,7 +1493,7 @@
         },
         {
           "id": "demo-live",
-          "number": 122,
+          "number": 136,
           "title": "Price your own drops",
           "layout": "demo",
           "file": "decks/lookbook/slides/demo-live.tsx",
@@ -1389,7 +1501,7 @@
         },
         {
           "id": "part-product",
-          "number": 123,
+          "number": 137,
           "title": "Show the product",
           "layout": "section",
           "file": "decks/lookbook/slides/part-product.mdx",
@@ -1397,7 +1509,7 @@
         },
         {
           "id": "before-after-street",
-          "number": 124,
+          "number": 138,
           "title": "The bollards stopped vans, not deliveries",
           "layout": "before-after",
           "file": "decks/lookbook/slides/before-after-street.mdx",
@@ -1405,23 +1517,63 @@
         },
         {
           "id": "screen-dispatch",
-          "number": 125,
+          "number": 139,
           "title": "A hub lead runs the whole day from one map",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-dispatch.mdx",
           "source": "---\nlayout: screen\ntitle: A hub lead runs the whole day from one map\neyebrow: Dispatch\nframe: browser\naddress: app.wrenhaul.example/dispatch\nsrc: ../assets/screens/dispatch.svg\nalt: Dispatch for the Old Town hub at 08:42, with three loops on a street map, a late-window alert and the day's figures\ncallouts:\n  - x: 84.5\n    y: 43\n    label: Every loop, live on one map\n  - x: 46.5\n    y: 20.5\n    label: A late window turns amber\n  - x: 15.5\n    y: 67\n    label: A batch every 90 seconds\n  - x: 36\n    y: 95\n    label: The day's score, kept live\nreveal: true\ntransition: zoom\nbudget: 1m\n---\n\n<Notes>\n`screen` with `frame: browser`, an `address`, four `callouts` and `reveal: true`; use it when the audience should look at one product screen while you point at its parts in order.\nThis is Dispatch at the Old Town hub, 08:42 on a weekday. [click] Every loop is on the map: Aoife's in rust, Jonas's in ink, and Loop 16 still loading at the hub. [click] Jonas is four minutes behind on a 9:00 window, so the stop turns amber before anyone is late. [click] Twenty-three drops wait for the next batch; Flock takes them in 41 seconds. [click] And along the bottom, the day's score: 98.1% on time, 412 of 680 drops delivered.\n</Notes>\n"
         },
         {
+          "id": "browser-spotlight",
+          "number": 140,
+          "title": "See the deadline before assigning the loop",
+          "layout": "screen-story",
+          "file": "decks/lookbook/slides/browser-spotlight.mdx",
+          "source": "---\nlayout: screen-story\npattern: spotlight\ntitle: See the deadline before assigning the loop\neyebrow: Browser spotlight\naddress: dispatch.wrenhaul.example\nratio: 2\nreveal: true\nbudget: 35s\nscreens:\n  - src: ../assets/screens/demo-queue-after.svg\n    alt: Flock Dispatch shows the promised time of 09:35 on the first waiting drop\n    label: Brightloaf is due by 09:35\n    detail: The time stays in the queue while dispatch plans the loop.\nspotlight: { x: 61, y: 32, width: 35, height: 42 }\n---\n\n<Notes>\n`browser-spotlight` uses a registered crop of the Dispatch queue.\nStart with the whole waiting queue in the dispatch browser. [click] The border and magnification refer to the same part of the same screen. WQ-214 has a promise of 09:35. That time is available before assigning a rider.\n</Notes>\n"
+        },
+        {
+          "id": "product-cutaway",
+          "number": 141,
+          "title": "One dispatch screen, three jobs",
+          "layout": "product-cutaway",
+          "file": "decks/lookbook/slides/product-cutaway.mdx",
+          "source": "---\nlayout: product-cutaway\ntitle: One dispatch screen, three jobs\neyebrow: Flock Dispatch\nreveal: true\nbudget: 45s\nlayers:\n  - src: ../assets/screens/cutaway-promise.svg\n    alt: The Flock Dispatch queue shows 18 pending drops and the delivery deadlines for Brightloaf and Pantry Lane\n    label: Delivery promise\n    detail: Each booking brings a deadline into the next batch.\n  - src: ../assets/screens/cutaway-route.svg\n    alt: Two marked bike routes leave the same hub, each with nine stops and a ride time within 75 minutes\n    label: Route feasibility\n    detail: Flock fits nine drops and their windows into each bike loop.\n  - src: ../assets/screens/cutaway-capacity.svg\n    alt: Two checked-in riders, Aoife and Jonas, are assigned loops 17 and 18\n    label: Rider capacity\n    detail: A loop goes out when a rider and bike are ready at the hub.\ntakeaway: Flock dispatches only when the delivery windows, routes and riders line up.\n---\n\n<Notes>\n`product-cutaway` with three equally sized illustrations. Open on the dispatch board and point to the two promised times. [click] Those are promises to customers. Flock checks that the two routes can keep those promises within the bike’s limits. [click] Each loop still needs a rider who is ready at the hub. Read the takeaway against the three layers.\n</Notes>\n"
+        },
+        {
+          "id": "sketch-to-ship",
+          "number": 142,
+          "title": "The deadline belongs beside the loop",
+          "layout": "sketch-to-ship",
+          "file": "decks/lookbook/slides/sketch-to-ship.mdx",
+          "source": "---\nlayout: sketch-to-ship\ntitle: The deadline belongs beside the loop\neyebrow: From dispatch sketch to release\nbudget: 45s\nreveal: true\nsketch:\n  src: ../assets/screens/dispatch-notebook.svg\n  alt: Rough pencil drawing with a deadline on one row and a loop slot below it.\nfinished:\n  src: ../assets/screens/dispatch-assignment.svg\n  alt: The original Wrenhaul dispatch assignment view puts the deadline beside the chosen loop.\nannotations:\n  - label: Promised window\n    sketch: { x: 52, y: 28 }\n    finished: { x: 51, y: 30 }\n  - label: Available loop\n    sketch: { x: 54, y: 76 }\n    finished: { x: 53, y: 76 }\nresult: Hub leads can check the loop against the window before assigning it.\n---\n\n<Notes>\n`sketch-to-ship` pins the same decisions in an original sketch and the released state. At the drawing stage we wrote the customer promise at the top and put the route choice on its own line. [click] In the released view our hub lead reads both in one glance. The useful change was making those two facts visible at the decision, while a different loop can still be chosen.\n</Notes>\n"
+        },
+        {
+          "id": "version-wipe",
+          "number": 143,
+          "title": "A deadline moves into the dispatch queue",
+          "layout": "screen-story",
+          "file": "decks/lookbook/slides/version-wipe.mdx",
+          "source": "---\nlayout: screen-story\npattern: wipe\ntitle: A deadline moves into the dispatch queue\neyebrow: Version wipe\naddress: dispatch.wrenhaul.example\nratio: 2\nreveal: true\nbudget: 35s\nscreens:\n  - src: ../assets/screens/demo-queue-before.svg\n    alt: Old dispatch queue showing Same hour for each parcel without an exact deadline\n    label: Before · Service only\n    detail: Dispatch had to open the order to see its promise.\n  - src: ../assets/screens/demo-queue-after.svg\n    alt: Updated queue showing the exact deadlines, including 09:35 for Brightloaf\n    label: After · Exact deadline\n    detail: The promised time is visible in every row.\n---\n\n<Notes>\n`version-wipe` uses two aligned captures of the same Dispatch viewport.\nStart in the earlier queue. The service column says Same hour, so you have to open each order to check the deadline. [click] Wipe to the same viewport in the new version. Keep your eye on that column as the exact times appear.\n</Notes>\n"
+        },
+        {
           "id": "split-phones",
-          "number": 126,
+          "number": 144,
           "title": "One loop, seen from saddle and door",
           "layout": "split",
           "file": "decks/lookbook/slides/split-phones.mdx",
           "source": "---\nlayout: split\ntitle: One loop, seen from saddle and door\neyebrow: Rider and Track\nratio: 5:7\nside: right\ntreatment: plain\ntransition: slide\nbudget: 40s\n---\n\nOn the left, Aoife's loop 14: six of nine stops done, 14 Weir Street next.\n\nOn the right, a Brightloaf customer two stops further on: Aoife is six minutes away.\n\n<Media>\n<Image src=\"../assets/screens/rider-and-track.svg\" alt=\"Two phones side by side: the Rider app showing loop 14 with six of nine stops ticked off and Weir Street next, and the Track page of a Brightloaf order with the rider six minutes away\" fit=\"contain\" />\n</Media>\n\n<Caption>The Rider app and the Track page at the same minute, 09:18.</Caption>\n\n<Notes>\n`split` with `ratio: 5:7`, two phone screens drawn side by side as one picture, and `transition: slide`; use it when two screens of one flow belong to the same moment.\nOn the left, Aoife's loop 14 from her handlebar: nine stops, six done, Weir Street next. On the right, what a Brightloaf customer two stops further along the same loop sees: Aoife, six minutes away. Neither of them phones the hub.\n</Notes>\n"
         },
         {
+          "id": "device-handoff",
+          "number": 145,
+          "title": "One assignment sends the next stop to Rider",
+          "layout": "screen-story",
+          "file": "decks/lookbook/slides/device-handoff.mdx",
+          "source": "---\nlayout: screen-story\npattern: handoff\ntitle: One assignment sends the next stop to Rider\neyebrow: Desktop to phone\naddress: dispatch.wrenhaul.example\nratio: 2\nreveal: true\nbudget: 40s\nscreens:\n  - src: ../assets/screens/demo-queue-assign.svg\n    alt: Dispatch assigns parcel WQ-214 from Brightloaf to loop 17\n    label: Assign to loop 17\n    detail: WQ-214 · Dispatch at Old Town\n  - src: ../assets/screens/demo-rider-1.svg\n    alt: Rider opens loop 17 to parcel WQ-214 at 14 Weir Street, in slot B3\n    label: Next stop in Rider\n    detail: WQ-214 · 14 Weir Street · Slot B3\n---\n\n<Notes>\n`device-handoff` follows the same parcel from Dispatch to Rider.\nRead WQ-214 on the desktop. It goes to loop 17. [click] The phone receives the same parcel with the next address and the slot in the bike box, so Aoife can take it without re-entering the order.\n</Notes>\n"
+        },
+        {
           "id": "screen-rider",
-          "number": 127,
+          "number": 146,
           "title": "The rider never has to think about the route",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-rider.mdx",
@@ -1429,7 +1581,7 @@
         },
         {
           "id": "before-after-rider",
-          "number": 128,
+          "number": 147,
           "title": "One loop becomes one clear next stop",
           "layout": "before-after",
           "file": "decks/lookbook/slides/before-after-rider.mdx",
@@ -1437,7 +1589,7 @@
         },
         {
           "id": "morph-dispatch-overview",
-          "number": 129,
+          "number": 148,
           "title": "Dispatch shows every loop at once",
           "layout": "split",
           "file": "decks/lookbook/slides/morph-dispatch-overview.mdx",
@@ -1445,7 +1597,7 @@
         },
         {
           "id": "morph-dispatch-detail",
-          "number": 130,
+          "number": 149,
           "title": "A window turns amber before it is missed",
           "layout": "split",
           "file": "decks/lookbook/slides/morph-dispatch-detail.mdx",
@@ -1453,7 +1605,7 @@
         },
         {
           "id": "screen-insights",
-          "number": 131,
+          "number": 150,
           "title": "Merchants see their cost per drop every week",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-insights.mdx",
@@ -1461,7 +1613,7 @@
         },
         {
           "id": "gallery-screens",
-          "number": 132,
+          "number": 151,
           "title": "Four screens run on one stream of events",
           "layout": "gallery",
           "file": "decks/lookbook/slides/gallery-screens.mdx",
@@ -1469,15 +1621,31 @@
         },
         {
           "id": "screen-console",
-          "number": 133,
+          "number": 152,
           "title": "Developers test a drop before they ship",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-console.mdx",
           "source": "---\nlayout: screen\ntitle: Developers test a drop before they ship\neyebrow: Open Network console\nframe: none\nsurface: default\nsrc: ../assets/screens/console.svg\nalt: The Open Network console in test mode, with a test drop request, a 201 response with a price of €3.10 and a webhook log\ncallouts:\n  - x: 78\n    y: 42.5\n    label: Test drops get a real quote\n  - x: 89.5\n    y: 81\n    label: A failed webhook is retried\nbudget: 40s\n---\n\n<Notes>\n`screen` with `frame: none` on the default surface and two `callouts`; use it when the screen needs no device around it, such as a console or a document.\nIn test mode a drop is batched like a real one and never reaches a rider. The response has the price, €3.10, and when the rider would be at the door. Below, the webhook log: the one that failed with a 500 was retried two seconds later.\n</Notes>\n"
         },
         {
+          "id": "demo-filmstrip",
+          "number": 153,
+          "title": "Three actions take a parcel to the door",
+          "layout": "screen-story",
+          "file": "decks/lookbook/slides/demo-filmstrip.mdx",
+          "source": "---\nlayout: screen-story\npattern: filmstrip\ntitle: Three actions take a parcel to the door\neyebrow: Demo filmstrip\nreveal: true\nbudget: 40s\nscreens:\n  - src: ../assets/screens/demo-rider-1.svg\n    alt: Rider shows the next stop and parcel WQ-214 in slot B3\n    label: Open the next stop\n    detail: 14 Weir Street · Parcel in slot B3\n  - src: ../assets/screens/demo-rider-2.svg\n    alt: Rider shows the handoff screen for the same Brightloaf parcel\n    label: Tap Start handoff\n    detail: Hand the order to Sam at the door.\n  - src: ../assets/screens/demo-rider-3.svg\n    alt: Rider shows proof of delivery at 09:21 for parcel WQ-214\n    label: Confirm handover\n    detail: Proof logged at 09:21 · Merchant notified\n---\n\n<Notes>\n`demo-filmstrip` keeps the three Rider actions visible at the end.\nThe first frame names the next stop and the parcel slot. [click] Aoife taps Start handoff and checks who receives it. [click] Confirm handover records proof at 09:21. Leave the three frames up to recap the full route from next stop to proof.\n</Notes>\n"
+        },
+        {
+          "id": "demo-choose-path",
+          "number": 154,
+          "title": "How should Flock handle this drop?",
+          "layout": "choose-path",
+          "file": "decks/lookbook/slides/demo-choose-path.mdx",
+          "source": "---\nlayout: choose-path\ntitle: How should Flock handle this drop?\neyebrow: Choose a workflow\nbudget: 1m\nprompt: The Old Town hub has a new booking. Which parcel should Flock route?\nbranches:\n  - name: 4 kg bakery bag\n    situation: Brightloaf needs a bread order delivered within the hour.\n    steps:\n      - action: Check the bike limit\n        detail: The bag fits in a bike box and weighs less than 25 kg.\n      - action: Add to the bike loop\n        detail: Loop 17 has room for the bag and can keep the promised window.\n    outcome: Aoife takes the bag on loop 17 and keeps the same-hour window.\n  - name: 28 kg flour box\n    situation: Pantry Lane needs to send a single box of flour across town.\n    steps:\n      - action: Check the bike limit\n        detail: The box is over the 25 kg limit, so Flock looks for a partner van.\n      - action: Confirm the van booking\n        detail: A partner has capacity and can make the promised window.\n    outcome: The partner van takes the box and keeps the same-hour window.\n---\n\n<Notes>\n`choose-path` gives the room two cases to pick from. Ask for the bakery bag or the flour box. Follow the two buttons for the branch they pick, read the outcome, and use Back to choices to run the other case. The bike cap is the same in both cases and the action changes with the parcel. The still shows the two workflows and both outcomes side by side.\n</Notes>\n"
+        },
+        {
           "id": "split-video",
-          "number": 134,
+          "number": 155,
           "title": "The launch film opens in light alone",
           "layout": "split",
           "file": "decks/lookbook/slides/split-video.mdx",
@@ -1485,7 +1653,7 @@
         },
         {
           "id": "gallery-places",
-          "number": 135,
+          "number": 156,
           "title": "Booked at 08:42, at the door at 09:21",
           "layout": "gallery",
           "file": "decks/lookbook/slides/gallery-places.mdx",
@@ -1493,7 +1661,7 @@
         },
         {
           "id": "part-people",
-          "number": 136,
+          "number": 157,
           "title": "People and proof",
           "layout": "section",
           "file": "decks/lookbook/slides/part-people.mdx",
@@ -1501,7 +1669,7 @@
         },
         {
           "id": "voices-merchants",
-          "number": 137,
+          "number": 158,
           "title": "The hour changes what shops can promise",
           "layout": "voices",
           "file": "decks/lookbook/slides/voices-merchants.mdx",
@@ -1509,7 +1677,7 @@
         },
         {
           "id": "voices-network",
-          "number": 138,
+          "number": 159,
           "title": "One loop serves three different needs",
           "layout": "voices",
           "file": "decks/lookbook/slides/voices-network.mdx",
@@ -1517,7 +1685,7 @@
         },
         {
           "id": "team-founders",
-          "number": 139,
+          "number": 160,
           "title": "Each founder has run one part of this before",
           "layout": "team",
           "file": "decks/lookbook/slides/team-founders.mdx",
@@ -1525,7 +1693,7 @@
         },
         {
           "id": "persona-hub-lead",
-          "number": 140,
+          "number": 161,
           "title": "Hub leads need time to rescue a late loop",
           "layout": "persona",
           "file": "decks/lookbook/slides/persona-hub-lead.mdx",
@@ -1533,7 +1701,7 @@
         },
         {
           "id": "logos-customers",
-          "number": 141,
+          "number": 162,
           "title": "Five of our merchants, from warm bread to blood samples",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-customers.mdx",
@@ -1541,7 +1709,7 @@
         },
         {
           "id": "proof-pantry-lane",
-          "number": 142,
+          "number": 163,
           "title": "Pantry Lane takes 63% more same-day orders",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-pantry-lane.mdx",
@@ -1549,7 +1717,7 @@
         },
         {
           "id": "team-row",
-          "number": 143,
+          "number": 164,
           "title": "Four people build what riders, hubs and partners use",
           "layout": "team",
           "file": "decks/lookbook/slides/team-row.mdx",
@@ -1557,7 +1725,7 @@
         },
         {
           "id": "logos-color",
-          "number": 144,
+          "number": 165,
           "title": "Eight kinds of shop already send drops",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-color.mdx",
@@ -1565,7 +1733,7 @@
         },
         {
           "id": "proof-st-brenna",
-          "number": 145,
+          "number": 166,
           "title": "Samples reach the lab in 31 minutes, not 74",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-st-brenna.mdx",
@@ -1573,7 +1741,7 @@
         },
         {
           "id": "team-grid",
-          "number": 146,
+          "number": 167,
           "title": "Six leads run the company day to day",
           "layout": "team",
           "file": "decks/lookbook/slides/team-grid.mdx",
@@ -1581,7 +1749,7 @@
         },
         {
           "id": "persona-recipient",
-          "number": 147,
+          "number": 168,
           "title": "Recipients need a window they can plan around",
           "layout": "persona",
           "file": "decks/lookbook/slides/persona-recipient.mdx",
@@ -1589,7 +1757,7 @@
         },
         {
           "id": "logos-wall",
-          "number": 148,
+          "number": 169,
           "title": "Fourteen organisations stand behind the launch",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-wall.mdx",
@@ -1597,7 +1765,7 @@
         },
         {
           "id": "proof-brightloaf",
-          "number": 149,
+          "number": 170,
           "title": "Brightloaf delivers 93% of its bread warm",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-brightloaf.mdx",
@@ -1605,7 +1773,7 @@
         },
         {
           "id": "team-roster",
-          "number": 150,
+          "number": 171,
           "title": "Eight people opened the first six cities",
           "layout": "team",
           "file": "decks/lookbook/slides/team-roster.mdx",
@@ -1613,15 +1781,23 @@
         },
         {
           "id": "part-ahead",
-          "number": 151,
+          "number": 172,
           "title": "Plan ahead and ask",
           "layout": "section",
           "file": "decks/lookbook/slides/part-ahead.mdx",
           "source": "---\nlayout: section\ntitle: Plan ahead and ask\nnumber: 10\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nWhere we have been, where we go next, and what we need.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nThe history, the roadmap and the ask.\n</Notes>\n"
         },
         {
+          "id": "future-back",
+          "number": 173,
+          "title": "A neighborhood can count on a bike delivery",
+          "layout": "future-back",
+          "file": "decks/lookbook/slides/future-back.mdx",
+          "source": "---\nlayout: future-back\ntitle: A neighborhood can count on a bike delivery\neyebrow: Working backward from December 2027\nbudget: 55s\nreveal: true\nfuture:\n  when: December 2027\n  outcome: A shop can offer the hour with every neighborhood order.\n  image:\n    src: ../assets/scenes/future-back-district.jpg\n    alt: Cargo-bike riders serve independent shops across a sunny Old Town street.\n    focal: center 56%\ncapabilities:\n  - name: Reliable local capacity\n    reason: Put enough riders and orders on overlapping loops to keep the hour.\n  - name: Windows at checkout\n    reason: Give each shop the same view of remaining slots.\nbet:\n  when: Next four weeks\n  action: Test one shared window\n  test: Offer it from six shops and track late deliveries and unfilled loop slots.\n---\n\n<Footnote>Illustrated future with a generated photograph of fictional people.</Footnote>\n\n<Notes>\n`future-back` begins with the customer’s world on the right and works back toward the next decision. Picture a December morning in Old Town: offering the hour is an ordinary checkout choice. [click] That requires both nearby rider capacity and the same view of available slots at each shop. [click] The immediate bet is a shared window across six shops. We will learn whether a group of shops can fill loops and still make the promise before rolling the window out across the district.\n</Notes>\n"
+        },
+        {
           "id": "timeline-history",
-          "number": 152,
+          "number": 174,
           "title": "Four years from one hub to six cities",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-history.mdx",
@@ -1629,7 +1805,7 @@
         },
         {
           "id": "columns-roadmap",
-          "number": 153,
+          "number": 175,
           "title": "We finish the network before we widen it",
           "layout": "columns",
           "file": "decks/lookbook/slides/columns-roadmap.mdx",
@@ -1637,7 +1813,7 @@
         },
         {
           "id": "status-launch",
-          "number": 154,
+          "number": 176,
           "title": "The network launches today; two decisions remain",
           "layout": "status",
           "file": "decks/lookbook/slides/status-launch.mdx",
@@ -1645,7 +1821,7 @@
         },
         {
           "id": "status-next-wave",
-          "number": 155,
+          "number": 177,
           "title": "Sandgate needs power before the February opening",
           "layout": "status",
           "file": "decks/lookbook/slides/status-next-wave.mdx",
@@ -1653,15 +1829,23 @@
         },
         {
           "id": "timeline-roadmap",
-          "number": 156,
+          "number": 178,
           "title": "Eighteen months from today's launch to break-even",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-roadmap.mdx",
           "source": "---\nlayout: timeline\ntitle: Eighteen months from today's launch to break-even\neyebrow: The plan\ncurrent: 1\nreveal: true\nmilestones:\n  - date: 3 Dec 2026\n    title: Open Network launches\n    detail: And the Series A, today\n  - date: Q1 2027\n    title: Returns pick-up\n    detail: Collected on the next loop\n  - date: Q2 2027\n    title: Four new cities\n    detail: Ten cities live in all\n  - date: Q4 2027\n    title: 500,000 drops a month\n    detail: Up from 182,000 today\n    state: muted\n  - date: Q2 2028\n    title: Company break-even\n    detail: Every cost counted\n    state: muted\nbudget: 1m\n---\n\nThe first three are dates we set; the last two are targets.\n\n<Notes>\n`timeline` with `current: 1` and `reveal: true`, the milestones after the current one drawn as still to come and the two targets as tentative (`state: muted`, a dashed dot); use it for a plan seen from where we stand, with more dates than an ask holds.\n[click] We are here, at the filled dot: today's launch, open to every shop in six cities. [click] By the end of March, riders pick up returns on their next loop. [click] By June, four new cities. [click] By the end of 2027, 500,000 drops a month. [click] And in the second quarter of 2028, the whole company breaks even. The last two are targets: they depend on growth, not only on us.\n</Notes>\n"
         },
         {
+          "id": "roadmap-transit",
+          "number": 179,
+          "title": "A live returns feed unlocks the next hub",
+          "layout": "roadmap-transit",
+          "file": "decks/lookbook/slides/roadmap-transit.mdx",
+          "source": "---\nlayout: roadmap-transit\ntitle: A live returns feed unlocks the next hub\neyebrow: Three workstreams to a launch\nbudget: 55s\nreveal: true\nperiods: [January, March, May, July]\ntracks:\n  - name: Open Network\n    stops: [Return event, Test webhook, Live proof feed, Rollout]\n  - name: Hub operations\n    stops: [Map return loops, Staff the trial, Proof on each loop, Launch next hub]\n  - name: Merchant rollout\n    stops: [Choose six shops, Invite pharmacies, Train staff, Open returns]\ntransfer:\n  stop: 3\n  from: 1\n  to: 2\n  label: Proof unlocks the loop\nmilestone: July launch depends on returned parcels having a traceable handover.\n---\n\n<Notes>\n`roadmap-transit` uses parallel lines for the three workstreams that can move in parallel. Follow the Open Network line from the first return event to a live proof feed. Hub operations can staff the trial while the feed is built. [click] They meet in May. A live proof feed gives each return loop a traceable handover. [click] That is the condition for opening the next hub to returns in July. An elapsed date alone would not make it ready.\n</Notes>\n"
+        },
+        {
           "id": "schedule-openings",
-          "number": 157,
+          "number": 180,
           "title": "Six hubs open between April and June",
           "layout": "schedule",
           "file": "decks/lookbook/slides/schedule-openings.mdx",
@@ -1669,7 +1853,7 @@
         },
         {
           "id": "schedule-quayside",
-          "number": 158,
+          "number": 181,
           "title": "Quayside covers its costs by September",
           "layout": "schedule",
           "file": "decks/lookbook/slides/schedule-quayside.mdx",
@@ -1677,7 +1861,7 @@
         },
         {
           "id": "ask-series-a",
-          "number": 159,
+          "number": 182,
           "title": "Fund four new cities, then break-even",
           "layout": "ask",
           "file": "decks/lookbook/slides/ask-series-a.mdx",
@@ -1685,7 +1869,7 @@
         },
         {
           "id": "columns-four",
-          "number": 160,
+          "number": 183,
           "title": "Four cities and six hubs open between April and June",
           "layout": "columns",
           "file": "decks/lookbook/slides/columns-four.mdx",
@@ -1693,15 +1877,23 @@
         },
         {
           "id": "timeline-slipped",
-          "number": 161,
+          "number": 184,
           "title": "One opening slipped, and we said so",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-slipped.mdx",
           "source": "---\nlayout: timeline\ntitle: One opening slipped, and we said so\neyebrow: The 2026 openings\nmilestones:\n  - date: Sep 2025\n    title: Six hub leases signed\n    detail: Hollin, Ebbsford and Calder Bay\n    state: success\n  - date: Nov 2025\n    title: Sandgate opens early\n    detail: 'Slipped to February: no power'\n    state: error\n  - date: Jan 2026\n    title: 132 riders trained\n    detail: Four weeks each, in Kestwick\n    state: success\n  - date: Feb 2026\n    title: Three cities open\n    detail: Six hubs, Sandgate with them\n    state: success\nbudget: 45s\n---\n\nEvery other date held; Calder Bay's merchants heard the week we knew.\n\n<Notes>\n`timeline` with one milestone in `state: error` among done ones; use it to report a slip honestly next to what held.\nSandgate, Calder Bay's second hub, was to open in November as a trial run. The unit had no power supply for chargers, and the upgrade took three months. It opened in February with the other five. Every other date held, and we told Calder Bay's merchants the week we found out.\n</Notes>\n"
         },
         {
+          "id": "roadmap-hill",
+          "number": 185,
+          "title": "The team has a plan for returns proof",
+          "layout": "roadmap-hill",
+          "file": "decks/lookbook/slides/roadmap-hill.mdx",
+          "source": "---\nlayout: roadmap-hill\ntitle: The team has a plan for returns proof\neyebrow: Discovery and delivery\nbudget: 50s\nreveal: true\nprevious: 29 October\ncurrent: 12 November\nscopes:\n  - name: Shop enrollment\n    previous: 16\n    current: 29\n  - name: Returns proof\n    previous: 39\n    current: 64\n  - name: Partner alerts\n    previous: 74\n    current: 88\ntakeaway: Take returns proof into the trial while enrollment stays in discovery.\n---\n\n<Footnote>Illustrative scope assessments at two reviews. Hill chart method from Basecamp’s Shape Up.</Footnote>\n\n<Notes>\n`roadmap-hill` shows three scopes at two reviews. A scope climbs while we are finding the approach. Once we know what to build, it can descend through execution. [click] Returns proof crossed the crest when the team agreed who records the handover. Take that into a trial. Shop enrollment is still uphill because we need to see how a small shop adds returns without slowing its counter service.\n</Notes>\n"
+        },
+        {
           "id": "ask-pilot",
-          "number": 162,
+          "number": 186,
           "title": "Approve Saltby's first hub this month",
           "layout": "ask",
           "file": "decks/lookbook/slides/ask-pilot.mdx",
@@ -1709,7 +1901,7 @@
         },
         {
           "id": "actions-launch",
-          "number": 163,
+          "number": 187,
           "title": "Returns training clears the way to close the round",
           "layout": "actions",
           "file": "decks/lookbook/slides/actions-launch.mdx",
@@ -1717,7 +1909,7 @@
         },
         {
           "id": "actions-expansion",
-          "number": 164,
+          "number": 188,
           "title": "Four new cities are ready to launch by June 2027",
           "layout": "actions",
           "file": "decks/lookbook/slides/actions-expansion.mdx",
@@ -1725,7 +1917,7 @@
         },
         {
           "id": "part-motion",
-          "number": 165,
+          "number": 189,
           "title": "Motion",
           "layout": "section",
           "file": "decks/lookbook/slides/part-motion.mdx",
@@ -1733,7 +1925,7 @@
         },
         {
           "id": "motion-rise",
-          "number": 166,
+          "number": 190,
           "title": "Rise: each entry of the log rises into place",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-rise.mdx",
@@ -1741,7 +1933,7 @@
         },
         {
           "id": "motion-fade",
-          "number": 167,
+          "number": 191,
           "title": "Fade: each message appears where it stands",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-fade.mdx",
@@ -1749,7 +1941,7 @@
         },
         {
           "id": "motion-scale",
-          "number": 168,
+          "number": 192,
           "title": "Scale: each beat grows a step closer",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-scale.mdx",
@@ -1757,7 +1949,7 @@
         },
         {
           "id": "motion-blur",
-          "number": 169,
+          "number": 193,
           "title": "Blur: the arrival time comes into focus",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-blur.mdx",
@@ -1765,7 +1957,7 @@
         },
         {
           "id": "motion-wipe",
-          "number": 170,
+          "number": 194,
           "title": "Wipe: each leg is drawn from shop to door",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-wipe.mdx",
@@ -1773,7 +1965,7 @@
         },
         {
           "id": "motion-focus",
-          "number": 171,
+          "number": 195,
           "title": "Focus: only the latest status is lit",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-focus.mdx",
@@ -1781,7 +1973,7 @@
         },
         {
           "id": "part-close",
-          "number": 172,
+          "number": 196,
           "title": "Close",
           "layout": "section",
           "file": "decks/lookbook/slides/part-close.mdx",
@@ -1789,7 +1981,7 @@
         },
         {
           "id": "recap-network",
-          "number": 173,
+          "number": 197,
           "title": "A denser network makes every drop work harder",
           "layout": "recap",
           "file": "decks/lookbook/slides/recap-network.mdx",
@@ -1797,7 +1989,7 @@
         },
         {
           "id": "recap-launch",
-          "number": 174,
+          "number": 198,
           "title": "The next chapter starts with the hubs we have",
           "layout": "recap",
           "file": "decks/lookbook/slides/recap-launch.mdx",
@@ -1805,7 +1997,7 @@
         },
         {
           "id": "sources-evidence",
-          "number": 175,
+          "number": 199,
           "title": "Three records underpin the launch figures",
           "layout": "sources",
           "file": "decks/lookbook/slides/sources-evidence.mdx",
@@ -1813,7 +2005,7 @@
         },
         {
           "id": "sources-records",
-          "number": 176,
+          "number": 200,
           "title": "Every launch claim has a record behind it",
           "layout": "sources",
           "file": "decks/lookbook/slides/sources-records.mdx",
@@ -1821,7 +2013,7 @@
         },
         {
           "id": "content-links",
-          "number": 177,
+          "number": 201,
           "title": "Everything you need to ship a drop today",
           "layout": "content",
           "file": "decks/lookbook/slides/content-links.mdx",
@@ -1829,7 +2021,7 @@
         },
         {
           "id": "split-qr",
-          "number": 178,
+          "number": 202,
           "title": "Book a test drop from your phone, now",
           "layout": "split",
           "file": "decks/lookbook/slides/split-qr.mdx",
@@ -1837,7 +2029,7 @@
         },
         {
           "id": "closing-ask",
-          "number": 179,
+          "number": 203,
           "title": "Send us your first drop this week",
           "layout": "closing",
           "file": "decks/lookbook/slides/closing-ask.mdx",
@@ -1845,7 +2037,7 @@
         },
         {
           "id": "closing-questions",
-          "number": 180,
+          "number": 204,
           "title": "What should we deliver next?",
           "layout": "closing",
           "file": "decks/lookbook/slides/closing-questions.mdx",

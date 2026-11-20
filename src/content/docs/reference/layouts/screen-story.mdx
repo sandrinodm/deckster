@@ -1,0 +1,27 @@
+---
+title: "screen-story"
+description: "Show a product detail, a change between versions, a handoff or a short workflow."
+sidebar:
+  order: 73
+---
+
+The dispatch queue contains several deadlines. A magnified crop keeps the 09:35 promise legible while the surrounding browser window shows where a dispatcher finds it.
+
+## Author the slide
+
+Give each screenshot a label and alternative text. Set `ratio` to the desktop viewport width divided by its height. Use `reveal: true` for one advance on `spotlight`, `wipe` and `handoff`, or two on `filmstrip`.
+
+- **`spotlight`** crops one screenshot. Set the crop’s `x`, `y`, `width` and `height` as percentages of the full image, counting from the top left. Keep the rectangle within the image and at least 5% wide and high.
+- **`wipe`** takes two screenshots of the same viewport with a shared aspect ratio. Use the **Compare versions** slider to see where the screen changes. The finished export shows both versions side by side. [Version wipe](/decks/lookbook/#/version-wipe)
+- **`handoff`** takes a desktop screen for the sender and a phone screen for the receiver. Keep a name or ID visible on both devices so the audience can follow the same item. [Device handoff](/decks/lookbook/#/device-handoff)
+- **`filmstrip`** takes three screenshots in the order the actions happen. They remain together on the finished slide. [Demo filmstrip](/decks/lookbook/#/demo-filmstrip)
+
+## Example
+
+<SlideExample deck="lookbook" slide="browser-spotlight" />
+
+## Reference
+
+<LayoutReference name="screen-story" />
+
+See the [presentation patterns guide](/examples/presentation-patterns/) for related slides and their source files.

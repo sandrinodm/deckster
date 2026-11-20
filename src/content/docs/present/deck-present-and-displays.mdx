@@ -31,11 +31,9 @@ The window opens on the primary display, not fullscreen. The terminal keeps a sh
 
 ## Choose a deck in the desktop gallery
 
-<Aside type="note" title="Unreleased">
-The desktop gallery is not included in 0.6.1. See [Desktop presentation gallery](/project/changelog/#desktop-presentation-gallery).
-</Aside>
+New in v0.7.0. [Desktop presentation gallery changelog](/project/changelog/#desktop-presentation-gallery).
 
-Run `deck present` without a deck argument and with `DECK` unset or empty. With several decks, Deckster shows **Choose a deck**. Pick a card to open the deck in an audience window. A single deck opens directly, and an explicit deck name takes precedence over `DECK`. In 0.6.1, an unnamed invocation still prefers `hello` when it exists.
+Run `deck present` without a deck argument and with `DECK` unset or empty. With several decks, Deckster shows **Choose a deck**. Pick a card to open the deck in an audience window. A single deck opens directly, and an explicit deck name takes precedence over `DECK`. To open the starter deck directly, run `deck present hello`.
 
 With two or more displays in extended mode, the gallery stays off the audience display. Mirrored displays show the same view. With one display, the gallery hides while the audience window is open. Use the same display options as for a named deck, such as `deck present --presenter --fullscreen`.
 

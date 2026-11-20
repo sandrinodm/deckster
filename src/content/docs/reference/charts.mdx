@@ -15,7 +15,7 @@ Each entry starts with when to use the component, when to avoid it, the messages
 
 How `highlight`, `annotations` and `at` work together is on [highlights and annotations](/data-and-diagrams/highlights-and-annotations/); `BigNumber`, `StatRow`, `Progress` and the other number components are explained on [number components](/data-and-diagrams/number-components/).
 
-`deck charts --json` prints the same catalog, plus two fields this page does not show: `nulls`, how each chart draws a missing value (null, an empty CSV cell, text that is not a number), and `accessibility`. It also gives `native`, the PowerPoint chart `deck export --pptx` builds for the component: `BarChart`, `Comparison`, `Progress`, `Waterfall` and `Funnel` become bar charts; `LineChart`, `Slope` and `Sparkline` line charts; `AreaChart` an area chart; `Donut` a doughnut; `Scatter` a scatter chart; and `Table` a table. `BigNumber`, `StatRow`, `Pictogram` and `Heatmap` have no native form.
+`deck charts --json` prints the same catalog, plus two fields this page does not show: `nulls`, how each chart draws a missing value (null, an empty CSV cell, text that is not a number), and `accessibility`. It also gives `native`, the PowerPoint chart `deck export --pptx` builds for the component: `BarChart`, `Comparison`, `Progress`, `Waterfall` and `Funnel` become bar charts; `LineChart`, `Slope` and `Sparkline` line charts; `AreaChart` an area chart; `Donut` a doughnut; `Scatter` a scatter chart; and `Table` a table. `BigNumber`, `StatRow`, `Pictogram`, `Heatmap`, `RetentionCohorts`, `ProfitPool` and `MarketMovement` have no native chart type.
 
 `<Table>` here is the component; the `table` layout has [its own page](/reference/layouts/table/).
 
@@ -90,6 +90,24 @@ Several charts take these props, with the same meaning in each. They are listed 
 ### Table
 
 <PropsTable of="Table" />
+
+### RetentionCohorts
+
+Give each cohort its starting size and a row for each observed age. Write `82` for 82%. A zero prints as `0%`, while an unobserved age stays blank. [Retention cohorts example](/decks/lookbook/#/chart-retention-cohorts)
+
+<PropsTable of="RetentionCohorts" />
+
+### ProfitPool
+
+Use the same currency and scale for every segment’s revenue. Width represents revenue, height measures the contribution margin from zero, and area corresponds to the segment’s contribution profit or loss. [Profit pool example](/decks/lookbook/#/chart-profit-pool)
+
+<PropsTable of="ProfitPool" />
+
+### MarketMovement
+
+Give each observation an ISO date in `YYYY-MM-DD` form. `highlight` names the entity whose positions form a trail. Each peer appears at the dates for which it has data. [Market movement example](/decks/lookbook/#/chart-market-movement)
+
+<PropsTable of="MarketMovement" />
 
 ## Types
 

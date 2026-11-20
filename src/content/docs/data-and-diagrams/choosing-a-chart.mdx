@@ -9,18 +9,18 @@ A chart slide makes one point, and the chart is the evidence for it. This page s
 
 ## Start from the message
 
-Name what the numbers say before you pick a form. The kit has 16 chart and number components, and each is filed under the messages it can carry:
+Name what the numbers say before you pick a form. The kit has 19 chart and number components, and each is filed under the messages it can carry:
 
 | Message | Components |
 | --- | --- |
 | single number | `<BigNumber>`, `<StatRow>`, `<Pictogram>`, `<Progress>` |
-| comparison | `<StatRow>`, `<Comparison>`, `<BarChart>`, `<Slope>`, `<Waterfall>`, `<Heatmap>`, `<Table>` |
-| ranking | `<BarChart>` |
-| trend | `<BarChart>`, `<LineChart>`, `<AreaChart>`, `<Sparkline>` |
-| change between two points | `<Comparison>`, `<Slope>` |
-| part-to-whole | `<AreaChart>`, `<Donut>`, `<Pictogram>`, `<Progress>` |
+| comparison | `<StatRow>`, `<Comparison>`, `<BarChart>`, `<Slope>`, `<Waterfall>`, `<Heatmap>`, `<Table>`, `<RetentionCohorts>`, `<ProfitPool>` |
+| ranking | `<BarChart>`, `<ProfitPool>` |
+| trend | `<BarChart>`, `<LineChart>`, `<AreaChart>`, `<Sparkline>`, `<RetentionCohorts>`, `<MarketMovement>` |
+| change between two points | `<Comparison>`, `<Slope>`, `<MarketMovement>` |
+| part-to-whole | `<AreaChart>`, `<Donut>`, `<Pictogram>`, `<Progress>`, `<ProfitPool>` |
 | distribution | `<Scatter>`, `<Heatmap>` |
-| correlation | `<Scatter>` |
+| correlation | `<Scatter>`, `<MarketMovement>` |
 | flow | `<Waterfall>`, `<Funnel>` |
 | exact values | `<Table>` |
 
@@ -110,4 +110,4 @@ Then make the chart point at the same thing the title says, with a `highlight`: 
 
 Each layout and its limits are on its own page under [layouts](/reference/layouts/).
 
-Twelve of the 16 components have a native PowerPoint counterpart, which `deck charts --json` names in each chart's `native` field (`null` for `<BigNumber>`, `<StatRow>`, `<Pictogram>` and `<Heatmap>`). [PowerPoint](/export-and-publish/powerpoint/) explains when an export uses it.
+Twelve of the 19 components have a native PowerPoint counterpart, which `deck charts --json` names in each chart's `native` field (`null` for `<BigNumber>`, `<StatRow>`, `<Pictogram>`, `<Heatmap>`, `<RetentionCohorts>`, `<ProfitPool>` and `<MarketMovement>`). [PowerPoint](/export-and-publish/powerpoint/) explains when an export uses it.

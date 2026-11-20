@@ -2306,6 +2306,204 @@
       }
     },
     {
+      "name": "service-blueprint",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Map two to four stages of a service for a single customer journey. Show the customer and frontstage actions above the line of visibility, then backstage work and the responsible owner below. Highlight the handoff that crosses the line and give it a short name.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "stages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                },
+                "customer": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 44
+                },
+                "frontstage": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 44
+                },
+                "backstage": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 44
+                },
+                "owner": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                }
+              },
+              "required": [
+                "title",
+                "customer",
+                "frontstage",
+                "backstage",
+                "owner"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "handoff": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 26
+              }
+            },
+            "required": [
+              "stage",
+              "label"
+            ],
+            "additionalProperties": true
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "stages",
+          "handoff"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "stages": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 4 stages in order. Each stage needs a `title` (up to 24 characters), a `customer` action, visible `frontstage` work and internal `backstage` work (up to 44 characters each), and an accountable `owner` (up to 24 characters)."
+        },
+        "handoff": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Set `stage` to the 1-based column where the handoff crosses the line of visibility. Use `label` to name what changes hands in up to 26 characters."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Use `reveal: true` to start with the visible service. The first click exposes backstage work and the second exposes owners and highlights the handoff. Omit it to start with the whole blueprint visible."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 60
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "An optional source or caveat below the blueprint.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "The desk owns the handoff to the repair team",
+          "eyebrow": "Service blueprint",
+          "stages": [
+            {
+              "title": "Report",
+              "customer": "Reports the breakage",
+              "frontstage": "Desk opens a ticket",
+              "backstage": "Checks asset records",
+              "owner": "Service desk"
+            },
+            {
+              "title": "Book",
+              "customer": "Picks a repair time",
+              "frontstage": "Desk confirms the visit",
+              "backstage": "Technician accepts the job",
+              "owner": "Repair lead"
+            }
+          ],
+          "handoff": {
+            "stage": 2,
+            "label": "Confirmed job"
+          },
+          "reveal": true
+        },
+        "body": "<Notes>Follow the customer across both stages. [click] Show the work behind the desk. [click] The repair lead accepts the confirmed job.</Notes>\n",
+        "mdx": "---\nlayout: service-blueprint\ntitle: The desk owns the handoff to the repair team\neyebrow: Service blueprint\nstages:\n  - title: Report\n    customer: Reports the breakage\n    frontstage: Desk opens a ticket\n    backstage: Checks asset records\n    owner: Service desk\n  - title: Book\n    customer: Picks a repair time\n    frontstage: Desk confirms the visit\n    backstage: Technician accepts the job\n    owner: Repair lead\nhandoff:\n  stage: 2\n  label: Confirmed job\nreveal: true\n---\n\n<Notes>Follow the customer across both stages. [click] Show the work behind the desk. [click] The repair lead accepts the confirmed job.</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "code",
       "source": "@deckster/kit",
       "fallback": null,
@@ -2413,7 +2611,7 @@
       "source": "@deckster/kit",
       "fallback": null,
       "label": null,
-      "description": "A title that states what the audience is about to watch, then one large region for a live demo: an <AppFrame> (a mini app or an external page) or a <Live> widget, filling all the space under the title. Fill <Aside> with up to three short notes to set them in a narrow column beside the demo. Give the demo a poster, so exports and offline runs have a still.",
+      "description": "A title that states what the audience is about to watch, then one large region for a live demo: an <AppFrame> (a mini app or an external page) or a <Live> widget, filling all the space under the title. CommandDemo, GroundedAnswer, ReviewDiff and RunTrace have scripted steps and built-in stills. Fill <Aside> with up to three short notes to set them in a narrow column beside the demo. Supply an explicit poster for AppFrame and networked Live widgets.",
       "frontmatter": {
         "type": "object",
         "properties": {
@@ -2454,7 +2652,7 @@
       "slots": {
         "body": {
           "tag": null,
-          "description": "One <AppFrame app=\"name\" poster=\"...\" /> or <Live component={...} />, nothing else. It fills the region. The app must exist under decks/<deck>/apps/ (`deck new app`), or the build fails. Set what the audience should watch for in `title:` (one line).",
+          "description": "One <AppFrame>, <Live>, <CommandDemo>, <GroundedAnswer>, <ReviewDiff> or <RunTrace>. It fills the region. The app must exist under decks/<deck>/apps/ (`deck new app`), or the build fails. Set what the audience should watch for in `title:` (one line).",
           "required": true,
           "accepts": [
             "component"
@@ -2495,6 +2693,256 @@
         },
         "body": "<Live label=\"Where the live demo goes\">\n\n**The demo goes here.** Create a mini app with `deck new app <deck> <name>`, then replace this placeholder with `<AppFrame app=\"<name>\" poster=... chrome=\"window\" />`.\n\n</Live>\n\n<Aside>\n- Tool calls appear as cards\n- The answer streams in last\n</Aside>\n\n<Notes>\nSay what to watch for before the demo starts, then let it run without talking over it.\n</Notes>\n",
         "mdx": "---\nlayout: demo\ntitle: \"Watch the agent call two tools, then answer\"\neyebrow: Live demo\n---\n\n<Live label=\"Where the live demo goes\">\n\n**The demo goes here.** Create a mini app with `deck new app <deck> <name>`, then replace this placeholder with `<AppFrame app=\"<name>\" poster=... chrome=\"window\" />`.\n\n</Live>\n\n<Aside>\n- Tool calls appear as cards\n- The answer streams in last\n</Aside>\n\n<Notes>\nSay what to watch for before the demo starts, then let it run without talking over it.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "choose-path",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Let the audience choose one of two short workflows from the same prompt. Each choice opens its own actions and outcome. Return to the choices at any time. A static poster summarises both workflows and outcomes for previews and exports.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "branches": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 34
+                  },
+                  "situation": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 88
+                  },
+                  "steps": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 32
+                        },
+                        "detail": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 88
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "detail"
+                      ],
+                      "additionalProperties": true
+                    },
+                    "minItems": 2,
+                    "maxItems": 3
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 88
+                  }
+                },
+                "required": [
+                  "name",
+                  "situation",
+                  "steps",
+                  "outcome"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 34
+                  },
+                  "situation": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 88
+                  },
+                  "steps": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 32
+                        },
+                        "detail": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 88
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "detail"
+                      ],
+                      "additionalProperties": true
+                    },
+                    "minItems": 2,
+                    "maxItems": 3
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 88
+                  }
+                },
+                "required": [
+                  "name",
+                  "situation",
+                  "steps",
+                  "outcome"
+                ],
+                "additionalProperties": true
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "prompt",
+          "branches"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "prompt": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Ask which case or action to explore, in up to 100 characters."
+        },
+        "branches": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write exactly 2 workflows, each with a distinct `name` (up to 34 characters), a `situation` and an `outcome` (up to 88 characters each). Give each branch 2 to 3 `steps`. Each pairs a verb-led `action` that fits on a button (up to 32 characters) with an explanatory `detail` (up to 88 characters)."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 60
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "Brief source or caveat, such as that the outcomes are illustrated.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "How should we handle this service request?",
+          "eyebrow": "Interactive demo",
+          "prompt": "Choose which request to try.",
+          "branches": [
+            {
+              "name": "A broken sprinkler",
+              "situation": "A resident reports water pooling on the pavement.",
+              "steps": [
+                {
+                  "action": "Check the location",
+                  "detail": "Match the postcode to a city-owned asset."
+                },
+                {
+                  "action": "Send an urgent crew",
+                  "detail": "Alert the crew on duty and assign the job."
+                }
+              ],
+              "outcome": "The duty crew accepts an urgent repair job."
+            },
+            {
+              "name": "A new street tree",
+              "situation": "A resident asks for shade outside their building.",
+              "steps": [
+                {
+                  "action": "Check the planting list",
+                  "detail": "Find the next survey for that street."
+                },
+                {
+                  "action": "Book a survey",
+                  "detail": "Send the resident the next available date."
+                }
+              ],
+              "outcome": "The resident gets a date for a pavement survey."
+            }
+          ]
+        },
+        "body": "<Notes>Ask the room which request to try first. Walk through both actions, then return to the choices.</Notes>\n",
+        "mdx": "---\nlayout: choose-path\ntitle: \"How should we handle this service request?\"\neyebrow: Interactive demo\nprompt: Choose which request to try.\nbranches:\n  - name: A broken sprinkler\n    situation: A resident reports water pooling on the pavement.\n    steps:\n      - action: Check the location\n        detail: Match the postcode to a city-owned asset.\n      - action: Send an urgent crew\n        detail: Alert the crew on duty and assign the job.\n    outcome: The duty crew accepts an urgent repair job.\n  - name: A new street tree\n    situation: A resident asks for shade outside their building.\n    steps:\n      - action: Check the planting list\n        detail: Find the next survey for that street.\n      - action: Book a survey\n        detail: Send the resident the next available date.\n    outcome: The resident gets a date for a pavement survey.\n---\n\n<Notes>Ask the room which request to try first. Walk through both actions, then return to the choices.</Notes>\n"
       },
       "pptx": {
         "type": "title-only",
@@ -4761,6 +5209,2645 @@
             "kind": "body",
             "from": {
               "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "screen-story",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Present an offline product moment using screenshot artwork. Spotlight links a browser view to a magnified crop of the same image. Wipe animates a registered pair in a fixed viewport and compares both versions in the finished export. Handoff transfers a task from desktop to a phone. Filmstrip keeps three consecutive actions and screenshots visible at the end.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "pattern": {
+            "type": "string",
+            "enum": [
+              "spotlight",
+              "wipe",
+              "handoff",
+              "filmstrip"
+            ]
+          },
+          "screens": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "src": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "alt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 140
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 26
+                },
+                "detail": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 65
+                }
+              },
+              "required": [
+                "src",
+                "alt",
+                "label"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 42
+          },
+          "ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "Infinity",
+                  "-Infinity",
+                  "NaN"
+                ]
+              }
+            ],
+            "default": 2
+          },
+          "spotlight": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "Infinity",
+                      "-Infinity",
+                      "NaN"
+                    ]
+                  }
+                ]
+              },
+              "y": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "Infinity",
+                      "-Infinity",
+                      "NaN"
+                    ]
+                  }
+                ]
+              },
+              "width": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "Infinity",
+                      "-Infinity",
+                      "NaN"
+                    ]
+                  }
+                ]
+              },
+              "height": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "Infinity",
+                      "-Infinity",
+                      "NaN"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "x",
+              "y",
+              "width",
+              "height"
+            ],
+            "additionalProperties": true
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "pattern",
+          "screens"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "pattern": {
+          "required": true,
+          "default": null,
+          "allowed": [
+            "spotlight",
+            "wipe",
+            "handoff",
+            "filmstrip"
+          ],
+          "hint": "Choose spotlight, wipe, handoff, or filmstrip."
+        },
+        "screens": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Supply 1 screen for spotlight, 2 for wipe or handoff, and 3 for filmstrip. Each needs a local `src`, `alt` (up to 140 characters), `label` (up to 26 characters) and optional `detail` (up to 65 characters). Order them as the workflow happens."
+        },
+        "address": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Optional browser address, up to 42 characters."
+        },
+        "ratio": {
+          "required": false,
+          "default": 2,
+          "allowed": null,
+          "hint": "Write the desktop viewport width divided by its height, from 0.5 to 3, default 2. The images in a wipe must share the ratio and line up at corresponding coordinates."
+        },
+        "spotlight": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Required only for spotlight. Set x, y, width and height as percentages of the complete screen. Keep the rectangle within the screenshot and at least 5% wide and high."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Use reveal: true to build. Spotlight, wipe and handoff take one click. Filmstrip takes two clicks. Omit it to show the finished visual immediately."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 62
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "Optional attribution or an example caveat.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Three actions turn a booking into a receipt",
+          "eyebrow": "Product filmstrip",
+          "pattern": "filmstrip",
+          "reveal": true,
+          "screens": [
+            {
+              "src": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22360%22%20height%3D%22480%22%3E%3Crect%20width%3D%22360%22%20height%3D%22480%22%20fill%3D%22%23f5efe4%22%2F%3E%3Crect%20width%3D%22360%22%20height%3D%2262%22%20fill%3D%22%231d2a33%22%2F%3E%3Ctext%20x%3D%2226%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%3EBooking%20desk%3C%2Ftext%3E%3Ccircle%20cx%3D%22180%22%20cy%3D%22258%22%20r%3D%2287%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M124%20226h112v72H124zm20%2024h72m-72%2022h50%22%20fill%3D%22none%22%20stroke%3D%22%23695a46%22%20stroke-width%3D%228%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3Ctext%20x%3D%22180%22%20y%3D%22390%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%231d2a33%22%3EBooking%20open%3C%2Ftext%3E%3C%2Fsvg%3E",
+              "alt": "The open booking shown with a document icon",
+              "label": "Open booking"
+            },
+            {
+              "src": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22360%22%20height%3D%22480%22%3E%3Crect%20width%3D%22360%22%20height%3D%22480%22%20fill%3D%22%23f5efe4%22%2F%3E%3Crect%20width%3D%22360%22%20height%3D%2262%22%20fill%3D%22%231d2a33%22%2F%3E%3Ctext%20x%3D%2226%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%3EBooking%20desk%3C%2Ftext%3E%3Ccircle%20cx%3D%22180%22%20cy%3D%22258%22%20r%3D%2287%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M180%20210l57%2092H123zm0%2031v23m0%2016v1%22%20fill%3D%22none%22%20stroke%3D%22%2385522b%22%20stroke-width%3D%228%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3Ctext%20x%3D%22180%22%20y%3D%22390%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%231d2a33%22%3EPriority%20checked%3C%2Ftext%3E%3C%2Fsvg%3E",
+              "alt": "The booking priority shown with a warning icon",
+              "label": "Check priority"
+            },
+            {
+              "src": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22360%22%20height%3D%22480%22%3E%3Crect%20width%3D%22360%22%20height%3D%22480%22%20fill%3D%22%23f5efe4%22%2F%3E%3Crect%20width%3D%22360%22%20height%3D%2262%22%20fill%3D%22%231d2a33%22%2F%3E%3Ctext%20x%3D%2226%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%3EBooking%20desk%3C%2Ftext%3E%3Ccircle%20cx%3D%22180%22%20cy%3D%22258%22%20r%3D%2287%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M121%20260l39%2035%2078-79%22%20fill%3D%22none%22%20stroke%3D%22%23225d50%22%20stroke-width%3D%228%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3Ctext%20x%3D%22180%22%20y%3D%22390%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%231d2a33%22%3EReceipt%20saved%3C%2Ftext%3E%3C%2Fsvg%3E",
+              "alt": "The saved booking receipt shown with a tick",
+              "label": "Confirm booking"
+            }
+          ]
+        },
+        "body": "<Notes>Show the booking, then [click] the priority and [click] the receipt.</Notes>\n",
+        "mdx": "---\nlayout: screen-story\ntitle: Three actions turn a booking into a receipt\neyebrow: Product filmstrip\npattern: filmstrip\nreveal: true\nscreens:\n  - src: \"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22360%22%20height%3D%22480%22%3E%3Crect%20width%3D%22360%22%20height%3D%22480%22%20fill%3D%22%23f5efe4%22%2F%3E%3Crect%20width%3D%22360%22%20height%3D%2262%22%20fill%3D%22%231d2a33%22%2F%3E%3Ctext%20x%3D%2226%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%3EBooking%20desk%3C%2Ftext%3E%3Ccircle%20cx%3D%22180%22%20cy%3D%22258%22%20r%3D%2287%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M124%20226h112v72H124zm20%2024h72m-72%2022h50%22%20fill%3D%22none%22%20stroke%3D%22%23695a46%22%20stroke-width%3D%228%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3Ctext%20x%3D%22180%22%20y%3D%22390%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%231d2a33%22%3EBooking%20open%3C%2Ftext%3E%3C%2Fsvg%3E\"\n    alt: The open booking shown with a document icon\n    label: Open booking\n  - src: \"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22360%22%20height%3D%22480%22%3E%3Crect%20width%3D%22360%22%20height%3D%22480%22%20fill%3D%22%23f5efe4%22%2F%3E%3Crect%20width%3D%22360%22%20height%3D%2262%22%20fill%3D%22%231d2a33%22%2F%3E%3Ctext%20x%3D%2226%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%3EBooking%20desk%3C%2Ftext%3E%3Ccircle%20cx%3D%22180%22%20cy%3D%22258%22%20r%3D%2287%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M180%20210l57%2092H123zm0%2031v23m0%2016v1%22%20fill%3D%22none%22%20stroke%3D%22%2385522b%22%20stroke-width%3D%228%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3Ctext%20x%3D%22180%22%20y%3D%22390%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%231d2a33%22%3EPriority%20checked%3C%2Ftext%3E%3C%2Fsvg%3E\"\n    alt: The booking priority shown with a warning icon\n    label: Check priority\n  - src: \"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22360%22%20height%3D%22480%22%3E%3Crect%20width%3D%22360%22%20height%3D%22480%22%20fill%3D%22%23f5efe4%22%2F%3E%3Crect%20width%3D%22360%22%20height%3D%2262%22%20fill%3D%22%231d2a33%22%2F%3E%3Ctext%20x%3D%2226%22%20y%3D%2240%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20fill%3D%22white%22%3EBooking%20desk%3C%2Ftext%3E%3Ccircle%20cx%3D%22180%22%20cy%3D%22258%22%20r%3D%2287%22%20fill%3D%22white%22%2F%3E%3Cpath%20d%3D%22M121%20260l39%2035%2078-79%22%20fill%3D%22none%22%20stroke%3D%22%23225d50%22%20stroke-width%3D%228%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3Ctext%20x%3D%22180%22%20y%3D%22390%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2226%22%20fill%3D%22%231d2a33%22%3EReceipt%20saved%3C%2Ftext%3E%3C%2Fsvg%3E\"\n    alt: The saved booking receipt shown with a tick\n    label: Confirm booking\n---\n\n<Notes>Show the booking, then [click] the priority and [click] the receipt.</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "vision-storyboard",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Make a product vision tangible with three illustrated moments from one person’s day.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          },
+          "scenes": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "src": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "alt": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "focal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+                      }
+                    },
+                    "required": [
+                      "src",
+                      "alt"
+                    ],
+                    "additionalProperties": true
+                  },
+                  "moment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 22
+                  },
+                  "action": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 48
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 85
+                  }
+                },
+                "required": [
+                  "image",
+                  "moment",
+                  "action",
+                  "detail"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "src": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "alt": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "focal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+                      }
+                    },
+                    "required": [
+                      "src",
+                      "alt"
+                    ],
+                    "additionalProperties": true
+                  },
+                  "moment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 22
+                  },
+                  "action": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 48
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 85
+                  }
+                },
+                "required": [
+                  "image",
+                  "moment",
+                  "action",
+                  "detail"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "src": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "alt": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "focal": {
+                        "type": "string",
+                        "minLength": 1,
+                        "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+                      }
+                    },
+                    "required": [
+                      "src",
+                      "alt"
+                    ],
+                    "additionalProperties": true
+                  },
+                  "moment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 22
+                  },
+                  "action": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 48
+                  },
+                  "detail": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 85
+                  }
+                },
+                "required": [
+                  "image",
+                  "moment",
+                  "action",
+                  "detail"
+                ],
+                "additionalProperties": true
+              }
+            ],
+            "maxItems": 3,
+            "minItems": 3
+          }
+        },
+        "required": [
+          "scenes"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Start on the first scene and reveal a scene on each click. All three appear on the final frame."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": null
+        },
+        "scenes": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Exactly 3 moments. Each takes image: { src, alt, focal? } (alt up to 160 characters), a moment up to 22, an action up to 48, and a detail up to 85 characters. Keep one actor or object consistent."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 70
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "The repaired lamp is back by dinner",
+          "reveal": true,
+          "scenes": [
+            {
+              "image": {
+                "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23e9d8c3' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M90 268h460M126 267v61m386-61v61M304 181v64m-36 1h72m-99-65 34-87h61l32 87zM382 268v-36h91v36'/%3E%3C/svg%3E",
+                "alt": "A lamp on a repair counter"
+              },
+              "moment": "09:10",
+              "action": "Drop off at the shop",
+              "detail": "The owner leaves a lamp on the counter."
+            },
+            {
+              "image": {
+                "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23d4e4f1' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M77 270h486M114 270v49m403-49v49M315 176v62m-34 10h68m-99-74 34-79h59l31 79zM448 235l45-80m-13 88 31-56m-71 5 25 15'/%3E%3C/svg%3E",
+                "alt": "A lamp being repaired on a workbench"
+              },
+              "moment": "13:00",
+              "action": "Replace the switch",
+              "detail": "The repairer tests the new switch."
+            },
+            {
+              "image": {
+                "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23d8e6d3' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M69 285h502M420 170v102m-33 0h66m-91-104 30-74h58l29 74zM167 217v-45m-26 58q0-30 26-30h124q29 0 29 28v44H141zM382 75l-19-20m69 18 15-20'/%3E%3C/svg%3E",
+                "alt": "The repaired lamp lit at home"
+              },
+              "moment": "17:32",
+              "action": "Turn on the light",
+              "detail": "The lamp is home before dinner."
+            }
+          ]
+        },
+        "body": "<Notes>Follow the lamp from the counter to the workbench and back home.</Notes>\n",
+        "mdx": "---\nlayout: vision-storyboard\ntitle: The repaired lamp is back by dinner\nreveal: true\nscenes:\n  - image:\n      src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23e9d8c3' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M90 268h460M126 267v61m386-61v61M304 181v64m-36 1h72m-99-65 34-87h61l32 87zM382 268v-36h91v36'/%3E%3C/svg%3E\"\n      alt: A lamp on a repair counter\n    moment: \"09:10\"\n    action: Drop off at the shop\n    detail: The owner leaves a lamp on the counter.\n  - image:\n      src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23d4e4f1' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M77 270h486M114 270v49m403-49v49M315 176v62m-34 10h68m-99-74 34-79h59l31 79zM448 235l45-80m-13 88 31-56m-71 5 25 15'/%3E%3C/svg%3E\"\n      alt: A lamp being repaired on a workbench\n    moment: \"13:00\"\n    action: Replace the switch\n    detail: The repairer tests the new switch.\n  - image:\n      src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23d8e6d3' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M69 285h502M420 170v102m-33 0h66m-91-104 30-74h58l29 74zM167 217v-45m-26 58q0-30 26-30h124q29 0 29 28v44H141zM382 75l-19-20m69 18 15-20'/%3E%3C/svg%3E\"\n      alt: The repaired lamp lit at home\n    moment: \"17:32\"\n    action: Turn on the light\n    detail: The lamp is home before dinner.\n---\n\n<Notes>Follow the lamp from the counter to the workbench and back home.</Notes>\n"
+      },
+      "pptx": null
+    },
+    {
+      "name": "sketch-to-ship",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Connect an annotated sketch to the same decisions in a finished design.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          },
+          "sketch": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "minLength": 1
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "focal": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+              }
+            },
+            "required": [
+              "src",
+              "alt"
+            ],
+            "additionalProperties": true
+          },
+          "finished": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "minLength": 1
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "focal": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+              }
+            },
+            "required": [
+              "src",
+              "alt"
+            ],
+            "additionalProperties": true
+          },
+          "annotations": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 28
+                  },
+                  "sketch": {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "y": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": true
+                  },
+                  "finished": {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "y": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "label",
+                  "sketch",
+                  "finished"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 28
+                  },
+                  "sketch": {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "y": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": true
+                  },
+                  "finished": {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "y": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "label",
+                  "sketch",
+                  "finished"
+                ],
+                "additionalProperties": true
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2
+          },
+          "result": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 98
+          }
+        },
+        "required": [
+          "sketch",
+          "finished",
+          "annotations",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Start with the marked-up sketch. The click exposes the shipping design and its corresponding annotations."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": null
+        },
+        "sketch": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "The rough design as { src, alt } with up to 160 alt characters. Use the same 16:9 orientation as finished."
+        },
+        "finished": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "The released design as { src, alt } with up to 160 alt characters and the same landmarks as the sketch."
+        },
+        "annotations": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write 2 { label, sketch: { x, y }, finished: { x, y } } mappings. A label takes up to 28 characters. Coordinates are percentages from the top left. Keep room above and to the right of the pin."
+        },
+        "result": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Name what changed for the person using the product, in up to 98 characters."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 70
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "The repair estimate now shows its due date",
+          "reveal": true,
+          "sketch": {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23ecdcc5' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M44 60q267-5 552 3l-3 233q-246 9-552-5zM49 93l542 1M369 92l-4 203M92 142l110-2m-109 32 78-4m241 30 106-3m-105 30h62'/%3E%3C/svg%3E",
+            "alt": "A rough two-column estimate"
+          },
+          "finished": {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23d8e6f4' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M44 60h552v236H44zM44 93h552m-227 0v203M92 142h110m-110 31h78M412 198h106m-106 30h62M463 253h42'/%3E%3C/svg%3E",
+            "alt": "The released two-column estimate"
+          },
+          "annotations": [
+            {
+              "label": "Estimate",
+              "sketch": {
+                "x": 12,
+                "y": 24
+              },
+              "finished": {
+                "x": 12,
+                "y": 24
+              }
+            },
+            {
+              "label": "Due date",
+              "sketch": {
+                "x": 52,
+                "y": 70
+              },
+              "finished": {
+                "x": 52,
+                "y": 70
+              }
+            }
+          ],
+          "result": "The customer sees the price and due date together."
+        },
+        "body": "<Notes>Point to both landmarks in the sketch. [click] Find the same decisions in the final design.</Notes>\n",
+        "mdx": "---\nlayout: sketch-to-ship\ntitle: The repair estimate now shows its due date\nreveal: true\nsketch:\n  src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23ecdcc5' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M44 60q267-5 552 3l-3 233q-246 9-552-5zM49 93l542 1M369 92l-4 203M92 142l110-2m-109 32 78-4m241 30 106-3m-105 30h62'/%3E%3C/svg%3E\"\n  alt: A rough two-column estimate\nfinished:\n  src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23d8e6f4' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M44 60h552v236H44zM44 93h552m-227 0v203M92 142h110m-110 31h78M412 198h106m-106 30h62M463 253h42'/%3E%3C/svg%3E\"\n  alt: The released two-column estimate\nannotations:\n  - label: Estimate\n    sketch:\n      x: 12\n      y: 24\n    finished:\n      x: 12\n      y: 24\n  - label: Due date\n    sketch:\n      x: 52\n      y: 70\n    finished:\n      x: 52\n      y: 70\nresult: The customer sees the price and due date together.\n---\n\n<Notes>Point to both landmarks in the sketch. [click] Find the same decisions in the final design.</Notes>\n"
+      },
+      "pptx": null
+    },
+    {
+      "name": "future-back",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Start at a pictured desired future and trace backward to the capabilities and a near-term bet.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          },
+          "future": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "object",
+                "properties": {
+                  "src": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "alt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "focal": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+                  }
+                },
+                "required": [
+                  "src",
+                  "alt"
+                ],
+                "additionalProperties": true
+              },
+              "when": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 25
+              },
+              "outcome": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 76
+              }
+            },
+            "required": [
+              "image",
+              "when",
+              "outcome"
+            ],
+            "additionalProperties": true
+          },
+          "capabilities": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 78
+                  }
+                },
+                "required": [
+                  "name",
+                  "reason"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 78
+                  }
+                },
+                "required": [
+                  "name",
+                  "reason"
+                ],
+                "additionalProperties": true
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2
+          },
+          "bet": {
+            "type": "object",
+            "properties": {
+              "when": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 45
+              },
+              "test": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "when",
+              "action",
+              "test"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "future",
+          "capabilities",
+          "bet"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Start at the illustrated outcome on the right. Reveal its capabilities to the left, then the immediate bet farther left."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": null
+        },
+        "future": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Give a horizon (when, 25 characters), outcome (76) and image ({ src, alt }, 160 alt characters) from a customer’s point of view."
+        },
+        "capabilities": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write 2 prerequisites. Each takes a name up to 40 characters and a reason up to 78 explaining what it enables."
+        },
+        "bet": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write when (up to 24 characters), one action (up to 45) and the test that will change a decision (up to 100)."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 70
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "A broken lamp should be working by dinner",
+          "reveal": true,
+          "future": {
+            "image": {
+              "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23e2eacb' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M65 286h512M421 170v101m-32 0h64m-93-103 32-74h57l31 74zM144 231q0-27 27-27h107q28 0 28 27v41H144zM171 206v-34m207-100-16-17m92 20 18-18'/%3E%3C/svg%3E",
+              "alt": "A repaired lamp beside a sofa"
+            },
+            "when": "By next summer",
+            "outcome": "Neighbors collect repaired lamps on their way home."
+          },
+          "capabilities": [
+            {
+              "name": "Same-day triage",
+              "reason": "Identify the fix before the afternoon collection."
+            },
+            {
+              "name": "Common parts on hand",
+              "reason": "Complete common repairs without an extra visit."
+            }
+          ],
+          "bet": {
+            "when": "Next month",
+            "action": "Run four repair Saturdays",
+            "test": "Measure how many common repairs finish before 5 p.m."
+          }
+        },
+        "body": "<Notes>Start in the home. [click] Trace back to what the shop must be able to do. [click] Share the first test.</Notes>\n",
+        "mdx": "---\nlayout: future-back\ntitle: A broken lamp should be working by dinner\nreveal: true\nfuture:\n  image:\n    src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23e2eacb' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M65 286h512M421 170v101m-32 0h64m-93-103 32-74h57l31 74zM144 231q0-27 27-27h107q28 0 28 27v41H144zM171 206v-34m207-100-16-17m92 20 18-18'/%3E%3C/svg%3E\"\n    alt: A repaired lamp beside a sofa\n  when: By next summer\n  outcome: Neighbors collect repaired lamps on their way home.\ncapabilities:\n  - name: Same-day triage\n    reason: Identify the fix before the afternoon collection.\n  - name: Common parts on hand\n    reason: Complete common repairs without an extra visit.\nbet:\n  when: Next month\n  action: Run four repair Saturdays\n  test: Measure how many common repairs finish before 5 p.m.\n---\n\n<Notes>Start in the home. [click] Trace back to what the shop must be able to do. [click] Share the first test.</Notes>\n"
+      },
+      "pptx": null
+    },
+    {
+      "name": "roadmap-transit",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Lay three workstreams across four shared periods and mark the dependency where two lines connect.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          },
+          "periods": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16
+              },
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16
+              },
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16
+              },
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16
+              }
+            ],
+            "maxItems": 4,
+            "minItems": 4
+          },
+          "tracks": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 24
+                  },
+                  "stops": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    ],
+                    "maxItems": 4,
+                    "minItems": 4
+                  }
+                },
+                "required": [
+                  "name",
+                  "stops"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 24
+                  },
+                  "stops": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    ],
+                    "maxItems": 4,
+                    "minItems": 4
+                  }
+                },
+                "required": [
+                  "name",
+                  "stops"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 24
+                  },
+                  "stops": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 24
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    ],
+                    "maxItems": 4,
+                    "minItems": 4
+                  }
+                },
+                "required": [
+                  "name",
+                  "stops"
+                ],
+                "additionalProperties": true
+              }
+            ],
+            "maxItems": 3,
+            "minItems": 3
+          },
+          "transfer": {
+            "type": "object",
+            "properties": {
+              "stop": {
+                "type": "number",
+                "enum": [
+                  2,
+                  3
+                ]
+              },
+              "from": {
+                "type": "number",
+                "enum": [
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "to": {
+                "type": "number",
+                "enum": [
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32
+              }
+            },
+            "required": [
+              "stop",
+              "from",
+              "to",
+              "label"
+            ],
+            "additionalProperties": true
+          },
+          "milestone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          }
+        },
+        "required": [
+          "periods",
+          "tracks",
+          "transfer",
+          "milestone"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Show the three lines first, then the dependency, then the milestone."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": null
+        },
+        "periods": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 4 period labels in time order, each up to 16 characters. Every workstream shares these positions."
+        },
+        "tracks": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write 3 { name, stops } lines, each with 4 stop labels or null for an empty stop. A name or stop label takes up to 24 characters."
+        },
+        "transfer": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Set stop to 2 or 3, use from and to to name the two one-based track positions, and explain the dependency in a label up to 32 characters."
+        },
+        "milestone": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "State the milestone enabled by that dependency, in up to 96 characters."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 70
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "The pilot depends on pickup labels",
+          "reveal": true,
+          "periods": [
+            "April",
+            "May",
+            "June",
+            "July"
+          ],
+          "tracks": [
+            {
+              "name": "Software",
+              "stops": [
+                "Queue prototype",
+                "Print labels",
+                "Live alerts",
+                null
+              ]
+            },
+            {
+              "name": "Operations",
+              "stops": [
+                "Map pickup routes",
+                "Scan labels",
+                "Staff the pilot",
+                "Run the pilot"
+              ]
+            },
+            {
+              "name": "Sales",
+              "stops": [
+                "Invite shops",
+                null,
+                "Confirm shops",
+                "Announce dates"
+              ]
+            }
+          ],
+          "transfer": {
+            "stop": 2,
+            "from": 1,
+            "to": 2,
+            "label": "Labels to dispatch"
+          },
+          "milestone": "July: run the pilot once every pickup carries a scannable label."
+        },
+        "body": "<Notes>Read across the parallel lines. [click] Trace the shared dependency. [click] Name the pilot it unlocks.</Notes>\n",
+        "mdx": "---\nlayout: roadmap-transit\ntitle: The pilot depends on pickup labels\nreveal: true\nperiods:\n  - April\n  - May\n  - June\n  - July\ntracks:\n  - name: Software\n    stops:\n      - Queue prototype\n      - Print labels\n      - Live alerts\n      - null\n  - name: Operations\n    stops:\n      - Map pickup routes\n      - Scan labels\n      - Staff the pilot\n      - Run the pilot\n  - name: Sales\n    stops:\n      - Invite shops\n      - null\n      - Confirm shops\n      - Announce dates\ntransfer:\n  stop: 2\n  from: 1\n  to: 2\n  label: Labels to dispatch\nmilestone: \"July: run the pilot once every pickup carries a scannable label.\"\n---\n\n<Notes>Read across the parallel lines. [click] Trace the shared dependency. [click] Name the pilot it unlocks.</Notes>\n"
+      },
+      "pptx": null
+    },
+    {
+      "name": "roadmap-hill",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Show where named scopes sit between discovering an approach and carrying it out.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          },
+          "scopes": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 25
+                  },
+                  "previous": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "current": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "name",
+                  "previous",
+                  "current"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 25
+                  },
+                  "previous": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "current": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "name",
+                  "previous",
+                  "current"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 25
+                  },
+                  "previous": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "current": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "name",
+                  "previous",
+                  "current"
+                ],
+                "additionalProperties": true
+              }
+            ],
+            "maxItems": 3,
+            "minItems": 3
+          },
+          "previous": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22
+          },
+          "current": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22
+          },
+          "takeaway": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 92
+          }
+        },
+        "required": [
+          "scopes",
+          "previous",
+          "current",
+          "takeaway"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Show the earlier scope positions first and reveal their direction and new positions on the click."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": null
+        },
+        "scopes": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write 3 { name, previous, current } scopes, with names up to 25 characters. Positions 0–49 are discovering, 50 means the approach is known, and 51–100 are executing it."
+        },
+        "previous": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Label the earlier checkpoint, up to 22 characters."
+        },
+        "current": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Label the current checkpoint, up to 22 characters."
+        },
+        "takeaway": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "State what the movement means for the next decision, up to 92 characters."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 70
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Route scanning has a workable approach",
+          "reveal": true,
+          "previous": "3 March",
+          "current": "17 March",
+          "scopes": [
+            {
+              "name": "Shop enrollment",
+              "previous": 18,
+              "current": 30
+            },
+            {
+              "name": "Route scanning",
+              "previous": 43,
+              "current": 61
+            },
+            {
+              "name": "Label printing",
+              "previous": 72,
+              "current": 88
+            }
+          ],
+          "takeaway": "Make the route scanner ready for the first trial."
+        },
+        "body": "<Notes>Read each scope on the earlier hill. [click] Route scanning has moved into delivery.</Notes>\n",
+        "mdx": "---\nlayout: roadmap-hill\ntitle: Route scanning has a workable approach\nreveal: true\nprevious: 3 March\ncurrent: 17 March\nscopes:\n  - name: Shop enrollment\n    previous: 18\n    current: 30\n  - name: Route scanning\n    previous: 43\n    current: 61\n  - name: Label printing\n    previous: 72\n    current: 88\ntakeaway: Make the route scanner ready for the first trial.\n---\n\n<Notes>Read each scope on the earlier hill. [click] Route scanning has moved into delivery.</Notes>\n"
+      },
+      "pptx": null
+    },
+    {
+      "name": "opportunity-map",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Explain a spatial expansion decision on a map with a proposed site, coverage route and constraint.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          },
+          "map": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "minLength": 1
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "focal": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+              }
+            },
+            "required": [
+              "src",
+              "alt"
+            ],
+            "additionalProperties": true
+          },
+          "districts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 24
+                },
+                "point": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "label",
+                "point"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 4
+          },
+          "proposed": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "point": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "additionalProperties": true
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "label",
+              "point",
+              "detail"
+            ],
+            "additionalProperties": true
+          },
+          "constraint": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "point": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "additionalProperties": true
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "label",
+              "point",
+              "detail"
+            ],
+            "additionalProperties": true
+          },
+          "route": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              },
+              "required": [
+                "x",
+                "y"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 8
+          }
+        },
+        "required": [
+          "map",
+          "districts",
+          "proposed",
+          "constraint",
+          "route"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Start with the geography and districts, then expose the proposal and route, then the constraint."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": null
+        },
+        "map": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "A local 16:9 map image with src and alt, up to 160 characters. Include geography that affects the decision."
+        },
+        "districts": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write 2 to 4 context points, each with a label up to 24 characters and x and y as percentages from the top left."
+        },
+        "proposed": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Give the selected site a label up to 24 characters, a point and a detail up to 100 characters."
+        },
+        "constraint": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Locate the constraint with a label up to 24 characters, a point and a detail up to 100 characters."
+        },
+        "route": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 8 points in percentages tracing the proposed connection along paths in the artwork."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 70
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Start the collection route south of the bridge",
+          "reveal": true,
+          "map": {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23dbe6ce' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M307 4q-33 112 29 172t13 184m29-360q-32 111 26 172t25 185M329 190l71 1M33 109l243 12M43 208l223-7m-96-136 12 221M456 107l164 10m-109-53-9 227M466 213l150-8'/%3E%3C/svg%3E",
+            "alt": "A schematic of two districts near a crossing"
+          },
+          "districts": [
+            {
+              "label": "Market",
+              "point": {
+                "x": 19,
+                "y": 32
+              }
+            },
+            {
+              "label": "North bank",
+              "point": {
+                "x": 71,
+                "y": 22
+              }
+            }
+          ],
+          "proposed": {
+            "label": "New station",
+            "point": {
+              "x": 32,
+              "y": 72
+            },
+            "detail": "Groups pickups with the shops that already share a route."
+          },
+          "constraint": {
+            "label": "Bridge works",
+            "point": {
+              "x": 58,
+              "y": 53
+            },
+            "detail": "Delay the north bank until the short crossing reopens."
+          },
+          "route": [
+            {
+              "x": 32,
+              "y": 72
+            },
+            {
+              "x": 23,
+              "y": 56
+            },
+            {
+              "x": 19,
+              "y": 32
+            }
+          ]
+        },
+        "body": "<Notes>Place the districts first. [click] Trace the selected link. [click] Explain the crossing constraint.</Notes>\n",
+        "mdx": "---\nlayout: opportunity-map\ntitle: Start the collection route south of the bridge\nreveal: true\nmap:\n  src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 360'%3E%3Cpath fill='%23dbe6ce' d='M0 0h640v360H0z'/%3E%3Cpath fill='none' stroke='%233c4a62' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' d='M307 4q-33 112 29 172t13 184m29-360q-32 111 26 172t25 185M329 190l71 1M33 109l243 12M43 208l223-7m-96-136 12 221M456 107l164 10m-109-53-9 227M466 213l150-8'/%3E%3C/svg%3E\"\n  alt: A schematic of two districts near a crossing\ndistricts:\n  - label: Market\n    point:\n      x: 19\n      y: 32\n  - label: North bank\n    point:\n      x: 71\n      y: 22\nproposed:\n  label: New station\n  point:\n    x: 32\n    y: 72\n  detail: Groups pickups with the shops that already share a route.\nconstraint:\n  label: Bridge works\n  point:\n    x: 58\n    y: 53\n  detail: Delay the north bank until the short crossing reopens.\nroute:\n  - x: 32\n    y: 72\n  - x: 23\n    y: 56\n  - x: 19\n    y: 32\n---\n\n<Notes>Place the districts first. [click] Trace the selected link. [click] Explain the crossing constraint.</Notes>\n"
+      },
+      "pptx": null
+    },
+    {
+      "name": "strategy-canvas",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Plot two alternatives and one chosen offer across shared buyer factors, then state the emphasis and tradeoff.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          },
+          "factors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 22
+            },
+            "minItems": 4,
+            "maxItems": 6
+          },
+          "alternatives": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 24
+                  },
+                  "levels": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "enum": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "levels"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 24
+                  },
+                  "levels": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "enum": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "levels"
+                ],
+                "additionalProperties": true
+              }
+            ],
+            "maxItems": 2,
+            "minItems": 2
+          },
+          "offer": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 24
+              },
+              "levels": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "enum": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                  ]
+                }
+              }
+            },
+            "required": [
+              "name",
+              "levels"
+            ],
+            "additionalProperties": true
+          },
+          "emphasize": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "tradeoff": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "factors",
+          "alternatives",
+          "offer",
+          "emphasize",
+          "tradeoff"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Show the alternative curves first, then the featured curve, then the strategic choices."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": null
+        },
+        "factors": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Give 4 to 6 ordered buyer factors up to 22 characters each, with a clear positive direction."
+        },
+        "alternatives": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Write 2 profiles with names up to 24 characters and one score 1–5 per factor, in order."
+        },
+        "offer": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Give a name up to 24 characters and one score 1–5 per factor, using the same assumptions."
+        },
+        "emphasize": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Describe the stronger offering in up to 64 characters."
+        },
+        "tradeoff": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "Describe the sacrifice in up to 64 characters."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 76
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "A source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Same-day lamp repair serves the neighborhood",
+          "reveal": true,
+          "factors": [
+            "Fast turnaround",
+            "Walk-in access",
+            "Rare parts",
+            "Wide coverage",
+            "Lower quote",
+            "Home pickup"
+          ],
+          "alternatives": [
+            {
+              "name": "Mail-in repair",
+              "levels": [
+                2,
+                1,
+                5,
+                5,
+                4,
+                5
+              ]
+            },
+            {
+              "name": "General workshop",
+              "levels": [
+                3,
+                3,
+                4,
+                2,
+                3,
+                3
+              ]
+            }
+          ],
+          "offer": {
+            "name": "Local lamp shop",
+            "levels": [
+              5,
+              5,
+              2,
+              1,
+              5,
+              2
+            ]
+          },
+          "emphasize": "Fast repairs within walking distance",
+          "tradeoff": "Rare parts go to a specialist"
+        },
+        "body": "<Footnote>Illustrative qualitative assessments.</Footnote>\n\n<Notes>Read the alternatives. [click] Compare the local offer. [click] Explain its tradeoff.</Notes>\n",
+        "mdx": "---\nlayout: strategy-canvas\ntitle: Same-day lamp repair serves the neighborhood\nreveal: true\nfactors:\n  - Fast turnaround\n  - Walk-in access\n  - Rare parts\n  - Wide coverage\n  - Lower quote\n  - Home pickup\nalternatives:\n  - name: Mail-in repair\n    levels:\n      - 2\n      - 1\n      - 5\n      - 5\n      - 4\n      - 5\n  - name: General workshop\n    levels:\n      - 3\n      - 3\n      - 4\n      - 2\n      - 3\n      - 3\noffer:\n  name: Local lamp shop\n  levels:\n    - 5\n    - 5\n    - 2\n    - 1\n    - 5\n    - 2\nemphasize: Fast repairs within walking distance\ntradeoff: Rare parts go to a specialist\n---\n\n<Footnote>Illustrative qualitative assessments.</Footnote>\n\n<Notes>Read the alternatives. [click] Compare the local offer. [click] Explain its tradeoff.</Notes>\n"
+      },
+      "pptx": null
+    },
+    {
+      "name": "product-cutaway",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "Show two or three illustrated layers of one product or software screen. Give the layers equally sized local artwork and write them front to back, so the first image is also the face of the assembled view. The first click separates the top two layers. A third layer separates on the next click. Each gets an aligned label and explanation. State what the parts enable together in the takeaway.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "src": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "alt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 26
+                },
+                "detail": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                }
+              },
+              "required": [
+                "src",
+                "alt",
+                "label",
+                "detail"
+              ],
+              "additionalProperties": true
+            },
+            "minItems": 2,
+            "maxItems": 3
+          },
+          "takeaway": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 110
+          },
+          "reveal": {
+            "type": "boolean",
+            "default": false
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "layers",
+          "takeaway"
+        ],
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "layers": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "List 2 to 3 layers front to back, each with a local image `src`, descriptive `alt` (up to 120 characters), `label` (up to 26 characters) and `detail` (up to 80 characters). Use a wide shared ratio, ideally about 4:1, and consistent bounds. Put the assembled face first. Keep important artwork away from the edges."
+        },
+        "takeaway": {
+          "required": true,
+          "default": null,
+          "allowed": null,
+          "hint": "State what the layers do together in one sentence, up to 110 characters."
+        },
+        "reveal": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Use `reveal: true` to begin assembled, expose the second layer on click one and the third, if present, on click two. The finished export shows all labels and the takeaway. Omit it to start with the layers open."
+        },
+        "chrome": {
+          "required": false,
+          "default": true,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 60
+      },
+      "surface": null,
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "Content outside every slot tag (in TSX, the default export).",
+          "required": false,
+          "accepts": []
+        },
+        "footnote": {
+          "tag": "Footnote",
+          "description": "An optional source or caveat on the bottom line.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        }
+      },
+      "budget": {
+        "footnote": {
+          "maxWords": 24
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "One cabinet protects the battery and the room",
+          "eyebrow": "Battery cabinet",
+          "reveal": true,
+          "layers": [
+            {
+              "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='150'%3E%3Crect width='398' height='148' x='1' y='1' rx='16' fill='%23d9e4ff'/%3E%3Cpath d='M58 50h284v54H58z M86 73h40' stroke='%23243a9a' stroke-width='5' fill='none'/%3E%3C/svg%3E",
+              "alt": "The closed cabinet face with a recessed handle",
+              "label": "Safety enclosure",
+              "detail": "The lock covers the battery terminals."
+            },
+            {
+              "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='150'%3E%3Crect width='398' height='148' x='1' y='1' rx='16' fill='%23d7eddf'/%3E%3Cpath d='M74 77h250 M115 49v56 M199 49v56 M283 49v56' stroke='%23306248' stroke-width='5' fill='none'/%3E%3C/svg%3E",
+              "alt": "Three green thermal fins across the cabinet",
+              "label": "Cooling plate",
+              "detail": "The fins carry heat away from the cells."
+            }
+          ],
+          "takeaway": "The cabinet keeps the cells cool and the terminals out of reach."
+        },
+        "body": "<Notes>Show the cabinet first, then [click] explain the enclosure and cooling plate.</Notes>\n",
+        "mdx": "---\nlayout: product-cutaway\ntitle: One cabinet protects the battery and the room\neyebrow: Battery cabinet\nreveal: true\nlayers:\n  - src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='150'%3E%3Crect width='398' height='148' x='1' y='1' rx='16' fill='%23d9e4ff'/%3E%3Cpath d='M58 50h284v54H58z M86 73h40' stroke='%23243a9a' stroke-width='5' fill='none'/%3E%3C/svg%3E\"\n    alt: The closed cabinet face with a recessed handle\n    label: Safety enclosure\n    detail: The lock covers the battery terminals.\n  - src: \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='150'%3E%3Crect width='398' height='148' x='1' y='1' rx='16' fill='%23d7eddf'/%3E%3Cpath d='M74 77h250 M115 49v56 M199 49v56 M283 49v56' stroke='%23306248' stroke-width='5' fill='none'/%3E%3C/svg%3E\"\n    alt: Three green thermal fins across the cabinet\n    label: Cooling plate\n    detail: The fins carry heat away from the cells.\ntakeaway: The cabinet keeps the cells cool and the terminals out of reach.\n---\n\n<Notes>Show the cabinet first, then [click] explain the enclosure and cooling plate.</Notes>\n"
+      },
+      "pptx": {
+        "type": "title-only",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-title"
             }
           }
         ]
