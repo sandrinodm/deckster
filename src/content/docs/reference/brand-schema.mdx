@@ -7,6 +7,8 @@ sidebar:
 
 Use this page to check a field of a `brand.ts` while you write or review one: its type, its limits, whether it is required and what fills it in when you leave it out. To build a brand step by step, start at [create a brand](/brands/create-a-brand/).
 
+For development builds, see [unreleased diagram brand settings](/data-and-diagrams/diagram-design/#set-defaults-in-a-brand).
+
 ## The file
 
 A brand is `brands/<name>/brand.ts`, default-exporting a call to `defineBrand` from `@deckster/brand`. `defineBrand` returns its argument unchanged and types it; the build validates the object when a deck loads the brand.
