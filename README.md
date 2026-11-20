@@ -177,11 +177,13 @@ your PATH (`npm install --global @deckster/cli`, Node 26 or newer) and a folder 
 
 - [create-presentation](skills/create-presentation/SKILL.md) plans a talk from audience and outcome
   to a storyline and an outline with one claim per slide, then writes the slides, speaker notes and
-  charts with `deck new`, `deck lint` and `deck shot`, looks at every screenshot, and critiques the
-  result against a rubric.
+  charts with `deck new`, `deck lint` and `deck shot`. Use its [layout chooser](skills/create-presentation/references/slide-craft.md#3-choosing-the-evidence)
+  to match the claim to a layout, then check the selected brand's slots and budgets with
+  `deck layouts <deck> --summary`. The skill reviews the rendered slides against a rubric.
 - [brand-import](skills/brand-import/SKILL.md) turns a PPTX, PDF, Google Slides link, website,
   guidelines document or screenshots into a draft `brands/<name>/brand.ts`: palette, surfaces,
-  typography with font licence status, logos, data palettes. It checks the brand with
+  typography with font licence status, logos and data palettes. For a reusable template, it maps
+  source layouts to kit fallbacks and can emit `layouts.ts` alongside the brand. It checks the brand with
   `deck brand check`, builds a specimen deck in it and renders side-by-side comparisons with the
   source.
 

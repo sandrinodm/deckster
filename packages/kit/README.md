@@ -94,8 +94,9 @@ component or contract per layout.
 
 A brand layout's contract is its fallback's, cut down to what the layout binds:
 
-- The slots are the ones its regions bind, with the fallback's descriptions and `accepts`. `body`
-  always exists. The schema has the fallback's fields that regions bind or `fields` lists, with
+- Write ordinary MDX content only when a region binds the `body` slot. On a layout made from
+  fields and named slots, fill those fields and wrap content in the named slot tags. The fallback
+  supplies the slot descriptions and `accepts`. The schema has the fallback's fields that regions bind or `fields` lists, with
   the fallback's `required` flags, defaults and hints. A slide valid on the brand layout is valid
   on the fallback.
 - Budgets are the fallback's, per slot, and the layout's own `budget` can only tighten them: each
@@ -104,8 +105,9 @@ A brand layout's contract is its fallback's, cut down to what the layout binds:
   does not take filled in. Its `variants` are kept when everything they refer to exists in the
   layout and dropped otherwise.
 - The example is the fallback's, reduced to the bound fields and slots.
-- The PPTX mapping (a title placeholder, a body, a picture for the first media region) is built
-  from the regions when the fallback has one.
+- The PPTX mapping comes from the layout's title and bound regions. For a two-column layout,
+  bind each text column to its own slot. The [two-content export change](https://github.com/sandrinodm/deckster/pull/31)
+  maps the first two qualifying body slots to distinct editable PowerPoint placeholders.
 
 `checkBrandLayouts` reports as errors a name that is already a kit or engine layout, an unknown
 fallback, a slot or field the fallback lacks or does not accept as text, one it requires that the
