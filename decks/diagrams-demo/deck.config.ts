@@ -11,7 +11,7 @@ import { defineDeck } from '@deckster/engine/config';
 export default defineDeck({
   title: 'How Parcelwise moves a request',
   brand: 'default',
-  duration: '18m',
+  duration: '19m',
   slides: [
     'cover',
     'request-journey',
