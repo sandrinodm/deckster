@@ -281,7 +281,7 @@ function wrapForLayout(tree: MdastNode, slotTags: ReadonlyMap<string, string>): 
         ...(node.attributes ?? []),
         { type: 'mdxJsxAttribute', name: SLOT_NAME_ATTRIBUTE, value: slot },
       ];
-    } else if (!(JSX_ELEMENT_TYPES.has(node.type) && node.name === NOTES_ELEMENT)) {
+    } else if (isBodyContent(node)) {
       hasBody = true;
     }
   }
@@ -291,6 +291,37 @@ function wrapForLayout(tree: MdastNode, slotTags: ReadonlyMap<string, string>): 
     { type: FLOW_ELEMENT_TYPE, name: SLOTS_ELEMENT, attributes: [], children: content },
   ];
   return hasBody;
+}
+
+/**
+ * Whether a node adds slide content. Notes, Markdown definitions and MDX comments can appear on a
+ * slide that has no body region.
+ *
+ * @param node - A node outside a named slot.
+ */
+function isBodyContent(node: MdastNode): boolean {
+  if (isNotes(node)) {
+    return false;
+  }
+
+  if (node.name === null && JSX_ELEMENT_TYPES.has(node.type)) {
+    return node.children?.some(isBodyContent) ?? false;
+  }
+
+  switch (node.type) {
+    case 'definition':
+    case 'footnoteDefinition':
+      return false;
+    case 'mdxFlowExpression':
+    case 'mdxTextExpression':
+      return node.data?.estree?.body?.length !== 0;
+    case 'paragraph':
+      return node.children?.some(isBodyContent) ?? false;
+    case 'text':
+      return typeof node.value === 'string' && node.value.trim() !== '';
+    default:
+      return true;
+  }
 }
 
 /**

@@ -60,8 +60,9 @@ export type SlotCheck = {
 
 /**
  * Checks how a slide fills its layout's slots: every required slot is filled, each slot tag appears
- * once and (in MDX) at the top level, and no tag names a slot only other layouts have. Names that
- * are no layout's slot tag are components and are left alone.
+ * once and (in MDX) at the top level, and no tag names a slot only other layouts have. MDX body
+ * content also needs a body region on a brand layout. Names that are no layout's slot tag are
+ * components and are left alone.
  *
  * @param usage - What the slide puts where.
  * @param layout - The layout the slide names.
@@ -96,8 +97,34 @@ export function checkSlotUsage(
     }
   }
 
+  const bodyIsUnbound = layout.fallback !== undefined && !Object.hasOwn(contract.slots, BODY_SLOT);
+  if (usage.kind === 'mdx' && usage.hasBody && bodyIsUnbound) {
+    problems.push(noBodyRegionProblem(contract.name, [...own.keys()]));
+  }
+
   const slots = [...own.values()].filter((slot) => filled.has(slot));
   return { slots, problems };
+}
+
+/**
+ * The problem for MDX body content that a brand layout has nowhere to draw.
+ *
+ * @param layout - The brand layout name.
+ * @param tags - The tags of its named slots.
+ */
+function noBodyRegionProblem(layout: string, tags: readonly string[]): Problem {
+  const useBodyRegion =
+    `Choose a layout with a body region or add a region with \`bind: { slot: '${BODY_SLOT}' }\` ` +
+    "in the brand's layouts.ts.";
+  const namedSlots = tags.map((tag) => `<${tag}>`).join(', ');
+  const fix =
+    tags.length === 0
+      ? useBodyRegion
+      : `Move the content into one of this layout's slots (${namedSlots}). ${useBodyRegion}`;
+  return {
+    message: `The ${layout} brand layout has no body region for content outside its slot tags.`,
+    fix,
+  };
 }
 
 /**

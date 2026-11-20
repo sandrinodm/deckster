@@ -75,7 +75,10 @@ layer(NodeFileSystem.layer)('loadBrand with layouts.ts', (it) => {
       Effect.gen(function* () {
         const workspace = yield* makeWorkspace;
         const dir = yield* writeBrand(workspace, { layouts: FIXTURE_FILE, art: true });
-        const loaded = yield* loadBrand(workspace, 'test', { read: 'data' });
+        const loaded = yield* loadBrand(workspace, 'test', {
+          read: 'data',
+          fontPackages: { fromDir: dir, allowMissing: new Set() },
+        });
         expect(loaded.tokens.layouts.map((layout) => layout.name)).toEqual([
           'fixture-cover',
           'fixture-photo',
@@ -89,33 +92,60 @@ layer(NodeFileSystem.layer)('loadBrand with layouts.ts', (it) => {
     ),
   );
 
-  it.effect('imports layouts.ts as code outside a data read', () =>
+  it.effect('reads the same literal layouts from an installed brand', () =>
     Effect.scoped(
       Effect.gen(function* () {
         const workspace = yield* makeWorkspace;
-        yield* writeBrand(workspace, {
-          layouts: `export default ${JSON.stringify(TEST_LAYOUTS)};\n`,
-          art: true,
-        });
+        yield* writeBrand(workspace, { layouts: FIXTURE_FILE, art: true });
         const loaded = yield* loadBrand(workspace, 'test');
         expect(loaded.tokens.layouts).toHaveLength(3);
       }),
     ),
   );
 
-  it.effect('fails a data read of a layouts.ts that is more than data', () =>
+  it.effect('rejects executable layouts.ts without running it in either read mode', () =>
     Effect.scoped(
       Effect.gen(function* () {
         const workspace = yield* makeWorkspace;
-        yield* writeBrand(workspace, {
-          layouts: `const x = 1;\nexport default [{ name: String(x) }];\n`,
+        const fs = yield* FileSystem.FileSystem;
+        const marker = path.join(workspace, 'layouts-ran.txt');
+        const dir = yield* writeBrand(workspace, {
+          layouts: [
+            "import { writeFileSync } from 'node:fs';",
+            `writeFileSync(${JSON.stringify(marker)}, 'ran');`,
+            'export default [];',
+          ].join('\n'),
         });
-        const message = yield* loadBrand(workspace, 'test', { read: 'data' }).pipe(
-          Effect.flip,
-          Effect.map((error) => error.message),
+        const activeError = yield* Effect.flip(loadBrand(workspace, 'test'));
+        const stagedError = yield* Effect.flip(
+          loadBrand(workspace, 'test', {
+            read: 'data',
+            fontPackages: { fromDir: dir, allowMissing: new Set() },
+          }),
         );
-        expect(message).toContain('Could not read the layouts in brands/test/layouts.ts');
-        expect(message).toContain('defineBrandLayouts');
+        expect(activeError.message).toContain(
+          'Could not read the layouts in brands/test/layouts.ts',
+        );
+        expect(activeError.message).toContain('defineBrandLayouts');
+        expect(stagedError.message).toBe(activeError.message);
+        expect(yield* fs.exists(marker)).toBe(false);
+      }),
+    ),
+  );
+
+  it.effect('still evaluates an installed brand.ts that uses a variable', () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        const workspace = yield* makeWorkspace;
+        const fs = yield* FileSystem.FileSystem;
+        const dir = yield* writeBrand(workspace, {});
+        const file = path.join(dir, 'brand.ts');
+        const source = yield* fs.readFileString(file);
+        const declaration = source.replace('export default ', 'const brand = ');
+        const computed = `${declaration}export default brand;\n`;
+        yield* fs.writeFileString(file, computed);
+        const loaded = yield* loadBrand(workspace, 'test');
+        expect(loaded.tokens.name).toBe('test');
       }),
     ),
   );

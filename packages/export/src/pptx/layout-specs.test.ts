@@ -4,9 +4,9 @@ import type { AnyLayoutContract } from '@deckster/engine/layout';
 import { describe, expect, it } from 'vite-plus/test';
 
 import { slideInput } from '#pptx/deck.fixture.ts';
-import { masterSpecs, matchesSource, placeholderRefs } from '#pptx/layout-specs.ts';
+import { layoutPlaceholders, masterSpecs, matchesSource } from '#pptx/layout-specs.ts';
 import { surfaceThemeFixture } from '#pptx/theme.fixture.ts';
-import { line, paragraph, textNode } from '#scene/scene.fixture.ts';
+import { line, paragraph, run, runStyle, textNode } from '#scene/scene.fixture.ts';
 
 /**
  * The parts of a brand the layout specs read.
@@ -51,46 +51,63 @@ const CONTRACTS = [
 
 describe('placeholder mapping', () => {
   it('names a title slide title ctrTitle and numbers the other placeholders', () => {
-    const refs = placeholderRefs('title', ['title', 'subtitle', 'body']);
-    expect([...refs.values()]).toEqual([
+    const placeholders = layoutPlaceholders('title', [
+      { kind: 'title', from: { selector: '.kit-title' } },
+      { kind: 'subtitle', from: { slot: 'subtitle' } },
+      { kind: 'body', from: { slot: 'body' } },
+    ]);
+    expect(placeholders.map(({ ref }) => ref)).toEqual([
       { type: 'ctrTitle', idx: undefined },
       { type: 'subTitle', idx: 1 },
       { type: 'body', idx: 2 },
     ]);
-    expect(placeholderRefs('content', ['title']).get('title')).toEqual({
-      type: 'title',
-      idx: undefined,
-    });
   });
 
-  it('types a picture placeholder pic and numbers it after the text placeholders', () => {
-    const refs = placeholderRefs('content', ['title', 'body', 'picture']);
-    expect(refs.get('picture')).toEqual({ type: 'pic', idx: 2 });
+  it('assigns each body a distinct index and numbers the picture after them', () => {
+    const placeholders = layoutPlaceholders('two-content', [
+      { kind: 'title', from: { selector: '.kit-title' } },
+      { kind: 'body', from: { slot: 'body' } },
+      { kind: 'body', from: { slot: 'aside' } },
+      { kind: 'picture', from: { slot: 'media' } },
+    ]);
+    expect(placeholders.map(({ ref }) => ref)).toEqual([
+      { type: 'title', idx: undefined },
+      { type: 'body', idx: 1 },
+      { type: 'body', idx: 2 },
+      { type: 'pic', idx: 3 },
+    ]);
   });
 
-  it('places a brand layout placeholders at its region boxes and names it after its label', () => {
+  it('uses each brand region box, measures each body separately and keeps the layout label', () => {
     const layout = {
       name: 'brand-photo',
       label: 'Brand photo',
       title: { box: [10, 20, 300, 100] },
       regions: [
         { bind: { slot: 'body' }, kind: 'text', box: [10, 200, 300, 400] },
-        { bind: { slot: 'media' }, kind: 'media', box: [400, 0, 500, 600] },
+        { bind: { slot: 'aside' }, kind: 'text', box: [400, 200, 300, 400] },
+        { bind: { slot: 'media' }, kind: 'media', box: [800, 0, 500, 600] },
       ],
       layers: {},
     } as unknown as BrandLayoutTokens;
     const contract = {
       name: 'brand-photo',
       pptx: {
-        type: 'content',
+        type: 'two-content',
         placeholders: [
           { kind: 'title', from: { selector: '.kit-brand-title' } },
           { kind: 'body', from: { slot: 'body' } },
+          { kind: 'body', from: { slot: 'aside' } },
           { kind: 'picture', from: { slot: 'media' } },
         ],
       },
     } as unknown as AnyLayoutContract;
-    const slide = slideInput(0, [], { layout: 'brand-photo' });
+    const left = textNode(1, paragraph([line('Body', 240)]));
+    const asideRun = run('Aside', { style: runStyle({ color: '#987654' }) });
+    const right = textNode(2, paragraph([line('Aside', 240, { runs: [asideRun] })]), {
+      slot: 'aside',
+    });
+    const slide = slideInput(0, [left, right], { layout: 'brand-photo' });
     const [master] = masterSpecs(
       { layouts: [contract], slides: [slide], brand: { ...brand(), layouts: [layout] } },
       { themes: [surfaceThemeFixture()], font: undefined },
@@ -100,8 +117,12 @@ describe('placeholder mapping', () => {
     expect(spec?.placeholders.map((placeholder) => placeholder.rect)).toEqual([
       { x: 10, y: 20, width: 300, height: 100 },
       { x: 10, y: 200, width: 300, height: 400 },
-      { x: 400, y: 0, width: 500, height: 600 },
+      { x: 400, y: 200, width: 300, height: 400 },
+      { x: 800, y: 0, width: 500, height: 600 },
     ]);
+    expect(
+      spec?.placeholders.slice(1, 3).map((placeholder) => placeholder.defaults?.color),
+    ).toEqual(['#161920', '#987654']);
   });
 
   it('matches frames by slot and by selector', () => {

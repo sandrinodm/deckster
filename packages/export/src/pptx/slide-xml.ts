@@ -1,5 +1,5 @@
 import type { BrandTokens } from '@deckster/brand';
-import type { AnyLayoutContract, PptxPlaceholderKind } from '@deckster/engine/layout';
+import type { PptxPlaceholderKind, PptxPlaceholderSource } from '@deckster/engine/layout';
 
 import { parseHash } from '@deckster/engine/hash';
 
@@ -9,7 +9,7 @@ import type { ChromeShape } from '#pptx/chrome.ts';
 import type { PptxSlideInput } from '#pptx/deck-input.ts';
 import type { PlaceholderRef } from '#pptx/frame-xml.ts';
 import type { LayoutArt, LayoutSource } from '#pptx/layout-art.ts';
-import type { LayoutSpec, SlideNumberSpec } from '#pptx/layout-specs.ts';
+import type { LayoutSpec, PlaceholderSpec, SlideNumberSpec } from '#pptx/layout-specs.ts';
 import type { FontResolver, LinkTarget, SlideTotals, TextContext } from '#pptx/text-xml.ts';
 import type { SurfaceTheme } from '#pptx/theme.ts';
 import type {
@@ -182,11 +182,6 @@ export type SlideWriteOptions = {
    * The slide layout's placeholders, if it maps any.
    */
   placeholders: LayoutSpec | undefined;
-
-  /**
-   * The layout contract, for placeholder sources.
-   */
-  contract: AnyLayoutContract | undefined;
 
   /**
    * Whether to animate step reveals.
@@ -484,7 +479,7 @@ function contentShapes(writer: Writer): SlideShapes {
 
   shapes.push(slideChromeXml(writer, chrome, inherits));
 
-  for (const [kind, text] of fieldPlaceholders(slide, options, assigned)) {
+  for (const [kind, text] of fieldPlaceholders(slide, options)) {
     shapes.push(offSlidePlaceholderXml(text.text, writer.nextId(), text.ref, CANVAS_WIDTH_PX));
     filled.push(kind);
   }
@@ -549,21 +544,6 @@ type Writer = {
 };
 
 /**
- * A frame or picture assigned to a placeholder.
- */
-type AssignedPlaceholder = {
-  /**
-   * The placeholder kind.
-   */
-  kind: PptxPlaceholderKind;
-
-  /**
-   * The placeholder reference.
-   */
-  ref: PlaceholderRef;
-};
-
-/**
  * Which text frames and pictures fill which placeholders: for each placeholder of the layout that
  * reads the page, the first frame holding its slot or selector, or for a picture placeholder the
  * first image in its slot.
@@ -574,22 +554,14 @@ type AssignedPlaceholder = {
 function assignPlaceholders(
   items: readonly PlanItem[],
   options: SlideWriteOptions,
-): Map<SceneNode, AssignedPlaceholder> {
-  const assigned = new Map<SceneNode, AssignedPlaceholder>();
-  const mapping = options.contract?.pptx;
-  if (mapping === undefined || options.placeholders === undefined) {
-    return assigned;
-  }
-
-  for (const placeholder of mapping.placeholders) {
-    const spec = options.placeholders.placeholders.find(
-      (candidate) => candidate.kind === placeholder.kind,
-    );
-    if (spec === undefined || 'field' in placeholder.from) {
+): Map<SceneNode, PlaceholderSpec> {
+  const assigned = new Map<SceneNode, PlaceholderSpec>();
+  for (const placeholder of options.placeholders?.placeholders ?? []) {
+    const source = placeholder.from;
+    if ('field' in source) {
       continue;
     }
 
-    const source = placeholder.from;
     const frame = items.find(
       (item) =>
         item.kind === 'native' &&
@@ -597,7 +569,7 @@ function assignPlaceholders(
         fillsPlaceholder(item.node, placeholder.kind, source),
     );
     if (frame !== undefined) {
-      assigned.set(frame.node, { kind: placeholder.kind, ref: spec.ref });
+      assigned.set(frame.node, placeholder);
     }
   }
 
@@ -615,7 +587,7 @@ function assignPlaceholders(
 function fillsPlaceholder(
   node: SceneNode,
   kind: PptxPlaceholderKind,
-  source: { slot: string } | { selector: string },
+  source: Exclude<PptxPlaceholderSource, { field: string }>,
 ): boolean {
   if (kind === 'picture') {
     return node.kind === 'image' && 'slot' in source && node.slot === source.slot;
@@ -629,34 +601,24 @@ function fillsPlaceholder(
  *
  * @param slide - The slide.
  * @param options - The layout.
- * @param assigned - The placeholders already filled from the page.
  */
 function fieldPlaceholders(
   slide: PptxSlideInput,
   options: SlideWriteOptions,
-  assigned: ReadonlyMap<SceneNode, AssignedPlaceholder>,
 ): [PptxPlaceholderKind, { text: string; ref: PlaceholderRef }][] {
-  const mapping = options.contract?.pptx;
-  if (mapping === undefined || options.placeholders === undefined) {
-    return [];
-  }
+  const placeholders = options.placeholders?.placeholders ?? [];
+  return placeholders.flatMap((placeholder) => {
+    if (!('field' in placeholder.from)) {
+      return [];
+    }
 
-  const filledKinds = new Set([...assigned.values()].map((entry) => entry.kind));
-  return mapping.placeholders.flatMap(
-    (placeholder): [PptxPlaceholderKind, { text: string; ref: PlaceholderRef }][] => {
-      const spec = options.placeholders?.placeholders.find(
-        (candidate) => candidate.kind === placeholder.kind,
-      );
-      const text =
-        'field' in placeholder.from ? slide.scene.fieldText[placeholder.from.field] : undefined;
-      const hasText = text !== undefined && text !== '';
-      if (spec === undefined || !hasText || filledKinds.has(placeholder.kind)) {
-        return [];
-      }
+    const text = slide.scene.fieldText[placeholder.from.field];
+    if (text === undefined || text === '') {
+      return [];
+    }
 
-      return [[placeholder.kind, { text, ref: spec.ref }]];
-    },
-  );
+    return [[placeholder.kind, { text, ref: placeholder.ref }]];
+  });
 }
 
 /**
@@ -669,7 +631,7 @@ function fieldPlaceholders(
 function itemXml(
   writer: Writer,
   item: PlanItem,
-  assigned: ReadonlyMap<SceneNode, AssignedPlaceholder>,
+  assigned: ReadonlyMap<SceneNode, PlaceholderSpec>,
 ): string {
   if (item.kind === 'picture') {
     return rasterXml(writer, item.node, item.scope, { name: item.name, alt: item.alt });
@@ -806,7 +768,7 @@ function chartItemXml(writer: Writer, node: ChartNode): string {
  * @param node - The frame.
  * @param placeholder - The placeholder it fills, if any.
  */
-function textXml(writer: Writer, node: TextNode, placeholder: AssignedPlaceholder | null): string {
+function textXml(writer: Writer, node: TextNode, placeholder: PlaceholderSpec | null): string {
   const fonts = writer.options.outlineFonts;
   if (fonts !== null && isOutlineCandidate(node.paragraphs)) {
     const outlined = outlinedTextXml(writer, node, placeholder, fonts);
@@ -817,17 +779,13 @@ function textXml(writer: Writer, node: TextNode, placeholder: AssignedPlaceholde
 
   writer.counts.text += 1;
   const id = writer.nextId();
-  const spec =
-    placeholder === null
-      ? undefined
-      : writer.options.placeholders?.placeholders.find((entry) => entry.kind === placeholder.kind);
   const context: TextContext =
-    placeholder === null ? writer.context : { ...writer.context, defaults: spec?.defaults ?? null };
+    placeholder === null ? writer.context : { ...writer.context, defaults: placeholder.defaults };
   recordTextReveals(writer, node, id);
 
   const name = frameName(node, placeholder);
   return textFrameXml(node.paragraphs, id, name, context, placeholder?.ref ?? null, {
-    layoutRect: spec?.rect ?? null,
+    layoutRect: placeholder?.rect ?? null,
   });
 }
 
@@ -872,7 +830,7 @@ function recordTextReveals(writer: Writer, node: TextNode, shapeId: number): voi
  * @param node - The frame.
  * @param placeholder - The placeholder it fills, if any.
  */
-function frameName(node: TextNode, placeholder: AssignedPlaceholder | null): string {
+function frameName(node: TextNode, placeholder: PlaceholderSpec | null): string {
   if (placeholder !== null) {
     return { title: 'Title', subtitle: 'Subtitle', body: 'Body', picture: 'Picture' }[
       placeholder.kind
@@ -927,7 +885,7 @@ function textOf(node: TextNode): string {
 function outlinedTextXml(
   writer: Writer,
   node: TextNode,
-  placeholder: AssignedPlaceholder | null,
+  placeholder: PlaceholderSpec | null,
   fonts: OutlineFonts,
 ): string | null {
   const fallback = writer.slide.assets.pictures.get(node.id);
@@ -965,11 +923,7 @@ function outlinedTextXml(
  * @param node - The image.
  * @param placeholder - The picture placeholder it fills, if any.
  */
-function imageXml(
-  writer: Writer,
-  node: ImageNode,
-  placeholder: AssignedPlaceholder | null,
-): string {
+function imageXml(writer: Writer, node: ImageNode, placeholder: PlaceholderSpec | null): string {
   const file = writer.slide.assets.images.get(node.src);
   const fallback = writer.slide.assets.pictures.get(node.id);
   const id = writer.nextId();

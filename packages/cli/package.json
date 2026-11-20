@@ -79,6 +79,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "remark-gfm": "catalog:",
+    "saxes": "catalog:",
     "shiki": "catalog:",
     "tailwindcss": "catalog:",
     "unplugin-icons": "catalog:",

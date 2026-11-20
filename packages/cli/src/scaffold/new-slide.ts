@@ -45,6 +45,11 @@ export type AddSlideOptions = {
    * The layout the slide uses, from the layout catalog; `undefined` for `default`.
    */
   layout: string | undefined;
+
+  /**
+   * The active brand when a live session overrides the deck's configured brand.
+   */
+  brand?: string | undefined;
 };
 
 /**
@@ -70,10 +75,10 @@ export const addSlide = Effect.fn('addSlide')(function* (
   // added, against the config's brand when the config reads; the problem is reported only when
   // the layout asked for is one that the brand's layouts might have supplied.
   const loaded = yield* Effect.result(loadDeck(options.workspaceRoot, deck));
-  const configured = Result.isSuccess(loaded) ? loaded.success.config.brand : undefined;
+  const config = Result.isSuccess(loaded) ? loaded.success.config : {};
   const { catalog, warning } = yield* loadBrandCatalog(
     options.workspaceRoot,
-    deckBrandName({}, configured),
+    deckBrandName(config, options.brand),
   );
   if (warning !== undefined) {
     yield* Console.error(`warning: ${warning}`);

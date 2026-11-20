@@ -37,6 +37,19 @@ layer(NodeFileSystem.layer)('loadLayoutCatalog', (it) => {
     }),
   );
 
+  it.effect('loads a title-only brand layout whose generated example has no body', () =>
+    Effect.gen(function* () {
+      const { tokens } = yield* loadDeckBrand(FIXTURE_WORKSPACE, 'fx-brand');
+      const [cover] = tokens.layouts;
+      const brand = { ...tokens, layouts: [{ ...cover!, fallback: 'default', regions: [] }] };
+      const catalog = yield* loadLayoutCatalog([], { brand });
+      expect(catalog.get('fx-cover')?.contract.example).toEqual({
+        frontmatter: { title: 'Hello, deck' },
+        body: '\n',
+      });
+    }),
+  );
+
   it.effect('rejects a brand layout named like a kit layout, naming the brand file', () =>
     Effect.gen(function* () {
       const { tokens, layoutsFile } = yield* loadDeckBrand(FIXTURE_WORKSPACE, 'fx-brand');

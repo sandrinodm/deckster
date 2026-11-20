@@ -567,7 +567,7 @@ export const deckToolsLive = Effect.fn('deckToolsLive')(function* (
           yield* requireSlide(after);
         }
 
-        yield* addSlide({ workspaceRoot: root, deck, id: input.id, layout: input.layout });
+        yield* addSlide({ workspaceRoot: root, deck, id: input.id, layout: input.layout, brand });
         if (after !== undefined) {
           const location = yield* findDeck(root, deck);
           const ids = (yield* loadDeck(root, location)).slides.map((slide) => slide.id);

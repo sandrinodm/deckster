@@ -226,7 +226,8 @@ export type LoadedBrand = {
 /**
  * Loads `brands/<name>/brand.ts`, validates it, finds its fonts, logos and background files, and
  * compiles it. The brand file is imported fresh whenever it changes on disk; files it imports are
- * not. A workspace without `brands/default` gets the framework's default brand.
+ * not. A sibling `layouts.ts` is always read as data. A workspace without `brands/default` gets the
+ * framework's default brand.
  *
  * @param workspaceRoot - The absolute workspace root (the folder with `brands/`).
  * @param name - The brand folder name.
@@ -259,8 +260,8 @@ export const loadBrand = Effect.fn('loadBrand')(function* (
   }
 
   const read = options.read ?? 'import';
-  const exported = yield* importModule(location, read, BRAND_MODULE);
-  const layouts = yield* importLayouts(location, read);
+  const exported = yield* loadBrandModule(location, read);
+  const layouts = yield* loadLayouts(location, read);
   const resolved = yield* resolveBrand(
     exported,
     { source: location.displayPath, file: location.file },
@@ -396,20 +397,17 @@ const availableBrands = Effect.fn('availableBrands')(function* (
 });
 
 /**
- * Imports a brand's `brand.ts` or `layouts.ts`, or reads it as data, and returns its default
- * export, which must have the shape of the kind of file.
+ * Reads a brand or layouts file, reporting a filesystem error against that file.
  *
- * @param location - The file to import; `location.file` is the file itself.
- * @param read - Whether to import the file or read it as a data literal.
+ * @param location - The file to read.
  * @param kind - Which file it is.
  */
-const importModule = Effect.fn('importModule')(function* (
+const readModuleText = Effect.fn('readModuleText')(function* (
   location: BrandLocation,
-  read: BrandRead,
   kind: ModuleKind,
-): Effect.fn.Return<object, BrandError, FileSystem.FileSystem> {
+): Effect.fn.Return<string, BrandError, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
-  const text = yield* fs
+  return yield* fs
     .readFileString(location.file)
     .pipe(
       Effect.mapError((error) =>
@@ -418,6 +416,20 @@ const importModule = Effect.fn('importModule')(function* (
         ]),
       ),
     );
+});
+
+/**
+ * Gets the default export of `brand.ts` by importing it or reading it as data.
+ *
+ * @param location - The brand file to load.
+ * @param read - Whether to import the file or read it as a data literal.
+ */
+const loadBrandModule = Effect.fn('loadBrandModule')(function* (
+  location: BrandLocation,
+  read: BrandRead,
+): Effect.fn.Return<object, BrandError, FileSystem.FileSystem> {
+  const kind = BRAND_MODULE;
+  const text = yield* readModuleText(location, kind);
   if (read === 'data') {
     return yield* readModuleData(location, text, kind);
   }
@@ -450,12 +462,9 @@ const importModule = Effect.fn('importModule')(function* (
           ]),
       });
   const exported = Predicate.isObjectOrArray(module) ? Reflect.get(module, 'default') : undefined;
-  if (!kind.accepts(exported)) {
-    return yield* noDefaultExport(location, kind);
-  }
-
-  rememberLoaded(location.file, exported);
-  return exported;
+  const value = yield* moduleValue(location, exported, kind);
+  rememberLoaded(location.file, value);
+  return value;
 });
 
 /**
@@ -486,28 +495,33 @@ const readModuleData = Effect.fn('readModuleData')(function* (
     ]);
   }
 
-  if (!kind.accepts(read.value) || typeof read.value !== 'object' || read.value === null) {
-    return yield* noDefaultExport(location, kind);
-  }
-
-  return read.value;
+  return yield* moduleValue(location, read.value, kind);
 });
 
 /**
- * The failure for a file whose default export is missing or has the wrong shape.
+ * Checks the shape of a module's default export, or reports that it is missing or unusable.
  *
  * @param location - The file's location.
+ * @param value - The export, or `undefined` when there is none.
  * @param kind - Which file it is.
  */
-function noDefaultExport(location: BrandLocation, kind: ModuleKind): BrandError {
-  return failure(location, kind.summary, [
+const moduleValue = Effect.fn('moduleValue')(function* (
+  location: BrandLocation,
+  value: unknown,
+  kind: ModuleKind,
+): Effect.fn.Return<object, BrandError> {
+  if (typeof value === 'object' && value !== null && kind.accepts(value)) {
+    return value;
+  }
+
+  return yield* failure(location, kind.summary, [
     {
       path: '',
       message: `The file has no default export with ${kind.noun}.`,
       fix: kind.shapeFix,
     },
   ]);
-}
+});
 
 /**
  * A text with its first letter in upper case.
@@ -521,7 +535,7 @@ function capitalized(text: string): string {
 /**
  * A brand's `layouts.ts`: where it is and what it exports.
  */
-type ImportedLayouts = {
+type LoadedLayouts = {
   /**
    * Where the layouts file is, shaped like a brand location so errors can name it.
    */
@@ -534,16 +548,17 @@ type ImportedLayouts = {
 };
 
 /**
- * Imports the brand's `layouts.ts` when it has one.
+ * Reads the brand's `layouts.ts` as data. During a turn, the code gate only serves vouched data or
+ * the last loaded value. An unvouched file with no last loaded value is left out.
  *
  * @param location - The brand.
- * @param read - Whether to import the file or read it as a data literal.
+ * @param read - Whether the brand is being loaded for use or checked in a staging folder.
  * @returns The layouts file, or `undefined` when the brand has none.
  */
-const importLayouts = Effect.fn('importLayouts')(function* (
+const loadLayouts = Effect.fn('loadLayouts')(function* (
   location: BrandLocation,
   read: BrandRead,
-): Effect.fn.Return<ImportedLayouts | undefined, BrandError, FileSystem.FileSystem> {
+): Effect.fn.Return<LoadedLayouts | undefined, BrandError, FileSystem.FileSystem> {
   const file = path.join(location.dir, LAYOUTS_FILE);
   if (!(yield* fileExists(file))) {
     forgetLoaded(file);
@@ -555,34 +570,23 @@ const importLayouts = Effect.fn('importLayouts')(function* (
     file,
     displayPath: `${BRANDS_DIR}/${location.name}/${LAYOUTS_FILE}`,
   };
-  if (yield* isUnvouchedNewFile(layoutsLocation)) {
+  const text = yield* readModuleText(layoutsLocation, LAYOUTS_MODULE);
+  const gate = gatedLoad(file, text, LAYOUTS_CALLEE);
+  if (gate.kind === 'held') {
     return undefined;
   }
 
-  const input = yield* importModule(layoutsLocation, read, LAYOUTS_MODULE);
+  const input = yield* gate.kind === 'value'
+    ? moduleValue(layoutsLocation, gate.value, LAYOUTS_MODULE)
+    : readModuleData(layoutsLocation, text, LAYOUTS_MODULE);
+  if (read === 'import') {
+    rememberLoaded(file, input);
+  }
+
   return {
     location: layoutsLocation,
     source: { input, source: layoutsLocation.displayPath, file },
   };
-});
-
-/**
- * Whether a layouts file appeared during an agent turn and nothing vouches for it: the turn guard
- * vouches for what the turn found, so a file it made is not loaded until the turn ends, and the
- * brand loads without it instead of failing.
- *
- * @param location - The layouts file's location.
- */
-const isUnvouchedNewFile = Effect.fn('isUnvouchedNewFile')(function* (
-  location: BrandLocation,
-): Effect.fn.Return<boolean, never, FileSystem.FileSystem> {
-  if (!isCodeHeld(location.file)) {
-    return false;
-  }
-
-  const fs = yield* FileSystem.FileSystem;
-  const text = yield* fs.readFileString(location.file).pipe(Effect.orElseSucceed(() => ''));
-  return gatedLoad(location.file, text, LAYOUTS_CALLEE).kind === 'held';
 });
 
 /**

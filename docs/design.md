@@ -179,15 +179,16 @@ An organisation's template has layouts of its own: a cover with a mark in one co
 with a number set large, a photo that runs off the edge. A brand brings them in
 `brands/<name>/layouts.ts`. Each one is data: a name, the kit layout it falls back to, where the
 title and the slots sit on the 1920x1080 canvas, and the art behind them (SVG or raster files in
-the brand folder). It is not a component. Like `brand.ts`, `layouts.ts` is a static literal, so an
-agent can write it under the code gate (see [agent.md](agent.md)) and the build can read another
-brand's layouts without running anything from that brand. One kit component, `BrandLayout`, draws
-every brand layout from its tokens.
+the brand folder). Every `layouts.ts` exports a static literal, so the build can read the active
+brand or look up another brand's layouts without running the file. The code gate also protects the
+active layout file during an agent turn (see [agent.md](agent.md)). One kit component,
+`BrandLayout`, draws every brand layout from its tokens.
 
 A brand layout takes its contract from its fallback. It has the slots and fields its regions
 bind, with the fallback's descriptions, `required` flags, schemas and checks. A slide that is
 valid on the brand layout is therefore valid on the fallback, and the build refuses a layout that
-binds something the fallback lacks or leaves out something it requires.
+binds something the fallback lacks or leaves out something it requires. Markdown outside a named
+slot fills the `body` slot, so a brand layout needs a `body` region to accept that content.
 
 That is the fallback rule, and it mirrors diagram cards. A deck may be rendered in another brand,
 so a name the brand lacks must not fail the build. A card the brand does not have falls to the

@@ -307,7 +307,8 @@ export type PptxMapping = {
   readonly type: PptxLayoutType;
 
   /**
-   * The placeholders, in the order PowerPoint lists them; at most one of each kind.
+   * The placeholders, in the order PowerPoint lists them. A two-content layout may list two body
+   * placeholders with distinct sources. Other kinds appear at most once.
    */
   readonly placeholders: readonly PptxPlaceholder[];
 };
