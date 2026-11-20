@@ -59,7 +59,7 @@ export function SceneSvg({ scene, name, summaryId }: SceneSvgProps): ReactNode {
       aria-label={name}
       aria-describedby={summaryId}>
       {scene.layers.map((layer, index) => (
-        <ChartStep key={index} at={layer.at}>
+        <ChartStep key={index} at={layer.at} until={layer.until}>
           {layer.items.map((item, position) => (
             <SceneElement key={position} item={item} highlightOn={highlightOn} />
           ))}
@@ -190,6 +190,7 @@ type SceneTextProps = {
 function SceneText({ item, highlightOn }: SceneTextProps): ReactNode {
   const build = buildProps(item);
   const color = highlightOn ? item.color : (item.colorBefore ?? item.color);
+  const background = highlightOn ? item.background : (item.backgroundBefore ?? item.background);
   const lineHeight = item.style.size * item.style.lineHeight;
   const className = [
     'kit-chart-text',
@@ -216,7 +217,7 @@ function SceneText({ item, highlightOn }: SceneTextProps): ReactNode {
         fontSize: item.style.size,
         fontWeight: item.weight,
         // SVG text paints no background; this tells contrast checks which mark it sits on.
-        backgroundColor: item.background,
+        backgroundColor: background,
       }}>
       {item.lines.length === 1
         ? item.lines[0]

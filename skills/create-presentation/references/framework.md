@@ -50,6 +50,10 @@ Read a component's full entry before you use it: a prop name the component does 
 
 Every catalog entry carries a working `example`, and `deck new slide <deck> <id> --layout <name>` writes a slide from the layout's example. Start from those and change the content, not the structure.
 
+- Use `product-cutaway` to reveal two or three aligned, equally sized illustrations of a product. Order them front to back and put the product face first. With `reveal: true`, the first advance exposes the next layer and a second advance exposes an optional third. The takeaway appears with the finished cutaway.
+- Use `service-blueprint` for a two- to four-stage customer journey. Give every stage visible work, backstage work and an owner. Pick the stage where those roles meet in `handoff:`. Set `reveal: true` to show the visible service first, then backstage work, then the owners and highlighted handoff.
+- Use `choose-path` for two authored workflows, each with a scenario, two or three actions and its own outcome. In the live deck the presenter selects a branch and can return to the choices. Previews and exports show both workflows and outcomes side by side.
+
 ## Where a deck lives
 
 ```

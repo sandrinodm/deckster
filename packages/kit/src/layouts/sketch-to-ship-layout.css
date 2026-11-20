@@ -1,0 +1,81 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-sketch-pair {
+    display: grid;
+    flex: 1 1 0;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--brand-space-sm);
+    min-height: 0;
+  }
+
+  .kit-sketch-view {
+    min-width: 0;
+    margin: 0;
+  }
+
+  .kit-sketch-view figcaption {
+    margin-bottom: var(--brand-space-xs);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-sketch-art {
+    position: relative;
+    aspect-ratio: 16 / 9;
+  }
+
+  .kit-sketch-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--brand-radius-sm);
+    object-fit: contain;
+  }
+
+  .kit-sketch-pin {
+    position: absolute;
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: var(--brand-space-2xs);
+    padding: var(--brand-space-2xs) var(--brand-space-xs);
+    border: 1px solid var(--brand-color-border);
+    border-radius: var(--brand-radius-sm);
+    background: var(--brand-color-bg);
+    color: var(--brand-color-fg);
+    white-space: nowrap;
+    transform: translate(-0.35em, calc(-100% - var(--brand-space-xs)));
+  }
+
+  .kit-sketch-pin::after {
+    position: absolute;
+    top: 100%;
+    left: 0.35em;
+    width: 1px;
+    height: var(--brand-space-xs);
+    background: var(--brand-color-accent);
+    content: '';
+  }
+
+  .kit-sketch-pin::before {
+    width: 0.55em;
+    height: 0.55em;
+    border-radius: 50%;
+    background: var(--brand-color-accent);
+    content: '';
+  }
+
+  .kit-sketch-arrow {
+    color: var(--brand-color-accent);
+    font-size: var(--brand-type-title-size);
+    line-height: 1;
+  }
+
+  .kit-sketch-result {
+    align-self: center;
+    margin: 0;
+    padding: var(--brand-space-xs) 0;
+    color: var(--brand-color-muted);
+  }
+}

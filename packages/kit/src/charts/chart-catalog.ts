@@ -1081,6 +1081,34 @@ export const CHART_INFOS: readonly ChartInfo[] = [
     native: 'scatter',
   },
   {
+    name: 'MarketMovement',
+    kind: 'market-movement',
+    useWhen: 'One entity changes position over dated observations against peers on two fixed axes.',
+    messages: ['trend', 'change between two points', 'correlation'],
+    avoid: 'Movement in only one measure (use LineChart) or a single snapshot (use Scatter).',
+    data: 'Long rows with an entity name, ISO calendar date and two numeric measures.',
+    nulls:
+      'A row missing either measure has no position. Peers appear only on their observation dates.',
+    shared: [...FRAME, 'data', 'format'],
+    props: {
+      entity: prop('string', 'The entity name field.', { default: 'entity' }),
+      date: prop('string', 'The YYYY-MM-DD date field.', { default: 'date' }),
+      x: prop('string', 'The horizontal measure field.', { required: true }),
+      y: prop('string', 'The vertical measure field.', { required: true }),
+      xLabel: prop('string', 'The horizontal axis title.'),
+      yLabel: prop('string', 'The vertical axis title.'),
+      xFormat: prop('Format', 'The horizontal axis number format. The shared format is for y.'),
+      highlight: prop('string', 'The entity whose positions form the trail.', { required: true }),
+      buildFrom: prop('number', 'The step for the second date. Each later date adds one step.'),
+    },
+    limits: {},
+    example:
+      '<MarketMovement data={market} x="density" y="onTime" highlight="Wrenhaul" buildFrom={1} />',
+    accessibility:
+      'The static chart labels the trail endpoints. The summary lists positions by date.',
+    native: null,
+  },
+  {
     name: 'Heatmap',
     kind: 'heatmap',
     useWhen:
@@ -1105,6 +1133,69 @@ export const CHART_INFOS: readonly ChartInfo[] = [
       "'9–12', y: 'Mon' }} />",
     accessibility:
       'The summary gives the range and the highest cell; values are printed in cells with room.',
+    native: null,
+  },
+  {
+    name: 'RetentionCohorts',
+    kind: 'retention-cohorts',
+    useWhen:
+      'Retention by signup cohort and elapsed age, with the starting populations beside the rates.',
+    messages: ['comparison', 'trend'],
+    avoid: 'Calendar-period activity (use Heatmap or LineChart).',
+    data: 'Long rows with a cohort name, a whole elapsed age, a starting population and retention in percent.',
+    nulls: 'Absent or explicitly null rates stay blank. An observed zero is printed as 0%.',
+    shared: [...FRAME, 'data'],
+    props: {
+      cohort: prop('string', 'The cohort name field.', { default: 'cohort' }),
+      age: prop('string', 'The elapsed age field, a nonnegative whole number.', { default: 'age' }),
+      ageUnit: prop('string', 'The heading prefix for each age.', { default: 'Month' }),
+      value: prop('string', 'The retention field. Pass 82 for 82%.', { default: 'retained' }),
+      size: prop('string', 'The starting population field.', { default: 'size' }),
+      sizeLabel: prop('string', 'The heading of the starting population column.', {
+        default: 'Size',
+      }),
+      focus: prop(
+        '{ cohort: string; age: number; from?: number }',
+        'Outline the cohort at `from`, then compare cohorts at `age` one step later. Leave out `from` for a static comparison at `age`.',
+      ),
+    },
+    limits: {},
+    example: '<RetentionCohorts data={retention} focus={{ cohort: "April", age: 3, from: 1 }} />',
+    accessibility:
+      'The summary names the starting populations, observed rates and focus age. Blank cells are unobserved.',
+    native: null,
+  },
+  {
+    name: 'ProfitPool',
+    kind: 'profit-pool',
+    useWhen:
+      'Segment revenue is a width and contribution margin a height, making area represent profit.',
+    messages: ['part-to-whole', 'ranking', 'comparison'],
+    avoid: 'Profit is the only measure that matters (use BarChart).',
+    data: 'One row per segment with positive revenue and a margin in percent. A margin may be negative.',
+    nulls: 'Revenue and margin are required to calculate profit. A zero margin has zero area.',
+    shared: [...FRAME, 'data', 'format', 'unit'],
+    props: {
+      segment: prop('string', 'The segment name field.', { default: 'segment' }),
+      revenue: prop('string', 'The revenue field. All rows must use the same currency and scale.', {
+        default: 'revenue',
+      }),
+      margin: prop('string', 'The contribution margin field. Pass 25 for 25%.', {
+        default: 'margin',
+      }),
+      highlight: prop(
+        'string',
+        'The segment to emphasize. Defaults to the largest profit contributor.',
+      ),
+      buildFrom: prop(
+        'number',
+        'The margin step. Before it the chart shows revenue only, and the next step highlights profit.',
+      ),
+    },
+    limits: {},
+    example:
+      '<ProfitPool data={segments} highlight="Memberships" format="currency" buildFrom={1} />',
+    accessibility: 'The summary gives revenue, margin and profit for every segment.',
     native: null,
   },
   {

@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 
-import type { ChartSpec } from '#charts/chart-spec.ts';
+import type { ChartKind, ChartSpec } from '#charts/chart-spec.ts';
 import type { ResolvedFormat } from '#charts/format/number-format.ts';
 import type { ChartDrawing, ChartFacts, DrawInput } from '#charts/frame/chart-frame.tsx';
 import type { ChartProps } from '#charts/frame/chart-props.ts';
 import type { ChartTheme } from '#charts/frame/chart-theme.ts';
-import type { SceneItem } from '#charts/frame/scene.ts';
+import type { SceneItem, SceneLayer } from '#charts/frame/scene.ts';
 import type { Measure, TextStyle } from '#charts/layout/text-measure.ts';
 
 import { fieldKinds, resolveRows, toLabel, toNumber } from '#charts/data/rows.ts';
@@ -28,6 +28,31 @@ const CELL_GAP = 3;
  * The gap between the swatches of the scale legend, in canvas pixels.
  */
 const SWATCH_GAP = 2;
+
+/**
+ * Cohort labels and focus steps supplied by the retention preset. Missing cells stay blank.
+ */
+export type HeatmapCohort = {
+  /**
+   * The starting population by cohort label.
+   */
+  sizes: ReadonlyMap<string, number>;
+
+  /**
+   * The headings for the cohort name and population columns.
+   */
+  headings: readonly [string, string];
+
+  /**
+   * The age headings in increasing numeric order.
+   */
+  ages: readonly string[];
+
+  /**
+   * The row then column to outline, or undefined for an overview with neither.
+   */
+  focus: { row: string; column: string; from: number | undefined } | undefined;
+};
 
 /**
  * Props of {@link Heatmap}.
@@ -120,6 +145,11 @@ type HeatmapGrid = {
   lines: readonly string[];
 
   /**
+   * Cohort sizes, when the retention preset supplies them.
+   */
+  cohort: HeatmapCohort | undefined;
+
+  /**
    * Each cell's value by its column and row, `null` where it has none.
    */
   cells: ReadonlyMap<string, number | null>;
@@ -170,6 +200,11 @@ type HeatmapGrid = {
   rowLabels: number;
 
   /**
+   * The width reserved for cohort sizes, including their gap from the tiles.
+   */
+  sizeLabels: number;
+
+  /**
    * The y where the grid starts, under the column labels and the scale legend.
    */
   top: number;
@@ -190,8 +225,13 @@ type HeatmapGrid = {
  *
  * @param props - The chart's props.
  * @param input - The plot size, theme and measurer.
+ * @param cohort - The retention preset's labels and focus, when used.
  */
-export function drawHeatmap(props: HeatmapProps, input: DrawInput): ChartDrawing {
+export function drawHeatmap(
+  props: HeatmapProps,
+  input: DrawInput,
+  cohort?: HeatmapCohort,
+): ChartDrawing {
   const { theme, measure, size } = input;
   const rows = resolveRows(props.data, input.datasets);
   const kinds = fieldKinds(rows);
@@ -199,7 +239,7 @@ export function drawHeatmap(props: HeatmapProps, input: DrawInput): ChartDrawing
   const yField = props.y ?? kinds.text.find((field) => field !== xField) ?? '';
   const valueField =
     props.value ?? kinds.numbers.find((field) => field !== xField && field !== yField) ?? '';
-  const columns = [...new Set(rows.map((row) => toLabel(row[xField])))];
+  const columns = cohort?.ages ?? [...new Set(rows.map((row) => toLabel(row[xField])))];
   const lines = [...new Set(rows.map((row) => toLabel(row[yField])))];
   const cells = new Map(
     rows.map((row) => [
@@ -215,16 +255,21 @@ export function drawHeatmap(props: HeatmapProps, input: DrawInput): ChartDrawing
   const axisStyle = theme.text.axis;
   const legendRoom = lineHeight(axisStyle) + theme.space.md;
   const top = legendRoom + lineHeight(axisStyle) + theme.space.sm;
+  const nameLabels = cohort === undefined ? lines : [cohort.headings[0], ...lines];
+  const sizeLabels = cohortSizeWidth(cohort, input);
   const rowLabels =
     maxOf(
-      lines.map((line) => measure(line, axisStyle)),
+      nameLabels.map((line) => measure(line, axisStyle)),
       0,
-    ) + theme.space.md;
+    ) +
+    theme.space.md +
+    sizeLabels;
   const grid: HeatmapGrid = {
     theme,
     measure,
     columns,
     lines,
+    cohort,
     cells,
     low,
     high,
@@ -235,9 +280,10 @@ export function drawHeatmap(props: HeatmapProps, input: DrawInput): ChartDrawing
     valueStyle: theme.text.value,
     headerY: legendRoom + lineHeight(axisStyle) / 2,
     rowLabels,
+    sizeLabels,
     top,
-    cellWidth: (size.width - rowLabels) / Math.max(1, columns.length),
-    cellHeight: (size.height - top) / Math.max(1, lines.length),
+    cellWidth: Math.max(0, size.width - rowLabels) / Math.max(1, columns.length),
+    cellHeight: Math.max(0, size.height - top) / Math.max(1, lines.length),
   };
   const items: SceneItem[] = [
     ...columnHeaderItems(grid),
@@ -259,7 +305,7 @@ export function drawHeatmap(props: HeatmapProps, input: DrawInput): ChartDrawing
       scene: {
         width: size.width,
         height: size.height,
-        layers: [{ at: undefined, items }],
+        layers: [{ at: undefined, items }, ...cohortFocusLayers(grid)],
         highlightAt: undefined,
       },
       spec,
@@ -267,6 +313,80 @@ export function drawHeatmap(props: HeatmapProps, input: DrawInput): ChartDrawing
     },
     input,
   );
+}
+
+/**
+ * Reserves one aligned column for the starting population, in canvas pixels.
+ */
+function cohortSizeWidth(cohort: HeatmapCohort | undefined, input: DrawInput): number {
+  if (cohort === undefined) {
+    return 0;
+  }
+
+  const { theme, measure } = input;
+  const labels = [
+    cohort.headings[1],
+    ...[...cohort.sizes.values()].map((value) => sizeText(value, theme)),
+  ];
+  return (
+    maxOf(
+      labels.map((label) => measure(label, theme.text.axis)),
+      0,
+    ) + theme.space.md
+  );
+}
+
+/**
+ * Each step outlines only the observed cells for that reading of the grid.
+ */
+function cohortFocusLayers(grid: HeatmapGrid): SceneLayer[] {
+  const focus = grid.cohort?.focus;
+  if (focus === undefined) {
+    return [];
+  }
+
+  const column = grid.columns.indexOf(focus.column);
+  const columnItems = grid.lines.flatMap((name, row) =>
+    focusCell(grid, focus.column, column, name, row),
+  );
+  if (focus.from === undefined) {
+    return [{ at: undefined, items: columnItems }];
+  }
+
+  const row = grid.lines.indexOf(focus.row);
+  const rowItems = grid.columns.flatMap((name, index) =>
+    focusCell(grid, name, index, focus.row, row),
+  );
+  return [
+    { at: focus.from, until: focus.from + 1, items: rowItems },
+    { at: focus.from + 1, items: columnItems },
+  ];
+}
+
+/**
+ * Outlines a measured tile, leaving the immature part of a cohort untouched.
+ */
+function focusCell(
+  grid: HeatmapGrid,
+  column: string,
+  columnIndex: number,
+  row: string,
+  rowIndex: number,
+): SceneItem[] {
+  if (cellValue(grid.cells, column, row) === null || !hasTileRoom(grid)) {
+    return [];
+  }
+
+  return [
+    {
+      kind: 'path',
+      d: tilePath(grid, columnIndex, rowIndex),
+      fill: 'none',
+      stroke: grid.theme.colors.heading,
+      strokeWidth: grid.theme.lineWidth,
+      anim: 'fade',
+    },
+  ];
 }
 
 /**
@@ -284,12 +404,21 @@ function heatmapSpec(
   fields: { x: string; y: string; value: string },
   format: ResolvedFormat,
 ): ChartSpec {
-  const { theme, columns, lines, cells, low, high, write, palette } = grid;
+  const { theme, columns, lines, cells, low, high, write, palette, cohort } = grid;
+  const kind: ChartKind = cohort === undefined ? 'heatmap' : 'retention-cohorts';
+  const name =
+    cohort === undefined
+      ? `Heatmap of ${fields.value} by ${fields.y} and ${fields.x}`
+      : 'Retention by signup cohort and age';
+  const summary =
+    cohort === undefined
+      ? `${lines.length} rows by ${columns.length} columns, from ${write(low)} to ${write(high)}.${highestText(cells, write)}`
+      : cohortSummary(grid, cohort);
   return buildSpec(
     {
-      kind: 'heatmap',
-      name: `Heatmap of ${fields.value} by ${fields.y} and ${fields.x}`,
-      summary: `${lines.length} rows by ${columns.length} columns, from ${write(low)} to ${write(high)}.${highestText(cells, write)}`,
+      kind,
+      name,
+      summary,
       categories: columns,
       series: lines.map((line) => ({
         name: line,
@@ -307,6 +436,16 @@ function heatmapSpec(
         }),
       })),
       legend: true,
+      ...(cohort?.focus === undefined
+        ? {}
+        : {
+            highlight: {
+              series: [],
+              categories: [cohort.focus.column],
+              points: [],
+              range: null,
+            },
+          }),
     },
     {
       theme,
@@ -316,6 +455,22 @@ function heatmapSpec(
       source: props.source,
     },
   );
+}
+
+/**
+ * Describes cohort sizes, observed rates and immature cells for the static chart.
+ */
+function cohortSummary(grid: HeatmapGrid, cohort: HeatmapCohort): string {
+  const rows = grid.lines.map((row) => {
+    const size = sizeText(cohort.sizes.get(row) ?? 0, grid.theme);
+    const observed = grid.columns.flatMap((column) => {
+      const value = cellValue(grid.cells, column, row);
+      return value === null ? [] : [`${column} ${grid.write(value)}`];
+    });
+    return `${row}, ${size} at signup: ${observed.join(', ') || 'no observations'}.`;
+  });
+  const focus = cohort.focus === undefined ? '' : ` Comparison at ${cohort.focus.column}.`;
+  return `Blank cells have no observed rate.${focus} ${rows.join(' ')}`;
 }
 
 /**
@@ -350,7 +505,7 @@ function cellValue(
  * @param grid - The heatmap's grid.
  */
 function columnHeaderItems(grid: HeatmapGrid): SceneItem[] {
-  return grid.columns.map((name, column): SceneItem => ({
+  const headings = grid.columns.map((name, column): SceneItem => ({
     kind: 'text',
     x: grid.rowLabels + column * grid.cellWidth + grid.cellWidth / 2,
     y: grid.headerY,
@@ -359,6 +514,15 @@ function columnHeaderItems(grid: HeatmapGrid): SceneItem[] {
     color: grid.theme.colors.label,
     anchor: 'middle',
   }));
+  if (grid.cohort === undefined) {
+    return headings;
+  }
+
+  return [
+    rowLabel(grid.cohort.headings[0], grid.headerY, grid, 'name'),
+    rowLabel(grid.cohort.headings[1], grid.headerY, grid, 'size'),
+    ...headings,
+  ];
 }
 
 /**
@@ -369,7 +533,13 @@ function columnHeaderItems(grid: HeatmapGrid): SceneItem[] {
 function rowItems(grid: HeatmapGrid): SceneItem[] {
   const items: SceneItem[] = [];
   for (const [row, line] of grid.lines.entries()) {
-    items.push(rowLabelItem(line, row, grid));
+    const y = grid.top + row * grid.cellHeight + grid.cellHeight / 2;
+    items.push(rowLabel(line, y, grid, 'name'));
+    const size = grid.cohort?.sizes.get(line);
+    if (size !== undefined) {
+      items.push(rowLabel(sizeText(size, grid.theme), y, grid, 'size'));
+    }
+
     for (const [column, name] of grid.columns.entries()) {
       for (const item of cellItems(grid, name, column, line, row)) {
         items.push(item);
@@ -383,20 +553,31 @@ function rowItems(grid: HeatmapGrid): SceneItem[] {
 /**
  * The name of a row, right-aligned at the left of the grid.
  *
- * @param line - The row's name.
- * @param rowIndex - The row's position.
+ * @param line - The label's text.
+ * @param y - The vertical center of the row or heading.
  * @param grid - The heatmap's grid.
+ * @param field - The name or population column.
  */
-function rowLabelItem(line: string, rowIndex: number, grid: HeatmapGrid): SceneItem {
+function rowLabel(line: string, y: number, grid: HeatmapGrid, field: 'name' | 'size'): SceneItem {
+  const gutter = grid.rowLabels - grid.theme.space.md;
+  const isSize = field === 'size';
   return {
     kind: 'text',
-    x: grid.rowLabels - grid.theme.space.md,
-    y: grid.top + rowIndex * grid.cellHeight + grid.cellHeight / 2,
+    x: isSize ? gutter : gutter - grid.sizeLabels,
+    y,
     lines: [line],
     style: grid.axisStyle,
     color: grid.theme.colors.label,
     anchor: 'end',
+    tabular: isSize,
   };
+}
+
+/**
+ * Formats an integer cohort size in the brand's number locale.
+ */
+function sizeText(size: number, theme: ChartTheme): string {
+  return new Intl.NumberFormat(theme.numbers.locale).format(size);
 }
 
 /**
@@ -418,13 +599,15 @@ function cellItems(
 ): SceneItem[] {
   const { theme, measure, write } = grid;
   const value = cellValue(grid.cells, column, row);
-  const x = grid.rowLabels + columnIndex * grid.cellWidth;
-  const y = grid.top + rowIndex * grid.cellHeight;
+  if ((grid.cohort !== undefined && value === null) || !hasTileRoom(grid)) {
+    return [];
+  }
+
   const fill =
     value === null ? theme.colors.grid : stepColor(value, grid.low, grid.high, grid.palette);
   const box = {
-    x: x + CELL_GAP / 2,
-    y: y + CELL_GAP / 2,
+    x: grid.rowLabels + columnIndex * grid.cellWidth + CELL_GAP / 2,
+    y: grid.top + rowIndex * grid.cellHeight + CELL_GAP / 2,
     width: grid.cellWidth - CELL_GAP,
     height: grid.cellHeight - CELL_GAP,
   };
@@ -433,7 +616,7 @@ function cellItems(
   const items: SceneItem[] = [
     {
       kind: 'path',
-      d: `M${box.x},${box.y}h${box.width}v${box.height}h${-box.width}Z`,
+      d: tilePath(grid, columnIndex, rowIndex),
       fill,
       ...(strong ? { stroke: theme.colors.heading, strokeWidth: theme.lineWidth } : {}),
       anim: 'fade',
@@ -464,6 +647,24 @@ function cellItems(
   }
 
   return items;
+}
+
+/**
+ * Whether the available plot is large enough to draw a positive-size tile.
+ */
+function hasTileRoom(grid: HeatmapGrid): boolean {
+  return grid.cellWidth > CELL_GAP && grid.cellHeight > CELL_GAP;
+}
+
+/**
+ * The path shared by a tile and its focus outline.
+ */
+function tilePath(grid: HeatmapGrid, column: number, row: number): string {
+  const x = grid.rowLabels + column * grid.cellWidth + CELL_GAP / 2;
+  const y = grid.top + row * grid.cellHeight + CELL_GAP / 2;
+  const width = grid.cellWidth - CELL_GAP;
+  const height = grid.cellHeight - CELL_GAP;
+  return `M${x},${y}h${width}v${height}h${-width}Z`;
 }
 
 /**

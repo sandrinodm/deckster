@@ -1,0 +1,35 @@
+---
+layout: service-blueprint
+title: The hub owns the rider handoff
+eyebrow: Service blueprint
+reveal: true
+budget: 50s
+stages:
+  - title: Book
+    customer: Picks a delivery window
+    frontstage: Shop confirms the window
+    backstage: Flock queues the drop
+    owner: Merchant support
+  - title: Batch
+    customer: Checks the promised time
+    frontstage: Tracking shows the window
+    backstage: Flock groups nearby drops
+    owner: Dispatch
+  - title: Ride
+    customer: Gets a rider ETA
+    frontstage: Rider heads to the door
+    backstage: Hub lead reprioritises stops
+    owner: Hub lead
+  - title: Confirm
+    customer: Accepts the parcel
+    frontstage: Rider records the handover
+    backstage: Proof closes the order
+    owner: Rider
+handoff:
+  stage: 3
+  label: Loop to rider
+---
+
+<Notes>
+`service-blueprint` traces Wrenhaul's delivery across the line of visibility. Read the visible service across the top. [click] Show the work below the line that keeps the service moving. [click] When the loop becomes a rider's route, the hub lead can still change the stop order and is accountable for the handoff. The recipient sees the resulting ETA.
+</Notes>

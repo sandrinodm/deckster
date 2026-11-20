@@ -18,15 +18,16 @@ export const demoLayoutContract = defineLayoutContract({
   description:
     'A title that states what the audience is about to watch, then one large region for a live ' +
     'demo: an <AppFrame> (a mini app or an external page) or a <Live> widget, filling all the ' +
-    'space under the title. Fill <Aside> with up to three short notes to set them in a narrow ' +
-    'column beside the demo. Give the demo a poster, so exports and offline runs have a still.',
+    'space under the title. CommandDemo, GroundedAnswer, ReviewDiff and RunTrace have scripted ' +
+    'steps and built-in stills. Fill <Aside> with up to three short notes to set them in a narrow ' +
+    'column beside the demo. Supply an explicit poster for AppFrame and networked Live widgets.',
   schema: Schema.Struct({ eyebrow: EyebrowField, chrome: chromeField(true) }),
   hints: { eyebrow: EYEBROW_HINT, chrome: CHROME_HINT },
   title: { required: true, maxChars: DEMO_TITLE_MAX_CHARS },
   slots: {
     body: {
       description:
-        'One <AppFrame app="name" poster="..." /> or <Live component={...} />, nothing else. It ' +
+        'One <AppFrame>, <Live>, <CommandDemo>, <GroundedAnswer>, <ReviewDiff> or <RunTrace>. It ' +
         'fills the region. The app must exist under decks/<deck>/apps/ (`' +
         deckCommand() +
         ' new app`), or ' +

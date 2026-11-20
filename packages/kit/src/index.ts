@@ -23,3 +23,7 @@ export { Lottie, type LottieProps } from '#media/lottie.tsx';
 export { Video, type VideoProps } from '#media/video.tsx';
 export { AppFrame, type AppFrameProps } from '#apps/app-frame.tsx';
 export { Live, type LiveProps } from '#apps/live.tsx';
+export { CommandDemo, type CommandDemoProps } from '#demo/command-demo.tsx';
+export { GroundedAnswer, type GroundedAnswerProps } from '#demo/grounded-answer.tsx';
+export { ReviewDiff, type ReviewDiffProps } from '#demo/review-diff.tsx';
+export { RunTrace, type RunTraceProps } from '#demo/run-trace.tsx';

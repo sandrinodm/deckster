@@ -26,10 +26,13 @@ export const CHART_KINDS = [
   'area',
   'donut',
   'scatter',
+  'market-movement',
   'slope',
   'waterfall',
   'funnel',
   'heatmap',
+  'retention-cohorts',
+  'profit-pool',
   'sparkline',
   'big-number',
   'stat-row',
@@ -108,9 +111,10 @@ export type ChartSpecSeries = {
   values: readonly (number | null)[];
 
   /**
-   * For a scatter, the x value of each point; `null` for every other kind.
+   * The x value of each point in a scatter or market movement chart. Missing positions use `null`
+   * in market movement; series from other chart kinds set this field to `null`.
    */
-  x: readonly number[] | null;
+  x: readonly (number | null)[] | null;
 
   /**
    * The series color as `#rrggbb`: its own palette color, or the context color when another series

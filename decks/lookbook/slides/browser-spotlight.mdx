@@ -1,0 +1,21 @@
+---
+layout: screen-story
+pattern: spotlight
+title: See the deadline before assigning the loop
+eyebrow: Browser spotlight
+address: dispatch.wrenhaul.example
+ratio: 2
+reveal: true
+budget: 35s
+screens:
+  - src: ../assets/screens/demo-queue-after.svg
+    alt: Flock Dispatch shows the promised time of 09:35 on the first waiting drop
+    label: Brightloaf is due by 09:35
+    detail: The time stays in the queue while dispatch plans the loop.
+spotlight: { x: 61, y: 32, width: 35, height: 42 }
+---
+
+<Notes>
+`browser-spotlight` uses a registered crop of the Dispatch queue.
+Start with the whole waiting queue in the dispatch browser. [click] The border and magnification refer to the same part of the same screen. WQ-214 has a promise of 09:35. That time is available before assigning a rider.
+</Notes>

@@ -1,0 +1,85 @@
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-blueprint-region {
+    margin-top: var(--kit-title-gap);
+  }
+
+  .kit-blueprint {
+    width: 100%;
+    height: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    text-align: left;
+  }
+
+  .kit-blueprint :is(th, td) {
+    padding: var(--brand-space-xs) var(--brand-space-sm);
+    vertical-align: middle;
+    overflow-wrap: break-word;
+  }
+
+  .kit-blueprint thead th:not(:first-child),
+  .kit-blueprint .kit-blueprint-lane td {
+    border-inline-start: 1px solid var(--brand-color-border);
+  }
+
+  .kit-blueprint thead th:first-child {
+    width: 16%;
+    padding-inline-start: 0;
+    color: var(--brand-color-muted);
+  }
+
+  .kit-blueprint thead tr {
+    height: 17%;
+    border-bottom: 2px solid var(--brand-color-fg);
+  }
+
+  .kit-blueprint th[scope='row'] {
+    padding-inline-start: 0;
+    color: var(--brand-color-muted);
+  }
+
+  .kit-blueprint-lane {
+    height: 17%;
+    border-bottom: 1px solid var(--brand-color-border);
+  }
+
+  .kit-blueprint-lane[data-lane='owner']:has([data-handoff]) {
+    background: var(--brand-color-surface);
+  }
+
+  .kit-blueprint-lane[data-lane='owner'] td {
+    font-weight: 650;
+  }
+
+  .kit-blueprint-lane td[data-handoff] {
+    border-inline-start: var(--brand-stroke-bold) solid var(--brand-color-accent);
+    background: var(--brand-color-surface);
+  }
+
+  .kit-blueprint-visibility {
+    height: 15%;
+  }
+
+  .kit-blueprint-visibility td {
+    position: relative;
+    padding-block: 0;
+    text-align: center;
+  }
+
+  .kit-blueprint-visibility td::before {
+    position: absolute;
+    inset: 50% 0 auto;
+    border-top: 2px dashed var(--brand-color-muted);
+    content: '';
+  }
+
+  .kit-blueprint-visibility td[data-handoff]::before {
+    content: none;
+  }
+
+  .kit-blueprint-handoff {
+    color: var(--brand-color-accent-text);
+  }
+}

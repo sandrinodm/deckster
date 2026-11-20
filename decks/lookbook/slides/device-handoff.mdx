@@ -1,0 +1,24 @@
+---
+layout: screen-story
+pattern: handoff
+title: One assignment sends the next stop to Rider
+eyebrow: Desktop to phone
+address: dispatch.wrenhaul.example
+ratio: 2
+reveal: true
+budget: 40s
+screens:
+  - src: ../assets/screens/demo-queue-assign.svg
+    alt: Dispatch assigns parcel WQ-214 from Brightloaf to loop 17
+    label: Assign to loop 17
+    detail: WQ-214 · Dispatch at Old Town
+  - src: ../assets/screens/demo-rider-1.svg
+    alt: Rider opens loop 17 to parcel WQ-214 at 14 Weir Street, in slot B3
+    label: Next stop in Rider
+    detail: WQ-214 · 14 Weir Street · Slot B3
+---
+
+<Notes>
+`device-handoff` follows the same parcel from Dispatch to Rider.
+Read WQ-214 on the desktop. It goes to loop 17. [click] The phone receives the same parcel with the next address and the slot in the bike box, so Aoife can take it without re-entering the order.
+</Notes>

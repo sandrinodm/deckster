@@ -98,6 +98,12 @@ Some jobs have a layout of their own, and the near miss is the layout that comes
 | A programme's readiness, exceptions and who owns them                    | `status`: three to seven workstreams, labelled states, optional owners and one-line notes                                                                     | `table` for arbitrary values, `columns` for task lanes, `timeline` for dated milestones                                                                                       |
 | Several people supporting one point                                      | `voices`: two or three short testimonials with names, roles and optional portraits                                                                            | `quote` for one speaker; `proof` for a customer result with numbers; `team` to introduce people                                                                               |
 
+For these recurring decisions, adapt the corresponding lookbook slide.
+
+- **Pitch by analogy** · Start with a familiar market’s change. Reveal how the same mechanism works for the company, then show the assumption the audience should challenge. [Lookbook example](../../../decks/lookbook/slides/pitch-analogy.mdx)
+- **Investment committee decision** · Put the decision and amount in the title. Pair the thesis with evidence and give the strongest objection a measurable condition for reconsideration. [Lookbook example](../../../decks/lookbook/slides/investment-committee.mdx)
+- **Opportunity to experiment** · Start from the outcome and show the opportunity, competing options, and experiment. Keep alternatives visible when the experiment is revealed. State the measure and the baseline on the slide. [Lookbook example](../../../decks/lookbook/slides/opportunity-experiments.mdx)
+
 ## 4. Cognitive load: what the research supports
 
 Working memory handles only a few items at once, and a listener is already using some of it to follow speech. Mayer's multimedia learning research gives the best-supported design rules. Median effect sizes are from his 2014 handbook review; they come mostly from short lab lessons with novice learners and immediate tests, so treat sizes as indicative, the direction as reliable.
@@ -210,6 +216,33 @@ Controlled research on demos in presentations is thin; this section is practice 
 - **Keep it short and scripted:** one scenario, a named user with a goal, three or so beats, realistic data. Put the click path in the notes.
 - **Always have a fallback.** A recorded video or screenshot sequence for when the network, the build or the model fails. Live apps and videos take a `poster` for this reason (static mode and exports show it), and lint reports a demo without one. Tell the presenter in the notes when to switch.
 - **Budget honestly.** Demos run long. Give the demo a time budget and a "skip to" point.
+
+
+Use `screen-story` for authored, offline product screens. `pattern: spotlight` takes one screenshot
+and a rectangle in percentages of that unscaled viewport. Both the outline and the enlarged inset
+come from that image. `wipe` takes two registered screenshots of the same size. A live scrubber moves
+the divider, while a finished handout labels and compares both versions. `handoff` pairs the sender's
+action with the receiver's state. Keep the same record identifier visible on both devices.
+`filmstrip` takes three distinct screens and action labels, and shows the full sequence at the end.
+
+Use these components inside `layout: demo` for scripted AI and keyboard workflows:
+
+- **CommandDemo** shows a workspace, palette and executed result. Give each command a distinct local
+  result so the presenter can demonstrate another choice.
+- **GroundedAnswer** shows the source brief and question, then the cited answer and the exact evidence.
+  Use the source's wording and give the citation a specific page, section or record.
+- **ReviewDiff** accepts the exact original and suggested text plus the shared sentence around it.
+  Keep the human decision visible with the draft it produces.
+- **RunTrace** pairs each observed tool call with its return. Show the draft and a specific human
+  checkpoint before an action could affect anything outside the demo.
+
+Each above uses normal deck advances and has a standalone static frame. Copy the relevant slide from
+`decks/lookbook/slides/` and preview each reveal in both directions.
+
+For production references, watch Stripe introduce a concrete checkout task before handing it to the demo
+operator. Linear documents how command menus surface keyboard shortcuts, and Apple's Handoff shows what
+it means to resume the same task on another device. GitHub pairs an agent session log with the changes
+a human reviews. Apply those ideas to the product and data the audience came to see. [Stripe Sessions product keynote](https://stripe.com/sessions/2026/opening-remarks-and-product) · [Linear contextual menus](https://linear.app/now/invisible-details) · [Apple Handoff](https://support.apple.com/en-us/102426) · [GitHub agent management](https://docs.github.com/en/copilot/concepts/agent-capabilities/choosing-and-delegating-agent-work/agent-management)
 
 ## 11. Speaker notes
 

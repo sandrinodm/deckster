@@ -69,6 +69,21 @@ const PICTURE_REASONS: Partial<Record<ChartSpec['kind'], string>> = {
   heatmap: 'a heatmap has no PowerPoint chart type',
 
   /**
+   * The chart uses age-aligned cells and an extra column of cohort sizes.
+   */
+  'retention-cohorts': 'a retention cohort grid has no PowerPoint chart type',
+
+  /**
+   * A profit pool encodes profit with variable-width rectangles.
+   */
+  'profit-pool': 'PowerPoint chart columns cannot vary in width by revenue',
+
+  /**
+   * The final chart combines dated labels, a selected trail and the latest peer positions.
+   */
+  'market-movement': 'a PowerPoint scatter chart cannot reproduce the dated trail and peer labels',
+
+  /**
    * A sparkline has no axes, which a native line chart always draws space for.
    */
   sparkline: 'a sparkline is too small for a native chart without axis padding',
@@ -542,6 +557,9 @@ function fitChart(spec: ChartSpec, svg: ChartSvg): Fitted | string {
     case 'slope':
     case 'funnel':
     case 'heatmap':
+    case 'retention-cohorts':
+    case 'profit-pool':
+    case 'market-movement':
     case 'sparkline':
     case 'big-number':
     case 'stat-row':
@@ -1995,7 +2013,9 @@ function fitScatter(spec: ChartSpec, svg: ChartSvg): Fitted | string {
   const points = spec.series.flatMap((series, index) =>
     series.values.flatMap((value, position) => {
       const x = series.x?.[position];
-      return value === null || x === undefined ? [] : [{ series: index, position, x, y: value }];
+      return value === null || x === undefined || x === null
+        ? []
+        : [{ series: index, position, x, y: value }];
     }),
   );
   if (dots.length !== points.length || dots.length === 0) {

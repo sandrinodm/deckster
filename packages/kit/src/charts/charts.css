@@ -203,6 +203,12 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .kit-chart[data-motion='on'],
+    .kit-chart[data-motion='on'] .kit-chart-step,
+    .kit-chart[data-motion='on'] .kit-chart-mark {
+      transition: none;
+    }
+
     .kit-chart [data-anim] {
       animation: none !important;
     }

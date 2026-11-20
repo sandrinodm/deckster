@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 626" width="430" height="626">
+  <g font-family="Arial, sans-serif">
+    <rect x="0" y="0" width="430" height="626" rx="0" fill="#f5efe4"/>
+    <rect x="0" y="0" width="430" height="113" rx="0" fill="#1d2a33"/>
+    <text x="27" y="41" font-size="20" font-weight="700" fill="#fffdf7" text-anchor="start">Rider · Loop 17</text>
+    <text x="27" y="83" font-size="34" font-weight="700" fill="#fffdf7" text-anchor="start">Next stop</text>
+    <rect x="22" y="136" width="386" height="128" rx="14" fill="#fffdf7" stroke="#dfd5c4"/>
+    <text x="45" y="171" font-size="19" font-weight="700" fill="#8c3b2c" text-anchor="start">PARCEL WQ-214</text>
+    <text x="45" y="216" font-size="28" font-weight="700" fill="#1d2a33" text-anchor="start">14 Weir Street</text>
+    <text x="45" y="246" font-size="18" font-weight="500" fill="#665a50" text-anchor="start">Brightloaf · Slot B3</text>
+    <rect x="22" y="282" width="386" height="195" rx="14" fill="#e6e9dc"/>
+    <path d="M22 337h386m-386 75h386M138 282v195m107-195v195m89-195v195" fill="none" stroke="#fffdf7" stroke-width="9"/>
+    <path d="M56 439h81v-29h111v-74h82" fill="none" stroke="#285b53" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="57" cy="439" r="12" fill="#fffdf7" stroke="#285b53" stroke-width="6"/>
+    <path d="M330 302c-15 0-25 10-25 23 0 18 25 37 25 37s25-19 25-37c0-13-10-23-25-23z" fill="#8c3b2c"/>
+    <circle cx="330" cy="325" r="7" fill="#fffdf7"/>
+    <text x="270" y="452" font-size="15" font-weight="700" fill="#285b53" text-anchor="start">NEXT STOP</text>
+    <rect x="22" y="505" width="386" height="60" rx="11" fill="#1d2a33"/>
+    <text x="215" y="543" font-size="22" font-weight="700" fill="#fffdf7" text-anchor="middle">Start handoff</text>
+  </g>
+</svg>

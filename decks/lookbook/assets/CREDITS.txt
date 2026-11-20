@@ -32,8 +32,17 @@ screens/*.svg
 maps/kestwick-loops.svg
   A map of a fictional town, drawn for this deck. No restrictions.
 
+maps/saltby-expansion.svg
+  Original map drawn for the fictional Saltby expansion decision. No restrictions.
+
 scenes/*.svg
   Illustrated scenes of Wrenhaul at work (a rider in the Old Town, a hub on a square, a
   handover, the Old Town from above, inside a hub, an evening street, a van at the bollards, an
   open bike box), drawn for this deck in flat shapes, 2400x1600, with the same palette as the
   screens and portraits: no real people or places. No restrictions.
+
+scenes/vision-counter.jpg, scenes/vision-ride.jpg, scenes/vision-door.jpg,
+scenes/future-back-district.jpg
+  Generated editorial photographs commissioned for this deck. The first three depict the same
+  fictional Wrenhaul order moving from counter to rider to recipient. The fourth depicts an
+  aspirational neighborhood. All people and locations are fictional.

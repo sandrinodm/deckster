@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <rect width="800" height="200" rx="18" fill="#f5efe4"/>
+  <g font-family="Arial, sans-serif">
+    <text x="29" y="44" fill="#74675b" font-size="16" font-weight="700" letter-spacing="1.5">RIDER CAPACITY</text>
+    <text x="29" y="91" fill="#1d2a33" font-size="35" font-weight="700">2 riders ready</text>
+    <text x="29" y="123" fill="#594b42" font-size="19">Checked in at the hub</text>
+    <text x="29" y="152" fill="#594b42" font-size="19">A bike and box for each</text>
+    <rect x="300" y="20" width="474" height="160" rx="10" fill="#fffcf5"/>
+    <path d="M322 100h430" stroke="#e3dacb"/>
+    <circle cx="348" cy="61" r="17" fill="#f6ddd1"/>
+    <circle cx="348" cy="139" r="17" fill="#dcebe4"/>
+    <text x="348" y="67" text-anchor="middle" fill="#924432" font-size="17" font-weight="700">A</text>
+    <text x="348" y="145" text-anchor="middle" fill="#2c6c64" font-size="17" font-weight="700">J</text>
+    <text x="380" y="68" fill="#1d2a33" font-size="21" font-weight="700">Aoife</text>
+    <text x="380" y="146" fill="#1d2a33" font-size="21" font-weight="700">Jonas</text>
+    <text x="750" y="68" text-anchor="end" fill="#924432" font-size="20">Loop 17</text>
+    <text x="750" y="146" text-anchor="end" fill="#2c6c64" font-size="20">Loop 18</text>
+  </g>
+</svg>
