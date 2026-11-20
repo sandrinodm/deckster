@@ -92,6 +92,18 @@ The checks run in stages. A stage that finds a problem reports all of its proble
 
 [Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/) explains the roles and surfaces these checks measure.
 
+## Layout checks during installation
+
+<Aside type="note" title="Unreleased">
+These checks in `deck brand add` are not included in 0.6.1. See [Brand layout validation before install](/project/changelog/#brand-layout-validation-before-install).
+</Aside>
+
+In 0.6.1, run `deck brand check <name>` after adding a brand to check its layouts against the deckster layout catalog. The unreleased importer runs that catalog check before publishing the brand, including when you pass `--force`. It checks layout names, fallbacks and slot and field bindings. Errors prevent the install and keep the previous brand in place. Warnings name the source file and include a fix.
+
+To fix a layout failure, use the reported field path and fix in the source repository's `layouts.ts`, then import the corrected ref. With `deck brand add <source> --json`, a brand validation failure returns `{ ok: false, error: { type, message, file, problems } }`. For a catalog failure, `file` points to `brands/<name>/layouts.ts`. See [Brand layouts](/brands/brand-layouts/#check-it) for what each check means.
+
+Missing Fontsource packages do not block installation: the importer prints commands to install them. An installed package with an unreadable manifest, invalid metadata or missing font files does block installation. Repair or reinstall that package, then retry the import. After adding any missing packages, run `deck brand check <name>` to check the brand in your workspace.
+
 ## Diagram cards
 
 The `diagram` section goes through the same stages. A value outside the schema fails first:

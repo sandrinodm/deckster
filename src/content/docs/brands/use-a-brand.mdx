@@ -23,12 +23,12 @@ These steps add `nocturne` to a workspace called `talks`. The other three work t
 
 <Steps>
 
-1. Add the brand from the repository, at the tag of the CLI you run, so the brand and the CLI match. It needs `git` on your `PATH`:
+1. Add the brand from the repository. Use the tag that matches your CLI version, and make sure `git` is on your `PATH`.
 
    ```console
-   $ deck brand add gh:sandrinodm/deckster/brands/nocturne#v0.6.0
-   Fetching gh:sandrinodm/deckster/brands/nocturne#v0.6.0 with git...
-   Added brands/nocturne/ from gh:sandrinodm/deckster/brands/nocturne#v0.6.0 at 5ee4926 (4 files).
+   $ deck brand add gh:sandrinodm/deckster/brands/nocturne#v0.6.1
+   Fetching gh:sandrinodm/deckster/brands/nocturne#v0.6.1 with git...
+   Added brands/nocturne/ from gh:sandrinodm/deckster/brands/nocturne#v0.6.1 at 2042d1a (4 files).
    Left out: package.json (package file), tsconfig.json (package file).
    Next:
      npm install @fontsource-variable/fraunces@5.3.0 @fontsource-variable/manrope@5.3.0 @fontsource/ibm-plex-mono@5.3.0
@@ -64,7 +64,7 @@ The CLI already carries the fonts of `default` (Bricolage Grotesque, Inter and J
 
 ## Add a brand from another repository
 
-`deck brand add <source>` works with any git repository your `git` can read. The source names the repository, the folder that holds `brand.ts`, and optionally a ref after `#`, a branch, a tag or a full 40-character commit. Without a ref it takes the default branch.
+`deck brand add <source>` reads a git repository over HTTPS or SSH. The source names the repository, the folder that holds `brand.ts`, and optionally a ref after `#`, a branch, a tag or a full commit hash. Without a ref it takes the default branch.
 
 | Source | Example |
 | --- | --- |
@@ -72,13 +72,13 @@ The CLI already carries the fonts of `default` (Bricolage Grotesque, Inter and J
 | A GitHub link to the folder | `https://github.com/acme/brand-kit/tree/v2/brands/acme` |
 | Any HTTPS or SSH address, with the folder after `//` | `git@github.com:acme/brand-kit.git//brands/acme#v2` |
 
-It runs your own `git`, so your credential helper, SSH key and `url.<base>.insteadOf` rules apply, and a private repository works when `git clone` would. It fetches only that folder, at the commit the ref names, and each network step may take up to two minutes. The folder is named after the brand's `name` in `brand.ts`, not after the folder in the source.
+It runs your own `git`, so your credential helper, SSH key and `url.<base>.insteadOf` rules apply. It fetches only that folder, at the commit the ref names, and each network step may take up to two minutes. The installed folder takes its name from `name` in `brand.ts`.
 
 What it copies and what it refuses:
 
-- **Data, not code.** `brand.ts` and `layouts.ts` are read as data and never run, and a `brand.ts` that is more than one `defineBrand` call around plain values is refused. The brand is checked before anything is written, and `deck brand check`, once its fonts are installed, checks what needs them.
+- **Plain data.** The importer reads `brand.ts` and `layouts.ts` without running them. Write `brand.ts` as one `defineBrand` call around plain values. The importer checks the brand before installing it. After you install any missing font packages, run `deck brand check <name>` to check the installed files and layouts.
 - **Only brand files.** `brand.ts`, `layouts.ts`, images (`svg`, `png`, `webp`, `jpg`, `jpeg`), fonts (`woff2`, `woff`, `ttf`, `otf`), documents (`md`, `txt`, `json`) and licence files. Other code, symlinks, hidden files and package files (`package.json`, lock files, `tsconfig.json` and the like) are left out, and `Left out:` lists them. At most 500 files and 50 MiB.
-- **No overwrite.** When the workspace already has a brand of that name, it stops: `The workspace already has brands/nocturne/.` Pass `--force` to replace it; the output then starts with `Replaced`, and a failed copy puts the old folder back.
+- **Replacement.** When the workspace already has a brand of that name, the command stops with `The workspace already has brands/nocturne/.` Pass `--force` to replace it. A successful replacement starts its report with `Replaced`. In 0.6.1, the importer attempts to restore the previous folder if it cannot copy the replacement.
 
 A source that is not a brand folder fails before anything is written:
 
@@ -90,6 +90,26 @@ Point at the folder that holds brand.ts, such as gh:owner/repo/brands/<name>.
 ```
 
 `--json` prints `{ ok, brand, dir, source, commit, replaced, files, written, skipped, fonts, warnings, next }`: `skipped` has each left-out file with its reason, `fonts` each font package with its version and whether it is `installed`, and `next` the commands to run. The full help is under [`deck brand`](/reference/cli/#cli-brand).
+
+### Authenticate to a private repository
+
+For HTTPS, use your git credential helper. For GitHub you can sign in with `gh auth login` and choose HTTPS and Git authentication when prompted. For SSH, load the key your git host accepts into your SSH agent. Use a source address without a token or password. HTTPS sources omit the user name, and SSH sources can include the account name, such as `git@`.
+
+If the fetch fails, run `git ls-remote <repository-url>` in the same terminal, with the repository URL alone. Leave off the `//` folder suffix and the `#` ref. This checks whether Git can reach and authenticate to the repository. Once it works, check the folder path and ref in your `deck brand add` command.
+
+**Unreleased.** The importer validates the source before printing the fetch line. Invalid-source errors explain what to fix without echoing the supplied address. If Git fails, the importer prints the failed step and its status where available, while keeping Git's raw diagnostics out of the CLI output. See [Credential-safe brand sources](/project/changelog/#credential-safe-brand-sources).
+
+### Recover an interrupted replacement
+
+<Aside type="note" title="Unreleased">
+This recovery behavior is not included in 0.6.1. See [Transaction-safe brand installs](/project/changelog/#transaction-safe-brand-installs).
+</Aside>
+
+`deck brand add <source> --force` stages and checks the replacement under `brands/` before publishing it. Installs of the same brand take turns. If publication fails after moving the previous brand, the installer restores it when the destination is free. After a process interruption, retry the same source. The installer recovers the previous brand or finishes cleaning up a published install before it checks whether it can proceed. Leave out `--force` on that retry if you want to check the recovered brand first.
+
+If the error says the destination already exists and the previous brand is preserved, keep both folders while you check them. The message gives the paths. Move the conflicting destination aside and restore the previous brand to `brands/<name>/`, or move the saved copy somewhere safe before retrying. The transaction files live under `brands/.deck/brand-add/<name>/`. Keep `brands/.deck/` out of git and leave its lock files in place. The directories `.deck/`, `brand-add/` and `<name>/` in that path must be real directories. If the installer reports an existing link or other entry there, move that entry somewhere safe before retrying.
+
+After a successful install, follow the printed font commands and run [`deck brand check <name>`](/brands/check-a-brand/). See [layout checks during installation](/brands/check-a-brand/#layout-checks-during-installation) for the unreleased validation.
 
 ## Which brand a deck uses
 
