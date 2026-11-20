@@ -6,6 +6,7 @@ import type { CountValue } from '#motion/count-up.ts';
 
 import { prefersReducedMotion } from '#diagrams/diagram-tokens.ts';
 import { countText, parseCount } from '#motion/count-up.ts';
+import { cssDurationMs } from '#motion/css-duration.ts';
 import { RevealContext, useStillMotion } from '#motion/still-motion.ts';
 
 /**
@@ -222,11 +223,11 @@ function playCount(
  */
 function countTiming(element: HTMLElement, cause: CountCause): CountTiming {
   const style = getComputedStyle(element);
-  const slow = Number.parseFloat(style.getPropertyValue('--brand-duration-slow'));
-  const transition = Number.parseFloat(style.getPropertyValue('--brand-transition-duration'));
+  const slow = cssDurationMs(style.getPropertyValue('--brand-duration-slow'));
+  const transition = cssDurationMs(style.getPropertyValue('--brand-transition-duration'));
   return {
     delay: cause === 'enter' ? enterDelay(element, transition) : 0,
-    duration: Number.isFinite(slow) ? slow * COUNT_DURATION_SHARE : 0,
+    duration: (slow ?? 0) * COUNT_DURATION_SHARE,
     easing: readEasing(style.getPropertyValue('--brand-ease-emphasized')),
   };
 }
@@ -236,9 +237,9 @@ function countTiming(element: HTMLElement, cause: CountCause): CountTiming {
  * that takes part in it, else a share of the slide transition.
  *
  * @param element - An element of the figure.
- * @param transition - The slide transition's duration in milliseconds, `NaN` when unknown.
+ * @param transition - The slide transition's duration in milliseconds, if available.
  */
-function enterDelay(element: HTMLElement, transition: number): number {
+function enterDelay(element: HTMLElement, transition: number | undefined): number {
   const entering = element.closest('[data-kit-enter]');
   const animation = entering
     ?.getAnimations()
@@ -251,7 +252,7 @@ function enterDelay(element: HTMLElement, transition: number): number {
     return delay;
   }
 
-  return Number.isFinite(transition) ? transition * TRANSITION_DELAY_SHARE : 0;
+  return (transition ?? 0) * TRANSITION_DELAY_SHARE;
 }
 
 /**

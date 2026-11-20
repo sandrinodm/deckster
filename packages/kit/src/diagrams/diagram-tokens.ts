@@ -21,6 +21,7 @@ import {
   type CardTokens,
 } from '#diagrams/node-cards.ts';
 import { NODE_KIND_NAMES } from '#diagrams/node-kinds.ts';
+import { cssDurationMs } from '#motion/css-duration.ts';
 
 /**
  * How edges turn their corners: rounded (the default) or square.
@@ -468,9 +469,9 @@ export function readDiagramTokens(element: Element): DiagramTokens {
   const labelType = keyword(style, '--brand-diagram-label-type', LABEL_TYPES, 'caption');
   return {
     motion: {
-      fast: read('--brand-duration-fast', FALLBACK.motion.fast),
-      base: read('--brand-duration-base', FALLBACK.motion.base),
-      slow: read('--brand-duration-slow', FALLBACK.motion.slow),
+      fast: cssDurationMs(style.getPropertyValue('--brand-duration-fast')) ?? FALLBACK.motion.fast,
+      base: cssDurationMs(style.getPropertyValue('--brand-duration-base')) ?? FALLBACK.motion.base,
+      slow: cssDurationMs(style.getPropertyValue('--brand-duration-slow')) ?? FALLBACK.motion.slow,
       easing: readEasing(style.getPropertyValue('--brand-ease-standard')),
     },
     radius,

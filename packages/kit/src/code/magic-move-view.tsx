@@ -3,6 +3,8 @@ import type { KeyedTokensInfo, MagicMoveRenderOptions } from '@shikijs/magic-mov
 import { ShikiMagicMovePrecompiled } from '@shikijs/magic-move/react';
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
+import { cssDurationMs } from '#motion/css-duration.ts';
+
 /**
  * Props of {@link MagicMoveView}.
  */
@@ -120,12 +122,12 @@ export default function MagicMoveView({ states, index, animate }: MagicMoveViewP
  */
 function measure(element: HTMLElement, previous: Measured): Measured {
   const style = getComputedStyle(element);
-  const duration = Number.parseFloat(style.getPropertyValue('--brand-duration-slow'));
+  const duration = cssDurationMs(style.getPropertyValue('--brand-duration-slow'));
   const easing = style.getPropertyValue('--brand-ease-emphasized').trim();
   const scale =
     element.offsetWidth === 0 ? 1 : element.getBoundingClientRect().width / element.offsetWidth;
   const next: Measured = {
-    duration: Number.isFinite(duration) && duration > 0 ? duration : previous.duration,
+    duration: duration !== undefined && duration > 0 ? duration : previous.duration,
     easing: easing === '' ? previous.easing : easing,
     scale: Number.isFinite(scale) && scale > 0 ? scale : previous.scale,
   };
