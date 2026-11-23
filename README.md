@@ -23,6 +23,7 @@ npm install --global @deckster/cli
 mkdir talks && cd talks
 deckster new launch-review --title "Launch review" --duration 20m
 deckster dev launch-review                    # hot reload; q or Ctrl+C stops it
+deckster electron install                     # once, for deckster present (about 120 MB)
 ```
 
 Or run directly from a clone of this repository:
@@ -31,9 +32,9 @@ Or run directly from a clone of this repository:
 git clone https://github.com/sandrinodm/deckster.git
 cd deckster
 pnpm install
-pnpm dev hello              # the 4-slide starter deck, with hot reload
-pnpm deckster dev showcase      # a 45-slide talk about deckster, built with deckster
-pnpm deckster dev lookbook      # every layout, option, chart, diagram and component in one talk
+pnpm dev hello                 # the 4-slide starter deck, with hot reload
+pnpm deckster dev showcase    # a 45-slide talk about deckster, built with deckster
+pnpm deckster dev lookbook    # every layout, option, chart, diagram and component in one talk
 ```
 
 The dev server prints its URL (the first free port from 5173). When working in this repository,
@@ -259,15 +260,15 @@ Brands and decks:
 
 ## Requirements
 
-| For                                 | You need                                                                                                                                           |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Everything                          | Node 26 or later; pnpm 12.16.1 (fetched by pnpm itself from `devEngines`)                                                                          |
-| `shot`, `lint`, `diff`, `export`    | Playwright's Chromium: `pnpm --filter @deckster/cli exec playwright install chromium`                                                              |
-| `present`                           | Electron's binary, downloaded once: `pnpm --filter @deckster/shell exec install-electron`. `--browser` opens Chrome or the default browser instead |
-| `export --verify`                   | Docker for the LibreOffice and Open XML SDK checks; the `quicklook` and `keynote` renderers are macOS only                                         |
-| `diff` against a git ref            | A git repository; otherwise compare with a folder from `deckster diff --save-baseline`                                                             |
-| `--agent claude` or `--agent codex` | That CLI installed and signed in; `pnpm deckster agent doctor` checks both                                                                         |
-| GIFs as looping video               | `ffmpeg` on `PATH`; without it a GIF stays an image and `lint` warns                                                                               |
+| For                                 | You need                                                                                                                                                                   |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Everything                          | Node 26 or later; pnpm 12.16.1 (fetched by pnpm itself from `devEngines`)                                                                                                  |
+| `shot`, `lint`, `diff`, `export`    | Playwright's Chromium: `pnpm --filter @deckster/cli exec playwright install chromium`                                                                                      |
+| `present`                           | Electron's binary, downloaded once with `deckster electron install` (`pnpm deckster electron install` in a clone). `--browser` opens Chrome or the default browser instead |
+| `export --verify`                   | Docker for the LibreOffice and Open XML SDK checks; the `quicklook` and `keynote` renderers are macOS only                                                                 |
+| `diff` against a git ref            | A git repository; otherwise compare with a folder from `deckster diff --save-baseline`                                                                                     |
+| `--agent claude` or `--agent codex` | That CLI installed and signed in; `pnpm deckster agent doctor` checks both                                                                                                 |
+| GIFs as looping video               | `ffmpeg` on `PATH`; without it a GIF stays an image and `lint` warns                                                                                                       |
 
 `deckster present` has been checked on macOS with one display only. Several displays, kiosk mode,
 Windows and Linux are untested ([docs/present.md](docs/present.md#verified-and-not)).

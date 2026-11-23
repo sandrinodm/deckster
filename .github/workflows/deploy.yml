@@ -101,7 +101,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb libgtk-3-0t64 libnss3 libgbm1 libasound2t64
-          pnpm --filter @deckster/shell exec install-electron
+          pnpm deckster electron install
 
       # The export-verify shot runs deckster export --verify, which renders the PPTX with LibreOffice in
       # Docker (ubuntu-latest has it). Building the image here keeps its time and errors out of the

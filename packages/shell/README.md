@@ -11,7 +11,7 @@ It is the only package in the workspace that imports `electron`. It is private a
 `pnpm install` does not download Electron's binary. Download it once:
 
 ```sh
-pnpm --filter @deckster/shell exec install-electron
+pnpm deckster electron install
 pnpm deckster present --help
 ```
 

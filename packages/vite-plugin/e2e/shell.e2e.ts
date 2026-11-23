@@ -111,8 +111,7 @@ describe('the desktop shell, hidden, through Playwright', () => {
     'loads the hello deck, exposes window.deckShell, and keeps the presenter window in sync',
     {
       skip:
-        files === undefined &&
-        'Electron is not downloaded: run `pnpm --filter @deckster/shell exec install-electron`.',
+        files === undefined && 'Electron is not downloaded: run `pnpm deckster electron install`.',
     },
     async () => {
       if (files === undefined) {

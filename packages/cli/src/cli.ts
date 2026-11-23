@@ -18,6 +18,7 @@ import { componentsCommand } from '#commands/components.ts';
 import { devCommand } from '#commands/dev.ts';
 import { diagramsCommand } from '#commands/diagrams.ts';
 import { diffCommand } from '#commands/diff.ts';
+import { electronCommand } from '#commands/electron.ts';
 import { exportCommand } from '#commands/export.ts';
 import { iconsCommand } from '#commands/icons.ts';
 import { layoutsCommand } from '#commands/layouts.ts';
@@ -43,6 +44,7 @@ import { Workspace } from '#workspace.ts';
 export const COMMANDS: readonly Command[] = [
   devCommand,
   presentCommand,
+  electronCommand,
   buildCommand,
   previewCommand,
   shotCommand,
@@ -202,13 +204,18 @@ export function main(
 }
 
 /**
- * Whether a command line needs a workspace. Help and the version print without one, so they work in
- * a folder that is not a workspace, such as a home folder.
+ * Whether a command line needs a workspace. Help, the version and `electron` run without one, so
+ * they work in a folder that is not a workspace, such as a home folder.
  *
  * @param argv - The arguments after `deckster`.
  */
 function needsWorkspace(argv: readonly string[]): boolean {
   const [name] = argv;
+  // `electron` manages the CLI's own Electron, so it works outside any workspace.
+  if (name === 'electron') {
+    return false;
+  }
+
   const isInfo =
     name === undefined ||
     name === 'help' ||

@@ -3,12 +3,12 @@ import { FRAMEWORK_INSTALLED } from '@deckster/brand/node';
 import { AGENT_HELP } from '#agent/agent-flags.ts';
 
 /**
- * How the Electron binary is downloaded: one command in the repository; in a published install the
- * error that appears when the binary is missing prints the exact command.
+ * How the Electron binary is downloaded, worded for the reader: the published command after an npm
+ * install, the workspace script in the repository. The docs' CLI reference checks for the second.
  */
 const ELECTRON_DOWNLOAD = FRAMEWORK_INSTALLED
-  ? "Electron's binary is downloaded once; `deckster present` prints the command when it is missing"
-  : "Electron's binary is downloaded once with `pnpm --filter @deckster/shell exec install-electron`";
+  ? "Electron's binary is downloaded once with `deckster electron install`"
+  : "Electron's binary is downloaded once with `pnpm deckster electron install`";
 
 /**
  * The text `deckster present --help` prints.

@@ -30,6 +30,7 @@ export function writeFakeElectron(electronDir: string): void {
   const app = path.join(electronDir, 'dist', 'Electron.app', 'Contents');
   mkdirSync(path.join(app, 'MacOS'), { recursive: true });
   mkdirSync(path.join(app, 'Resources'), { recursive: true });
+  writeFileSync(path.join(electronDir, 'package.json'), '{"name":"electron","version":"45.3.2"}');
   writeFileSync(path.join(electronDir, 'dist', 'version'), '45.3.2\n');
   writeFileSync(path.join(electronDir, 'path.txt'), 'Electron.app/Contents/MacOS/Electron');
   writeFileSync(path.join(app, 'MacOS', 'Electron'), 'main');

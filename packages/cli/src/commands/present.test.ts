@@ -171,7 +171,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
         const error = yield* Effect.flip(
           runCaptured(['present', 'hello', '--port', '5645'], { shell: fake.layer }),
         );
-        expect(error.message).toContain('pnpm --filter @deckster/shell exec install-electron');
+        expect(error.message).toContain('electron install');
         expect(error.message).toContain('--browser');
         expect(fake.started).toHaveLength(1);
         expect(fake.opened).toEqual([]);

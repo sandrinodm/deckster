@@ -1,32 +1,13 @@
 import type { ChildProcessSpawner } from 'effect/process';
 
 import { FRAMEWORK_INSTALLED, HOOKS_ENV } from '@deckster/brand/node';
-import { fileExists } from '@deckster/brand/node/file-exists';
 import { Console, Effect, FileSystem } from 'effect';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import { shellError, type ShellError } from '#cli-error.ts';
 import { brandedAppWarning, ensureBrandedApp } from '#present/branded-app.ts';
-
-/**
- * The command that downloads Electron's binary, named in every error about it.
- */
-export const INSTALL_ELECTRON_COMMAND = 'pnpm --filter @deckster/shell exec install-electron';
-
-/**
- * The command that downloads Electron's binary. A published CLI has no workspace to run `pnpm
- * --filter` in, and a package manager that skips install scripts (pnpm by default) leaves the
- * binary out, so it runs the package's own downloader, which works the same under every package
- * manager.
- *
- * @param electronDir - The `electron` package folder, when it is known.
- */
-export function installElectronCommand(electronDir?: string): string {
-  return FRAMEWORK_INSTALLED && electronDir !== undefined
-    ? `node ${JSON.stringify(path.join(electronDir, 'install.js'))}`
-    : INSTALL_ELECTRON_COMMAND;
-}
+import { electronInstallCommand, readElectronStatus } from '#present/electron-install.ts';
 
 /**
  * Where the Electron binary and the shell's entry file are.
@@ -70,7 +51,7 @@ export const findElectronPackage = Effect.fn('findElectronPackage')(function* ()
           (FRAMEWORK_INSTALLED
             ? 'Electron is an optional dependency that the install skipped or could not fetch: ' +
               'reinstall @deckster/cli, '
-            : `Run \`pnpm install\`, then \`${INSTALL_ELECTRON_COMMAND}\` to download the binary, `) +
+            : `Run \`pnpm install\`, then \`${electronInstallCommand()}\` to download the binary, `) +
           'or pass --browser to present in Chrome.',
       ),
   });
@@ -99,17 +80,13 @@ export const resolveShellBinary = Effect.fn('resolveShellBinary')(function* (
 > {
   const fs = yield* FileSystem.FileSystem;
   const directory = electronDir ?? (yield* findElectronPackage());
-  const missing = shellError(
-    `Electron's binary is not downloaded (${path.join(directory, 'dist')}), ` +
-      'so `deckster present` cannot open a window.\n' +
-      `Run \`${installElectronCommand(directory)}\` (about 120 MB), or pass --browser to present in Chrome.`,
-  );
-  const relative = yield* fs
-    .readFileString(path.join(directory, 'path.txt'))
-    .pipe(Effect.mapError(() => missing));
-  const executable = path.join(directory, 'dist', relative.trim());
-  if (relative.trim() === '' || !(yield* fileExists(executable))) {
-    return yield* missing;
+  const status = yield* readElectronStatus(directory);
+  const executable = status.executable;
+  if (executable === null) {
+    return yield* shellError(
+      `Electron ${status.version} is not downloaded, so \`deckster present\` cannot open a window.\n` +
+        `Run \`${electronInstallCommand()}\` once (about 120 MB), or pass --browser to present in Chrome.`,
+    );
   }
 
   const entry = yield* Effect.try({

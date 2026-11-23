@@ -483,7 +483,7 @@ const SHELL_DIR = path.join(WORKSPACE_ROOT, 'packages', 'shell');
 /**
  * The documented step that downloads Electron, tried once when the binary is missing.
  */
-const ELECTRON_INSTALL = ['--filter', '@deckster/shell', 'exec', 'install-electron'] as const;
+const ELECTRON_INSTALL = ['deckster', 'electron', 'install'] as const;
 
 /**
  * A running `deckster dev` and its address.
