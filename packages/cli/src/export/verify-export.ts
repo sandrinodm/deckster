@@ -150,7 +150,7 @@ export type RegionTotals = {
 };
 
 /**
- * What `deck export --verify` found.
+ * What `deckster export --verify` found.
  */
 export type VerifyReport = {
   /**

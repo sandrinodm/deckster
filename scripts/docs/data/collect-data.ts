@@ -61,20 +61,20 @@ export type DocsDataOptions = {
   brands: readonly string[];
 
   /**
-   * The workspace's own `deck`, which lists the layouts and icons of its decks and brands.
+   * The workspace's own `deckster`, which lists the layouts and icons of its decks and brands.
    */
   deck: DeckBinary;
 
   /**
-   * The `deck` whose help and version the CLI reference shows: the packed CLI ({@link packCli}),
-   * whose help is worded for an npm install.
+   * The `deckster` whose help and version the CLI reference shows: the packed CLI ({@link
+   * packCli}), whose help is worded for an npm install.
    */
   installedDeck: DeckBinary;
 };
 
 /**
  * One published brand: its name and label, a sentence or two about it, and every resolved token as
- * `deck brand <name> --json` prints them.
+ * `deckster brand <name> --json` prints them.
  */
 export type DocsBrand = {
   /**
@@ -129,27 +129,27 @@ export type DocsMeta = {
  */
 export type DocsData = {
   /**
-   * `deck layouts <deck> --json`: the slide frontmatter JSON Schema and every layout.
+   * `deckster layouts <deck> --json`: the slide frontmatter JSON Schema and every layout.
    */
   layouts: unknown;
 
   /**
-   * `deck components --json`.
+   * `deckster components --json`.
    */
   components: ComponentCatalog;
 
   /**
-   * `deck charts --json`.
+   * `deckster charts --json`.
    */
   charts: ChartCatalog;
 
   /**
-   * `deck diagrams --json`.
+   * `deckster diagrams --json`.
    */
   diagrams: DiagramCatalog;
 
   /**
-   * `deck icons --brand <published brands> --json`: the icon names every published brand has.
+   * `deckster icons --brand <published brands> --json`: the icon names every published brand has.
    */
   icons: unknown;
 
@@ -190,18 +190,18 @@ export type DocsData = {
 export type DocsDataError = DocsError | BrandError | DeckBuildError;
 
 /**
- * Collects the docs export. The layouts and icons are what the workspace's `deck layouts` and `deck
- * icons` print with `--json`, the CLI reference what the installed `deck` prints for `--help` and
- * `--version`, and the other catalogs, the brand tokens, the slides and the schemas come from the
- * packages that own them. Decks and brands come only from the options, never from listing the
- * workspace, and the output holds no timestamps or absolute paths, so the same commit gives the
- * same data.
+ * Collects the docs export. The layouts and icons are what the workspace's `deckster layouts` and
+ * `deck icons` print with `--json`, the CLI reference what the installed `deckster` prints for
+ * `--help` and `--version`, and the other catalogs, the brand tokens, the slides and the schemas
+ * come from the packages that own them. Decks and brands come only from the options, never from
+ * listing the workspace, and the output holds no timestamps or absolute paths, so the same commit
+ * gives the same data.
  *
- * @param options - The workspace, the published decks and brands, and the two `deck`s to ask.
+ * @param options - The workspace, the published decks and brands, and the two `deckster`s to ask.
  * @returns The data, by file.
  * @throws DeckBuildError in the error channel when a deck is missing or invalid, BrandError when a
  *   brand is, and DocsError when a deck renders with a brand the options do not list, a slide file
- *   cannot be read or a `deck` run fails or prints something that is not JSON.
+ *   cannot be read or a `deckster` run fails or prints something that is not JSON.
  */
 export const collectDocsData = Effect.fn('collectDocsData')(function* (
   options: DocsDataOptions,
@@ -259,8 +259,8 @@ export const writeDocsData = Effect.fn('writeDocsData')(function* (
  * Packs the CLI, collects the docs export and writes it to a folder, as the process's main program.
  * A failure prints its message and sets a non-zero exit code.
  *
- * @param options - The workspace, the published decks and brands, the workspace's `deck` and the
- *   absolute output folder.
+ * @param options - The workspace, the published decks and brands, the workspace's `deckster` and
+ *   the absolute output folder.
  */
 export function runDocsData(
   options: Omit<DocsDataOptions, 'installedDeck'> & { out: string },
@@ -284,11 +284,11 @@ export function runDocsData(
 }
 
 /**
- * Runs a `deck` command line that prints JSON and parses what it printed.
+ * Runs a `deckster` command line that prints JSON and parses what it printed.
  *
- * @param deck - The `deck` to start.
+ * @param deck - The `deckster` to start.
  * @param root - The absolute workspace root.
- * @param args - The arguments after `deck`, `--json` included.
+ * @param args - The arguments after `deckster`, `--json` included.
  */
 const deckJson = Effect.fn('deckJson')(function* (
   deck: DeckBinary,
@@ -298,13 +298,13 @@ const deckJson = Effect.fn('deckJson')(function* (
   const output = yield* deckOutput(deck, root, args);
   return yield* Effect.try({
     try: (): unknown => JSON.parse(output),
-    catch: () => docsError(`\`deck ${args.join(' ')}\` printed something that is not JSON.`),
+    catch: () => docsError(`\`deckster ${args.join(' ')}\` printed something that is not JSON.`),
   });
 });
 
 /**
- * One brand's entry: its tokens as `deck brand <name> --json` prints them and the doc comment of
- * its brand file.
+ * One brand's entry: its tokens as `deckster brand <name> --json` prints them and the doc comment
+ * of its brand file.
  *
  * @param root - The absolute workspace root.
  * @param name - The brand folder name.

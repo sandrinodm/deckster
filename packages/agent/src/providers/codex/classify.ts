@@ -40,7 +40,7 @@ export function classifyCodexMessage(message: string): AgentProblem {
     return {
       kind: 'mcp-unavailable',
       message: `Codex could not reach the deck tools: ${shorten(firstLine(message))}`,
-      fix: 'Restart `deck dev --agent`; if it happens again, run `deck agent doctor`.',
+      fix: 'Restart `deckster dev --agent`; if it happens again, run `deckster agent doctor`.',
     };
   }
 
@@ -67,7 +67,7 @@ export function classifyCodexMessage(message: string): AgentProblem {
   return {
     kind: 'crashed',
     message: shorten(message),
-    fix: 'Send the prompt again; if it keeps failing, run `deck agent doctor`.',
+    fix: 'Send the prompt again; if it keeps failing, run `deckster agent doctor`.',
   };
 }
 
@@ -106,7 +106,7 @@ export function interpretCodexExit(exit: ProcessExit, state: ParseState): TurnOu
           ? {
               kind: 'crashed',
               message: `Codex exited with code ${code} before it started.`,
-              fix: 'Run `deck agent doctor` to check the installation and login.',
+              fix: 'Run `deckster agent doctor` to check the installation and login.',
             }
           : classifyCodexMessage(errorLine(exit.stderr)),
     };

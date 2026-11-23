@@ -184,7 +184,7 @@ export type DeckPluginApi = {
 
   /**
    * The warnings the MDX extensions reported the last time a file compiled, such as a missing image
-   * or an unknown code language; `deck lint` turns them into findings.
+   * or an unknown code language; `deckster lint` turns them into findings.
    *
    * @param file - The absolute path of the slide file.
    */
@@ -356,7 +356,7 @@ export function deckPlugin(
       const reported: MdxWarning[] = [];
       warnings.set(file.file, reported);
       /**
-       * Prints a plugin's warning with the slide it belongs to, and keeps it for `deck lint`.
+       * Prints a plugin's warning with the slide it belongs to, and keeps it for `deckster lint`.
        *
        * @param message - The warning as the build prints it.
        * @param warning - Its parts: reason, line, rule id and fix.

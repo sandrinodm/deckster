@@ -11,8 +11,8 @@ const STARTUP_TIMEOUT_MS = 120_000;
 
 /**
  * The kit's browser suite: the exemplars deck in Chromium at 1920x1080 (one canvas pixel per screen
- * pixel), once per brand, each served by `deck dev` (`packages/cli/src/bin.ts`), which the runner
- * starts before the first test and stops after the last.
+ * pixel), once per brand, each served by `deckster dev` (`packages/cli/src/bin.ts`), which the
+ * runner starts before the first test and stops after the last.
  */
 export default {
   tests: ['e2e/*.e2e.ts'],

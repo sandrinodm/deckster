@@ -35,8 +35,8 @@ export type Hex = string;
 
 /**
  * A brand with every reference resolved, every default applied and every check passed. This is what
- * the compiler turns into CSS, what `useBrand()` returns at runtime and what `deck brand --json`
- * prints. Every color is hex; every size is canvas pixels.
+ * the compiler turns into CSS, what `useBrand()` returns at runtime and what `deckster brand
+ * --json` prints. Every color is hex; every size is canvas pixels.
  */
 export type BrandTokens = {
   /**

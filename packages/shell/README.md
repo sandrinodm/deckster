@@ -1,6 +1,6 @@
 # @deckster/shell
 
-The Electron app behind `deck present`. It opens the audience and presenter windows for a deck the
+The Electron app behind `deckster present`. It opens the audience and presenter windows for a deck the
 CLI is already serving, and does nothing else: no deck loading, no agent, no server. The CLI starts
 it as a child process and drives it over stdin and stdout.
 
@@ -12,15 +12,15 @@ It is the only package in the workspace that imports `electron`. It is private a
 
 ```sh
 pnpm --filter @deckster/shell exec install-electron
-pnpm deck present --help
+pnpm deckster present --help
 ```
 
 The CLI never imports `electron`. It reads the binary's location from
 `node_modules/electron/path.txt` and runs it with [`src/main/main.ts`](src/main/main.ts) as the
-entry. When the binary is missing, `deck present` fails with that install command and the
+entry. When the binary is missing, `deckster present` fails with that install command and the
 `--browser` fallback. It never downloads anything mid-command.
 
-On macOS the CLI does not run Electron's own app. On the first `deck present` (or `deck present
+On macOS the CLI does not run Electron's own app. On the first `deckster present` (or `deckster present
 --list-displays`) it builds a branded copy, `.deck/shell/app/<key>/Deckster.app`, from the recipe in
 [`src/bundle/`](src/bundle/branded-app-plan.ts), so the Dock, Cmd+Tab and the menu bar say Deckster
 from the first frame. If that fails, it prints one warning and runs stock Electron.
@@ -46,7 +46,7 @@ The CLI passes a JSON configuration in the `DECK_SHELL_CONFIG` environment varia
 `ShellConfig` in [`src/main/config.ts`](src/main/config.ts)): the window-state file and key, the
 profile folder, and optionally the deck URL (an `http:` or `https:` URL on a loopback host), the
 window title, the brand's background colour, a start-up plan and a one-time agent code (only with a
-`url`). `deck present` sends no `url`: the shell starts, reports its displays and waits, and the
+`url`). `deckster present` sends no `url`: the shell starts, reports its displays and waits, and the
 deck comes later in the `open` command's `target`. A missing or malformed configuration makes the
 shell exit 1 with the reason on stderr.
 

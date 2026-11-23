@@ -40,8 +40,8 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}/;
 /**
  * Writes one comment as Markdown an agent can act on: where to edit, what the element was, the
  * source around it, what the reviewer asked for and the command that resolves it. The overlay's
- * "Copy for agent" button puts this on the clipboard; it carries the same facts as `deck comments
- * --json`.
+ * "Copy for agent" button puts this on the clipboard; it carries the same facts as `deckster
+ * comments --json`.
  *
  * @param deck - The deck folder name, for the resolve command.
  * @param comment - The comment, as the report gives it.

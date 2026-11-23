@@ -39,8 +39,8 @@ const APP_ENTRY = 'index.html';
 /**
  * A remark plugin that fails the build when an `<AppFrame app="name">` names an app the deck does
  * not have (no `decks/<deck>/apps/<name>/index.html`). The message lists the apps the deck has and
- * how to create the missing one. A name that is not a literal is left to `deck lint`, which reports
- * `app-missing` from the rendered page.
+ * how to create the missing one. A name that is not a literal is left to `deckster lint`, which
+ * reports `app-missing` from the rendered page.
  *
  * @param options - The deck folder.
  */

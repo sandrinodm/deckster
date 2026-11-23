@@ -45,7 +45,7 @@ export type ActorProps = {
 
   /**
    * The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`,
-   * `tint`, `raised` or one of the brand's own (`deck brand <name>` lists them). Without one it
+   * `tint`, `raised` or one of the brand's own (`deckster brand <name>` lists them). Without one it
    * takes the diagram's `card`, else the card the brand maps its kind to, else `default`.
    */
   card?: string;
@@ -188,7 +188,7 @@ export type ItemProps = {
 
   /**
    * The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`,
-   * `tint`, `raised` or one of the brand's own (`deck brand <name>` lists them). Without one it
+   * `tint`, `raised` or one of the brand's own (`deckster brand <name>` lists them). Without one it
    * takes the diagram's `card`, else the card the brand maps its kind to, else `default`.
    */
   card?: string;

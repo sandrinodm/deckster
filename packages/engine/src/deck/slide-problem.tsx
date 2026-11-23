@@ -18,7 +18,7 @@ type SlideProblemProps = {
 /**
  * Shows a slide that could not render in place of its content, naming the file so the author knows
  * where to look. The rest of the deck keeps working. The `data-slide-error` attribute marks it for
- * tools: `deck lint` reports it as a `render-error` and `deck shot` fails on it.
+ * tools: `deckster lint` reports it as a `render-error` and `deckster shot` fails on it.
  */
 export function SlideProblem({ file, message }: SlideProblemProps): ReactNode {
   return (

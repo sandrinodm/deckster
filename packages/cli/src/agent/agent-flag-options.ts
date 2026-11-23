@@ -5,7 +5,7 @@ import type { AgentFlags } from '#server/dev-server.ts';
 import { usageError, type CliError } from '#cli-error.ts';
 
 /**
- * The `parseArgs` options of the agent flags, shared by `deck dev` and `deck present`.
+ * The `parseArgs` options of the agent flags, shared by `deckster dev` and `deckster present`.
  */
 export const AGENT_ARG_OPTIONS = {
   /**

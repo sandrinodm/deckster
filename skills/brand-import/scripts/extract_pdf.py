@@ -16,7 +16,7 @@ Writes:
   <out>/assets/fonts-embedded/    only with --dump-fonts; subsets, evidence only, never reusable
 
 Note: PyMuPDF is AGPL-licensed. It is used here as a command-line tool. The
-framework's `deck brand extract` is expected to replace this script with pdf.js
+framework's `deckster brand extract` is expected to replace this script with pdf.js
 or MuPDF bindings and keep the same output format.
 """
 from __future__ import annotations

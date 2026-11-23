@@ -41,16 +41,16 @@ const DEFAULT_COMPILER_OPTIONS: ReadonlyMap<string, unknown> = new Map<string, u
 const JSON_INDENT_SPACES = 2;
 
 /**
- * The packages decks and brands import directly, whose specifiers `deck types` maps one by one
+ * The packages decks and brands import directly, whose specifiers `deckster types` maps one by one
  * because TypeScript does not read `exports` for a path mapped to a folder. Other packages a deck
  * imports resolve through the catch-all.
  */
 export const USER_PACKAGES = ['effect', 'react', 'react-dom'];
 
 /**
- * Whether a key of `compilerOptions.paths` is one `deck types` owns: the framework's own packages,
- * the packages in {@link USER_PACKAGES} with their subpaths, and the catch-all for its other
- * dependencies. Other keys are the workspace's and stay.
+ * Whether a key of `compilerOptions.paths` is one `deckster types` owns: the framework's own
+ * packages, the packages in {@link USER_PACKAGES} with their subpaths, and the catch-all for its
+ * other dependencies. Other keys are the workspace's and stay.
  *
  * @param key - A `paths` key.
  */
@@ -101,7 +101,7 @@ export function mergeTsconfig(
  */
 export function envDeclarations(files: readonly string[]): string {
   return [
-    '// Written by `deck types`. Do not edit: run `deck types` again after upgrading.',
+    '// Written by `deckster types`. Do not edit: run `deckster types` again after upgrading.',
     ...files.map((file) => `/// <reference path=${JSON.stringify(file)} />`),
     '',
   ].join('\n');

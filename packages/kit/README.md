@@ -35,7 +35,7 @@ Every block in the ten-year plan passes all three.
 ```
 
 The build checks `cards` against the layout's contract, resolves each `icon` against the brand's
-icon set (an unknown name fails the build), and `deck lint` holds the slide to the layout's budget.
+icon set (an unknown name fails the build), and `deckster lint` holds the slide to the layout's budget.
 
 A TSX slide imports the same components:
 
@@ -49,14 +49,14 @@ import { Edge, Flow, Journey, Node, State } from '@deckster/kit/diagrams';
 The CLI prints the kit's catalogs. Run these from the repository root:
 
 ```sh
-pnpm deck layouts --summary    # every layout: surface, title limit, slots and budgets
-pnpm deck charts               # charts and number figures: when to use each, props, example
-pnpm deck diagrams             # Flow, SequenceDiagram, Timeline, Layers, Cycle, Tree, Svg and their parts
-pnpm deck components           # Code, Terminal, Image, Video, Icon, Button, AppFrame, Live...
-pnpm deck icons --search rocket
+pnpm deckster layouts --summary    # every layout: surface, title limit, slots and budgets
+pnpm deckster charts               # charts and number figures: when to use each, props, example
+pnpm deckster diagrams             # Flow, SequenceDiagram, Timeline, Layers, Cycle, Tree, Svg and their parts
+pnpm deckster components           # Code, Terminal, Image, Video, Icon, Button, AppFrame, Live...
+pnpm deckster icons --search rocket
 ```
 
-Each takes `--json`. The first lines of `deck layouts --summary`:
+Each takes `--json`. The first lines of `deckster layouts --summary`:
 
 ```console
 default     surface default   title any
@@ -89,7 +89,7 @@ component or contract per layout.
 | Export                                  | What it does                                                                                                                                                    |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `brandLayoutContract(layout, fallback)` | Derives a layout's contract from the layout and the contract of its fallback.                                                                                   |
-| `checkBrandLayouts(layouts, catalog)`   | Returns `{ errors, warnings }`, each with a `path` into `layouts.ts`, a message and a fix. Used by the build and by `deck brand check`.                         |
+| `checkBrandLayouts(layouts, catalog)`   | Returns `{ errors, warnings }`, each with a `path` into `layouts.ts`, a message and a fix. Used by the build and by `deckster brand check`.                     |
 | `brandLayoutCatalog(brand, base)`       | The brand's layouts as a catalog with source `brand:<name>`, loaded after the kit's. It throws when `checkBrandLayouts` finds an error, so callers check first. |
 
 A brand layout's contract is its fallback's, cut down to what the layout binds:
@@ -123,16 +123,16 @@ slot that takes only pictures. The brand package checks everything that needs on
 | `@deckster/kit`                     | browser | Components for TSX slides: `Step`, `Morph`, `Code`, `CodeMove`, `CodeStep`, `Terminal`, `Cmd`, `Out`, `Image`, `Video`, `Lottie`, `Icon`, `Button`, `Download`, `LinkCard`, `QR`, `AppFrame`, `Live` | slides                                   |
 | `@deckster/kit/diagrams`            | browser | Diagram components and parts for TSX slides (`Flow`, `Node`, `Edge`, `Packet`, ...)                                                                                                                  | slides                                   |
 | `@deckster/kit/runtime`             | browser | The runtime plugin: registers every layout, every MDX component and the page chrome                                                                                                                  | `@deckster/vite-plugin`                  |
-| `@deckster/kit/catalog`             | Node    | The layout contracts, loaded by the build and `deck layouts`, and `brandLayoutContract`, `checkBrandLayouts` and `brandLayoutCatalog` for a brand's own                                              | `@deckster/vite-plugin`, `@deckster/cli` |
+| `@deckster/kit/catalog`             | Node    | The layout contracts, loaded by the build and `deckster layouts`, and `brandLayoutContract`, `checkBrandLayouts` and `brandLayoutCatalog` for a brand's own                                          | `@deckster/vite-plugin`, `@deckster/cli` |
 | `@deckster/kit/mdx`                 | Node    | The MDX extension: Shiki highlighting, media and icon resolution, prop checks, diagram checks and layout, typographic punctuation                                                                    | `@deckster/vite-plugin`                  |
 | `@deckster/kit/vite`                | Node    | `kitVitePlugins()` (icons through `unplugin-icons`, CSV imports for charts) and `KIT_SCAN_ENTRY`                                                                                                     | `@deckster/vite-plugin`                  |
-| `@deckster/kit/chart-catalog`       | Node    | What `deck charts` prints and the numbers the `chart-*` lint rules use (`CHART_LIMITS`)                                                                                                              | `@deckster/cli`                          |
-| `@deckster/kit/diagram-catalog`     | Node    | What `deck diagrams` prints, with the limits the `diagram-*` rules share                                                                                                                             | `@deckster/cli`                          |
-| `@deckster/kit/component-catalog`   | Node    | What `deck components` prints                                                                                                                                                                        | `@deckster/cli`                          |
+| `@deckster/kit/chart-catalog`       | Node    | What `deckster charts` prints and the numbers the `chart-*` lint rules use (`CHART_LIMITS`)                                                                                                          | `@deckster/cli`                          |
+| `@deckster/kit/diagram-catalog`     | Node    | What `deckster diagrams` prints, with the limits the `diagram-*` rules share                                                                                                                         | `@deckster/cli`                          |
+| `@deckster/kit/component-catalog`   | Node    | What `deckster components` prints                                                                                                                                                                    | `@deckster/cli`                          |
 | `@deckster/kit/chart-spec`          | both    | `ChartSpec`, the versioned JSON every chart writes to `data-chart-spec`                                                                                                                              | `@deckster/export`                       |
 | `@deckster/kit/diagram-description` | both    | The versioned JSON every diagram writes to `data-diagram-description`                                                                                                                                | `@deckster/export`                       |
 | `@deckster/kit/limit-cases`         | Node    | Each layout filled to its limits, for the budget stress test                                                                                                                                         | `@deckster/cli` tests                    |
-| `@deckster/kit/icon-sets`           | Node    | `iconSetNames(set)`: the names an installed Iconify set has                                                                                                                                          | `deck icons`                             |
+| `@deckster/kit/icon-sets`           | Node    | `iconSetNames(set)`: the names an installed Iconify set has                                                                                                                                          | `deckster icons`                         |
 
 Inside the package, imports use `#` paths (`#foundation/slide-parts.tsx`), as everywhere in the
 workspace.
@@ -215,7 +215,7 @@ Much of the kit is tested from other packages, against real decks:
 | Test                                                                   | Where                      | What it holds                                                                          |
 | ---------------------------------------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------- |
 | `src/lint/budget-limits.test.ts`                                       | `packages/cli`             | `limit-cases.ts` in default, nocturne and `wide-sans` (drives Chromium, so it is slow) |
-| `src/layouts/published-limits.test.ts`                                 | `packages/cli`             | the limits the build and lint enforce match `deck layouts --json`                      |
+| `src/layouts/published-limits.test.ts`                                 | `packages/cli`             | the limits the build and lint enforce match `deckster layouts --json`                  |
 | `src/lint/layout-probes.test.ts`                                       | `packages/cli`             | lints `packages/cli/fixtures/decks/layout-probes`, the cases reviews found broken      |
 | `charts.e2e.ts`, `diagrams.e2e.ts`, `components.e2e.ts`, `apps.e2e.ts` | `packages/vite-plugin/e2e` | the `data-stories`, `diagrams-demo`, `components` and `apps-demo` fixture decks        |
 
@@ -224,12 +224,12 @@ the [`lookbook`](../../decks/lookbook/README.md) shows all of them in one talk. 
 layout, lint and shoot its deck in both brands with `pnpm deck`:
 
 ```sh
-pnpm --dir ../.. deck lint layouts
-pnpm --dir ../.. deck shot layouts                     # the deck's own brand, default
-pnpm --dir ../.. deck shot layouts --brand nocturne    # .deck/shots/layouts@nocturne/
+pnpm --dir ../.. deckster lint layouts
+pnpm --dir ../.. deckster shot layouts                     # the deck's own brand, default
+pnpm --dir ../.. deckster shot layouts --brand nocturne    # .deck/shots/layouts@nocturne/
 ```
 
-From the repository root it is `pnpm deck lint layouts`.
+From the repository root it is `pnpm deckster lint layouts`.
 
 `ffmpeg` on `PATH` is optional: with it, a local GIF becomes a looping video; without it the GIF
 stays an image and the build warns `media-gif`.

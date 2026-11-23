@@ -1,20 +1,20 @@
 import path from 'node:path';
 
 /**
- * The folder `deck diff` writes its report to, relative to the workspace root; one folder per deck
- * (and brand) below it.
+ * The folder `deckster diff` writes its report to, relative to the workspace root; one folder per
+ * deck (and brand) below it.
  */
 export const DEFAULT_DIFF_DIR = path.join('.deck', 'diff');
 
 /**
- * The folder `deck diff --save-baseline` writes to, relative to the workspace root; one folder per
- * deck (and brand) below it.
+ * The folder `deckster diff --save-baseline` writes to, relative to the workspace root; one folder
+ * per deck (and brand) below it.
  */
 export const DEFAULT_BASELINE_DIR = path.join('.deck', 'baseline');
 
 /**
- * The character between a deck's folder name and its brand in a run with `--brand`, as `deck shot`
- * writes it.
+ * The character between a deck's folder name and its brand in a run with `--brand`, as `deckster
+ * shot` writes it.
  */
 const BRAND_FOLDER_SEPARATOR = '@';
 

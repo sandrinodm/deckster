@@ -41,7 +41,7 @@ class Scratch extends Context.Service<Scratch, { readonly root: string }>()('tes
 }
 
 /**
- * Runs `deck` in the scratch workspace and returns what it printed.
+ * Runs `deckster` in the scratch workspace and returns what it printed.
  */
 const deck = Effect.fn('deck')(function* (argv: string[]) {
   const { root } = yield* Scratch;
@@ -49,7 +49,7 @@ const deck = Effect.fn('deck')(function* (argv: string[]) {
   return output;
 });
 
-layer(Scratch.layer.pipe(Layer.provideMerge(NodeServices.layer)))('deck new', (it) => {
+layer(Scratch.layer.pipe(Layer.provideMerge(NodeServices.layer)))('deckster new', (it) => {
   it.effect(
     'scaffolds a deck, adds a slide, and the result builds',
     () =>
@@ -107,7 +107,7 @@ layer(Scratch.layer.pipe(Layer.provideMerge(NodeServices.layer)))('deck new', (i
       const tooLong = yield* Effect.flip(deck(['new', 'long-title', '--title', long]));
       expect(tooLong.message).toContain(`--title is ${long.length} characters`);
       expect(tooLong.message).toContain('allows a title of at most 36');
-      expect(tooLong.message).toContain('Run `deck new --help` for the usage.');
+      expect(tooLong.message).toContain('Run `deckster new --help` for the usage.');
       const unknownBrand = yield* Effect.flip(deck(['new', 'odd-brand', '--brand', 'nope']));
       expect(unknownBrand.message).toContain('There is no brand "nope". Brands: default.');
       const badLength = yield* Effect.flip(deck(['new', 'odd-time', '--duration', 'soon']));

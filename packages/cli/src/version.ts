@@ -8,8 +8,8 @@ import path from 'node:path';
 const PackageVersion = Schema.fromJsonString(Schema.Struct({ version: Schema.String }));
 
 /**
- * The version `deck --version` prints: the published version recorded in the framework folder when
- * installed, else the version in this package's `package.json`.
+ * The version `deckster --version` prints: the published version recorded in the framework folder
+ * when installed, else the version in this package's `package.json`.
  *
  * @returns The version, or `unknown` when it cannot be read.
  */

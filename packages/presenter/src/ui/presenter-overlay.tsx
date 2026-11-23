@@ -16,7 +16,7 @@ import { windowKind } from '#ui/window-kind.ts';
 
 /**
  * Everything the presenter tools draw over the deck. It draws nothing in static mode, so `deck
- * shot`, `deck lint` and export see exactly the slides. The audience window gets the sidebar,
+ * shot`, `deckster lint` and export see exactly the slides. The audience window gets the sidebar,
  * overview, blackout and laser; the presenter window gets the presenter view; both get the sync
  * bridge, the go-to prompt and the help. The audience window also gets the tool cluster.
  */

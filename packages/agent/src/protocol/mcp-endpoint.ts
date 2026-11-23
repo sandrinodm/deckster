@@ -24,7 +24,7 @@ export type McpEndpoint = {
 };
 
 /**
- * What a running dev server writes to `.deck/agent/<deck>/server.json` so `deck mcp` and other
+ * What a running dev server writes to `.deck/agent/<deck>/server.json` so `deckster mcp` and other
  * tools can find it. The file holds the token, so it is created with mode 0600 and removed when the
  * server stops.
  */

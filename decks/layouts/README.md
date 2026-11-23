@@ -16,8 +16,8 @@ partners are fictional.
 Run these from the repository root:
 
 ```sh
-pnpm deck dev layouts
-pnpm deck lint layouts    # layouts: no problems in 124 slides (201 steps checked).
+pnpm deckster dev layouts
+pnpm deckster lint layouts    # layouts: no problems in 124 slides (201 steps checked).
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures. The first six
@@ -27,7 +27,7 @@ No test suite opens this deck. CI lints it, and `packages/kit/README.md` points 
 `slides/cards-principles.mdx` as an example. After changing a layout, lint it in the other brand too:
 
 ```sh
-pnpm deck lint layouts --brand nocturne
+pnpm deckster lint layouts --brand nocturne
 ```
 
 Asset sources are in [assets/CREDITS.txt](assets/CREDITS.txt): two CC0 photos from Wikimedia

@@ -64,7 +64,7 @@ export const contrastRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     'Text contrast against its background is below WCAG AA (4.5:1, or 3:1 for large text).',

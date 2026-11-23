@@ -18,7 +18,7 @@ slides still follow the story: read a part top to bottom and it makes sense as a
   demonstrate; the coverage test checks most of it.
 - **Layouts the kit added last** (`screen`, `equation`, `ask`, `proof`, `matrix`, `columns`,
   `statement`'s `size: giant` and `team`'s founders form): their field names below were read from
-  the catalog when this outline was written. Read `pnpm deck layouts lookbook --json` when you
+  the catalog when this outline was written. Read `pnpm deckster layouts lookbook --json` when you
   start, since a field may have changed, and plan from the contract's description and example.
 - **Builds** follow `skills/create-presentation/references/slide-craft.md` section 7: build in
   the order the notes speak, the last step carries the whole claim, every step has a `[click]`.
@@ -29,7 +29,7 @@ slides still follow the story: read a part top to bottom and it makes sense as a
   paragraph on its own lines, an image, a list) and leave blank lines inside the `<Step>`; a
   `<Morph>` suits a photo, logo or screenshot whose box is its own size, never a chart or a big
   number that fills its region.
-- **Repetition.** `deck lint` warns on three slides in a row with the same layout on the same
+- **Repetition.** `deckster lint` warns on three slides in a row with the same layout on the same
   surface. The order and surfaces below avoid it; if you change a surface, check your neighbours,
   including the first and last slides of the parts beside yours.
 - **Pictures.** The deck uses eight drawn scenes and four generated editorial photographs. The drawn scenes (`assets/scenes/`, listed in
@@ -41,7 +41,7 @@ slides still follow the story: read a part top to bottom and it makes sense as a
 - **Budgets.** Give every slide a `budget:` (dividers 10s, statements and pictures 20s to 30s,
   evidence 45s to 1m30s). The deck's `duration` is the sum of the budgets rounded up with a little
   slack (`147m` for 142m20s); review it with each added slide,
-  or `deck lint` reports the deck over time.
+  or `deckster lint` reports the deck over time.
 
 ## Dividers
 
@@ -244,7 +244,7 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `diagram-cards` | `diagram`, `<Flow>` whose `<Node>`s pick a `card`: three partners on `outline`, Open Network on `solid`, Wrenhaul's own systems on the brand default | Three kinds of partner, and one door into Wrenhaul | Cards picked by name, standard names only, so it reads the same in every brand | 0 the partners and Open Network; 1 the systems behind it | G5 |
 | `diagram-timeline` | `diagram`, `<Timeline>` with `<Milestone>`s of Open Network's rollout (beta to launch, then returns pick-up), `current`, `surface: inverse` | Open Network went from beta to launch in 12 weeks | The diagram timeline (explicit `<Timeline>`/`<Milestone>`, not the timeline layout) | one milestone per step | G5 |
 | `diagram-svg` | `diagram`, `<Svg src="../assets/maps/kestwick-loops.svg">` with `steps` (hub, then each loop with its stops), `draw` and the `recolor` map from `BRIEF.md` (checked: it lints clean in three brands) | Three loops cover the Old Town from one hub | A drawn map revealed by id and drawn on | 1 the hub; 2 to 4 one loop each | G5 |
-| `demo-appframe` | `demo`, `<AppFrame app="dispatch-sim">` with a poster and `<Aside>`; build the mini app in `apps/dispatch-sim/` (`pnpm deck new app`) and a poster in `assets/` | Watch Flock build a loop | A mini app in a sandboxed frame, with a poster | as the app's steps | G5 |
+| `demo-appframe` | `demo`, `<AppFrame app="dispatch-sim">` with a poster and `<Aside>`; build the mini app in `apps/dispatch-sim/` (`pnpm deckster new app`) and a poster in `assets/` | Watch Flock build a loop | A mini app in a sandboxed frame, with a poster | as the app's steps | G5 |
 | `demo-live` | `demo`, a **TSX slide** with `<Live>` (a drop price calculator in `lib/`), a poster, an `<Aside>` | Price your own drops | `<Live>`: a React widget inline, with a poster | whole | G5 |
 
 ### Part 8: Show the product (G6)
@@ -335,7 +335,7 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `recap-launch` | `recap`, four points with detail, context, footnote, `surface: accent`, `reveal: true` | The next chapter starts with the hubs we have | Four numbered takeaways at the close | 1 to 4 one point each | G5 |
 | `sources-evidence` | `sources`, three full references | Three records underpin the launch figures | One-column bibliography with real link destinations | whole | G5 |
 | `sources-records` | `sources`, eight references, `surface: inverse` | Every launch claim has a record behind it | Two-column bibliography with mixed citation detail | whole | G5 |
-| `content-links` | `content`, `width: full`, three `<LinkCard>`s with descriptions in a row (docs, the SDK, status) and a `<Download>` of the slides under them | Everything you need to ship a drop today | LinkCard in a row and Download (needs `deck build --with-exports` to work) | whole | G5 |
+| `content-links` | `content`, `width: full`, three `<LinkCard>`s with descriptions in a row (docs, the SDK, status) and a `<Download>` of the slides under them | Everything you need to ship a drop today | LinkCard in a row and Download (needs `deckster build --with-exports` to work) | whole | G5 |
 | `split-qr` | `split`, `ratio: 7:5`, `<QR>` in `<Media>`, a sentence, three bullets and a `<Button>` in the text, a `<Caption>` | Book a test drop from your phone, now | `<QR>` with a caption and a `<Button>` | whole | G5 |
 | `closing-ask` | `closing`, two `contacts` and a `qr:` | Send us your first drop this week | The closing slide with a QR code | whole | G5 |
 | `closing-questions` | `closing`, three `contacts`, no QR (the last slide) | What should we deliver next? | The three-contact variant, as the questions slide | whole | G5 |

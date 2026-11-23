@@ -26,7 +26,7 @@ export const CHART_MESSAGES = [
 export type ChartMessage = (typeof CHART_MESSAGES)[number];
 
 /**
- * One prop of a chart component, as `deck charts --json` prints it.
+ * One prop of a chart component, as `deckster charts --json` prints it.
  */
 export type ChartPropInfo = {
   /**
@@ -51,7 +51,7 @@ export type ChartPropInfo = {
 };
 
 /**
- * One chart or figure component, as `deck charts --json` prints it.
+ * One chart or figure component, as `deckster charts --json` prints it.
  */
 export type ChartInfo = {
   /**
@@ -101,8 +101,8 @@ export type ChartInfo = {
   props: Readonly<Record<string, ChartPropInfo>>;
 
   /**
-   * The numbers `deck lint` holds it to, from {@link CHART_LIMITS}: the most categories, slices or
-   * series it reads well with, and from how many it needs a highlight.
+   * The numbers `deckster lint` holds it to, from {@link CHART_LIMITS}: the most categories, slices
+   * or series it reads well with, and from how many it needs a highlight.
    */
   limits: Readonly<Record<string, number | string>>;
 
@@ -123,7 +123,7 @@ export type ChartInfo = {
 };
 
 /**
- * The catalog `deck charts --json` prints.
+ * The catalog `deckster charts --json` prints.
  */
 export type ChartCatalog = {
   /**
@@ -159,8 +159,8 @@ export type ChartCatalog = {
 };
 
 /**
- * The numbers `deck lint`'s chart rules hold charts to, in one place: the rules import them and
- * `deck charts --json` prints them per chart.
+ * The numbers `deckster lint`'s chart rules hold charts to, in one place: the rules import them and
+ * `deckster charts --json` prints them per chart.
  */
 export const CHART_LIMITS = {
   /**
@@ -427,7 +427,7 @@ const POINT_ANNOTATIONS = prop(
 );
 
 /**
- * The fields of the objects props take, described for `deck charts --json`.
+ * The fields of the objects props take, described for `deckster charts --json`.
  */
 export const CHART_TYPES: Readonly<Record<string, Readonly<Record<string, ChartPropInfo>>>> = {
   /**
@@ -751,7 +751,7 @@ export const CHART_INFOS: readonly ChartInfo[] = [
       'category, series and value fields (long).',
     nulls:
       'A missing value draws no bar and no label; the category keeps its place. ' +
-      'A chart with no values at all is reported by `deck lint` (chart-empty).',
+      'A chart with no values at all is reported by `deckster lint` (chart-empty).',
     shared: ALL_SHARED,
     props: {
       ...FIELD_PROPS,
@@ -1019,7 +1019,7 @@ export const CHART_INFOS: readonly ChartInfo[] = [
       'Drop-off through ordered stages, where the share that carries on between ' +
       'stages is the point.',
     messages: ['flow'],
-    avoid: 'Unordered categories (use BarChart), or stages that grow (`deck lint` warns).',
+    avoid: 'Unordered categories (use BarChart), or stages that grow (`deckster lint` warns).',
     data: 'Rows in stage order with a stage name and a count.',
     nulls:
       'A stage with no count draws an outlined "no data" slot, and the shares ' +
@@ -1268,7 +1268,7 @@ export function chartPropNames(info: ChartInfo): string[] {
  * The catalog: every component, the components for each message, how the insight props work and
  * where the serialisable description lives.
  *
- * @returns The catalog `deck charts --json` prints.
+ * @returns The catalog `deckster charts --json` prints.
  */
 export function chartCatalog(): ChartCatalog {
   const messages = Object.fromEntries(
@@ -1313,7 +1313,7 @@ export function chartCatalog(): ChartCatalog {
       format: SHARED_PROPS.format.description,
       relative: RELATIVE_PROP.description,
       limits:
-        "Each chart's `limits` are the numbers `deck lint` holds it to; " +
+        "Each chart's `limits` are the numbers `deckster lint` holds it to; " +
         "`coloredSeries` is the brand's categorical palette size, counted without " +
         'series a highlight mutes.',
     },

@@ -373,8 +373,8 @@ const useSystemFonts = Effect.fn('useSystemFonts')(function* (opened: OpenedDeck
 });
 
 /**
- * Writes PNGs with `deck shot`: every slide that is not hidden (all with `--include-hidden`), or
- * each selected one.
+ * Writes PNGs with `deckster shot`: every slide that is not hidden (all with `--include-hidden`),
+ * or each selected one.
  *
  * @param options - What to export.
  * @param outDir - The PNG folder.

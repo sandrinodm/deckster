@@ -80,8 +80,8 @@ export type NodeProps = CellProps & {
   /**
    * What it is, which sets its shape and icon: `service`, `database`, `queue`, `cache`, `storage`,
    * `user`, `client`, `mobile`, `cloud`, `external`, `function`, `gateway`, `loadbalancer`,
-   * `agent`, `llm`, `tool`, `document`, `decision` or `node` (the default). `deck diagrams` lists
-   * them with aliases.
+   * `agent`, `llm`, `tool`, `document`, `decision` or `node` (the default). `deckster diagrams`
+   * lists them with aliases.
    */
   kind?: string;
 
@@ -112,7 +112,7 @@ export type NodeProps = CellProps & {
 
   /**
    * The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`,
-   * `tint`, `raised` or one of the brand's own (`deck brand <name>` lists them). Without one it
+   * `tint`, `raised` or one of the brand's own (`deckster brand <name>` lists them). Without one it
    * takes the diagram's `card`, else the card the brand maps its kind to, else `default`.
    */
   card?: string;

@@ -36,7 +36,7 @@ export const diagramSmallTextRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: "Text in a diagram appears smaller than the brand's caption and label steps.",
 

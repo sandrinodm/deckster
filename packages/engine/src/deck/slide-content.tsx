@@ -235,7 +235,7 @@ function tsxSlots(entry: SlideEntry, body: ReactNode): LayoutSlots {
 
 /**
  * Wraps each filled slot in `<span class="deck-slot" data-slot="<name>">`, which has `display:
- * contents`, so `deck lint` can find and measure it.
+ * contents`, so `deckster lint` can find and measure it.
  *
  * @param slots - The filled slots.
  */

@@ -90,7 +90,7 @@ const WRAPPER_EXPRESSIONS = new Set([
  */
 export type CoverageCatalog = {
   /**
-   * Every layout with its fields, as `deck layouts --json` prints them.
+   * Every layout with its fields, as `deckster layouts --json` prints them.
    */
   layouts: readonly LayoutInfo[];
 

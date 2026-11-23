@@ -64,7 +64,7 @@ export type SvgProps = {
  * A hand-made or imported SVG drawn inline, so it follows the brand: shapes take the surface's
  * color roles (through `recolor` or `data-fill`/`data-stroke` attributes), elements appear by step
  * by id, and strokes can draw themselves on. Static mode shows each step's finished drawing. Text
- * inside is scaled with the drawing, so `deck lint` checks that it stays readable.
+ * inside is scaled with the drawing, so `deckster lint` checks that it stays readable.
  *
  * ```mdx
  * <Svg src="../assets/warehouse.svg" title="The warehouse floor" steps={{ inbound: 1, sorting: 2 }} recolor={{ '#e4572e': 'accent' }} draw />

@@ -53,13 +53,13 @@ export type DeckShellApi = {
 
 declare global {
   /**
-   * The browser window, with the desktop shell's API inside `deck present`.
+   * The browser window, with the desktop shell's API inside `deckster present`.
    */
   // Augmenting the global Window needs interface declaration merging.
   // oxlint-disable-next-line typescript/consistent-type-definitions
   interface Window {
     /**
-     * The desktop shell's API; present only inside `deck present`'s window.
+     * The desktop shell's API; present only inside `deckster present`'s window.
      */
     deckShell?: DeckShellApi;
   }

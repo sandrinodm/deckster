@@ -2,12 +2,12 @@ import { lazyRun, type Command } from '#command.ts';
 import { DEFAULT_DECK } from '#workspace.ts';
 
 /**
- * The text `deck preview --help` prints.
+ * The text `deckster preview --help` prints.
  */
-const HELP = `Usage: deck preview [deck] [--port <n>] [--host]
+const HELP = `Usage: deckster preview [deck] [--port <n>] [--host]
 
 Serves the built output of a deck from decks/<deck>/dist until you press Ctrl+C. Run
-\`deck build <deck>\` first.
+\`deckster build <deck>\` first.
 
 Arguments:
   deck          Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}".
@@ -18,21 +18,21 @@ Options:
   -h, --help    Show this help.`;
 
 /**
- * `deck preview`: serves a deck's production build.
+ * `deckster preview`: serves a deck's production build.
  */
 export const previewCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'preview',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'Serve the built output of a deck',
 
   /**
-   * The text `deck preview --help` prints.
+   * The text `deckster preview --help` prints.
    */
   help: HELP,
 

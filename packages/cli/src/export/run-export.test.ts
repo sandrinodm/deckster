@@ -131,7 +131,7 @@ function fontsEmbedded(document: PDFDocument): {
   return { fonts, embedded, trueType, type3 };
 }
 
-layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deck export on the exemplars deck', (it) => {
+layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deckster export on the exemplars deck', (it) => {
   it.effect(
     'writes a PDF with a page, a bookmark and embedded fonts per slide, and the deck title',
     () =>
@@ -219,7 +219,7 @@ layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deck export on the exemplars deck
   );
 });
 
-layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deck export output paths', (it) => {
+layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deckster export output paths', (it) => {
   it.effect('refuses a file name for --out when several formats are written', () =>
     Effect.gen(function* () {
       const error = yield* Effect.flip(
@@ -234,7 +234,7 @@ layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deck export output paths', (it) =
   );
 });
 
-layer(cliLayer(Workspace.at(FIXTURE_WORKSPACE)))('deck export on the export fixture', (it) => {
+layer(cliLayer(Workspace.at(FIXTURE_WORKSPACE)))('deckster export on the export fixture', (it) => {
   it.effect(
     'keeps external and slide links in the PDF',
     () =>
@@ -301,7 +301,7 @@ layer(cliLayer(Workspace.at(FIXTURE_WORKSPACE)))('deck export on the export fixt
   );
 });
 
-layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deck export on the diagrams-demo deck', (it) => {
+layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deckster export on the diagrams-demo deck', (it) => {
   it.effect(
     'draws every described diagram as native shapes with connectors glued to their nodes',
     () =>

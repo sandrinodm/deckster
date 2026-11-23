@@ -71,7 +71,7 @@ export const run: Command['run'] = Effect.fn('deck.new')(function* (argv) {
   yield* printFiles(workspaceRoot, created.files);
   yield* Console.log(
     FRAMEWORK_INSTALLED
-      ? `Next: run \`deck dev ${first}\`. For editor type checking, run \`deck types\` once ` +
+      ? `Next: run \`deckster dev ${first}\`. For editor type checking, run \`deckster types\` once ` +
           '(again after upgrading @deckster/cli).'
       : `Next: run \`pnpm install\` to link decks/${first}, then \`${deckCommand()} dev ${first}\`.`,
   );

@@ -4,7 +4,7 @@ import { Effect } from 'effect';
 import { cliError, type CliError } from '#cli-error.ts';
 
 /**
- * Names that would collide with a `deck new` subcommand.
+ * Names that would collide with a `deckster new` subcommand.
  */
 const RESERVED_DECK_NAMES = new Set(['slide', 'app']);
 

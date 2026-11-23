@@ -8,7 +8,7 @@ import { BUDGET_PATTERN } from '#contract/slide-defaults.ts';
  * id names `slides/<id>.mdx` or `slides/<id>.tsx`. `brand` names a folder under `brands/`; without
  * it the deck uses `brands/default`. `mouseNavigation: false` turns off moving the deck with left
  * and right clicks, which is on by default. `duration` is the length of the talk (`20m`, `1m30s`),
- * which the presenter view paces against and `deck lint` checks the slide budgets against.
+ * which the presenter view paces against and `deckster lint` checks the slide budgets against.
  */
 export const DeckConfig = Schema.Struct({
   title: Schema.NonEmptyString,

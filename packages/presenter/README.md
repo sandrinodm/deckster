@@ -7,7 +7,7 @@ a runtime plugin that `@deckster/vite-plugin` loads into every deck, in dev and 
 It is a workspace package (`private`, TypeScript source, not on npm). You use it by running a deck:
 
 ```sh
-pnpm deck dev hello
+pnpm deckster dev hello
 ```
 
 Then press `?` on the slide for the list of keys, or move the pointer to the bottom-left corner for
@@ -35,7 +35,7 @@ match either case; a press with Ctrl, Alt or Meta never matches.
 
 Other packages add their own through the same registry, so the help lists them too: `c` for comment
 mode (`@deckster/comments`, dev only), `v` to switch a live demo to its recording (`<AppFrame>` in
-`@deckster/kit`) and `a` for the agent panel (`@deckster/agent`, with `deck dev --agent`).
+`@deckster/kit`) and `a` for the agent panel (`@deckster/agent`, with `deckster dev --agent`).
 
 ## The presenter window
 
@@ -55,7 +55,7 @@ The two windows sync position, blackout and the laser over a `BroadcastChannel` 
 always navigate unless a text field has focus, so a clicker never gets stuck on a focused button.
 The presenter window closes itself when the audience window closes, but not when it reloads.
 
-Inside `deck present` (the Electron shell, see [docs/present.md](../../docs/present.md)) the shell
+Inside `deckster present` (the Electron shell, see [docs/present.md](../../docs/present.md)) the shell
 opens the presenter window on the other display, and a displays panel can move either window. The
 package only imports the shell's types (`@deckster/shell/api`, `@deckster/shell/protocol`), never
 `electron`.
@@ -113,7 +113,7 @@ registerToolButton({
 - Style tool UI only with the `--dp-*` tokens in `src/styles/tokens.css`, under `.dp-ui`. Never read
   brand tokens: the tools must look the same over every brand. The laser is a fixed red with a white
   ring so it reads on any surface.
-- Draw nothing in `?static` mode. `deck shot`, `deck lint` and `deck export` render that mode and
+- Draw nothing in `?static` mode. `deckster shot`, `deckster lint` and `deckster export` render that mode and
   must never see the tools (`PresenterStage` and `PresenterOverlay` return early).
 - Tool UI is marked `[data-deck-interactive]`, so clicks on it do not navigate. The `stage` wrapper
   must not be, or clicks on the slide stop navigating.

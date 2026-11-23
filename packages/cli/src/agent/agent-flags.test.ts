@@ -91,7 +91,7 @@ describe('agent flags', () => {
     }),
   );
 
-  it.effect('deck agent needs the doctor subcommand and a public provider', () =>
+  it.effect('deckster agent needs the doctor subcommand and a public provider', () =>
     Effect.gen(function* () {
       const missing = yield* Effect.flip(runCaptured(['agent']));
       expect(missing.message).toContain('The one there is: doctor.');

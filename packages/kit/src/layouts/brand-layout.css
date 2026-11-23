@@ -2,7 +2,7 @@
  * Brand layouts: each region is a box at the pixels its layout gives on the full canvas. A box is
  * a size container, so text steps down to fit it and media fills it. Text is aligned across the
  * box by `data-align` and placed down it by `data-anchor`; `safe` anchoring keeps text that is too
- * tall growing downward, where the fit and `deck lint` see it, instead of off the box's top.
+ * tall growing downward, where the fit and `deckster lint` see it, instead of off the box's top.
  */
 @layer theme, base, components, utilities;
 

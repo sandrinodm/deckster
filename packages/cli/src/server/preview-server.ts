@@ -44,9 +44,9 @@ export type PreviewServerOptions = {
 };
 
 /**
- * Serves a deck's `dist/` with Vite's preview server in the caller's scope (`deck preview` and
- * `deck present --built`); it closes with the scope, and Vite's own exit handlers are taken back so
- * Ctrl+C and SIGTERM run the command's finalizers.
+ * Serves a deck's `dist/` with Vite's preview server in the caller's scope (`deckster preview` and
+ * `deckster present --built`); it closes with the scope, and Vite's own exit handlers are taken
+ * back so Ctrl+C and SIGTERM run the command's finalizers.
  *
  * @param options - The deck and how to listen.
  */

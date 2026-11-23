@@ -7,11 +7,11 @@
 Usage:
   uv run compare.py --out <dir> <source.png>:<specimen.png> [<source.png>:<specimen.png> ...]
   uv run compare.py --out <dir> --sheet <dir of PNGs>          (a contact sheet of one folder)
-  uv run compare.py --out <dir> --layouts <specimen-map.json> --extraction <dir of extraction.json> --shots <dir of deck shot PNGs>
+  uv run compare.py --out <dir> --layouts <specimen-map.json> --extraction <dir of extraction.json> --shots <dir of deckster shot PNGs>
       each brand layout's specimen slide next to the filled reference render of its source layout
       (<extraction>/layouts/ref-<key>.png); a layout drawn on two surfaces is compared once per surface
 
-The specimen side is a screenshot from `deck shot <deck>` of the specimen deck that
+The specimen side is a screenshot from `deckster shot <deck>` of the specimen deck that
 make_specimen.py builds (or any deck rendered with `--brand <name>`). Pair each kind of
 source page with the closest slide: cover with cover, section with section, a chart with a
 chart. Then open the written images and compare colour, type, density, accent use and shape.
@@ -105,7 +105,7 @@ def main() -> None:
     ap.add_argument("--sheet", type=Path, help="write a contact sheet of this folder's PNGs instead")
     ap.add_argument("--layouts", type=Path, help="specimen-map.json from make_specimen.py --map-out: compare the brand's layouts with the source's")
     ap.add_argument("--extraction", type=Path, help="with --layouts: the folder of the template's extraction.json")
-    ap.add_argument("--shots", type=Path, help="with --layouts: the folder of `deck shot` PNGs of the specimen")
+    ap.add_argument("--shots", type=Path, help="with --layouts: the folder of `deckster shot` PNGs of the specimen")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     if args.layouts:

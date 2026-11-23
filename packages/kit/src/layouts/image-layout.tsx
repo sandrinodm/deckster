@@ -28,8 +28,8 @@ type ScrimProps = {
 /**
  * The dark scrim behind one block of text over the photo, drawn inside that block so it is exactly
  * as large as the text: solid enough under every glyph that light text keeps 4.5:1 on a white
- * photo, fading to clear away from it. Decoration: `deck lint` measures the text against the photo
- * and scrim as painted, and the PPTX export draws it as a gradient.
+ * photo, fading to clear away from it. Decoration: `deckster lint` measures the text against the
+ * photo and scrim as painted, and the PPTX export draws it as a gradient.
  */
 function Scrim({ at }: ScrimProps): ReactNode {
   return <span className="kit-image-scrim" data-at={at} aria-hidden="true" data-decorative="" />;

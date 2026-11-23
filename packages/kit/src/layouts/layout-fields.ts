@@ -51,10 +51,10 @@ export const CHROME_HINT =
 
 /**
  * The `treatment` field of layouts with a photo: the name of one of the brand's image treatments
- * (`deck brand --json` lists them under `imagery.treatments`), such as `plain`, which every brand
- * has, for a screenshot, map or chart whose own colors carry meaning. The brand's default treatment
- * applies when it is left out; a name the brand does not have draws the photo as it is, and the
- * build warns (`treatment-unknown`) with the names the brand has.
+ * (`deckster brand --json` lists them under `imagery.treatments`), such as `plain`, which every
+ * brand has, for a screenshot, map or chart whose own colors carry meaning. The brand's default
+ * treatment applies when it is left out; a name the brand does not have draws the photo as it is,
+ * and the build warns (`treatment-unknown`) with the names the brand has.
  */
 export const TreatmentField = Schema.optionalKey(
   Schema.NonEmptyString.check(

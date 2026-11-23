@@ -34,7 +34,7 @@ import {
 /**
  * The diagram components the kit registers for MDX slides, by the tag a slide writes. The diagrams
  * load their code on first use; the parts inside them (`<Node>`, `<Edge>`, `<Actor>`, ...) are tiny
- * and load with the deck. `deck diagrams` describes each one (`diagram-catalog.ts`).
+ * and load with the deck. `deckster diagrams` describes each one (`diagram-catalog.ts`).
  */
 export const DIAGRAM_COMPONENTS = {
   /**

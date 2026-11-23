@@ -34,7 +34,7 @@ export type FitLevel = {
 
   /**
    * Whether the content overflows its region even at the last level, so the layout can mark it for
-   * `deck lint`.
+   * `deckster lint`.
    */
   overflows: boolean;
 };
@@ -102,7 +102,7 @@ export function fitsRegion(
  * Picks the largest of a layout's type levels at which its content fits the region: the layout
  * renders at level 0 (its largest text), and while the content overflows the region it renders
  * again one level down, before paint, until it fits or reaches the last level. The last level's
- * overflow is reported for `deck lint`. A new key starts again from level 0, and so, with
+ * overflow is reported for `deckster lint`. A new key starts again from level 0, and so, with
  * `restartOnFontLoad`, does each finished load of web fonts. State, not DOM edits, so React's
  * re-renders and hot reload keep the level.
  *

@@ -6,7 +6,7 @@ import { chartsOn } from '#lint/rules/chart-facts.ts';
 
 /**
  * The most slices a donut keeps readable: people judge "about a quarter" well, fine differences
- * badly. From the kit's chart limits, which `deck charts --json` prints.
+ * badly. From the kit's chart limits, which `deckster charts --json` prints.
  */
 const MAX_SLICES = CHART_LIMITS.slices;
 
@@ -35,7 +35,7 @@ export const chartPieSlicesRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: `A <Donut> has more than ${MAX_SLICES} slices.`,
 

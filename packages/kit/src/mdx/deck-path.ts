@@ -9,7 +9,7 @@ export type FileKind = 'image' | 'video' | 'lottie' | 'svg';
 
 /**
  * The extensions each kind of file accepts: what the browser draws and Vite ships as an asset.
- * Video is WebM or MP4 (Playwright's Chromium, which `deck shot` uses, has no H.264).
+ * Video is WebM or MP4 (Playwright's Chromium, which `deckster shot` uses, has no H.264).
  */
 export const FILE_EXTENSIONS: Readonly<Record<FileKind, readonly string[]>> = {
   /**

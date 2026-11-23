@@ -264,7 +264,7 @@ layer(NodeFileSystem.layer)('site folder', (it) => {
       }),
   );
 
-  it.effect('deck build --out decks leaves the decks alone and says why', () =>
+  it.effect('deckster build --out decks leaves the decks alone and says why', () =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const root = yield* fs.makeTempDirectoryScoped();

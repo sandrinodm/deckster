@@ -55,7 +55,7 @@ Illustrative content: Halden and its numbers are fictional; the framework's own 
 | 35 | agent-turn | An agent turn edits a working copy | Sequence diagram | diagram | 1m30s | Agent safety |
 | 36 | chat-demo | Ask for a change beside the slide | Mini app in a frame (TSX) | demo | 2m | Peak: the demo |
 | 37 | designer-quote | The designer reviews the point | Quote with portrait (fictional) | quote | 30s | Sign-off |
-| 38 | presenter | The presenter window paces the talk | Bullets and an aside on deck present | content | 1m | On the day |
+| 38 | presenter | The presenter window paces the talk | Bullets and an aside on deckster present | content | 1m | On the day |
 | 39 | export-path | Export decides shape by shape | Flow written in TSX | diagram | 1m15s | Export |
 | 40 | export-share | 39 of 45 slides export without a picture | Pictogram, real dry-run count | chart | 45s | Proof |
 | 41 | week | From brief to stage in five sessions | Five milestones | timeline | 45s | Workflow |

@@ -13,7 +13,7 @@ export const SCREENSHOT_PATH = '/screenshot';
 
 /**
  * The custom HMR event the dev server sends when a feedback file changes, so open overlays reload
- * their comments (one resolved with `deck comments resolve`, say).
+ * their comments (one resolved with `deckster comments resolve`, say).
  */
 export const COMMENTS_CHANGED_EVENT = 'deck:comments-changed';
 

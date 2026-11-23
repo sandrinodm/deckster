@@ -10,7 +10,7 @@ import { firstLine } from '#cli-error.ts';
 const RULE_ID = 'render-error';
 
 /**
- * The sentence `deck lint --help` lists for the rule.
+ * The sentence `deckster lint --help` lists for the rule.
  */
 const DESCRIPTION = 'A slide threw while rendering, or the page threw an uncaught error.';
 
@@ -40,7 +40,7 @@ export const renderErrorRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: DESCRIPTION,
 
@@ -94,7 +94,7 @@ export const loadErrorRule: DeckRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: DESCRIPTION,
 

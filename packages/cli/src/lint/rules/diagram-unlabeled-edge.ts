@@ -29,7 +29,7 @@ export const diagramUnlabeledEdgeRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     'A diagram edge without a label is ambiguous: it doubles another edge, ' +

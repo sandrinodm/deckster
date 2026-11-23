@@ -91,7 +91,7 @@ describe('buildFlowSpec', () => {
 
   it('throws with the fix for an unknown kind and a stray hop', () => {
     expect(() => buildFlowSpec([node('a', 1, 1, { kind: 'mainframe' })])).toThrow(
-      'pnpm deck diagrams',
+      'pnpm deckster diagrams',
     );
     expect(() => buildFlowSpec([part('Hop', { from: 'a', to: 'b' })])).toThrow(
       'Wrap the hops in <Journey',

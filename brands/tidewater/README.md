@@ -42,9 +42,9 @@ frontmatter. The dark surfaces show the `reversed` logo.
   brand's own `capsule` card draws a node as a pill.
 
 ```sh
-pnpm deck brand check tidewater   # "tidewater: is valid (0 errors, 0 warnings)."
-pnpm deck shot hello --brand tidewater
+pnpm deckster brand check tidewater   # "tidewater: is valid (0 errors, 0 warnings)."
+pnpm deckster shot hello --brand tidewater
 ```
 
 To make it a deck's brand, set `brand: 'tidewater'` in its `deck.config.ts`, or start the deck
-with it: `pnpm deck new my-talk --brand tidewater`.
+with it: `pnpm deckster new my-talk --brand tidewater`.

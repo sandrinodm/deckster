@@ -26,7 +26,7 @@ frontmatter. The two light surfaces (`inverse`, `accent`) show the dark `ink` lo
   Fontsource packages listed in [`package.json`](package.json).
 - **Icons.** [Tabler](https://tabler.io/icons), stroke width 1.25. Icon names differ from Lucide's
   (the default brand's set), so a deck that renders in both needs names both sets have:
-  `pnpm deck icons --brand default,nocturne --search <text>` lists them.
+  `pnpm deckster icons --brand default,nocturne --search <text>` lists them.
 - **Shape.** Radii 0, 2, 4 and 8 px; a hairline ring instead of a small shadow, a deep ember glow
   for the large one.
 - **Images.** Duotone by default (night shadows, ember highlights); `plain` and `mono` (grayscale)
@@ -45,9 +45,9 @@ frontmatter. The two light surfaces (`inverse`, `accent`) show the dark `ink` lo
 Print every resolved token with:
 
 ```sh
-pnpm deck brand nocturne         # summary: fonts, type scale, spacing, each surface's roles
-pnpm deck brand nocturne --json  # every token, colors as hex
-pnpm deck brand check nocturne   # validate it: "nocturne: is valid (0 errors, 0 warnings)."
+pnpm deckster brand nocturne         # summary: fonts, type scale, spacing, each surface's roles
+pnpm deckster brand nocturne --json  # every token, colors as hex
+pnpm deckster brand check nocturne   # validate it: "nocturne: is valid (0 errors, 0 warnings)."
 ```
 
 ## Using it
@@ -56,13 +56,13 @@ Render any deck in Nocturne without editing it. `dev`, `shot`, `lint`, `export` 
 `--brand`:
 
 ```sh
-pnpm deck dev hello --brand nocturne
-pnpm deck shot hello --brand nocturne    # writes .deck/shots/hello@nocturne/
-pnpm deck lint hello --brand nocturne
+pnpm deckster dev hello --brand nocturne
+pnpm deckster shot hello --brand nocturne    # writes .deck/shots/hello@nocturne/
+pnpm deckster lint hello --brand nocturne
 ```
 
 To make it a deck's brand, set `brand: 'nocturne'` in its `deck.config.ts`, or start the deck with
-it: `pnpm deck new my-talk --brand nocturne`.
+it: `pnpm deckster new my-talk --brand nocturne`.
 
 ## Starting a new brand from it
 
@@ -76,7 +76,7 @@ cp -R brands/nocturne brands/acme
 2. In `brands/acme/package.json`, set `"name": "@deckster/brand-acme"`.
 3. Change the palette, roles, fonts and logos (`logos/`, with each variant's `aspect`). Fonts come
    from Fontsource packages in the brand's `package.json`, or from files in the brand folder.
-4. Run `pnpm install`, then `pnpm deck brand check acme` and `pnpm deck shot hello --brand acme`.
+4. Run `pnpm install`, then `pnpm deckster brand check acme` and `pnpm deckster shot hello --brand acme`.
 
 The [default brand's README](../default/README.md#starting-a-new-brand-from-it) has the same steps
 with the icon set and logo details, and the

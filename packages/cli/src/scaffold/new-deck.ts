@@ -12,7 +12,7 @@ import { deckFiles, DEFAULT_BRAND_NAME } from '#scaffold/templates.ts';
 import { writeFiles } from '#scaffold/write-files.ts';
 
 /**
- * What `deck new` created.
+ * What `deckster new` created.
  */
 export type CreatedFiles = {
   /**
@@ -22,7 +22,7 @@ export type CreatedFiles = {
 };
 
 /**
- * What `deck new <deck>` can be told about the deck besides its title.
+ * What `deckster new <deck>` can be told about the deck besides its title.
  */
 export type NewDeckOptions = {
   /**

@@ -17,8 +17,8 @@ import { closeDevServer, deckCompiler } from '#server/deck-server-live.ts';
 import { withoutViteExitHandlers } from '#server/shutdown.ts';
 
 /**
- * The `--agent*` flags of `deck dev` and `deck present`, as given. Parsing and validating them, and
- * what they switch on, belong to the agent feature; the commands only pass them along.
+ * The `--agent*` flags of `deckster dev` and `deckster present`, as given. Parsing and validating
+ * them, and what they switch on, belong to the agent feature; the commands only pass them along.
  */
 export type AgentFlags = {
   /**
@@ -43,8 +43,8 @@ export type AgentFlags = {
 };
 
 /**
- * What a dev server for one deck is started with. `deck dev` and `deck present` build the same
- * object from their flags.
+ * What a dev server for one deck is started with. `deckster dev` and `deckster present` build the
+ * same object from their flags.
  */
 export type DevServerOptions = {
   /**
@@ -95,13 +95,13 @@ export type DevServerOptions = {
 
   /**
    * Vite's log level: `info` (default) prints every hot update, `warn` only problems, for the short
-   * status `deck present` keeps in the terminal.
+   * status `deckster present` keeps in the terminal.
    */
   logLevel?: 'info' | 'warn';
 
   /**
-   * A one-time code for the dev session (`deck present`'s window): the session becomes strict, so
-   * only the page request that carries this code gets the session cookie the agent and comment
+   * A one-time code for the dev session (`deckster present`'s window): the session becomes strict,
+   * so only the page request that carries this code gets the session cookie the agent and comment
    * endpoints need.
    */
   agentCode?: string;
@@ -134,7 +134,7 @@ export type StartedDevServer = {
 
 /**
  * Imports everything `--mcp` and `--agent` need, in one go: the agent packages, the MCP and agent
- * Vite plugins and the CLI's live tools. A plain `deck dev` never loads any of it.
+ * Vite plugins and the CLI's live tools. A plain `deckster dev` never loads any of it.
  */
 async function importAgentHost() {
   const [

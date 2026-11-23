@@ -7,7 +7,7 @@ import { updateUi, useUiState } from '#ui/ui-state.ts';
 import { useModalFocus } from '#ui/use-modal-focus.ts';
 
 /**
- * The displays panel, which only the desktop shell (`deck present`) can fill: every connected
+ * The displays panel, which only the desktop shell (`deckster present`) can fill: every connected
  * display, with buttons to put this window or the presenter window on it.
  */
 export function DisplaysPanel(): ReactNode {

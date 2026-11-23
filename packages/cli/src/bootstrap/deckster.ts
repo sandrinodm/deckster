@@ -20,19 +20,19 @@ const COMMAND_ENV = 'DECKSTER_COMMAND';
 const HOOKS_ENV = 'DECKSTER_HOOKS';
 
 /**
- * The `deck` command of the published package: refuses an old Node with one line (before any
+ * The `deckster` command of the published package: refuses an old Node with one line (before any
  * framework code could fail in a confusing way), registers the hooks, then runs the framework's own
  * entry point from its staged source.
  */
 const major = Number.parseInt(process.versions.node, 10);
 if (major < MIN_NODE_MAJOR) {
   process.stderr.write(
-    `deck needs Node ${MIN_NODE_MAJOR} or later, found v${process.versions.node}.\n`,
+    `deckster needs Node ${MIN_NODE_MAJOR} or later, found v${process.versions.node}.\n`,
   );
   process.exit(1);
 }
 
-process.env[COMMAND_ENV] = 'deck';
+process.env[COMMAND_ENV] = 'deckster';
 process.env[HOOKS_ENV] = path.join(import.meta.dirname, 'hooks.js');
 await import('./hooks.ts');
 await import(

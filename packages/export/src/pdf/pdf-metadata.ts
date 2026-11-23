@@ -15,7 +15,7 @@ export const PDF_CREATOR = 'deck';
 /**
  * The tool named as the document's producer.
  */
-export const PDF_PRODUCER = 'deck export (Chromium, pdf-lib)';
+export const PDF_PRODUCER = 'deckster export (Chromium, pdf-lib)';
 
 /**
  * The document information a PDF carries in its Info dictionary and, identically, in its XMP

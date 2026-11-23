@@ -14,9 +14,9 @@ Wrenhaul, its people and every figure are invented.
 Run these from the repository root:
 
 ```sh
-pnpm deck dev lookbook
-pnpm deck lint lookbook
-pnpm deck lint lookbook --brand nocturne
+pnpm deckster dev lookbook
+pnpm deckster lint lookbook
+pnpm deckster lint lookbook --brand nocturne
 ```
 
 The deck has 204 slides and 427 steps in 12 parts. The slide budgets add up to 142 minutes 20

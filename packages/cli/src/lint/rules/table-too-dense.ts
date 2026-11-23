@@ -33,7 +33,7 @@ export const tableTooDenseRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     'A table does not fit its slide even at the smallest type the brand allows, so it must lose ' +

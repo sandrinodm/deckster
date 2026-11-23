@@ -45,7 +45,7 @@ export {
 export type DiagramCatalogEntry = {
   /**
    * The tag without brackets or the option, such as `Flow`, `Packet` or `dashed / async`, as `deck
-   * charts` and `deck components` name theirs.
+   * charts` and `deckster components` name theirs.
    */
   name: string;
 
@@ -61,7 +61,7 @@ export type DiagramCatalogEntry = {
 };
 
 /**
- * One diagram component or part, as `deck diagrams --json` prints it.
+ * One diagram component or part, as `deckster diagrams --json` prints it.
  */
 export type DiagramComponentInfo = DiagramCatalogEntry & {
   /**
@@ -96,7 +96,7 @@ export type DiagramComponentInfo = DiagramCatalogEntry & {
   children: string;
 
   /**
-   * The numbers `deck lint` and the renderer hold it to.
+   * The numbers `deckster lint` and the renderer hold it to.
    */
   limits: Readonly<Record<string, number | string>>;
 
@@ -188,7 +188,7 @@ export type DiagramTsxGuide = {
 };
 
 /**
- * Everything `deck diagrams` lists: the shared props, every diagram component and part with its
+ * Everything `deckster diagrams` lists: the shared props, every diagram component and part with its
  * props and limits, node kinds, edge options, animation primitives, emphasis states, packet roles,
  * the color roles an imported SVG can use, how long text is handled and how to write diagrams in
  * TSX.
@@ -251,7 +251,7 @@ export type DiagramCatalog = {
   svgRoles: readonly string[];
 
   /**
-   * The numbers `deck lint` holds diagrams to and the renderer wraps text by.
+   * The numbers `deckster lint` holds diagrams to and the renderer wraps text by.
    */
   limits: Readonly<Record<string, number | string>>;
 
@@ -296,7 +296,7 @@ const LONG_TEXT =
   `most ${LABEL_MAX_LINES} lines, broken the same way; what still does not fit is cut with an ellipsis, one identifier keeping its ` +
   ('start and end (OrderCancelled…Event), several words ending after a whole ' +
     'word. The full text stays in the ') +
-  ('accessible summary; `deck lint` warns (diagram-long-word) for every text ' +
+  ('accessible summary; `deckster lint` warns (diagram-long-word) for every text ' +
     'broken inside a word or cut. Keep ') +
   'labels to a word or two (HTTPS, publish) and titles to about 20 characters.';
 
@@ -554,7 +554,7 @@ const TEXTS: Readonly<Record<DiagramComponentName, ComponentText>> = {
         'bottom left when an ') +
       'edge drawn at that step runs through the top right (the corner is chosen from the ' +
       'edges visible at each step, so it can change between steps). When no corner is free it ' +
-      'stays on the one with the fewest edges and `deck lint` warns diagram-badge-overlap: move ' +
+      'stays on the one with the fewest edges and `deckster lint` warns diagram-badge-overlap: move ' +
       'that edge to another side of the node (`fromSide`/`toSide`) or drop the badge.',
   },
 
@@ -751,7 +751,7 @@ const TEXTS: Readonly<Record<DiagramComponentName, ComponentText>> = {
     children: '',
     limits: {},
     longText:
-      'Text inside scales with the drawing; `deck lint` reports text drawn ' +
+      'Text inside scales with the drawing; `deckster lint` reports text drawn ' +
       'below the brand’s caption size.',
   },
 };
@@ -953,7 +953,7 @@ const CARDS: DiagramCardGuide = {
    */
   custom:
     'Every brand has the five standard cards and may restyle them or define more of its own ' +
-    '(`deck brand <name>` lists them). Stick to the standard names for a deck that should look ' +
+    '(`deckster brand <name>` lists them). Stick to the standard names for a deck that should look ' +
     'right in any brand.',
 
   /**
@@ -970,7 +970,7 @@ const CARDS: DiagramCardGuide = {
 };
 
 /**
- * The diagram catalog, as `deck diagrams --json` prints it.
+ * The diagram catalog, as `deckster diagrams --json` prints it.
  */
 export const DIAGRAM_CATALOG: DiagramCatalog = {
   /**
@@ -1067,11 +1067,11 @@ export const DIAGRAM_CATALOG: DiagramCatalog = {
       'naming the closest.',
     'Place nodes on grid cells (col, row); never pixels. The diagram scales ' +
       'to its region and text stays at brand sizes.',
-    `Keep a slide to about ${DIAGRAM_NODE_BUDGET} nodes and ${DIAGRAM_EDGE_BUDGET} edges and ${DIAGRAM_GRID_LIMITS.columns} columns by ${DIAGRAM_GRID_LIMITS.rows} rows; \`deck lint\` warns above that (diagram-too-dense) and reports nodes that overlap.`,
+    `Keep a slide to about ${DIAGRAM_NODE_BUDGET} nodes and ${DIAGRAM_EDGE_BUDGET} edges and ${DIAGRAM_GRID_LIMITS.columns} columns by ${DIAGRAM_GRID_LIMITS.rows} rows; \`deckster lint\` warns above that (diagram-too-dense) and reports nodes that overlap.`,
     'One accent: let a journey, a highlight or a state carry the point; ' +
       'everything else stays in the quiet colors.',
     'Nodes, actors, items and layers take `card` (a node style the brand defines: `default`, ' +
-      "`outline`, `solid`, `tint`, `raised` or one of the brand's own, listed by `deck brand " +
+      "`outline`, `solid`, `tint`, `raised` or one of the brand's own, listed by `deckster brand " +
       "<name>`); a diagram's `card` sets it for all its nodes. Without one a node takes the card " +
       'the brand maps its kind to, else `default`; a name the brand lacks is skipped. States ' +
       'still win over the card (`cards` in --json has the details).',

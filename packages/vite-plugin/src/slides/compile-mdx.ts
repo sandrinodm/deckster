@@ -112,7 +112,7 @@ export type CompileMdxOptions = {
 
   /**
    * Called with the text of each warning a plugin reports with `file.message(...)`, such as a
-   * missing image, and the warning's parts: its rule id and fix, for `deck lint`.
+   * missing image, and the warning's parts: its rule id and fix, for `deckster lint`.
    */
   onWarning?: (message: string, warning: MdxWarning) => void;
 };

@@ -35,7 +35,7 @@ const MISSING_PACKAGE_FIX = FRAMEWORK_INSTALLED
   ? "Install the package in the workspace folder (`npm install <package>`), where the deck's " +
     'files can find it, then run the command again.'
   : "Run `pnpm install` at the workspace root so the deck's dependencies are linked (a deck made " +
-    'with `deck new` needs this once), then run the command again. If the package is not in the ' +
+    'with `deckster new` needs this once), then run the command again. If the package is not in the ' +
     "deck's package.json, add it there first.";
 
 /**

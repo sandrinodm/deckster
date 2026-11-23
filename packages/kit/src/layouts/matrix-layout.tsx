@@ -157,9 +157,9 @@ type PlotMeasure = {
  * where it has room: the layout measures the plot, the dots and the labels with layout geometry and
  * lets a planner put every name inside the plot, clear of the dots, the other names and the fixed
  * labels (which step aside from a dot themselves); a plot too crowded for that keeps the collisions
- * to a minimum, which `deck lint` reports. The item marked `us` is set in the accent with a ring
- * and its quadrant tinted with the surface's raised color; the rest are muted. With `reveal`, the
- * axes and captions show first, the other items on step 1 and the marked item, its tint and the
+ * to a minimum, which `deckster lint` reports. The item marked `us` is set in the accent with a
+ * ring and its quadrant tinted with the surface's raised color; the rest are muted. With `reveal`,
+ * the axes and captions show first, the other items on step 1 and the marked item, its tint and the
  * note on step 2. When the title column does not fit, the note steps down from the lead size.
  */
 function MatrixLayout({ frontmatter, slots }: LayoutProps<typeof matrixLayoutContract>): ReactNode {

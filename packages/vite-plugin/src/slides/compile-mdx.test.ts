@@ -110,7 +110,7 @@ describe('compileMdx with the kit extension', () => {
     expect(unknown).toContain('Fix: Closest names in the lucide set: book');
   });
 
-  it('imports a bare frontmatter path from the deck folder, and reports a missing one for deck lint', async () => {
+  it('imports a bare frontmatter path from the deck folder, and reports a missing one for deckster lint', async () => {
     const code = await compileSlide('Text', { members: [{ photo: 'assets/dana.svg' }] });
     expect(code).toContain('"../assets/dana.svg"');
     expect(code).toContain('"asset:assets/dana.svg"');

@@ -64,7 +64,7 @@
     "should_trigger": false
   },
   {
-    "query": "deck lint is reporting a contrast failure on the inverse surface for the acme brand, which token do I change in brands/acme/brand.ts?",
+    "query": "deckster lint is reporting a contrast failure on the inverse surface for the acme brand, which token do I change in brands/acme/brand.ts?",
     "should_trigger": false
   },
   {

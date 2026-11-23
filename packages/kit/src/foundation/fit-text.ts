@@ -53,7 +53,7 @@ export type FitRung = {
 
 /**
  * How a fitted text ended up, set as its `data-fit` attribute: at its first size, at a later one,
- * or still too long at the last (then clipped to its line budget, which `deck lint` reports as
+ * or still too long at the last (then clipped to its line budget, which `deckster lint` reports as
  * overflow).
  */
 export type FitResult = 'natural' | 'stepped' | 'overflow';
@@ -142,7 +142,7 @@ export function fitLadder(
   }
 
   // Still too long at the smallest size: clip to the budget so the slide keeps its shape, and let
-  // the overflow show up in `deck lint`.
+  // the overflow show up in `deckster lint`.
   const last = ladder.at(-1);
   if (last !== undefined) {
     element.style.maxHeight = `${last.maxLines * lineHeightOf(element)}px`;

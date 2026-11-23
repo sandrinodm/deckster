@@ -47,7 +47,7 @@ export const chartNoHighlightRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A chart with several series or many categories highlights nothing.',
 

@@ -71,7 +71,7 @@ const RETRY_FIX = 'Try again.';
 const JSON_INDENT_SPACES = 2;
 
 /**
- * What `deck brand add` is asked to do.
+ * What `deckster brand add` is asked to do.
  */
 export type AddBrandRequest = {
   /**
@@ -107,7 +107,7 @@ export type AddedFont = FontPackage & {
 };
 
 /**
- * What `deck brand add` did.
+ * What `deckster brand add` did.
  */
 export type AddedBrand = {
   /**
@@ -501,7 +501,8 @@ const writePackageFiles = Effect.fn('writePackageFiles')(function* (
 /**
  * The commands to run before decks can use the added brand. A checkout links the new brand package
  * with `pnpm install` and adds missing fonts without a version from the source or catalog. A
- * published CLI's workspace installs missing fonts with `npm install`. Then `deck brand check`.
+ * published CLI's workspace installs missing fonts with `npm install`. Then `deckster brand
+ * check`.
  *
  * @param name - The brand name.
  * @param fonts - Its font packages.

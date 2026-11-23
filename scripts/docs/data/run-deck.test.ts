@@ -7,7 +7,7 @@ import { REPO_ROOT } from '#scratch-workspace.fixture.ts';
 import { DECK_BIN } from '#script-support.ts';
 
 /**
- * How long `deck present --help` may take to start, in milliseconds.
+ * How long `deckster present --help` may take to start, in milliseconds.
  */
 const HELP_TIMEOUT_MS = 60_000;
 

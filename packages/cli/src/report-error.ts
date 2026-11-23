@@ -111,8 +111,8 @@ function isReadable(error: unknown): error is { _tag: string; message: string } 
 }
 
 /**
- * Whether an error is a deck build error, told by its tag: `deck diff` against a git ref loads that
- * checkout's own plugin, whose error class is not this one, so `instanceof` would miss it.
+ * Whether an error is a deck build error, told by its tag: `deckster diff` against a git ref loads
+ * that checkout's own plugin, whose error class is not this one, so `instanceof` would miss it.
  *
  * @param error - Any value.
  */

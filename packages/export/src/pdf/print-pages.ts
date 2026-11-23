@@ -125,7 +125,7 @@ export const SLIDE_LINK_PATH = '/__deck-slide/';
  * The fix printed when printing fails.
  */
 const PRINT_FIX =
-  'Run the export again; Chromium prints PDFs only in headless mode, which `deck export` uses.';
+  'Run the export again; Chromium prints PDFs only in headless mode, which `deckster export` uses.';
 
 /**
  * Prints the slide on screen as a one-page PDF the size of the canvas, with backgrounds, vector

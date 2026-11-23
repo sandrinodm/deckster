@@ -12,7 +12,8 @@ import { RevealContext } from '#motion/still-motion.ts';
 import '#charts/charts.css';
 
 /**
- * What a chart tells `deck lint` about itself, written as `data-chart-*` attributes on its root.
+ * What a chart tells `deckster lint` about itself, written as `data-chart-*` attributes on its
+ * root.
  */
 export type ChartFacts = {
   /**
@@ -92,7 +93,7 @@ export type ChartDrawing = {
   spec: ChartSpec;
 
   /**
-   * The facts `deck lint` reads.
+   * The facts `deckster lint` reads.
    */
   facts: ChartFacts;
 };

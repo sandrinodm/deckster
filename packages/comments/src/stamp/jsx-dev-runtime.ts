@@ -10,8 +10,8 @@ export { Fragment };
 
 /**
  * Whether this page stamps elements: every dev page except one in `?static` mode, which `deck
- * shot`, `deck lint` and export read and which must match a production build. Static mode is read
- * once, as the engine reads it.
+ * shot`, `deckster lint` and export read and which must match a production build. Static mode is
+ * read once, as the engine reads it.
  */
 const STAMPING = typeof window === 'undefined' ? true : !readStaticMode(window.location.search);
 

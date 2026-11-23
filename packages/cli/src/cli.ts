@@ -38,7 +38,7 @@ import { cliVersion } from '#version.ts';
 import { Workspace } from '#workspace.ts';
 
 /**
- * Every command, in the order `deck --help` lists them.
+ * Every command, in the order `deckster --help` lists them.
  */
 export const COMMANDS: readonly Command[] = [
   devCommand,
@@ -63,7 +63,7 @@ export const COMMANDS: readonly Command[] = [
 ];
 
 /**
- * The flags that print help, anywhere after `deck` or a command name.
+ * The flags that print help, anywhere after `deckster` or a command name.
  */
 const HELP_FLAGS = new Set(['-h', '--help']);
 
@@ -112,9 +112,9 @@ export function cliLayer(
 }
 
 /**
- * Runs one `deck` command line.
+ * Runs one `deckster` command line.
  *
- * @param argv - The arguments after `deck`, such as `['shot', 'hello', '--steps']`.
+ * @param argv - The arguments after `deckster`, such as `['shot', 'hello', '--steps']`.
  * @returns The exit code.
  * @throws CliError in the error channel for a bad command line, and whatever the command fails
  *   with.
@@ -162,7 +162,7 @@ export const runCli = Effect.fn('runCli')(function* (
  * SIGTERM interrupt it (`NodeRuntime.runMain`) and so does SIGHUP (a closed terminal): the
  * command's scope closes and every finalizer runs before the process exits.
  *
- * @param argv - The arguments after `deck`.
+ * @param argv - The arguments after `deckster`.
  * @param workspace - The workspace layer; {@link Workspace.layer} for the real one.
  */
 export function cliProgram(
@@ -188,9 +188,9 @@ export function cliProgram(
  * The entry point used by `bin.ts` and the root scripts: runs a command line as the process's main
  * program and reports failures with a non-zero exit code. Before anything else, Tailwind's module
  * loader is closed for the process (`refuseStylesheetCode`), so no command, the base render of
- * `deck diff` included, can make a stylesheet load JavaScript.
+ * `deckster diff` included, can make a stylesheet load JavaScript.
  *
- * @param argv - The arguments after `deck`.
+ * @param argv - The arguments after `deckster`.
  * @param workspace - The workspace layer; {@link Workspace.layer} for the real one.
  */
 export function main(
@@ -205,7 +205,7 @@ export function main(
  * Whether a command line needs a workspace. Help and the version print without one, so they work in
  * a folder that is not a workspace, such as a home folder.
  *
- * @param argv - The arguments after `deck`.
+ * @param argv - The arguments after `deckster`.
  */
 function needsWorkspace(argv: readonly string[]): boolean {
   const [name] = argv;

@@ -11,9 +11,9 @@ const BOLD_FROM_WEIGHT = 550;
 const WHITESPACE_RUN = /\s+/g;
 
 /**
- * The CSS that re-renders a deck in its brand's substitutes, for `deck export --fonts system`: the
- * slides are measured, and their lines broken, as Keynote, Google Slides or PowerPoint without the
- * brand fonts will set them.
+ * The CSS that re-renders a deck in its brand's substitutes, for `deckster export --fonts system`:
+ * the slides are measured, and their lines broken, as Keynote, Google Slides or PowerPoint without
+ * the brand fonts will set them.
  *
  * For every brand family it declares four `@font-face` rules under the brand family's own name
  * whose sources are the substitute's installed faces (`local("Arial")`, `local("Arial Bold")`,

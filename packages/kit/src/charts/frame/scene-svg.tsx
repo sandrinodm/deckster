@@ -185,7 +185,7 @@ type SceneTextProps = {
  * A text item in its brand type step, one `tspan` per line, at the size the chart laid it out at (a
  * figure scaled to fit its room is smaller than its step). The color is set as both `fill` and
  * `color`, so the lint snapshot reads the color the text is painted in; a text cut short carries
- * its whole text as `data-truncated`, which `deck lint` reports.
+ * its whole text as `data-truncated`, which `deckster lint` reports.
  */
 function SceneText({ item, highlightOn }: SceneTextProps): ReactNode {
   const build = buildProps(item);

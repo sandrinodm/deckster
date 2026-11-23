@@ -28,7 +28,7 @@ export const diagramEdgeOverlapRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'Two diagram edges that share no node run along one line and read as one.',
 

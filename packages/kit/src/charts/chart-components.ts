@@ -19,7 +19,7 @@ import { Waterfall } from '#charts/waterfall/waterfall.tsx';
 
 /**
  * The chart and number components the kit registers for MDX slides, by the tag a slide writes.
- * `deck charts` describes each one (`chart-catalog.ts`).
+ * `deckster charts` describes each one (`chart-catalog.ts`).
  */
 export const CHART_COMPONENTS = {
   /**

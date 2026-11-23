@@ -79,7 +79,7 @@ export const exportMissingPosterRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'Live media without a poster exports as a stray frame, a picture or nothing.',
 

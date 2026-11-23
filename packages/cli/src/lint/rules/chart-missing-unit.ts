@@ -28,7 +28,7 @@ export const chartMissingUnitRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: "A chart's values have no unit and no caption naming the measure.",
 

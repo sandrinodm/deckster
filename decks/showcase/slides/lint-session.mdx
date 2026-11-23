@@ -7,14 +7,14 @@ budget: 1m15s
 ---
 
 <Terminal title="~/deckster" at={1}>
-  <Cmd>pnpm deck lint showcase</Cmd>
+  <Cmd>pnpm deckster lint showcase</Cmd>
   <Out tone="error">error  content-budget (bullets-to-cards)</Out>
   <Out>The body slot holds 13 lines; its layout allows 11.</Out>
   <Out tone="muted">Fix: Cut it to the essentials, split the slide, …</Out>
   <Out tone="error">showcase: 1 error, 0 warnings in 12 slides</Out>
-  <Cmd>pnpm deck lint showcase</Cmd>
+  <Cmd>pnpm deckster lint showcase</Cmd>
   <Out tone="success">showcase: no problems in 12 slides</Out>
-  <Cmd>pnpm deck lint showcase --brand nocturne</Cmd>
+  <Cmd>pnpm deckster lint showcase --brand nocturne</Cmd>
   <Out tone="success">showcase: no problems in 22 slides</Out>
 </Terminal>
 

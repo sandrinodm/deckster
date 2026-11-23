@@ -30,15 +30,16 @@ export type VideoProps = {
   src: string;
 
   /**
-   * A still frame, required: it is what static mode, `deck shot` and exports show, and what the
+   * A still frame, required: it is what static mode, `deckster shot` and exports show, and what the
    * video shows before it can play.
    */
   poster: string;
 
   /**
    * One still per part of a cued video (one more than the steps its `cues` add), each the frame at
-   * the end of its part: static mode, `deck shot --steps` and exports show the one for the current
-   * step. Without them every step shows `poster`, and `deck lint` warns (`video-cue-posters`).
+   * the end of its part: static mode, `deckster shot --steps` and exports show the one for the
+   * current step. Without them every step shows `poster`, and `deckster lint` warns
+   * (`video-cue-posters`).
    */
   posters?: readonly string[];
 
@@ -111,8 +112,8 @@ const NO_CUES: readonly number[] = [];
  * A video that plays when its slide is on screen and pauses when the deck moves away. It starts
  * muted so browsers allow it, and can be cut into parts with `cues` that advance with steps;
  * stepping back plays a part again from its start, and coming back to the slide starts it over. In
- * static mode, `deck shot` and exports it shows the poster (the part's own with `posters`), never a
- * frame of the video. The slide's `ready()` is held until the video's metadata has loaded.
+ * static mode, `deckster shot` and exports it shows the poster (the part's own with `posters`),
+ * never a frame of the video. The slide's `ready()` is held until the video's metadata has loaded.
  *
  * ```mdx
  * <Video

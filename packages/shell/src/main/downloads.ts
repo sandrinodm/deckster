@@ -34,7 +34,7 @@ export type DownloadSessionLike = {
  * default for a download without a save path is a native save dialog, which a slide script could
  * raise unprompted (and which keeps the window busy while the CLI waits). Denying is the simplest
  * rule that never shows a dialog: a deck that offers a file to download works in the browser (`deck
- * present --browser`, `deck dev`), not in the shell. Each refusal is reported.
+ * present --browser`, `deckster dev`), not in the shell. Each refusal is reported.
  *
  * @param session - The session the windows use.
  * @param report - Where the note about a refused download goes; standard error in the shell.

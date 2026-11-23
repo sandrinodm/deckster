@@ -1,17 +1,17 @@
 /**
  * The numbers a diagram is held to, in one place: the renderer wraps and truncates text by them,
- * `deck lint` reports diagrams over them and `deck diagrams --json` prints them. Node-safe: no DOM
- * or React.
+ * `deckster lint` reports diagrams over them and `deckster diagrams --json` prints them. Node-safe:
+ * no DOM or React.
  */
 
 /**
- * The most nodes a diagram shows at once before it reads as a wall of boxes; `deck lint` warns
+ * The most nodes a diagram shows at once before it reads as a wall of boxes; `deckster lint` warns
  * above it (`diagram-too-dense`).
  */
 export const DIAGRAM_NODE_BUDGET = 12;
 
 /**
- * The most edges a diagram shows at once; `deck lint` warns above it (`diagram-too-dense`).
+ * The most edges a diagram shows at once; `deckster lint` warns above it (`diagram-too-dense`).
  */
 export const DIAGRAM_EDGE_BUDGET = 16;
 
@@ -61,7 +61,7 @@ export const DIAGRAM_GRID_LIMITS = {
   rows: 3,
 
   /**
-   * Rows before the gutters between them get too tight for edges (`deck lint` reports cramped).
+   * Rows before the gutters between them get too tight for edges (`deckster lint` reports cramped).
    */
   maxRows: 4,
 } as const;
@@ -69,7 +69,7 @@ export const DIAGRAM_GRID_LIMITS = {
 /**
  * The hard limits of a diagram: past them the build fails (a diagram would otherwise take seconds
  * to route, or a number would ask the renderer for millions of tracks or particles). They sit far
- * above the budgets `deck lint` warns about.
+ * above the budgets `deckster lint` warns about.
  */
 export const DIAGRAM_HARD_LIMITS = {
   /**

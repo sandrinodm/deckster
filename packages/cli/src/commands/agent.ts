@@ -1,21 +1,21 @@
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * `deck agent doctor`: the state of the agent CLIs.
+ * `deckster agent doctor`: the state of the agent CLIs.
  */
 export const agentCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'agent',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'Check the agent CLIs (Claude Code, Codex): installed, version, signed in',
 
   /**
-   * The text `deck agent --help` prints.
+   * The text `deckster agent --help` prints.
    */
   help: () => import('#commands/agent-help.ts').then((module) => module.HELP),
 

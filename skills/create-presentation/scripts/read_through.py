@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Read-through of a deck's argument: the checks `deck lint` does not make.
+"""Read-through of a deck's argument: the checks `deckster lint` does not make.
 
-`deck lint` measures the rendered slides (overflow, budgets, contrast,
+`deckster lint` measures the rendered slides (overflow, budgets, contrast,
 chart and diagram rules, missing notes, repeated layouts, the time budget).
 This script reads the slide files and reports on the argument instead:
 
@@ -10,7 +10,7 @@ This script reads the slide files and reports on the argument instead:
   - speaker notes that are missing, thin, or longer than the slide's budget
   - slides without a budget, and the total against the deck's duration
     (hidden slides, `hidden: true`, are backups: they need no budget and
-    are left out of the total, as in `deck lint`)
+    are left out of the total, as in `deckster lint`)
   - a closing slide that only says thanks
   - every [NEEDS: ...] placeholder, for the handoff
 
@@ -20,7 +20,7 @@ Usage:
 Slide order and duration come from deck.config.ts: the `slides` list and the
 `duration` of the `defineDeck({...})` literal, read with a small tokenizer that
 skips comments and strings (the deck CLI has no command that prints the slide
-list without rendering; `deck lint <deck> --json` is the authority on the
+list without rendering; `deckster lint <deck> --json` is the authority on the
 deck itself). Exit code 1 when a content slide has a label-style title or no
 notes; exit code 2 when the config lists no slides or cannot be read, so an
 empty read-through never passes.
@@ -323,7 +323,7 @@ def main() -> int:
         print("\nPlaceholders to list in the handoff:")
         for slide_id, text in needs:
             print(f"  {slide_id}: {text}")
-    print(f"\n{errors} error(s), {len(findings) - errors} warning(s). This reads text only; run `deck lint` and look at `deck shot` for everything visual.")
+    print(f"\n{errors} error(s), {len(findings) - errors} warning(s). This reads text only; run `deckster lint` and look at `deckster shot` for everything visual.")
     return 1 if errors else 0
 
 

@@ -299,7 +299,7 @@ describe('an app the deck does not have', () => {
       const page = await fetch(`${base}apps/not-an-app/`);
       expect(page.status, base).toBe(404);
       const text = await page.text();
-      expect(text, base).toContain('pnpm deck new app apps-demo not-an-app');
+      expect(text, base).toContain('pnpm deckster new app apps-demo not-an-app');
       expect(text, base).toContain('Apps: agent-demo.');
       expect(text, base).not.toContain('deck-root');
     }

@@ -14,9 +14,9 @@ export type SlideComparison = {
 };
 
 /**
- * Compares two PNGs of the same slide. The live layer reuses the comparison `deck export --verify`
- * runs: both pictures are decoded and diffed in a blank Chromium page, so no image library is
- * needed. Tests replace it with a comparison of bytes.
+ * Compares two PNGs of the same slide. The live layer reuses the comparison `deckster export
+ * --verify` runs: both pictures are decoded and diffed in a blank Chromium page, so no image
+ * library is needed. Tests replace it with a comparison of bytes.
  */
 export class SlideComparer extends Context.Service<
   SlideComparer,

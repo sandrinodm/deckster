@@ -52,7 +52,7 @@ type FrontmatterPictureProps = {
  * sizes: the brand's image treatment on the frame (its corners, filter and tint), the picture
  * absolutely placed inside it, so a large file never stretches the grid it sits in. `cover` crops
  * it around `focal`; `contain` shows it whole on the surface's raised panel, for screenshots. A
- * missing file leaves the panel empty, which `deck lint` reports as missing media.
+ * missing file leaves the panel empty, which `deckster lint` reports as missing media.
  */
 export function FrontmatterPicture({
   src,

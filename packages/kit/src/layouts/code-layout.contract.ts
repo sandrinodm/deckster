@@ -19,7 +19,7 @@ export const codeLayoutContract = defineLayoutContract({
     '<CodeMove> that animates between versions, or a <Terminal> session. Fill <Aside> with up to ' +
     'three short notes to set them beside the code. Keep code to at most 11 lines and 60 columns ' +
     'beside notes (90 without); longer lines step the font down to the brand minimum and then ' +
-    'overflow, which `deck lint` reports. In a <Terminal> each <Cmd> adds one step (the first at ' +
+    'overflow, which `deckster lint` reports. In a <Terminal> each <Cmd> adds one step (the first at ' +
     "the Terminal's `at`, default 1, so step 0 shows only the prompt and cursor); a fence with " +
     '`{2|3-4}` adds one step per part. Use content for prose and split for a picture.',
   schema: Schema.Struct({ eyebrow: EyebrowField, chrome: chromeField(true) }),

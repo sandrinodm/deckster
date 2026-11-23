@@ -10,8 +10,8 @@ Larkfield and its endpoints are fictional.
 Run these from the repository root:
 
 ```sh
-pnpm deck dev components
-pnpm deck lint components    # components: no problems in 12 slides (31 steps checked).
+pnpm deckster dev components
+pnpm deckster lint components    # components: no problems in 12 slides (31 steps checked).
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures.

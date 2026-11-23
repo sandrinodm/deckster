@@ -6,8 +6,9 @@ import type { SlideRule } from '#lint/types.ts';
 const MISSING_POSTER_ATTRIBUTE = 'app-missing-poster';
 
 /**
- * A mini app frame with no `poster`. Static mode, `deck shot`, PDF and PPTX export and offline runs
- * never load the iframe, so without a poster they show a placeholder where the demo should be.
+ * A mini app frame with no `poster`. Static mode, `deckster shot`, PDF and PPTX export and offline
+ * runs never load the iframe, so without a poster they show a placeholder where the demo should
+ * be.
  */
 export const appMissingPosterRule: SlideRule = {
   /**
@@ -31,7 +32,7 @@ export const appMissingPosterRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'An <AppFrame> has no poster to show in static mode, export and offline.',
 

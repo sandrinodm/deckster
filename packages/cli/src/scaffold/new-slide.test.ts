@@ -5,7 +5,7 @@ import path from 'node:path';
 
 import { runCaptured } from '#cli.fixture.ts';
 
-layer(NodeServices.layer)('deck new slide', (it) => {
+layer(NodeServices.layer)('deckster new slide', (it) => {
   it.effect('refuses an id that exists with another extension or is already listed', () =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;

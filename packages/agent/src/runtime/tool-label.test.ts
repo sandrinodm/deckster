@@ -54,9 +54,9 @@ describe('describeTool', () => {
     expect(
       line({ name: 'shell', title: "rg --files -g '*.mdx'", status: 'done', path: null }),
     ).toBe('search: Searched files');
-    expect(line({ name: 'shell', title: 'pnpm deck lint hello', status: 'done', path: null })).toBe(
-      'shell: Ran pnpm deck lint hello',
-    );
+    expect(
+      line({ name: 'shell', title: 'pnpm deckster lint hello', status: 'done', path: null }),
+    ).toBe('shell: Ran pnpm deckster lint hello');
     expect(
       line({ name: 'shell', title: "sed -n '1,200p' slides/a.mdx", status: 'done', path: null }),
     ).toBe('read: Read slides/a.mdx');
@@ -102,7 +102,7 @@ describe('describeTool', () => {
   });
 
   it('shell label: a long command is cut in the line and kept whole in `full`', () => {
-    const title = `pnpm deck lint hello ${'--flag '.repeat(30)}`.trim();
+    const title = `pnpm deckster lint hello ${'--flag '.repeat(30)}`.trim();
     const described = describeTool({ name: 'shell', title, status: 'done', path: null }, 'hello');
     expect(described.object.length).toBeLessThan(title.length);
     expect(described.full).toBe(title);

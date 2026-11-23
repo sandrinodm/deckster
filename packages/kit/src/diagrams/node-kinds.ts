@@ -40,7 +40,7 @@ export type NodeKindInfo = {
   icons: Readonly<Record<string, string>> | null;
 
   /**
-   * When to pick this kind, for `deck diagrams`.
+   * When to pick this kind, for `deckster diagrams`.
    */
   useWhen: string;
 };

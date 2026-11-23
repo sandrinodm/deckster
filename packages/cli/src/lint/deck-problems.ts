@@ -14,7 +14,7 @@ export const SCHEMA_RULE_ID = 'schema';
 
 /**
  * The rule id of problems with the brand a deck renders in: they come from the brand file, not from
- * any slide, and `deck brand check <name>` reports the same ones without a deck.
+ * any slide, and `deckster brand check <name>` reports the same ones without a deck.
  */
 export const BRAND_RULE_ID = 'brand';
 

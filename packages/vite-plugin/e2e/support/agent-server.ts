@@ -120,7 +120,7 @@ const TOOLS: DeckToolsApi = {
 };
 
 /**
- * Serves a copy of the hello deck with the agent endpoint and the fake provider, as `deck dev
+ * Serves a copy of the hello deck with the agent endpoint and the fake provider, as `deckster dev
  * --agent fake` does, before the first test; closes it and removes the copy and the agent's files
  * after the last.
  */

@@ -33,7 +33,8 @@ export const MIN_DIVERGING_ENDS_DELTA_E = 12;
  * The contrast the context color is held to on every surface's plate. Context data is drawn as thin
  * lines, small dots and muted bars, so it needs the 3:1 of graphical objects (WCAG 1.4.11) to stay
  * visible; the resolver moves the brand's context color in lightness until it reaches this on each
- * plate, and `deck brand check` warns about a context color a surface writes that stays under it.
+ * plate, and `deckster brand check` warns about a context color a surface writes that stays under
+ * it.
  */
 export const CONTEXT_CONTRAST = 3;
 

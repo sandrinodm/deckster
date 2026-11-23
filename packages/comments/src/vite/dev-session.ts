@@ -9,7 +9,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 export const DEV_SESSION_PATH = '/__deck';
 
 /**
- * The request header that carries a one-time code. In strict mode (`deck present`'s window) the
+ * The request header that carries a one-time code. In strict mode (`deckster present`'s window) the
  * cookie is issued only to the document request that presents an unused code.
  */
 export const DEV_SESSION_CODE_HEADER = 'x-deck-agent-code';
@@ -97,7 +97,7 @@ export type DevSession = {
 
   /**
    * Strict mode: the cookie is issued only to a document request that carries a one-time code from
-   * {@link DevSession.addCode}. `deck present` turns it on for its window.
+   * {@link DevSession.addCode}. `deckster present` turns it on for its window.
    */
   readonly setStrict: (strict: boolean) => void;
 

@@ -1,9 +1,9 @@
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * The text `deck build --help` prints.
+ * The text `deckster build --help` prints.
  */
-const HELP = `Usage: deck build [deck] [--with-exports] [--all] [--out <dir>] [--include-scratch]
+const HELP = `Usage: deckster build [deck] [--with-exports] [--all] [--out <dir>] [--include-scratch]
 
 Builds a deck to decks/<deck>/dist as static files that can be hosted under any path.
 
@@ -30,21 +30,21 @@ Options:
   -h, --help      Show this help.`;
 
 /**
- * `deck build`: a production build of one deck, or of every deck.
+ * `deckster build`: a production build of one deck, or of every deck.
  */
 export const buildCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'build',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'Build a deck (or every deck) to decks/<deck>/dist',
 
   /**
-   * The text `deck build --help` prints.
+   * The text `deckster build --help` prints.
    */
   help: HELP,
 

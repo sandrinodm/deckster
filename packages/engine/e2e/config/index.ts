@@ -10,8 +10,8 @@ import { DECK_PORT } from '../support/deck.ts';
 const STARTUP_TIMEOUT_MS = 120_000;
 
 /**
- * The engine's browser suite: the hello deck in Chromium at 1280x720, served by `pnpm deck dev`,
- * which the runner starts before the first test and stops after the last.
+ * The engine's browser suite: the hello deck in Chromium at 1280x720, served by `pnpm deckster
+ * dev`, which the runner starts before the first test and stops after the last.
  */
 export default {
   tests: ['e2e/*.e2e.ts'],
@@ -26,7 +26,7 @@ export default {
         url: `http://localhost:${DECK_PORT}`,
         command: {
           executable: 'pnpm',
-          args: ['--dir', '../..', 'deck', 'dev', 'hello', '--port', String(DECK_PORT)],
+          args: ['--dir', '../..', 'deckster', 'dev', 'hello', '--port', String(DECK_PORT)],
           startupTimeout: STARTUP_TIMEOUT_MS,
           log: '.e2e/logs/hello.log',
         },

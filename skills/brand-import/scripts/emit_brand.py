@@ -11,7 +11,7 @@ The mapping from the neutral draft onto the framework's brand schema lives here 
 references/brand-schema.md, and nowhere else in the skill. After writing, run:
 
   npm install <font packages>                    (run in the workspace folder; the run prints the command)
-  deck brand check <name> --json                 (the framework's own validation)
+  deckster brand check <name> --json                 (the framework's own validation)
 
 The check prints every problem with the field and the fix. Fix the DRAFT, re-emit with --force,
 check again.
@@ -19,7 +19,7 @@ check again.
 A draft whose layouts[] holds layout specs (references/brand-draft-format.md, from `brand_tools.py
 propose-layouts`) also gets `layouts.ts` (defineBrandLayouts, the same fixed-header data literal) and the
 art files under `layouts/`. Specs with `keep: false` are not written. A spec with no fallback, an invalid
-name or a binding the draft's own rules reject stops the run; `deck brand check` then applies the
+name or a binding the draft's own rules reject stops the run; `deckster brand check` then applies the
 catalog rules to what was written.
 
 Surfaces the draft does not define (inverse, accent, gradient) are left out so the framework
@@ -981,7 +981,7 @@ def run() -> None:
     for x in defaulted:
         print("defaulted:", plain(x))
     install = f"npm install {' '.join(f'{k}@{v}' for k, v in packages.items())} && " if packages else ""
-    print(f"next: (cd {args.workspace} && {install}deck brand check {name} --json)")
+    print(f"next: (cd {args.workspace} && {install}deckster brand check {name} --json)")
 
 
 if __name__ == "__main__":

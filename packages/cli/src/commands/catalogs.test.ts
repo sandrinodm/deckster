@@ -26,7 +26,7 @@ type Catalog = {
 };
 
 it.effect(
-  'deck charts, diagrams and components --json name components by their bare tag, in one shape',
+  'deckster charts, diagrams and components --json name components by their bare tag, in one shape',
   () =>
     Effect.gen(function* () {
       for (const command of ['charts', 'diagrams', 'components']) {
@@ -51,20 +51,22 @@ it.effect(
     }),
 );
 
-it.effect('deck diagrams --json says the shared long-text rule once, not on every component', () =>
-  Effect.gen(function* () {
-    const { output } = yield* runCaptured(['diagrams', '--json']);
-    const catalog = JSON.parse(output) as Catalog & {
-      animation: { name: string }[];
-    };
-    const components = catalog.components ?? [];
-    expect(catalog.longText).toContain('ellipsis');
-    expect(components.filter((entry) => entry.longText === catalog.longText)).toEqual([]);
-    expect(components.filter((entry) => entry.longText === '')).toEqual([]);
-    expect(components.find((entry) => entry.name === 'Group')?.longText).toContain('one line');
-    expect(catalog.animation.map((entry) => entry.name)).toEqual(
-      expect.arrayContaining(['Packet', 'Journey', 'State', 'Focus']),
-    );
-    expect(output).not.toContain('"tag"');
-  }),
+it.effect(
+  'deckster diagrams --json says the shared long-text rule once, not on every component',
+  () =>
+    Effect.gen(function* () {
+      const { output } = yield* runCaptured(['diagrams', '--json']);
+      const catalog = JSON.parse(output) as Catalog & {
+        animation: { name: string }[];
+      };
+      const components = catalog.components ?? [];
+      expect(catalog.longText).toContain('ellipsis');
+      expect(components.filter((entry) => entry.longText === catalog.longText)).toEqual([]);
+      expect(components.filter((entry) => entry.longText === '')).toEqual([]);
+      expect(components.find((entry) => entry.name === 'Group')?.longText).toContain('one line');
+      expect(catalog.animation.map((entry) => entry.name)).toEqual(
+        expect.arrayContaining(['Packet', 'Journey', 'State', 'Focus']),
+      );
+      expect(output).not.toContain('"tag"');
+    }),
 );

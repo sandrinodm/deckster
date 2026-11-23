@@ -5,8 +5,8 @@
 """Compare an imported brand with the brand its source was rendered from (a round-trip eval).
 
 Usage:
-  pnpm --silent deck brand <truth> --json > truth.json
-  pnpm --silent deck brand <candidate> --json > candidate.json
+  pnpm --silent deckster brand <truth> --json > truth.json
+  pnpm --silent deckster brand <candidate> --json > candidate.json
   uv run compare_tokens.py truth.json candidate.json [--json]
 
 Both files are resolved tokens, so palette references and derived values are already hex. Prints,

@@ -39,7 +39,7 @@ export const appMissingRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'An <AppFrame app> names an app the deck does not have.',
 

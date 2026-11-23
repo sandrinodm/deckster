@@ -32,7 +32,7 @@ const CLI_TIMEOUT_MS = 30_000;
  * Runs the real CLI with a Git fixture that records its invocation and prints a credential on both
  * streams before failing, like a transport reporting a rewritten address.
  *
- * @param args - The arguments after `deck brand add`.
+ * @param args - The arguments after `deckster brand add`.
  */
 function runWithFailingGit(
   args: readonly string[],
@@ -63,7 +63,7 @@ function runWithFailingGit(
   return { ...run, gitRan: fs.existsSync(invocation) };
 }
 
-describe('deck brand add', () => {
+describe('deckster brand add', () => {
   it.effect('needs exactly one source, and refuses --force on the other brand commands', () =>
     Effect.gen(function* () {
       const missing = yield* runCaptured(['brand', 'add', '--json']);

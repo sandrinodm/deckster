@@ -12,7 +12,7 @@ carry that.
    or pixel positions.
 2. **Slides fill typed layouts.** An author picks a layout and fills its slots. The layout owns the
    type, the grid and the spacing, so a slide cannot go off-brand without the linter saying so.
-3. **Agents see their own work.** `deck shot` renders any slide to a PNG and `deck lint` reports
+3. **Agents see their own work.** `deckster shot` renders any slide to a PNG and `deckster lint` reports
    overflow, contrast, off-brand values and content over budget, each with its fix. Without that
    loop an agent cannot tell a good slide from a broken one.
 4. **One React tree.** Diagrams, code, video and live mini apps are components on the slide, driven
@@ -62,7 +62,7 @@ up to its value when the deck moves forward onto it. Durations and easings are t
 tokens. A receded step changes color, never opacity, so it keeps the brand's text contrast.
 
 The page exposes `window.__deck` (`goto`, `ready()` and the slide list) and a `?static` mode in
-which every animation is at its end state. `deck shot`, `deck lint` and `deck export` all drive a
+which every animation is at its end state. `deckster shot`, `deckster lint` and `deckster export` all drive a
 slide through these two. That is why content that loads late must hold `ready()`, and why
 animations never run in static mode: there every revealed step is in place at full strength,
 nothing is receded and every number shows its final value. Copies of a slide (thumbnails,
@@ -83,7 +83,7 @@ to the canvas, which names only the one live copy of the element on each side wh
 new states are captured; the neighbouring slides that stay mounted, and the slide copies in
 thumbnails and presenter panes, never carry the name. A view transition applies its update a frame
 after it starts, so only interactive moves morph: `window.__deck` moves apply at once and never
-morph, which keeps `deck shot`, `deck lint` and export exact.
+morph, which keeps `deckster shot`, `deckster lint` and export exact.
 
 ## Hidden slides
 
@@ -96,7 +96,7 @@ embed controls and the presenter window all get it. Next and previous go to the 
 slide, and first and last go to the first and last shown slide. A deck opened without a hash starts
 on its first shown slide. A hidden slide is still reachable on purpose: a link or hash names it,
 the presenter's sidebar, overview and go-to open it, and `window.__deck.goto` lands on it, which is
-how `deck shot`, `deck lint` and `deck export` reach it. From a hidden slide that was reached this
+how `deckster shot`, `deckster lint` and `deckster export` reach it. From a hidden slide that was reached this
 way, next and previous step through its own steps, then move to the neighbouring shown slide on that
 side; where there is none (a backup slide after the last shown one), the move does nothing.
 Whatever pairs a slide with the one before or after it (transitions, morphs, the presenter's next
@@ -105,14 +105,14 @@ audience sees one after the other.
 
 Two rules keep the numbers honest. The numbers an author works with stay positions in the full slide
 list: the URL hash, the sidebar's row numbers, the presenter's "Slide 12 of 40", the number typed
-into go-to, `deck shot` file names and `--slides 3,5-9`. Hiding or showing a slide then moves none
+into go-to, `deckster shot` file names and `--slides 3,5-9`. Hiding or showing a slide then moves none
 of them, so a saved link, a review comment and a screenshot name keep pointing at the same slide.
 The numbers the audience sees count shown slides only: the brand's page number and total, the
 progress bar and the embed controls' count. A deck of 35 slides with 5 hidden ones shows pages 1 to
 30, with no gap where a hidden slide sits. A hidden slide reached directly shows no page number,
 and its progress stays where the last shown slide before it left it.
 
-Hiding is not removing. `deck build` still builds a hidden slide and a URL still opens it. To take
+Hiding is not removing. `deckster build` still builds a hidden slide and a URL still opens it. To take
 a slide out of a deck, remove it from `slides` in `deck.config.ts`. A deck whose every slide is
 hidden fails the build, because a talk would have nothing to show.
 
@@ -160,13 +160,13 @@ A node takes, in order, its own `card`, its diagram's `card`, the card the brand
 (`diagram.kinds`, such as databases as `tint`), then `default`. States win over the card:
 highlighted, error and success still recolor the outline, and muted nodes and a focus still dim. A
 name the brand does not have does not fail the build, because a deck may be rendered in another
-brand: the next card in the order applies, and `deck lint` reports it (`diagram-card-missing`)
+brand: the next card in the order applies, and `deckster lint` reports it (`diagram-card-missing`)
 with the brand's cards and the closest name.
 
 ## Layouts and budgets
 
 Each layout publishes a contract: its frontmatter fields, its slots, and a content budget.
-`deck layouts --json` prints the catalog so an agent can choose a layout from the message it wants
+`deckster layouts --json` prints the catalog so an agent can choose a layout from the message it wants
 to send.
 
 Budgets count content (words, bullets, items), never the room the content takes. A slide within
@@ -192,8 +192,8 @@ slot fills the `body` slot, so a brand layout needs a `body` region to accept th
 
 That is the fallback rule, and it mirrors diagram cards. A deck may be rendered in another brand,
 so a name the brand lacks must not fail the build. A card the brand does not have falls to the
-next card in the order, and `deck lint` reports it (`diagram-card-missing`). A slide that names a
-brand layout the deck's brand lacks renders with the layout's kit fallback, and `deck lint`
+next card in the order, and `deckster lint` reports it (`diagram-card-missing`). A slide that names a
+brand layout the deck's brand lacks renders with the layout's kit fallback, and `deckster lint`
 reports it (`brand-layout-fallback`). The swap happens in Node at build time, and the built deck
 names only the kit layout: nothing about another brand reaches the browser. If two brands define
 the same name with different fallbacks, the build fails and asks to rename one.
@@ -219,7 +219,7 @@ picture placeholders.
 - **Diagrams are placed by grid cell.** `<Flow>` takes nodes with a column and a row, or lays them
   out with ELK. Agents are reliable with grid cells and unreliable with pixel coordinates.
 - **Diagrams are drawn by the kit.** There is no Mermaid tier. A diagram the kit draws takes the
-  brand's tokens and type, reveals by step and can be checked by `deck lint`.
+  brand's tokens and type, reveals by step and can be checked by `deckster lint`.
 - **Charts lead with the point.** Every chart takes a `highlight` (what matters; the rest is
   muted) and `annotations`. The slide title states the takeaway and the chart supports it. Labels
   sit on the marks where possible, in place of a legend.
@@ -255,7 +255,7 @@ overlay.
   links are native wherever the slide can be expressed that way; charts and diagrams become native
   charts, shapes and connectors, and a picture is used only for what PowerPoint cannot draw (an
   app, a video's frame, effects it has no equivalent for). An editable slide never matches the web
-  slide exactly, so `deck export --dry-run` lists what each slide draws natively and why, and
+  slide exactly, so `deckster export --dry-run` lists what each slide draws natively and why, and
   `--verify` scores the result against the web slide.
 - **Steps.** A PPTX turns step reveals into click animations (`--no-animations` turns that off). A
   PDF has no animation, so `--steps` exports one page per step.
@@ -267,23 +267,23 @@ overlay.
 
 ## History
 
-Git is the history. One file per slide keeps text diffs readable. `deck diff` adds the visual
+Git is the history. One file per slide keeps text diffs readable. `deckster diff` adds the visual
 side: it renders the deck at two revisions and reports the slides that changed, side by side.
 
 ## The desktop shell
 
-`deck present` opens the deck in an Electron window (`packages/shell`). Electron is used because
-it renders with Chromium on every platform, the same engine family `deck lint`, `deck shot` and
+`deckster present` opens the deck in an Electron window (`packages/shell`). Electron is used because
+it renders with Chromium on every platform, the same engine family `deckster lint`, `deckster shot` and
 export use. A shell built on the system webview would render in WebKit on macOS and Linux, and the
 linter would no longer describe what the audience sees.
 
 Electron's Chromium is not the same build as the one Playwright drives, so a slide can differ
-slightly between the window and `deck shot`. Electron's version is pinned in the workspace catalog
+slightly between the window and `deckster shot`. Electron's version is pinned in the workspace catalog
 and changed on purpose.
 
 The shell is thin: windows, displays, fullscreen, menus and sleep prevention. It holds no deck or
 agent logic. The CLI process owns the dev server and starts the shell as a child, so everything
-that works in the shell also works in a browser with `deck dev`, and the shell could be replaced
+that works in the shell also works in a browser with `deckster dev`, and the shell could be replaced
 without touching the rest. [present.md](present.md) is the guide.
 
 ## The agent panel

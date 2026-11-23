@@ -60,7 +60,7 @@ const BRAND_MODULES = new Set([BRAND_FILE, LAYOUTS_FILE]);
 /**
  * File names, in lower case, that configure a package, a package manager or TypeScript. They are
  * never copied, at any depth and in any case: a case-insensitive file system would take
- * `Package.JSON` for `package.json`. `deck brand add` writes the ones this workspace needs.
+ * `Package.JSON` for `package.json`. `deckster brand add` writes the ones this workspace needs.
  */
 const PACKAGE_FILE_NAMES = new Set([
   'package.json',

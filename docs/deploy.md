@@ -12,7 +12,7 @@ own site, the documentation with the example decks, is built by a different pipe
 ## Build the site
 
 ```sh
-pnpm deck build --all --out site
+pnpm deckster build --all --out site
 ```
 
 This builds every deck into `site/`, with a gallery page (`index.html`) that links each deck's
@@ -29,11 +29,11 @@ host settings below are for building from a clone of this repository.
 
 The other projects in this account run on Cloudflare, so this is the first choice.
 
-| Setting                | Value                                                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Build command          | `pnpm install --frozen-lockfile && pnpm exec playwright install chromium && pnpm deck build --all --out site` |
-| Build output directory | `site`                                                                                                        |
-| Node.js version        | `24` (set the `NODE_VERSION` variable)                                                                        |
+| Setting                | Value                                                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Build command          | `pnpm install --frozen-lockfile && pnpm exec playwright install chromium && pnpm deckster build --all --out site` |
+| Build output directory | `site`                                                                                                            |
+| Node.js version        | `24` (set the `NODE_VERSION` variable)                                                                            |
 
 Cloudflare's build image may lack the system libraries Chromium needs. If the thumbnails are
 missing, build in CI instead and upload the folder with
@@ -43,7 +43,7 @@ missing, build in CI instead and upload the folder with
 
 `.github/workflows/deploy.yml` publishes this repository's own site to GitHub Pages: the
 documentation at the root and the example decks under `decks/`. It does not deploy the
-`deck build --all` gallery. The site's source is the orphan `docs-site` branch of this repository
+`deckster build --all` gallery. The site's source is the orphan `docs-site` branch of this repository
 (Astro with Nimbus). Its reference data (`src/data`: layouts, components, commands) is committed on
 that branch for the release the pages document (`src/data/meta.json` names it), and is published
 as committed. The slide stills and the decks come from the `main` commit being deployed. The
@@ -54,7 +54,7 @@ workflow:
 2. Checks out `docs-site` into `docs-site/`.
 3. Installs the workspace with pnpm and Node 26, Chromium, Electron's binary
    (`pnpm --filter @deckster/shell exec install-electron`) with Xvfb and the libraries Electron
-   links, and builds the LibreOffice Docker image that `deck export --verify` renders with
+   links, and builds the LibreOffice Docker image that `deckster export --verify` renders with
    (`pnpm --filter @deckster/export prepare:verify`).
 4. Runs `npm ci` in `docs-site/`, then `npm run check:briefs`, which fails while a page still
    carries its writing brief, and `npm run check:coverage`, which fails when a layout, component,
@@ -75,7 +75,7 @@ workflow:
      same commit gives the same pictures on any machine.
    - `decks.ts` needs an empty or new `--out` (the sync gives it a fresh temporary folder),
      because the site publishes that folder whole.
-6. Exports each published deck with `deck export`, which writes `<deck>.pdf`, `<deck>.pptx` and the
+6. Exports each published deck with `deckster export`, which writes `<deck>.pdf`, `<deck>.pptx` and the
    PPTX fonts beside the deck's `index.html`. A `<Download file="<deck>.pdf">` on a slide links to
    a file only when this ran; the showcase deck has one. A run started by hand exports unless the
    `with_exports` checkbox (on by default) is cleared; a run after CI always exports.
@@ -120,29 +120,29 @@ public unless the organisation is on GitHub Enterprise Cloud.
 To host your own decks on GitHub Pages instead, build the gallery in a workflow of your own:
 [Build and host](https://sandrinodm.github.io/deckster/export-and-publish/build-and-host/#example-github-pages)
 has one to start from. From a clone, use the same guard, install and browser steps as this workflow,
-then `pnpm deck build --all --out site` (add `--with-exports` for the PDF and PPTX files), and upload
+then `pnpm deckster build --all --out site` (add `--with-exports` for the PDF and PPTX files), and upload
 `site` with `actions/upload-pages-artifact`.
 
 ## Vercel
 
-| Setting          | Value                                                                       |
-| ---------------- | --------------------------------------------------------------------------- |
-| Install command  | `pnpm install --frozen-lockfile`                                            |
-| Build command    | `pnpm exec playwright install chromium && pnpm deck build --all --out site` |
-| Output directory | `site`                                                                      |
-| Framework preset | Other                                                                       |
+| Setting          | Value                                                                           |
+| ---------------- | ------------------------------------------------------------------------------- |
+| Install command  | `pnpm install --frozen-lockfile`                                                |
+| Build command    | `pnpm exec playwright install chromium && pnpm deckster build --all --out site` |
+| Output directory | `site`                                                                          |
+| Framework preset | Other                                                                           |
 
 ## Netlify
 
-| Setting           | Value                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------- |
-| Build command     | `pnpm install --frozen-lockfile && pnpm exec playwright install chromium && pnpm deck build --all --out site` |
-| Publish directory | `site`                                                                                                        |
-| Node.js version   | `24` (set the `NODE_VERSION` variable)                                                                        |
+| Setting           | Value                                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Build command     | `pnpm install --frozen-lockfile && pnpm exec playwright install chromium && pnpm deckster build --all --out site` |
+| Publish directory | `site`                                                                                                            |
+| Node.js version   | `24` (set the `NODE_VERSION` variable)                                                                            |
 
 ## Pull request previews
 
 `.github/workflows/slides-diff.yml` does not deploy anything. It renders the decks a pull request
-changes against the base branch with `deck diff`, uploads the report folder as an artifact and keeps
+changes against the base branch with `deckster diff`, uploads the report folder as an artifact and keeps
 one comment on the pull request up to date with the table of changed slides. Open `index.html` in
 the downloaded artifact to see before, after and difference side by side.

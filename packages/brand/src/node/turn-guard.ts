@@ -1453,8 +1453,8 @@ export const recoverTurnGuard = Effect.fn('recoverTurnGuard')(function* (
 
 /**
  * Finishes every unfinished turn whose record names a brand, before that brand's code is imported
- * (`deck brand check`, a build): the same recovery as {@link recoverTurnGuard}, for each deck whose
- * in-flight record verifies `brands/<brand>`.
+ * (`deckster brand check`, a build): the same recovery as {@link recoverTurnGuard}, for each deck
+ * whose in-flight record verifies `brands/<brand>`.
  *
  * @param workspaceRoot - The absolute workspace root.
  * @param brand - The brand folder name.

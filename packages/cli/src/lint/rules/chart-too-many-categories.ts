@@ -6,8 +6,8 @@ import { chartsOn, chartTag } from '#lint/rules/chart-facts.ts';
 
 /**
  * The most categories each kind reads well with on a slide, from the kit's chart limits (which
- * `deck charts --json` prints); kinds left out have no limit (a line's points in time, a heatmap's
- * cells).
+ * `deckster charts --json` prints); kinds left out have no limit (a line's points in time, a
+ * heatmap's cells).
  */
 const LIMITS: ReadonlyMap<string, number> = new Map(
   Object.entries(CHART_LIMITS.categories).filter(
@@ -41,7 +41,7 @@ export const chartTooManyCategoriesRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A chart draws more bars, stages, rows or items than reads at a glance on a slide.',
 

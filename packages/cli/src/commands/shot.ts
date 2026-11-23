@@ -17,9 +17,9 @@ export const MAX_SCALE = 4;
 export const BRAND_FOLDER_SEPARATOR = '@';
 
 /**
- * The text `deck shot --help` prints.
+ * The text `deckster shot --help` prints.
  */
-const HELP = `Usage: deck shot <deck> [slide] [--steps] [--brand <name>] [--out <dir>] [--scale <n>] [--json]
+const HELP = `Usage: deckster shot <deck> [slide] [--steps] [--brand <name>] [--out <dir>] [--scale <n>] [--json]
 
 Renders a deck in static mode and writes a 1920x1080 PNG per slide, so you can look at the
 slides, hidden ones included. Open the files to inspect them; --json lists them for scripts. A
@@ -47,21 +47,21 @@ Files are named 03-request-flow.png and 03-request-flow.step2.png. A run over th
 removes older screenshots with that naming from the output folder first.`;
 
 /**
- * `deck shot`: PNGs of the slides, for agents and authors to look at.
+ * `deckster shot`: PNGs of the slides, for agents and authors to look at.
  */
 export const shotCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'shot',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'Write PNG screenshots of slides (and steps)',
 
   /**
-   * The text `deck shot --help` prints.
+   * The text `deckster shot --help` prints.
    */
   help: HELP,
 

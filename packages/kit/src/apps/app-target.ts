@@ -4,7 +4,7 @@
 export const APPS_PATH = 'apps';
 
 /**
- * Letters, digits and hyphens: the form `deck new app` names an app folder in.
+ * Letters, digits and hyphens: the form `deckster new app` names an app folder in.
  */
 const APP_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 

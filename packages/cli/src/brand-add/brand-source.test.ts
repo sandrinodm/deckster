@@ -111,7 +111,7 @@ describe('parseBrandSource', () => {
       for (const [input, reason] of INVALID) {
         const error = yield* Effect.flip(parseBrandSource(input));
         expect(error.message, input).toContain(reason);
-        expect(error.message, input).toContain('deck brand --help');
+        expect(error.message, input).toContain('deckster brand --help');
       }
     }),
   );

@@ -22,7 +22,7 @@ describe('cliVersion', () => {
   );
 });
 
-describe('deck --version', () => {
+describe('deckster --version', () => {
   it.effect('prints the version for --version and -v', () =>
     Effect.gen(function* () {
       for (const flag of ['--version', '-v']) {

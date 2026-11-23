@@ -10,7 +10,7 @@ import { openDeck } from './support/presenter-deck.ts';
 useBrandServers();
 useBaselineServer();
 
-describe('static mode, which deck shot and deck lint use', () => {
+describe('static mode, which deckster shot and deckster lint use', () => {
   test('renders exactly what it renders without the presenter tools', async (fixtures) => {
     const { browser } = fixtures;
     const markup: string[] = [];

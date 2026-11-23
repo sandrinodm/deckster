@@ -57,7 +57,7 @@ export function classifyClaudeError(error: string, message: string): AgentProble
   return {
     kind: 'crashed',
     message: shorten(message === '' ? `Claude Code reported "${error}".` : message),
-    fix: 'Send the prompt again; if it keeps failing, run `deck agent doctor`.',
+    fix: 'Send the prompt again; if it keeps failing, run `deckster agent doctor`.',
   };
 }
 
@@ -76,7 +76,7 @@ export function claudeStartupProblem(stderr: string, code: number | null): Agent
   return {
     kind: 'crashed',
     message: `Claude Code did not start: ${said}`,
-    fix: 'Run `deck agent doctor` to check the installation and login.',
+    fix: 'Run `deckster agent doctor` to check the installation and login.',
   };
 }
 

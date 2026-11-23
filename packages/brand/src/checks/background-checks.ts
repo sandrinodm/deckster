@@ -75,7 +75,7 @@ export function checkPictureBackgrounds(brand: Brand): BrandProblem[] {
             fix:
               'Set `bg` to the color the picture reads as from a distance (its average under ' +
               'the text, with any tint laid over it), such as "ink.900"; text contrast is ' +
-              'checked against it and `deck lint` measures the pixels.',
+              'checked against it and `deckster lint` measures the pixels.',
           },
         ]
       : [],

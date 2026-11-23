@@ -1,21 +1,21 @@
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * `deck present`: a deck in its own window.
+ * `deckster present`: a deck in its own window.
  */
 export const presentCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'present',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'Open a deck in its own window, with displays and presenter view',
 
   /**
-   * The text `deck present --help` prints.
+   * The text `deckster present --help` prints.
    */
   help: () => import('#commands/present-help.ts').then((module) => module.HELP),
 

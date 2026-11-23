@@ -167,7 +167,7 @@ export type GridPlacement = {
 
   /**
    * Whether the nodes had to get narrower than {@link FlowMetrics.nodeMinWidth} or the rows closer
-   * than the gutter, which `deck lint` reports as too dense.
+   * than the gutter, which `deckster lint` reports as too dense.
    */
   cramped: boolean;
 

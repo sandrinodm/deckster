@@ -185,7 +185,7 @@ export function checkProps(name: string, props: object): void {
     const hint = guess === undefined ? '' : ` did you mean \`${guess}\`?`;
     throw new Error(
       `\`${key}\` is not a prop of ${name};${hint} Its props are: ${known.join(', ')}. ` +
-        '`deck charts --json` describes each one.',
+        '`deckster charts --json` describes each one.',
     );
   }
 }
@@ -397,7 +397,7 @@ function checkRevealObject(written: string, reveal: object, forms: string): void
       const hint = guess === undefined ? '.' : `; did you mean \`${guess}\`?`;
       throw new Error(
         `${written}: \`${key}\` is not a field of \`reveal\`${hint} Its fields are: ` +
-          `${fields.join(', ')}, described under \`types.RevealOption\` in \`deck charts --json\`.`,
+          `${fields.join(', ')}, described under \`types.RevealOption\` in \`deckster charts --json\`.`,
       );
     }
   }

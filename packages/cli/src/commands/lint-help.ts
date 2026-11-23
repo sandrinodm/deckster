@@ -15,14 +15,14 @@ export const RULE_LIST = [...new Map(LINT_RULES.map((rule) => [rule.id, rule])).
   .join('\n');
 
 /**
- * The text `deck lint --help` prints.
+ * The text `deckster lint --help` prints.
  */
-export const HELP = `Usage: deck lint <deck> [--brand <name>] [--json]
+export const HELP = `Usage: deckster lint <deck> [--brand <name>] [--json]
 
 Checks a deck and exits non-zero when it finds errors.
 
   1. Schema: the deck config, the brand and every slide file go through the same checks as
-     \`deck build\`, and each problem is reported with the file and its fix. When files fail, the
+     \`deckster build\`, and each problem is reported with the file and its fix. When files fail, the
      rendered checks are skipped, because the deck cannot render.
   2. Rendered: the deck is opened in static mode and every step of every slide is measured.
   3. Deck: rules over the whole deck, such as the order of layouts.

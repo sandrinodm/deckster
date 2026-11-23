@@ -15,7 +15,7 @@ import { parseCommandArgs } from '#parse-command-args.ts';
 import { Workspace } from '#workspace.ts';
 
 /**
- * Parses the arguments of `deck brand add <source>` and adds the brand.
+ * Parses the arguments of `deckster brand add <source>` and adds the brand.
  *
  * @param argv - The arguments after `brand`, without `add`.
  * @returns The exit code.

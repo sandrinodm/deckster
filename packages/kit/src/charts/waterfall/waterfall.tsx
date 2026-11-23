@@ -38,7 +38,7 @@ const BAND_PADDING = 0.28;
 const MAX_BAR = 140;
 
 /**
- * The most lines a step's label wraps to under its column; past them it is cut, and `deck lint`
+ * The most lines a step's label wraps to under its column; past them it is cut, and `deckster lint`
  * reports it.
  */
 const LABEL_LINES = 3;

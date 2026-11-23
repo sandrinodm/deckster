@@ -144,8 +144,8 @@ export type DeckPage = {
   takeErrors: () => Effect.Effect<string[]>;
 
   /**
-   * The Playwright page itself, for `deck export`, which prints PDFs and measures scenes; absent in
-   * fakes.
+   * The Playwright page itself, for `deckster export`, which prints PDFs and measures scenes;
+   * absent in fakes.
    */
   playwright?: Page;
 };

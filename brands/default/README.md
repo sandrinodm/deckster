@@ -40,9 +40,9 @@ frontmatter. The three dark surfaces show the reversed logo.
 Print every resolved token with:
 
 ```sh
-pnpm deck brand default         # summary: fonts, type scale, spacing, each surface's roles
-pnpm deck brand default --json  # every token, colors as hex
-pnpm deck brand check default   # validate it: "default: is valid (0 errors, 0 warnings)."
+pnpm deckster brand default         # summary: fonts, type scale, spacing, each surface's roles
+pnpm deckster brand default --json  # every token, colors as hex
+pnpm deckster brand check default   # validate it: "default: is valid (0 errors, 0 warnings)."
 ```
 
 ## Using it
@@ -63,7 +63,7 @@ export default defineDeck({
 without editing it:
 
 ```sh
-pnpm deck shot hello --brand nocturne   # writes .deck/shots/hello@nocturne/
+pnpm deckster shot hello --brand nocturne   # writes .deck/shots/hello@nocturne/
 ```
 
 [`tailwind.tooling.css`](../../tailwind.tooling.css), which the formatter and the Tailwind lint
@@ -85,10 +85,10 @@ cp -R brands/default brands/acme
 5. Run `pnpm install`, then check it and look at it:
 
 ```sh
-pnpm deck brand check acme
-pnpm deck shot hello --brand acme
+pnpm deckster brand check acme
+pnpm deckster shot hello --brand acme
 ```
 
-`deck brand check` names every problem with its field and fix, contrast on every surface included.
+`deckster brand check` names every problem with its field and fix, contrast on every surface included.
 To build a brand from an existing deck, PDF, website or guidelines, use the
 [`brand-import`](../../skills/brand-import/SKILL.md) skill.

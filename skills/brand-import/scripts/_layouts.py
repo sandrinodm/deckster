@@ -10,8 +10,8 @@ packages/brand/src/schema/layout-schema.ts). This module holds what needs no jud
                   falls back to chosen by the framework's own compatibility rules, bindings by the plan's
                   placeholder table, duplicates across masters merged with surface-keyed art, kebab names
                   with the brand prefix on a clash
-- `check_specs`   the same rules `deck brand check` applies to layouts (a port of `checkBrandLayouts` and
-                  `checkLayouts`), run on the draft against the catalog from `deck layouts --json`
+- `check_specs`   the same rules `deckster brand check` applies to layouts (a port of `checkBrandLayouts` and
+                  `checkLayouts`), run on the draft against the catalog from `deckster layouts --json`
 - `spec_to_module_value` a draft spec as the value `layouts.ts` holds
 
 The agent reviews every choice: names, fallbacks, bindings, duplicates. Standard library only.
@@ -85,12 +85,12 @@ def parse_json_output(text: str) -> dict:
 
 
 def deck_command() -> list[str]:
-    """The command that runs `deck`: $DECK_CMD (for example `pnpm deck` in a framework checkout) or `deck`."""
-    return shlex.split(os.environ.get("DECK_CMD") or "deck")
+    """The command that runs `deckster`: $DECK_CMD (for example `pnpm deckster` in a framework checkout) or `deckster`."""
+    return shlex.split(os.environ.get("DECK_CMD") or "deckster")
 
 
 def load_catalog(path: Path | None, workspace: Path | None = None) -> dict[str, dict]:
-    """The layout catalog by name, from a saved `deck layouts <deck> --json` or by running it in the workspace
+    """The layout catalog by name, from a saved `deckster layouts <deck> --json` or by running it in the workspace
     (any deck there will do: the kit's layouts are the same in all). Raises RuntimeError when neither works."""
     if path is not None:
         data = parse_json_output(Path(path).read_text(encoding="utf-8"))
@@ -98,10 +98,10 @@ def load_catalog(path: Path | None, workspace: Path | None = None) -> dict[str, 
         ws = Path(workspace or ".")
         decks = sorted(p.name for p in (ws / "decks").glob("*") if (p / "deck.config.ts").exists()) if (ws / "decks").is_dir() else []
         if not decks:
-            raise RuntimeError("no catalog: pass --catalog <file from `deck layouts <deck> --json`>, or run in a workspace that has a deck")
+            raise RuntimeError("no catalog: pass --catalog <file from `deckster layouts <deck> --json`>, or run in a workspace that has a deck")
         run = subprocess.run([*deck_command(), "layouts", "hello" if "hello" in decks else decks[0], "--json"], capture_output=True, text=True, cwd=ws)
         if run.returncode != 0:
-            raise RuntimeError(f"`deck layouts` failed: {(run.stdout + run.stderr)[-300:]}")
+            raise RuntimeError(f"`deckster layouts` failed: {(run.stdout + run.stderr)[-300:]}")
         data = parse_json_output(run.stdout)
     return {layout["name"]: layout for layout in data["layouts"]}
 
@@ -679,7 +679,7 @@ def is_spec(entry) -> bool:
 
 
 def check_specs(entries: list, catalog: dict[str, dict] | None, surface_names: set[str], base: Path | None = None) -> tuple[list[str], list[str]]:
-    """Errors and warnings for the spec entries of a draft: the rules `deck brand check` applies to layouts.
+    """Errors and warnings for the spec entries of a draft: the rules `deckster brand check` applies to layouts.
     Entries with `keep: false` are not checked beyond their names. `base` is the draft's folder, for art files."""
     errors: list[str] = []
     warns: list[str] = []
@@ -891,7 +891,7 @@ def emit_layouts(draft: dict, base: Path, surfaces: set[str], notes: list[str]) 
         raise LayoutError("layouts: " + "; ".join(errors[:4]) + (f" (and {len(errors) - 4} more)" if len(errors) > 4 else ""))
     for i, e in enumerate(kept):
         if not isinstance(e.get("fallback"), str) or not KEBAB.match(e["fallback"]):
-            raise LayoutError(f"layouts[{i}] ({e.get('name')!r}) has no fallback: choose a kit layout from `deck layouts --json`, or set keep: false")
+            raise LayoutError(f"layouts[{i}] ({e.get('name')!r}) has no fallback: choose a kit layout from `deckster layouts --json`, or set keep: false")
     values: list[dict] = []
     assets: list[tuple[str, bytes]] = []
     for e in kept:

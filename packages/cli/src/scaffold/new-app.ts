@@ -51,7 +51,7 @@ const INCLUDE_PATTERN = /^([ \t]*)"include":\s*\[([^\]]*)\]/m;
 const PRINT_WIDTH = 100;
 
 /**
- * What `deck new app` created.
+ * What `deckster new app` created.
  */
 export type CreatedApp = {
   /**

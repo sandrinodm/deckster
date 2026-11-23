@@ -134,7 +134,7 @@ const runTool = Effect.fn('runTool')(function* (
   const result = yield* Effect.scoped(
     Effect.gen(function* () {
       // On a timeout the spawner sends SIGTERM; a tool that ignores it is killed 2 s later, so a
-      // hung `codesign` or `cp` can never block `deck present`.
+      // hung `codesign` or `cp` can never block `deckster present`.
       const handle = yield* spawner.spawn(
         ChildProcess.make(command, [...args], { forceKillAfter: '2 seconds' }),
       );

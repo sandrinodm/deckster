@@ -59,7 +59,7 @@ export type ParsedShotName = {
 };
 
 /**
- * Matches `03-request-flow.png` and `03-request-flow.step2.png`, the names `deck shot` writes.
+ * Matches `03-request-flow.png` and `03-request-flow.step2.png`, the names `deckster shot` writes.
  */
 const SHOT_NAME_PATTERN = /^(\d{2,})-([a-z0-9]+(?:-[a-z0-9]+)*)(?:\.step(\d+))?\.png$/;
 
@@ -67,7 +67,7 @@ const SHOT_NAME_PATTERN = /^(\d{2,})-([a-z0-9]+(?:-[a-z0-9]+)*)(?:\.step(\d+))?\
  * Reads a screenshot's slide number, id and step from its file name.
  *
  * @param name - The file name, without a folder.
- * @returns The parts, or `undefined` when the name is not one `deck shot` writes.
+ * @returns The parts, or `undefined` when the name is not one `deckster shot` writes.
  */
 export function parseShotName(name: string): ParsedShotName | undefined {
   const match = SHOT_NAME_PATTERN.exec(name);

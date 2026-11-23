@@ -125,7 +125,7 @@ export class SlideNotReadyError extends Schema.TaggedError<SlideNotReadyError>()
 ) {}
 
 /**
- * The desktop shell (`deck present`) could not start, crashed, or is not installed.
+ * The desktop shell (`deckster present`) could not start, crashed, or is not installed.
  */
 export class ShellError extends Schema.TaggedError<ShellError>()('ShellError', {
   /**
@@ -169,7 +169,7 @@ export function shellError(message: string): ShellError {
  * @param command - The command whose `--help` explains the usage; empty for the root help.
  */
 export function usageError(problem: string, command: string): CliError {
-  const help = command === '' ? 'deck --help' : `deck ${command} --help`;
+  const help = command === '' ? 'deckster --help' : `deckster ${command} --help`;
   return cliError(`${problem}\nRun \`${help}\` for the usage.`);
 }
 

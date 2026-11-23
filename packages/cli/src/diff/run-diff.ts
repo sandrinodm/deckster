@@ -75,7 +75,7 @@ export type DiffOptions = {
 type ResolvedBase =
   | {
       /**
-       * A folder of pictures made by `deck shot`.
+       * A folder of pictures made by `deckster shot`.
        */
       kind: 'dir';
 
@@ -116,7 +116,7 @@ export type DiffError = ShotError | CompareError | CliError | FileSystemError;
 /**
  * Renders the deck now and at the base, compares the slides picture by picture and writes the
  * report folder (`index.html`, `summary.md`, `report.json` and the pictures of what differs). The
- * base is a folder of pictures from `deck shot`, or a git revision, which is extracted to a
+ * base is a folder of pictures from `deckster shot`, or a git revision, which is extracted to a
  * temporary folder, rendered there with the workspace's installed dependencies and deleted when the
  * scope closes.
  *
@@ -295,7 +295,7 @@ const resolveNamedBase = Effect.fn('resolveNamedBase')(function* (
   return yield* usageError(
     `--base "${base}" is not a folder, and this workspace is not a git repository, ` +
       'so it cannot be a ref.\n' +
-      `Make baseline pictures with \`deck shot ${deck} --out <dir>\` and pass that folder.`,
+      `Make baseline pictures with \`deckster shot ${deck} --out <dir>\` and pass that folder.`,
     'diff',
   );
 });
@@ -321,9 +321,9 @@ const resolveSavedBaseline = Effect.fn('resolveSavedBaseline')(function* (
 
   return yield* usageError(
     'This workspace is not a git repository, so there is no revision to compare against.\n' +
-      `Save a baseline with \`deck diff ${deck} --save-baseline\` (or make one with ` +
-      `\`deck shot ${deck} --out <dir>\`), change the deck, then run ` +
-      `\`deck diff ${deck}\` (or \`deck diff ${deck} --base <dir>\`).`,
+      `Save a baseline with \`deckster diff ${deck} --save-baseline\` (or make one with ` +
+      `\`deckster shot ${deck} --out <dir>\`), change the deck, then run ` +
+      `\`deckster diff ${deck}\` (or \`deckster diff ${deck} --base <dir>\`).`,
     'diff',
   );
 });

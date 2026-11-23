@@ -12,7 +12,7 @@ import { cliError, type CliError } from '#cli-error.ts';
 export const DEFAULT_DECK = 'hello';
 
 /**
- * The environment variable that names the workspace folder, for running `deck` from outside it.
+ * The environment variable that names the workspace folder, for running `deckster` from outside it.
  */
 export const WORKSPACE_ENV = 'DECK_ROOT';
 
@@ -27,7 +27,7 @@ const DECKS_DIR = 'decks';
 const ROOT_FROM_ENV = Config.option(Config.String(WORKSPACE_ENV));
 
 /**
- * The folder `deck shot` writes to by default, relative to the workspace root.
+ * The folder `deckster shot` writes to by default, relative to the workspace root.
  */
 export const DEFAULT_SHOT_DIR = path.join('.deck', 'shots');
 
@@ -62,8 +62,8 @@ export class Workspace extends Context.Service<
   /**
    * The workspace the command runs in: `DECK_ROOT` when set, else the nearest folder at or above
    * the current one that contains `decks/`. When there is none, a published CLI works in the
-   * current folder (so `deck new talk` can start a workspace) and the repository checkout works in
-   * itself. A home folder or the filesystem root is never chosen implicitly, and a published CLI
+   * current folder (so `deckster new talk` can start a workspace) and the repository checkout works
+   * in itself. A home folder or the filesystem root is never chosen implicitly, and a published CLI
    * says on standard error when the workspace is not the current folder.
    */
   static readonly layer: Layer.Layer<Workspace, CliError> = Layer.effect(

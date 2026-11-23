@@ -118,7 +118,7 @@ export type BackdropPlan = {
 /**
  * Decides what a slide paints behind its content from its surface's layers and its `background:`:
  * nothing set keeps the layers; `none` hides them; an image replaces them, or paints over them with
- * `layers: over`. An image whose file was not found is left out (`deck lint` reports it as
+ * `layers: over`. An image whose file was not found is left out (`deckster lint` reports it as
  * `media-missing`), and the surface's layers stay hidden all the same, so the slide does not change
  * look when the file arrives.
  *
@@ -193,7 +193,7 @@ type BackdropProps = {
 /**
  * The background a kit layout paints behind its content: the slide surface's image, pattern and
  * gradient layers from the brand, then the slide's own `background:` image. Decorative to every
- * tool: hidden from screen readers, ignored by the overflow and text rules, though `deck lint`
+ * tool: hidden from screen readers, ignored by the overflow and text rules, though `deckster lint`
  * still measures text over its pictures against their pixels. Each layer is marked
  * `data-backdrop-layer` with its index in the surface's list (`slide` for the slide's own image),
  * which exports read. A layout with artwork of its own passes it as `layers`.

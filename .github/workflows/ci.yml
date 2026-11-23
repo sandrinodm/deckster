@@ -68,8 +68,8 @@ jobs:
           status=0
           for config in decks/*/deck.config.ts; do
             deck="$(basename "$(dirname "$config")")"
-            echo "::group::deck lint $deck"
-            pnpm deck lint "$deck" || status=1
+            echo "::group::deckster lint $deck"
+            pnpm deckster lint "$deck" || status=1
             echo "::endgroup::"
           done
           exit "$status"
@@ -125,7 +125,7 @@ jobs:
         run: pnpm test
 
       - name: Build hello
-        run: pnpm deck build hello
+        run: pnpm deckster build hello
 
   # The CLI as users get it: packed, installed globally into an empty prefix and run in a folder
   # that is not a checkout. It catches a file missing from the tarball and a dependency the package
@@ -166,10 +166,10 @@ jobs:
           export PATH="$RUNNER_TEMP/prefix/bin:$PATH"
           mkdir workspace
           cd workspace
-          deck --help
-          deck new smoke
-          deck lint smoke
-          deck build smoke
-          deck shot smoke
-          deck export smoke --pdf
-          deck types
+          deckster --help
+          deckster new smoke
+          deckster lint smoke
+          deckster build smoke
+          deckster shot smoke
+          deckster export smoke --pdf
+          deckster types

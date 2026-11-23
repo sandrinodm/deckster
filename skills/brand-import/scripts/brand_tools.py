@@ -27,7 +27,7 @@
 
   uv run brand_tools.py check-draft brand-draft.json [--catalog catalog.json] [--workspace .]
       Structural and contrast checks on a brand draft before the specimen is rendered. Layout specs in layouts[]
-      are checked against the layout catalog (`deck layouts <deck> --json`): names, fallbacks, bindings, boxes.
+      are checked against the layout catalog (`deckster layouts <deck> --json`): names, fallbacks, bindings, boxes.
 
   uv run brand_tools.py propose-layouts <out>/extraction.json --draft brand-draft.json [--catalog catalog.json] [--aspect-rule stretch]
       One brand layout spec per layout of a template (used or not), written into the draft's layouts[] for review.
@@ -49,7 +49,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import _common as C  # noqa: E402
 import _layouts as L  # noqa: E402
 
-# Thresholds copied from the brand compiler (`deck brand check`). If they change there, change them here.
+# Thresholds copied from the brand compiler (`deckster brand check`). If they change there, change them here.
 TEXT_CONTRAST, GRAPHIC_CONTRAST = 4.5, 3.0
 MIN_ADJACENT, COMFORTABLE_ADJACENT, MIN_ADJACENT_CVD = 10.0, 15.0, 8.0
 MIN_DIVERGING_ENDS = 12.0
@@ -776,8 +776,8 @@ def digest(a: dict) -> str:
 
 
 def check_draft(path: Path, catalog_path: Path | None = None, workspace: Path | None = None) -> tuple[list[str], list[str]]:
-    """A fast pre-check that mirrors the brand compiler's rules (`deck brand check`). The compiler
-    itself (`deck brand check <name>` on the emitted brand.ts) is the authority."""
+    """A fast pre-check that mirrors the brand compiler's rules (`deckster brand check`). The compiler
+    itself (`deckster brand check <name>` on the emitted brand.ts) is the authority."""
     d = json.loads(path.read_text())
     errors, warns = [], []
     color = d.get("color", {})
@@ -896,7 +896,7 @@ def check_draft(path: Path, catalog_path: Path | None = None, workspace: Path | 
             try:
                 catalog = L.load_catalog(catalog_path, workspace)
             except (RuntimeError, OSError, ValueError, KeyError) as exc:
-                warns.append(f"layouts: not checked against the layout catalog ({exc}); run `deck layouts <deck> --json > catalog.json` and pass --catalog")
+                warns.append(f"layouts: not checked against the layout catalog ({exc}); run `deckster layouts <deck> --json > catalog.json` and pass --catalog")
             lerrors, lwarns = L.check_specs(d["layouts"], catalog, set(surfaces), path.resolve().parent)
             errors += [f"layouts: {m}" for m in lerrors]
             warns += [f"layouts: {m}" for m in lwarns]
@@ -975,12 +975,12 @@ def main() -> None:
     f.add_argument("--offline", action="store_true")
     cd = sub.add_parser("check-draft")
     cd.add_argument("draft", type=Path)
-    cd.add_argument("--catalog", type=Path, default=None, help="`deck layouts <deck> --json` saved to a file; by default it is run in --workspace")
+    cd.add_argument("--catalog", type=Path, default=None, help="`deckster layouts <deck> --json` saved to a file; by default it is run in --workspace")
     cd.add_argument("--workspace", type=Path, default=Path("."))
     pl = sub.add_parser("propose-layouts", help="turn every layout of a template extraction into a brand layout spec")
     pl.add_argument("extraction", type=Path)
     pl.add_argument("--draft", type=Path, required=True, help="the brand-draft.json: its name, surfaces and type scale are used, and its layouts[] is updated")
-    pl.add_argument("--catalog", type=Path, default=None, help="`deck layouts <deck> --json` saved to a file; by default it is run in --workspace")
+    pl.add_argument("--catalog", type=Path, default=None, help="`deckster layouts <deck> --json` saved to a file; by default it is run in --workspace")
     pl.add_argument("--workspace", type=Path, default=Path("."))
     pl.add_argument("--aspect-rule", choices=("auto", "uniform", "stretch"), default="auto", help="for a non-16:9 source: uniform (default) or stretch for layouts with no art")
     pl.add_argument("--print-only", action="store_true", help="print the proposal without changing the draft")

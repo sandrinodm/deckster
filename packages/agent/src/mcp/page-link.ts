@@ -189,7 +189,7 @@ export function createPageLink(): PageLink {
       if (page === undefined) {
         return yield* agentError(
           'No deck page is open, so there is no window to move.',
-          'Open the deck URL the dev server printed in a browser or in `deck present`.',
+          'Open the deck URL the dev server printed in a browser or in `deckster present`.',
         );
       }
 

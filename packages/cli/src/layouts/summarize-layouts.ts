@@ -8,7 +8,7 @@ import { BRAND_SOURCE_PREFIX, type LayoutInfo } from '#layouts/list-layouts.ts';
 const FIRST_SENTENCE_PATTERN = /^.*?[.!?](?=\s|$)/su;
 
 /**
- * A slot in `deck layouts --summary`.
+ * A slot in `deckster layouts --summary`.
  */
 export type SlotSummary = {
   /**
@@ -43,7 +43,8 @@ export type SlotSummary = {
 };
 
 /**
- * A list field in `deck layouts --summary`: a frontmatter array the layout draws, such as `stats`.
+ * A list field in `deckster layouts --summary`: a frontmatter array the layout draws, such as
+ * `stats`.
  */
 export type ItemListSummary = {
   /**
@@ -63,7 +64,7 @@ export type ItemListSummary = {
 };
 
 /**
- * One layout in `deck layouts --summary`: enough to pick it, not to fill it.
+ * One layout in `deckster layouts --summary`: enough to pick it, not to fill it.
  */
 export type LayoutSummary = {
   /**
@@ -149,7 +150,7 @@ function itemLists(layout: LayoutInfo): ItemListSummary[] {
  * sentence, the default surface, the title limit, the slots with what each accepts and holds, and
  * the item lists with their counts.
  *
- * @param layout - One layout as `deck layouts --json` prints it.
+ * @param layout - One layout as `deckster layouts --json` prints it.
  */
 export function summarizeLayout(layout: LayoutInfo): LayoutSummary {
   const slots: Record<string, SlotSummary> = {};

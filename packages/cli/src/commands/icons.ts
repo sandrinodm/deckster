@@ -6,9 +6,9 @@ import { lazyRun, type Command } from '#command.ts';
 export const PLAIN_LIMIT = 120;
 
 /**
- * The text `deck icons --help` prints.
+ * The text `deckster icons --help` prints.
  */
-const HELP = `Usage: deck icons [--brand <a,b>] [--search <text>] [--json]
+const HELP = `Usage: deckster icons [--brand <a,b>] [--search <text>] [--json]
 
 Lists the icon names a deck can use in every brand it renders in. Each brand draws icons from one
 Iconify set (its \`icons.set\`); a name works in all of those brands only when every set has it.
@@ -26,21 +26,21 @@ Plain output prints the count and the first ${PLAIN_LIMIT} names; narrow it with
 print them all with --json.`;
 
 /**
- * `deck icons`: the icon names every brand's set has.
+ * `deckster icons`: the icon names every brand's set has.
  */
 export const iconsCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'icons',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'List the icon names every brand has',
 
   /**
-   * The text `deck icons --help` prints.
+   * The text `deckster icons --help` prints.
    */
   help: HELP,
 

@@ -37,7 +37,7 @@ export const appExternalSrcRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'An <AppFrame src> loads an external page and has no recorded fallback video.',
 
@@ -55,7 +55,7 @@ export const appExternalSrcRule: SlideRule = {
         message: 'An <AppFrame src> loads an external page, which fails when the venue Wi-Fi does.',
         fix:
           `Add \`fallback="./demo.mp4"\` to the <AppFrame> in ${slide.file}: a screen recording ` +
-          'that plays when the page cannot load. Or bundle the demo as an app with `deck new app`.',
+          'that plays when the page cannot load. Or bundle the demo as an app with `deckster new app`.',
         selector: element.selector,
       })),
 };

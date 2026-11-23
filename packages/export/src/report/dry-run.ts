@@ -62,8 +62,8 @@ export type DryRunSlide = {
 };
 
 /**
- * What `deck export --dry-run` reports: per slide, what will be native and what will be rasterised,
- * simplified or dropped, and why.
+ * What `deckster export --dry-run` reports: per slide, what will be native and what will be
+ * rasterised, simplified or dropped, and why.
  */
 export type DryRunReport = {
   /**

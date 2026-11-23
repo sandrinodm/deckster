@@ -78,7 +78,7 @@ describe('brand layouts in the CLI', () => {
     ).pipe(Effect.provide(NodeServices.layer)),
   );
 
-  it.effect('deck new slide --layout takes a brand layout and writes its example', () =>
+  it.effect('deckster new slide --layout takes a brand layout and writes its example', () =>
     Effect.scoped(
       Effect.gen(function* () {
         const root = yield* workspaceWith([NOTE_LAYOUT]);
@@ -98,7 +98,7 @@ describe('brand layouts in the CLI', () => {
     ).pipe(Effect.provide(NodeServices.layer)),
   );
 
-  it.effect('deck brand names the layouts and deck brand check accepts a sound set', () =>
+  it.effect('deckster brand names the layouts and deckster brand check accepts a sound set', () =>
     Effect.scoped(
       Effect.gen(function* () {
         const root = yield* workspaceWith([NOTE_LAYOUT]);
@@ -112,7 +112,7 @@ describe('brand layouts in the CLI', () => {
     ).pipe(Effect.provide(NodeServices.layer)),
   );
 
-  it.effect('deck brand check fails on a layout whose fallback is not in the catalog', () =>
+  it.effect('deckster brand check fails on a layout whose fallback is not in the catalog', () =>
     Effect.scoped(
       Effect.gen(function* () {
         const root = yield* workspaceWith([NOTE_LAYOUT]);
@@ -165,7 +165,7 @@ describe('brand layouts in the CLI', () => {
   );
 
   it.effect(
-    "deck layouts --brand lists the layouts of that brand instead of the deck config's",
+    "deckster layouts --brand lists the layouts of that brand instead of the deck config's",
     () =>
       Effect.scoped(
         Effect.gen(function* () {
@@ -219,7 +219,7 @@ describe('brand layouts in the CLI', () => {
     ).pipe(Effect.provide(NodeServices.layer)),
   );
 
-  it.effect('deck brand check reports layout problems under layouts.ts', () =>
+  it.effect('deckster brand check reports layout problems under layouts.ts', () =>
     Effect.scoped(
       Effect.gen(function* () {
         const root = yield* workspaceWith([NOTE_LAYOUT]);

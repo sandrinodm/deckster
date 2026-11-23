@@ -244,7 +244,8 @@ export const deckToolsLive = Effect.fn('deckToolsLive')(function* (
       return {
         connected: false,
         message:
-          `No deck window is open. ` + `Open the URL \`deck dev ${deck}\` printed, then ask again.`,
+          `No deck window is open. ` +
+          `Open the URL \`deckster dev ${deck}\` printed, then ask again.`,
       } satisfies CurrentSlide;
     }
 

@@ -34,7 +34,7 @@ export const chartTooManySeriesRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     "A chart draws more series in their own color than the brand's categorical palette has colors.",

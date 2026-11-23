@@ -13,8 +13,8 @@ Larkfield and its people are fictional.
 Run these from the repository root:
 
 ```sh
-pnpm deck dev exemplars
-pnpm deck lint exemplars    # exemplars: no problems in 26 slides (29 steps checked).
+pnpm deckster dev exemplars
+pnpm deckster lint exemplars    # exemplars: no problems in 26 slides (29 steps checked).
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures. The later
@@ -23,7 +23,7 @@ layouts are in [layouts](../layouts/README.md).
 Used by:
 
 - The kit's browser suite (`packages/kit/e2e`) serves it once per brand through
-  `deck dev`, and checks slides by position: add slides at the end.
+  `deckster dev`, and checks slides by position: add slides at the end.
 - `packages/cli/src/export/run-export.test.ts` exports it to PDF and PPTX and checks the slide
   count against `deck.config.ts`, and that only the full-bleed cover (slide 17) has pictures: its
   two scrims.

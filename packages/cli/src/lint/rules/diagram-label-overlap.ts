@@ -34,7 +34,7 @@ export const diagramLabelOverlapRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A diagram edge label covers a node, a group label or another edge label.',
 

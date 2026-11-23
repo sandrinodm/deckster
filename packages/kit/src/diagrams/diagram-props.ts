@@ -23,8 +23,8 @@ import { pushAll } from '#foundation/lists.ts';
 export type ValueKind = 'string' | 'number' | 'boolean' | 'list' | 'object' | 'function' | 'node';
 
 /**
- * One prop of a diagram component or part, as `deck diagrams --json` prints it and the validator
- * checks it.
+ * One prop of a diagram component or part, as `deckster diagrams --json` prints it and the
+ * validator checks it.
  */
 export type DiagramPropInfo = {
   /**
@@ -300,7 +300,7 @@ const STANDARD_CARDS = '`default`, `outline`, `solid`, `tint` or `raised`';
 const DIAGRAM_CARD = prop(
   'string',
   ['string'],
-  `The card (a node style the brand defines) for all its nodes: ${STANDARD_CARDS}, or one of the brand's own (\`deck brand <name>\` lists them). A node's own \`card\` wins.`,
+  `The card (a node style the brand defines) for all its nodes: ${STANDARD_CARDS}, or one of the brand's own (\`deckster brand <name>\` lists them). A node's own \`card\` wins.`,
   { pattern: CARD_NAME },
 );
 
@@ -416,7 +416,7 @@ export const SHARED_DIAGRAM_PROPS = {
   card: prop(
     'string',
     ['string'],
-    `The card (a node style the brand defines) it is drawn with: ${STANDARD_CARDS}, or one of the brand's own (\`deck brand <name>\` lists them). Without one: the diagram's \`card\`, else the card the brand maps its kind to, else \`default\`; a name the brand lacks is skipped.`,
+    `The card (a node style the brand defines) it is drawn with: ${STANDARD_CARDS}, or one of the brand's own (\`deckster brand <name>\` lists them). Without one: the diagram's \`card\`, else the card the brand maps its kind to, else \`default\`; a name the brand lacks is skipped.`,
     { pattern: CARD_NAME },
   ),
 
@@ -1099,7 +1099,7 @@ function propTables() {
 
 /**
  * Every prop of every diagram component and part, by tag: the one list the build, the components
- * and `deck diagrams` read, and the fields of `<Edge flow>`.
+ * and `deckster diagrams` read, and the fields of `<Edge flow>`.
  */
 const PROP_TABLES = propTables();
 
@@ -1164,7 +1164,7 @@ export const DIAGRAM_ROOT_NAMES: readonly DiagramComponentName[] = [
 ];
 
 /**
- * Every prop of every diagram component and part, as `deck diagrams --json` prints them.
+ * Every prop of every diagram component and part, as `deckster diagrams --json` prints them.
  */
 export const DIAGRAM_PROPS: Readonly<
   Record<DiagramComponentName, Readonly<Record<string, DiagramPropInfo>>>
@@ -1414,7 +1414,7 @@ function checkRange(
     {
       severity: 'error',
       message: `<${component} ${name}={${value}}> is outside the ${low} to ${high} a diagram takes.`,
-      fix: `Use a number from ${low} to ${high} (\`deck diagrams --json\` lists the limits).`,
+      fix: `Use a number from ${low} to ${high} (\`deckster diagrams --json\` lists the limits).`,
     },
   ];
 }

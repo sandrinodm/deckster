@@ -42,7 +42,7 @@ layer(NodeFileSystem.layer)('server.json lifecycle', (it) => {
       yield* Scope.close(scope, Exit.void);
       expect(yield* fs.exists(file)).toBe(false);
       const missing = yield* Effect.flip(readServerInfo(root, 'hello'));
-      expect(missing.message).toContain('pnpm deck dev hello --mcp');
+      expect(missing.message).toContain('pnpm deckster dev hello --mcp');
     }).pipe(Effect.scoped),
   );
 
@@ -53,7 +53,7 @@ layer(NodeFileSystem.layer)('server.json lifecycle', (it) => {
       yield* publishServerInfo(root, info({ pid: 2 ** 22 + 12345 }));
       const stale = yield* Effect.flip(readServerInfo(root, 'hello'));
       expect(stale.message).toContain('not running any more');
-      expect(stale.message).toContain('pnpm deck dev hello --mcp');
+      expect(stale.message).toContain('pnpm deckster dev hello --mcp');
 
       yield* fs.writeFileString(serverInfoFile(root, 'hello'), '{"hello":1}');
       const broken = yield* Effect.flip(readServerInfo(root, 'hello'));

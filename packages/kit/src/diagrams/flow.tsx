@@ -597,7 +597,7 @@ const NO_PLANS: readonly never[] = [];
 
 /**
  * What a flow's frame carries as `data-*` attributes: its counts, how it was laid out, and the
- * overlaps and broken text `deck lint` reads.
+ * overlaps and broken text `deckster lint` reads.
  *
  * @param input - The flow's state at this step.
  */
@@ -689,7 +689,7 @@ type FlowDataInput = {
 /**
  * The badges that still sit on an edge or its arrowhead at this step, because no corner of their
  * node was free, named as the reader sees them (`"Payments" badge on "Orders to Payments"`), for
- * `deck lint`.
+ * `deckster lint`.
  *
  * @param input - The flow's state at this step.
  * @returns The names joined with semicolons, or nothing when every badge is clear.
@@ -1156,7 +1156,7 @@ function labelWidthsOf(
 }
 
 /**
- * The text a diagram had to break inside a word or cut, named for `deck lint`: node titles and
+ * The text a diagram had to break inside a word or cut, named for `deckster lint`: node titles and
  * subtitles with a word wider than the node's text box, and edge labels broken inside a word or cut
  * short.
  *

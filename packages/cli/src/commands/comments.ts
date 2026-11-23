@@ -3,20 +3,20 @@ import { deckCommand } from '@deckster/engine/command';
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * The text `deck comments --help` prints.
+ * The text `deckster comments --help` prints.
  */
-const HELP = `Usage: deck comments <deck> [--open | --resolved | --all] [--slide <id>] [--json]
-       deck comments resolve <deck> <id> [--note <text>] [--json]
-       deck comments reopen <deck> <id> [--json]
-       deck comments add <deck> <slide> --text <text> [--line <n>] [--step <n>] [--type <type>]
+const HELP = `Usage: deckster comments <deck> [--open | --resolved | --all] [--slide <id>] [--json]
+       deckster comments resolve <deck> <id> [--note <text>] [--json]
+       deckster comments reopen <deck> <id> [--json]
+       deckster comments add <deck> <slide> --text <text> [--line <n>] [--step <n>] [--type <type>]
                          [--json]
-       deck comments prune <deck> [--json]
+       deckster comments prune <deck> [--json]
 
 Review comments on a deck: left in the browser in comment mode (press c in \`${deckCommand()} dev\`) or
 by agents, stored in decks/<deck>/.feedback/<slide-id>.json and committed with the deck. Each
 comment names the file, line and column to edit, so it can be fixed without the browser.
 
-  deck comments <deck>          Lists open comments with file:line:column, anchor status, text and
+  deckster comments <deck>          Lists open comments with file:line:column, anchor status, text and
                                 screenshot (--resolved or --all for the others).
   resolve <deck> <id>           Marks a comment resolved, signed with $DECK_AUTHOR, else git's
                                 user.name; --note says what changed. An already resolved
@@ -58,21 +58,21 @@ Options:
   -h, --help        Show this help.`;
 
 /**
- * `deck comments`: list, resolve, reopen, add and prune review comments.
+ * `deckster comments`: list, resolve, reopen, add and prune review comments.
  */
 export const commentsCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'comments',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'List, resolve, reopen, add and prune review comments',
 
   /**
-   * The text `deck comments --help` prints.
+   * The text `deckster comments --help` prints.
    */
   help: HELP,
 

@@ -12,24 +12,24 @@ import { assertDocsBrands } from '#check-brands.ts';
 export const WORKSPACE_ROOT = path.resolve(import.meta.dirname, '..', '..');
 
 /**
- * The environment every `deck` the scripts start runs with: the inherited one, with `DECK_ROOT` set
- * to this workspace, so a `DECK_ROOT` exported in the shell cannot point the CLI at another
+ * The environment every `deckster` the scripts start runs with: the inherited one, with `DECK_ROOT`
+ * set to this workspace, so a `DECK_ROOT` exported in the shell cannot point the CLI at another
  * workspace's decks. A scratch workspace overrides it on purpose.
  */
 export const DECK_ENV: NodeJS.ProcessEnv = {
   ...process.env,
 
   /**
-   * The workspace every `deck` reads its decks and brands from.
+   * The workspace every `deckster` reads its decks and brands from.
    */
   DECK_ROOT: WORKSPACE_ROOT,
 };
 
 /**
- * The `deck` binary of this package's `@deckster/cli` dependency (the workspace's CLI), run
+ * The `deckster` binary of this package's `@deckster/cli` dependency (the workspace's CLI), run
  * directly so no package manager sits in between.
  */
-export const DECK_BIN = path.join(import.meta.dirname, 'node_modules', '.bin', 'deck');
+export const DECK_BIN = path.join(import.meta.dirname, 'node_modules', '.bin', 'deckster');
 
 /**
  * Milliseconds in a second.
@@ -51,7 +51,7 @@ const PROTECTED_FOLDERS = [
 ] as const;
 
 /**
- * What a finished `deck` run printed and how it exited.
+ * What a finished `deckster` run printed and how it exited.
  */
 export type DeckRun = {
   /**
@@ -182,11 +182,11 @@ export function requireDocsBrands(): Promise<void> {
 }
 
 /**
- * Runs `deck` in the workspace root, with `DECK_ROOT` set to it, and collects its output. A
- * non-zero exit is not an error here: callers decide, because `deck shot` exits 1 for a broken
+ * Runs `deckster` in the workspace root, with `DECK_ROOT` set to it, and collects its output. A
+ * non-zero exit is not an error here: callers decide, because `deckster shot` exits 1 for a broken
  * slide and still prints its JSON.
  *
- * @param args - The arguments after `deck`.
+ * @param args - The arguments after `deckster`.
  * @returns The exit code and output.
  * @throws Error when the binary cannot be started.
  */

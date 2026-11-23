@@ -44,7 +44,7 @@ export const FRAMEWORK_FS_ROOTS: readonly string[] = [
 
 /**
  * The environment variable that holds the absolute path of the bootstrap hooks file, set by the
- * published `deck` command for itself and its children. It is unset in the repository checkout,
+ * published `deckster` command for itself and its children. It is unset in the repository checkout,
  * where Node loads the framework's TypeScript natively.
  */
 export const HOOKS_ENV = 'DECKSTER_HOOKS';

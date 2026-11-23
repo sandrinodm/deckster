@@ -103,13 +103,13 @@ const FRAME_MS = 16;
  * reached, one step per command, and its `<Out>` lines appear when it is done. Going back a step
  * removes lines with no animation; in static mode the whole session up to the current step shows at
  * once. The window says in `data-code-lines` how many lines the session holds (each `<Cmd>` and
- * `<Out>`, shown or not), which `deck lint` counts against the layout's `maxLines`.
+ * `<Out>`, shown or not), which `deckster lint` counts against the layout's `maxLines`.
  *
  * ```mdx
  * <Terminal title="~/larkfield" at={1}>
- *   <Cmd>pnpm deck build exemplars</Cmd>
+ *   <Cmd>pnpm deckster build exemplars</Cmd>
  *   <Out>built 16 slides in 1.4 s</Out>
- *   <Cmd>pnpm deck lint exemplars</Cmd>
+ *   <Cmd>pnpm deckster lint exemplars</Cmd>
  *   <Out tone="success">no problems</Out>
  * </Terminal>
  * ```

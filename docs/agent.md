@@ -2,7 +2,7 @@
 
 The user guide is also on the documentation site: [The agent panel](https://sandrinodm.github.io/deckster/ai-agents/agent-panel/).
 
-`deck dev <deck> --agent claude` (or `--agent codex`) adds a chat panel beside the slide. You ask
+`deckster dev <deck> --agent claude` (or `--agent codex`) adds a chat panel beside the slide. You ask
 for a change to the slide on screen; the agent edits a working copy of the deck's slides, media and
 data, the editor brings those edits into the deck (the slide hot-reloads then), and every turn can
 be undone. The agent is the `claude` or `codex` CLI you installed
@@ -11,9 +11,9 @@ and signed in to, run on your machine with your login; the deck framework bundle
 ## Starting it
 
 ```sh
-pnpm deck dev hello --agent claude
-pnpm deck dev hello --agent codex --agent-panel bottom
-pnpm deck present hello --agent claude      # the same panel in the desktop window
+pnpm deckster dev hello --agent claude
+pnpm deckster dev hello --agent codex --agent-panel bottom
+pnpm deckster present hello --agent claude      # the same panel in the desktop window
 ```
 
 ```
@@ -25,7 +25,7 @@ pnpm deck present hello --agent claude      # the same panel in the desktop wind
 
 The terminal prints the agent line when the server starts, for example `Agent: Claude Code
 2.1.325: signed in with claude.ai (panel right)`, or the problem and its fix.
-`pnpm deck agent doctor` checks both CLIs without starting a deck.
+`pnpm deckster agent doctor` checks both CLIs without starting a deck.
 
 ## Signing in
 
@@ -80,7 +80,7 @@ button. Sign in in a terminal, then press Retry on the failed turn; there is no 
   and the version found is kept in `.deck/agent/<deck>/reverted/<turn>/`. The agent is told in
   its next turn.
 - **Empty panel:** it suggests prompts from the slide's open comments and the lint findings the
-  agent's last turn found on it (the page has no lint of its own; `pnpm deck lint <deck>` is the
+  agent's last turn found on it (the page has no lint of its own; `pnpm deckster lint <deck>` is the
   full check), else a few examples.
 - **Header:** the model of the next turns (click to change it; empty is the default, and the
   name shown is the one the default resolved to in the last turn when known), New
@@ -131,7 +131,7 @@ is. The editor is the only writer of the deck:
    and notes on disk that a turn is in flight; after it, it compares them all by content and puts
    back any that changed. While a turn runs, and until that check is done, the dev server does not
    load the deck's config or brand again. If the dev server or the CLI is killed during a turn,
-   the next `deck dev`, `present`, `build`, `lint`, `shot`, `export` or `brand check` first puts
+   the next `deckster dev`, `present`, `build`, `lint`, `shot`, `export` or `brand check` first puts
    the deck back exactly as it was before the turn (the working copy is discarded, never synced).
    No stylesheet anywhere may load JavaScript through Tailwind (`@plugin`, `@config`): every
    command closes that door when it starts. No slide may import from `.deck/`.
@@ -193,7 +193,7 @@ tool can. The terminal's agent line ends in `web on`. This limits the provider p
   (mode 0600) and Claude's per-turn MCP config file (0600, removed when the turn ends); the dev
   server never serves `.deck/`. A program running as you on the same machine can still open the
   page and get the cookie, as it could read your files: that is accepted for a single-user
-  machine. `deck present` is stricter: only its own window's first page load gets the session.
+  machine. `deckster present` is stricter: only its own window's first page load gets the session.
 - **One agent per deck.** A second dev server with `--agent` for the same deck refuses to start
   its agent and names the process that has it.
 - **Nothing outlives the CLI.** Ctrl+C, `q`, SIGTERM, SIGHUP and closing the window stop the
@@ -236,7 +236,7 @@ you pick an element.
 | Edit limits   | permission rules on the working copy | the sandbox, writable only in the working copy |
 
 Both get the deck MCP tools (lint, screenshots, outline, comments), resume the same conversation
-from turn to turn, and keep it across restarts of `deck dev`. Claude Code runs with no settings
+from turn to turn, and keep it across restarts of `deckster dev`. Claude Code runs with no settings
 file at all; its standing rules point it at the catalog and at the `create-presentation` skill's
 guidance as a plain file, since skills are off. The same rules ask both providers to build a
 slide's evidence (a chart, a diagram, code, a list the notes walk through) in steps in the order
@@ -252,6 +252,6 @@ the notes explain it, with a `[click]` cue in the notes for each step.
   each turn.
 - **A turn timed out or crashed:** Retry sends the same prompt again; the session resumes.
 - **No panel:** it exists only with `--agent`, only in the audience window, never in `?static`,
-  builds, exports or `deck present --built`. Press `a` if it is hidden.
+  builds, exports or `deckster present --built`. Press `a` if it is hidden.
 - **The desktop shell has no menu item for the panel:** the shell's page API has no generic
   command channel yet, so use `a` or the tool cluster there too.

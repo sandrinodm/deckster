@@ -128,7 +128,7 @@ export function mcpConfig(info: ServerInfo): McpConfig {
 export function formatMcpConfig(config: McpConfig): string {
   return [
     `Deck MCP server for "${config.deck}": ${config.url}`,
-    'The token belongs to this dev server run; start `deck dev --mcp` again and the token changes.',
+    'The token belongs to this dev server run; start `deckster dev --mcp` again and the token changes.',
     '',
     'Set the token for the terminal that starts the agent:',
     `  ${config.env}`,

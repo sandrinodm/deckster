@@ -79,7 +79,7 @@ function git(cwd: string, ...args: string[]): void {
 }
 
 /**
- * Runs `deck diff ... --json` in a workspace with the fakes.
+ * Runs `deckster diff ... --json` in a workspace with the fakes.
  *
  * @param root - The workspace.
  * @param args - The arguments after `diff demo`.
@@ -98,7 +98,7 @@ function statuses(report: DiffReport): Record<string, string> {
   return Object.fromEntries(report.slides.map((slide) => [slide.id, slide.status]));
 }
 
-describe('deck diff against a baseline folder', () => {
+describe('deckster diff against a baseline folder', () => {
   it.effect('saves a baseline, then reports changed, added and unchanged slides', () =>
     Effect.gen(function* () {
       const root = makeWorkspace();
@@ -190,7 +190,7 @@ describe('deck diff against a baseline folder', () => {
       const root = makeWorkspace();
       const error = yield* Effect.flip(runCaptured(['diff', 'demo'], { root, deck: FAKES }));
       expect(error.message).toContain('not a git repository');
-      expect(error.message).toContain('deck diff demo --save-baseline');
+      expect(error.message).toContain('deckster diff demo --save-baseline');
       yield* runCaptured(['diff', 'demo', '--save-baseline'], { root, deck: FAKES });
       const { report } = yield* diffJson(root);
       expect(report.counts.unchanged).toBe(3);
@@ -212,7 +212,7 @@ describe('deck diff against a baseline folder', () => {
   );
 });
 
-describe.skipIf(!GIT_AVAILABLE)('deck diff against a git ref', () => {
+describe.skipIf(!GIT_AVAILABLE)('deckster diff against a git ref', () => {
   it.effect(
     'renders the ref from git archive, reports reorders as moved and leaves the repo alone',
     () =>

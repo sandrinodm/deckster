@@ -22,21 +22,21 @@ const COMMANDS_HEADING = 'Commands:';
 const COMMAND_LINE_PATTERN = /^ {2}(\S+) +(\S.*)$/;
 
 /**
- * How many `deck <command> --help` runs go at once.
+ * How many `deckster <command> --help` runs go at once.
  */
 const HELP_CONCURRENCY = 4;
 
 /**
- * One `deck` command as the CLI reference shows it.
+ * One `deckster` command as the CLI reference shows it.
  */
 export type DocsCommand = {
   /**
-   * The word after `deck`, such as `lint`.
+   * The word after `deckster`, such as `lint`.
    */
   name: string;
 
   /**
-   * The line `deck --help` shows for it.
+   * The line `deckster --help` shows for it.
    */
   summary: string;
 
@@ -54,11 +54,11 @@ export type DocsCommand = {
 };
 
 /**
- * The CLI reference: the command name, its version and every command in `deck --help` order.
+ * The CLI reference: the command name, its version and every command in `deckster --help` order.
  */
 export type DocsCli = {
   /**
-   * The command the help texts name, such as `deck`.
+   * The command the help texts name, such as `deckster`.
    */
   command: string;
 
@@ -68,18 +68,18 @@ export type DocsCli = {
   version: string;
 
   /**
-   * Every command, in the order `deck --help` lists them.
+   * Every command, in the order `deckster --help` lists them.
    */
   commands: DocsCommand[];
 };
 
 /**
- * Reads the CLI reference from a `deck`'s own output: the commands and summaries from `deck
- * --help`, each command's help from `deck <command> --help` and the version from `deck --version`.
- * Run against the packed CLI, the help is worded for an npm install, which is what the docs'
- * readers have.
+ * Reads the CLI reference from a `deckster`'s own output: the commands and summaries from `deck
+ * --help`, each command's help from `deckster <command> --help` and the version from `deckster
+ * --version`. Run against the packed CLI, the help is worded for an npm install, which is what the
+ * docs' readers have.
  *
- * @param deck - The `deck` to ask.
+ * @param deck - The `deckster` to ask.
  * @param root - The absolute workspace root.
  * @returns The reference.
  * @throws DocsError in the error channel when a run fails or the root help lists no command.
@@ -90,7 +90,7 @@ export const readCliReference = Effect.fn('readCliReference')(function* (
 ): Effect.fn.Return<DocsCli, DocsError, ChildProcessSpawner.ChildProcessSpawner> {
   const listed = parseCommandList(yield* deckOutput(deck, root, ['--help']));
   if (listed.length === 0) {
-    return yield* docsError('`deck --help` lists no command under "Commands:".');
+    return yield* docsError('`deckster --help` lists no command under "Commands:".');
   }
 
   const version = (yield* deckOutput(deck, root, ['--version'])).trim();
@@ -137,8 +137,8 @@ export function parseCommandList(help: string): { name: string; summary: string 
 
 /**
  * The usage forms at the top of a help text: the `Usage: ` line and the indented lines right below
- * it, without the prefix or indent. A line that starts with the program name (`deck`) starts a new
- * form; any other line continues the form above it, as when a long form wraps.
+ * it, without the prefix or indent. A line that starts with the program name (`deckster`) starts a
+ * new form; any other line continues the form above it, as when a long form wraps.
  *
  * @param help - The whole help text.
  * @returns One line per form.

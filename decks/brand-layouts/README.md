@@ -17,14 +17,14 @@ street tree survey.
 | `closing`     | `fieldnote-cover`   | default               | The paper art of the cover                                       |
 
 ```sh
-pnpm deck lint brand-layouts
-pnpm deck shot brand-layouts
-pnpm deck layouts brand-layouts --summary
-pnpm deck export brand-layouts --pptx --dry-run
+pnpm deckster lint brand-layouts
+pnpm deckster shot brand-layouts
+pnpm deckster layouts brand-layouts --summary
+pnpm deckster export brand-layouts --pptx --dry-run
 ```
 
-To see the fallback, run `pnpm deck lint brand-layouts --brand tidewater`, or set `brand` in
+To see the fallback, run `pnpm deckster lint brand-layouts --brand tidewater`, or set `brand` in
 [deck.config.ts](deck.config.ts) to `tidewater`: the five brand-layout slides render with their kit
-fallbacks (`title`, `content`, `section`, `image`) and `deck lint` reports `brand-layout-fallback`
+fallbacks (`title`, `content`, `section`, `image`) and `deckster lint` reports `brand-layout-fallback`
 for each. The pictures in
 [assets/](assets) are drawn illustrations, not photographs.

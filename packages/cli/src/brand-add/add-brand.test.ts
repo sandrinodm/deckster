@@ -311,7 +311,7 @@ layer(NodeServices.layer)('addBrand', (it) => {
           { path: 'logos/Package.JSON', reason: 'package file' },
         ]),
       );
-      expect(added.next).toEqual(['pnpm install', `pnpm deck brand check ${BRAND}`]);
+      expect(added.next).toEqual(['pnpm install', `pnpm deckster brand check ${BRAND}`]);
       expect(fs.readFileSync(path.join(dir, 'brand.ts'), 'utf8')).toBe(
         fs.readFileSync(path.join(FRAMEWORK_ROOT, 'brands', BRAND, 'brand.ts'), 'utf8'),
       );
@@ -332,7 +332,7 @@ layer(NodeServices.layer)('addBrand', (it) => {
       const root = workspace();
       const added = yield* addBrand(root, request(`//brands/${BRAND}`, { installed: true }));
       expect(added.written).toEqual([]);
-      expect(added.next.at(-1)).toBe(`pnpm deck brand check ${BRAND}`);
+      expect(added.next.at(-1)).toBe(`pnpm deckster brand check ${BRAND}`);
       expect(fs.existsSync(path.join(root, 'brands', BRAND, 'package.json'))).toBe(false);
     }),
   );
@@ -387,7 +387,7 @@ layer(NodeServices.layer)('addBrand', (it) => {
       expect(added.next).toEqual([
         'pnpm install',
         `pnpm --filter @deckster/brand-${BRAND} add ${TEST_FONT}`,
-        `pnpm deck brand check ${BRAND}`,
+        `pnpm deckster brand check ${BRAND}`,
       ]);
       const installed = yield* addBrand(
         workspace(),
@@ -589,7 +589,7 @@ type BrandCli = {
   exit: Promise<CliExit>;
 };
 
-describe('deck brand add publication', () => {
+describe('deckster brand add publication', () => {
   it(
     'shows the layouts file in CLI warnings and validation errors',
     async () => {

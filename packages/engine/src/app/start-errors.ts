@@ -5,9 +5,9 @@
  * would stay blank with the error only in the console. Until `window.__deck` exists, every uncaught
  * error, unhandled rejection and module that fails to load is listed in `#deck-root`, with the file
  * it came from; once the deck renders, React replaces the panel. In dev, the next hot update
- * reloads the page, so saving the fix shows the deck. `deck shot`, `deck lint` and `deck export`
- * read the same panel (`[data-deck-start-error]`) to name the file: each problem carries the module
- * path in `data-file` and the browser's own message in `data-message`.
+ * reloads the page, so saving the fix shows the deck. `deckster shot`, `deckster lint` and
+ * `deckster export` read the same panel (`[data-deck-start-error]`) to name the file: each problem
+ * carries the module path in `data-file` and the browser's own message in `data-message`.
  */
 
 /**

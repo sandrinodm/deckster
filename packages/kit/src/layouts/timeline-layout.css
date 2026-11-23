@@ -24,7 +24,7 @@
   /*
    * The timeline is as tall as its milestones and stands in the middle of the region: the date over
    * each dot, the text under it taking what it needs. A timeline taller than the region overflows
-   * it, which `deck lint` reports.
+   * it, which `deckster lint` reports.
    */
   .kit-frame[data-layout='timeline'] .kit-timeline {
     --kit-timeline-dot: var(--brand-space-lg);

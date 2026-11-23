@@ -33,7 +33,7 @@ export const lowResImageRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A raster image has fewer pixels than the size it is drawn at on the 1x canvas.',
 

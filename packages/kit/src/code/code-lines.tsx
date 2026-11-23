@@ -37,8 +37,8 @@ type CodeLinesProps = {
 /**
  * The lines of a highlighted block, one block element per line. A line carries its focus state
  * (`data-focus`), its diff change (`data-change`) and, as colored runs, its tokens. Lines faded
- * back are marked `data-decorative`: they are context, and `deck lint` leaves them out of its text
- * checks while they are faded.
+ * back are marked `data-decorative`: they are context, and `deckster lint` leaves them out of its
+ * text checks while they are faded.
  */
 export function CodeLines({ code, lineNumbers, start, focus, dim }: CodeLinesProps): ReactNode {
   return code.lines.map((line, index) => {

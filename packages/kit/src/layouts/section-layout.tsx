@@ -102,7 +102,8 @@ type LargeNumeralProps = {
 
 /**
  * The part number as a graphic behind the text (`numeral: large`): decoration, which assistive
- * technology and `deck lint`'s text and overflow rules skip, sized by how many characters it has.
+ * technology and `deckster lint`'s text and overflow rules skip, sized by how many characters it
+ * has.
  */
 function LargeNumeral({ number }: LargeNumeralProps): ReactNode {
   const enter = useEnter(0);

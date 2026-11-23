@@ -43,7 +43,7 @@ export const tableLayoutContract = defineLayoutContract({
     "are aligned right with tabular figures, the header is set in the brand's label style, and " +
     '`highlight: { row: Eastgate }` (or a column) marks what the point rests on the way the ' +
     "brand's charts do. A wide or long table steps down in size, never below the smallest type " +
-    'the brand allows; past that `deck lint` asks you to cut rows or columns. Fill <Aside> with ' +
+    'the brand allows; past that `deckster lint` asks you to cut rows or columns. Fill <Aside> with ' +
     'the "so what" to set it beside the table. Use a chart for a pattern across many values and ' +
     'comparison for two or three options; ' +
     'use status for readiness, risks for a risk register, actions for commitments, or schedule for durations.',

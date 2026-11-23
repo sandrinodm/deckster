@@ -141,9 +141,9 @@ type Located = {
 };
 
 /**
- * Parses the source of `deck brand add`. Every part that reaches git or a path is checked first:
- * only `https` and `ssh` addresses, path segments without `..`, a leading `-` or glob characters,
- * and no credentials in the address.
+ * Parses the source of `deckster brand add`. Every part that reaches git or a path is checked
+ * first: only `https` and `ssh` addresses, path segments without `..`, a leading `-` or glob
+ * characters, and no credentials in the address.
  *
  * @param input - The source as written, such as `gh:acme/brand-kit/brands/acme#v2`.
  * @returns The repository, folder and ref.

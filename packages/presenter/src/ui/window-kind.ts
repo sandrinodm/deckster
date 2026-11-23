@@ -40,7 +40,8 @@ export function presenterUrl(
 
 /**
  * Opens the presenter window, or focuses it when it is open already. Inside the desktop shell
- * (`deck present`) the shell opens it, on the display other than this window's when there is one.
+ * (`deckster present`) the shell opens it, on the display other than this window's when there is
+ * one.
  */
 export function openPresenterWindow(): void {
   const shell = deckShell();

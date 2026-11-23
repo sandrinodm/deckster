@@ -123,7 +123,7 @@ async function startLongTurn(base: string): Promise<WebSocket> {
   return socket;
 }
 
-describe('deck dev --agent shutdown', () => {
+describe('deckster dev --agent shutdown', () => {
   it.each([
     ['SIGINT', 0],
     ['SIGTERM', 1],

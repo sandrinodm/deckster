@@ -5,7 +5,7 @@ import { Predicate } from 'effect';
  */
 export type KitMessage = {
   /**
-   * How to fix the problem, which `deck lint` shows as the finding's fix.
+   * How to fix the problem, which `deckster lint` shows as the finding's fix.
    */
   note?: string;
 };
@@ -27,7 +27,7 @@ export type KitFile = {
 
   /**
    * Records a warning the build prints. The origin `deck:<rule>` names the kind of problem, which
-   * `deck lint` reports as its rule id.
+   * `deckster lint` reports as its rule id.
    */
   message: (reason: string, place?: unknown, origin?: string) => KitMessage;
 
@@ -38,7 +38,7 @@ export type KitFile = {
 };
 
 /**
- * The kinds of warning the kit reports, which `deck lint` shows as rule ids.
+ * The kinds of warning the kit reports, which `deckster lint` shows as rule ids.
  */
 export type KitWarningRule =
   | 'media-missing'
@@ -49,8 +49,8 @@ export type KitWarningRule =
   | 'treatment-unknown';
 
 /**
- * Reports a warning with its kind and fix: the build prints both, and `deck lint` turns it into a
- * finding with the kind as its rule id.
+ * Reports a warning with its kind and fix: the build prints both, and `deckster lint` turns it into
+ * a finding with the kind as its rule id.
  *
  * @param file - The vfile.
  * @param warning - The kind, what is wrong and how to fix it.

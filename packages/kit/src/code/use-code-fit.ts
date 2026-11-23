@@ -40,7 +40,8 @@ const FIT_TOLERANCE_PX = 1;
 /**
  * How a block ended up, set as its `data-fit` attribute: stepped up to fill a layout's code region,
  * at the brand's code size, stepped down, or still too wide or too tall at the smallest allowed
- * size (then its lines run out of the frame or the region, which `deck lint` reports as overflow).
+ * size (then its lines run out of the frame or the region, which `deckster lint` reports as
+ * overflow).
  */
 export type CodeFit = 'grown' | 'natural' | 'stepped' | 'overflow';
 

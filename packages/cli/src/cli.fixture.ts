@@ -92,7 +92,7 @@ export type CaptureOptions = {
  * Runs a command line in a workspace with Node's services, capturing what it prints. A failing
  * command fails the effect with its error, as `runCli` does.
  *
- * @param argv - The arguments after `deck`.
+ * @param argv - The arguments after `deckster`.
  * @param options - The workspace, and fakes for the deck server and browser.
  */
 export function runCaptured(

@@ -3,8 +3,8 @@ import type { Schema } from 'effect';
 import type { BODY_SLOT } from '#contract/slots.ts';
 
 /**
- * Kinds of content a slot is designed for. They are descriptive: `deck layouts --json` prints them
- * so an agent puts a chart where a chart belongs; the build does not inspect slot content.
+ * Kinds of content a slot is designed for. They are descriptive: `deckster layouts --json` prints
+ * them so an agent puts a chart where a chart belongs; the build does not inspect slot content.
  */
 export const SLOT_CONTENT_KINDS = [
   'heading',
@@ -47,7 +47,7 @@ export type SlotContract = {
 };
 
 /**
- * Content limits for one slot, counted on the rendered slide by `deck lint`'s `content-budget`
+ * Content limits for one slot, counted on the rendered slide by `deckster lint`'s `content-budget`
  * rule. Every limit is optional; a missing one is not checked. Budgets count content, not the room
  * it takes: words, list items and lines of code are the same in every brand, so a slide within its
  * budget in one brand is within it in all of them. Whether the content fits a brand's type is the
@@ -156,9 +156,9 @@ export type VariantCondition = {
 
 /**
  * A variant of a layout whose slots hold less (or more) than the layout's base budget: a narrower
- * column, a slot that shares its row with another, four items where two fit more text. `deck lint`
- * checks a slide against the base budget tightened by every variant it matches, and `deck layouts`
- * prints them so an agent writes to the right limit.
+ * column, a slot that shares its row with another, four items where two fit more text. `deckster
+ * lint` checks a slide against the base budget tightened by every variant it matches, and `deckster
+ * layouts` prints them so an agent writes to the right limit.
  */
 export type LayoutVariant<Slot extends string = string> = {
   /**
@@ -178,8 +178,8 @@ export type LayoutVariant<Slot extends string = string> = {
 
   /**
    * Frontmatter fields the variant holds to tighter limits than the layout's schema, such as `{
-   * 'stats[].label': { maxChars: 32 } }` in a row of four. The build checks them and `deck layouts`
-   * prints them, so the limit an agent reads is the limit the build enforces.
+   * 'stats[].label': { maxChars: 32 } }` in a row of four. The build checks them and `deckster
+   * layouts` prints them, so the limit an agent reads is the limit the build enforces.
    */
   readonly fields?: FieldLimits;
 };
@@ -222,8 +222,8 @@ export type LayoutExample = {
 };
 
 /**
- * The PowerPoint placeholders `deck export --pptx` can fill: the slide title (`ctrTitle` on a title
- * slide), the subtitle under it, the body text, and a picture (the slot's first image).
+ * The PowerPoint placeholders `deckster export --pptx` can fill: the slide title (`ctrTitle` on a
+ * title slide), the subtitle under it, the body text, and a picture (the slot's first image).
  */
 export const PPTX_PLACEHOLDER_KINDS = ['title', 'subtitle', 'body', 'picture'] as const;
 
@@ -294,11 +294,11 @@ export type PptxPlaceholder = {
 };
 
 /**
- * How `deck export --pptx` maps a layout to a PowerPoint slide layout: the kind of layout it is,
- * and which rendered text becomes the title, subtitle and body placeholders, so that text is
+ * How `deckster export --pptx` maps a layout to a PowerPoint slide layout: the kind of layout it
+ * is, and which rendered text becomes the title, subtitle and body placeholders, so that text is
  * editable in outline view and the deck restyles from the slide master. Text not covered by a
- * placeholder is still exported as native text boxes. It must stay JSON-serializable: `deck layouts
- * --json` prints it.
+ * placeholder is still exported as native text boxes. It must stay JSON-serializable: `deckster
+ * layouts --json` prints it.
  */
 export type PptxMapping = {
   /**
@@ -342,7 +342,7 @@ export type BodySlot = typeof BODY_SLOT;
 /**
  * Everything the build and the tooling know about a layout, without its React component: its
  * frontmatter fields, its slots, its content budget and an example. It lives in a file with no JSX
- * and no browser code, so the build can load it in Node to validate slides and `deck layouts
+ * and no browser code, so the build can load it in Node to validate slides and `deckster layouts
  * --json` can print it. The component is registered separately with `defineLayout`.
  *
  * Type parameters: `Name` is the layout name, `Fields` the layout's own frontmatter fields and
@@ -360,7 +360,7 @@ export type LayoutContract<
   readonly name: Name;
 
   /**
-   * When to use the layout, as one or two sentences, for `deck layouts` and agents.
+   * When to use the layout, as one or two sentences, for `deckster layouts` and agents.
    */
   readonly description: string;
 
@@ -425,8 +425,9 @@ export type LayoutContract<
   readonly example: LayoutExample;
 
   /**
-   * How `deck export --pptx` maps the layout to PowerPoint placeholders; see {@link PptxMapping}.
-   * Without it, the slide's text is exported as free text boxes on a blank layout.
+   * How `deckster export --pptx` maps the layout to PowerPoint placeholders; see
+   * {@link PptxMapping}. Without it, the slide's text is exported as free text boxes on a blank
+   * layout.
    */
   readonly pptx?: PptxMapping;
 };
@@ -437,18 +438,18 @@ export type LayoutContract<
 export type AnyLayoutContract = LayoutContract<string, Schema.Struct.Fields, string>;
 
 /**
- * The layouts one package provides, as the build and `deck layouts` load them. A package that
+ * The layouts one package provides, as the build and `deckster layouts` load them. A package that
  * registers layouts at run time exports one of these as the default export of a Node-safe module
  * (for the kit, `@deckster/kit/catalog`), with a contract for every layout it registers.
  */
 export type LayoutCatalog = {
   /**
-   * The package that provides the layouts, such as `@deckster/kit`; `deck layouts` prints it.
+   * The package that provides the layouts, such as `@deckster/kit`; `deckster layouts` prints it.
    */
   readonly source: string;
 
   /**
-   * The contracts, in the order `deck layouts` lists them.
+   * The contracts, in the order `deckster layouts` lists them.
    */
   readonly layouts: readonly AnyLayoutContract[];
 };

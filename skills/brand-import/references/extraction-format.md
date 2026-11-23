@@ -1,6 +1,6 @@
 # `extraction.json` (schema `brand-extraction/1`)
 
-The neutral output of every extractor. It describes the **source**, not the brand, and knows nothing about `brand.ts`. The framework's `deck brand extract` is expected to write the same shape, so the rest of the skill does not care which tool produced it.
+The neutral output of every extractor. It describes the **source**, not the brand, and knows nothing about `brand.ts`. The framework's `deckster brand extract` is expected to write the same shape, so the rest of the skill does not care which tool produced it.
 
 An extraction is a folder:
 

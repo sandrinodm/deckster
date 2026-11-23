@@ -1,6 +1,6 @@
 # Writing the brand into the workspace (`brands/<name>/brand.ts`)
 
-Use `deck brand check` from the target Deckster build as the authority for the brand schema and layout contract. `deck brand default --json` shows resolved values. Read authored files under `brands/` or the target build’s schema to see how to write overrides. Use the [draft format](brand-draft-format.md) for fields the bundled emitter can write.
+Use `deckster brand check` from the target Deckster build as the authority for the brand schema and layout contract. `deckster brand default --json` shows resolved values. Read authored files under `brands/` or the target build’s schema to see how to write overrides. Use the [draft format](brand-draft-format.md) for fields the bundled emitter can write.
 
 ## Contents
 
@@ -24,14 +24,14 @@ Use `deck brand check` from the target Deckster build as the authority for the b
 ```bash
 uv run $SKILL_DIR/scripts/emit_brand.py $WORK/brand-draft.json --workspace .     # writes brands/<name>/
 npm install <font packages>               # only if the run lists some (it prints the command)
-deck brand check <name> --json            # { brand, file, ok, errors, warnings }, each { path, message, fix }
+deckster brand check <name> --json            # { brand, file, ok, errors, warnings }, each { path, message, fix }
 # fix the DRAFT, then:
 uv run $SKILL_DIR/scripts/emit_brand.py $WORK/brand-draft.json --workspace . --force
-deck brand check <name> --json
-deck brand <name> --json                  # every resolved token, including what was derived
+deckster brand check <name> --json
+deckster brand <name> --json                  # every resolved token, including what was derived
 ```
 
-`deck brand check` is the authority: it loads the brand the way the build does (schema, palette references, derived surfaces, contrast on every surface, data palettes, fonts, logo files, substitutes). A brand is done when `ok` is true. `brand_tools.py check-draft` applies the main thresholds to the draft and is only a faster first pass.
+`deckster brand check` is the authority: it loads the brand the way the build does (schema, palette references, derived surfaces, contrast on every surface, data palettes, fonts, logo files, substitutes). A brand is done when `ok` is true. `brand_tools.py check-draft` applies the main thresholds to the draft and is only a faster first pass.
 
 Fix emitter-supported fields in the draft and re-emit. For supported fields outside the emitter, record the exact values and provenance in the draft, then apply them as literal fields after the final emit. Reapply them after any further `--force` run and check the finished files. Once the import is reviewed, maintain the workspace’s `brand.ts` and `layouts.ts` directly.
 
@@ -55,11 +55,11 @@ A local import creates a brand folder without a package manifest. Fontsource pac
 
 ## Repository installation
 
-For an existing Deckster brand in Git, install the brand folder directly in the target workspace. Use the source location and ref the user intends. For example, `deck brand add 'gh:acme/brand-kit/brands/acme#v2' --json` names a folder and pins a ref. The CLI also accepts a GitHub tree URL or a git HTTPS or SSH address with the folder after `//`. Use Git credential helpers or normal SSH authentication.
+For an existing Deckster brand in Git, install the brand folder directly in the target workspace. Use the source location and ref the user intends. For example, `deckster brand add 'gh:acme/brand-kit/brands/acme#v2' --json` names a folder and pins a ref. The CLI also accepts a GitHub tree URL or a git HTTPS or SSH address with the folder after `//`. Use Git credential helpers or normal SSH authentication.
 
 The installer reads brand and layout literals as data, stages the supported files and checks the brand. Since v0.7.0 it also checks layout names and fallback contracts before publishing the staged brand. A failed check preserves any installed brand, including on a `--force` replacement. On builds with standalone SVG sanitization, it sanitises SVG files during staging. Invalid UTF-8 or malformed SVG aborts the install. When unsupported markup is removed, inspect the file warning and compare the installed artwork with its source. If appearance changes, ask for simplified SVG or a raster export of the authorised art.
 
-Read the result's `warnings`, `skipped` and `next` fields. The installer copies brand and layout data and allowed images, fonts and documents. Review the skipped list for symlinks, other code and package files. It reports the Fontsource commands separately. Missing Fontsource packages can be installed after the import. Repair an already installed package if its metadata or font files fail validation. Finish with `deck brand check <name> --json`, then render a specimen. For a catalog failure, use `error.file` and `error.problems` when available to correct the source layout, then install that corrected ref.
+Read the result's `warnings`, `skipped` and `next` fields. The installer copies brand and layout data and allowed images, fonts and documents. Review the skipped list for symlinks, other code and package files. It reports the Fontsource commands separately. Missing Fontsource packages can be installed after the import. Repair an already installed package if its metadata or font files fail validation. Finish with `deckster brand check <name> --json`, then render a specimen. For a catalog failure, use `error.file` and `error.problems` when available to correct the source layout, then install that corrected ref.
 
 ## The schema, section by section
 
@@ -97,7 +97,7 @@ All sizes are canvas pixels on 1920x1080. A colour is a literal (`#1f2937` or `o
 | `quote` | pull quotes |
 | `code` | code blocks |
 
-`size` is **at least 20** (the smallest text the framework allows on the canvas; `deck lint` enforces the same number on slides). `lineHeight` is unitless, 0.7 to 2.5. `tracking` is in em, -0.1 to 0.5. `weight` is 1 to 1000 (variable fonts take in-between values). `case` is `none` or `upper`. `features` are OpenType tags (`tnum`, `lnum`). `axes` sets variable-font axes per step (`{ opsz: 144 }`).
+`size` is **at least 20** (the smallest text the framework allows on the canvas; `deckster lint` enforces the same number on slides). `lineHeight` is unitless, 0.7 to 2.5. `tracking` is in em, -0.1 to 0.5. `weight` is 1 to 1000 (variable fonts take in-between values). `case` is `none` or `upper`. `features` are OpenType tags (`tnum`, `lnum`). `axes` sets variable-font axes per step (`{ opsz: 144 }`).
 
 **`shape`**: `radius { sm, md, lg, xl }`, `stroke { hairline, regular, bold }`, `shadow { sm, md, lg }`. A shadow is `'none'` or a list of layers `{ x?, y, blur, spread?, color, inset? }`, for example `[{ y: 8, blur: 24, spread: -8, color: 'ink.950/14' }]`. CSS shadow strings are not accepted; the emitter converts one from the draft. There is no pill radius: use a large `xl`.
 
@@ -128,7 +128,7 @@ All sizes are canvas pixels on 1920x1080. A colour is a literal (`#1f2937` or `o
 
 **`code`, `diagram`** (optional, top level and per surface): colour overrides for the code theme (`background foreground comment keyword string number function type punctuation highlight added removed`) and the diagram theme (`node node-border node-text group edge label highlight highlight-text packet`). Both are derived from each surface's roles when left out, including the diff colours `added` and `removed`. Set one only when the source shows code or diagrams the derived theme does not match.
 
-**`diagram` look** (optional, top level only): `edges` (`stroke`: a stroke name, `corners: round|sharp`, `arrow: triangle|open|dot`), `groups` (`stroke`: a stroke name or `none`, `dashed`, `radius: none|sm|md|lg|xl`), `labels` (`style: plain|chip`, `type: caption|label`: the type step labels are set in), `kinds` (node kind to card name, such as `database: 'tint'`; kinds are the kit's, listed by `deck diagrams --json`) and `cards` (named node styles: `fill`, `border`, `stroke`, `radius`, `shadow: none|sm|md|lg`, `shape: kind|box|pill`, `text`, `subtext`, `icon: { style: chip|solid|plain|none, color, fill }`, `accent: { side: left|top|right|bottom, color, width }`, `title: { family: display|body|mono, weight, tracking, case: none|upper }`). Card colours are a role with an optional opacity (`accent/12`), a palette reference or a literal; `fill` and `border` also take `none`. Five cards exist in every brand (`default`, `outline`, `solid`, `tint`, `raised`), derived from the roles when not written; a brand writes at most 12 entries. Every card takes `stroke`, `radius` and `title` from the brand's `default` card unless the card (or its standard look, such as `raised`'s hairline) sets them; paint and `shape` are not inherited. A surface recolours a card under `color.surfaces.<name>.diagram.cards.<card>` with the colour fields only (`fill`, `border`, `text`, `subtext`, `icon: { color, fill }`, `accent: { color }`); the card must exist. `brand check` reports a `kinds` entry naming an unknown kind or card, a title family that is not a family role, and card text that does not read on the card's fill on some surface.
+**`diagram` look** (optional, top level only): `edges` (`stroke`: a stroke name, `corners: round|sharp`, `arrow: triangle|open|dot`), `groups` (`stroke`: a stroke name or `none`, `dashed`, `radius: none|sm|md|lg|xl`), `labels` (`style: plain|chip`, `type: caption|label`: the type step labels are set in), `kinds` (node kind to card name, such as `database: 'tint'`; kinds are the kit's, listed by `deckster diagrams --json`) and `cards` (named node styles: `fill`, `border`, `stroke`, `radius`, `shadow: none|sm|md|lg`, `shape: kind|box|pill`, `text`, `subtext`, `icon: { style: chip|solid|plain|none, color, fill }`, `accent: { side: left|top|right|bottom, color, width }`, `title: { family: display|body|mono, weight, tracking, case: none|upper }`). Card colours are a role with an optional opacity (`accent/12`), a palette reference or a literal; `fill` and `border` also take `none`. Five cards exist in every brand (`default`, `outline`, `solid`, `tint`, `raised`), derived from the roles when not written; a brand writes at most 12 entries. Every card takes `stroke`, `radius` and `title` from the brand's `default` card unless the card (or its standard look, such as `raised`'s hairline) sets them; paint and `shape` are not inherited. A surface recolours a card under `color.surfaces.<name>.diagram.cards.<card>` with the colour fields only (`fill`, `border`, `text`, `subtext`, `icon: { color, fill }`, `accent: { color }`); the card must exist. `brand check` reports a `kinds` entry naming an unknown kind or card, a title family that is not a family role, and card text that does not read on the card's fill on some surface.
 
 ## Diagram design controls
 
@@ -145,7 +145,7 @@ The expanded controls require a Deckster build that contains the diagram design 
 | `cards.<name>.icon` | `border` sets the tile's colour, `borderWidth` is a named stroke or numeric width, and `borderStyle` is a line pattern. Width zero suppresses the outline. A width without a colour uses the card's detail colour. |
 | `color.surfaces.<name>.diagram.cards.<card>.icon.border` | Surface-specific icon border colour. Set tile width and pattern on the top-level card. |
 
-Cards inherit shared `borderStyle` and subtitle properties from the brand's `default` card. The card's subtitle overrides the diagram-wide subtitle property by property. Use `subtitle: null` to skip the default card and use `diagram.nodes.subtitle` directly. Individual styling falls back to the selected step. To check a finished brand, inspect `deck brand <name> --json` for resolved diagram geometry and text, and `surfaces.<name>.diagramCards` for resolved paint. Use `deck diagrams --json` and the design controls guide from the matching build to check which controls each component supports.
+Cards inherit shared `borderStyle` and subtitle properties from the brand's `default` card. The card's subtitle overrides the diagram-wide subtitle property by property. Use `subtitle: null` to skip the default card and use `diagram.nodes.subtitle` directly. Individual styling falls back to the selected step. To check a finished brand, inspect `deckster brand <name> --json` for resolved diagram geometry and text, and `surfaces.<name>.diagramCards` for resolved paint. Use `deckster diagrams --json` and the design controls guide from the matching build to check which controls each component supports.
 
 ## Limits the framework enforces
 
@@ -176,7 +176,7 @@ If the schema moves, `scripts/_brand_rules.py` moves with it: the test `scripts/
 
 ## What the framework derives, so you do not have to
 
-The resolver fills a lot in. Emit what the source shows and leave the rest out; `deck brand <name> --json` prints what it ended up as.
+The resolver fills a lot in. Emit what the source shows and leave the rest out; `deckster brand <name> --json` prints what it ended up as.
 
 - **Missing surfaces.** `inverse`, `accent` and `gradient` are derived from the base roles when the brand omits them. The emitter leaves them out for that reason and prints which ones. Look at them in the rendered decks; if one is wrong for the brand, or `brand check` rejects it, define it in the draft (or re-emit with `--build-surfaces`, which builds them from colours that fit each backdrop).
 - **Roles a surface leaves out are inherited from the base roles**, which were chosen for the default background. On a surface the draft does define, the emitter therefore fills the roles the draft left out with colours that fit that backdrop and prints what it filled.
@@ -210,7 +210,7 @@ Data palettes, on each surface's chart plate:
 
 Code themes: the `added` and `removed` line tints must be told apart (a warning when they are tinted almost alike). They are derived from `positive` and `negative`, so a pair chosen to survive colour-vision deficiency can still give similar pale tints; set `code: { added, removed }` on the surface when the check says so.
 
-Not checked by `brand check` but enforced by `deck lint` on slides: text needs 4.5:1 (3:1 at 24 px and up). Layouts set eyebrows in the accent colour at label size, so in practice **the accent needs 4.5:1 on every surface's background**, not the 3:1 the table gives it.
+Not checked by `brand check` but enforced by `deckster lint` on slides: text needs 4.5:1 (3:1 at 24 px and up). Layouts set eyebrows in the accent colour at label size, so in practice **the accent needs 4.5:1 on every surface's background**, not the 3:1 the table gives it.
 
 Diagram card checks require 4.5:1 for authored text and subtext and 3:1 for an authored icon colour on the card's fill on every surface. A written fill must also admit a readable text colour. A surface's recolouring is checked the same way; the fix for a fill that fails on one surface names the surface to recolour it on.
 
@@ -258,7 +258,7 @@ The emitter prints `defaulted:` for every value it had to invent and `note:` for
 - **Commercial, files missing**: `kind: 'unavailable'` with a `reason` such as "Tiempos Headline is licensed from Klim; web font files not supplied". Put the best open stand-in first in `fallback` so machines that have it show something close. The check warns until files arrive. `emit_brand.py --stand-in-fonts` instead writes the stand-in as the family with a Fontsource source, for when the user has approved the substitute.
 - Never copy fonts extracted from a PDF, a PPTX or a website into `fonts/`.
 
-**`substitute`** is a different thing from the web fallback stack: it is the system font a PowerPoint export names beside the brand font, and the font `deck export --fonts system` measures and renders with, so the deck still breaks lines correctly in Keynote, Google Slides or an Office install without the brand's fonts. Every family gets one:
+**`substitute`** is a different thing from the web fallback stack: it is the system font a PowerPoint export names beside the brand font, and the font `deckster export --fonts system` measures and renders with, so the deck still breaks lines correctly in Keynote, Google Slides or an Office install without the brand's fonts. Every family gets one:
 
 ```ts
 display: { family: 'Fraunces', fallback: ['Georgia', 'ui-serif', 'serif'], substitute: { family: 'Georgia' }, source: … }
@@ -287,14 +287,14 @@ Use `scripts/make_specimen.py <name>` to build a specimen (`decks/zz-<name>-spec
 
 ```bash
 python3 $SKILL_DIR/scripts/make_specimen.py <name>
-deck shot zz-<name>-specimen              # every layout, all four surfaces, type scale, logo and chrome;
+deckster shot zz-<name>-specimen              # every layout, all four surfaces, type scale, logo and chrome;
                                           #   figures and tables: data palettes and `charts` tokens
-deck lint zz-<name>-specimen              # overflow or contrast problems the brand's sizes cause
+deckster lint zz-<name>-specimen              # overflow or contrast problems the brand's sizes cause
 ```
 
 The specimen includes `layout-code` and `layout-diagram`. Edit the generated code slide to exercise the source’s code or terminal treatment. On the diagram slide, assign `card="solid"`, `card="tint"` and any custom card names to representative nodes so you can compare their appearance. Screenshots go to `.deck/shots/<deck>@<name>/` when you pass `--brand`, else `.deck/shots/<deck>/`. `uv run $SKILL_DIR/scripts/compare.py` puts a source page next to a screenshot, and `--sheet` makes a contact sheet of a folder. The specimen's wording is the framework's, so compare treatment, not content: pair like with like (cover with cover, a chart page with a chart slide).
 
-`deck lint zz-<name>-specimen` matters because a brand can be valid and still break slides: a display size too large for the layouts' title lines, margins that squeeze the content, a wide typeface that overflows. Lint errors on a specimen that is clean in the default brand are caused by the brand: fix the scale or spacing in the draft.
+`deckster lint zz-<name>-specimen` matters because a brand can be valid and still break slides: a display size too large for the layouts' title lines, margins that squeeze the content, a wide typeface that overflows. Lint errors on a specimen that is clean in the default brand are caused by the brand: fix the scale or spacing in the draft.
 
 ## Where things go, and what not to commit
 
@@ -306,4 +306,4 @@ The specimen includes `layout-code` and `layout-diagram`. Edit the generated cod
 
 - **Chart mark geometry** (bar radius, bar gap, line width, markers): owned by the chart components, which draw them from the brand's `shape` tokens. Keep what the source does in the draft's `dataviz` section and mention a strong mismatch in the review list.
 - **A pill radius**, **per-step text colour**, **decoration or rule colours**, **card and button tokens**: keep them in the draft and in `layouts[].notes`.
-- **Layout overrides of kit layouts.** `brand.ts` is tokens; it cannot move a title in a kit layout. A brand brings its own layouts instead: `brands/<name>/layouts.ts` (`defineBrandLayouts`, schema in `packages/brand/src/schema/layout-schema.ts`), each a named list of boxes on the 1920x1080 canvas bound to the title, a slot or a field, with a `fallback` kit layout that a deck on another brand renders with, and art files in `brands/<name>/layouts/`. `emit_brand.py` writes both from the draft's layout specs (`references/brand-draft-format.md`); `deck brand check` validates them (names against the kit, bindings against the fallback, boxes, surfaces, art). Brand layouts extend the kit using unique names. See [Choosing layouts](choosing-layouts.md) to select and test a fallback. Decorative backgrounds that belong to the whole brand stay surface `background` layers. Where a page has a structure neither the kit nor a template layout covers, record it in `layouts[]` with `override_needed` and a note.
+- **Layout overrides of kit layouts.** `brand.ts` is tokens; it cannot move a title in a kit layout. A brand brings its own layouts instead: `brands/<name>/layouts.ts` (`defineBrandLayouts`, schema in `packages/brand/src/schema/layout-schema.ts`), each a named list of boxes on the 1920x1080 canvas bound to the title, a slot or a field, with a `fallback` kit layout that a deck on another brand renders with, and art files in `brands/<name>/layouts/`. `emit_brand.py` writes both from the draft's layout specs (`references/brand-draft-format.md`); `deckster brand check` validates them (names against the kit, bindings against the fallback, boxes, surfaces, art). Brand layouts extend the kit using unique names. See [Choosing layouts](choosing-layouts.md) to select and test a fallback. Decorative backgrounds that belong to the whole brand stay surface `background` layers. Where a page has a structure neither the kit nor a template layout covers, record it in `layouts[]` with `override_needed` and a note.

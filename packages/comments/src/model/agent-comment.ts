@@ -17,12 +17,12 @@ import type {
 export type AnchorStatus = 'ok' | 'moved' | 'guessed' | 'lost' | 'none';
 
 /**
- * One comment as `deck comments --json` prints it and the overlay receives it: everything an agent
- * needs to make the change without opening the browser.
+ * One comment as `deckster comments --json` prints it and the overlay receives it: everything an
+ * agent needs to make the change without opening the browser.
  */
 export type AgentComment = {
   /**
-   * The comment id, for `deck comments resolve <deck> <id>`.
+   * The comment id, for `deckster comments resolve <deck> <id>`.
    */
   id: string;
 
@@ -219,7 +219,8 @@ export const COMMENT_UNITS: CommentUnits = {
 };
 
 /**
- * What `deck comments <deck> --json` prints and the dev server's `GET /__deck/comments` answers.
+ * What `deckster comments <deck> --json` prints and the dev server's `GET /__deck/comments`
+ * answers.
  */
 export type CommentReport = {
   /**
