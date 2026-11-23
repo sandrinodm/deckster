@@ -9,14 +9,14 @@ Use this page to see which version of deckster these docs describe, upgrade to t
 
 ## The version these pages describe
 
-These pages describe **@deckster/cli 0.8.0**. Check the version installed in your workspace with this command.
+These pages describe **@deckster/cli 0.9.0**. Check the version installed in your workspace with this command.
 
 ```console
 $ deckster --version
-0.8.0
+0.9.0
 ```
 
-The guides mark new features with the version that introduced them. See the [changelog](/project/changelog/) for diagram design controls, brand layout fixes and updated authoring skills.
+The guides mark new features with the version that introduced them. See the [changelog](/project/changelog/) for the `deckster` command name and `deckster electron`.
 
 ## Published versions
 
@@ -24,7 +24,7 @@ The guides mark new features with the version that introduced them. See the [cha
 npm view @deckster/cli versions
 ```
 
-The npm `latest` tag points at 0.8.0. Run `npm view @deckster/cli dist-tags.latest` to check it. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
+The npm `latest` tag points at 0.9.0. Run `npm view @deckster/cli dist-tags.latest` to check it. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
 
 ## Upgrade
 
@@ -47,6 +47,8 @@ Mapped 71 @deckster/* entry points. The paths name this install: run `deckster t
 For a first install, see [quickstart](/get-started/quickstart/).
 
 ## What changed
+
+[0.9.0](https://github.com/sandrinodm/deckster/releases/tag/v0.9.0) renames the command from `deck` to `deckster`, adds [`deckster electron`](/reference/cli/#deckster-electron) to download the presenter's Electron binary, keeps published animations at their authored speed, and updates Vite+ to 1.7.0 for two security fixes. The [changelog](/project/changelog/#v090) says what to change after upgrading.
 
 [0.8.0](https://github.com/sandrinodm/deckster/releases/tag/v0.8.0) adds [diagram design controls](/data-and-diagrams/diagram-design/), SVG sanitization for Git brand imports, and separate PowerPoint placeholders for two-content brand layouts. The [changelog](/project/changelog/#v080) also covers static layout files and slide authoring in the live session brand.
 

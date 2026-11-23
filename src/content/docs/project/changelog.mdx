@@ -1,9 +1,29 @@
 ---
 title: "Changelog"
-description: "Deckster v0.8.0 and v0.7.0 changes, with guides and links to the code."
+description: "Deckster v0.9.0, v0.8.0 and v0.7.0 changes, with guides and links to the code."
 sidebar:
   order: 6
 ---
+
+## v0.9.0
+
+[Release notes](https://github.com/sandrinodm/deckster/releases/tag/v0.9.0).
+
+### The command is now `deckster`
+
+**Breaking.** The CLI installs a `deckster` command instead of `deck`, and there is no `deck` alias. After upgrading, use `deckster` in scripts, CI workflows and agent instructions: `deck dev` becomes `deckster dev`, and in a clone of the repository `pnpm deck` becomes `pnpm deckster`. The deck files, `deck.config.ts` and the `DECK` and `DECK_ROOT` variables are unchanged. [CLI reference](/reference/cli/) · [PR #35](https://github.com/sandrinodm/deckster/pull/35)
+
+### Download Electron with `deckster electron`
+
+npm, pnpm and yarn often skip Electron's download when they install `@deckster/cli`. `deckster electron install` downloads the version the CLI was built with, `deckster electron update` replaces a binary left by an older CLI, and `deckster electron status` reports what is on disk. A failed download names the cause, such as missing write permission, the network or proxy, or a checksum mismatch. `deckster present` now prints `deckster electron install` when the binary is missing. [Download Electron's binary once](/present/deck-present-and-displays/#download-electrons-binary-once) · [PR #37](https://github.com/sandrinodm/deckster/pull/37)
+
+### Animation timing in published decks
+
+A production build wrote the brand's durations in seconds (`.64s`), and diagrams, code transitions and count-ups read them as milliseconds, so they played almost instantly. They now run at the authored speed. [PR #33](https://github.com/sandrinodm/deckster/pull/33)
+
+### Security updates
+
+Vite+ moves to 1.7.0, which fixes two advisories in earlier versions ([GHSA-5qr3-w62x-jmwx](https://github.com/advisories/GHSA-5qr3-w62x-jmwx), [GHSA-p79r-mf8q-r78h](https://github.com/advisories/GHSA-p79r-mf8q-r78h)). Effect, Playwright (1.65.1), Electron (45.4.1) and the icon sets are updated too. [PR #34](https://github.com/sandrinodm/deckster/pull/34)
 
 ## v0.8.0
 

@@ -21,7 +21,7 @@ In six steps you install the `deckster` CLI, create a workspace with one deck, o
 
    ```console
    $ deckster --version
-   0.8.0
+   0.9.0
    ```
 
 2. Make a folder for your talks and go into it:
@@ -73,13 +73,13 @@ In six steps you install the `deckster` CLI, create a workspace with one deck, o
    ```console
    $ deckster lint launch-review
    Could not start Chromium: browserType.launch: Executable doesn't exist at ...
-   Install the browser with `npx playwright@1.65.0 install chromium`.
+   Install the browser with `npx playwright@1.65.1 install chromium`.
    ```
 
    Run that command:
 
    ```sh
-   npx playwright@1.65.0 install chromium
+   npx playwright@1.65.1 install chromium
    ```
 
    Outside a project that depends on Playwright, it first prints a warning box suggesting `npm install`; the download goes ahead anyway. It fetches Chrome for Testing, FFmpeg and Chrome Headless Shell into Playwright's own cache, once per machine.
@@ -90,6 +90,14 @@ In six steps you install the `deckster` CLI, create a workspace with one deck, o
    $ deckster lint launch-review
    launch-review: no problems in 1 slide (1 step checked).
    ```
+
+7. To present in a window of its own with `deckster present`, download Electron once (about 120 MB). npm usually skips this download when it installs the CLI:
+
+   ```sh
+   deckster electron install
+   ```
+
+   Skip it if you present in a browser: `deckster present launch-review --browser` uses Chrome. See [`deckster present` and displays](/present/deck-present-and-displays/).
 
 </Steps>
 

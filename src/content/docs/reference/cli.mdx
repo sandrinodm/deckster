@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Use this page to look up the exact arguments and flags of a `deckster` command. Each section shows the command's summary, its usage lines and, folded, the full `deckster <command> --help` as `@deckster/cli` 0.8.0 prints it. `deckster --help` lists the commands in the same order:
+Use this page to look up the exact arguments and flags of a `deckster` command. Each section shows the command's summary, its usage lines and, folded, the full `deckster <command> --help` as `@deckster/cli` 0.9.0 prints it. `deckster --help` lists the commands in the same order:
 
 ```console
 $ deckster --help
@@ -14,6 +14,7 @@ Usage: deckster <command> [options]
 Commands:
   dev         Serve a deck with hot reload
   present     Open a deck in its own window, with displays and presenter view
+  electron    Download, update or check the Electron binary deckster present uses
   build       Build a deck (or every deck) to decks/<deck>/dist
   preview     Serve the built output of a deck
   shot        Write PNG screenshots of slides (and steps)
@@ -89,6 +90,12 @@ Guide: [quickstart](/get-started/quickstart/).
 **New in v0.7.0.** `deckster present` uses the same deck-selection order as `deckster dev`. With several decks and neither a name nor `DECK`, it opens the gallery in Deckster, or in your browser with `--browser`. See [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery).
 
 Guide: [`deckster present` and displays](/present/deck-present-and-displays/).
+
+## deckster electron
+
+<CliCommand name="electron" />
+
+**New in v0.9.0.** npm, pnpm and yarn often skip Electron's download when they install `@deckster/cli`. Run `deckster electron install` once after installing, and `deckster electron update` after upgrading the CLI. `status` exits with 1 when there is no usable binary, so a script can check before a talk. See [Download Electron's binary once](/present/deck-present-and-displays/#download-electrons-binary-once).
 
 ## deckster build
 

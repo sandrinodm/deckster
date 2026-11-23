@@ -191,6 +191,6 @@ $ deckster lint launch-review --json
 ...
 ```
 
-The output is cut after the first finding. `ok` is `false` when there is an error, and the exit code follows it. When the command itself fails (bad arguments, unknown deck, browser problems) it prints `{ "ok": false, "error": { "type", "message" } }` instead. In CI, `deckster lint <deck>` as a step is enough: an error fails the job. Lint needs Chromium; install it with `npx playwright@1.65.0 install chromium`.
+The output is cut after the first finding. `ok` is `false` when there is an error, and the exit code follows it. When the command itself fails (bad arguments, unknown deck, browser problems) it prints `{ "ok": false, "error": { "type", "message" } }` instead. In CI, `deckster lint <deck>` as a step is enough: an error fails the job. Lint needs Chromium; install it with `npx playwright@1.65.1 install chromium`.
 
 The full help is on the [CLI reference](/reference/cli/).

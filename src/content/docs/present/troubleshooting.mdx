@@ -7,14 +7,14 @@ sidebar:
 
 Each section below is a symptom or the exact message `deckster` prints, what causes it and the fix, for problems just before or during a talk. Build and lint errors are on their own pages.
 
-## "Electron's binary is not downloaded"
+## "Electron ... is not downloaded"
 
 ```text
-Electron's binary is not downloaded (<cli>/node_modules/electron/dist), so `deckster present` cannot open a window.
-Run `node "<cli>/node_modules/electron/install.js"` (about 120 MB), or pass --browser to present in Chrome.
+Electron 45.4.1 is not downloaded, so `deckster present` cannot open a window.
+Run `deckster electron install` once (about 120 MB), or pass --browser to present in Chrome.
 ```
 
-npm installs Electron's package but not its binary. Run the `node "..."` command your terminal printed (it has the full path) once. With no time for a 120 MB download, present with `deckster present <deck> --browser`, or `deckster dev <deck>` in any browser. See [deckster present and displays](/present/deck-present-and-displays/).
+npm installs Electron's package but often not its binary. Run `deckster electron install` once. If it was downloaded for an older CLI, `deckster electron status` says so and `deckster electron update` replaces it. When the download fails, the command says why (no write permission, network or proxy, checksum) and how to fix it. With no time for a 120 MB download, present with `deckster present <deck> --browser`, or `deckster dev <deck>` in any browser. See [deckster present and displays](/present/deck-present-and-displays/).
 
 ## "The electron package is not installed"
 

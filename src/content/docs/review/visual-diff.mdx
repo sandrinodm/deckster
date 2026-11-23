@@ -144,8 +144,8 @@ Compared with `HEAD`: 1 changed, 2 unchanged.
 That workflow uses the repository's pnpm set-up, so it is not ready to copy into an npm workspace. In an npm workspace, the job's commands for steps 3 and 4 are these, with `main` as the base branch:
 
 ```sh
-npm install --global @deckster/cli@0.8.0
-npx playwright@1.65.0 install chromium
+npm install --global @deckster/cli@0.9.0
+npx playwright@1.65.1 install chromium
 git fetch origin main
 deckster diff launch-review --base origin/main
 ```

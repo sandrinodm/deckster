@@ -9,15 +9,24 @@ sidebar:
 
 ## Download Electron's binary once
 
-The window is [Electron](https://www.electronjs.org/). npm installs the `electron` package with `@deckster/cli`, but not its binary, and `deckster present` never downloads anything in the middle of a command. The first time, it stops and prints the command that downloads it:
+The window is [Electron](https://www.electronjs.org/). npm installs the `electron` package with `@deckster/cli`, but usually not its binary, and `deckster present` never downloads anything in the middle of a command. Download it once after installing the CLI:
+
+```console
+$ deckster electron install
+Downloading Electron 45.4.1 for darwin-arm64 (about 120 MB)...
+Downloaded Electron 45.4.1.
+  <cli>/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron
+```
+
+Running it again leaves a good binary alone. Without the binary, `deckster present` stops and prints the command:
 
 ```console
 $ deckster present launch-review
-Electron's binary is not downloaded (<cli>/node_modules/electron/dist), so `deckster present` cannot open a window.
-Run `node "<cli>/node_modules/electron/install.js"` (about 120 MB), or pass --browser to present in Chrome.
+Electron 45.4.1 is not downloaded, so `deckster present` cannot open a window.
+Run `deckster electron install` once (about 120 MB), or pass --browser to present in Chrome.
 ```
 
-`<cli>` stands for the folder npm installed the CLI in; the real message prints the full path. Copy the `node "..."` command from your terminal and run it once. Every `deckster present` after that starts the binary directly.
+`<cli>` stands for the folder npm installed the CLI in. Every `deckster present` after the download starts the binary directly. After upgrading `@deckster/cli`, run `deckster electron update`: it downloads again only when the CLI needs another Electron version. `deckster electron status` shows what is on disk. See [`deckster electron`](/reference/cli/#deckster-electron).
 
 ## Present on one screen
 
