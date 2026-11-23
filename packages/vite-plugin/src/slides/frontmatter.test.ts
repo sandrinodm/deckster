@@ -122,7 +122,7 @@ describe('validateFrontmatter', () => {
       [
         'Invalid frontmatter in decks/demo/slides/intro.mdx:',
         '  - layout: There is no "splitt" layout.',
-        '    Fix: Use "split". Run `pnpm deck layouts` to see what each layout is for.',
+        '    Fix: Use "split". Run `pnpm deckster layouts` to see what each layout is for.',
       ].join('\n'),
     );
     expect(failure(validate({ layout: 'timeline' })).message).toContain(
@@ -169,7 +169,7 @@ describe('validateFrontmatter', () => {
       {
         message:
           'layout: Expected a layout name in kebab-case, such as "request-flow", got "Split View".',
-        fix: 'Name a layout from `pnpm deck layouts` in kebab-case, for example `layout: default`.',
+        fix: 'Name a layout from `pnpm deckster layouts` in kebab-case, for example `layout: default`.',
       },
       {
         message: 'budget: Expected a duration such as "90s", "2m" or "1m30s", got "ninety".',

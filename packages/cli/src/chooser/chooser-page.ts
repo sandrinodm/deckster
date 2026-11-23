@@ -129,7 +129,7 @@ function renderOperator(
   desktop: boolean,
   nonce: string,
 ): string {
-  const empty = 'No decks found. Run <code>deck new &lt;name&gt;</code> to create one.';
+  const empty = 'No decks found. Run <code>deckster new &lt;name&gt;</code> to create one.';
   const protocol = [HTTP_CONFLICT, HTTP_START_FAILED, SELECTION_HEADER] as const;
   const script = chooserClient.toString();
   const args = [base, selection ?? null, returning ?? null, protocol, desktop]

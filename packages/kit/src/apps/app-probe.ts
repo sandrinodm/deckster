@@ -90,7 +90,8 @@ export async function probeTarget(request: ProbeRequest): Promise<ProbeResult> {
 
 /**
  * Probes a frame's address once per target, holding the slide's `ready()` until the answer, so
- * `deck shot` and `deck lint` see a missing app. Nothing is probed while `enabled` is false.
+ * `deckster shot` and `deckster lint` see a missing app. Nothing is probed while `enabled` is
+ * false.
  *
  * @param target - The frame's target.
  * @param bundledApp - Whether it is an app of the deck.

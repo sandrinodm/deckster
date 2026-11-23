@@ -14,7 +14,7 @@ import { usageError, type CliError } from '#cli-error.ts';
  */
 export const AGENT_HELP = `  --agent <name>  Add the agent chat beside the slide: ${PUBLIC_PROVIDERS.join(' or ')}. It runs that
                   CLI with your own login, one process per prompt; every turn can be undone.
-                  Implies --mcp. Check the set-up with \`deck agent doctor\`.
+                  Implies --mcp. Check the set-up with \`deckster agent doctor\`.
                   ${CONTENT_SCOPE_SENTENCE}
                   See docs/agent.md.
   --agent-panel <right|bottom>

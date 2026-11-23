@@ -31,10 +31,10 @@ Be hard on the deck. A rubric where everything scores 2 on the first pass was no
 | C1  | Every content slide has an assertion title                         | A sentence with a verb, making a claim, within budget                               |
 | C2  | The body is evidence for the title                                 | Visual where possible; bullets only for list-like content; a job with a layout of its own (a product screen, a competitor map, market size, the ask, a case study) uses it (`slide-craft.md`, section 3) |
 | C3  | One idea per slide                                                 | No slide makes two claims                                                           |
-| C4  | Text is within the layout's content budget and title length        | `deck lint` reports no `content-budget` or overflow finding                    |
+| C4  | Text is within the layout's content budget and title length        | `deckster lint` reports no `content-budget` or overflow finding                    |
 | C5  | Slides do not duplicate the narration                              | No paragraphs meant to be read aloud (read-alone decks excepted)                    |
 | C6  | The deck has rhythm                                                | Layouts and surfaces vary; no three identical layouts in a row; parts are marked (section slides in a long deck, all with the same options, or eyebrows in a deck of about twelve slides or fewer); the peak sits on a surface its neighbours do not have; any transition other than the brand's belongs to one role |
-| C7  | Evidence is built in the order of the notes, and only where it helps | Each chart, diagram, code or list slide the notes walk through builds in that order, with a `[click]` per step; photos, quotes, statements and single numbers stay whole; `deck lint` reports no `few-builds`; the last step stands alone |
+| C7  | Evidence is built in the order of the notes, and only where it helps | Each chart, diagram, code or list slide the notes walk through builds in that order, with a `[click]` per step; photos, quotes, statements and single numbers stay whole; `deckster lint` reports no `few-builds`; the last step stands alone |
 | C8  | No raw styling                                                     | No hard-coded colors, fonts, sizes or positions                                     |
 
 ## D. Data (skip if no numbers)
@@ -69,10 +69,10 @@ Be hard on the deck. A rubric where everything scores 2 on the first pass was no
 
 | #   | Criterion                      | How to check                                                                |
 | --- | ------------------------------ | --------------------------------------------------------------------------- |
-| G1  | `deck lint <deck>` is clean in the deck's brand | No errors; every remaining warning has a stated reason |
+| G1  | `deckster lint <deck>` is clean in the deck's brand | No errors; every remaining warning has a stated reason |
 | G2  | Every screenshot was opened and looked at | Title dominant; each slide's point taken in at a glance (about three seconds); nothing clipped, cramped, or stranded in an empty slide; each chart's point readable in five seconds with its highlight obvious; each diagram's main path easy to follow |
 | G3  | The deck looks like one deck   | Consistent brand, consistent colors for the same entities                   |
-| G4  | Stepped slides build in the order of the notes | `deck shot --steps` for each stepped slide: every step shows what the presenter is saying then, and the last step stands alone |
+| G4  | Stepped slides build in the order of the notes | `deckster shot --steps` for each stepped slide: every step shows what the presenter is saying then, and the last step stands alone |
 
 Score G from the pictures, not from the source. If a command could not run, mark the affected rows "not verified", say which command failed and what it printed, and do not claim a visual check that did not happen.
 

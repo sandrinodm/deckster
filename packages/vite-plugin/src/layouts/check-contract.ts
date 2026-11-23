@@ -145,7 +145,7 @@ function nameProblems(contract: AnyLayoutContract, where: string): Problem[] {
   if (typeof contract.description !== 'string' || contract.description.trim() === '') {
     problems.push({
       message: `${where} has no description.`,
-      fix: 'Say in a sentence when to use the layout; `deck layouts` prints it for agents.',
+      fix: 'Say in a sentence when to use the layout; `deckster layouts` prints it for agents.',
     });
   }
 

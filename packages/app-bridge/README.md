@@ -9,7 +9,7 @@ It is private and not published. Decks depend on it as `"@deckster/app-bridge": 
 
 ## A mini app
 
-A mini app is a page in `decks/<deck>/apps/<name>/`. `deck new app <deck> <name>` scaffolds one
+A mini app is a page in `decks/<deck>/apps/<name>/`. `deckster new app <deck> <name>` scaffolds one
 with the React hook already wired up; this is its component:
 
 ```tsx
@@ -36,7 +36,7 @@ function Demo() {
 ```
 
 A slide shows it with `<AppFrame app="<name>" poster="..." />`. `poster` is required: static mode,
-`deck shot`, export and thumbnails show it instead of the iframe. `pnpm deck components --json`
+`deckster shot`, export and thumbnails show it instead of the iframe. `pnpm deckster components --json`
 lists the other `AppFrame` props.
 
 Without React, use the client directly. This is the `thrower` app from the plugin's e2e fixtures:

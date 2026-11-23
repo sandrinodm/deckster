@@ -14,7 +14,7 @@ Slide file: decks/hello/slides/steps.mdx
 `;
 
 exports[`buildPrompt > an automatic follow-up lists the lint errors 1`] = `
-"deck lint found errors on the slides you just changed. Fix them, then call \`deck_lint\` again to confirm. The findings:
+"deckster lint found errors on the slides you just changed. Fix them, then call \`deck_lint\` again to confirm. The findings:
 <deck-data kind="lint-findings">
 - decks/hello/slides/steps.mdx (slide steps): [title-length] The title is 92 characters; the layout allows 60. Fix: Shorten the title to 60 characters or fewer.
 </deck-data>

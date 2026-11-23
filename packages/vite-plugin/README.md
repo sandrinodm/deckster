@@ -43,9 +43,9 @@ path. The CLI's [`deck-server.ts`](../cli/src/server/deck-server.ts) and
 | ------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `workspaceRoot`     | required                                                                                                     | Absolute folder that contains `decks/`.                                                                                                                               |
 | `deck`              | required                                                                                                     | Deck folder name under `decks/`.                                                                                                                                      |
-| `brand`             | the deck config's `brand`                                                                                    | Brand folder under `brands/` to render with instead, without editing the deck (`deck dev --brand`).                                                                   |
+| `brand`             | the deck config's `brand`                                                                                    | Brand folder under `brands/` to render with instead, without editing the deck (`deckster dev --brand`).                                                               |
 | `runtimePlugins`    | `DEFAULT_RUNTIME_PLUGINS`: `@deckster/brand/runtime`, `@deckster/kit/runtime`, `@deckster/presenter/runtime` | Modules whose default export is a `DeckPlugin`, merged into the engine in order.                                                                                      |
-| `devRuntimePlugins` | `DEV_RUNTIME_PLUGINS`: `@deckster/comments/runtime`                                                          | Loaded after the others while serving, never in a build. `deck dev --mcp` and `--agent` append the agent's page link and chat panel here.                             |
+| `devRuntimePlugins` | `DEV_RUNTIME_PLUGINS`: `@deckster/comments/runtime`                                                          | Loaded after the others while serving, never in a build. `deckster dev --mcp` and `--agent` append the agent's page link and chat panel here.                         |
 | `layoutCatalogs`    | `DEFAULT_LAYOUT_CATALOGS`: `@deckster/kit/catalog`                                                           | Modules whose default export is a `defineLayoutCatalog(...)`, loaded in Node after the engine's own catalog. A later layout of the same name replaces an earlier one. |
 | `mdxExtensions`     | `DEFAULT_MDX_EXTENSIONS`: `@deckster/kit/mdx`                                                                | Modules whose default export is a `defineMdxExtension(...)`, whose remark and rehype plugins run on every slide.                                                      |
 
@@ -104,7 +104,7 @@ slot exports and leaves compiling to the React plugin. Other MDX files under `sl
 plain MDX partials, and other TSX files are left alone.
 
 Warnings an MDX extension reports, such as a missing image, are printed with the slide's path and
-kept per file. `deck lint` reads them through the plugin's `api`:
+kept per file. `deckster lint` reads them through the plugin's `api`:
 
 ```ts
 const api = server.config.plugins.find((plugin) => plugin.name === 'deck')?.api as
@@ -134,21 +134,21 @@ Neither exists in a build or a preview server.
 
 Everything comes from the package root (`exports: { ".": "./src/index.ts" }`).
 
-| Export                                                                                | What it is                                                                                                       |
-| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `deckViteConfig`                                                                      | The full Vite config for one deck.                                                                               |
-| `deckPlugin`, `DeckPluginOptions`, `DeckPluginApi`                                    | The deck plugin alone, its options and its `api` (`activeDeck()`, `slideWarnings(file)`).                        |
-| `DEFAULT_RUNTIME_PLUGINS`, `DEV_RUNTIME_PLUGINS`                                      | The default runtime plugin lists.                                                                                |
-| `VIRTUAL_DECK_ID`, `VIRTUAL_PLUGINS_ID`, `VIRTUAL_BRAND_ID`, `VIRTUAL_BRAND_CSS_ID`   | The virtual module ids.                                                                                          |
-| `discoverDecks`, `findDeck`, `loadDeck`, `LoadedDeck`, `LoadedSlide`                  | Find decks under `decks/` and load one (config and slide files) as Effects.                                      |
-| `DECKS_DIR`, `SLIDES_DIR`, `DECK_CONFIG_FILE`, `DeckLocation`                         | Folder and file names, and a deck's paths.                                                                       |
-| `appendSlideId`, `reorderSlideIds`, `slideListProblem`, `reorderDeck`                 | Slide-list edits to `deck.config.ts`, used by the reorder endpoint, `deck new slide` and the agent's deck tools. |
-| `loadLayoutCatalog`, `DEFAULT_LAYOUT_CATALOGS`, `CatalogLayout`, `LayoutCatalogIndex` | Load layout contracts, as `deck layouts` does.                                                                   |
-| `slideSchemaFor`, `slideHintsFor`                                                     | The schema a slide naming a layout is decoded with, and the fix for each of its fields.                          |
-| `validateFrontmatter`, `ValidFrontmatter`                                             | Validate MDX or TSX frontmatter against the fields every slide has and its layout's.                             |
-| `discoverApps`, `APPS_DIR`, `APP_ENTRY_FILE`, `AppLocation`                           | A deck's mini apps.                                                                                              |
-| `DeckBuildError`, `Problem`, `MdxWarning`                                             | The error and warning types.                                                                                     |
-| `refuseStylesheetCode`                                                                | Closes Tailwind's JavaScript loader for the whole process. The CLI's `main` calls it before any command.         |
+| Export                                                                                | What it is                                                                                                           |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `deckViteConfig`                                                                      | The full Vite config for one deck.                                                                                   |
+| `deckPlugin`, `DeckPluginOptions`, `DeckPluginApi`                                    | The deck plugin alone, its options and its `api` (`activeDeck()`, `slideWarnings(file)`).                            |
+| `DEFAULT_RUNTIME_PLUGINS`, `DEV_RUNTIME_PLUGINS`                                      | The default runtime plugin lists.                                                                                    |
+| `VIRTUAL_DECK_ID`, `VIRTUAL_PLUGINS_ID`, `VIRTUAL_BRAND_ID`, `VIRTUAL_BRAND_CSS_ID`   | The virtual module ids.                                                                                              |
+| `discoverDecks`, `findDeck`, `loadDeck`, `LoadedDeck`, `LoadedSlide`                  | Find decks under `decks/` and load one (config and slide files) as Effects.                                          |
+| `DECKS_DIR`, `SLIDES_DIR`, `DECK_CONFIG_FILE`, `DeckLocation`                         | Folder and file names, and a deck's paths.                                                                           |
+| `appendSlideId`, `reorderSlideIds`, `slideListProblem`, `reorderDeck`                 | Slide-list edits to `deck.config.ts`, used by the reorder endpoint, `deckster new slide` and the agent's deck tools. |
+| `loadLayoutCatalog`, `DEFAULT_LAYOUT_CATALOGS`, `CatalogLayout`, `LayoutCatalogIndex` | Load layout contracts, as `deckster layouts` does.                                                                   |
+| `slideSchemaFor`, `slideHintsFor`                                                     | The schema a slide naming a layout is decoded with, and the fix for each of its fields.                              |
+| `validateFrontmatter`, `ValidFrontmatter`                                             | Validate MDX or TSX frontmatter against the fields every slide has and its layout's.                                 |
+| `discoverApps`, `APPS_DIR`, `APP_ENTRY_FILE`, `AppLocation`                           | A deck's mini apps.                                                                                                  |
+| `DeckBuildError`, `Problem`, `MdxWarning`                                             | The error and warning types.                                                                                         |
+| `refuseStylesheetCode`                                                                | Closes Tailwind's JavaScript loader for the whole process. The CLI's `main` calls it before any command.             |
 
 ## Rules for changing this package
 

@@ -104,8 +104,8 @@ export function excerpt(text: string): string {
 }
 
 /**
- * The anchor of a comment on a source line rather than an element (`deck comments add --line`): the
- * line is all there is to match.
+ * The anchor of a comment on a source line rather than an element (`deckster comments add --line`):
+ * the line is all there is to match.
  *
  * @param source - The line, or `null`.
  * @param lineText - How it reads now.

@@ -7,8 +7,8 @@ highlight and direct labels. 18 slides, 21 steps. Lumen and every number are fic
 Run these from the repository root:
 
 ```sh
-pnpm deck dev data-stories
-pnpm deck lint data-stories    # data-stories: 0 errors, 1 warning in 18 slides (21 steps checked).
+pnpm deckster dev data-stories
+pnpm deckster lint data-stories    # data-stories: 0 errors, 1 warning in 18 slides (21 steps checked).
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures.

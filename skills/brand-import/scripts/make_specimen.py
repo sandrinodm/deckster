@@ -8,17 +8,17 @@ slides on each non-default surface, and the chart and number components.
 Usage:
   python3 make_specimen.py <brand> [--deck <name>] [--replace] [--map-out <file>]
 
-Run it from the workspace folder (the one with decks/ and brands/), after `deck brand check <brand>`
-passes. It uses only the installed `deck` command: `deck new`, `deck layouts --json` and `deck new slide`. The deck is called `zz-<brand>-specimen` by default (the
-`zz-` prefix marks a scratch deck: it stays out of `deck build --out` sites). Then:
+Run it from the workspace folder (the one with decks/ and brands/), after `deckster brand check <brand>`
+passes. It uses only the installed `deckster` command: `deckster new`, `deckster layouts --json` and `deckster new slide`. The deck is called `zz-<brand>-specimen` by default (the
+`zz-` prefix marks a scratch deck: it stays out of `deckster build --out` sites). Then:
 
-  deck lint <deck>               what the brand's sizes and spacing break
-  deck shot <deck>               a PNG per slide in .deck/shots/<deck>/
+  deckster lint <deck>               what the brand's sizes and spacing break
+  deckster shot <deck>               a PNG per slide in .deck/shots/<deck>/
 
 A brand that came from a template (brands/<brand>/layouts.ts) gets one slide per brand layout, first, named
 `brand-<layout>`; a layout with art for a second surface (a light and a dark master) gets another slide on that
 surface. `--map-out` writes which slide shows which layout (and which source layout it is compared with), for
-compare.py --layouts. `DECK_CMD` replaces the `deck` command (for example `pnpm deck` in a framework checkout).
+compare.py --layouts. `DECK_CMD` replaces the `deckster` command (for example `pnpm deckster` in a framework checkout).
 
 The content is the framework's own example text, so it differs from the source's; judge treatment,
 not wording. Lint may warn about repeated layouts and the layout slides' topic-style titles:
@@ -63,7 +63,7 @@ FIGURES = (
 
 
 def deck_command() -> list[str]:
-    return shlex.split(os.environ.get("DECK_CMD") or "deck")
+    return shlex.split(os.environ.get("DECK_CMD") or "deckster")
 
 
 def deck(*args: str) -> str:
@@ -93,7 +93,7 @@ def main() -> None:
     ap.add_argument("--map-out", help="write which slide shows which brand layout to this JSON file")
     args = ap.parse_args()
     if shutil.which(deck_command()[0]) is None:
-        sys.exit("`deck` is not on PATH. Install it with: npm install --global @deckster/cli (Node 26 or newer).")
+        sys.exit("`deckster` is not on PATH. Install it with: npm install --global @deckster/cli (Node 26 or newer).")
     name = args.deck or f"zz-{kebab(args.brand)}-specimen"
     folder = Path("decks") / name
     if folder.exists():
@@ -133,7 +133,7 @@ def main() -> None:
                 path.write_text(path.read_text().replace(f"layout: {lay['name']}\n", f"layout: {lay['name']}\nsurface: {surface}\n", 1))
                 mapping.append({"layout": lay["name"], "surface": surface, "slide": other, "keys": entry.get("keys") or [], "sources": entry.get("sources") or [], "surface_default": entry.get("surface")})
     for layout in layouts:
-        if layout["name"] != "title" and layout not in own:  # `deck new` already wrote the cover
+        if layout["name"] != "title" and layout not in own:  # `deckster new` already wrote the cover
             add_slide(f"layout-{layout['name']}", layout["name"])
     for surface in SURFACES:
         path = add_slide(f"content-{surface}", "content")
@@ -147,7 +147,7 @@ def main() -> None:
         Path(ap_map).write_text(json.dumps({"deck": name, "brand": args.brand, "slides": mapping}, indent=2) + "\n", encoding="utf-8")
         print("wrote", ap_map)
     print(f"Built {folder} with {len(added) + 1} slides ({len(mapping)} on the brand's own layouts).")
-    print(f"Next: deck lint {name}; deck shot {name}")
+    print(f"Next: deckster lint {name}; deckster shot {name}")
 
 
 if __name__ == "__main__":

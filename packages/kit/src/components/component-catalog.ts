@@ -1,7 +1,7 @@
 import { DEFAULT_STEP_EFFECT, STEP_EFFECTS } from '#motion/step-effects.ts';
 
 /**
- * One prop of a component, as `deck components --json` prints it.
+ * One prop of a component, as `deckster components --json` prints it.
  */
 export type ComponentPropInfo = {
   /**
@@ -31,7 +31,7 @@ export type ComponentPropInfo = {
 export type ComponentKind = 'code' | 'media' | 'icon' | 'link' | 'app' | 'motion' | 'notes';
 
 /**
- * One MDX component, as `deck components --json` prints it.
+ * One MDX component, as `deckster components --json` prints it.
  */
 export type ComponentInfo = {
   /**
@@ -67,9 +67,9 @@ export type ComponentInfo = {
 };
 
 /**
- * One component as `deck components --json` prints it: its entry with the names of the shared props
- * it takes, which is none, so the entry has the shape `deck charts` and `deck diagrams` give
- * theirs.
+ * One component as `deckster components --json` prints it: its entry with the names of the shared
+ * props it takes, which is none, so the entry has the shape `deckster charts` and `deckster
+ * diagrams` give theirs.
  */
 export type ComponentCatalogEntry = ComponentInfo & {
   /**
@@ -79,11 +79,11 @@ export type ComponentCatalogEntry = ComponentInfo & {
 };
 
 /**
- * What `deck components --json` prints.
+ * What `deckster components --json` prints.
  */
 export type ComponentCatalog = {
   /**
-   * The props several components share, described once by name, as in `deck charts` and `deck
+   * The props several components share, described once by name, as in `deckster charts` and `deck
    * diagrams`; empty, since each component lists all of its props.
    */
   shared: Readonly<Record<string, ComponentPropInfo>>;
@@ -190,7 +190,7 @@ const RATIO_PROP = prop('number', false, null, "The frame's width over height.")
 const LOOP_PROP = prop('boolean', false, false, 'Play again from the start when it ends.');
 
 /**
- * Every MDX component the kit registers, apart from charts (`deck charts`) and diagrams (`deck
+ * Every MDX component the kit registers, apart from charts (`deckster charts`) and diagrams (`deck
  * diagrams`), with its props.
  */
 export const COMPONENT_INFOS = [
@@ -392,9 +392,9 @@ export const COMPONENT_INFOS = [
         'string[]',
         false,
         null,
-        'One still per part of a cued video, so static mode and `deck shot ' +
+        'One still per part of a cued video, so static mode and `deckster shot ' +
           '--steps` show each part; without them every step shows `poster`, which ' +
-          '`deck lint` reports as video-cue-posters.',
+          '`deckster lint` reports as video-cue-posters.',
       ),
       alt: prop('string', true, null, 'What the video shows.'),
       loop: LOOP_PROP,
@@ -484,7 +484,7 @@ export const COMPONENT_INFOS = [
     name: 'Download',
     kind: 'link',
     useWhen:
-      "A button that downloads one of the deck's exports, built with `deck build --with-exports`.",
+      "A button that downloads one of the deck's exports, built with `deckster build --with-exports`.",
     avoid: 'Files the build does not write; link to them with Button.',
     props: props({
       file: prop('string', true, null, 'The file, relative to the built deck, such as talk.pdf.'),
@@ -530,7 +530,7 @@ export const COMPONENT_INFOS = [
     name: 'AppFrame',
     kind: 'app',
     useWhen:
-      'A mini app (decks/<deck>/apps/<name>/, `deck new app`) or an external page in a sandboxed frame, with the brand and the steps.',
+      'A mini app (decks/<deck>/apps/<name>/, `deckster new app`) or an external page in a sandboxed frame, with the brand and the steps.',
     avoid: 'An external page without fallback=: the venue Wi-Fi decides whether it shows.',
     props: props({
       app: prop(
@@ -756,7 +756,7 @@ export function isPassThroughProp(name: string): boolean {
 }
 
 /**
- * The catalog `deck components --json` prints.
+ * The catalog `deckster components --json` prints.
  */
 export function componentCatalog(): ComponentCatalog {
   return {
@@ -770,18 +770,18 @@ export function componentCatalog(): ComponentCatalog {
         'A missing required prop is refused the same way.',
       files:
         'Paths to images, video, posters and Lottie files are relative to the ' +
-        'slide and become imports; a missing one is reported by `deck lint` as ' +
+        'slide and become imports; a missing one is reported by `deckster lint` as ' +
         'media-missing. A markdown image alone in its paragraph becomes an ' +
         '<Image>.',
       static:
-        'Static mode, `deck shot` and exports never play video or load frames: ' +
+        'Static mode, `deckster shot` and exports never play video or load frames: ' +
         'they show posters, the last state of a CodeMove and the whole terminal ' +
         'session up to the step.',
       steps:
         'Code highlights, CodeMove states, Terminal commands, Video cues and ' +
         'AppFrame steps are deck steps: each press moves one.',
       warnings:
-        'What the build warns about reaches `deck lint` with a rule id: ' +
+        'What the build warns about reaches `deckster lint` with a rule id: ' +
         'media-missing, media-gif, code-unknown-language, code-step-range, ' +
         'terminal-tone.',
     },

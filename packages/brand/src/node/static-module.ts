@@ -15,8 +15,8 @@ let parser: Parser | undefined;
 
 /**
  * Loads `parseAst` on first use. A static import would pull `vite` (about 100 ms) into every
- * command that imports this package, such as the start of `deck present --agent`, which parses no
- * module until the dev server starts.
+ * command that imports this package, such as the start of `deckster present --agent`, which parses
+ * no module until the dev server starts.
  */
 function loadParser(): Parser {
   parser ??= (createRequire(import.meta.url)('vite') as { parseAst: Parser }).parseAst;

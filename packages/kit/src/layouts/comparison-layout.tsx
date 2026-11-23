@@ -266,7 +266,7 @@ type ValueProps = {
 /**
  * The mark on the cell that wins its row: a small diamond in the gutter before the value, named for
  * assistive technology (so the win does not rest on the bold weight and the color alone) and left
- * out of `deck lint`'s overflow measure, which would count a mark hung outside the cell's box.
+ * out of `deckster lint`'s overflow measure, which would count a mark hung outside the cell's box.
  */
 function WinnerMark(): ReactNode {
   return (

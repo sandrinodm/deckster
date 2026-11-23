@@ -1,5 +1,5 @@
 # LibreOffice Impress without a GUI, poppler to rasterise its PDF output and fontTools to turn the
-# brand's WOFF2 files into fonts LibreOffice can load. Used by `deck export --verify`. Liberation
+# brand's WOFF2 files into fonts LibreOffice can load. Used by `deckster export --verify`. Liberation
 # (metric-compatible with Arial, Times New Roman and Courier New), Carlito (Calibri) and Caladea
 # (Cambria) stand in for the fonts a recipient's computer has, so a pass without the brand's fonts
 # shows the substitutes PowerPoint and Keynote would use.

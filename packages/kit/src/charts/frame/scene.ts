@@ -240,7 +240,7 @@ export type TextItem = ItemCommon & {
 
   /**
    * The fill of the mark the text sits on (a label inside a bar or cell), as `#rrggbb`. SVG does
-   * not paint it; it tells `deck lint`'s contrast check what the text is read against.
+   * not paint it; it tells `deckster lint`'s contrast check what the text is read against.
    */
   background?: string;
 
@@ -251,7 +251,7 @@ export type TextItem = ItemCommon & {
 
   /**
    * The whole text, when the lines had to cut it short to fit. Written as `data-truncated`, which
-   * `deck lint` reports (`text-truncated`): a chart never cuts a label silently.
+   * `deckster lint` reports (`text-truncated`): a chart never cuts a label silently.
    */
   cut?: string;
 };

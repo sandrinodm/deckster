@@ -27,7 +27,7 @@ export const BRAND_TITLE_SELECTOR = '.kit-brand-title';
  */
 const DEFAULT_BODY_SLOT: SlotContract = {
   /**
-   * What the slot holds, for `deck layouts`.
+   * What the slot holds, for `deckster layouts`.
    */
   description: "The slide's content outside any named slot tag.",
 
@@ -72,7 +72,7 @@ const LIST_BRACKETS_PATTERN = /\[\]$/u;
  */
 const STRUCTURED_FIELD_FIX =
   'List it under `fields` if it is a setting, or choose a fallback whose required content this ' +
-  'layout draws (`deck layouts` lists the kit layouts and their fields).';
+  'layout draws (`deckster layouts` lists the kit layouts and their fields).';
 
 /**
  * How many catalog names a fix suggests for an unknown fallback.
@@ -853,7 +853,7 @@ function unknownFallback(
   return {
     path: `${path}.fallback`,
     message: `The fallback "${fallback}" is not a layout of the kit or the engine.`,
-    fix: `Name a layout \`deck layouts\` lists, such as ${closest.map((name) => `"${name}"`).join(', ')}.`,
+    fix: `Name a layout \`deckster layouts\` lists, such as ${closest.map((name) => `"${name}"`).join(', ')}.`,
   };
 }
 

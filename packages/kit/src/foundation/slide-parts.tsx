@@ -68,10 +68,11 @@ type FrameProps = {
  * The root of every kit layout. It covers the 1920x1080 slide, sets the brand's body type as the
  * base for everything on it (so a plain table, `div` or quote reads as slide text), and holds the
  * safe area: a box exactly inside the brand's margins that the layout's regions stack in. Content
- * that does not fit overflows the safe area, so `deck lint` reports it before it reaches the chrome
- * in the margins. Only media that bleeds to the slide edges sits outside it; a layout that bleeds
- * names the edges in `defineLayout({ bleed })`, so the chrome moves off them. Behind everything it
- * draws the surface's background layers and the slide's own `background:` image (`Backdrop`).
+ * that does not fit overflows the safe area, so `deckster lint` reports it before it reaches the
+ * chrome in the margins. Only media that bleeds to the slide edges sits outside it; a layout that
+ * bleeds names the edges in `defineLayout({ bleed })`, so the chrome moves off them. Behind
+ * everything it draws the surface's background layers and the slide's own `background:` image
+ * (`Backdrop`).
  */
 export function Frame({
   layout,
@@ -123,7 +124,7 @@ type RegionProps = {
  * The height left in a layout's column, given to what it holds: the region grows to fill its column
  * between the parts above and below it, and is a size container, so a chart or a demo inside can
  * size itself with `100cqh` and `100cqw` or fill it with `height: 100%`. Content that is taller
- * than the region spills out of it, which `deck lint` reports.
+ * than the region spills out of it, which `deckster lint` reports.
  */
 export function Region({ className, place = 'top', ref, children }: RegionProps): ReactNode {
   return (

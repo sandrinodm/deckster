@@ -22,8 +22,8 @@ export type TextTone = (typeof TEXT_TONES)[number];
  * kept as it is; one that falls short (an accent held only to 3:1) is moved in OKLCH lightness, hue
  * and chroma kept, the least amount that reaches 4.5:1; and where no lightness of the role does (a
  * gradient running from light to dark), the surface's `fg` stands in, moved the same way. The brand
- * check verifies the result, so a brand that passes `deck brand check` passes `deck lint` for
- * role-colored text at any size.
+ * check verifies the result, so a brand that passes `deckster brand check` passes `deckster lint`
+ * for role-colored text at any size.
  *
  * @param surface - The surface's roles and backdrop.
  * @param plate - The surface's opaque chart plate.

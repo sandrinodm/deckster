@@ -8,7 +8,7 @@ what the design does and does not protect against. The
 ## Processes
 
 ```
-deck present hello --agent claude
+deckster present hello --agent claude
  └─ CLI process (Node, Effect; one scope)
      ├─ Vite dev server            http://127.0.0.1:<port>/     slides, hot reload
      │    ├─ /__deck/agent         WebSocket: prompts in, events out
@@ -21,11 +21,11 @@ deck present hello --agent claude
 ```
 
 The CLI owns the dev server, the agent host and the deck MCP server. The Electron shell only shows
-windows. So the panel works the same with plain `deck dev --agent` in a browser.
+windows. So the panel works the same with plain `deckster dev --agent` in a browser.
 
 The agent endpoints, the MCP server and the panel exist only while a dev server runs with
 `--agent` (or `--mcp` for the MCP server alone). They are never part of `?static`, a build, an
-export or `deck present --built`.
+export or `deckster present --built`.
 
 ## Why the provider's own CLI
 
@@ -42,11 +42,11 @@ by the provider's session id.
 Each adapter is written against recorded transcripts of the real CLI
 (`packages/agent/fixtures/transcripts/`, Claude Code 2.1.325 and Codex 0.167.2). Flags and event
 shapes change between releases, so the parsers ignore events they do not know, and
-`deck agent doctor` adds a note when the installed version is outside the tested line.
+`deckster agent doctor` adds a note when the installed version is outside the tested line.
 
 Custom tools reach a spawned agent through MCP. The dev server hosts the deck tools at
 `/__deck/mcp`, so the same tools serve the panel's agent and any agent a person runs in a terminal
-(`deck mcp <deck>` prints the configuration).
+(`deckster mcp <deck>` prints the configuration).
 
 ## The Claude Code invocation
 

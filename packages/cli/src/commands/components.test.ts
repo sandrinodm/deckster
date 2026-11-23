@@ -3,7 +3,7 @@ import { Effect } from 'effect';
 
 import { runCaptured } from '#cli.fixture.ts';
 
-it.effect('deck components --json prints every component with its props, use and example', () =>
+it.effect('deckster components --json prints every component with its props, use and example', () =>
   Effect.gen(function* () {
     const { code, output } = yield* runCaptured(['components', '--json']);
     expect(code).toBe(0);
@@ -30,7 +30,7 @@ it.effect('deck components --json prints every component with its props, use and
   }),
 );
 
-it.effect('deck components lists each component with its props in plain text', () =>
+it.effect('deckster components lists each component with its props in plain text', () =>
   Effect.gen(function* () {
     const { code, output } = yield* runCaptured(['components']);
     expect(code).toBe(0);

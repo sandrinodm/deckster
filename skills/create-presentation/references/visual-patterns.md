@@ -6,9 +6,9 @@ for related layouts. Check that the finished frame still shows the relationship 
 a static preview or export.
 
 ```sh
-deck layouts <deck> --json
-deck new slide <deck> <id> --layout vision-storyboard
-deck shot <deck> <id> --steps
+deckster layouts <deck> --json
+deckster new slide <deck> <id> --layout vision-storyboard
+deckster shot <deck> <id> --steps
 ```
 
 ## Screen story

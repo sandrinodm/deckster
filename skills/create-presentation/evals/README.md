@@ -2,7 +2,7 @@
 
 `evals.json` carries the task prompts and expectations inherited from earlier runs. They are test inputs, not evidence of a successful run.
 
-These are development material for maintaining the skill, not part of what a user needs. Several cases use fixtures and commands from the deckster repository (`pnpm deck`, its `showcase` deck, its `nocturne` and `default` brands); run them from a checkout of that repository, where `skills/` is the skill folder, and read `pnpm deck` as `deck`. They were written against an earlier repository-bound version of the skill and still assume it.
+These are development material for maintaining the skill, not part of what a user needs. Several cases use fixtures and commands from the deckster repository (`pnpm deck`, its `showcase` deck, its `nocturne` and `default` brands); run them from a checkout of that repository, where `skills/` is the skill folder, and read `pnpm deck` as `deckster`. They were written against an earlier repository-bound version of the skill and still assume it.
 
 Run each selected case with two fresh agents: one given this skill's absolute path, and a baseline without access to the skills folder (`skills/`, or the `.claude/skills` and `.agents/skills` links to it). Give both the same prompt, source fixtures, tools and framework snapshot. Keep graders and expected answers out of executor context.
 

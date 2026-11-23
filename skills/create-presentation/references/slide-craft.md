@@ -65,7 +65,7 @@ Pictures must be evidence. Decorative stock imagery adds processing without addi
 
 Show the product rather than describing it: one screen per slide, as large as the slide allows, with at most a few callouts on the parts the notes talk about. Ten thumbnails on one slide is a screenshot dump; nobody can read any of them.
 
-Choose a layout by what the audience needs to read, compare, or do. If the deck lists a brand layout for that job, start there and check that its fixed regions hold the evidence. Otherwise use the kit choices below. Confirm the name in `deck layouts <deck> --summary`, then open its full catalog entry for the exact fields, slots, limits and example. The [layout reference](https://sandrinodm.github.io/deckster/reference/layouts/) shows the rendered layouts. The installed catalog determines which ones you can use.
+Choose a layout by what the audience needs to read, compare, or do. If the deck lists a brand layout for that job, start there and check that its fixed regions hold the evidence. Otherwise use the kit choices below. Confirm the name in `deckster layouts <deck> --summary`, then open its full catalog entry for the exact fields, slots, limits and example. The [layout reference](https://sandrinodm.github.io/deckster/reference/layouts/) shows the rendered layouts. The installed catalog determines which ones you can use.
 
 ### Open, orient and close
 
@@ -195,7 +195,7 @@ Kosslyn's analysis of 140 real slide decks found the same rules violated almost 
 ## 5. Text on slides
 
 - A slide is read at a glance. If its point cannot be taken in within about three seconds, the slide holds two points or too much evidence: split it or cut it. (A chart takes a little longer to read; its test in `data-visuals.md` allows five.)
-- Stay inside the layout's content budget. When text does not fit, the answer is to split the slide or move words to notes. Never shrink type or tighten spacing; the layouts own those and `deck lint` reports it (`content-budget`, `off-brand`).
+- Stay inside the layout's content budget. When text does not fit, the answer is to split the slide or move words to notes. Never shrink type or tighten spacing; the layouts own those and `deckster lint` reports it (`content-budget`, `off-brand`).
 - One idea per slide. Two ideas become two slides; slides are free.
 - Use the audience's words. Define a term the first time it appears if any part of the audience might not know it.
 - Emphasis is a budget: one highlighted element per slide. If three things are bold, nothing is.
@@ -208,7 +208,7 @@ Kosslyn's analysis of 140 real slide decks found the same rules violated almost 
 
 ## 6. Rhythm across the deck
 
-- In a deck long enough to have parts (more than about twelve slides, or more than about fifteen minutes), open each part with a section slide. In a shorter deck a section slide costs a slide the argument needs: mark the parts with the eyebrow above the title instead. Above about twelve slides, choose the section slides and surfaces on purpose rather than letting them fall out. Either way, vary layouts within a part. Three identical layouts in a row on the same surface read as monotony (`deck lint` warns: `layout-repetition`). When the content really is three charts in a row, break the run with a statement slide that says what they add up to, or put one on a different surface.
+- In a deck long enough to have parts (more than about twelve slides, or more than about fifteen minutes), open each part with a section slide. In a shorter deck a section slide costs a slide the argument needs: mark the parts with the eyebrow above the title instead. Above about twelve slides, choose the section slides and surfaces on purpose rather than letting them fall out. Either way, vary layouts within a part. Three identical layouts in a row on the same surface read as monotony (`deckster lint` warns: `layout-repetition`). When the content really is three charts in a row, break the run with a statement slide that says what they add up to, or put one on a different surface.
 - Use surfaces deliberately: a different surface for section breaks, statements and the key moment gives the deck a pulse without custom styling. In a long deck where most slides sit on the default surface, the eye stops noticing slides; two or three moments on another surface are enough to break that.
 - Follow a dense slide with a light one: a chart, then a statement that says what it means.
 - Plan one peak: the slide or moment the audience should remember (the result, the demo, the before-and-after). Clear space around it, and give it a surface its neighbours do not have.
@@ -252,8 +252,8 @@ Rules that keep a build honest:
 
 - The last step stands alone. Static mode, screenshots, the PDF and the PowerPoint show only it, so it must carry the whole claim: nothing left dimmed, nothing the conclusion depends on still hidden.
 - Each step has a `[click]` cue in the notes, where the presenter says that part (section 11).
-- Look at every step (`deck shot <deck> <slide> --steps`), and click through the slide once in `deck dev`: screenshots show each step at rest, not the motion.
-- In a live talk with charts, diagrams or code, most of those slides have something the notes walk through, so most of them build. A deck that shows nearly all of them at once is what `deck lint` reports as `few-builds`.
+- Look at every step (`deckster shot <deck> <slide> --steps`), and click through the slide once in `deckster dev`: screenshots show each step at rest, not the motion.
+- In a live talk with charts, diagrams or code, most of those slides have something the notes walk through, so most of them build. A deck that shows nearly all of them at once is what `deckster lint` reports as `few-builds`.
 
 ## 8. Diagrams
 
@@ -262,12 +262,12 @@ Rules that keep a build honest:
 - Build in steps, in the order you will explain, and label on the diagram (segmenting, contiguity). The final state must still make sense in a static export.
 - Flow reads left to right or top to bottom. Use position and grouping to mean something; do not let layout be arbitrary.
 - Highlight the one path or component the slide is about; mute the rest.
-- Which diagram component fits which claim, and how to stage one with steps, is in `data-visuals.md` section 15; the components are listed by `deck diagrams --json`.
+- Which diagram component fits which claim, and how to stage one with steps, is in `data-visuals.md` section 15; the components are listed by `deckster diagrams --json`.
 
 ## 9. Code
 
 - Show only the lines that carry the point, at a size readable from the back; elide the rest.
-- Highlight the lines being discussed and step through them (a fence takes step ranges such as `{2-4|7}`; `deck components --json` lists the code and terminal components). Never present a wall of code and talk over it. The `code` layout has a line budget; code that does not fit is a sign the slide shows too much.
+- Highlight the lines being discussed and step through them (a fence takes step ranges such as `{2-4|7}`; `deckster components --json` lists the code and terminal components). Never present a wall of code and talk over it. The `code` layout has a line budget; code that does not fit is a sign the slide shows too much.
 - The title states what the code demonstrates ("Retries are one decorator"), not the file name.
 
 ## 10. Demos

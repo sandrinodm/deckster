@@ -329,7 +329,7 @@ const runChild = Effect.fn('runChild')(function* (
       message: missing
         ? `${run.provider.label} (\`${run.invocation.command}\`) is not on the PATH.`
         : `${run.provider.label} could not start: ${spawned.failure.message}`,
-      fix: 'Run `deck agent doctor` for the installation and login state.',
+      fix: 'Run `deckster agent doctor` for the installation and login state.',
     });
   }
 
@@ -411,7 +411,7 @@ const runChild = Effect.fn('runChild')(function* (
     return failed({
       kind: 'crashed',
       message: `${run.provider.label} printed a line longer than ${limits.maxLineBytes} bytes, so the turn was stopped.`,
-      fix: 'Try the prompt again; if it happens again, run `deck agent doctor` and report the provider version.',
+      fix: 'Try the prompt again; if it happens again, run `deckster agent doctor` and report the provider version.',
     });
   }
 

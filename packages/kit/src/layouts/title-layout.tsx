@@ -171,7 +171,7 @@ type PhotoScrimProps = {
 /**
  * The dark scrim behind a block of the cover over a full-bleed photo: the image layout's scrim,
  * drawn inside the block so it is as large as the block, solid enough under the text that light
- * text keeps its contrast on a white photo and fading out away from it. Decoration: `deck lint`
+ * text keeps its contrast on a white photo and fading out away from it. Decoration: `deckster lint`
  * measures the text against the photo and scrim as painted.
  */
 function PhotoScrim({ at }: PhotoScrimProps): ReactNode {

@@ -43,7 +43,7 @@ export type CatalogLayout = {
 };
 
 /**
- * Every layout a deck can use, by name, in the order `deck layouts` lists them.
+ * Every layout a deck can use, by name, in the order `deckster layouts` lists them.
  */
 export type LayoutCatalogIndex = ReadonlyMap<string, CatalogLayout>;
 

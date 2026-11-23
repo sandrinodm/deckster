@@ -20,8 +20,8 @@ export const LABEL_SIDES = [
 const SEARCH_BUDGET = 20_000;
 
 /**
- * The cost of a name drawn over another name, a dot or a caption: a last resort, which `deck lint`
- * reports, taken only where no arrangement avoids it.
+ * The cost of a name drawn over another name, a dot or a caption: a last resort, which `deckster
+ * lint` reports, taken only where no arrangement avoids it.
  */
 const COLLISION_COST = 100;
 
@@ -141,8 +141,8 @@ export type LabelPlacement = {
 
   /**
    * Whether it is inside the plot and keeps its room from every other dot, every other name and
-   * every obstacle; a name that is not was put where it crowds or collides least, and `deck lint`
-   * reports it if it is drawn over other text.
+   * every obstacle; a name that is not was put where it crowds or collides least, and `deckster
+   * lint` reports it if it is drawn over other text.
    */
   clear: boolean;
 };
@@ -287,8 +287,8 @@ type Candidate = {
  * for the arrangement of lowest total cost, the subject first and then the names with the least
  * room, and cuts a branch once it costs more than the best arrangement found. Crowding and
  * collisions are costs rather than walls, so a plot too full for every name to stay clear still
- * gets the arrangement with the fewest of them; those names are marked, and `deck lint` reports any
- * that are drawn over each other. Pure, so it is tested without a browser; the layout gives it
+ * gets the arrangement with the fewest of them; those names are marked, and `deckster lint` reports
+ * any that are drawn over each other. Pure, so it is tested without a browser; the layout gives it
  * sizes measured with layout geometry.
  *
  * @param plot - The plot's size, the gap, the obstacles and the names.

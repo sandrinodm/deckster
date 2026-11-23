@@ -73,8 +73,8 @@ type ChangedPictures = {
  */
 export type CompareOptions = {
   /**
-   * The folder of base pictures, named as `deck shot` names them; `null` when the base has no such
-   * deck, so every slide counts as added.
+   * The folder of base pictures, named as `deckster shot` names them; `null` when the base has no
+   * such deck, so every slide counts as added.
    */
   beforeDir: string | null;
 
@@ -271,7 +271,9 @@ const compareStep = Effect.fn('compareStep')(function* (
   }
 
   if (oldFile === undefined || newFile === undefined) {
-    return yield* cliError('A step has no picture in either version; this is a bug in deck diff.');
+    return yield* cliError(
+      'A step has no picture in either version; this is a bug in deckster diff.',
+    );
   }
 
   const oldBytes = yield* readPicture(oldFile);
@@ -352,7 +354,12 @@ const readPicture = Effect.fn('readPicture')(function* (
     .readFile(file)
     .pipe(
       Effect.mapError((error) =>
-        fileSystemError('read the picture', file, error, 'Run `deck shot` again to recreate it.'),
+        fileSystemError(
+          'read the picture',
+          file,
+          error,
+          'Run `deckster shot` again to recreate it.',
+        ),
       ),
     );
 });
@@ -427,7 +434,7 @@ const assertOurs = Effect.fn('assertOurs')(function* (
    */
   const refuse = (why: string) =>
     cliError(
-      `${dir} ${why}, so \`deck diff\` will not empty it.\n` +
+      `${dir} ${why}, so \`deckster diff\` will not empty it.\n` +
         'Pass `--out` an empty or new folder, or leave it out to use the default.',
     );
   if (info.value.type !== 'Directory') {
@@ -482,7 +489,7 @@ const readShots = Effect.fn('readShots')(function* (
   if (slides.size === 0 && skipped === 0) {
     return yield* cliError(
       `${dir} has no screenshots named like 03-request-flow.png. ` +
-        `Make them with \`deck shot <deck> --out ${dir}\`.`,
+        `Make them with \`deckster shot <deck> --out ${dir}\`.`,
     );
   }
 
@@ -502,7 +509,7 @@ function modeHint(steps: boolean): string {
   if (steps) {
     return (
       'It holds only whole-slide pictures: leave out `--steps`, or make the pictures with ' +
-      '`deck shot <deck> --steps`.'
+      '`deckster shot <deck> --steps`.'
     );
   }
 

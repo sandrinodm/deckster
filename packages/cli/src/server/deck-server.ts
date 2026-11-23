@@ -46,9 +46,9 @@ export type RunningDeckServer = {
 };
 
 /**
- * Starts deck servers for `deck shot` and `deck lint`. Each server lives in the scope of the caller
- * that started it, so it closes when that task ends, even when the task fails. Tests replace the
- * layer with one that serves nothing.
+ * Starts deck servers for `deckster shot` and `deckster lint`. Each server lives in the scope of
+ * the caller that started it, so it closes when that task ends, even when the task fails. Tests
+ * replace the layer with one that serves nothing.
  */
 export class DeckServer extends Context.Service<
   DeckServer,

@@ -19,6 +19,6 @@ describe.each([codeLayoutContract, demoLayoutContract])('the $name layout contra
 describe('the demo layout example', () => {
   it('names no app, so a freshly scaffolded slide builds before the app exists', () => {
     expect(demoLayoutContract.example.body).not.toMatch(/^<AppFrame\b/mu);
-    expect(demoLayoutContract.example.body).toContain('pnpm deck new app');
+    expect(demoLayoutContract.example.body).toContain('pnpm deckster new app');
   });
 });

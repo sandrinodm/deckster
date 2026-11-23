@@ -38,7 +38,8 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
   /**
    * The kit layout a slide falls back to.
    */
-  fallback: 'Name a kit layout such as "title", "image" or "columns"; `deck layouts` lists them.',
+  fallback:
+    'Name a kit layout such as "title", "image" or "columns"; `deckster layouts` lists them.',
 
   /**
    * A box.

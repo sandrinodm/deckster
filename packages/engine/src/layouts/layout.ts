@@ -37,7 +37,7 @@ export type LayoutProps<Contract extends AnyLayoutContract = AnyLayoutContract> 
   /**
    * The slide's content sorted into the layout's slots. Each filled slot is wrapped in a `<span
    * class="deck-slot" data-slot="<name>">` with `display: contents`, which does not affect layout
-   * and lets `deck lint` measure the slot.
+   * and lets `deckster lint` measure the slot.
    */
   slots: LayoutSlots<Contract>;
 };

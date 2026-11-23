@@ -9,8 +9,8 @@
 ![A black card box printed "deckster" with a vermilion square, a stack of blank cards, and eight slide-shaped cards in two rows: a title rule, a bar chart with one vermilion bar, three boxes joined by arrows, a large "3×", a vermilion quotation mark, a line chart with one vermilion point, a grid of six squares with one vermilion, and a nearly empty card numbered 8](assets/brand/hero.png)
 
 deckster is a code-first slide framework: one MDX or TSX file per slide, typed layouts and brands,
-a React engine on Vite, and a `deck` CLI that serves, lints, screenshots, exports and presents
-decks. It is built for slides written largely by AI agents and checked by `deck lint`, with a
+a React engine on Vite, and a `deckster` CLI that serves, lints, screenshots, exports and presents
+decks. It is built for slides written largely by AI agents and checked by `deckster lint`, with a
 person reviewing the result.
 
 ## Quick start
@@ -21,8 +21,8 @@ a workspace:
 ```sh
 npm install --global @deckster/cli
 mkdir talks && cd talks
-deck new launch-review --title "Launch review" --duration 20m
-deck dev launch-review                    # hot reload; q or Ctrl+C stops it
+deckster new launch-review --title "Launch review" --duration 20m
+deckster dev launch-review                    # hot reload; q or Ctrl+C stops it
 ```
 
 Or run directly from a clone of this repository:
@@ -32,8 +32,8 @@ git clone https://github.com/sandrinodm/deckster.git
 cd deckster
 pnpm install
 pnpm dev hello              # the 4-slide starter deck, with hot reload
-pnpm deck dev showcase      # a 45-slide talk about deckster, built with deckster
-pnpm deck dev lookbook      # every layout, option, chart, diagram and component in one talk
+pnpm deckster dev showcase      # a 45-slide talk about deckster, built with deckster
+pnpm deckster dev lookbook      # every layout, option, chart, diagram and component in one talk
 ```
 
 The dev server prints its URL (the first free port from 5173). When working in this repository,
@@ -42,7 +42,7 @@ pnpm 12.16.1 is pinned in `devEngines` and downloaded on demand.
 The other commands work on the same deck name:
 
 ```console
-$ pnpm deck lint hello
+$ pnpm deckster lint hello
 decks/hello/slides/closing.mdx
   warning missing-notes (closing): The slide has no speaker notes.
           Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
@@ -50,13 +50,13 @@ decks/hello/slides/closing.mdx
 hello: 0 errors, 1 warning in 4 slides (8 steps checked).
 ```
 
-| Command                                               | What it does                                                                                            |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `pnpm deck shot hello`                                | One 1920x1080 PNG per slide in `.deck/shots/hello` (`--steps` for every step)                           |
-| `pnpm deck export hello`                              | `hello.pdf` and `hello.pptx` in `.deck/exports/hello`                                                   |
-| `pnpm deck present hello`                             | The deck in its own window, with a presenter window (needs Electron, see [Requirements](#requirements)) |
-| `pnpm deck new launch-review --title "Launch review"` | A new deck in `decks/launch-review` that passes `deck lint`; run `pnpm install` before using it         |
-| `pnpm deck --help`                                    | Every command; `pnpm deck <command> --help` for one                                                     |
+| Command                                                   | What it does                                                                                            |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `pnpm deckster shot hello`                                | One 1920x1080 PNG per slide in `.deck/shots/hello` (`--steps` for every step)                           |
+| `pnpm deckster export hello`                              | `hello.pdf` and `hello.pptx` in `.deck/exports/hello`                                                   |
+| `pnpm deckster present hello`                             | The deck in its own window, with a presenter window (needs Electron, see [Requirements](#requirements)) |
+| `pnpm deckster new launch-review --title "Launch review"` | A new deck in `decks/launch-review` that passes `deckster lint`; run `pnpm install` before using it     |
+| `pnpm deckster --help`                                    | Every command; `pnpm deckster <command> --help` for one                                                 |
 
 `shot`, `lint` and `export` render in Playwright's Chromium. Install it once with
 `pnpm --filter @deckster/cli exec playwright install chromium`.
@@ -115,19 +115,19 @@ An agent that writes slides needs rules it can read and a check it can run. deck
 
 Slides fill typed layouts. A layout such as `cards`, `stats` or `comparison` owns the grid, the type
 and the spacing, and its contract says which frontmatter fields and slots it takes and how much
-content fits: words, bullets and items, counted the same in every brand. `pnpm deck layouts
+content fits: words, bullets and items, counted the same in every brand. `pnpm deckster layouts
 --summary` prints that budget for all 63 layouts, and the `charts`, `diagrams`, `components` and
 `icons` commands list the rest. The build fails on an unknown layout, field or icon.
 
-`deck lint` is the check. It renders every step of every slide in Chromium and reports overflow,
+`deckster lint` is the check. It renders every step of every slide in Chromium and reports overflow,
 text cut short, contrast (including text over photos, measured against the pixels), off-brand
 values, content over budget, missing notes and a talk that runs over its `duration`, each with a
-fix. `deck shot` gives the agent, or you, a picture to look at.
+fix. `deckster shot` gives the agent, or you, a picture to look at.
 
 Brands are data. A brand is a typed `brand.ts` in `brands/<name>` with colours, surfaces, fonts,
 icons, motion and chart palettes; slides hold no raw colours or pixel positions. The same deck
-renders in another brand without an edit: `pnpm deck lint hello --brand nocturne`. To use a
-brand that lives in another git repository, `pnpm deck brand add gh:<owner>/<repo>/brands/<name>`
+renders in another brand without an edit: `pnpm deckster lint hello --brand nocturne`. To use a
+brand that lives in another git repository, `pnpm deckster brand add gh:<owner>/<repo>/brands/<name>`
 copies it into `brands/`. The reasons behind these choices are in [docs/design.md](docs/design.md).
 
 ## What it does
@@ -136,7 +136,7 @@ copies it into `brands/`. The reasons behind these choices are in [docs/design.m
   line steps, diffs, `<CodeMove>`), `<Terminal>`, images, video with cues, Lottie and icons from
   the brand's icon set.
 - Put numbers on a slide with chart and number components in the brand's chart palette that
-  highlight one value, take annotations and reveal by step (`pnpm deck charts` lists them).
+  highlight one value, take annotations and reveal by step (`pnpm deckster charts` lists them).
 - Draw `<Flow>` diagrams placed on a grid or by ELK, with routed edges and packets that travel
   along them by step, plus sequence diagrams, timelines, layers, cycles, trees and sanitised SVG.
   The brand sets their edges, groups and labels, and a node takes a `card`: a node style the
@@ -149,42 +149,42 @@ copies it into `brands/`. The reasons behind these choices are in [docs/design.m
   picture or logo across two consecutive slides. Static mode and exports show the last step.
 - Embed live React components with `<Live>`, and mini apps in `<AppFrame>` that talk to the deck
   over [`@deckster/app-bridge`](packages/app-bridge/README.md).
-- Check a deck with `deck lint`, and see which slides changed visually against a git ref or a
-  saved baseline with `deck diff` ([CLI](packages/cli/README.md)).
+- Check a deck with `deckster lint`, and see which slides changed visually against a git ref or a
+  saved baseline with `deckster diff` ([CLI](packages/cli/README.md)).
 - Review in the dev server: press `c` and click an element to comment on it. The comment is saved
-  with the file and line that rendered the element, and `deck comments` lists them for a person or
+  with the file and line that rendered the element, and `deckster comments` lists them for a person or
   an agent to fix ([`@deckster/comments`](packages/comments/README.md)).
 - Present with the slide sidebar, overview, presenter window with notes and pacing, laser and
-  blackout ([`@deckster/presenter`](packages/presenter/README.md)), or with `deck present`, which opens
+  blackout ([`@deckster/presenter`](packages/presenter/README.md)), or with `deckster present`, which opens
   the audience and presenter windows on the displays you pick
-  ([deck present and displays](https://sandrinodm.github.io/deckster/present/deck-present-and-displays/)).
+  ([deckster present and displays](https://sandrinodm.github.io/deckster/present/deck-present-and-displays/)).
 - Export a PDF with bookmarks and links, and a PPTX with editable text, a master per brand surface,
   native charts and diagrams, speaker notes and click animations
   ([`@deckster/export`](packages/export/README.md)).
-- Ask an agent: `pnpm deck dev hello --agent claude` (or `codex`) opens a chat panel beside the
+- Ask an agent: `pnpm deckster dev hello --agent claude` (or `codex`) opens a chat panel beside the
   slide that runs your own signed-in CLI, limited to the deck's content, with undo per turn
   ([the agent panel](https://sandrinodm.github.io/deckster/ai-agents/agent-panel/)). `--mcp` alone
   serves the deck's tools to an agent you run yourself.
-- Publish: `pnpm deck build --all --out site` builds every deck into one static folder with a
+- Publish: `pnpm deckster build --all --out site` builds every deck into one static folder with a
   gallery page ([Build and host](https://sandrinodm.github.io/deckster/export-and-publish/build-and-host/)).
 
 ## Working with agents
 
-Two agent skills teach a coding agent (Claude Code, Codex, Cursor and others) to use the `deck` CLI
-well. They live in [`skills/`](skills) and are written for the published CLI: they expect `deck` on
+Two agent skills teach a coding agent (Claude Code, Codex, Cursor and others) to use the `deckster` CLI
+well. They live in [`skills/`](skills) and are written for the published CLI: they expect `deckster` on
 your PATH (`npm install --global @deckster/cli`, Node 26 or newer) and a folder with `decks/` and
 `brands/`, not a clone of this repository.
 
 - [create-presentation](skills/create-presentation/SKILL.md) plans a talk from audience and outcome
   to a storyline and an outline with one claim per slide, then writes the slides, speaker notes and
-  charts with `deck new`, `deck lint` and `deck shot`. Use its [layout chooser](skills/create-presentation/references/slide-craft.md#3-choosing-the-evidence)
+  charts with `deckster new`, `deckster lint` and `deckster shot`. Use its [layout chooser](skills/create-presentation/references/slide-craft.md#3-choosing-the-evidence)
   to match the claim to a layout, then check the selected brand's slots and budgets with
-  `deck layouts <deck> --summary`. The skill reviews the rendered slides against a rubric.
+  `deckster layouts <deck> --summary`. The skill reviews the rendered slides against a rubric.
 - [brand-import](skills/brand-import/SKILL.md) turns a PPTX, PDF, Google Slides link, website,
   guidelines document or screenshots into a draft `brands/<name>/brand.ts`: palette, surfaces,
   typography with font licence status, logos and data palettes. For a reusable template, it maps
   source layouts to kit fallbacks and can emit `layouts.ts` alongside the brand. It checks the brand with
-  `deck brand check`, builds a specimen deck in it and renders side-by-side comparisons with the
+  `deckster brand check`, builds a specimen deck in it and renders side-by-side comparisons with the
   source.
 
 Install them with [skills.sh](https://skills.sh):
@@ -218,13 +218,13 @@ then builds `decks/q3-reliability/` and checks it. For a brand, hand it a source
 > Import our brand from ~/Downloads/company-template.pptx and the site https://example.com.
 ```
 
-The skills run the CLI for you; for editor type checking in the same folder run `deck types` once.
-The skills need Chromium for `deck lint` and `deck shot` (downloaded once, see
+The skills run the CLI for you; for editor type checking in the same folder run `deckster types` once.
+The skills need Chromium for `deckster lint` and `deckster shot` (downloaded once, see
 [the CLI README](packages/cli/README.md#optional-dependencies)), and brand-import also uses
 [`uv`](https://docs.astral.sh/uv/) for its Python extractors.
 
 In this repository `.claude/skills` and `.agents/skills` link to `skills/`, so agents working on
-deckster itself load the same files. The chat panel's agent (`deck dev --agent`) reads
+deckster itself load the same files. The chat panel's agent (`deckster dev --agent`) reads
 `create-presentation` from the workspace when it finds it, under either folder.
 
 ## Packages
@@ -238,11 +238,11 @@ workspace packages are private and export TypeScript source directly:
 | [`@deckster/vite-plugin`](packages/vite-plugin/README.md) | Finds and validates a deck, compiles MDX slides and serves the `virtual:deck*` modules                        |
 | [`@deckster/brand`](packages/brand/README.md)             | The brand schema, resolver, contrast checks and CSS compiler                                                  |
 | [`@deckster/kit`](packages/kit/README.md)                 | Layouts and components: code, media, charts, diagrams, mini apps                                              |
-| [`@deckster/cli`](packages/cli/README.md)                 | `deck`, the command line                                                                                      |
+| [`@deckster/cli`](packages/cli/README.md)                 | `deckster`, the command line                                                                                  |
 | [`@deckster/presenter`](packages/presenter/README.md)     | Sidebar, overview, presenter window and the other presenting tools                                            |
 | [`@deckster/comments`](packages/comments/README.md)       | Review comments, in the dev server only                                                                       |
 | [`@deckster/export`](packages/export/README.md)           | The PDF and PPTX writer and its `--verify` tooling                                                            |
-| [`@deckster/shell`](packages/shell/README.md)             | The Electron app behind `deck present`                                                                        |
+| [`@deckster/shell`](packages/shell/README.md)             | The Electron app behind `deckster present`                                                                    |
 | [`@deckster/agent`](packages/agent/README.md)             | The deck MCP server, the agent host and the chat panel                                                        |
 | [`@deckster/app-bridge`](packages/app-bridge/README.md)   | The `postMessage` protocol between a deck and its mini apps                                                   |
 
@@ -252,7 +252,7 @@ Brands and decks:
 | -------------------------------------------- | --------------------------------------------------------------------------------- |
 | [brands/default](brands/default/README.md)   | Light, cool grays with a cobalt accent; every deck here uses it                   |
 | [brands/nocturne](brands/nocturne/README.md) | Dark and editorial; the tests render decks in it to check they fit both           |
-| [decks/hello](decks/hello/README.md)         | The 4-slide starter and the default deck of `deck dev`                            |
+| [decks/hello](decks/hello/README.md)         | The 4-slide starter and the default deck of `deckster dev`                        |
 | [decks/showcase](decks/showcase/README.md)   | A 45-slide talk about deckster that uses 23 of the 63 layouts                     |
 | [decks/lookbook](decks/lookbook/README.md)   | One talk that shows every layout and option, every chart, diagram and component   |
 | [decks/\*](decks/README.md)                  | Six test decks the suites drive, one area of the kit each; run them like any deck |
@@ -265,11 +265,11 @@ Brands and decks:
 | `shot`, `lint`, `diff`, `export`    | Playwright's Chromium: `pnpm --filter @deckster/cli exec playwright install chromium`                                                              |
 | `present`                           | Electron's binary, downloaded once: `pnpm --filter @deckster/shell exec install-electron`. `--browser` opens Chrome or the default browser instead |
 | `export --verify`                   | Docker for the LibreOffice and Open XML SDK checks; the `quicklook` and `keynote` renderers are macOS only                                         |
-| `diff` against a git ref            | A git repository; otherwise compare with a folder from `deck diff --save-baseline`                                                                 |
-| `--agent claude` or `--agent codex` | That CLI installed and signed in; `pnpm deck agent doctor` checks both                                                                             |
+| `diff` against a git ref            | A git repository; otherwise compare with a folder from `deckster diff --save-baseline`                                                             |
+| `--agent claude` or `--agent codex` | That CLI installed and signed in; `pnpm deckster agent doctor` checks both                                                                         |
 | GIFs as looping video               | `ffmpeg` on `PATH`; without it a GIF stays an image and `lint` warns                                                                               |
 
-`deck present` has been checked on macOS with one display only. Several displays, kiosk mode,
+`deckster present` has been checked on macOS with one display only. Several displays, kiosk mode,
 Windows and Linux are untested ([docs/present.md](docs/present.md#verified-and-not)).
 
 ## Development
@@ -284,7 +284,7 @@ the same steps, then lints every deck.
 | `pnpm typecheck` | `tsc --noEmit` at the root and in every package                                                                   |
 | `pnpm test`      | Unit tests in every package; a few render in Chromium, and the export checks skip without Docker                  |
 | `pnpm test:e2e`  | Browser tests, one package at a time                                                                              |
-| `pnpm build`     | `deck build` for every deck                                                                                       |
+| `pnpm build`     | `deckster build` for every deck                                                                                   |
 
 The browser tests need their own Chromium:
 `pnpm --dir packages/engine exec e2e-web install chromium`. Tooling is Vite+ (`vp`); each
@@ -303,7 +303,7 @@ The user guide is at [sandrinodm.github.io/deckster](https://sandrinodm.github.i
 - [Review](https://sandrinodm.github.io/deckster/review/lint/): lint, screenshots, visual diff and
   comments
 - [Present](https://sandrinodm.github.io/deckster/present/deck-present-and-displays/): the
-  `deck present` window, displays, presenter tools and troubleshooting
+  `deckster present` window, displays, presenter tools and troubleshooting
 - [Export and publish](https://sandrinodm.github.io/deckster/export-and-publish/pdf/): PDF,
   PowerPoint and hosting built decks
 - [AI agents](https://sandrinodm.github.io/deckster/ai-agents/skills/): the skills, the agent
@@ -313,12 +313,12 @@ The user guide is at [sandrinodm.github.io/deckster](https://sandrinodm.github.i
 
 For contributors, in this repository:
 
-| Page                                         | Covers                                                  |
-| -------------------------------------------- | ------------------------------------------------------- |
-| [docs/design.md](docs/design.md)             | Why the framework is built the way it is                |
-| [docs/agent-design.md](docs/agent-design.md) | How an agent turn runs and what it is allowed to change |
-| [docs/present.md](docs/present.md)           | Working on `deck present`: internals and what is tested |
-| [docs/deploy.md](docs/deploy.md)             | This repository's own site and hosting from a clone     |
+| Page                                         | Covers                                                      |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| [docs/design.md](docs/design.md)             | Why the framework is built the way it is                    |
+| [docs/agent-design.md](docs/agent-design.md) | How an agent turn runs and what it is allowed to change     |
+| [docs/present.md](docs/present.md)           | Working on `deckster present`: internals and what is tested |
+| [docs/deploy.md](docs/deploy.md)             | This repository's own site and hosting from a clone         |
 
 ## Contributing & Security
 

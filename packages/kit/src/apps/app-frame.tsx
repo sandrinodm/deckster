@@ -64,9 +64,9 @@ export type AppFrameProps = {
   src?: string;
 
   /**
-   * What static mode, `deck shot`, PDF and PPTX export and offline runs show in place of the frame:
-   * an image URL, or a function that renders it (it gets the slide's step, so a poster can show the
-   * app's state at each step). Required; `deck lint` reports a missing one as
+   * What static mode, `deckster shot`, PDF and PPTX export and offline runs show in place of the
+   * frame: an image URL, or a function that renders it (it gets the slide's step, so a poster can
+   * show the app's state at each step). Required; `deckster lint` reports a missing one as
    * `app-missing-poster`.
    */
   poster: Poster;
@@ -153,8 +153,8 @@ type FrameStatus = 'loading' | 'ready' | 'timeout' | 'failed';
  * its slide arrives and pauses when it leaves, and can own steps of the slide. It is marked
  * interactive: clicks inside do not move the deck, and while it has focus the keyboard is the app's
  * until Escape or the "Return to deck" control. The slide's `ready()` waits for the app's `ready`
- * message, or a timeout. In static mode, `deck shot` and export it shows the `poster` and never
- * loads the frame. An app the deck does not have shows a card that says so (`deck lint` reports
+ * message, or a timeout. In static mode, `deckster shot` and export it shows the `poster` and never
+ * loads the frame. An app the deck does not have shows a card that says so (`deckster lint` reports
  * `app-missing`), never the deck's own page.
  *
  * ```mdx

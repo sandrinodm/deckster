@@ -8,7 +8,7 @@ to see how each part is written.
 
 ```sh
 pnpm install
-pnpm deck dev showcase
+pnpm deckster dev showcase
 ```
 
 **The content is illustrative.** Halden, its people, its client organisations and every Halden
@@ -23,15 +23,15 @@ The links, the QR code and the contact addresses use placeholder domains (`decks
 
 Run these from the repository root.
 
-| Command                                    | What it does                                                                                |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `pnpm deck dev showcase`                   | Serve with hot reload                                                                       |
-| `pnpm deck lint showcase`                  | Render all 105 steps in Chromium and check them                                             |
-| `pnpm deck lint showcase --brand nocturne` | The same in the dark brand                                                                  |
-| `pnpm deck shot showcase`                  | One 1920x1080 PNG per slide in `.deck/shots/showcase` (`--steps` for every step)            |
-| `pnpm deck build showcase --with-exports`  | Build to `decks/showcase/dist`, with `showcase.pdf` and `showcase.pptx` beside `index.html` |
-| `pnpm deck preview showcase`               | Serve that build                                                                            |
-| `pnpm deck export showcase`                | Write the PDF and PPTX to `.deck/exports/showcase`                                          |
+| Command                                        | What it does                                                                                |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `pnpm deckster dev showcase`                   | Serve with hot reload                                                                       |
+| `pnpm deckster lint showcase`                  | Render all 105 steps in Chromium and check them                                             |
+| `pnpm deckster lint showcase --brand nocturne` | The same in the dark brand                                                                  |
+| `pnpm deckster shot showcase`                  | One 1920x1080 PNG per slide in `.deck/shots/showcase` (`--steps` for every step)            |
+| `pnpm deckster build showcase --with-exports`  | Build to `decks/showcase/dist`, with `showcase.pdf` and `showcase.pptx` beside `index.html` |
+| `pnpm deckster preview showcase`               | Serve that build                                                                            |
+| `pnpm deckster export showcase`                | Write the PDF and PPTX to `.deck/exports/showcase`                                          |
 
 The deck lints with no problems in both `default` and `nocturne`. Build with `--with-exports` if
 you want the PDF button on the `links` slide to work: it is a `<Download file="showcase.pdf">`,

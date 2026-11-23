@@ -30,7 +30,7 @@ export const brokenImageRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'An image failed to load, so the slide shows a broken image or nothing.',
 

@@ -45,15 +45,15 @@ const REPOSITORY_ROOT = path.resolve(import.meta.dirname, '../../../..');
 const FIXTURE_WORKSPACE = path.resolve(import.meta.dirname, '../fixtures');
 
 /**
- * Starts `deck dev` on the fixture deck before the suite's first test and stops it after the last.
- * The deck lives in this package's `e2e/fixtures`, which `DECK_ROOT` names as the workspace.
+ * Starts `deckster dev` on the fixture deck before the suite's first test and stops it after the
+ * last. The deck lives in this package's `e2e/fixtures`, which `DECK_ROOT` names as the workspace.
  */
 export function useHiddenDeckServer(): void {
   let server: ChildProcess | undefined;
   beforeAll(async () => {
     server = spawn(
       'pnpm',
-      ['--dir', REPOSITORY_ROOT, 'deck', 'dev', 'hidden', '--port', String(HIDDEN_PORT)],
+      ['--dir', REPOSITORY_ROOT, 'deckster', 'dev', 'hidden', '--port', String(HIDDEN_PORT)],
       { env: { ...process.env, DECK_ROOT: FIXTURE_WORKSPACE }, stdio: 'ignore', detached: true },
     );
     await waitForServer();

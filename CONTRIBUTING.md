@@ -36,8 +36,8 @@ Or explore the 45-slide showcase deck, a talk about deckster, and the lookbook, 
 layout, option, chart, diagram and component:
 
 ```sh
-pnpm deck dev showcase
-pnpm deck dev lookbook
+pnpm deckster dev showcase
+pnpm deckster dev lookbook
 ```
 
 ## Checks and tests
@@ -72,7 +72,7 @@ Note that export verification tests in `@deckster/export` require Docker (for Li
 - **JSDoc**: Public and internal declarations in `packages/*/src/` require multiline JSDoc comments enforced by `jsdoc-lint`.
 - **Public CLI surface**: Commands, flags, `--json` output shapes, and exit codes in `@deckster/cli` are part of the public contract for humans, CI, and AI agents. Document any changes in `packages/cli/README.md`.
 - **Deck/brand names**: Any name used in paths must go through `isSafeName`; never join raw user input into a filesystem path.
-- **Keep the working tree clean**: CI verifies that `pnpm check`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build`, and `pnpm deck lint` leave no untracked or modified files behind.
+- **Keep the working tree clean**: CI verifies that `pnpm check`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build`, and `pnpm deckster lint` leave no untracked or modified files behind.
 
 ## Pull requests
 

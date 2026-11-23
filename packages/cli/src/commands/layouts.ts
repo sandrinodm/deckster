@@ -2,9 +2,9 @@ import { lazyRun, type Command } from '#command.ts';
 import { DEFAULT_DECK } from '#workspace.ts';
 
 /**
- * The text `deck layouts --help` prints.
+ * The text `deckster layouts --help` prints.
  */
-const HELP = `Usage: deck layouts [deck] [--brand <name>] [--summary] [--json]
+const HELP = `Usage: deckster layouts [deck] [--brand <name>] [--summary] [--json]
 
 Lists the layouts a slide can name in its \`layout:\` frontmatter: the engine's and the kit's, and
 the ones the deck's brand brings in brands/<name>/layouts.ts (source "brand:<name>"). A brand's
@@ -16,7 +16,7 @@ Arguments:
 
 Options:
   --brand <name>
-                List the layouts of this brand instead of the deck config's, as \`deck dev
+                List the layouts of this brand instead of the deck config's, as \`deckster dev
                 --brand\` renders it. A brand that does not load leaves its own layouts out, with
                 a warning on stderr (and in "warnings" with --json).
   --summary     One compact entry per layout, for a first look: name, the first sentence of its
@@ -44,21 +44,21 @@ Options:
   -h, --help    Show this help.`;
 
 /**
- * `deck layouts`: the layouts available to a deck.
+ * `deckster layouts`: the layouts available to a deck.
  */
 export const layoutsCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'layouts',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'List the layouts available to a deck',
 
   /**
-   * The text `deck layouts --help` prints.
+   * The text `deckster layouts --help` prints.
    */
   help: HELP,
 

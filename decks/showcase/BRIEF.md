@@ -17,7 +17,7 @@ Primary audience: the developer, who will run it first; the designer's sign-off 
 
 ## Outcome
 
-After this, a developer or designer will run `pnpm deck new` on a real talk because they now believe a deck can be content in files, checked by a linter, in a brand nobody can break.
+After this, a developer or designer will run `pnpm deckster new` on a real talk because they now believe a deck can be content in files, checked by a linter, in a brand nobody can break.
 
 ## Big idea
 
@@ -27,7 +27,7 @@ A slide is a file with a claim and its evidence; the brand owns every pixel and 
 
 | Claim the talk needs | Source |
 | --- | --- |
-| 63 layouts, 19 charts and figures, 7 diagram components, 42 lint rules, 776 shared icon names | `pnpm deck layouts --summary`, `charts --json`, `diagrams --json`, `lint --help`, `icons` in this repository |
+| 63 layouts, 19 charts and figures, 7 diagram components, 42 lint rules, 776 shared icon names | `pnpm deckster layouts --summary`, `charts --json`, `diagrams --json`, `lint --help`, `icons` in this repository |
 | What lint, shot, export, comments, present and the agent host do | The package READMEs and docs/ in this repository |
 | Terminal output on slides | Copied from real runs of the CLI against this deck |
 | Halden's review rounds, hours, findings | Fictional, labelled illustrative on each slide |

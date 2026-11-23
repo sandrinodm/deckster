@@ -7,17 +7,17 @@ import { AGENT_HELP } from '#agent/agent-flags.ts';
  * error that appears when the binary is missing prints the exact command.
  */
 const ELECTRON_DOWNLOAD = FRAMEWORK_INSTALLED
-  ? "Electron's binary is downloaded once; `deck present` prints the command when it is missing"
+  ? "Electron's binary is downloaded once; `deckster present` prints the command when it is missing"
   : "Electron's binary is downloaded once with `pnpm --filter @deckster/shell exec install-electron`";
 
 /**
- * The text `deck present --help` prints.
+ * The text `deckster present --help` prints.
  */
-export const HELP = `Usage: deck present [deck] [--brand <name>] [--port <n>] [--built] [--fullscreen]
+export const HELP = `Usage: deckster present [deck] [--brand <name>] [--port <n>] [--built] [--fullscreen]
                     [--display <n>] [--presenter [display]] [--kiosk] [--browser] [--verbose]
                     [--agent claude|codex] [--agent-panel right|bottom] [--agent-model <m>]
                     [--agent-web]
-       deck present --list-displays [--json]
+       deckster present --list-displays [--json]
 
 Opens a deck in its own desktop window (Electron) and serves it with hot reload, so edits show at
 once. With several decks and no name, choose a deck in the gallery. Use Back to decks to end the

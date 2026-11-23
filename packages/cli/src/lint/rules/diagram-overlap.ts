@@ -29,7 +29,7 @@ export const diagramOverlapRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A diagram draws nodes, groups or group labels on top of each other.',
 

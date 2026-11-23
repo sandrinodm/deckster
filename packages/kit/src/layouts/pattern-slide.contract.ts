@@ -79,8 +79,8 @@ export const patternFootnote = {
 } as const;
 
 /**
- * A file-free illustration for `deck new` and catalog examples. Draws the supplied outlines against
- * a percent-escaped background color on a 640 × 360 canvas.
+ * A file-free illustration for `deckster new` and catalog examples. Draws the supplied outlines
+ * against a percent-escaped background color on a 640 × 360 canvas.
  */
 export function patternExampleImage(fill: string, outline: string): string {
   return (

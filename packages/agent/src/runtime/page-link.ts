@@ -66,7 +66,8 @@ function answerGoto(request: PageGotoRequest): PageGotoDone {
 /**
  * Tells the dev server which slide, step and selection this page shows, and moves the page when the
  * server asks. It reports nothing and listens to nothing in `?static` mode, in the presenter window
- * and when there is no dev server, so `deck shot`, `deck lint`, exports and builds never see it.
+ * and when there is no dev server, so `deckster shot`, `deckster lint`, exports and builds never
+ * see it.
  *
  * @returns Nothing: it draws no element.
  */
@@ -184,7 +185,7 @@ function PageLink(): null {
 }
 
 /**
- * The page link for `deck dev --mcp`: it reports the slide, step and selected text to the dev
+ * The page link for `deckster dev --mcp`: it reports the slide, step and selected text to the dev
  * server and applies `goto` requests from the MCP tools. Loaded only while serving with the MCP or
  * agent option.
  */

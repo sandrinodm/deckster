@@ -17,7 +17,7 @@ layer(NodeServices.layer)('open-comments', (it) => {
         { slide: 'intro', message: '1 open review comment on this slide.' },
         { slide: 'steps', message: '3 open review comments on this slide.' },
       ]);
-      expect(violations[1]?.fix).toContain('pnpm deck comments test --slide steps');
+      expect(violations[1]?.fix).toContain('pnpm deckster comments test --slide steps');
       expect(openCommentsRule.severity).toBe('warning');
     }),
   );

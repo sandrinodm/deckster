@@ -99,7 +99,7 @@ For values around a midpoint (change against target, sentiment, deviation).
 
 ## Checks
 
-These are the framework's thresholds (run by `deck brand check`); a brand that breaks one cannot be used. They apply on every surface: colours tuned for a light page usually sink on the inverse surface, so the framework fits the categorical colours to each surface's chart plate itself (lightness moves, hue and order stay). `deck brand <name> --json` prints the fitted palette per surface; look at a chart on a dark surface in the screenshots and write that surface's own `data` in the draft only when the fitted colours are wrong for the brand.
+These are the framework's thresholds (run by `deckster brand check`); a brand that breaks one cannot be used. They apply on every surface: colours tuned for a light page usually sink on the inverse surface, so the framework fits the categorical colours to each surface's chart plate itself (lightness moves, hue and order stay). `deckster brand <name> --json` prints the fitted palette per surface; look at a chart on a dark surface in the screenshots and write that surface's own `data` in the draft only when the fitted colours are wrong for the brand.
 
 `brand_tools.py data-palette` runs these on what it generates. `check-data-palette --bg <bg> --colors a,b,c` runs them on any list, and `check-draft` runs them on the draft.
 
@@ -128,7 +128,7 @@ Common with brand palettes chosen for logos rather than for data: a light teal a
 
 ## Specimen comparison
 
-The specimen deck (`scripts/make_specimen.py <name>`, then `deck shot zz-<name>-specimen`) renders a big number, a stat row, a line chart, a donut, a table and a heatmap in the new brand. Whenever the source has charts or big numbers, pair each with the closest slide in `compare.py` and check:
+The specimen deck (`scripts/make_specimen.py <name>`, then `deckster shot zz-<name>-specimen`) renders a big number, a stat row, a line chart, a donut, a table and a heatmap in the new brand. Whenever the source has charts or big numbers, pair each with the closest slide in `compare.py` and check:
 
 - The same colours carry the same meaning: highlight, context, series order.
 - Gridlines: weight, colour, dash.
@@ -137,4 +137,4 @@ The specimen deck (`scripts/make_specimen.py <name>`, then `deck shot zz-<name>-
 - Big numbers: size relative to the headline, colour logic, label style.
 - Table: header treatment, rule weight, how the emphasised row is marked.
 
-If the source has no charts, still look at the chart slides on their own: do they look like they belong to the rest of the deck? That is the test for a derived palette. Look at one chart slide on a dark surface too (add `surface: inverse` to a figure slide's frontmatter in the specimen and shoot it again; `deck brand <name> --json` prints the fitted palette per surface).
+If the source has no charts, still look at the chart slides on their own: do they look like they belong to the rest of the deck? That is the test for a derived palette. Look at one chart slide on a dark surface too (add `surface: inverse` to a figure slide's frontmatter in the specimen and shoot it again; `deckster brand <name> --json` prints the fitted palette per surface).

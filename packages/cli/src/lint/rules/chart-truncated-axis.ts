@@ -29,7 +29,7 @@ export const chartTruncatedAxisRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A bar chart sets `min` above zero without `truncate`, so its bars would lie.',
 

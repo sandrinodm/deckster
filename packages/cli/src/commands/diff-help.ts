@@ -8,11 +8,11 @@ import { DEFAULT_BASE_REF } from '#diff/run-diff.ts';
 export const DEFAULT_THRESHOLD = 0;
 
 /**
- * The text `deck diff --help` prints.
+ * The text `deckster diff --help` prints.
  */
-export const HELP = `Usage: deck diff <deck> [--base <ref|dir>] [--brand <name>] [--steps] [--threshold <n>]
+export const HELP = `Usage: deckster diff <deck> [--base <ref|dir>] [--brand <name>] [--steps] [--threshold <n>]
                  [--out <dir>] [--fail-on-change] [--json]
-       deck diff <deck> --save-baseline [dir] [--brand <name>] [--steps] [--json]
+       deckster diff <deck> --save-baseline [dir] [--brand <name>] [--steps] [--json]
 
 Shows which slides of a deck changed visually, for pull requests and for agents checking their
 own edits. It renders the deck now and at the base, matches slides by id (so a reordered deck
@@ -24,7 +24,7 @@ Arguments:
   deck            Deck folder name under decks/.
 
 Options:
-  --base <x>      What to compare against. A folder of PNGs made by \`deck shot\` (same names), else
+  --base <x>      What to compare against. A folder of PNGs made by \`deckster shot\` (same names), else
                   a git ref. Default: ${DEFAULT_BASE_REF} in a git repository; outside one, the folder
                   --save-baseline writes. A ref is extracted with \`git archive\` into a temporary
                   folder that borrows this workspace's node_modules by link, so nothing is installed
@@ -34,7 +34,7 @@ Options:
   --brand <name>  Render both with brands/<name> instead of the deck config's brand. The default
                   folders get an @<name> suffix.
   --steps         Compare every step, not only each slide's finished state. A baseline folder
-                  must then hold step pictures (\`deck shot <deck> --steps\`).
+                  must then hold step pictures (\`deckster shot <deck> --steps\`).
   --threshold <n> A picture counts as changed when more than this share of its pixels changed
                   visibly, from 0 to 1. Default: ${DEFAULT_THRESHOLD}.
   --out <dir>     Report folder. Default: ${DEFAULT_DIFF_DIR}/<deck>[@<brand>].
@@ -42,7 +42,7 @@ Options:
   --save-baseline [dir]
                   Instead of comparing, render the deck into a baseline folder (default
                   ${DEFAULT_BASELINE_DIR}/<deck>[@<brand>]) to compare against later. This is the
-                  way to use \`deck diff\` without git.
+                  way to use \`deckster diff\` without git.
   --json          Print the report: { ok, deck, brand, base, baseKind, steps, threshold, outDir,
                   counts, slides: [{ id, status, beforeNumber, afterNumber, moved,
                   differenceRatio, before, after, compare, steps? }] } with absolute picture

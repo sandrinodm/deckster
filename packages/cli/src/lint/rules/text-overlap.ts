@@ -31,7 +31,7 @@ export const textOverlapRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'Two pieces of text are drawn over each other.',
 

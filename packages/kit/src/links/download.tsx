@@ -8,7 +8,7 @@ import { safeDownloadPath } from '#links/link-target.ts';
  */
 export type DownloadProps = {
   /**
-   * The file, relative to the built deck, such as `exemplars.pdf`: `deck build --with-exports`
+   * The file, relative to the built deck, such as `exemplars.pdf`: `deckster build --with-exports`
    * writes `<deck>.pdf` and `<deck>.pptx` beside the deck's `index.html`. A relative path works
    * when the deck is hosted under a subpath and when it is opened from `file://`.
    */

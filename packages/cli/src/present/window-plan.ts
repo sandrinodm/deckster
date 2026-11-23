@@ -5,7 +5,7 @@ import { Effect } from 'effect';
 import { usageError, type CliError } from '#cli-error.ts';
 
 /**
- * The flags of `deck present` that decide where windows go.
+ * The flags of `deckster present` that decide where windows go.
  */
 export type PlanFlags = {
   /**
@@ -158,7 +158,7 @@ export const planWindows = Effect.fn('planWindows')(function* (
 });
 
 /**
- * One line per display, as `deck present --list-displays` prints it.
+ * One line per display, as `deckster present --list-displays` prints it.
  *
  * @param displays - The connected displays.
  */

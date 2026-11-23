@@ -92,7 +92,7 @@ export const diagramCardMissingRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A diagram part names a card the brand does not have, so it uses another card.',
 

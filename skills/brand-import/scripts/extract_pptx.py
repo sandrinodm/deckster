@@ -624,7 +624,7 @@ def _static_svg(data: bytes) -> bytes:
 
 
 DOCKER_HINT = ('LibreOffice (soffice) was not found. Install it, or pass --soffice with a container that has it, for example the image '
-               '`deck export --verify` builds from packages/export/docker/libreoffice (find it with `docker images | grep deck-export-libreoffice`): '
+               '`deckster export --verify` builds from packages/export/docker/libreoffice (find it with `docker images | grep deck-export-libreoffice`): '
                '--soffice "docker run --rm --network none --entrypoint soffice -v {dir}:/work <that image>". Docker is optional; any LibreOffice works.')
 
 

@@ -35,7 +35,7 @@ const FLASH_MS = 1600;
 
 /**
  * Everything the comments plugin draws over the deck in dev. It draws nothing in static mode (`deck
- * shot`, `deck lint`, export) or in the presenter window.
+ * shot`, `deckster lint`, export) or in the presenter window.
  */
 export function CommentsOverlay(): ReactNode {
   const deck = useDeck();

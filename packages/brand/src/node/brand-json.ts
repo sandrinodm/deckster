@@ -10,7 +10,7 @@ import { loadBrand } from '#node/load-brand.ts';
 const JSON_INDENT_SPACES = 2;
 
 /**
- * A brand's resolved tokens as formatted JSON, for `deck brand --json`. Every color is hex and
+ * A brand's resolved tokens as formatted JSON, for `deckster brand --json`. Every color is hex and
  * every size is in canvas pixels; each surface lists its full role set and code and diagram themes,
  * so the output is everything a tool or agent needs to stay on-brand.
  *

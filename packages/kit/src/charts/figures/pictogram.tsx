@@ -48,7 +48,7 @@ const MIN_SIDE_SCALE = 0.75;
 const SIDE_LABEL_LINES = 3;
 
 /**
- * The most lines a label takes anywhere; past them it is cut, and `deck lint` reports it.
+ * The most lines a label takes anywhere; past them it is cut, and `deckster lint` reports it.
  */
 const MAX_LABEL_LINES = 5;
 
@@ -209,7 +209,7 @@ export type PictogramPlan = {
   lines: string[];
 
   /**
-   * Whether the label had to be cut to fit, which `deck lint` reports.
+   * Whether the label had to be cut to fit, which `deckster lint` reports.
    */
   cut: boolean;
 };
@@ -423,7 +423,7 @@ export function figureOf(props: PictogramProps): string {
  * size there and the label takes at most three lines; otherwise (a narrow column) it goes under the
  * grid, at the room's full width. The figure scales down to the width it has and the label wraps to
  * as many lines as it needs, so nothing runs past the room; a label too long for even that is cut
- * and marked, which `deck lint` reports.
+ * and marked, which `deckster lint` reports.
  *
  * @param props - The figure's props.
  * @param input - The room, the theme and the measurer.

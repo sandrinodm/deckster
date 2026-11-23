@@ -1,16 +1,16 @@
 # Present from the CLI
 
-`deck present <deck>` opens a deck in its own desktop window (Electron) and serves it with hot
+`deckster present <deck>` opens a deck in its own desktop window (Electron) and serves it with hot
 reload. How to use it is in the documentation:
-[deck present and displays](https://sandrinodm.github.io/deckster/present/deck-present-and-displays/)
+[deckster present and displays](https://sandrinodm.github.io/deckster/present/deck-present-and-displays/)
 covers the Electron download, the flags and putting the slides and the notes on different displays;
 [Presenter tools and shortcuts](https://sandrinodm.github.io/deckster/present/presenter-tools-and-shortcuts/)
 covers the tools inside the window; and
 [Troubleshooting](https://sandrinodm.github.io/deckster/present/troubleshooting/) covers the
-messages `deck present` prints. This page keeps the details for working on `deck present` in this
+messages `deckster present` prints. This page keeps the details for working on `deckster present` in this
 repository.
 
-Run `deck present` without a name to open the gallery when the workspace contains several decks.
+Run `deckster present` without a name to open the gallery when the workspace contains several decks.
 A name on the command line takes precedence over `DECK`, and a workspace with just one deck
 opens it directly. In gallery mode, use **Back to decks** to stop the current presentation and
 choose another. The gallery uses an operator display when one is available. With a single display in fullscreen or kiosk
@@ -22,7 +22,7 @@ Deckster stops the command.
 ```sh
 pnpm install
 pnpm --filter @deckster/shell exec install-electron   # downloads the binary, once
-pnpm deck present hello
+pnpm deckster present hello
 ```
 
 Electron's binary is not part of `pnpm install`: since Electron 42 it downloads on first use or with
@@ -33,7 +33,7 @@ middle of a command.
 
 ## How it starts
 
-On macOS the first `deck present` (or `deck present --list-displays`, which opens no window and so
+On macOS the first `deckster present` (or `deckster present --list-displays`, which opens no window and so
 prepares it ahead of time) also builds `Deckster.app` in `.deck/shell/app/<key>/`: a clone of
 Electron's app with its name, icon and helpers changed, so the Dock, Cmd+Tab, the menu bar and
 Activity Monitor say Deckster instead of Electron. It takes about 0.3 to 0.5 s once (the first
@@ -42,9 +42,9 @@ it), uses about 1 MB of disk on APFS (a plain copy elsewhere is about 260 MB), d
 is reused until Electron or the recipe changes. It is signed ad hoc, for this Mac only.
 
 The CLI starts Electron first and loads, builds and serves the deck while it boots, then tells the
-window which deck to load. On a warm disk `deck present hello` has its window loaded in about 1.6 to
-1.8 s (median; it was 2.9 s before), and `deck --help` answers in about 0.2 s (it was 1.5 s).
-`pnpm deck` adds about 0.3 s of its own; `./node_modules/.bin/deck present hello`, or an alias to
+window which deck to load. On a warm disk `deckster present hello` has its window loaded in about 1.6 to
+1.8 s (median; it was 2.9 s before), and `deckster --help` answers in about 0.2 s (it was 1.5 s).
+`pnpm deckster` adds about 0.3 s of its own; `./node_modules/.bin/deckster present hello`, or an alias to
 that file, skips it.
 
 ## Window details

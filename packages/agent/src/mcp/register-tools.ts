@@ -136,7 +136,7 @@ export function registerDeckTools(server: McpServer, tools: DeckToolsApi): void 
     {
       title: 'Lint the deck',
       description:
-        'Checks the deck the way `deck lint` does (schema, overflow, contrast, ' +
+        'Checks the deck the way `deckster lint` does (schema, overflow, contrast, ' +
         'off-brand values, layout budgets, time) and returns { ok, summary, ' +
         'findings }; each finding has slide, file, step, rule, severity, message ' +
         'and fix. Call it after every edit and before you finish; it takes a few ' +

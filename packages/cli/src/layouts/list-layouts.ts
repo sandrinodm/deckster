@@ -59,12 +59,12 @@ const PLAIN_YAML_PATTERN = /^[\w ./-]+$/;
 export const BRAND_SOURCE_PREFIX = 'brand:';
 
 /**
- * A JSON Schema object, as `deck layouts --json` prints it.
+ * A JSON Schema object, as `deckster layouts --json` prints it.
  */
 type JsonSchema = Readonly<Record<string, unknown>>;
 
 /**
- * One slot of a layout, as `deck layouts --json` prints it.
+ * One slot of a layout, as `deckster layouts --json` prints it.
  */
 export type SlotInfo = {
   /**
@@ -90,7 +90,8 @@ export type SlotInfo = {
 };
 
 /**
- * One frontmatter field of a layout, as `deck layouts --json` prints it next to its JSON Schema.
+ * One frontmatter field of a layout, as `deckster layouts --json` prints it next to its JSON
+ * Schema.
  */
 export type FieldInfo = {
   /**
@@ -115,7 +116,7 @@ export type FieldInfo = {
 };
 
 /**
- * One layout available to a deck, as `deck layouts --json` prints it: its whole contract.
+ * One layout available to a deck, as `deckster layouts --json` prints it: its whole contract.
  */
 export type LayoutInfo = {
   /**
@@ -174,7 +175,7 @@ export type LayoutInfo = {
   slots: Record<string, SlotInfo>;
 
   /**
-   * Content limits per slot for the layout's roomiest form, which `deck lint` checks.
+   * Content limits per slot for the layout's roomiest form, which `deckster lint` checks.
    */
   budget: Readonly<Record<string, ContentBudget | undefined>>;
 
@@ -196,8 +197,8 @@ export type LayoutInfo = {
 };
 
 /**
- * One variant as the catalog prints it: the contract's variant, and every limit `deck lint` and the
- * build hold a slide that matches it to.
+ * One variant as the catalog prints it: the contract's variant, and every limit `deckster lint` and
+ * the build hold a slide that matches it to.
  */
 export type VariantInfo = LayoutVariant & {
   /**
@@ -219,7 +220,7 @@ export type VariantInfo = LayoutVariant & {
 };
 
 /**
- * The layout catalog of a deck, as `deck layouts --json` prints it.
+ * The layout catalog of a deck, as `deckster layouts --json` prints it.
  */
 export type LayoutCatalogInfo = {
   /**

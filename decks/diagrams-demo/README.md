@@ -7,8 +7,8 @@ lists the slides in talk order. Parcelwise and its systems are fictional.
 Run these from the repository root:
 
 ```sh
-pnpm deck dev diagrams-demo
-pnpm deck lint diagrams-demo
+pnpm deckster dev diagrams-demo
+pnpm deckster lint diagrams-demo
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures.

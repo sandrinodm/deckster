@@ -29,7 +29,7 @@ export const diagramLongWordRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     'A diagram breaks a word inside a node title or edge label, or cuts a label short, ' +

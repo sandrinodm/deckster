@@ -160,7 +160,7 @@ function suiteTools(deckDir: string, deck: string): DeckToolsApi {
 }
 
 /**
- * Serves the panel suite's two decks, as `deck dev --agent fake [--agent-panel bottom] [--brand
+ * Serves the panel suite's two decks, as `deckster dev --agent fake [--agent-panel bottom] [--brand
  * nocturne]` does, before the first test; closes them and removes the copies and their agent files
  * after the last.
  */

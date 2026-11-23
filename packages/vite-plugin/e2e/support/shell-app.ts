@@ -40,10 +40,10 @@ export type ShellFiles = {
 };
 
 /**
- * Finds the executable `deck present` starts and the shell's entry file, without loading `electron`
- * (which would download the binary): the branded `Deckster.app` when the CLI or its tests already
- * built it (this never builds it), else the Electron binary `@deckster/shell` installed.
- * `undefined` when the binary is not downloaded, so the suite skips instead of failing.
+ * Finds the executable `deckster present` starts and the shell's entry file, without loading
+ * `electron` (which would download the binary): the branded `Deckster.app` when the CLI or its
+ * tests already built it (this never builds it), else the Electron binary `@deckster/shell`
+ * installed. `undefined` when the binary is not downloaded, so the suite skips instead of failing.
  */
 export function findShellFiles(): ShellFiles | undefined {
   try {

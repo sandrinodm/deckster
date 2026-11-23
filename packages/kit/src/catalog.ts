@@ -73,9 +73,10 @@ export {
 } from '#layouts/brand-layout.contract.ts';
 
 /**
- * The contracts of every layout the kit registers, for the build and `deck layouts`, in the order a
- * deck usually uses them. It is loaded in Node, so it imports only contracts: no components, no
- * JSX, no browser code. Every layout in `runtime.ts` has its contract here, under the same name.
+ * The contracts of every layout the kit registers, for the build and `deckster layouts`, in the
+ * order a deck usually uses them. It is loaded in Node, so it imports only contracts: no
+ * components, no JSX, no browser code. Every layout in `runtime.ts` has its contract here, under
+ * the same name.
  */
 export default defineLayoutCatalog({
   source: '@deckster/kit',

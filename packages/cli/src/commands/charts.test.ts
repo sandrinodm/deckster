@@ -4,7 +4,7 @@ import { Effect } from 'effect';
 import { runCaptured } from '#cli.fixture.ts';
 
 it.effect(
-  'deck charts --json prints every chart with its use, messages, props, data, example and accessibility',
+  'deckster charts --json prints every chart with its use, messages, props, data, example and accessibility',
   () =>
     Effect.gen(function* () {
       const { code, output } = yield* runCaptured(['charts', '--json']);
@@ -52,7 +52,7 @@ it.effect(
     }),
 );
 
-it.effect('deck charts lists each chart with its messages and example in plain text', () =>
+it.effect('deckster charts lists each chart with its messages and example in plain text', () =>
   Effect.gen(function* () {
     const { code, output } = yield* runCaptured(['charts']);
     expect(code).toBe(0);
@@ -62,7 +62,7 @@ it.effect('deck charts lists each chart with its messages and example in plain t
 );
 
 it.effect(
-  'deck charts --json lists the components for a message in catalog order, as its help says',
+  'deckster charts --json lists the components for a message in catalog order, as its help says',
   () =>
     Effect.gen(function* () {
       const { output } = yield* runCaptured(['charts', '--json']);

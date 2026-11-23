@@ -24,7 +24,7 @@ export const brandLayoutFallbackRule: DeckRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     "A slide names a layout that only another brand defines, so it renders with that layout's " +

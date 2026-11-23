@@ -63,7 +63,7 @@ export const canvasOverflowRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'Content extends past the edge of the 1920x1080 canvas and is clipped.',
 

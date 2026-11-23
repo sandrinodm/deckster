@@ -1,12 +1,12 @@
 import type { ExportMode, RendererId } from '@deckster/export';
 
 /**
- * The files `deck export` writes.
+ * The files `deckster export` writes.
  */
 export type ExportFormat = 'pdf' | 'png' | 'pptx';
 
 /**
- * Everything `deck export` was asked to do.
+ * Everything `deckster export` was asked to do.
  */
 export type ExportOptions = {
   /**
@@ -127,7 +127,7 @@ export type ExportOptions = {
 export const DEFAULT_MAX_MEDIA_BYTES = 50 * 1024 * 1024;
 
 /**
- * The options of a plain `deck export <deck>`: PDF and PPTX of every slide at its last step, in
+ * The options of a plain `deckster export <deck>`: PDF and PPTX of every slide at its last step, in
  * hybrid mode, with animations and embedded videos, into the default folder.
  *
  * @param deck - The deck folder name.

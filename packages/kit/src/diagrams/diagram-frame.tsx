@@ -45,7 +45,7 @@ type DiagramFrameProps = {
   live?: string | undefined;
 
   /**
-   * `data-*` attributes for `deck lint` and tests.
+   * `data-*` attributes for `deckster lint` and tests.
    */
   data?: Readonly<Record<`data-${string}`, string | undefined>>;
 
@@ -57,10 +57,10 @@ type DiagramFrameProps = {
 
 /**
  * The root every kit diagram draws in: a figure that fills its region (or takes a fixed height),
- * marked `data-diagram="<kind>"` for `deck lint` and exporters, a figure named for screen readers
- * by its title and described by its text summary (both in visually hidden text that stays put as
- * the slide steps), with a polite live region that announces what each step changes, and hidden
- * until its layout is ready so nothing is seen half placed.
+ * marked `data-diagram="<kind>"` for `deckster lint` and exporters, a figure named for screen
+ * readers by its title and described by its text summary (both in visually hidden text that stays
+ * put as the slide steps), with a polite live region that announces what each step changes, and
+ * hidden until its layout is ready so nothing is seen half placed.
  */
 export function DiagramFrame({
   ref,

@@ -14,7 +14,8 @@ export type FeedbackFailure = typeof FeedbackFailure.Type;
 
 /**
  * A comment that cannot be read, written or found. The message says what went wrong and what to do.
- * The dev server sends it back and `deck comments` prints it. Build it with {@link feedbackError}.
+ * The dev server sends it back and `deckster comments` prints it. Build it with
+ * {@link feedbackError}.
  */
 export class FeedbackError extends Schema.TaggedError<FeedbackError>()('FeedbackError', {
   /**

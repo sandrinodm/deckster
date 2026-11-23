@@ -27,9 +27,9 @@ export type LiveProps<Props extends object = object> = {
   children?: ReactNode;
 
   /**
-   * What static mode, `deck shot` and exports show instead of the running widget: an image URL, or
-   * a function that renders it (it gets the slide's step). Without it the widget itself renders in
-   * static mode, which is right only for a widget with no timers, fetches or randomness.
+   * What static mode, `deckster shot` and exports show instead of the running widget: an image URL,
+   * or a function that renders it (it gets the slide's step). Without it the widget itself renders
+   * in static mode, which is right only for a widget with no timers, fetches or randomness.
    */
   poster?: Poster;
 

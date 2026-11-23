@@ -60,7 +60,7 @@ describe('clampShellTitle', () => {
   });
 });
 
-describe('deck present', { timeout: 30_000 }, () => {
+describe('deckster present', { timeout: 30_000 }, () => {
   it.live('lists displays as text and as JSON', () =>
     Effect.gen(function* () {
       const fake = fakeShell({ displays: [testDisplay(1, true), testDisplay(7, false)] });
@@ -299,11 +299,11 @@ describe('deck present', { timeout: 30_000 }, () => {
       expect(yield* attempt('--browser', '--fullscreen')).toContain('--browser');
       expect(yield* attempt('--port', '0')).toContain('port number from 1 to 65535');
       expect(yield* attempt('--port', '99999999')).toContain('port number from 1 to 65535');
-      expect(yield* attempt('--nope')).toContain('deck present --help');
+      expect(yield* attempt('--nope')).toContain('deckster present --help');
       const gemini = yield* attempt('--agent', 'gemini');
       expect(gemini).toContain('--agent must be claude or codex');
-      expect(gemini).toContain('deck present --help');
-      expect(gemini).not.toContain('deck dev');
+      expect(gemini).toContain('deckster present --help');
+      expect(gemini).not.toContain('deckster dev');
       expect(fake.opened).toEqual([]);
       expect(fake.started).toEqual([]);
     }),

@@ -90,7 +90,7 @@ const withoutBrand = Effect.fn('withoutBrand')(function* (
     brand: undefined,
     warning:
       `The brand "${brandName}" has a problem, so its own layouts are left out: ` +
-      `${problemSummary(problem).replace(TRAILING_PERIOD_PATTERN, '')}. Run \`deck brand check ${brandName}\` for the details.`,
+      `${problemSummary(problem).replace(TRAILING_PERIOD_PATTERN, '')}. Run \`deckster brand check ${brandName}\` for the details.`,
   };
 });
 

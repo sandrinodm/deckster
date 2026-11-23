@@ -41,18 +41,18 @@ npm install --global @deckster/cli
 
 ```sh
 mkdir talks && cd talks
-deck new launch-review --title "Launch review" --duration 20m
-deck new slide launch-review results --layout stats
-deck dev launch-review                    # hot-reload dev server (q or Ctrl+C to stop)
+deckster new launch-review --title "Launch review" --duration 20m
+deckster new slide launch-review results --layout stats
+deckster dev launch-review                    # hot-reload dev server (q or Ctrl+C to stop)
 ```
 
 Check, screenshot, and export:
 
 ```sh
-deck lint launch-review                   # checks schema, overflow, contrast, budgets, notes
-deck shot launch-review results           # 1920x1080 PNG -> .deck/shots/launch-review/02-results.png
-deck export launch-review                 # PDF + editable PPTX -> .deck/exports/launch-review/
-deck types                                # optional: generate tsconfig.json for editor IntelliSense
+deckster lint launch-review                   # checks schema, overflow, contrast, budgets, notes
+deckster shot launch-review results           # 1920x1080 PNG -> .deck/shots/launch-review/02-results.png
+deckster export launch-review                 # PDF + editable PPTX -> .deck/exports/launch-review/
+deckster types                                # optional: generate tsconfig.json for editor IntelliSense
 ```
 
 A deck is just a plain folder (`decks/<name>/`) with `deck.config.ts` and `slides/*.mdx` (or `.tsx`) — no `package.json` or `node_modules` needed inside your talks folder.
@@ -61,41 +61,41 @@ A deck is just a plain folder (`decks/<name>/`) with `deck.config.ts` and `slide
 
 - **MDX & TSX slides**: Write declarative slides with `<Step at={n}>` reveals and `<Notes>` speaker notes, or drop into TSX for interactive React demos.
 - **Typed layouts & brands**: 52 built-in layouts and data-driven `brand.ts` themes (`--brand <name>`). Slides stay free of raw colors and pixel positioning.
-- **Visual linting (`deck lint`)**: Renders every step of every slide in headless Chromium to catch overflow, truncated text, contrast failures (including over photos), off-brand values, diagram problems (overlaps, density, a card the brand does not have), and pacing issues.
+- **Visual linting (`deckster lint`)**: Renders every step of every slide in headless Chromium to catch overflow, truncated text, contrast failures (including over photos), off-brand values, diagram problems (overlaps, density, a card the brand does not have), and pacing issues.
 - **PDF & editable PPTX export**: Vector PDFs with bookmarks and embedded fonts, plus hybrid/native PowerPoint decks with masters, editable text, native charts/diagrams, notes, and step animations.
-- **Visual diffing (`deck diff`)**: Pixel-by-pixel slide comparison against a git ref or saved baseline, with an HTML report and PR summary.
-- **Built for AI agents**: Every command supports `--json`, exposes typed catalogs (`layouts`, `charts`, `diagrams`, `components`, `icons`), and supports `--mcp` and `--agent claude|codex` in `deck dev`.
+- **Visual diffing (`deckster diff`)**: Pixel-by-pixel slide comparison against a git ref or saved baseline, with an HTML report and PR summary.
+- **Built for AI agents**: Every command supports `--json`, exposes typed catalogs (`layouts`, `charts`, `diagrams`, `components`, `icons`), and supports `--mcp` and `--agent claude|codex` in `deckster dev`.
 
 ## Commands
 
-Run `deck --help` for all commands, or `deck <command> --help` for full flags.
+Run `deckster --help` for all commands, or `deckster <command> --help` for full flags.
 
-| Command                                  | Description                                                                |
-| ---------------------------------------- | -------------------------------------------------------------------------- |
-| `deck dev [deck]`                        | Serve a deck with hot reload (`--mcp`, `--agent claude\|codex`, `--host`)  |
-| `deck present [deck]`                    | Open in Electron with presenter notes, timer, and display selection        |
-| `deck build [deck]`                      | Build static site output to `decks/<deck>/dist` (`--all`, `--out <dir>`)   |
-| `deck preview [deck]`                    | Serve a built deck locally                                                 |
-| `deck new <deck>`                        | Scaffold a new deck (`deck new slide ...`, `deck new app ...`)             |
-| `deck lint <deck>`                       | Validate schema, layout budgets, contrast, and overflow in Chromium        |
-| `deck shot <deck> [slide]`               | Capture 1920x1080 PNGs, hidden slides too (`--steps`, `--scale <n>`)       |
-| `deck diff <deck>`                       | Compare rendered slides against a git ref or `--save-baseline`             |
-| `deck export <deck>`                     | Export `--pdf`, `--pptx`, and/or `--png` (`--include-hidden`, `--dry-run`) |
-| `deck brand [name]`                      | Inspect resolved brand tokens and diagram cards, or `deck brand check`     |
-| `deck brand add <source>`                | Copy a brand folder from a git repository into `brands/<name>`             |
-| `deck layouts \| icons \| charts \| ...` | Print typed catalogs (`diagrams`, `components`) for humans and agents      |
-| `deck comments <deck>`                   | List, add, resolve, reopen, and prune browser review comments              |
-| `deck types`                             | Write `tsconfig.json` and `.deck/env.d.ts` for editor type checking        |
-| `deck mcp [deck]`                        | Print Claude Code / Codex MCP config for a running `deck dev --mcp`        |
-| `deck agent doctor`                      | Verify local `claude` / `codex` CLI availability and auth                  |
+| Command                                      | Description                                                                |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| `deckster dev [deck]`                        | Serve a deck with hot reload (`--mcp`, `--agent claude\|codex`, `--host`)  |
+| `deckster present [deck]`                    | Open in Electron with presenter notes, timer, and display selection        |
+| `deckster build [deck]`                      | Build static site output to `decks/<deck>/dist` (`--all`, `--out <dir>`)   |
+| `deckster preview [deck]`                    | Serve a built deck locally                                                 |
+| `deckster new <deck>`                        | Scaffold a new deck (`deckster new slide ...`, `deckster new app ...`)     |
+| `deckster lint <deck>`                       | Validate schema, layout budgets, contrast, and overflow in Chromium        |
+| `deckster shot <deck> [slide]`               | Capture 1920x1080 PNGs, hidden slides too (`--steps`, `--scale <n>`)       |
+| `deckster diff <deck>`                       | Compare rendered slides against a git ref or `--save-baseline`             |
+| `deckster export <deck>`                     | Export `--pdf`, `--pptx`, and/or `--png` (`--include-hidden`, `--dry-run`) |
+| `deckster brand [name]`                      | Inspect resolved brand tokens and diagram cards, or `deckster brand check` |
+| `deckster brand add <source>`                | Copy a brand folder from a git repository into `brands/<name>`             |
+| `deckster layouts \| icons \| charts \| ...` | Print typed catalogs (`diagrams`, `components`) for humans and agents      |
+| `deckster comments <deck>`                   | List, add, resolve, reopen, and prune browser review comments              |
+| `deckster types`                             | Write `tsconfig.json` and `.deck/env.d.ts` for editor type checking        |
+| `deckster mcp [deck]`                        | Print Claude Code / Codex MCP config for a running `deckster dev --mcp`    |
+| `deckster agent doctor`                      | Verify local `claude` / `codex` CLI availability and auth                  |
 
 ### Shared conventions
 
 - **`--brand <name>`** overrides the deck's configured brand for `dev`, `present`, `shot`, `lint`, `diff`, and `export`.
 - **`--json`** outputs structured JSON (`{ ok: false, error: { type, message } }` on failure).
-- **Workspace discovery**: `deck` uses the nearest parent directory containing `decks/` (or `DECK_ROOT`), and refuses to use `$HOME` or `/`.
-- **Hidden slides**: a slide with `hidden: true` in its frontmatter stays in the deck, and a talk skips it. `deck shot` and `deck lint` cover it (`deck shot --json` marks each file with `hidden`; `deck lint` checks it like any slide, but `time-budget`, `few-builds` and `layout-repetition` count the slides the talk shows). `deck export` leaves hidden slides out of the PDF, PNGs, and PPTX and says how many; `--include-hidden` puts them in (as native hidden slides in the PPTX), and a hidden slide named in `--slides`, or inside a range there, is exported (the summary then reports none left out): as an ordinary page in the PDF and a PNG, and still marked hidden in the PPTX. Slide numbers in `--slides`, file names, and the URL count every slide.
-- **Brand layouts**: a brand may bring layouts of its own in `brands/<name>/layouts.ts`. `deck layouts` lists them with the kit's, shows each one's `source` (`brand:<name>`) and `fallback` (the kit layout a deck on another brand renders it with) and, with `--json`, its `label` (the layout's name in the source template). With `--summary` the brand's layouts come first under their own heading. `--brand <name>` lists another brand's. `deck new slide <deck> <id> --layout <name>` takes a brand layout, and `deck brand check <name>` reports a layout's problems against `layouts.ts`. When a slide names a layout only another brand defines, the build renders the fallback and `deck lint` reports `brand-layout-fallback` (a warning) for the slide.
+- **Workspace discovery**: `deckster` uses the nearest parent directory containing `decks/` (or `DECK_ROOT`), and refuses to use `$HOME` or `/`.
+- **Hidden slides**: a slide with `hidden: true` in its frontmatter stays in the deck, and a talk skips it. `deckster shot` and `deckster lint` cover it (`deckster shot --json` marks each file with `hidden`; `deckster lint` checks it like any slide, but `time-budget`, `few-builds` and `layout-repetition` count the slides the talk shows). `deckster export` leaves hidden slides out of the PDF, PNGs, and PPTX and says how many; `--include-hidden` puts them in (as native hidden slides in the PPTX), and a hidden slide named in `--slides`, or inside a range there, is exported (the summary then reports none left out): as an ordinary page in the PDF and a PNG, and still marked hidden in the PPTX. Slide numbers in `--slides`, file names, and the URL count every slide.
+- **Brand layouts**: a brand may bring layouts of its own in `brands/<name>/layouts.ts`. `deckster layouts` lists them with the kit's, shows each one's `source` (`brand:<name>`) and `fallback` (the kit layout a deck on another brand renders it with) and, with `--json`, its `label` (the layout's name in the source template). With `--summary` the brand's layouts come first under their own heading. `--brand <name>` lists another brand's. `deckster new slide <deck> <id> --layout <name>` takes a brand layout, and `deckster brand check <name>` reports a layout's problems against `layouts.ts`. When a slide names a layout only another brand defines, the build renders the fallback and `deckster lint` reports `brand-layout-fallback` (a warning) for the slide.
 
   With the [brand import and layout changes](https://github.com/sandrinodm/deckster/pull/31),
   a live agent session uses its active brand override when its `new_slide` tool scaffolds a slide.
@@ -113,7 +113,7 @@ Run `deck --help` for all commands, or `deck <command> --help` for full flags.
 | `lint`, `shot`, `diff`, `export` | Playwright Chromium (commands print the exact install command if missing) |
 | `present`                        | Electron binary (or pass `--browser` to open Chrome / default browser)    |
 | `export --verify`                | Docker (LibreOffice + Open XML SDK), or `quicklook`/`keynote` on macOS    |
-| `dev --agent claude\|codex`      | Signed-in `claude` or `codex` CLI (`deck agent doctor` checks both)       |
+| `dev --agent claude\|codex`      | Signed-in `claude` or `codex` CLI (`deckster agent doctor` checks both)   |
 | Looping video from GIFs          | `ffmpeg` on `PATH` (otherwise GIFs stay images)                           |
 
 ## Documentation & Links

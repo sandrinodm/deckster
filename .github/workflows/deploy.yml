@@ -90,7 +90,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # deck build, deck shot, the UI shots and the exports drive Chromium.
+      # deckster build, deckster shot, the UI shots and the exports drive Chromium.
       - name: Install the browser
         run: pnpm exec playwright install chromium --with-deps
 
@@ -103,7 +103,7 @@ jobs:
           sudo apt-get install -y xvfb libgtk-3-0t64 libnss3 libgbm1 libasound2t64
           pnpm --filter @deckster/shell exec install-electron
 
-      # The export-verify shot runs deck export --verify, which renders the PPTX with LibreOffice in
+      # The export-verify shot runs deckster export --verify, which renders the PPTX with LibreOffice in
       # Docker (ubuntu-latest has it). Building the image here keeps its time and errors out of the
       # sync step.
       - name: Prepare export verification images
@@ -145,7 +145,7 @@ jobs:
         run: |
           for dir in docs-site/public/decks/*/; do
             deck="$(basename "$dir")"
-            pnpm deck export "$deck" --out "$GITHUB_WORKSPACE/$dir"
+            pnpm deckster export "$deck" --out "$GITHUB_WORKSPACE/$dir"
           done
 
       - name: Check the site

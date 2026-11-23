@@ -1,21 +1,21 @@
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * `deck dev`: the dev server for a deck or the workspace chooser.
+ * `deckster dev`: the dev server for a deck or the workspace chooser.
  */
 export const devCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'dev',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'Serve a deck with hot reload',
 
   /**
-   * The text `deck dev --help` prints.
+   * The text `deckster dev --help` prints.
    */
   help: () => import('#commands/dev-help.ts').then((module) => module.HELP),
 

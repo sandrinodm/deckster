@@ -869,7 +869,7 @@ function listedLabels(
 /**
  * The centre's caption set to fit the hole: in the stat label step on two lines, then three, then
  * in the smaller axis step, so it is never cut while a smaller setting would hold it. A caption too
- * long for all of them is cut and marked, which `deck lint` reports.
+ * long for all of them is cut and marked, which `deckster lint` reports.
  *
  * @param caption - The caption.
  * @param room - The width and height the hole leaves it, the theme and the measurer.

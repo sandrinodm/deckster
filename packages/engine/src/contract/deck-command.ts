@@ -1,10 +1,11 @@
 /**
- * The command messages tell the reader to type, in the repository: the workspace's `deck` script.
+ * The command messages tell the reader to type, in the repository: the workspace's `deckster`
+ * script.
  */
-const REPOSITORY_COMMAND = 'pnpm deck';
+const REPOSITORY_COMMAND = 'pnpm deckster';
 
 /**
- * The environment variable the published `deck` command sets to its own name, so every message
+ * The environment variable the published `deckster` command sets to its own name, so every message
  * written by it or by a process it starts names the command the reader actually has.
  */
 export const DECK_COMMAND_ENV = 'DECKSTER_COMMAND';
@@ -16,7 +17,7 @@ export const DECK_COMMAND_ENV = 'DECKSTER_COMMAND';
 declare const __DECK_COMMAND__: string | undefined;
 
 /**
- * The command a message names for running the CLI: `pnpm deck` in the repository, `deck` for a
+ * The command a message names for running the CLI: `pnpm deck` in the repository, `deckster` for a
  * published install. Node reads it from `DECKSTER_COMMAND`; the browser gets it from the page's
  * build.
  */

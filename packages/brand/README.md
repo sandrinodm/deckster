@@ -44,18 +44,18 @@ section. `code`, `diagram` and `charts` are optional and derived from the roles 
 Check a brand without a deck, or print its resolved tokens:
 
 ```console
-$ pnpm deck brand check nocturne
+$ pnpm deckster brand check nocturne
 brands/nocturne/brand.ts
 nocturne: is valid (0 errors, 0 warnings).
 
-$ pnpm deck brand nocturne
+$ pnpm deckster brand nocturne
 Nocturne (brands/nocturne/brand.ts)
 Fonts: display Fraunces, body Manrope, mono IBM Plex Mono
 Type: display 168px, headline 84px, title 56px, lead 38px, body 34px, small 26px, caption 24px, label 22px, stat 184px, quote 88px, code 26px
 ...
 ```
 
-`pnpm deck brand <name> --json` prints every resolved token.
+`pnpm deckster brand <name> --json` prints every resolved token.
 
 ## What the brand defines
 
@@ -117,7 +117,7 @@ with its field and a fix:
    `GRAPHIC_CONTRAST` 3) and of the colors a diagram card writes on its fill, and data palettes on each surface's chart plate and under color-vision
    deficiencies.
 
-A brand that fails does not load: `deck dev`, `build`, `shot` and `lint` stop with the brand file,
+A brand that fails does not load: `deckster dev`, `build`, `shot` and `lint` stop with the brand file,
 the field and the fix. Warnings (a waived contrast pair, data colors that are close, `positive`
 and `negative` that merge under a color-vision deficiency, a font substitute of another kind)
 don't stop it. `loadBrand` adds the checks that need the disk: the `name` matches the folder,
@@ -162,7 +162,7 @@ margins. A layout has:
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`        | Kebab-case, unique in the file. It cannot be the name of a kit or engine layout; prefix it with the brand (`fieldnote-cover`).                                                               |
 | `label`       | The layout's name in the source template. A PPTX export names the layout after it.                                                                                                           |
-| `description` | When to use it. `deck layouts` prints it.                                                                                                                                                    |
+| `description` | When to use it. `deckster layouts` prints it.                                                                                                                                                |
 | `fallback`    | The kit or engine layout the slide renders with in a brand that lacks this one. It also sets the layout's contract.                                                                          |
 | `surface`     | The surface the layout defaults to, else the fallback's.                                                                                                                                     |
 | `title`       | `{ box, type?, align?, anchor?, color? }`, or `false` for none. The fallback may require one.                                                                                                |
@@ -180,7 +180,7 @@ drawings in `brands/fieldnote/layouts/`. `loadBrand` checks the art files as it 
 
 ### Checks
 
-`resolveBrand` decodes and checks `layouts.ts` after `brand.ts`, and `deck brand check` reports
+`resolveBrand` decodes and checks `layouts.ts` after `brand.ts`, and `deckster brand check` reports
 what it finds against `layouts.ts`, each with its path (`layouts[2].regions[0].bind`) and a fix.
 The brand package checks what needs only the brand: names are unique, boxes lie inside the canvas
 and are at least 40 pixels across (`MIN_BOX_SIZE_PX`), a slot or field is bound once, `type`,

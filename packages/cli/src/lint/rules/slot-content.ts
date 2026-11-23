@@ -77,7 +77,7 @@ export const slotContentRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     "A slot holds content its layout's contract does not accept: a list where it takes no " +

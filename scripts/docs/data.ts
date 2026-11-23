@@ -15,14 +15,14 @@
 import { DOCS_BRANDS, DOCS_DECKS } from '#allowlist.ts';
 
 /**
- * The command the help texts name. The docs describe the published CLI, whose `deck` binary sets
- * this variable to its own name, so the export does not depend on how the script was started. The
- * `deck`s the export starts inherit it.
+ * The command the help texts name. The docs describe the published CLI, whose `deckster` binary
+ * sets this variable to its own name, so the export does not depend on how the script was started.
+ * The `deckster`s the export starts inherit it.
  */
-process.env.DECKSTER_COMMAND = 'deck';
+process.env.DECKSTER_COMMAND = 'deckster';
 
 /**
- * The workspace, its `deck` and the `--out` reader, imported after the variable is set: some
+ * The workspace, its `deckster` and the `--out` reader, imported after the variable is set: some
  * catalog texts read it when their module loads.
  */
 const { DECK_BIN, readOutDir, WORKSPACE_ROOT } = await import('#script-support.ts');

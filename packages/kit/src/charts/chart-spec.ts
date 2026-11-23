@@ -1,6 +1,6 @@
 /**
  * The attribute every kit chart, number figure and data table puts on its root element: a JSON
- * {@link ChartSpec} describing what it shows, so tools outside React (PPTX export, `deck lint`,
+ * {@link ChartSpec} describing what it shows, so tools outside React (PPTX export, `deckster lint`,
  * tests) can read the chart without parsing its SVG. The value is the end state of the chart, with
  * every step revealed, in the colors of the surface it is drawn on.
  *

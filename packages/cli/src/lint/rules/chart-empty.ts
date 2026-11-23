@@ -34,7 +34,7 @@ export const chartEmptyRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A chart draws no marks, or a line or area chart has a single point.',
 

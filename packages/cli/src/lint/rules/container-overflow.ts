@@ -71,7 +71,7 @@ export const containerOverflowRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'Content is larger than its own container and is clipped or spills out of it.',
 

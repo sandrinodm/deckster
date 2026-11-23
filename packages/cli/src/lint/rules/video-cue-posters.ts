@@ -11,8 +11,8 @@ const PARTS_ATTRIBUTE = 'video-parts';
 const POSTERS_ATTRIBUTE = 'video-posters';
 
 /**
- * A video cut into parts by `cues` without a poster per part. Static mode, `deck shot --steps` and
- * exports never play video, so every step of the slide would show the same still and the steps
+ * A video cut into parts by `cues` without a poster per part. Static mode, `deckster shot --steps`
+ * and exports never play video, so every step of the slide would show the same still and the steps
  * would look like they do nothing.
  */
 export const videoCuePostersRule: SlideRule = {
@@ -37,7 +37,7 @@ export const videoCuePostersRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A cued <Video> has no poster per part, so its steps export as the same still.',
 
@@ -57,7 +57,7 @@ export const videoCuePostersRule: SlideRule = {
           message:
             posters === 0
               ? `A <Video> is cut into ${parts} parts by its cues but has one poster, so static ` +
-                'mode, `deck shot --steps` and exports show the same still at every step.'
+                'mode, `deckster shot --steps` and exports show the same still at every step.'
               : `A <Video> has ${parts} parts but ${posters} posters.`,
           fix:
             `Add \`posters={['../assets/part-1.jpg', ...]}\` with ${parts} stills, ` +

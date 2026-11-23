@@ -49,7 +49,7 @@ export const BUILD_WARNING_SEVERITY: Readonly<Record<string, LintFinding['severi
 /**
  * The fix of a warning whose plugin gave none.
  */
-const DEFAULT_FIX = 'Change the slide as the message says, then run `deck lint` again.';
+const DEFAULT_FIX = 'Change the slide as the message says, then run `deckster lint` again.';
 
 /**
  * Turns the warnings the MDX extensions reported for one slide file into findings, each with the

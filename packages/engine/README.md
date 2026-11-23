@@ -49,7 +49,7 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
   moves, a key is pressed or keyboard focus enters it. The deck never takes focus by itself,
   so keys reach it only after the reader clicks into the frame, and moves replace the history entry
   instead of adding one. The slide still scales to the frame and the hash still addresses it.
-- `window.__deck` is the automation API `deck shot`, `deck lint`, export and the browser tests use:
+- `window.__deck` is the automation API `deckster shot`, `deckster lint`, export and the browser tests use:
   `slides` (each with `id`, `stepCount` and `hidden`), `position`, `isStatic`, `goto`, `next`, `prev` and `ready()`.
 - `useReadyHold(pending)` makes `ready()` wait for content that loads late. `ready()` also waits
   for fonts and images, and rejects after 30 seconds naming the held slides.
@@ -68,7 +68,7 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
 | `@deckster/engine`             | `Deck`, `SlideView`, `Canvas`, `Step`, `useStep`, `useStepAt`, `Notes`, `useDeck`, `useSlide`, `useReadyHold`, `useStatic`, `defineLayout`, `definePlugin`, `useLayouts`, `isInteractiveTarget`, `MORPH_ATTRIBUTE`, the shown-slide helpers (`hiddenSlides`, `shownSlideIndexes`, `neighbourShownSlide`, `shownPageNumber`, `areShownNeighbours`), and the manifest and contract types |
 | `@deckster/engine/config`      | `defineDeck` and the `DeckConfig` schema for `deck.config.ts`                                                                                                                                                                                                                                                                                                                          |
 | `@deckster/engine/frontmatter` | The `SlideFrontmatter` schema every slide accepts (`layout`, `title`, `surface`, `background`, `budget`, `transition`, `hidden`), its fix hints and `TRANSITION_KINDS`, the list `@deckster/brand` also validates against                                                                                                                                                              |
-| `@deckster/engine/layout`      | `defineLayoutContract`, `defineLayoutCatalog`, and the budget and variant helpers (`slideBudget`, `matchingVariants`, `slideFieldLimits`) the build and `deck lint` use                                                                                                                                                                                                                |
+| `@deckster/engine/layout`      | `defineLayoutContract`, `defineLayoutCatalog`, and the budget and variant helpers (`slideBudget`, `matchingVariants`, `slideFieldLimits`) the build and `deckster lint` use                                                                                                                                                                                                            |
 | `@deckster/engine/catalog`     | The engine's own layout catalog (the `default` contract), loaded before any plugin's                                                                                                                                                                                                                                                                                                   |
 | `@deckster/engine/manifest`    | `DeckManifest`, `SlideEntry`, `SlideMeta`: the shape of `virtual:deck`                                                                                                                                                                                                                                                                                                                 |
 | `@deckster/engine/slots`       | `BODY_SLOT`, `slotTag` and the element names the slot compiler writes                                                                                                                                                                                                                                                                                                                  |
@@ -80,7 +80,7 @@ Every subpath except the root and `app` is safe to load in Node: no JSX and no r
 `@deckster/vite-plugin` and the CLI import them while building and linting.
 
 The app entry imports `virtual:deck` and `virtual:deck/plugins`, so it only runs under
-`@deckster/vite-plugin`. To see a deck, run `pnpm deck dev hello` from the repository root.
+`@deckster/vite-plugin`. To see a deck, run `pnpm deckster dev hello` from the repository root.
 
 ## Usage
 
@@ -133,7 +133,7 @@ is the plugin test fixture in
 [`packages/vite-plugin/e2e/fixtures/layouts`](../vite-plugin/e2e/fixtures/layouts):
 
 ```ts
-// columns-layout.contract.ts: loaded in Node by the build and by deck lint
+// columns-layout.contract.ts: loaded in Node by the build and by deckster lint
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
@@ -185,7 +185,7 @@ The contract goes in a catalog (`defineLayoutCatalog`, listed in `layoutCatalogs
 listed in `runtimePlugins`). A slide that names a layout with no contract fails to build. The kit's
 layouts in [`packages/kit/src/layouts`](../kit/src/layouts) follow the same pattern.
 
-`window.__deck` can be driven from any browser automation. Against `pnpm deck dev hello` opened with
+`window.__deck` can be driven from any browser automation. Against `pnpm deckster dev hello` opened with
 `?static`:
 
 ```js
@@ -236,7 +236,7 @@ pnpm --filter @deckster/engine typecheck
 ```
 
 The browser suite in `e2e/` drives the hello deck in Chromium. Its runner starts
-`pnpm deck dev hello --port 5199` itself. Install the browser once, then run one file or all:
+`pnpm deckster dev hello --port 5199` itself. Install the browser once, then run one file or all:
 
 ```sh
 pnpm --dir packages/engine exec e2e-web install chromium

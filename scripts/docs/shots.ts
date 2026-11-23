@@ -7,7 +7,7 @@ import { elapsed, readOutDir, requireDocsBrands, runDeck } from '#script-support
 import { BRAND_GRID_SLIDES, STEP_SLIDES } from '#shots.manifest.ts';
 
 /**
- * How many `deck shot` runs go at once; each starts its own Chromium.
+ * How many `deckster shot` runs go at once; each starts its own Chromium.
  */
 const CONCURRENT_RUNS = 3;
 
@@ -27,7 +27,7 @@ const OWNED_FOLDERS = ['slides', 'steps', 'brands'] as const;
 type ShotKind = 'slide' | 'step' | 'brand';
 
 /**
- * One file `deck shot --json` lists.
+ * One file `deckster shot --json` lists.
  */
 type DeckShotFile = {
   /**
@@ -67,7 +67,7 @@ type DeckShotFile = {
 };
 
 /**
- * The JSON `deck shot --json` prints: the files on success, or `{ ok: false, error }`.
+ * The JSON `deckster shot --json` prints: the files on success, or `{ ok: false, error }`.
  */
 type DeckShotOutput = {
   /**
@@ -97,7 +97,7 @@ type DeckShotOutput = {
 };
 
 /**
- * One `deck shot` invocation and where its files go.
+ * One `deckster shot` invocation and where its files go.
  */
 type ShotJob = {
   /**
@@ -235,7 +235,7 @@ async function clearOwnedFolders(out: string): Promise<void> {
 }
 
 /**
- * Every `deck shot` run: each deck whole, each step slide, and each grid slide in each brand.
+ * Every `deckster shot` run: each deck whole, each step slide, and each grid slide in each brand.
  *
  * @returns The jobs in the order their entries appear in `shots.json`.
  */
@@ -270,7 +270,7 @@ function plannedJobs(): ShotJob[] {
 }
 
 /**
- * Runs one `deck shot` into a scratch folder and copies its files into `--out` under their docs
+ * Runs one `deckster shot` into a scratch folder and copies its files into `--out` under their docs
  * names. The scratch folder keeps a whole-deck run from deleting files in `--out`.
  *
  * @param out - The output folder.
@@ -303,10 +303,10 @@ async function runJob(out: string, job: ShotJob): Promise<JobResult> {
 }
 
 /**
- * Runs `deck shot --json` for a job and parses what it printed, whatever its exit code.
+ * Runs `deckster shot --json` for a job and parses what it printed, whatever its exit code.
  *
  * @param job - The run.
- * @param scratch - The folder `deck shot` writes into.
+ * @param scratch - The folder `deckster shot` writes into.
  * @returns The parsed output, or a failure carrying standard error when nothing parsed.
  */
 async function shoot(job: ShotJob, scratch: string): Promise<DeckShotOutput> {
@@ -334,7 +334,7 @@ async function shoot(job: ShotJob, scratch: string): Promise<DeckShotOutput> {
  *
  * @param out - The output folder.
  * @param job - The run.
- * @param files - The files `deck shot` listed.
+ * @param files - The files `deckster shot` listed.
  * @param brand - The brand the deck rendered with.
  * @returns One entry per file copied.
  */
@@ -371,7 +371,7 @@ async function copyShots(
  * slide must have produced a file with that id.
  *
  * @param job - The run.
- * @param files - The files `deck shot` listed.
+ * @param files - The files `deckster shot` listed.
  * @param label - The job's name in messages.
  * @returns A problem per mismatch; none for a whole-deck run.
  */

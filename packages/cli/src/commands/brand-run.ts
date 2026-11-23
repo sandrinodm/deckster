@@ -41,7 +41,7 @@ const CHECK = 'check';
 const ADD = 'add';
 
 /**
- * What `deck brand check` found: the brand file, and its problems by severity.
+ * What `deckster brand check` found: the brand file, and its problems by severity.
  */
 type BrandCheck = {
   /**
@@ -162,8 +162,8 @@ const checkBrand = Effect.fn('checkBrand')(function* (name: string, json: boolea
 });
 
 /**
- * The plain-text report `deck brand check` prints: each file with its problems and their fixes, and
- * a verdict line.
+ * The plain-text report `deckster brand check` prints: each file with its problems and their fixes,
+ * and a verdict line.
  *
  * @param name - The brand folder name.
  * @param check - What the check found.

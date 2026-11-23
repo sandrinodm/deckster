@@ -44,7 +44,7 @@ export type TypeStep = (typeof TYPE_STEPS)[number];
 /**
  * Smallest type size allowed, in canvas pixels (the canvas is 1920x1080): about 1.9% of the slide
  * height, the smallest text that stays readable from the back of a room. The schema rejects type
- * steps below it and `deck lint` flags rendered text below it, so both use this one number.
+ * steps below it and `deckster lint` flags rendered text below it, so both use this one number.
  */
 export const MIN_TYPE_SIZE_PX = 20;
 

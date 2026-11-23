@@ -72,7 +72,7 @@ type Named = {
  * on an `<Image treatment>`. Such a picture is drawn as it is, which is rarely what the author
  * meant, and treatment names differ between brands, so the fix lists the brand's own and points to
  * `plain`, which every brand has. It is a warning, not a build error, so a deck written for one
- * brand still builds in another; `deck lint` reports it.
+ * brand still builds in another; `deckster lint` reports it.
  *
  * @param options - The brand's name and treatments.
  */

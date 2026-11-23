@@ -8,7 +8,7 @@ import { runCaptured } from '#cli.fixture.ts';
 import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
 
 /**
- * What `deck icons --json` prints.
+ * What `deckster icons --json` prints.
  */
 type IconsJson = {
   /**
@@ -28,10 +28,10 @@ type IconsJson = {
 };
 
 /**
- * Runs `deck icons` in a scratch workspace that has the framework's brands (`default` on lucide,
- * `nocturne` on tabler), or only the given fixture brands (all on lucide).
+ * Runs `deckster icons` in a scratch workspace that has the framework's brands (`default` on
+ * lucide, `nocturne` on tabler), or only the given fixture brands (all on lucide).
  *
- * @param argv - The arguments after `deck icons`.
+ * @param argv - The arguments after `deckster icons`.
  * @param fixtureBrands - Fixture brands to list instead of the framework's.
  */
 const icons = Effect.fn('icons')(function* (
@@ -45,7 +45,7 @@ const icons = Effect.fn('icons')(function* (
   return yield* runCaptured(['icons', ...argv], { root });
 }, Effect.scoped);
 
-describe('deck icons', () => {
+describe('deckster icons', () => {
   it.effect('prints the names every brand shares and the sets used', () =>
     Effect.gen(function* () {
       const { code, output } = yield* icons(['--json']);
@@ -104,7 +104,7 @@ describe('deck icons', () => {
       expect(failure.message).toContain(
         'There is no brand "nope". Brands: default, fieldnote, kinetic, nocturne, tidewater.',
       );
-      expect(failure.message).toContain('Run `deck icons --help` for the usage.');
+      expect(failure.message).toContain('Run `deckster icons --help` for the usage.');
       const json = yield* icons(['--brand', '../evil', '--json']);
       expect(json.code).toBe(1);
       const parsed = JSON.parse(json.output) as {

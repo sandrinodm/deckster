@@ -187,7 +187,7 @@ function Trace({ view }: { view: RunView }): ReactNode {
   return (
     <aside className="ag-trace">
       <h2>Run trace</h2>
-      {/* The rows are divs because `deck lint` counts every <li> in a slide as a bullet. */}
+      {/* The rows are divs because `deckster lint` counts every <li> in a slide as a bullet. */}
       {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role */}
       <div className="ag-steps" role="list">
         {beats.map((beat, index) => {

@@ -1,18 +1,18 @@
 # @deckster/export
 
-The PDF and PowerPoint writer behind `deck export`. It measures a slide that Chromium has rendered,
+The PDF and PowerPoint writer behind `deckster export`. It measures a slide that Chromium has rendered,
 decides what can be drawn natively, and writes the PDF or the `.pptx` from that. It also holds the
 `--verify` tooling that renders a PPTX back to pictures and scores it against the web slide.
 
 The package is internal to deckster: `private: true`, never published, and it exports TypeScript
-source. Its one consumer is the CLI (`packages/cli/src/export/` and `deck diff`).
+source. Its one consumer is the CLI (`packages/cli/src/export/` and `deckster diff`).
 
 ## Try it
 
 From the repository root, with Playwright's Chromium installed:
 
 ```console
-$ pnpm deck export hello --dry-run
+$ pnpm deckster export hello --dry-run
 PPTX dry run (hybrid mode): native / picture / simplified / dropped
 01 title [default]: 2 / 0 / 0 / 0
 02 steps [default]: 6 / 0 / 0 / 0
@@ -20,13 +20,13 @@ PPTX dry run (hybrid mode): native / picture / simplified / dropped
 04 closing [default]: 4 / 0 / 0 / 0
 Total: 17 native, 0 picture, 0 simplified, 0 dropped.
 
-$ pnpm deck export hello
+$ pnpm deckster export hello
 .deck/exports/hello/hello.pdf (4 pages, 4 bookmarks, 0 slide links, 0 external links)
 .deck/exports/hello/hello.pptx (4 slides, hybrid mode, masters: default, inverse, accent, gradient, fonts embedded: ...)
 .deck/exports/hello/fonts: 5 static TrueType instance(s) in 5 families (...)
 ```
 
-`pnpm deck export --help` lists every flag. The ones that reach into this package are `--mode`
+`pnpm deckster export --help` lists every flag. The ones that reach into this package are `--mode`
 (`hybrid`, `native`, `image`), `--outline-text`, `--no-embed-fonts`, `--fonts system`, `--notes`,
 `--dry-run` and `--verify`.
 

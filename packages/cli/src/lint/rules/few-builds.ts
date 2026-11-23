@@ -33,7 +33,7 @@ export const fewBuildsRule: DeckRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     `Fewer than ${FEW_BUILDS_MIN_SHARE * 100}% of a deck's chart, diagram and code slides ` +

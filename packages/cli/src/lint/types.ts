@@ -4,17 +4,18 @@ import type { AnyLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
 /**
- * How serious a finding is. Errors make `deck lint` exit non-zero.
+ * How serious a finding is. Errors make `deckster lint` exit non-zero.
  */
 export const Severity = Schema.Literals(['error', 'warning']);
 
 /**
- * How serious a finding is. Errors make `deck lint` exit non-zero.
+ * How serious a finding is. Errors make `deckster lint` exit non-zero.
  */
 export type Severity = typeof Severity.Type;
 
 /**
- * One problem found in a deck, with where it is and how to fix it. `deck lint --json` prints these.
+ * One problem found in a deck, with where it is and how to fix it. `deckster lint --json` prints
+ * these.
  */
 export const LintFinding = Schema.Struct({
   /**
@@ -629,7 +630,7 @@ export type BrandContext = {
   name: string;
 
   /**
-   * Every resolved token, as `deck brand --json` prints them.
+   * Every resolved token, as `deckster brand --json` prints them.
    */
   tokens: BrandTokens;
 

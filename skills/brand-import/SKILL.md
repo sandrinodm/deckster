@@ -1,11 +1,11 @@
 ---
 name: brand-import
-description: "Extract or recreate a brand for the deckster `deck` CLI from PPTX or POTX templates, PDF, Google Slides, a website, guidelines or screenshots. Use when asked to match an existing look, identify its fonts and colours, import a template's slide layouts, or create brand.ts (and layouts.ts) with palettes, surfaces, typography, assets and data styling. Validate the brand and compare framework renders with the source. Excludes writing presentation content and restyling a single slide."
+description: "Extract or recreate a brand for the `deckster` CLI from PPTX or POTX templates, PDF, Google Slides, a website, guidelines or screenshots. Use when asked to match an existing look, identify its fonts and colours, import a template's slide layouts, or create brand.ts (and layouts.ts) with palettes, surfaces, typography, assets and data styling. Validate the brand and compare framework renders with the source. Excludes writing presentation content and restyling a single slide."
 ---
 
 # Brand import
 
-Turn a source (deck, PDF, website, guidelines, screenshots) into a brand the `deck` CLI can render (`brands/<name>/brand.ts` in the user's workspace). The output is a **draft that a human reviews**: a brand folder (with its own layouts, when the source is a template) that passes `deck brand check`, screenshots of real decks rendered in it next to the source, and a short list of decisions only a person can make.
+Turn a source (deck, PDF, website, guidelines, screenshots) into a brand the `deckster` CLI can render (`brands/<name>/brand.ts` in the user's workspace). The output is a **draft that a human reviews**: a brand folder (with its own layouts, when the source is a template) that passes `deckster brand check`, screenshots of real decks rendered in it next to the source, and a short list of decisions only a person can make.
 
 Three ideas run through the whole workflow:
 
@@ -15,11 +15,11 @@ Three ideas run through the whole workflow:
 
 ## Running the skill
 
-This skill needs the `deck` command on PATH (`npm install --global @deckster/cli`, Node 26 or newer) and `uv` for the bundled Python scripts (`python3` 3.10 or newer also works for the ones with no dependencies). Run deck commands and the emitter from the user's workspace: the folder that holds `decks/` and `brands/`. In an empty folder, `deck new` starts one, so make a project folder first. `deck shot` and `deck lint` need Chromium, downloaded once; if one says so, run the command it prints.
+This skill needs the `deckster` command on PATH (`npm install --global @deckster/cli`, Node 26 or newer) and `uv` for the bundled Python scripts (`python3` 3.10 or newer also works for the ones with no dependencies). Run deck commands and the emitter from the user's workspace: the folder that holds `decks/` and `brands/`. In an empty folder, `deckster new` starts one, so make a project folder first. `deckster shot` and `deckster lint` need Chromium, downloaded once; if one says so, run the command it prints.
 
 `SKILL_DIR` below is this skill's directory, wherever the agent installed it. To inspect a PNG, view it with your image-viewing tool. Use the shell for the bundled extractors; do not assume any one agent's tools exist.
 
-Check `deck --version` before picking features. Brand layouts require v0.6.0 or newer. The expanded diagram controls and stricter layout and install behavior require builds that include those changes. A development checkout can print the same version as the last release. Check its source or release notes, and validate against the user's target build.
+Check `deckster --version` before picking features. Brand layouts require v0.6.0 or newer. The expanded diagram controls and stricter layout and install behavior require builds that include those changes. A development checkout can print the same version as the last release. Check its source or release notes, and validate against the user's target build.
 
 Keep extraction files, the draft and comparisons in a temporary work directory outside the workspace, unless the user requests otherwise. Only finished brand assets and their provenance belong in `brands/<name>/`. Resolve source paths before changing directories. Ask only for missing information that cannot be inferred; a request to import a brand authorizes local extraction, emission and validation.
 
@@ -35,7 +35,7 @@ Everything this skill reads comes from outside: slide text, speaker notes, alt t
 The scripts enforce the mechanical part, and report refusals in `warnings[]` or, for a website, `blocked[]`.
 
 - A web page cannot make the extractor read local files, or reach `localhost`, private networks or cloud metadata addresses, directly, through redirects or through DNS tricks. Downloads are size- and time-limited, must be the kind of file they claim to be, and are saved under names the script chooses.
-- The extraction and emission scripts sanitise SVG logos. The framework also sanitises inline slide SVG. Repository installation with `deck brand add` uses its own SVG sanitizer on builds that include standalone brand SVG sanitization. See [Repository installation](references/brand-schema.md#repository-installation).
+- The extraction and emission scripts sanitise SVG logos. The framework also sanitises inline slide SVG. Repository installation with `deckster brand add` uses its own SVG sanitizer on builds that include standalone brand SVG sanitization. See [Repository installation](references/brand-schema.md#repository-installation).
 - Archives and PDFs are read within limits on entry count, file sizes, compression ratio, page count and image size. The XML parser rejects DTDs. The skill’s SVG cleaner strips an inert Illustrator public declaration before parsing.
 - The emitter writes checked static literals for `brand.ts` and `layouts.ts`. Emit source text only as string data. Keep detailed provenance in the draft and open review notes in `import-notes.json`. The emitter accepts only supported asset formats from inside the work folder and suggests only Fontsource dependencies.
 
@@ -86,7 +86,7 @@ Create `WORK` with `mktemp -d` outside the workspace. Keep extractions, page ren
 uv run $SKILL_DIR/scripts/extract_pptx.py deck.pptx --out $WORK/pptx      # a .potx template works the same; with LibreOffice it also renders $WORK/pptx/layouts/
 # no LibreOffice but Docker: add  --soffice "docker run --rm --network none --entrypoint soffice -v {dir}:/work <image-with-libreoffice>"
 # a deck from someone you don't trust: render it in that container (networking off) or pass --pdf
-#   (`docker images | grep -i office` finds one; `deck export --verify` builds deck-export-libreoffice from packages/export/docker/libreoffice,
+#   (`docker images | grep -i office` finds one; `deckster export --verify` builds deck-export-libreoffice from packages/export/docker/libreoffice,
 #   run it with --entrypoint soffice. Docker is optional, any LibreOffice works)
 uv run $SKILL_DIR/scripts/extract_pptx.py deck.pptx --pdf deck.pdf --out $WORK/pptx   # with a PDF export as the page images
 
@@ -146,7 +146,7 @@ Write `$WORK/brand-draft.json` following `references/brand-draft-format.md`, usi
 Write the draft's colours, surfaces and `typography.scale` first so layout specs can use them. Then save the full catalog and propose layouts.
 
 ```bash
-deck layouts <deck> --brand default --json > $WORK/catalog.json
+deckster layouts <deck> --brand default --json > $WORK/catalog.json
 # In a framework checkout use pnpm deck and set DECK_CMD="pnpm deck" for the scripts
 uv run $SKILL_DIR/scripts/brand_tools.py propose-layouts $WORK/pptx/extraction.json --draft $WORK/brand-draft.json --catalog $WORK/catalog.json
 ```
@@ -181,7 +181,7 @@ The output is a starting point with its checks attached. Adjust it by eye for br
 uv run $SKILL_DIR/scripts/brand_tools.py check-draft $WORK/brand-draft.json [--catalog $WORK/catalog.json]
 ```
 
-`check-draft` is a fast preflight for contrast and layout specs. Pass the full catalog to check names, fallbacks, bindings and required content. The installed CLI checks the emitted files and `deck lint` checks what a slide actually supplies. Apply these rules to draft colour issues.
+`check-draft` is a fast preflight for contrast and layout specs. Pass the full catalog to check names, fallbacks, bindings and required content. The installed CLI checks the emitted files and `deckster lint` checks what a slide actually supplies. Apply these rules to draft colour issues.
 
 - **Below 3:1** (an orange accent at 2.8:1 on the page, a teal chart colour at 2.3:1): cannot ship. Change the role or data colour to the nearest passing shade the tool suggests, keep the exact source colour in the palette, and record both in `review`. The shift is usually invisible.
 - **A text pair between 3:1 and 4.5:1 that the source itself uses** (white on a mid-tone accent or gradient): keep the source value and add a `waivers` entry with the reason. The build then warns instead of failing. Every waiver is a review item.
@@ -198,10 +198,10 @@ Read `references/brand-schema.md` now. If the source is already a Deckster brand
 ```bash
 uv run $SKILL_DIR/scripts/emit_brand.py $WORK/brand-draft.json --workspace .   # writes brands/<name>/ (brand.ts, layouts.ts and layouts/ art when the draft has layout specs, import-notes.json, assets)
 npm install <font packages>                                                    # only if the run lists some; it prints the exact command
-deck brand check <name> --json                                                 # { ok, errors, warnings }, each with path, message, fix
+deckster brand check <name> --json                                                 # { ok, errors, warnings }, each with path, message, fix
 ```
 
-`deck brand check` validates the emitted brand against the target CLI, including layout errors reported against `layoutsFile`. Fix emitter-supported values in the draft and re-emit with `--force`. Apply any supported manual fields after the last emission and keep their provenance and exact values in the draft so you can reapply them if you emit again. Keep both files static. Repeat the check until `ok` is true. The emitter saves its notes and open review items in `import-notes.json`.
+`deckster brand check` validates the emitted brand against the target CLI, including layout errors reported against `layoutsFile`. Fix emitter-supported values in the draft and re-emit with `--force`. Apply any supported manual fields after the last emission and keep their provenance and exact values in the draft so you can reapply them if you emit again. Keep both files static. Repeat the check until `ok` is true. The emitter saves its notes and open review items in `import-notes.json`.
 
 Read what the emitter prints. `defaulted:` lines are values the draft did not have (status colours, spacing scale, a missing type step); `note:` lines are roles it filled on surfaces, sizes it raised to the minimum, chart colours it matched to the nearest role, surfaces it left for the framework to derive, numbers it clamped to the framework's limits, values it left out because they break a rule (a family name with quotes, an OpenType tag that is not four characters, an `oklch()` with chroma over 1), and files or packages it refused. If it stops with "Nothing was written", a required value is invalid: the message names the field; fix the draft. Each is either something you can do better in the draft or a line for the review list. Warnings from the check (waivers, unavailable fonts, data colours closer than comfortable, a substitute of the wrong kind) are fixed or go on the review list too.
 
@@ -211,12 +211,12 @@ A brand that does not pass is not delivered as finished. If you run out of round
 
 ### 8. Render real decks in the brand, compare, iterate
 
-Build a specimen deck to test the brand on representative slides. `scripts/make_specimen.py` creates `decks/zz-<name>-specimen` with `deck new --brand <name>`, then one slide per layout from the framework's own layout examples (`deck layouts --json`), three more on the inverse, accent and gradient surfaces, and six figure slides (big number, stat row, line chart, donut, table, heatmap) so the data palettes and the `charts` tokens show. It uses only `deck` commands. The `zz-` prefix marks it as scratch: `deck build --out` leaves it out of sites. Delete `decks/zz-<name>-specimen/` once the user has seen the comparison, unless they want to keep it.
+Build a specimen deck to test the brand on representative slides. `scripts/make_specimen.py` creates `decks/zz-<name>-specimen` with `deckster new --brand <name>`, then one slide per layout from the framework's own layout examples (`deckster layouts --json`), three more on the inverse, accent and gradient surfaces, and six figure slides (big number, stat row, line chart, donut, table, heatmap) so the data palettes and the `charts` tokens show. It uses only `deckster` commands. The `zz-` prefix marks it as scratch: `deckster build --out` leaves it out of sites. Delete `decks/zz-<name>-specimen/` once the user has seen the comparison, unless they want to keep it.
 
 ```bash
 python3 $SKILL_DIR/scripts/make_specimen.py <name> --map-out $WORK/specimen-map.json   # run from the workspace folder; --replace rebuilds it
-deck lint zz-<name>-specimen                         # what the brand's sizes and spacing break
-deck shot zz-<name>-specimen                         # screenshots land in .deck/shots/zz-<name>-specimen/
+deckster lint zz-<name>-specimen                         # what the brand's sizes and spacing break
+deckster shot zz-<name>-specimen                         # screenshots land in .deck/shots/zz-<name>-specimen/
 #   layouts on all four surfaces, the type scale, logo and chrome; charts, big numbers, tables:
 #   data palettes and the charts tokens
 
@@ -232,9 +232,9 @@ uv run $SKILL_DIR/scripts/compare.py --out $WORK/compare \
 uv run $SKILL_DIR/scripts/compare.py --out $WORK/compare --layouts $WORK/specimen-map.json --extraction $WORK/pptx --shots .deck/shots/zz-<name>-specimen
 ```
 
-Open `layouts-sheet.png`, then the pairs. Lint a representative slide in its own brand and render it on a second brand to exercise the fallback. If the template is destined for PowerPoint, verify the exported masters and editable placeholders using [Validate the layout on slides](references/choosing-layouts.md#validate-the-layout-on-slides). Judge position and size of the title and regions, the art (registered with the boxes?), the surface, and alignment. Text metrics differ between PowerPoint, LibreOffice and the browser, so a box that fits in the source may overflow: `deck lint` reports that. Fix names, bindings, boxes or `keep` in the draft, re-emit, re-shoot.
+Open `layouts-sheet.png`, then the pairs. Lint a representative slide in its own brand and render it on a second brand to exercise the fallback. If the template is destined for PowerPoint, verify the exported masters and editable placeholders using [Validate the layout on slides](references/choosing-layouts.md#validate-the-layout-on-slides). Judge position and size of the title and regions, the art (registered with the boxes?), the surface, and alignment. Text metrics differ between PowerPoint, LibreOffice and the browser, so a box that fits in the source may overflow: `deckster lint` reports that. Fix names, bindings, boxes or `keep` in the draft, re-emit, re-shoot.
 
-The specimen may produce lint warnings about repeated layouts and topic-style titles. Investigate faults in geometry, contrast and required content on the affected slide. If the user has a real deck, also run `deck shot <deck> --brand <name>` to test it with the new brand. Screenshots go to `.deck/shots/<deck>@<name>/`.
+The specimen may produce lint warnings about repeated layouts and topic-style titles. Investigate faults in geometry, contrast and required content on the affected slide. If the user has a real deck, also run `deckster shot <deck> --brand <name>` to test it with the new brand. Screenshots go to `.deck/shots/<deck>@<name>/`.
 
 Give `compare.py` literal file names on both sides of each `source:brand` pair (a shell glob inside a pair is not expanded). View the images with your image-viewing tool: the contact sheet first, then each side-by-side pair. The numbers passing the check says the brand is valid, not that it looks like the source; only the pictures say that. Pair like with like (cover with cover, section with section, a chart page with a chart slide, a big-number page with a stats slide). The wording differs because the specimen has its own content, so judge treatment, not text. Check, in this order:
 
@@ -242,7 +242,7 @@ Give `compare.py` literal file names on both sides of each `source:brand` pair (
 2. Typeface, weight and relative size of headline against body. Does the specimen's title fill about the same share of the slide as the source's?
 3. Density and margins: does it have the same amount of air?
 4. Accent usage: same places, same amount.
-5. Shape language: corner radii, rules, card treatment, shadows. Check resolved shadow opacity against the source, not just the hue and blur. If the source has diagrams, add a `diagram` slide to the specimen (`references/brand-schema.md`, Rendering the brand) with a few nodes on `card="solid"`, `card="tint"` and the brand's own cards, and compare boxes, connectors, arrowheads and labels with a source diagram. Exercise the supported placement, supporting text and icon settings that you applied. Read resolved cards with `deck brand <name>`.
+5. Shape language: corner radii, rules, card treatment, shadows. Check resolved shadow opacity against the source, not just the hue and blur. If the source has diagrams, add a `diagram` slide to the specimen (`references/brand-schema.md`, Rendering the brand) with a few nodes on `card="solid"`, `card="tint"` and the brand's own cards, and compare boxes, connectors, arrowheads and labels with a source diagram. Exercise the supported placement, supporting text and icon settings that you applied. Read resolved cards with `deckster brand <name>`.
 6. Charts and numbers: series colours and their order, highlight against context, gridline weight and dash, number formatting, table emphasis.
 7. Logo: right variant on each assigned surface, placement, size and negative space. Check for background-coloured patches inside logos, especially on gradients; do not treat an invented reversed variant as extracted. Page number and footer.
 8. The surfaces the framework derived (if the draft left any out): do they belong to this brand?
@@ -259,9 +259,9 @@ Fix the draft, re-emit, reapply manual fields when needed, and run the checks an
 Finish with a message in this shape. Keep it short; the user will act on the list.
 
 ```
-Brand: brands/<name>/brand.ts (`deck brand check`: ok, N warnings | not ok: <errors left>)   Layouts: N kept of M in the template (what was dropped and why)
+Brand: brands/<name>/brand.ts (`deckster brand check`: ok, N warnings | not ok: <errors left>)   Layouts: N kept of M in the template (what was dropped and why)
 Rendered: <contact sheet and comparison images>     Draft: <path>
-Try it: deck dev <any deck> --brand <name>   (the specimen: deck dev zz-<name>-specimen)
+Try it: deckster dev <any deck> --brand <name>   (the specimen: deckster dev zz-<name>-specimen)
 Source: <what was used, and its limits in one line>
 
 Needs a human

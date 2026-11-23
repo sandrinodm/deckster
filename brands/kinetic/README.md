@@ -43,9 +43,9 @@ frontmatter. The dark surfaces show the `reversed` logo.
   one thing on a slide that has to shout (white on the lime section surface).
 
 ```sh
-pnpm deck brand check kinetic   # "kinetic: is valid (0 errors, 0 warnings)."
-pnpm deck shot hello --brand kinetic
+pnpm deckster brand check kinetic   # "kinetic: is valid (0 errors, 0 warnings)."
+pnpm deckster shot hello --brand kinetic
 ```
 
 To make it a deck's brand, set `brand: 'kinetic'` in its `deck.config.ts`, or start the deck
-with it: `pnpm deck new my-talk --brand kinetic`.
+with it: `pnpm deckster new my-talk --brand kinetic`.

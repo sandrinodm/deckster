@@ -27,7 +27,7 @@ const withServer = <A, E, R>(body: (root: string) => Effect.Effect<A, E, R>) =>
     return yield* body(root);
   }).pipe(Effect.scoped, Effect.provide(NodeServices.layer));
 
-describe('deck mcp', () => {
+describe('deckster mcp', () => {
   it.effect('prints the Claude Code and Codex configuration of a running server', () =>
     withServer((root) =>
       Effect.gen(function* () {
@@ -84,13 +84,16 @@ describe('deck mcp', () => {
       const failure = yield* Effect.flip(runCaptured(['mcp', 'hello'], { root }));
       expect(failure).toMatchObject({ _tag: 'CliError' });
       expect(String((failure as { message: string }).message)).toContain(
-        'pnpm deck dev hello --mcp',
+        'pnpm deckster dev hello --mcp',
       );
       const { code, output } = yield* runCaptured(['mcp', 'hello', '--json'], { root });
       expect(code).toBe(1);
       expect(JSON.parse(output)).toMatchObject({
         ok: false,
-        error: { type: 'CliError', message: expect.stringContaining('pnpm deck dev hello --mcp') },
+        error: {
+          type: 'CliError',
+          message: expect.stringContaining('pnpm deckster dev hello --mcp'),
+        },
       });
     }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
   );
@@ -129,7 +132,7 @@ describe('deck mcp', () => {
       const { output } = yield* runCaptured([]);
       expect(output).toContain('mcp');
       const { output: help } = yield* runCaptured(['mcp', '--help']);
-      expect(help).toContain('Usage: deck mcp [deck] [--json]');
+      expect(help).toContain('Usage: deckster mcp [deck] [--json]');
     }),
   );
 });

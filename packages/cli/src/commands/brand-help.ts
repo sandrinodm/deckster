@@ -1,16 +1,16 @@
 import { DEFAULT_BRAND } from '@deckster/brand';
 
 /**
- * The text `deck brand --help` prints.
+ * The text `deckster brand --help` prints.
  */
-export const HELP = `Usage: deck brand [name] [--json]
-       deck brand check <name> [--json]
-       deck brand add <source> [--force] [--json]
+export const HELP = `Usage: deckster brand [name] [--json]
+       deckster brand check <name> [--json]
+       deckster brand add <source> [--force] [--json]
 
 Prints a brand's resolved tokens, validates a brand without rendering a deck, or adds a brand
 from a git repository.
 
-  deck brand [name]        A summary of brands/<name>: families, type scale, spacing, each
+  deckster brand [name]        A summary of brands/<name>: families, type scale, spacing, each
                            surface's roles, with the small-text color of a role that reaches only
                            3:1, the diagram look (edges, groups, labels, geometry, text and kind
                            mappings) and every diagram card with its colors on the default
@@ -28,12 +28,12 @@ from a git repository.
                            It also prints the number and names of the brand's own layouts
                            (brands/<name>/layouts.ts). With --json, layouts has each
                            layout with its defaults filled in.
-  deck brand check <name>  Loads and validates brands/<name> and prints every error and warning
+  deckster brand check <name>  Loads and validates brands/<name> and prints every error and warning
                            with its field and fix. This includes its layouts: each must name a
                            kit or engine layout as its fallback, bind only slots and fields that
                            layout has, bind every one it requires, and not clash with a kit
                            layout's name. Exits with 1 when it has errors.
-  deck brand add <source>  Copies a brand folder from a git repository into brands/<name>, named
+  deckster brand add <source>  Copies a brand folder from a git repository into brands/<name>, named
                            by the brand's \`name\`. <source> is gh:owner/repo/<folder>#<ref>
                            (over https), a GitHub link (https://github.com/owner/repo/tree/<ref>/
                            <folder>), or any https or ssh address with the folder after //, such
@@ -44,7 +44,7 @@ from a git repository.
                            written, and only brand.ts, layouts.ts, images, fonts and documents
                            are copied (no other code, symlinks or package files). Fonts are not
                            installed: it prints the commands to run next (pnpm install in this
-                           repository, or npm install for missing fonts), then deck brand check,
+                           repository, or npm install for missing fonts), then deckster brand check,
                            which checks what needs the fonts. Each git step that uses the
                            network may take up to 2 minutes.
 

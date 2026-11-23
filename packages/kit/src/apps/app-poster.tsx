@@ -31,8 +31,8 @@ type PosterViewProps = {
 
 /**
  * Draws a poster filling its region. A missing poster draws a visible placeholder marked
- * `data-app-missing-poster`, which `deck lint` reports as an error: exports and offline runs have
- * nothing else to show.
+ * `data-app-missing-poster`, which `deckster lint` reports as an error: exports and offline runs
+ * have nothing else to show.
  */
 export function PosterView({ poster, alt, step }: PosterViewProps): ReactNode {
   if (poster === undefined) {

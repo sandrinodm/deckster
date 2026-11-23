@@ -66,7 +66,7 @@ layer(NodeServices.layer)('app lint rules', (it) => {
       expect(appMissingRule.severity).toBe('error');
       expect(violations.map((violation) => violation.selector)).toEqual(['div.kit-app']);
       expect(violations[0]?.message).toContain('app="agnet-demo"');
-      expect(violations[0]?.fix).toContain('deck new app');
+      expect(violations[0]?.fix).toContain('deckster new app');
     }),
   );
 

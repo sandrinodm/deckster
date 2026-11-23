@@ -45,8 +45,8 @@ const STRIP_WARNING = /stripTypeScriptTypes/;
 
 /**
  * Registers the hooks that let the published CLI run the framework from source. Importing this file
- * is enough: it is the first import of `deck`, of the Electron shell and, through `node --import`,
- * of every child process that runs framework code.
+ * is enough: it is the first import of `deckster`, of the Electron shell and, through `node
+ * --import`, of every child process that runs framework code.
  *
  * It may only import `node:` modules and the dependency-free framework helpers, because it runs
  * before anything of the framework can be resolved. Four things happen:

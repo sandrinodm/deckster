@@ -144,7 +144,7 @@ export type PlacedLabel = {
 
   /**
    * Whether no free place was found, so it overlaps a node, another label or the edge of the
-   * diagram; `deck lint` reports it.
+   * diagram; `deckster lint` reports it.
    */
   overlaps: boolean;
 };

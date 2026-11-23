@@ -28,7 +28,7 @@ export const chartFunnelGrowsRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A <Funnel> has a stage that holds more than the stage before it.',
 

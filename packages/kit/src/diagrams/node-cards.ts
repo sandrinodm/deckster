@@ -396,7 +396,7 @@ export function cardTitleVariables(name: string): Record<string, string> {
 /**
  * The `data-*` attributes every element drawn with a card carries: `data-card` (the card it uses)
  * and `data-card-missing` (the names asked for that the brand does not have, space separated), for
- * `deck lint` and the exporter.
+ * `deckster lint` and the exporter.
  *
  * @param card - The resolved card.
  */

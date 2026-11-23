@@ -100,8 +100,8 @@ const NO_WORDS: readonly string[] = [];
  * `highlight` focuses lines step by step: the lines outside the focus fade back. Lines may be
  * marked as added or removed (`diff`, or `// [!code ++]` and `// [!code --]`), and `words` marks
  * words inside lines. The font steps down within the brand's limits for long lines, and for a block
- * taller than the layout's code region; beyond that the lines run past the frame and `deck lint`
- * reports the overflow.
+ * taller than the layout's code region; beyond that the lines run past the frame and `deckster
+ * lint` reports the overflow.
  *
  * ```mdx
  * ```ts title="server.ts" {2-3|5} lineNumbers

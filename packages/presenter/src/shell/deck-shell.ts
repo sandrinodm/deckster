@@ -13,7 +13,7 @@ export const shellFullscreen = createStore(false);
 let stopWatching: (() => void) | undefined;
 
 /**
- * The desktop shell's API when the page runs inside `deck present`'s window, else `undefined`.
+ * The desktop shell's API when the page runs inside `deckster present`'s window, else `undefined`.
  */
 export function deckShell(): DeckShellApi | undefined {
   return typeof window === 'undefined' ? undefined : window.deckShell;

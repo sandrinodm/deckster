@@ -21,7 +21,7 @@ frontmatter. The dark surfaces show the `reversed` logo.
 - **Background layers.** The title surface draws [`backgrounds/sprig.svg`](backgrounds), a line
   drawing in paper ink, off the bottom right corner at 32%. The `notebook` surface tiles
   `ruled.svg` and places `margin.svg` as a notebook's margin rule; text on it is measured against
-  the actual pixels by `deck lint`.
+  the actual pixels by `deckster lint`.
 - **Type.** Playfair Display (display, headlines, titles, stats; quotes in italic), Source Sans 3
   (lead, body, small, caption and upper-case labels) and Source Code Pro for code. Body text is
   34 px on the 1920x1080 canvas, titles 52 px. All three are OFL-licensed Fontsource packages
@@ -54,16 +54,16 @@ palette. A deck on another brand renders a slide that names one of them with its
 | `fieldnote-columns` | Fieldnote two columns | `content`     | `default`       | Title under an eyebrow, then a main column and an `<Aside>` split by a hairline. Forest art on the inverse surface.                         |
 
 ```sh
-pnpm deck layouts brand-layouts --summary   # the four first, then the kit's
-pnpm deck brand check fieldnote
+pnpm deckster layouts brand-layouts --summary   # the four first, then the kit's
+pnpm deckster brand check fieldnote
 ```
 
 [`decks/brand-layouts`](../../decks/brand-layouts) uses all four.
 
 ```sh
-pnpm deck brand check fieldnote   # "fieldnote: is valid (0 errors, 0 warnings)."
-pnpm deck shot hello --brand fieldnote
+pnpm deckster brand check fieldnote   # "fieldnote: is valid (0 errors, 0 warnings)."
+pnpm deckster shot hello --brand fieldnote
 ```
 
 To make it a deck's brand, set `brand: 'fieldnote'` in its `deck.config.ts`, or start the deck
-with it: `pnpm deck new my-talk --brand fieldnote`.
+with it: `pnpm deckster new my-talk --brand fieldnote`.

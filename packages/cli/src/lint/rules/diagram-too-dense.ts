@@ -30,7 +30,7 @@ export const diagramTooDenseRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     `A diagram shows more than ${DIAGRAM_NODE_BUDGET} nodes or ${DIAGRAM_EDGE_BUDGET} edges ` +

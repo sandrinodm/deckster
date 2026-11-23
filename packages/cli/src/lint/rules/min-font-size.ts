@@ -36,7 +36,7 @@ export const minFontSizeRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     'Text appears below the minimum type size (after transforms and SVG scaling) on the canvas.',

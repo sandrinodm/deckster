@@ -45,7 +45,7 @@ export const textTruncatedRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'Text is cut short with an ellipsis or a line clamp, so part of it is not shown.',
 

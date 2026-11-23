@@ -30,8 +30,8 @@ export type LottieProps = {
   loop?: boolean;
 
   /**
-   * The frame static mode, `deck shot` and exports show: a frame number, `'first'` or `'last'` (the
-   * default).
+   * The frame static mode, `deckster shot` and exports show: a frame number, `'first'` or `'last'`
+   * (the default).
    */
   frame?: StaticFrame;
 
@@ -48,7 +48,7 @@ export type LottieProps = {
 
   /**
    * Draws every stroke and fill in a color role of the slide's surface, such as `accent` or `fg`,
-   * whatever colors the file has. Without it the file keeps its own colors, which `deck lint`
+   * whatever colors the file has. Without it the file keeps its own colors, which `deckster lint`
    * reports when they are not brand colors.
    */
   role?: IconRole;
@@ -58,7 +58,7 @@ export type LottieProps = {
  * A Lottie animation made by a designer, drawn as SVG. The player and the file load the first time
  * the slide is on screen, and the slide's `ready()` waits for them. The animation plays while the
  * slide is on screen (inside a `<Step>`, from when the step reveals it) and pauses when the deck
- * moves on; static mode, `deck shot` and exports show one frame (the last unless `frame` says
+ * moves on; static mode, `deckster shot` and exports show one frame (the last unless `frame` says
  * otherwise). A Lottie file carries its own colors; `role` redraws them in a color of the slide's
  * surface, so the animation follows the brand.
  *

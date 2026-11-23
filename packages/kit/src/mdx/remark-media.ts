@@ -149,10 +149,10 @@ type MediaRun = {
  * that starts with `/` names a file in the deck's `public/` folder, which is checked and left as it
  * is. The file, links followed, must be inside the deck folder and of the attribute's kind (an
  * image, a video, a Lottie JSON); anything else fails the build. A path that does not exist is a
- * `media-missing` warning (an error in `deck lint`) with the path that was tried, and the tag keeps
- * the string so the component shows a placeholder. Web addresses are left as they are. A local GIF
- * is converted to a looping WebM with a poster frame when `ffmpeg` is on `PATH` (cached under
- * `node_modules/.cache/deck/gif/`) and shown as `<Video>`; otherwise it stays a GIF with a
+ * `media-missing` warning (an error in `deckster lint`) with the path that was tried, and the tag
+ * keeps the string so the component shows a placeholder. Web addresses are left as they are. A
+ * local GIF is converted to a looping WebM with a poster frame when `ffmpeg` is on `PATH` (cached
+ * under `node_modules/.cache/deck/gif/`) and shown as `<Video>`; otherwise it stays a GIF with a
  * `media-gif` warning.
  *
  * @param options - The deck folder, and the workspace for the GIF cache.

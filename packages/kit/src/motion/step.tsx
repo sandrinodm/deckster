@@ -46,7 +46,7 @@ export type KitStepProps = StepProps & {
  * steps back to it.
  *
  * Static mode and `SlideView` copies show or hide with no motion and never recede, so screenshots,
- * `deck lint` and exports see every revealed step at full strength.
+ * `deckster lint` and exports see every revealed step at full strength.
  *
  * @throws Error when a prop is not one the catalog lists, `at` is missing, or `effect` is not one
  *   of the effects; RangeError when `at` is not an integer of 1 or more.

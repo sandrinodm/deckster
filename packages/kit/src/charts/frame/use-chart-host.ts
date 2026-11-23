@@ -72,7 +72,8 @@ export type ChartHost = {
  * `data-surface` (so a layout's default surface counts), measures the plot area with a
  * `ResizeObserver` (layout pixels, so the canvas scale and slide transitions never change it),
  * loads the fonts of the chart's text styles before measuring text, and holds the deck's `ready()`
- * until all three are known, so `deck shot`, `deck lint` and export see the laid-out chart.
+ * until all three are known, so `deckster shot`, `deckster lint` and export see the laid-out
+ * chart.
  *
  * @param root - The chart's root element, inside the slide.
  * @param plot - The element whose size the plot fills.

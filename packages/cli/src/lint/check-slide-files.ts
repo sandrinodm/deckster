@@ -26,8 +26,8 @@ export type SlideFileChecks = {
 /**
  * Compiles every slide through the deck's own Vite pipeline and collects what it rejects:
  * frontmatter that fails its schema, unknown keys, MDX that does not compile. This is the same code
- * path as `deck build`, run per file so one run reports every bad file. It also collects what the
- * MDX extensions warn about, which the build only prints.
+ * path as `deckster build`, run per file so one run reports every bad file. It also collects what
+ * the MDX extensions warn about, which the build only prints.
  *
  * @param server - A running deck server.
  * @param deck - The loaded deck.

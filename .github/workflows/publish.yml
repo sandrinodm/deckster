@@ -88,11 +88,11 @@ jobs:
         run: |
           mkdir consumer
           npm install --no-audit --no-fund --prefix consumer "$RUNNER_TEMP/deckster-cli.tgz"
-          ./consumer/node_modules/.bin/deck --help
+          ./consumer/node_modules/.bin/deckster --help
           mkdir workspace
           cd workspace
-          ../consumer/node_modules/.bin/deck new smoke
-          ../consumer/node_modules/.bin/deck build smoke
+          ../consumer/node_modules/.bin/deckster new smoke
+          ../consumer/node_modules/.bin/deckster build smoke
 
       - name: Publish with npm trusted publishing
         working-directory: ${{ runner.temp }}

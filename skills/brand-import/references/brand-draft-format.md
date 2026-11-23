@@ -173,7 +173,7 @@ The example is a made-up brand. Comments are for explanation; the real file is p
 
 ## Layout specs (`layouts[]` entries from a template)
 
-`layouts[]` takes two kinds of entry. The notes above (`archetype`, `maps_to`, `override_needed`) say how the source's pages use the kit's layouts. A **spec** is a layout the brand brings: an entry with `name` and `fallback` (or `regions`). `brand_tools.py propose-layouts <extraction.json> --draft brand-draft.json --catalog catalog.json` writes one spec per source layout, keeping your notes; the agent reviews them. `check-draft` validates the specs against the catalog (`deck layouts <deck> --json`); `emit_brand.py` writes the kept ones to `brands/<name>/layouts.ts` and copies their art to `brands/<name>/layouts/`.
+`layouts[]` takes two kinds of entry. The notes above (`archetype`, `maps_to`, `override_needed`) say how the source's pages use the kit's layouts. A **spec** is a layout the brand brings: an entry with `name` and `fallback` (or `regions`). `brand_tools.py propose-layouts <extraction.json> --draft brand-draft.json --catalog catalog.json` writes one spec per source layout, keeping your notes; the agent reviews them. `check-draft` validates the specs against the catalog (`deckster layouts <deck> --json`); `emit_brand.py` writes the kept ones to `brands/<name>/layouts.ts` and copies their art to `brands/<name>/layouts/`.
 
 | Field | Meaning |
 |---|---|

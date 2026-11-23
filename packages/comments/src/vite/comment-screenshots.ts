@@ -113,9 +113,9 @@ export type ScreenshotRequest = {
 };
 
 /**
- * Takes comment screenshots in headless Chromium, the way `deck shot` does: the deck in static mode
- * (no overlay, no source stamps) at 1920x1080, cropped to the element with some context and the
- * element outlined. Chromium is launched on the first screenshot and closed with the layer;
+ * Takes comment screenshots in headless Chromium, the way `deckster shot` does: the deck in static
+ * mode (no overlay, no source stamps) at 1920x1080, cropped to the element with some context and
+ * the element outlined. Chromium is launched on the first screenshot and closed with the layer;
  * screenshots are taken one at a time.
  */
 export class CommentScreenshots extends Context.Service<

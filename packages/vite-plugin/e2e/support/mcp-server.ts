@@ -48,9 +48,9 @@ export const MCP_URLS = {
 const unused = () => Effect.fail(agentError('Not part of this suite.'));
 
 /**
- * Serves the hello deck with the MCP endpoint and the page link, as `deck dev --mcp` does, but with
- * tools that only know the page: `current_slide` and `goto` are real, the others fail. The server
- * closes after the last test.
+ * Serves the hello deck with the MCP endpoint and the page link, as `deckster dev --mcp` does, but
+ * with tools that only know the page: `current_slide` and `goto` are real, the others fail. The
+ * server closes after the last test.
  */
 export function useMcpServer(): void {
   let server: ViteDevServer | undefined;

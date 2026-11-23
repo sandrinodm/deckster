@@ -159,7 +159,7 @@ function withLayers(
 /**
  * The colors text may sit on because of a surface's layers, each painted over `bg`: every tint at
  * its opacity and every gradient layer's colors at the layer's opacity. Pictures add none: what
- * they show is measured from pixels by `deck lint`, and `bg` says what they read as.
+ * they show is measured from pixels by `deckster lint`, and `bg` says what they read as.
  *
  * @param layers - The surface's resolved layers.
  * @param gradients - Every gradient, already compiled.

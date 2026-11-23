@@ -31,7 +31,7 @@ export function buildPrompt(turn: TurnRequest): string {
   const lines: string[] = [];
   if (turn.kind === 'auto-fix') {
     lines.push(
-      'deck lint found errors on the slides you just changed. Fix them, then ' +
+      'deckster lint found errors on the slides you just changed. Fix them, then ' +
         'call `deck_lint` again to confirm. The findings:',
       dataBlock(
         'lint-findings',

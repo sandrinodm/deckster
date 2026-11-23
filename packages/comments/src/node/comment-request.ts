@@ -20,7 +20,7 @@ const RequestText = Comment.fields.text.check(
 );
 
 /**
- * A new comment as the overlay (or `deck comments add`) sends it. The server adds the id, the
+ * A new comment as the overlay (or `deckster comments add`) sends it. The server adds the id, the
  * author when none is given, the timestamps, the status and the source line the anchor reads.
  */
 export const NewComment = Schema.Struct({

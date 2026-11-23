@@ -35,7 +35,7 @@ describe('missingAppMessage', () => {
     const message = missingAppMessage('demo', 'nope', ['agent-demo', 'counter']);
     expect(message).toContain('"nope"');
     expect(message).toContain('Apps: agent-demo, counter.');
-    expect(message).toContain('pnpm deck new app demo nope');
+    expect(message).toContain('pnpm deckster new app demo nope');
   });
 
   it('says so when the deck has none', () => {

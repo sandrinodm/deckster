@@ -1,7 +1,7 @@
 name: Slides diff
 
 # Shows which slides of which decks a pull request changes: renders each affected deck at the base
-# branch and at the pull request, and compares them picture by picture (`deck diff`).
+# branch and at the pull request, and compares them picture by picture (`deckster diff`).
 #
 # The report folder is uploaded as an artifact (open index.html for the side-by-side pictures) and
 # one pull request comment, updated on every push, carries the table from summary.md. Pictures
@@ -76,8 +76,8 @@ jobs:
           DECKS: ${{ steps.decks.outputs.list }}
         run: |
           for deck in $DECKS; do
-            echo "::group::deck diff $deck"
-            pnpm deck diff "$deck" --base "$BASE_REF"
+            echo "::group::deckster diff $deck"
+            pnpm deckster diff "$deck" --base "$BASE_REF"
             echo "::endgroup::"
           done
 

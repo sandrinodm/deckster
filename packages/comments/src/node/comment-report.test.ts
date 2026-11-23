@@ -193,7 +193,7 @@ layer(NodeFileSystem.layer)('the comment report', (it) => {
         expect(markdown).toContain('- Element: `<h1>` "Hello, deck"');
         expect(markdown).toContain('> Make the title shorter.');
         expect(markdown).toContain('> 5 | # Hello, deck');
-        expect(markdown).toContain(`pnpm deck comments resolve test ${saved.id}`);
+        expect(markdown).toContain(`pnpm deckster comments resolve test ${saved.id}`);
       }),
     ),
   );

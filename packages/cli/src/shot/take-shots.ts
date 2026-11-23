@@ -56,8 +56,8 @@ export type ShotOptions = {
   scale: number;
 
   /**
-   * Leave hidden slides out of a run over the whole deck, as `deck export --png` does. A run for
-   * one slide shoots it whether it is hidden or not, and so does a run without this.
+   * Leave hidden slides out of a run over the whole deck, as `deckster export --png` does. A run
+   * for one slide shoots it whether it is hidden or not, and so does a run without this.
    */
   skipHidden?: boolean;
 

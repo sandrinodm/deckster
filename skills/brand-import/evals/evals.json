@@ -28,8 +28,8 @@
         "A human-review list is given and is short (12 items or fewer)",
         "No font binaries are redistributed without their licence: fonts are referenced (Fontsource) or copied together with the licence text",
         "Sequential and diverging palettes are validated (lightness order, colour-vision distance of the ends), not only proposed",
-        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
-        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists"
+        "`pnpm deckster brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deckster shot) from the compiled brand exists"
       ]
     },
     {
@@ -58,8 +58,8 @@
         "A human-review list is given and is short (12 items or fewer)",
         "No font binaries are redistributed without their licence: fonts are referenced (Fontsource) or copied together with the licence text",
         "Sequential and diverging palettes are validated (lightness order, colour-vision distance of the ends), not only proposed",
-        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
-        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists"
+        "`pnpm deckster brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deckster shot) from the compiled brand exists"
       ]
     },
     {
@@ -87,8 +87,8 @@
         "A human-review list is given and is short (12 items or fewer)",
         "No font binaries are redistributed without their licence: fonts are referenced (Fontsource) or copied together with the licence text",
         "Sequential and diverging palettes are validated (lightness order, colour-vision distance of the ends), not only proposed",
-        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
-        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists",
+        "`pnpm deckster brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deckster shot) from the compiled brand exists",
         "The emitted and resolved shadow preserves the source colour opacity (8% within rounding tolerance), not only its offsets and blur",
         "Every logo variant is verified on its assigned surfaces without unintended background-coloured patches; unavailable variants are reported rather than invented"
       ]
@@ -108,8 +108,8 @@
         "The handover says what could not be determined from images and asks for a better source",
         "Data palettes are provided and marked as derived",
         "No font binaries are redistributed without their licence",
-        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
-        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists"
+        "`pnpm deckster brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deckster shot) from the compiled brand exists"
       ]
     },
     {
@@ -125,8 +125,8 @@
         "Carries the illustrated backgrounds over as image assets, or says clearly that they are not captured by tokens",
         "States that the 4:3 source was adapted to the 16:9 canvas",
         "No font binaries are redistributed without their licence",
-        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
-        "A specimen rendered by the framework (pnpm deck shot) from the compiled brand exists"
+        "`pnpm deckster brand check <name>` reports the brand as valid (0 errors)",
+        "A specimen rendered by the framework (pnpm deckster shot) from the compiled brand exists"
       ]
     },
     {
@@ -146,34 +146,34 @@
     {
       "id": 7,
       "name": "roundtrip-pptx-known-brand",
-      "prompt": "Here's a deck from the Larkfield city team: <path to a PPTX made with `pnpm deck export showcase --brand nocturne --pptx`>. I want our decks to look like theirs. Turn it into a brand called <name>. I'm away today, so don't wait for me.",
-      "expected_output": "brands/<name> that passes pnpm deck brand check and matches brands/nocturne when compared with evals/compare_tokens.py.",
+      "prompt": "Here's a deck from the Larkfield city team: <path to a PPTX made with `pnpm deckster export showcase --brand nocturne --pptx`>. I want our decks to look like theirs. Turn it into a brand called <name>. I'm away today, so don't wait for me.",
+      "expected_output": "brands/<name> that passes pnpm deckster brand check and matches brands/nocturne when compared with evals/compare_tokens.py.",
       "files": [],
       "expectations": [
-        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "`pnpm deckster brand check <name>` reports the brand as valid (0 errors)",
         "All ten roles of the default surface are within dE 6 of the truth, and at least 7 of 10 on each other surface",
         "The three font families match and each has a substitute of the right kind",
         "All eleven type sizes are within 15% of the truth",
         "The gradient surface exists with a mesh or linear gradient close to the source picture",
         "Both logo variants are extracted and placed top-right",
-        "`pnpm deck lint showcase --brand <name>` has no errors",
+        "`pnpm deckster lint showcase --brand <name>` has no errors",
         "The handover lists generated values (data ramps, status colours, motion, icons) as guesses"
       ]
     },
     {
       "id": 8,
       "name": "roundtrip-pdf-known-brand",
-      "prompt": "All I have from the Larkfield forestry team is this PDF of their deck: <path to a PDF made with `pnpm deck export showcase --pdf`> (no PowerPoint, I asked). Import their look as a brand called <name>. I'm away today, so don't wait for me.",
-      "expected_output": "brands/<name> that passes pnpm deck brand check and matches brands/default when compared with evals/compare_tokens.py.",
+      "prompt": "All I have from the Larkfield forestry team is this PDF of their deck: <path to a PDF made with `pnpm deckster export showcase --pdf`> (no PowerPoint, I asked). Import their look as a brand called <name>. I'm away today, so don't wait for me.",
+      "expected_output": "brands/<name> that passes pnpm deckster brand check and matches brands/default when compared with evals/compare_tokens.py.",
       "files": [],
       "expectations": [
-        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "`pnpm deckster brand check <name>` reports the brand as valid (0 errors)",
         "All ten roles of the default surface are within dE 6 of the truth, and at least 7 of 10 on the inverse and accent surfaces",
         "Bricolage Grotesque and Inter are identified and sourced from Fontsource, with substitutes of the right kind",
         "All eleven type sizes are within 15% of the truth",
         "The linear gradient's stops and angle match",
         "The logo is rebuilt as SVG in two variants",
-        "`pnpm deck lint showcase --brand <name>` has no errors"
+        "`pnpm deckster lint showcase --brand <name>` has no errors"
       ]
     },
     {
@@ -183,7 +183,7 @@
       "expected_output": "A valid brand that reads as the site in the rendered sample decks, with no third-party logo copied and the commercial typeface flagged.",
       "files": [],
       "expectations": [
-        "`pnpm deck brand check <name>` reports the brand as valid (0 errors)",
+        "`pnpm deckster brand check <name>` reports the brand as valid (0 errors)",
         "The site's commercial typeface is identified, not copied, and an open stand-in is used and named in the handover",
         "No third-party logo or imagery is copied into the brand",
         "The sample decks rendered in the brand read as the site: its ink and accent colours, a dark surface, the gradient treatment",
@@ -201,7 +201,7 @@
       ],
       "expectations": [
         "The template has no slides, yet the agent finds images to look at (the layout renders) and does not stop for lack of page images",
-        "`pnpm deck brand check <name>` reports the brand valid (0 errors) and names its layouts file",
+        "`pnpm deckster brand check <name>` reports the brand valid (0 errors) and names its layouts file",
         "layouts.ts holds the template's layouts except the ones the agent dropped with a reason: all 13 are listed in the extraction, including the unused ones; the Title Slide, Title and Content and Section Header that both masters have are not silently lost (merged with surface-keyed art when their geometry matches, kept apart with the master's name when it does not)",
         "Every kept layout has a fallback that is a real kit layout, and a deck whose brand lacks the layout still builds (the slide renders with the fallback)",
         "The placeholder inside a group, the picture placeholder (bound to a media slot) and the two custom prompts (in the description) are handled, not dropped without a note",

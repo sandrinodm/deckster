@@ -53,7 +53,7 @@ export function isLargeText(sizePx: number, weight: number): boolean {
 }
 
 /**
- * The facts about a brand's type scale that `deck lint` and other tools check rendered text
+ * The facts about a brand's type scale that `deckster lint` and other tools check rendered text
  * against.
  *
  * @param scale - The brand's resolved type scale, from `tokens.typography.scale`.

@@ -334,7 +334,7 @@ export function drawFunnel(props: FunnelProps, input: DrawInput): ChartDrawing {
 }
 
 /**
- * What the funnel tells `deck lint` about itself.
+ * What the funnel tells `deckster lint` about itself.
  *
  * @param layout - The funnel's layout.
  * @param keep - The share each stage carried on from the one before.

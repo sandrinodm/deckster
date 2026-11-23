@@ -14,7 +14,7 @@ const MERGED_PAIR = {
   fix: 'Make them differ in lightness as well as hue.',
 };
 
-describe('brand findings in deck lint', () => {
+describe('brand findings in deckster lint', () => {
   it('are brand findings at the brand file, each once, with the field and the fix', () => {
     const findings = findingsFromBrandWarnings('brands/acme/brand.ts', [MERGED_PAIR, MERGED_PAIR]);
     expect(findings).toEqual([
@@ -41,7 +41,7 @@ describe('brand findings in deck lint', () => {
     };
     const text = formatReport(report);
     expect(text).toContain(
-      'brands/acme/brand.ts (the brand "acme", for every slide; `pnpm deck brand check acme` lists these alone)',
+      'brands/acme/brand.ts (the brand "acme", for every slide; `pnpm deckster brand check acme` lists these alone)',
     );
     expect(text).toContain('  warning brand: color.roles.positive:');
     expect(text).not.toContain('(null)');

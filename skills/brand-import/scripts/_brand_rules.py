@@ -9,7 +9,7 @@ the framework's brand schema and returns one that satisfies it:
   note;
 - a required value that cannot be made valid raises Reject, and the emitter writes nothing.
 
-Every note is a review item. The authority is still `deck brand check`: this pass exists so the
+Every note is a review item. The authority is still `deckster brand check`: this pass exists so the
 emitter cannot write a file that breaks the rules on values that came out of an untrusted source.
 references/brand-schema.md lists the rules in prose. Standard library only.
 """

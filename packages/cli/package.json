@@ -21,7 +21,7 @@
     "directory": "packages/cli"
   },
   "bin": {
-    "deck": "./src/bin.ts"
+    "deckster": "./src/bin.ts"
   },
   "files": [
     "dist",
@@ -37,7 +37,7 @@
   },
   "publishConfig": {
     "bin": {
-      "deck": "./dist/deck.js"
+      "deckster": "./dist/deckster.js"
     },
     "exports": {
       "./package.json": "./package.json"

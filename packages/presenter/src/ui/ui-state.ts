@@ -50,7 +50,7 @@ export type UiState = {
   helpOpen: boolean;
 
   /**
-   * Whether the displays panel is open; only inside the desktop shell (`deck present`).
+   * Whether the displays panel is open; only inside the desktop shell (`deckster present`).
    */
   displaysOpen: boolean;
 

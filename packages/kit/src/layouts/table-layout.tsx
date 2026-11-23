@@ -57,7 +57,7 @@ type TableSize = {
  * type) and both tables take it from their column; both mark the row or column `highlight:` names
  * as the brand's charts do, the Markdown one through the kit's `table` component and the `<Table>`
  * through its own highlight, which the slide's fills when the table names none. A table that still
- * does not fit is marked for `deck lint`.
+ * does not fit is marked for `deckster lint`.
  */
 function TableLayout({ frontmatter, slots }: LayoutProps<typeof tableLayoutContract>): ReactNode {
   const { brand } = useBrand();
@@ -135,8 +135,8 @@ function tableSizes(brand: ReturnType<typeof useBrand>['brand'], tableStep: stri
 }
 
 /**
- * How the table was fitted, for `deck lint` and tests: grown to the body size, at its natural size,
- * stepped down, or overflowing even at the smallest.
+ * How the table was fitted, for `deckster lint` and tests: grown to the body size, at its natural
+ * size, stepped down, or overflowing even at the smallest.
  *
  * @param overflows - Whether it overflows at the last size.
  * @param grown - Whether it is set at the larger, sparse size.

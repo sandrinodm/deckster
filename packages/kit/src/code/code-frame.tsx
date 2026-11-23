@@ -61,7 +61,7 @@ function labelText(
  * optional title bar with the file name on the left and the language on the right. Without a file
  * name or a label there is no bar.
  *
- * The frame says how many lines of code it holds in `data-code-lines`, which `deck lint` counts
+ * The frame says how many lines of code it holds in `data-code-lines`, which `deckster lint` counts
  * against the layout's `maxLines`: the bar and the line numbers are not lines of code, and a blank
  * line is one whether or not it shows a number.
  */

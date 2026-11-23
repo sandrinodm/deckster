@@ -1,14 +1,14 @@
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * The text `deck diagrams --help` prints.
+ * The text `deckster diagrams --help` prints.
  */
-const HELP = `Usage: deck diagrams [--json]
+const HELP = `Usage: deckster diagrams [--json]
 
 Lists the diagram components a slide can use and the parts inside them, with every prop, the node
 kinds, the edge options, the cards and the animation primitives (packets, journeys, state changes,
-focus), each with when to use it and an example, plus the limits deck lint holds diagrams to and
-how to write diagrams in TSX. The cards listed are the five every brand has; \`deck brand <name>\`
+focus), each with when to use it and an example, plus the limits deckster lint holds diagrams to and
+how to write diagrams in TSX. The cards listed are the five every brand has; \`deckster brand <name>\`
 lists a brand's own.
 
 Options:
@@ -17,7 +17,7 @@ Options:
                 describes the props several components take once ({ type, required, default,
                 description, values } by name), and longText says once what happens to long node
                 titles, subtitles and edge labels. Each component has name (the tag, as in deck
-                charts and deck components: "Flow"), role (diagram or part), inside (where a part
+                charts and deckster components: "Flow"), role (diagram or part), inside (where a part
                 goes), useWhen, example (MDX), shared (the names of the shared props it takes),
                 props (its own props, by name), children, limits and, only where it has its own
                 rule, longText. A prop name in neither shared nor props, or a value outside its
@@ -33,21 +33,21 @@ Options:
   -h, --help    Show this help.`;
 
 /**
- * `deck diagrams`: the diagram catalog, for picking components, node kinds and animation.
+ * `deckster diagrams`: the diagram catalog, for picking components, node kinds and animation.
  */
 export const diagramsCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'diagrams',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'List the diagram components, node kinds, cards and animation primitives',
 
   /**
-   * The text `deck diagrams --help` prints.
+   * The text `deckster diagrams --help` prints.
    */
   help: HELP,
 

@@ -2,7 +2,7 @@
 
 A data slide has one job: make one quantitative point believable at a glance. An exploratory chart invites the viewer to find patterns; a presentation chart has already found the pattern and shows it. This file gets you from "what am I trying to say" to a form, and then through the details that decide whether the point lands.
 
-Check names, props and limits in the installed `deck charts --json` or `deck diagrams --json`. Read the component's entries and examples before writing the slide. Use the chart catalog's `messages` map to match the form to the claim. [Lookbook examples](https://sandrinodm.github.io/deckster/examples/lookbook/)
+Check names, props and limits in the installed `deckster charts --json` or `deckster diagrams --json`. Read the component's entries and examples before writing the slide. Use the chart catalog's `messages` map to match the form to the claim. [Lookbook examples](https://sandrinodm.github.io/deckster/examples/lookbook/)
 
 Evidence labels: see the top of `narrative.md`. Sources: `sources.md`.
 
@@ -119,7 +119,7 @@ Give the data that carries the point the accent color and render everything else
 ## 8. Color
 
 - **Color carries meaning, not decoration.** Default everything to a neutral and spend color on the highlight.
-- **The brand's data palettes do the coloring** (categorical for series, sequential and diverging for heatmaps, a context color for everything a highlight mutes; see `data` in `deck brand <name> --json`). Charts take no color props, so there is nothing to hard-code: you choose what is highlighted and the brand decides how it looks.
+- **The brand's data palettes do the coloring** (categorical for series, sequential and diverging for heatmaps, a context color for everything a highlight mutes; see `data` in `deckster brand <name> --json`). Charts take no color props, so there is nothing to hard-code: you choose what is highlighted and the brand decides how it looks.
 - **Few categories.** Past five or six colors, viewers cannot hold the mapping, and lint warns when a chart needs more colors than the brand's categorical palette has (`chart-too-many-series`). Reduce series, group into "Other", or highlight one and let the rest go to context.
 - **Color-blind safety.** Roughly 8% of men and 0.5% of women have a color vision deficiency, mostly red-green. Never rely on red versus green alone; pair color with position, direct labels, shape or a sign. Charts pair their good and bad tones with a sign or an arrow, but an encoding you invent ("the green ones are ours") is still your problem.
 - **Keep meaning stable.** The same entity has the same color on every slide. Do not reuse the highlight color for something else nearby.
@@ -134,7 +134,7 @@ Complex data slides overload when shown all at once. Build them **[evidence for 
 3. Add the highlighted series or point, and make the claim.
 4. Add the annotation that explains why.
 
-Charts build with the deck's steps: `at` on a series in `y` (`y={['2025', { field: '2026', at: 1 }]}`), on `highlight` (`{ series: '2026', at: 2 }`, or `{ category: 'EMEA', at: 1 }`) and on each annotation; `reveal="series"` or `"categories"` builds mark by mark from step 1, and `reveal={{ by: 'categories', from: 2 }}` starts later (`from` is 1 or more; the catalog lists it as `types.RevealOption`). The presenter drives each step. The last step must be a complete, self-explanatory chart, since exports and static mode show only the end state; check the order with `deck shot <deck> <slide> --steps`. Do not animate for its own sake: an animation should correspond to something the presenter is saying at that moment.
+Charts build with the deck's steps: `at` on a series in `y` (`y={['2025', { field: '2026', at: 1 }]}`), on `highlight` (`{ series: '2026', at: 2 }`, or `{ category: 'EMEA', at: 1 }`) and on each annotation; `reveal="series"` or `"categories"` builds mark by mark from step 1, and `reveal={{ by: 'categories', from: 2 }}` starts later (`from` is 1 or more; the catalog lists it as `types.RevealOption`). The presenter drives each step. The last step must be a complete, self-explanatory chart, since exports and static mode show only the end state; check the order with `deckster shot <deck> <slide> --steps`. Do not animate for its own sake: an animation should correspond to something the presenter is saying at that moment.
 
 Which build fits which chart:
 
@@ -181,7 +181,7 @@ Run this on every slide with numbers.
 - [ ] If built in steps, the final state stands alone.
 - [ ] Every value came from the user's material; gaps are marked `[NEEDS: ...]`.
 - [ ] The notes say where to look, what it means, and the source and caveats under "If asked".
-- [ ] `deck lint` reports no chart finding for the slide.
+- [ ] `deckster lint` reports no chart finding for the slide.
 - [ ] Five-second test on the screenshot: someone seeing the rendered slide cold could state the point.
 
 ## 12. Worked examples
@@ -286,7 +286,7 @@ After writing a data slide, shoot it and look. The questions that matter: is the
 
 ## 14. What lint tells you about a chart
 
-`deck lint` checks the measurable half of this file. Each finding names its fix; this is what each usually means about the thinking.
+`deckster lint` checks the measurable half of this file. Each finding names its fix; this is what each usually means about the thinking.
 
 | Rule                        | What it usually means                                                                                   |
 | --------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -307,7 +307,7 @@ Lint cannot tell whether the title's claim is true of the data, whether the meas
 
 A list of steps or components makes the audience build the picture in their heads while they listen. When the claim is about how things connect, in what order, or who owns what, draw it. Use bullets when the items are parallel and unordered (three requirements, four benefits); use a diagram when the relationships between the items are the point.
 
-| The claim is about                                             | Use (see `deck diagrams --json`)                                  |
+| The claim is about                                             | Use (see `deckster diagrams --json`)                                  |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | A path through a system: a request, an order, a ticket         | `<Flow>` with a `<Journey>` that walks it one hop per step             |
 | How parts connect: an architecture, a pipeline, a hand-off     | `<Flow>` with `<Node>`s on a grid, `<Edge>`s, `<Group>`s for boundaries |
@@ -321,11 +321,11 @@ A list of steps or components makes the audience build the picture in their head
 How to make one that works:
 
 - **Title the mechanism, not the picture.** "Every refund over $200 passes a team lead before Finance sees it", not "Refund flow". Use the `diagram` layout: a full-width assertion title over one diagram, with an optional `<Aside>` for the "so what".
-- **Draw the claim, not the inventory.** Show the path or structure the title asserts and leave out what is not on it. Five to seven nodes is comfortable; lint warns past twelve nodes or sixteen edges shown at once (`diagram-too-dense`), and a diagram with more than 60 nodes or 120 edges does not build at all (the numbers are `limits` in `deck diagrams --json`; read them there). For a bigger system, show an overview, then one region per slide.
+- **Draw the claim, not the inventory.** Show the path or structure the title asserts and leave out what is not on it. Five to seven nodes is comfortable; lint warns past twelve nodes or sixteen edges shown at once (`diagram-too-dense`), and a diagram with more than 60 nodes or 120 edges does not build at all (the numbers are `limits` in `deckster diagrams --json`; read them there). For a bigger system, show an overview, then one region per slide.
 - **Place a flow on the grid.** Give its nodes `col` and `row` so neighbors, stages and reading order are clear. Check the catalog's grid limits. Builds with the [diagram design controls](#diagram-design-controls) also let you set preferred node widths and minimum heights.
 - **Make it big enough.** A diagram fills its region, but three or four small nodes in one row leave a thin strip across a mostly empty slide. If the mechanism really is that small, it may be a sentence, or the diagram needs the part that makes it interesting (the branch, the exception path, the return trip) on a second row.
 - **Keep words short.** A node title of two or three words, an edge label of one or two ("HTTPS", "approves"). Long text is broken or cut and lint reports it (`diagram-long-word`). Detail goes in the notes or the `<Aside>`.
-- **Mark the few nodes that matter with a card.** A node, actor, item or layer takes `card`, a node style the brand defines. A diagram-wide `card` supplies the default for its nodes, actors or layer items. A layer band takes its own explicit `card`. Use one card to set apart the two or three nodes the title is about (the new service, the step that fails, the system you own) and leave the rest on the default. A card on every node, or a different card per node, is decoration and hides the point. Use the standard names (`default`, `outline`, `solid`, `tint`, `raised`): every brand has them, so the deck keeps working when it is rendered in another brand. Use a brand's own card (`deck brand <name>` lists them) only when the deck belongs to that brand. A name the brand does not have falls back to the next card and lint warns (`diagram-card-missing`). `cards` in `deck diagrams --json` says how a node picks its card; states such as `highlighted` and `error` still win over it.
+- **Mark the few nodes that matter with a card.** A node, actor, item or layer takes `card`, a node style the brand defines. A diagram-wide `card` supplies the default for its nodes, actors or layer items. A layer band takes its own explicit `card`. Use one card to set apart the two or three nodes the title is about (the new service, the step that fails, the system you own) and leave the rest on the default. A card on every node, or a different card per node, is decoration and hides the point. Use the standard names (`default`, `outline`, `solid`, `tint`, `raised`): every brand has them, so the deck keeps working when it is rendered in another brand. Use a brand's own card (`deckster brand <name>` lists them) only when the deck belongs to that brand. A name the brand does not have falls back to the next card and lint warns (`diagram-card-missing`). `cards` in `deckster diagrams --json` says how a node picks its card; states such as `highlighted` and `error` still win over it.
 - **Stage it.** Reveal in the order you will explain (`at` on nodes, groups and edges; `at` on each `<Message>` of a `<SequenceDiagram>`, one message per step; `steps` on a `<Cycle>`, whose step 0 is the whole loop and step 1 the move to the second stage), and let one thing carry the point at each step: a `<Journey>` for something travelling hop by hop (with `focus` to dim what is off the path; check the last step, because a journey that ends focused leaves the final picture dimmed, and the final picture is what exports show), a `<State>` to turn a node into an error or a success at a step, a `<Focus>` to dim everything but a region, a `<Packet>` for traffic on an edge. One accent at a time; everything else stays quiet.
 - **Walk one concrete case.** "A $450 refund on day 12" travelling through the routing rules teaches more than the rules shown all at once. Put the case in the notes and step through it.
 - **The last step stands alone.** Static mode and exports show the final state, so it must read without the animation. Shoot with `--steps` and check each step shows exactly what the presenter is saying at that moment.
@@ -337,11 +337,11 @@ In the notes, write the walk: what to say at each step, in order, with `[click]`
 
 Use `<Flow>` and connect named nodes with `<Edge>` if the recipient needs to move boxes in PowerPoint and keep the links attached. Prefer straight routes or simple orthogonal routes that PowerPoint can reproduce as connectors. Curved or complex routes can export as freeform lines, and imported `<Svg>` paths carry no node attachment information.
 
-Run `deck export <deck> --pptx --dry-run` in native or hybrid mode and review any reported route simplifications. Such a finding can include the count of connectors “glued at both ends”. Open the exported file in PowerPoint and move each connected node in turn to check that the connector follows it. This also works in v0.7.0. [PowerPoint export](https://sandrinodm.github.io/deckster/export-and-publish/powerpoint/)
+Run `deckster export <deck> --pptx --dry-run` in native or hybrid mode and review any reported route simplifications. Such a finding can include the count of connectors “glued at both ends”. Open the exported file in PowerPoint and move each connected node in turn to check that the connector follows it. This also works in v0.7.0. [PowerPoint export](https://sandrinodm.github.io/deckster/export-and-publish/powerpoint/)
 
 ### Diagram design controls
 
-The controls below require a development build with diagram design controls. In `deck diagrams --json`, check each component's `props` and its `shared` list. For example, Flow lists `align` and Edge lists `lineStyle` under `shared`, and Node lists `width` under `props`. The v0.7.0 CLI still supports the existing grid, cards and kind or Iconify icons.
+The controls below require a development build with diagram design controls. In `deckster diagrams --json`, check each component's `props` and its `shared` list. For example, Flow lists `align` and Edge lists `lineStyle` under `shared`, and Node lists `width` under `props`. The v0.7.0 CLI still supports the existing grid, cards and kind or Iconify icons.
 
 | Aim | Where to set it |
 | --- | --- |
@@ -350,6 +350,6 @@ The controls below require a development build with diagram design controls. In 
 | Distinguish one connector or boundary | `strokeWidth` and `lineStyle` (`solid`, `dashed`, `dotted`) on a flow or cycle `Edge`, a flow `Group`, or a sequence `Message`. Zero hides the stroke. A flow edge flagged `dashed` or `async`, a sequence message flagged `reply` or `async`, and an error edge still draw dashed. Use a short label so the meaning survives without the line pattern. |
 | Use a product or system image as an icon | On a `Node`, `Actor`, `Item` or `Milestone`, use a bundled asset such as `icon="../assets/parcel-mark.svg"` in MDX, or pass a `?url` import in MDX or TSX. An HTTPS image URL must be reachable when presenting and exporting. Prefer a bundled file for offline use. Supply a title with the icon's meaning. |
 
-Use a slide prop for one drawing and the brand for defaults across slides. Tree branches and the timeline track take their stroke settings from the brand. The brand's `diagram.nodes.subtitle` styles node subtitles and `diagram.notes` styles timeline milestone detail. Card and icon tile borders also belong to the brand. Run `deck brand check <name>` and inspect the resolved defaults with `deck brand <name> --json` after a brand change. Use the `brand-import` skill if brand work is in scope. [Diagram design guide](https://github.com/sandrinodm/deckster/blob/eb1bc3cf9f0528bac13090e193abc671fe7c4ab6/src/content/docs/data-and-diagrams/diagram-design.mdx) · [Dispatch example](https://github.com/sandrinodm/deckster/blob/be8cc95edb8db522f084f7f8b3a89ef46e9efd5b/decks/diagrams-demo/slides/dispatch-handoff.mdx)
+Use a slide prop for one drawing and the brand for defaults across slides. Tree branches and the timeline track take their stroke settings from the brand. The brand's `diagram.nodes.subtitle` styles node subtitles and `diagram.notes` styles timeline milestone detail. Card and icon tile borders also belong to the brand. Run `deckster brand check <name>` and inspect the resolved defaults with `deckster brand <name> --json` after a brand change. Use the `brand-import` skill if brand work is in scope. [Diagram design guide](https://github.com/sandrinodm/deckster/blob/eb1bc3cf9f0528bac13090e193abc671fe7c4ab6/src/content/docs/data-and-diagrams/diagram-design.mdx) · [Dispatch example](https://github.com/sandrinodm/deckster/blob/be8cc95edb8db522f084f7f8b3a89ef46e9efd5b/decks/diagrams-demo/slides/dispatch-handoff.mdx)
 
-After using a control, run `deck lint` and inspect every `deck shot --steps` frame. For PowerPoint, check the output as well. In native and hybrid modes the exporter draws diagram shapes, connectors and icon borders as editable elements, and embeds image icons as pictures when it can load and embed them. SVG artwork supplied to `<Svg>` keeps the placement and styling authored in the file.
+After using a control, run `deckster lint` and inspect every `deckster shot --steps` frame. For PowerPoint, check the output as well. In native and hybrid modes the exporter draws diagram shapes, connectors and icon borders as editable elements, and embeds image icons as pictures when it can load and embed them. SVG artwork supplied to `<Svg>` keeps the placement and styling authored in the file.

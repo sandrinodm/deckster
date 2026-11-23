@@ -20,12 +20,12 @@ const LIMITS = [
 
 /**
  * A slot that holds more than its layout's content budget allows: more words, bullets or lines of
- * code than the layout was designed for. The budgets come from the layout's contract (`deck layouts
- * --json` prints them), tightened by every variant the slide matches, such as a narrower text
- * column. They count content, which is the same in every brand, never the room it takes, so a slide
- * within budget in one brand is within it in all of them; whether it fits the brand's type is for
- * the overflow rules. Slots are counted over all their content, hidden steps included, so the rule
- * runs once per slide.
+ * code than the layout was designed for. The budgets come from the layout's contract (`deckster
+ * layouts --json` prints them), tightened by every variant the slide matches, such as a narrower
+ * text column. They count content, which is the same in every brand, never the room it takes, so a
+ * slide within budget in one brand is within it in all of them; whether it fits the brand's type is
+ * for the overflow rules. Slots are counted over all their content, hidden steps included, so the
+ * rule runs once per slide.
  */
 export const contentBudgetRule: SlideRule = {
   /**
@@ -49,7 +49,7 @@ export const contentBudgetRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: "A layout slot holds more words, bullets or lines of code than the layout's budget.",
 

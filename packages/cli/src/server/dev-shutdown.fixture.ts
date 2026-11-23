@@ -1,5 +1,5 @@
 /**
- * A deck CLI process for the shutdown test: `deck dev hello --agent fake --port <port>` on a
+ * A deck CLI process for the shutdown test: `deckster dev hello --agent fake --port <port>` on a
  * scratch workspace with a copy of the hello deck, run as the real entry runs it
  * (`NodeRuntime.runMain(cliProgram(...))`). Run as `node dev-shutdown.fixture.ts <root> <port>`.
  */

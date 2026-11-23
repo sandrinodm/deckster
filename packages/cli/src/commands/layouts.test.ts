@@ -5,7 +5,7 @@ import type { LayoutSummary } from '#layouts/summarize-layouts.ts';
 
 import { runCaptured } from '#cli.fixture.ts';
 
-it.effect('deck layouts --summary --json is a small entry per layout', () =>
+it.effect('deckster layouts --summary --json is a small entry per layout', () =>
   Effect.gen(function* () {
     const full = yield* runCaptured(['layouts', 'hello', '--json']);
     const summary = yield* runCaptured(['layouts', 'hello', '--summary', '--json']);
@@ -35,7 +35,7 @@ it.effect('deck layouts --summary --json is a small entry per layout', () =>
   }),
 );
 
-it.effect('deck layouts --summary prints an aligned entry per layout in plain text', () =>
+it.effect('deckster layouts --summary prints an aligned entry per layout in plain text', () =>
   Effect.gen(function* () {
     const { code, output } = yield* runCaptured(['layouts', 'hello', '--summary']);
     expect(code).toBe(0);
@@ -51,7 +51,7 @@ it.effect('deck layouts --summary prints an aligned entry per layout in plain te
   }),
 );
 
-it.effect('deck layouts without --summary keeps printing the full contracts', () =>
+it.effect('deckster layouts without --summary keeps printing the full contracts', () =>
   Effect.gen(function* () {
     const { output } = yield* runCaptured(['layouts', 'hello', '--json']);
     const catalog = JSON.parse(output) as { layouts: Record<string, unknown>[] };

@@ -11,7 +11,7 @@ import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
 import { collectedPage } from '#lint/snapshot.fixture.ts';
 
 /**
- * A fake hello deck whose second slide throws, for `deck shot` without Chromium.
+ * A fake hello deck whose second slide throws, for `deckster shot` without Chromium.
  */
 const BROKEN_HELLO = fakeDeckLayer({
   slides: [
@@ -49,7 +49,7 @@ describe('runCli', () => {
   it.effect('prints command help for --help', () =>
     Effect.gen(function* () {
       const { output } = yield* runCaptured(['shot', '--help']);
-      expect(output).toContain('Usage: deck shot');
+      expect(output).toContain('Usage: deckster shot');
       expect(output).toContain('--brand <name>');
     }),
   );
@@ -58,14 +58,14 @@ describe('runCli', () => {
     Effect.gen(function* () {
       const error = yield* Effect.flip(runCaptured(['shoot']));
       expect(error.message).toContain('Unknown command "shoot"');
-      expect(error.message).toContain('Run `deck --help` for the usage.');
+      expect(error.message).toContain('Run `deckster --help` for the usage.');
     }),
   );
 
   it.effect('points at --help for an unknown option', () =>
     Effect.gen(function* () {
       const error = yield* Effect.flip(runCaptured(['lint', 'hello', '--bogus']));
-      expect(error.message).toContain('deck lint --help');
+      expect(error.message).toContain('deckster lint --help');
     }),
   );
 
@@ -99,7 +99,7 @@ describe('runCli', () => {
     }),
   );
 
-  it.effect('makes deck shot exit with 1 and flag a slide that threw', () =>
+  it.effect('makes deckster shot exit with 1 and flag a slide that threw', () =>
     Effect.gen(function* () {
       const plain = yield* runCaptured(['shot', 'hello', '--out', SCRATCH_SHOTS], {
         deck: BROKEN_HELLO,

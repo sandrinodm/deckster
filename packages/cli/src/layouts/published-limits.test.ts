@@ -234,7 +234,7 @@ function schemaLimits(
   ];
 }
 
-describe('the limits deck layouts --json prints', () => {
+describe('the limits deckster layouts --json prints', () => {
   it.effect('state every length and count the frontmatter schema holds in the field hint', () =>
     Effect.gen(function* () {
       const info = describeCatalog(yield* loadLayoutCatalog());
@@ -264,56 +264,60 @@ describe('the limits deck layouts --json prints', () => {
     }),
   );
 
-  it.effect('are the limits the build and deck lint enforce, for every layout and variant', () =>
-    Effect.gen(function* () {
-      const catalog = yield* loadLayoutCatalog();
-      const info = describeCatalog(catalog);
-      let checked = 0;
-      for (const layout of info.layouts) {
-        const contract = catalog.get(layout.name)?.contract;
-        expect(contract, layout.name).toBeDefined();
-        if (contract === undefined) {
-          continue;
-        }
+  it.effect(
+    'are the limits the build and deckster lint enforce, for every layout and variant',
+    () =>
+      Effect.gen(function* () {
+        const catalog = yield* loadLayoutCatalog();
+        const info = describeCatalog(catalog);
+        let checked = 0;
+        for (const layout of info.layouts) {
+          const contract = catalog.get(layout.name)?.contract;
+          expect(contract, layout.name).toBeDefined();
+          if (contract === undefined) {
+            continue;
+          }
 
-        const cases: Case[] = [
-          { name: 'base', when: {} },
-          ...layout.variants.map((variant) => ({ name: variant.name, when: variant.when })),
-        ];
-        for (const { name, when } of cases) {
-          const label = `${layout.name} (${name})`;
-          const shape = atLimits(layout, when, {});
-          const slide = { frontmatter: shape, filled: [...(when.filled ?? []), BODY_SLOT] };
-          const fields = publishedFields(layout, slide);
-          const full = atLimits(layout, when, fields);
-          // Every text at its published limit builds: no limit is stricter than the catalog says.
-          const valid = yield* Effect.result(validateFrontmatter(full, catalog, REF));
-          expect(Result.isSuccess(valid) ? 'valid' : valid.failure.message, label).toBe('valid');
+          const cases: Case[] = [
+            { name: 'base', when: {} },
+            ...layout.variants.map((variant) => ({ name: variant.name, when: variant.when })),
+          ];
+          for (const { name, when } of cases) {
+            const label = `${layout.name} (${name})`;
+            const shape = atLimits(layout, when, {});
+            const slide = { frontmatter: shape, filled: [...(when.filled ?? []), BODY_SLOT] };
+            const fields = publishedFields(layout, slide);
+            const full = atLimits(layout, when, fields);
+            // Every text at its published limit builds: no limit is stricter than the catalog says.
+            const valid = yield* Effect.result(validateFrontmatter(full, catalog, REF));
+            expect(Result.isSuccess(valid) ? 'valid' : valid.failure.message, label).toBe('valid');
 
-          // One character past a published field limit fails, naming the field.
-          for (const path of Object.keys(fields)) {
-            const broken = yield* Effect.flip(
-              validateFrontmatter(atLimits(layout, when, fields, path), catalog, REF),
+            // One character past a published field limit fails, naming the field.
+            for (const path of Object.keys(fields)) {
+              const broken = yield* Effect.flip(
+                validateFrontmatter(atLimits(layout, when, fields, path), catalog, REF),
+              );
+              expect(broken.message, `${label} ${path}`).toContain(path.split('[]')[0] ?? path);
+            }
+
+            // deckster lint holds each slot to the tightest of the budgets the catalog prints for it.
+            const matching = layout.variants.filter((variant) =>
+              variantApplies(variant.when, slide),
             );
-            expect(broken.message, `${label} ${path}`).toContain(path.split('[]')[0] ?? path);
-          }
+            for (const slot of Object.keys(layout.slots)) {
+              const published: ContentBudget = combineBudgets([
+                layout.budget[slot],
+                ...matching.map((variant) => variant.limits.budget[slot]),
+              ]);
+              expect(slideBudget(contract, slot, slide), `${label} ${slot}`).toEqual(published);
+            }
 
-          // deck lint holds each slot to the tightest of the budgets the catalog prints for it.
-          const matching = layout.variants.filter((variant) => variantApplies(variant.when, slide));
-          for (const slot of Object.keys(layout.slots)) {
-            const published: ContentBudget = combineBudgets([
-              layout.budget[slot],
-              ...matching.map((variant) => variant.limits.budget[slot]),
-            ]);
-            expect(slideBudget(contract, slot, slide), `${label} ${slot}`).toEqual(published);
+            checked += 1;
           }
-
-          checked += 1;
         }
-      }
 
-      expect(checked).toBeGreaterThan(info.layouts.length);
-    }),
+        expect(checked).toBeGreaterThan(info.layouts.length);
+      }),
   );
 
   it.effect('print the label limit of a row of four stats on its variant', () =>

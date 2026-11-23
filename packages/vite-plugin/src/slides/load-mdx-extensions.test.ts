@@ -121,7 +121,7 @@ describe('a slide compiled with the kit extension', () => {
 
   it('fails the build for an AppFrame app the deck does not have, naming how to create it', async () => {
     await expect(compile('<AppFrame app="nope" poster="./p.png" />\n')).rejects.toThrow(
-      /no decks\/demo\/apps\/nope\/index\.html.*pnpm deck new app demo nope/,
+      /no decks\/demo\/apps\/nope\/index\.html.*pnpm deckster new app demo nope/,
     );
   });
 

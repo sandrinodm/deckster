@@ -81,7 +81,7 @@ const FONT_EXTENSIONS: ReadonlySet<string> = new Set(['.ttf', '.otf', '.woff', '
 const PAGE_NUMBER = /(\d+)\.png$/;
 
 /**
- * The renderers `deck export --verify` can use: LibreOffice with the export's fonts installed,
+ * The renderers `deckster export --verify` can use: LibreOffice with the export's fonts installed,
  * LibreOffice with no brand fonts and the embedded fonts removed (what an app that ignores
  * embedding shows: the declared substitutes), LibreOffice with no brand fonts but the file as
  * written (its embedded fonts), Quick Look and Keynote.

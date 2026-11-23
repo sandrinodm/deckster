@@ -77,7 +77,7 @@ export const buildCommentReport = Effect.fn('buildCommentReport')(function* (
 
 /**
  * Counts a deck's open comments by slide, for the `open-comments` lint rule. A feedback file that
- * is not valid counts as none: `deck comments` is where it is reported.
+ * is not valid counts as none: `deckster comments` is where it is reported.
  *
  * @param deckDir - The absolute deck folder.
  * @returns Slide id to open comment count; slides without open comments are left out.

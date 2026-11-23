@@ -137,7 +137,7 @@ describe('startFailureMessage', () => {
       ROOT,
     );
     expect(message).toContain('Fix the error in decks/q3/slides/a.tsx');
-    expect(message).toContain('`pnpm deck dev <deck>`');
+    expect(message).toContain('`pnpm deckster dev <deck>`');
   });
 });
 

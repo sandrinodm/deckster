@@ -328,8 +328,8 @@ function sameBox(left: DOMRect | undefined, right: DOMRect | undefined): boolean
 }
 
 /**
- * The agent chat panel for `deck dev --agent` and `deck present --agent`: `a` (or the chat button
- * in the tool cluster) shows or hides it. Loaded only while serving with `--agent`.
+ * The agent chat panel for `deckster dev --agent` and `deckster present --agent`: `a` (or the chat
+ * button in the tool cluster) shows or hides it. Loaded only while serving with `--agent`.
  */
 export default definePlugin({
   name: '@deckster/agent/panel',

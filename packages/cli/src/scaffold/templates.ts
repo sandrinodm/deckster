@@ -72,7 +72,7 @@ export type DeckTemplate = {
  * The files of a new deck, by path relative to the deck folder. They follow the workspace's
  * conventions: dependencies from the catalog, Vite+ client types, and sources the formatter leaves
  * as they are. A published CLI's workspace is a plain folder without a package manager of its own,
- * so a deck there is just its config and slides; `deck types` writes the one `tsconfig.json` an
+ * so a deck there is just its config and slides; `deckster types` writes the one `tsconfig.json` an
  * editor needs.
  *
  * @param template - The deck's name, title, brand, duration and cover example.

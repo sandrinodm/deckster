@@ -9,14 +9,16 @@ import { runCaptured } from '#cli.fixture.ts';
 import { FIXTURE_WORKSPACE } from '#lint/lint.fixtures.ts';
 import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
 
-it.effect('deck build refuses --include-scratch without --out, where it would change nothing', () =>
-  Effect.gen(function* () {
-    const error = yield* Effect.flip(runCaptured(['build', '--include-scratch']));
-    expect(error.message).toContain('--include-scratch only applies to the site --out writes');
-  }),
+it.effect(
+  'deckster build refuses --include-scratch without --out, where it would change nothing',
+  () =>
+    Effect.gen(function* () {
+      const error = yield* Effect.flip(runCaptured(['build', '--include-scratch']));
+      expect(error.message).toContain('--include-scratch only applies to the site --out writes');
+    }),
 );
 
-it.effect('deck build --help names the zz- convention and --include-scratch', () =>
+it.effect('deckster build --help names the zz- convention and --include-scratch', () =>
   Effect.gen(function* () {
     const { output } = yield* runCaptured(['build', '--help']);
     expect(output).toContain('--include-scratch');

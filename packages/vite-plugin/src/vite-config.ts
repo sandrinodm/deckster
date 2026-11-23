@@ -94,7 +94,8 @@ const WARMUP_FILES = ['./main.tsx', './start-errors.ts'];
 export type DeckServingOptions = {
   /**
    * Transform the engine's entry files at start (`server.warmup`), so the first page load finds
-   * them ready. Only a server that stays up for people (`deck dev`, `deck present`) wants it.
+   * them ready. Only a server that stays up for people (`deckster dev`, `deckster present`) wants
+   * it.
    */
   warmup?: boolean;
 };

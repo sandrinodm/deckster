@@ -104,8 +104,8 @@ export function shellProfileDir(root: string): string {
 }
 
 /**
- * What `deck present` puts in the shell's `DECK_SHELL_CONFIG`: nothing about the deck, which the
- * `open` command carries once it is served.
+ * What `deckster present` puts in the shell's `DECK_SHELL_CONFIG`: nothing about the deck, which
+ * the `open` command carries once it is served.
  *
  * @param root - The workspace root.
  * @param options - How the shell starts.
@@ -199,10 +199,10 @@ export type StartedShell = {
 };
 
 /**
- * Starts Electron windows for `deck present`. A shell lives in the scope of the caller that started
- * it: leaving the scope asks it to quit and kills it when it does not. The code that spawns it
- * loads on the first call, so a command that never presents does not import it. Tests replace the
- * layer with `fakeShellLayer`.
+ * Starts Electron windows for `deckster present`. A shell lives in the scope of the caller that
+ * started it: leaving the scope asks it to quit and kills it when it does not. The code that spawns
+ * it loads on the first call, so a command that never presents does not import it. Tests replace
+ * the layer with `fakeShellLayer`.
  */
 export class DeckShell extends Context.Service<
   DeckShell,

@@ -26,7 +26,7 @@ export const missingNotesRule: SlideRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description: 'A slide has no speaker notes.',
 

@@ -77,8 +77,8 @@ An imported layout is **data in the brand**, not code. Each one is a named list 
 pixels, and each box is bound to the title, a slot or a field. It also names a type step, an
 alignment and a surface, plus optional artwork layers for its decoration. One generic kit
 component, `BrandLayout`, draws any such spec. A small function turns a spec into a normal
-`LayoutContract`, and the Node catalog and the browser registry both use it. Lint, `deck layouts`,
-`deck new slide`, budgets, overflow checks and export then work on brand layouts with no special
+`LayoutContract`, and the Node catalog and the browser registry both use it. Lint, `deckster layouts`,
+`deckster new slide`, budgets, overflow checks and export then work on brand layouts with no special
 cases.
 
 The importer's job becomes extraction plus emission. It reads every master layout, renders its
@@ -143,7 +143,7 @@ the frontmatter schema, `data-layout`, suggestions and scaffolding.
 Recommendation:
 
 - A brand layout has a plain kebab name, such as `title-photo` from "Title with Photo".
-- A name that clashes with an engine or kit layout fails `deck brand check`, with the fix "rename
+- A name that clashes with an engine or kit layout fails `deckster brand check`, with the fix "rename
   it". When the kebab form of a source name clashes (a source "Title" becomes `title`), the
   importer prefixes the brand name: `acme-title`.
 - Brand layouts never replace kit layouts, so a deck that already works keeps working when its
@@ -174,7 +174,7 @@ Recommendation: follow the diagram-card rule in `design.md`.
   (static data; `listBrands` exists).
 - The built deck contains only the kit name. No other brand's layout names, labels or brand names
   reach the browser or a published build.
-- `deck lint` reports `brand-layout-fallback` locally, naming the brand the layout came from and
+- `deckster lint` reports `brand-layout-fallback` locally, naming the brand the layout came from and
   the fallback used.
 - Two brands may define the same name with different fallbacks. That is an error naming both;
   the fix is to rename one.
@@ -187,7 +187,7 @@ the fallback.
 - It must bind every slot and field its fallback requires, and the generated contract copies
   which of them are required.
 - If the fallback requires a title, the brand layout has one (`title: false` is then an error).
-- `deck brand check` rejects a layout that breaks any of these rules. The fix names the
+- `deckster brand check` rejects a layout that breaks any of these rules. The fix names the
   fallback's slots and the closest kit layouts that would fit.
 
 ### 3.4 Budgets: borrowed from the fallback
@@ -297,7 +297,7 @@ masters), and `emit_brand.py` gains layout emission. The agent's part in the ski
 - reviewing names and duplicates
 - comparing the specimen with the source render
 
-A `deck brand import` command in TypeScript would make imports reproducible without an agent, but
+A `deckster brand import` command in TypeScript would make imports reproducible without an agent, but
 it means porting about 1,400 lines of OOXML reading. It can come once the format is settled.
 
 ## 4. Framework design
@@ -317,7 +317,7 @@ it means porting about 1,400 lines of OOXML reading. It can come once the format
 gain `layouts: BrandLayoutTokens[]`. `brandModuleCode` emits `?url` imports for the art, as it
 does for backgrounds. The agent gate covers the file, because it uses the same static reader.
 
-**Checks** (`deck brand check`)
+**Checks** (`deckster brand check`)
 
 - names are kebab-case, unique, and clash with no engine or kit layout
 - the `fallback` exists, and the bindings exist on it
@@ -359,11 +359,11 @@ brands in dev (`brand-switch.e2e.ts`) must reload the catalog and re-validate th
 - `validateFrontmatter` and the slide transform look up the names the deck's slides use, across
   the workspace's brands.
 - The transform rewrites the slide's `layout` to the fallback before the browser sees it.
-- `deck lint` reports the swap. Nothing about other brands goes into a virtual module.
+- `deckster lint` reports the swap. Nothing about other brands goes into a virtual module.
 
 **Discovery.**
 
-- `deck layouts --json` adds `source` (`kit` or `brand:<name>`), `fallback`, `label` and the
+- `deckster layouts --json` adds `source` (`kit` or `brand:<name>`), `fallback`, `label` and the
   source template name to each `LayoutInfo`, and `--summary` groups brand layouts first.
 - `create-presentation` tells agents to prefer the brand's layouts when the deck's brand has
   them, because they are the template the organisation expects. It also tells them to fall back
@@ -411,7 +411,7 @@ brands in dev (`brand-switch.e2e.ts`) must reload the catalog and re-validate th
   - bindings per placeholder
   - box and type step per placeholder
   - `keep: true | false`
-- `check-draft` validates them against `deck layouts --json`.
+- `check-draft` validates them against `deckster layouts --json`.
 - `emit_brand.py` writes `layouts.ts` and copies the art into `layouts/`.
 - `make_specimen.py` adds one specimen slide per brand layout, filled from the contract example.
 - `compare.py` puts each specimen next to the prompt-filled source render.
@@ -474,7 +474,7 @@ waits on spike 5.
 | brand       | `layout-schema.ts`, `loadBrand`, tokens, checks, `brand-modules.ts` art URLs, `test-brand.fixture.ts` with three layouts                     |
 | kit         | `brand-layout.contract.ts`, `brand-layout.tsx` and `.css`, the runtime registration, `brandLayoutCatalog`, unit tests                        |
 | vite-plugin | `loadLayoutCatalog({ brand })`, `slide-meta.ts`, frontmatter fallback, a brand-switch reload, an e2e case modelled on `e2e/fixtures/layouts` |
-| cli         | the five CLI call sites, `deck layouts` fields, the `brand-layout-fallback` lint rule, `deck new slide --layout <brand layout>`              |
+| cli         | the five CLI call sites, `deckster layouts` fields, the `brand-layout-fallback` lint rule, `deckster new slide --layout <brand layout>`      |
 
 The coordinator owns the shared contract (names and types written first in the scratchpad), the
 e2e runs and `pnpm ready`.
@@ -482,7 +482,7 @@ e2e runs and `pnpm ready`.
 ### Phase 2: a hand-written brand layout set
 
 Write `layouts.ts` by hand for one public brand (`fieldnote` or `tidewater`), three or four
-layouts with art. Use it in a test deck and check `deck shot`, `deck lint` and `deck export`. This
+layouts with art. Use it in a test deck and check `deckster shot`, `deckster lint` and `deckster export`. This
 proves the format before the importer writes it.
 
 ### Phase 3: importer for PPTX, POTX and Google Slides
@@ -503,7 +503,7 @@ Fixtures come from `make_fixtures.py`:
 
 `check_extraction.py` asserts the layout count, the keys, the boxes and the bindings. A new
 `evals.json` case imports the `.potx` into a brand and grades the layout count, the
-`deck brand check` result and the specimen comparison.
+`deckster brand check` result and the specimen comparison.
 
 ### Phase 4: Keynote
 
@@ -534,7 +534,7 @@ placeholder. If you want it (3.6), template export follows as its own plan.
   drawn as a shape). The mapping rules cover the common cases; the agent's review covers the rest.
 - **Renderer availability.** The probe needs LibreOffice, and Keynote needs macOS. Both are
   already prerequisites of the skill's render step.
-- **Catalog growth.** A template with 40 layouts makes `deck layouts --summary` long for agents.
+- **Catalog growth.** A template with 40 layouts makes `deckster layouts --summary` long for agents.
   The draft's `keep` flag and the grouping in `--summary` help, and the import notes should
   recommend pruning near-duplicates.
 - **Fonts in art.** Outlined text in rendered art uses the renderer's fonts. A missing template

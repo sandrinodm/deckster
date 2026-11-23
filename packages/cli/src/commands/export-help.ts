@@ -28,9 +28,9 @@ export const SCALE_RANGE = {
 } as const;
 
 /**
- * The text `deck export --help` prints.
+ * The text `deckster export --help` prints.
  */
-export const HELP = `Usage: deck export <deck> [--pdf] [--png] [--pptx] [options]
+export const HELP = `Usage: deckster export <deck> [--pdf] [--png] [--pptx] [options]
 
 Exports a deck rendered in static mode. Without a format flag it writes the PDF and the PPTX.
 
@@ -40,7 +40,7 @@ Formats:
                     slide-to-slide links, a bookmark and page label per slide, tagged for screen
                     readers, the deck title and the brand's language. Videos, iframes and apps
                     show their posters.
-  --png             PNG screenshots, as \`deck shot\` writes them, in <out>/png.
+  --png             PNG screenshots, as \`deckster shot\` writes them, in <out>/png.
   --pptx            PowerPoint: a theme and slide master per brand surface in use with the brand's
                     chrome and a slide number, the deck's layouts with placeholders placed and
                     styled as the deck sets them, editable text that wraps where the web wraps, the

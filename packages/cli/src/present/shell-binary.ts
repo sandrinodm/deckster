@@ -66,7 +66,7 @@ export const findElectronPackage = Effect.fn('findElectronPackage')(function* ()
     },
     catch: () =>
       shellError(
-        'The electron package is not installed, so `deck present` cannot open a window.\n' +
+        'The electron package is not installed, so `deckster present` cannot open a window.\n' +
           (FRAMEWORK_INSTALLED
             ? 'Electron is an optional dependency that the install skipped or could not fetch: ' +
               'reinstall @deckster/cli, '
@@ -101,7 +101,7 @@ export const resolveShellBinary = Effect.fn('resolveShellBinary')(function* (
   const directory = electronDir ?? (yield* findElectronPackage());
   const missing = shellError(
     `Electron's binary is not downloaded (${path.join(directory, 'dist')}), ` +
-      'so `deck present` cannot open a window.\n' +
+      'so `deckster present` cannot open a window.\n' +
       `Run \`${installElectronCommand(directory)}\` (about 120 MB), or pass --browser to present in Chrome.`,
   );
   const relative = yield* fs

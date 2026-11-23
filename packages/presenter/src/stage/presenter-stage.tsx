@@ -16,10 +16,10 @@ type PresenterStageProps = {
 };
 
 /**
- * Wraps the main stage. In static mode, which `deck shot`, `deck lint` and export use, it adds
- * nothing. In the presenter window it renders no slides at all, because that window draws its own
- * panes. Otherwise it makes room for the sidebar, so the stage resizes beside it instead of being
- * covered, and turns a horizontal swipe into the previous or next step.
+ * Wraps the main stage. In static mode, which `deckster shot`, `deckster lint` and export use, it
+ * adds nothing. In the presenter window it renders no slides at all, because that window draws its
+ * own panes. Otherwise it makes room for the sidebar, so the stage resizes beside it instead of
+ * being covered, and turns a horizontal swipe into the previous or next step.
  */
 export function PresenterStage({ children }: PresenterStageProps): ReactNode {
   const deck = useDeck();

@@ -38,7 +38,7 @@ const COMMAND = 'comments';
 const STEP_PATTERN = /^\d+$/;
 
 /**
- * The parsed command line of `deck comments`, after the first positional.
+ * The parsed command line of `deckster comments`, after the first positional.
  */
 export type CommentsArgs = {
   /**
@@ -123,7 +123,7 @@ type CommentsError = CliError | DeckBuildError;
 type CommentsServices = Workspace | FileSystem.FileSystem | ChildProcessSpawner.ChildProcessSpawner;
 
 /**
- * `deck comments <deck>`: the deck's comments, open ones unless `--resolved` or `--all`.
+ * `deckster comments <deck>`: the deck's comments, open ones unless `--resolved` or `--all`.
  *
  * @param deckName - The deck folder name.
  * @param args - The options.
@@ -148,7 +148,7 @@ export const listComments = Effect.fn('listComments')(function* (
 });
 
 /**
- * `deck comments resolve <deck> <id>`: marks a comment resolved.
+ * `deckster comments resolve <deck> <id>`: marks a comment resolved.
  *
  * @param args - The deck, the id and `--note`.
  * @throws CliError in the error channel for missing arguments or an unknown id.
@@ -164,7 +164,7 @@ export const resolveComment = Effect.fn('resolveComment')(function* (
 });
 
 /**
- * `deck comments reopen <deck> <id>`: opens a resolved comment again.
+ * `deckster comments reopen <deck> <id>`: opens a resolved comment again.
  *
  * @param args - The deck and the id.
  * @throws CliError in the error channel for missing arguments or an unknown id.
@@ -177,8 +177,8 @@ export const reopenComment = Effect.fn('reopenComment')(function* (
 });
 
 /**
- * `deck comments add <deck> <slide> --text ...`: adds a comment on a slide, or with `--line` on a
- * line of the slide file.
+ * `deckster comments add <deck> <slide> --text ...`: adds a comment on a slide, or with `--line` on
+ * a line of the slide file.
  *
  * @param args - The deck, the slide, `--text`, `--line`, `--step` and `--type`.
  * @throws CliError in the error channel for missing or invalid arguments, a slide the deck does not
@@ -231,7 +231,7 @@ export const addComment = Effect.fn('addComment')(function* (
 });
 
 /**
- * `deck comments prune <deck>`: removes the comments of slides the deck config does not list.
+ * `deckster comments prune <deck>`: removes the comments of slides the deck config does not list.
  *
  * @param args - The deck.
  * @throws CliError in the error channel for a missing deck name or an invalid feedback file.

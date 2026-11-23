@@ -204,7 +204,7 @@ async function serveRequest(
       HTTP_UNAUTHORIZED,
       RPC_REFUSED,
       'Missing or wrong bearer token. Send `Authorization: Bearer <token>`; ' +
-        'run `deck mcp <deck>` for the configuration.',
+        'run `deckster mcp <deck>` for the configuration.',
       { 'www-authenticate': 'Bearer realm="deck"' },
     );
   }

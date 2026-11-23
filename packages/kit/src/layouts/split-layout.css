@@ -3,7 +3,7 @@
  * is a size container between the top and bottom lines. A photo or video alone in it fills it,
  * cropped to the brand treatment's corners; anything else (a chart, a table, a component) is
  * centred in it and may fill it with `height: 100%` or `100cqh`, and what does not fit spills out
- * where `deck lint` sees it instead of being clipped.
+ * where `deckster lint` sees it instead of being clipped.
  */
 @layer theme, base, components, utilities;
 

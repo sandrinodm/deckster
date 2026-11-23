@@ -102,7 +102,7 @@ export function propsProblem(check: PropsCheck): string | undefined {
     const hint = guess === undefined ? '' : ` Did you mean \`${guess}\`?`;
     return (
       `\`${key}\` is not a prop of <${check.name}>.${hint} Its props are: ${known.join(', ')}. ` +
-      '`deck components --json` describes each one.'
+      '`deckster components --json` describes each one.'
     );
   }
 

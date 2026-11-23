@@ -108,7 +108,7 @@ type PresentModules = {
 };
 
 /**
- * Imports the heavy modules `deck present` needs to serve a deck.
+ * Imports the heavy modules `deckster present` needs to serve a deck.
  *
  * @param built - Whether the static build is served.
  * @param withAgent - Whether `--agent` is given.
@@ -234,7 +234,7 @@ export const run: Command['run'] = (argv): ReturnType<Command['run']> =>
   withJsonErrors(argv, runPresent(argv));
 
 /**
- * The body of `deck present`.
+ * The body of `deckster present`.
  *
  * @param argv - The arguments after `present`.
  */
@@ -595,8 +595,8 @@ type ServeOptions = {
 };
 
 /**
- * Serves the deck in the command's scope and returns its URL: the dev server `deck dev` starts, or
- * with `built` a production build behind the preview server.
+ * Serves the deck in the command's scope and returns its URL: the dev server `deckster dev` starts,
+ * or with `built` a production build behind the preview server.
  *
  * @param options - The deck and how to serve it.
  */

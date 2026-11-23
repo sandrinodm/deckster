@@ -29,7 +29,7 @@ export function turnSummary(event: AgentEvent): string | undefined {
 
 /**
  * Prints a short line for every new turn summary, reverted change and error, for as long as the
- * caller's scope lives (`deck present` keeps the terminal to such a status).
+ * caller's scope lives (`deckster present` keeps the terminal to such a status).
  *
  * @param sessions - The agent host.
  */

@@ -39,7 +39,7 @@ class Scratch extends Context.Service<Scratch, { readonly root: string }>()(
 }
 
 /**
- * Runs `deck comments ...` in the scratch workspace and returns what it printed.
+ * Runs `deckster comments ...` in the scratch workspace and returns what it printed.
  */
 const comments = Effect.fn('comments')(function* (argv: string[]) {
   const { root } = yield* Scratch;
@@ -54,7 +54,7 @@ const json = Effect.fn('commentsJson')(function* <A>(argv: string[]) {
   return JSON.parse(output) as A;
 });
 
-layer(Scratch.layer.pipe(Layer.provideMerge(NodeServices.layer)))('deck comments', (it) => {
+layer(Scratch.layer.pipe(Layer.provideMerge(NodeServices.layer)))('deckster comments', (it) => {
   it.effect('adds a comment on a line and lists it with where to edit', () =>
     Effect.gen(function* () {
       const added = yield* json<{ ok: boolean; comment: AgentComment }>([
@@ -199,7 +199,7 @@ layer(Scratch.layer.pipe(Layer.provideMerge(NodeServices.layer)))('deck comments
     Effect.gen(function* () {
       const { output } = yield* comments(['add', '--help']);
       const usage = output.slice(0, output.indexOf('\n\n'));
-      const forms = usage.split(/\n(?=\s*deck comments)/);
+      const forms = usage.split(/\n(?=\s*deckster comments)/);
       expect(forms).toHaveLength(5);
       for (const form of forms) {
         expect(form).toContain('[--json]');

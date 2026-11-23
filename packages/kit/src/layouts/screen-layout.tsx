@@ -244,8 +244,8 @@ type RatioState = {
  * drawn around the picture rather than the picture letterboxed in the frame. They are read when the
  * picture loads, or when its element is committed if it has loaded already. It holds the slide's
  * readiness until they are known, so shots, lint and exports see the final frame, and lets go when
- * the picture fails or has no file (the frame then keeps its fallback proportions, and `deck lint`
- * reports the broken image).
+ * the picture fails or has no file (the frame then keeps its fallback proportions, and `deckster
+ * lint` reports the broken image).
  *
  * @param source - The picture's URL, or nothing when the file was not resolved.
  */

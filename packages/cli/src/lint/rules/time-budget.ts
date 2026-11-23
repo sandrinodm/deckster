@@ -29,7 +29,7 @@ export const timeBudgetRule: DeckRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     "The slides' budgets add up to more than the talk's duration (the deck config's `duration`); " +

@@ -146,7 +146,7 @@
       "expected_output": "A deck in decks/<name> that lints clean, was visually checked, and passes the rubric; plus a handoff.",
       "files": [],
       "expectations": [
-        "pnpm deck lint <deck> reports no errors and no warnings in the deck's brand",
+        "pnpm deckster lint <deck> reports no errors and no warnings in the deck's brand",
         "Every layout and component used exists in the catalogs; nothing is hand-drawn in SVG or styled with raw colours, fonts or sizes",
         "Every content slide's title is a claim (read_through.py reports no label-style title) and the titles read in order tell the argument",
         "Every slide has speaker notes; deck.config.ts sets duration and the budgets fit it",
@@ -156,7 +156,7 @@
         "The deck is buyer-first (their situation and a question before the product) and fits about 10 minutes",
         "The seller kit (talk track per slide, discovery questions, the three objections, BILL positioning) exists outside the customer-facing slides",
         "Pricing, SAP and BILL are not claimed beyond what the prompt gives",
-        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deck lint` reports no few-builds warning"
+        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deckster lint` reports no few-builds warning"
       ]
     },
     {
@@ -166,7 +166,7 @@
       "expected_output": "A deck in decks/<name> that lints clean, was visually checked, and passes the rubric; plus a handoff.",
       "files": [],
       "expectations": [
-        "pnpm deck lint <deck> reports no errors and no warnings in the deck's brand",
+        "pnpm deckster lint <deck> reports no errors and no warnings in the deck's brand",
         "Every layout and component used exists in the catalogs; nothing is hand-drawn in SVG or styled with raw colours, fonts or sizes",
         "Every content slide's title is a claim (read_through.py reports no label-style title) and the titles read in order tell the argument",
         "Every slide has speaker notes; deck.config.ts sets duration and the budgets fit it",
@@ -177,7 +177,7 @@
         "There is practice with feedback and a retrieval check, with answers revealed on a step",
         "Notes are a facilitator guide with timings for a remote session",
         "The proration calculation is not invented as policy",
-        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deck lint` reports no few-builds warning"
+        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deckster lint` reports no few-builds warning"
       ]
     },
     {
@@ -187,7 +187,7 @@
       "expected_output": "A deck in decks/<name> that lints clean, was visually checked, and passes the rubric; plus a handoff.",
       "files": [],
       "expectations": [
-        "pnpm deck lint <deck> reports no errors and no warnings in the deck's brand",
+        "pnpm deckster lint <deck> reports no errors and no warnings in the deck's brand",
         "Every layout and component used exists in the catalogs; nothing is hand-drawn in SVG or styled with raw colours, fonts or sizes",
         "Every content slide's title is a claim (read_through.py reports no label-style title) and the titles read in order tell the argument",
         "Every slide has speaker notes; deck.config.ts sets duration and the budgets fit it",
@@ -198,7 +198,7 @@
         "Each data slide uses the form its message calls for (a number or comparison for two values, a table for scenarios), with units and a caption",
         "The CFO's overrun objection and vendor lock-in are addressed on slides",
         "Derived figures (saving, payback) show their arithmetic in notes or a backup slide",
-        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deck lint` reports no few-builds warning"
+        "Slides whose notes walk through parts in order (a chart's context then its highlight, a diagram's path, code lines, a list the presenter recounts) build in that order, each step has a [click] cue at the matching sentence of the notes, slides whose point is the whole (photo, quote, statement, single number) stay whole, and `deckster lint` reports no few-builds warning"
       ]
     },
     {
@@ -208,12 +208,12 @@
       "expected_output": "A rendered deck for an engineering audience whose evidence builds: the monthly trend chart reveals toward the June value with the three changes as callouts at their steps, the job path is a diagram walked with a Journey or per-step reveals, the cache-key code steps through the lines that matter, and the speaker notes carry a [click] for every step; section slides share options; lint is clean.",
       "files": [],
       "expectations": [
-        "pnpm deck lint <deck> reports no errors and no warnings in the deck's brand, few-builds among them",
+        "pnpm deckster lint <deck> reports no errors and no warnings in the deck's brand, few-builds among them",
         "The outline (in the handoff or the working notes) has a Build column naming what arrives at each step, or 'whole', for every slide",
         "The monthly medians are a chart whose build follows the notes: the line or the changes arrive at steps, and the last step shows the whole trend with the highlight",
         "The job path is a diagram that reveals or travels the path in the order the notes explain it (a <Journey>, per-step `at`, or both), including the hit and miss branches",
         "If the cache-key code is on a slide, it is a code block with step ranges on the lines the notes discuss (the toolchain line among them)",
-        "For every slide that builds, the number of [click] cues in its notes equals its steps minus one, checked against `deck shot --steps`",
+        "For every slide that builds, the number of [click] cues in its notes equals its steps minus one, checked against `deckster shot --steps`",
         "Not every slide builds: a statement, a single number or a slide whose point is the whole stays whole, and no list is revealed bullet by bullet unless the notes walk through it",
         "The last step of every built slide reads on its own in the screenshots",
         "If the deck has section slides, they share one surface and the same options",
@@ -228,7 +228,7 @@
       "files": [],
       "expectations": [
         "No slide files are created; the reply shows the outline and stops for review",
-        "Every layout named in the outline exists in `deck layouts --summary`, and each slide's title fits that layout's title length",
+        "Every layout named in the outline exists in `deckster layouts --summary`, and each slide's title fits that layout's title length",
         "Traction (41 paying pharmacies, up from 6 in January) appears within the first four slides of the outline",
         "The market is built bottom-up as pharmacies × price on an `equation` slide (4,000 × £1,200 a year = £4.8M), with the arithmetic correct, rather than a top-down figure, nested circles or a `stats` row",
         "The competition is a `matrix` on the two trade-offs the prompt gives (time to set up, NHS integration) with Dispensa marked `us`, not a `<Scatter>` with invented coordinates",
@@ -244,7 +244,7 @@
   "changelog": [
     "After iteration 1: eval 2 question limit changed from two to three. Both configurations failed 'at most two'; the with-skill run's four questions were all substantive review questions, so two was an arbitrary bar. Three matches the skill's revised guidance. Iteration-1 gradings keep the original wording.",
     "After iteration 1: eval 7 assertion arithmetic corrected ($17.3M total growth and 55%, not $16.5M and 58%). The iteration-1 grader had already graded against the recomputed figures.",
-    "Added case 11 (render-conference-talk-builds) and a build expectation to cases 8 to 10, after a deck written with the skill showed nearly every evidence slide all at once. The expectation checks that builds follow the notes, carry [click] cues and leave whole slides whole, and that `deck lint` reports no few-builds warning.",
+    "Added case 11 (render-conference-talk-builds) and a build expectation to cases 8 to 10, after a deck written with the skill showed nearly every evidence slide all at once. The expectation checks that builds follow the notes, carry [click] cues and leave whole slides whole, and that `deckster lint` reports no few-builds warning.",
     "Added case 12 (outline-pitch-layouts) when the kit gained the `screen`, `matrix`, `equation`, `ask`, `proof` and `columns` layouts and the team's `edge` line. It checks that an outline picks the layout each pitch job has rather than its near miss (a screenshot in `split`, a `<Scatter>` of invented positions, a quote and a stats slide for one customer)."
   ]
 }

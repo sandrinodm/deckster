@@ -85,8 +85,8 @@ export function touchedSlides(deck: string, changes: readonly ChangedFile[]): st
 
 /**
  * Lints the whole deck once through the deck tools (`DeckTools.deckLint`, the same lint `deck_lint`
- * and `deck lint` run; the lint service renders the whole deck and cannot lint a subset of slides).
- * A lint that cannot run gives undefined.
+ * and `deckster lint` run; the lint service renders the whole deck and cannot lint a subset of
+ * slides). A lint that cannot run gives undefined.
  */
 export const lintDeckFindings = Effect.fn('lintDeckFindings')(function* (): Effect.fn.Return<
   readonly AgentLintFinding[] | undefined,

@@ -24,7 +24,7 @@ function movedIds(before: OrderedSlide[], after: OrderedSlide[]): string[] {
 }
 
 describe('parseShotName', () => {
-  it('reads the number, id and step of the names deck shot writes', () => {
+  it('reads the number, id and step of the names deckster shot writes', () => {
     expect(parseShotName('03-request-flow.png')).toEqual({
       number: 3,
       id: 'request-flow',

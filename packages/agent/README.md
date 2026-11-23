@@ -1,7 +1,7 @@
 # @deckster/agent
 
 The agent tooling of deckster: the deck MCP server, the host that runs your own `claude` or
-`codex` CLI one turn at a time, and the chat panel that sits beside the slide in `deck dev`.
+`codex` CLI one turn at a time, and the chat panel that sits beside the slide in `deckster dev`.
 
 It is a private workspace package (`workspace:*`, TypeScript source, nothing built or published).
 `@deckster/cli` is its only runtime consumer; `@deckster/vite-plugin` lists it as a dev dependency for its e2e suite.
@@ -16,7 +16,7 @@ From the repository root, check both CLIs first. The doctor runs `--version` and
 sign-in check, never a turn:
 
 ```console
-$ pnpm deck agent doctor
+$ pnpm deckster agent doctor
 Claude Code 2.1.325: signed in with claude.ai (max)
 Codex 0.169.0: signed in with ChatGPT
   Note: Codex 0.169.0 is installed; the adapter was tested with 0.167.x (recorded with 0.167.2). If turns fail, check the recorded transcripts against this version.
@@ -28,12 +28,12 @@ Then start a deck with the panel (`a` toggles it), or serve only the MCP tools f
 run in a terminal:
 
 ```sh
-pnpm deck dev hello --agent claude      # or --agent codex; --agent-web, --agent-model, --agent-panel bottom
-pnpm deck dev hello --mcp               # MCP endpoint only, at /__deck/mcp on 127.0.0.1
-pnpm deck mcp hello                     # prints .mcp.json, `claude mcp add` and Codex config.toml for it
+pnpm deckster dev hello --agent claude      # or --agent codex; --agent-web, --agent-model, --agent-panel bottom
+pnpm deckster dev hello --mcp               # MCP endpoint only, at /__deck/mcp on 127.0.0.1
+pnpm deckster mcp hello                     # prints .mcp.json, `claude mcp add` and Codex config.toml for it
 ```
 
-`deck present <deck> --agent claude` puts the same panel in the desktop window. The agent is
+`deckster present <deck> --agent claude` puts the same panel in the desktop window. The agent is
 whatever `claude` or `codex` binary is on your `PATH`, run with your own login. The package
 bundles no model and no SDK.
 

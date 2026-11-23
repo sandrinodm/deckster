@@ -26,7 +26,7 @@ export const layoutRepetitionRule: DeckRule = {
   severity: 'warning',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     `${REPEATED_LAYOUT_RUN} or more slides in a row ` +

@@ -41,7 +41,7 @@ export type ShellConfig = {
   watchParent: boolean;
 
   /**
-   * Report the displays and exit without opening a window (`deck present --list-displays`).
+   * Report the displays and exit without opening a window (`deckster present --list-displays`).
    */
   listOnly: boolean;
 
@@ -98,7 +98,7 @@ export type ShellTestOptions = {
 export function readConfig(env: Readonly<Record<string, string | undefined>>): ShellConfig {
   const raw = env['DECK_SHELL_CONFIG'];
   if (raw === undefined || raw === '') {
-    throw new Error('DECK_SHELL_CONFIG is not set. Start the shell with `deck present`.');
+    throw new Error('DECK_SHELL_CONFIG is not set. Start the shell with `deckster present`.');
   }
 
   const value: unknown = JSON.parse(raw);

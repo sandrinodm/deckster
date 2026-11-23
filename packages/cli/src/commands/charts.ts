@@ -1,9 +1,9 @@
 import { lazyRun, type Command } from '#command.ts';
 
 /**
- * The text `deck charts --help` prints.
+ * The text `deckster charts --help` prints.
  */
-const HELP = `Usage: deck charts [--json]
+const HELP = `Usage: deckster charts [--json]
 
 Lists the chart and number components a slide can use, each with the messages it is the right
 form for. Start from the message (what you are saying), then pick the form.
@@ -15,7 +15,7 @@ Options:
                 comparison, ranking, trend, change between two points, part-to-whole,
                 distribution, correlation, flow, exact values), avoid, data (the shape of its
                 rows), nulls (how it draws a missing value), shared (the names of the shared
-                props it takes), props (its own props, by name), limits (the numbers deck lint
+                props it takes), props (its own props, by name), limits (the numbers deckster lint
                 holds it to), example (MDX), accessibility and native (the PowerPoint chart
                 PPTX export builds, or null). A prop name in neither shared nor props throws.
                 types lists the fields of RowStat, ProgressItem, TableColumn, SeriesInput,
@@ -28,21 +28,21 @@ Options:
   -h, --help    Show this help.`;
 
 /**
- * `deck charts`: the chart catalog, for picking a form from a message.
+ * `deckster charts`: the chart catalog, for picking a form from a message.
  */
 export const chartsCommand: Command = {
   /**
-   * The word after `deck` that selects this command.
+   * The word after `deckster` that selects this command.
    */
   name: 'charts',
 
   /**
-   * The line `deck --help` shows for this command.
+   * The line `deckster --help` shows for this command.
    */
   summary: 'List the chart and number components and when to use each',
 
   /**
-   * The text `deck charts --help` prints.
+   * The text `deckster charts --help` prints.
    */
   help: HELP,
 

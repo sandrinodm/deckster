@@ -10,12 +10,12 @@ describe('deckCommand', () => {
   it('names the repository command when nothing says otherwise', () => {
     vi.stubEnv(DECK_COMMAND_ENV, '');
 
-    expect(deckCommand()).toBe('pnpm deck');
+    expect(deckCommand()).toBe('pnpm deckster');
   });
 
   it('names the command the published CLI set', () => {
-    vi.stubEnv(DECK_COMMAND_ENV, 'deck');
+    vi.stubEnv(DECK_COMMAND_ENV, 'deckster');
 
-    expect(deckCommand()).toBe('deck');
+    expect(deckCommand()).toBe('deckster');
   });
 });

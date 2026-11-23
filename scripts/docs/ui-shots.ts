@@ -233,7 +233,7 @@ const NEUTRAL_POINT = {
 } as const;
 
 /**
- * The deck the `deck diff` report is made for: small, so its three renders are quick.
+ * The deck the `deckster diff` report is made for: small, so its three renders are quick.
  */
 const DIFF_DECK = 'hello';
 
@@ -245,8 +245,8 @@ const DIFF_CHANGED_BRAND: DocsBrand = 'nocturne';
 
 /**
  * What the report's "Compared with" line shows instead of the temporary baseline folder, whose
- * absolute path names the machine and changes on every run. It is where `deck diff --save-baseline`
- * writes by default.
+ * absolute path names the machine and changes on every run. It is where `deckster diff
+ * --save-baseline` writes by default.
  */
 const DIFF_BASE_LABEL = `.deck/baseline/${DIFF_DECK}`;
 
@@ -428,7 +428,7 @@ const LINT_AFTER_SLIDE = [
 ].join('\n');
 
 /**
- * What `deck lint` prints for a deck with no findings at all, warnings included.
+ * What `deckster lint` prints for a deck with no findings at all, warnings included.
  */
 const LINT_CLEAN_TEXT = 'no problems';
 
@@ -475,7 +475,8 @@ const ELECTRON_START_TIMEOUT_MS = 30_000;
 const ELECTRON_LAUNCH_ATTEMPTS = 2;
 
 /**
- * The shell package, whose `node_modules` holds Electron and whose main file `deck present` runs.
+ * The shell package, whose `node_modules` holds Electron and whose main file `deckster present`
+ * runs.
  */
 const SHELL_DIR = path.join(WORKSPACE_ROOT, 'packages', 'shell');
 
@@ -485,7 +486,7 @@ const SHELL_DIR = path.join(WORKSPACE_ROOT, 'packages', 'shell');
 const ELECTRON_INSTALL = ['--filter', '@deckster/shell', 'exec', 'install-electron'] as const;
 
 /**
- * A running `deck dev` and its address.
+ * A running `deckster dev` and its address.
  */
 type DevServer = {
   /**
@@ -520,7 +521,7 @@ type UiShot = {
 };
 
 /**
- * Which deck a `deck dev` serves, from which workspace, and how.
+ * Which deck a `deckster dev` serves, from which workspace, and how.
  */
 type ServerSetup = {
   /**
@@ -529,7 +530,7 @@ type ServerSetup = {
   readonly deck: string;
 
   /**
-   * Extra `deck dev` flags.
+   * Extra `deckster dev` flags.
    */
   readonly flags: readonly string[];
 
@@ -561,7 +562,7 @@ type RunReport = {
 };
 
 /**
- * What `deck shot --json` prints, as far as this script reads it.
+ * What `deckster shot --json` prints, as far as this script reads it.
  */
 type DeckShotAnswer = {
   /**
@@ -649,18 +650,18 @@ const SHOTS: readonly UiShot[] = [
 await main();
 
 /**
- * Starts `deck dev showcase`, shoots each UI state at 1440x900 into `--out` (the tool cluster
+ * Starts `deckster dev showcase`, shoots each UI state at 1440x900 into `--out` (the tool cluster
  * close-up only its corner, at twice the pixel density) and the audience and presenter windows of
  * the desktop shell, then the agent panel on a second server with `--agent`, a finished turn of the
- * fake agent on a scratch copy of hello, a `deck diff` report, a lint finding before and after its
- * fix (with the lint output as text), the gallery of `deck build --all --out` and a `deck export
- * --verify` comparison, all made in temporary folders. Every page and window reads the same fixed
- * time, locale and time zone. The comment the comment shot placed is deleted before its server
- * stops, also on Ctrl-C or `SIGTERM` (a second Ctrl-C quits at once). A shot whose prerequisite is
- * missing (Electron, a display, Docker) is skipped with its reason; with `--strict` (or
- * `DECKSTER_SHOTS_STRICT=1`) a skip is a failure. Refuses to start when an allowlisted deck renders
- * with a brand outside the allowlist. Exits with 1 when a shot or the clean-up failed, after trying
- * the others.
+ * fake agent on a scratch copy of hello, a `deckster diff` report, a lint finding before and after
+ * its fix (with the lint output as text), the gallery of `deckster build --all --out` and a
+ * `deckster export --verify` comparison, all made in temporary folders. Every page and window reads
+ * the same fixed time, locale and time zone. The comment the comment shot placed is deleted before
+ * its server stops, also on Ctrl-C or `SIGTERM` (a second Ctrl-C quits at once). A shot whose
+ * prerequisite is missing (Electron, a display, Docker) is skipped with its reason; with `--strict`
+ * (or `DECKSTER_SHOTS_STRICT=1`) a skip is a failure. Refuses to start when an allowlisted deck
+ * renders with a brand outside the allowlist. Exits with 1 when a shot or the clean-up failed,
+ * after trying the others.
  */
 async function main(): Promise<void> {
   const start = performance.now();
@@ -1024,7 +1025,7 @@ async function waitForAgentPanel(page: Page): Promise<void> {
 }
 
 /**
- * The audience and presenter windows of the desktop shell, as `deck present --presenter` opens
+ * The audience and presenter windows of the desktop shell, as `deckster present --presenter` opens
  * them, on the showcase server: the shell is started hidden through Playwright's Electron launcher,
  * each window is sized to 1440x900 and shot. Skipped when Electron is not downloaded (after trying
  * the documented install once) or cannot start here.
@@ -1316,9 +1317,9 @@ async function retitle(file: string, title: string): Promise<void> {
 }
 
 /**
- * The lint pair: a slide that fails lint and the same slide fixed, each shot with `deck shot` and
- * its `deck lint` output written beside it as text, in a scratch workspace. A slide that does not
- * lint as intended (the first passing, the second failing) is a failure.
+ * The lint pair: a slide that fails lint and the same slide fixed, each shot with `deckster shot`
+ * and its `deckster lint` output written beside it as text, in a scratch workspace. A slide that
+ * does not lint as intended (the first passing, the second failing) is a failure.
  *
  * @param out - The output folder.
  * @param report - Where failures are recorded.
@@ -1371,7 +1372,7 @@ async function writeLintDeck(root: string): Promise<void> {
  * @param root - The scratch workspace.
  * @param out - The output folder.
  * @param variant - The shot name, the slide source and whether lint should pass.
- * @throws Error when lint does not come out as intended or `deck shot` fails.
+ * @throws Error when lint does not come out as intended or `deckster shot` fails.
  */
 async function shootLintVariant(
   root: string,
@@ -1385,18 +1386,18 @@ async function shootLintVariant(
   const clean = lint.code === 0 && output.includes(LINT_CLEAN_TEXT);
   if (clean !== variant.clean) {
     throw new Error(
-      `deck lint exited ${lint.code}, but the slide should ${variant.clean ? 'pass' : 'fail'}:\n` +
+      `deckster lint exited ${lint.code}, but the slide should ${variant.clean ? 'pass' : 'fail'}:\n` +
         output,
     );
   }
 
-  await writeFile(path.join(out, `${variant.name}.txt`), `$ deck lint ${LINT_DECK}\n${output}`);
+  await writeFile(path.join(out, `${variant.name}.txt`), `$ deckster lint ${LINT_DECK}\n${output}`);
   const shots = path.join(root, 'shots', variant.name);
   const shot = await runDeckIn(root, ['shot', LINT_DECK, LINT_SLIDE, '--out', shots, '--json']);
   const listed = shot.code === 0 ? (JSON.parse(shot.stdout) as DeckShotAnswer) : undefined;
   const picture = listed?.files[0]?.path;
   if (picture === undefined) {
-    throw new Error(`deck shot exited ${shot.code}:\n${shot.stdout}${shot.stderr}`);
+    throw new Error(`deckster shot exited ${shot.code}:\n${shot.stdout}${shot.stderr}`);
   }
 
   await copyFile(picture, path.join(out, `${variant.name}.png`));
@@ -1415,8 +1416,8 @@ function plainOutput(text: string, root: string): string {
 }
 
 /**
- * The gallery page `deck build --all --out` writes, built into a scratch folder from the decks on
- * the docs allowlist only. The build runs in a scratch workspace holding copies of those decks,
+ * The gallery page `deckster build --all --out` writes, built into a scratch folder from the decks
+ * on the docs allowlist only. The build runs in a scratch workspace holding copies of those decks,
  * each linked to its own dependencies, and a link to the brands, so a deck outside the allowlist
  * never reaches the page. The CLI does not list a deck folder that is itself a link.
  *
@@ -1437,7 +1438,7 @@ async function shotBuildGallery(browser: Browser): Promise<Page> {
   const site = path.join(await scratchFolder('docs-ui-gallery-site-'), 'site');
   const run = await runDeckIn(root, ['build', '--all', '--out', site]);
   if (run.code !== 0) {
-    throw new Error(`deck build --all exited ${run.code}:\n${run.stdout}${run.stderr}`);
+    throw new Error(`deckster build --all exited ${run.code}:\n${run.stdout}${run.stderr}`);
   }
 
   const context = await newShotContext(browser, 1);
@@ -1448,9 +1449,9 @@ async function shotBuildGallery(browser: Browser): Promise<Page> {
 }
 
 /**
- * The side-by-side picture of `deck export --verify` for the first slide of hello: the web render,
- * the LibreOffice render of the PPTX and their difference, copied from the report folder. Skipped
- * when Docker is not running or the report has no such picture.
+ * The side-by-side picture of `deckster export --verify` for the first slide of hello: the web
+ * render, the LibreOffice render of the PPTX and their difference, copied from the report folder.
+ * Skipped when Docker is not running or the report has no such picture.
  *
  * @param out - The output folder.
  * @param report - Where failures and skips are recorded.
@@ -1464,7 +1465,7 @@ async function takeExportVerifyShot(out: string, report: RunReport): Promise<voi
       timeoutMs: DOCKER_CHECK_TIMEOUT_MS,
     }).catch(() => undefined);
     if (docker?.code !== 0) {
-      throw new ShotSkipped('Docker is not running, and deck export --verify needs it.');
+      throw new ShotSkipped('Docker is not running, and deckster export --verify needs it.');
     }
 
     const folder = path.join(await scratchFolder('docs-ui-export-'), 'export');
@@ -1483,15 +1484,15 @@ async function takeExportVerifyShot(out: string, report: RunReport): Promise<voi
 }
 
 /**
- * The HTML report of `deck diff` for the diff deck, made without touching the workspace: a baseline
- * saved into a temporary folder, with the first slide's picture replaced by its render in another
- * brand (shown as changed) and the next two slides' numbers swapped (shown as moved), then compared
- * with the deck as it is. The report's "Compared with" line names the temporary folder, so the shot
- * shows the default baseline folder there instead.
+ * The HTML report of `deckster diff` for the diff deck, made without touching the workspace: a
+ * baseline saved into a temporary folder, with the first slide's picture replaced by its render in
+ * another brand (shown as changed) and the next two slides' numbers swapped (shown as moved), then
+ * compared with the deck as it is. The report's "Compared with" line names the temporary folder, so
+ * the shot shows the default baseline folder there instead.
  *
  * @param browser - The browser.
  * @returns The report page to shoot.
- * @throws Error when a `deck` run fails or the deck has too few slides.
+ * @throws Error when a `deckster` run fails or the deck has too few slides.
  */
 async function shotDiffReport(browser: Browser): Promise<Page> {
   const scratch = await scratchFolder('docs-ui-diff-');
@@ -1517,9 +1518,10 @@ async function shotDiffReport(browser: Browser): Promise<Page> {
  * Makes a saved baseline differ from the deck: the first slide's picture is replaced by its render
  * in `DIFF_CHANGED_BRAND`, and the second and third pictures trade slide numbers.
  *
- * @param baseline - The baseline folder `deck diff --save-baseline` wrote.
+ * @param baseline - The baseline folder `deckster diff --save-baseline` wrote.
  * @param changed - An empty folder for the other brand's render.
- * @throws Error when the baseline has fewer than `DIFF_MIN_SLIDES` pictures or a `deck` run fails.
+ * @throws Error when the baseline has fewer than `DIFF_MIN_SLIDES` pictures or a `deckster` run
+ *   fails.
  */
 async function alterBaseline(baseline: string, changed: string): Promise<void> {
   const files = (await readdir(baseline))
@@ -1528,7 +1530,7 @@ async function alterBaseline(baseline: string, changed: string): Promise<void> {
   const [first, second, third] = files.map(baselineFile);
   if (first === undefined || second === undefined || third === undefined) {
     throw new Error(
-      `deck diff --save-baseline wrote ${files.length} picture(s) for ${DIFF_DECK}; ` +
+      `deckster diff --save-baseline wrote ${files.length} picture(s) for ${DIFF_DECK}; ` +
         `the report needs at least ${DIFF_MIN_SLIDES}.`,
     );
   }
@@ -1558,23 +1560,23 @@ function baselineFile(name: string): { name: string; number: string; id: string 
 }
 
 /**
- * Runs `deck` in the workspace and fails when it exits with anything but 0.
+ * Runs `deckster` in the workspace and fails when it exits with anything but 0.
  *
- * @param args - The arguments after `deck`.
+ * @param args - The arguments after `deckster`.
  * @throws Error with the command and its output when it fails.
  */
 async function deckOrThrow(args: readonly string[]): Promise<void> {
   const run = await runDeck(args);
   if (run.code !== 0) {
-    throw new Error(`deck ${args.join(' ')} exited ${run.code}:\n${run.stdout}${run.stderr}`);
+    throw new Error(`deckster ${args.join(' ')} exited ${run.code}:\n${run.stdout}${run.stderr}`);
   }
 }
 
 /**
- * Runs `deck` on a scratch workspace, which it finds through `DECK_ROOT`.
+ * Runs `deckster` on a scratch workspace, which it finds through `DECK_ROOT`.
  *
  * @param root - The scratch workspace.
- * @param args - The arguments after `deck`.
+ * @param args - The arguments after `deckster`.
  * @returns The exit code and output; a non-zero exit is not an error here.
  * @throws Error when the binary cannot be started.
  */
@@ -1747,7 +1749,7 @@ async function ensureSidebar(page: Page, open: boolean): Promise<void> {
 }
 
 /**
- * Starts `deck dev` on a free port, runs `use`, and stops the server.
+ * Starts `deckster dev` on a free port, runs `use`, and stops the server.
  *
  * @param setup - The deck, its workspace and the extra flags.
  * @param use - The work to do while it runs.
@@ -1762,8 +1764,8 @@ async function withServer(setup: ServerSetup, use: (url: string) => Promise<void
 }
 
 /**
- * Starts `deck dev` and waits for its first answer. Its input stays open, because the server stops
- * when its input ends.
+ * Starts `deckster dev` and waits for its first answer. Its input stays open, because the server
+ * stops when its input ends.
  *
  * @param setup - The deck, its workspace and the extra flags.
  * @returns The running server.
@@ -1793,7 +1795,7 @@ async function startServer(setup: ServerSetup): Promise<DevServer> {
   const deadline = performance.now() + SERVER_START_TIMEOUT_MS;
   while (performance.now() < deadline) {
     if (child.exitCode !== null) {
-      throw new Error(`deck dev exited ${child.exitCode}:\n${output}`);
+      throw new Error(`deckster dev exited ${child.exitCode}:\n${output}`);
     }
 
     if (await answers(server.url)) {
@@ -1804,7 +1806,7 @@ async function startServer(setup: ServerSetup): Promise<DevServer> {
   }
 
   await stopServer(server);
-  throw new Error(`deck dev did not answer on ${server.url}:\n${output}`);
+  throw new Error(`deckster dev did not answer on ${server.url}:\n${output}`);
 }
 
 /**

@@ -19,8 +19,8 @@ const ROOT_ABSOLUTE_REFERENCE = /\b(?:src|href)="\/(?!\/)/;
 await main();
 
 /**
- * Builds each allowlisted deck with `deck build <deck>` and copies its `decks/<deck>/dist` to
- * `<out>/<deck>/`. `deck build --out` is not used because it replaces the whole destination and
+ * Builds each allowlisted deck with `deckster build <deck>` and copies its `decks/<deck>/dist` to
+ * `<out>/<deck>/`. `deckster build --out` is not used because it replaces the whole destination and
  * writes a gallery `index.html`, which the docs site does not want. `--out` must be empty or not
  * exist yet: the site publishes the folder whole, so a deck an earlier run left there would stay
  * public after it left the allowlist. Refuses to start when an allowlisted deck renders with a
@@ -85,7 +85,7 @@ async function buildDeck(out: string, deck: string): Promise<string | undefined>
   const start = performance.now();
   const run = await runDeck(['build', deck]);
   if (run.code !== 0) {
-    return `${deck}: deck build exited ${run.code}: ${run.stderr.trim()}`;
+    return `${deck}: deckster build exited ${run.code}: ${run.stderr.trim()}`;
   }
 
   const target = path.join(out, deck);

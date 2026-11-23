@@ -44,7 +44,7 @@ function AgendaLayout({ frontmatter, slots }: LayoutProps<typeof agendaLayoutCon
   const marked = current !== undefined && current <= items.length ? current : undefined;
   const dense = items.length >= DENSE_ITEMS;
   const detailType = dense ? 'kit-type-small' : 'kit-type-body';
-  // A dense agenda sets its titles a step down from the title size, which `deck lint` reads as fit.
+  // A dense agenda sets its titles a step down from the title size, which `deckster lint` reads as fit.
   const fitted = dense ? { 'data-fit': 'scaled' } : {};
   return (
     <Frame

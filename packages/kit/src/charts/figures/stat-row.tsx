@@ -29,8 +29,8 @@ import '#charts/figures/figures.css';
 import '#layouts/stats-layout.css';
 
 /**
- * The most stats a row holds, from the chart limits `deck charts --json` prints; more belong in a
- * table.
+ * The most stats a row holds, from the chart limits `deckster charts --json` prints; more belong in
+ * a table.
  */
 export const MAX_ROW_STATS = CHART_LIMITS.categories['stat-row'] ?? 4;
 

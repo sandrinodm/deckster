@@ -18,7 +18,7 @@ import {
 import { packagePaths } from '#editor-types/package-paths.ts';
 
 /**
- * The file `deck types` writes the compiler settings to, relative to the workspace root.
+ * The file `deckster types` writes the compiler settings to, relative to the workspace root.
  */
 export const TSCONFIG_FILE = 'tsconfig.json';
 
@@ -33,7 +33,7 @@ const DECLARATION_FILES = [
 ];
 
 /**
- * What `deck types` did.
+ * What `deckster types` did.
  */
 export type EditorTypesResult =
   | {
@@ -88,7 +88,7 @@ export const writeEditorTypes = Effect.fn('writeEditorTypes')(function* (
   if (modules === undefined) {
     return yield* cliError(
       `Could not find the framework's dependencies next to ${FRAMEWORK_ROOT}.\n` +
-        'Reinstall @deckster/cli, then run `deck types` again.',
+        'Reinstall @deckster/cli, then run `deckster types` again.',
     );
   }
 
@@ -109,8 +109,8 @@ export const writeEditorTypes = Effect.fn('writeEditorTypes')(function* (
   for (const file of [tsconfig, declarations]) {
     if (yield* isSymbolicLink(file)) {
       return yield* cliError(
-        `${file} is a symbolic link, so \`deck types\` will not write through it.\n` +
-          'Replace it with a regular file, or remove it, and run `deck types` again.',
+        `${file} is a symbolic link, so \`deckster types\` will not write through it.\n` +
+          'Replace it with a regular file, or remove it, and run `deckster types` again.',
       );
     }
   }
@@ -118,8 +118,8 @@ export const writeEditorTypes = Effect.fn('writeEditorTypes')(function* (
   const merged = mergeTsconfig(existing, paths);
   if (merged === undefined) {
     return yield* cliError(
-      `${TSCONFIG_FILE} is not plain JSON (comments or trailing commas), so \`deck types\` will not rewrite it.\n` +
-        'Remove the comments, or move the file aside and run `deck types` again.',
+      `${TSCONFIG_FILE} is not plain JSON (comments or trailing commas), so \`deckster types\` will not rewrite it.\n` +
+        'Remove the comments, or move the file aside and run `deckster types` again.',
     );
   }
 

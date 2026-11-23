@@ -33,7 +33,7 @@ export type DiffCounts = {
 };
 
 /**
- * The result of `deck diff`, as `--json` prints it and `report.json` stores it.
+ * The result of `deckster diff`, as `--json` prints it and `report.json` stores it.
  */
 export type DiffReport = {
   /**

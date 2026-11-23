@@ -2,11 +2,11 @@ import { PUBLIC_PROVIDERS } from '@deckster/agent/providers';
 import { CONTENT_SCOPE_SENTENCE } from '@deckster/brand/node';
 
 /**
- * The text `deck agent --help` prints.
+ * The text `deckster agent --help` prints.
  */
-export const HELP = `Usage: deck agent doctor [--agent claude|codex] [--json]
+export const HELP = `Usage: deckster agent doctor [--agent claude|codex] [--json]
 
-Checks the agent CLIs \`deck dev --agent\` and \`deck present --agent\` drive: whether each binary is
+Checks the agent CLIs \`deckster dev --agent\` and \`deckster present --agent\` drive: whether each binary is
 on the PATH, its version (and whether it is the version the adapter was tested with), and whether
 it is signed in, with the command that fixes each problem. It runs \`claude --version\`,
 \`claude auth status --json\`, \`codex --version\` and \`codex login status\`; it never prints an

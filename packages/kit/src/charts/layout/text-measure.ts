@@ -208,8 +208,8 @@ export function wrapText(
 
 /**
  * Like {@link wrapText}, and says whether the text was cut, so a chart that has to cut a label can
- * mark it for `deck lint` (a text item's `cut`, written as `data-truncated`) instead of truncating
- * it silently.
+ * mark it for `deckster lint` (a text item's `cut`, written as `data-truncated`) instead of
+ * truncating it silently.
  *
  * @param text - The text.
  * @param maxWidth - The widest a line may be.

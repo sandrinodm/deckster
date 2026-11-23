@@ -111,7 +111,7 @@ function systemEvent(event: Record<string, unknown>, state: ParseState): Provide
             message:
               `The deck tools did not connect (${text(server.status) ?? 'unknown'}), ` +
               'so the agent works without lint, screenshots or the slide on screen.',
-            fix: 'Restart `deck dev --agent`; if it happens again, run `deck agent doctor`.',
+            fix: 'Restart `deckster dev --agent`; if it happens again, run `deckster agent doctor`.',
           });
         }
       }

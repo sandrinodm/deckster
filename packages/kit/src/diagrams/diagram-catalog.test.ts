@@ -125,7 +125,7 @@ describe('cards in the catalog', () => {
     ]);
     expect(DIAGRAM_CATALOG.cards.resolution).toContain('data-card-missing');
     expect(DIAGRAM_CATALOG.cards.resolution).toContain('`diagram.kinds`');
-    expect(DIAGRAM_CATALOG.cards.custom).toContain('deck brand <name>');
+    expect(DIAGRAM_CATALOG.cards.custom).toContain('deckster brand <name>');
     expect(DIAGRAM_CATALOG.cards.rules.join(' ')).toContain('States still win');
     expect(DIAGRAM_CATALOG.notes.some((note) => note.includes('`card`'))).toBe(true);
   });

@@ -1,7 +1,7 @@
 /**
  * The most lines the layouts that step sparse running text up (`useDensity`) let it take at a
  * larger step: a body that would take more stays at the body size. They shape the layout's look in
- * each brand and are not budgets: `deck lint` budgets slots in words and bullets, which do not
+ * each brand and are not budgets: `deckster lint` budgets slots in words and bullets, which do not
  * depend on the brand's type (see `ContentBudget` in `@deckster/engine/layout`).
  */
 export const LAYOUT_LIMITS = {

@@ -16,7 +16,7 @@ export const run: Command['run'] = Effect.fn('deck.types')(function* (argv) {
   if (result._tag === 'NotNeeded') {
     yield* Console.log(
       'Nothing to do: this is the framework repository, where the packages are linked by ' +
-        'the workspace. `deck types` is for a workspace that uses an installed @deckster/cli.',
+        'the workspace. `deckster types` is for a workspace that uses an installed @deckster/cli.',
     );
     return EXIT_OK;
   }
@@ -25,7 +25,7 @@ export const run: Command['run'] = Effect.fn('deck.types')(function* (argv) {
   yield* Console.log(path.relative(root, result.declarations));
   yield* Console.log(
     `Mapped ${result.entryPoints} @deckster/* entry points. The paths name this install: ` +
-      'run `deck types` again after upgrading @deckster/cli.',
+      'run `deckster types` again after upgrading @deckster/cli.',
   );
   return EXIT_OK;
 });

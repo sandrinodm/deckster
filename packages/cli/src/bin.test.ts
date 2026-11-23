@@ -9,20 +9,20 @@ import { describe, expect, it } from 'vite-plus/test';
  */
 const RUN_TIMEOUT_MS = 60_000;
 
-describe('pnpm deck', () => {
+describe('pnpm deckster', () => {
   it('runs the workspace bin, not a script, so nothing is printed before the output', () => {
     const manifest: unknown = JSON.parse(
       fs.readFileSync(path.join(FRAMEWORK_ROOT, 'package.json'), 'utf8'),
     );
-    // A root `deck` script would make pnpm echo `$ node …` before the output.
-    expect(manifest).not.toHaveProperty(['scripts', 'deck']);
+    // A root `deckster` script would make pnpm echo `$ node …` before the output.
+    expect(manifest).not.toHaveProperty(['scripts', 'deckster']);
     expect(manifest).toHaveProperty(['devDependencies', '@deckster/cli'], 'workspace:*');
   });
 
   it(
     'prints --json output that parses as JSON',
     () => {
-      const output = execFileSync('pnpm', ['deck', 'layouts', '--json'], {
+      const output = execFileSync('pnpm', ['deckster', 'layouts', '--json'], {
         cwd: FRAMEWORK_ROOT,
         encoding: 'utf8',
       });

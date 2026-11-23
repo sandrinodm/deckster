@@ -138,7 +138,7 @@ export const offBrandRule: SlideRule = {
   severity: 'error',
 
   /**
-   * The sentence `deck lint --help` lists for the rule.
+   * The sentence `deckster lint --help` lists for the rule.
    */
   description:
     'Colors, font families, type sizes or Tailwind numeric spacing that are not brand tokens.',

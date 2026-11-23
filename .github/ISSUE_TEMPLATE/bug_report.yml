@@ -20,8 +20,8 @@ body:
       label: Steps to reproduce
       description: Commands run, minimal slide/deck config, or reproduction steps.
       placeholder: |
-        1. Run `deck new demo`
-        2. Run `deck lint demo`
+        1. Run `deckster new demo`
+        2. Run `deckster lint demo`
         3. See error...
     validations:
       required: true
@@ -35,7 +35,7 @@ body:
     id: version
     attributes:
       label: deckster version
-      description: Output of `deck --version` (or commit SHA if running from source).
+      description: Output of `deckster --version` (or commit SHA if running from source).
       placeholder: '0.1.0'
     validations:
       required: true

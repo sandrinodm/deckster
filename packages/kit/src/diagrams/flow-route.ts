@@ -612,7 +612,7 @@ export function withoutBacktracks(points: readonly Point[]): Point[] {
 
 /**
  * Pairs of edges that share no node yet run along one line for a stretch, close enough to read as
- * one line: what the router could not keep apart, for `deck lint`.
+ * one line: what the router could not keep apart, for `deckster lint`.
  *
  * @param edges - The routed edges.
  * @param ends - Each edge's nodes, by id.

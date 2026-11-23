@@ -30,9 +30,9 @@ const STALE_LOCK_MS = 10_000;
 
 /**
  * Runs an effect while holding the lock of one feedback file, so writers in different processes
- * (the dev server and `deck comments`) never interleave a read and a write and lose a comment. The
- * lock is a `<file>.lock` file created exclusively; a lock older than ten seconds is taken over. It
- * is released when the effect ends, however it ends.
+ * (the dev server and `deckster comments`) never interleave a read and a write and lose a comment.
+ * The lock is a `<file>.lock` file created exclusively; a lock older than ten seconds is taken
+ * over. It is released when the effect ends, however it ends.
  *
  * @param file - The absolute feedback file.
  * @param use - The read, change and write to run under the lock.

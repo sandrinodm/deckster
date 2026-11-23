@@ -104,9 +104,9 @@ type Found = {
  * (`/Users/me/dana.jpg`), which is not there, fails the build. The file, links followed, must be
  * inside the deck folder and be an image (.svg, .png, .jpg, .jpeg, .webp, .avif, .gif): anything
  * else fails the build naming the field (`members[2].photo`). A web address fails too, because a
- * slide must render the same offline, in `deck shot` and in exports: the fix is to download the
+ * slide must render the same offline, in `deckster shot` and in exports: the fix is to download the
  * file into `assets/`. A `data:image/` URI is kept as it is. A missing file is a `media-missing`
- * warning, which `deck lint` reports as an error, and the layout draws its fallback until it is
+ * warning, which `deckster lint` reports as an error, and the layout draws its fallback until it is
  * there. Found files are imported so the bundler ships them, and the slide registers them by the
  * value as written (`registerFrontmatterAssets`), which is what the layout looks up.
  *
@@ -246,7 +246,7 @@ function checkAsset(item: Found, resolved: DeckPath, file: FrontmatterFile): str
           fix:
             "Download the image into the deck's assets/ folder and write its path, such as " +
             `\`${item.key}: assets/${webFileName(item.value)}\`, so the slide renders the same ` +
-            'offline, in `deck shot` and in exports.',
+            'offline, in `deckster shot` and in exports.',
         },
         undefined,
       );

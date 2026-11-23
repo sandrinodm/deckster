@@ -7,8 +7,8 @@ that the slide's steps drive, and an external page with a poster and a recorded 
 Run these from the repository root:
 
 ```sh
-pnpm deck dev apps-demo
-pnpm deck lint apps-demo    # apps-demo: no problems in 4 slides (7 steps checked).
+pnpm deckster dev apps-demo
+pnpm deckster lint apps-demo    # apps-demo: no problems in 4 slides (7 steps checked).
 ```
 
 [decks](../README.md) explains which decks are examples and which are test fixtures.

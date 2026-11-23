@@ -12,7 +12,7 @@ export type PropsFile = {
 };
 
 /**
- * A remark plugin that checks the attributes of the kit's components (`deck components`) as the
+ * A remark plugin that checks the attributes of the kit's components (`deckster components`) as the
  * slide writes them: an attribute a component does not take fails the build with the closest one it
  * does (`<Download href>` names `file`), and so does a required attribute left out. An element that
  * spreads props (`{...props}`) is checked only for the names it writes, and a name the slide

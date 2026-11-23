@@ -22,7 +22,7 @@ export type BrandIconSet = {
 };
 
 /**
- * The icon names several brands share, as `deck icons --json` prints them.
+ * The icon names several brands share, as `deckster icons --json` prints them.
  */
 export type IconListing = {
   /**

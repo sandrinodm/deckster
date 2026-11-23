@@ -42,11 +42,11 @@ export type CommandServices =
   | Scope.Scope;
 
 /**
- * One `deck` subcommand.
+ * One `deckster` subcommand.
  */
 export type Command = {
   /**
-   * The word after `deck`, such as `shot`.
+   * The word after `deckster`, such as `shot`.
    */
   name: string;
 

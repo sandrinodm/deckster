@@ -12,7 +12,7 @@ import { REPO_ROOT } from '#scratch-workspace.fixture.ts';
 import { DECK_BIN } from '#script-support.ts';
 
 /**
- * The workspace's `deck`. The tests ask it for the CLI reference too, so its help is the
+ * The workspace's `deckster`. The tests ask it for the CLI reference too, so its help is the
  * repository's wording; `data.ts` asks the packed CLI instead.
  */
 const DECK = { executable: DECK_BIN, prefix: [] };
@@ -46,12 +46,12 @@ const FILES = [
 ];
 
 /**
- * How long a test that starts `deck` a few times may take, in milliseconds.
+ * How long a test that starts `deckster` a few times may take, in milliseconds.
  */
 const DECK_TEST_TIMEOUT_MS = 60_000;
 
 /**
- * The export, collected once: it starts `deck` about twenty times.
+ * The export, collected once: it starts `deckster` about twenty times.
  */
 const data = await Effect.runPromise(
   collectDocsData(OPTIONS).pipe(Effect.provide(NodeServices.layer)),
@@ -73,9 +73,9 @@ function asJson(value: unknown): unknown {
 }
 
 /**
- * What a `deck` command line prints, parsed as JSON.
+ * What a `deckster` command line prints, parsed as JSON.
  *
- * @param argv - The arguments after `deck`.
+ * @param argv - The arguments after `deckster`.
  */
 const printedJson = Effect.fn('printedJson')(function* (argv: readonly string[]) {
   return JSON.parse(yield* deckOutput(DECK, REPO_ROOT, argv)) as unknown;
@@ -98,7 +98,7 @@ describe('collectDocsData', () => {
   );
 
   it.effect(
-    'gives each allowlisted brand, in allowlist order, with deck brand --json tokens',
+    'gives each allowlisted brand, in allowlist order, with deckster brand --json tokens',
     () =>
       Effect.gen(function* () {
         const { brands } = data.brands;
@@ -115,7 +115,7 @@ describe('collectDocsData', () => {
   );
 
   it.effect(
-    'gives every command of deck --help with its summary, usage lines and full help',
+    'gives every command of deckster --help with its summary, usage lines and full help',
     () =>
       Effect.gen(function* () {
         const { cli } = data;
@@ -131,7 +131,7 @@ describe('collectDocsData', () => {
         const usage = (name: string) =>
           cli.commands.find((command) => command.name === name)?.usage ?? [];
         expect(usage('brand').some((form) => form.includes('brand check'))).toBe(true);
-        // The first form of `deck present` wraps over four lines of its help.
+        // The first form of `deckster present` wraps over four lines of its help.
         expect(usage('present')).toHaveLength(2);
         expect(usage('present')[0]).toContain('[--agent-web]');
       }).pipe(Effect.provide(NodeServices.layer)),
