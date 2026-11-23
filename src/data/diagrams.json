@@ -126,7 +126,7 @@
       "type": "string",
       "required": false,
       "default": null,
-      "description": "The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). Without one: the diagram's `card`, else the card the brand maps its kind to, else `default`; a name the brand lacks is skipped."
+      "description": "The card (a node style the brand defines) it is drawn with: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deckster brand <name>` lists them). Without one: the diagram's `card`, else the card the brand maps its kind to, else `default`; a name the brand lacks is skipped."
     },
     "count": {
       "type": "number",
@@ -257,7 +257,7 @@
           "type": "string",
           "required": false,
           "default": null,
-          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). A node's own `card` wins."
+          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deckster brand <name>` lists them). A node's own `card` wins."
         },
         "children": {
           "type": "ReactNode",
@@ -302,7 +302,7 @@
           "type": "string",
           "required": false,
           "default": null,
-          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). A node's own `card` wins."
+          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deckster brand <name>` lists them). A node's own `card` wins."
         },
         "children": {
           "type": "ReactNode",
@@ -406,7 +406,7 @@
           "type": "string",
           "required": false,
           "default": null,
-          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). A node's own `card` wins."
+          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deckster brand <name>` lists them). A node's own `card` wins."
         },
         "children": {
           "type": "ReactNode",
@@ -447,7 +447,7 @@
           "type": "string",
           "required": false,
           "default": null,
-          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deck brand <name>` lists them). A node's own `card` wins."
+          "description": "The card (a node style the brand defines) for all its nodes: `default`, `outline`, `solid`, `tint` or `raised`, or one of the brand's own (`deckster brand <name>` lists them). A node's own `card` wins."
         },
         "children": {
           "type": "ReactNode",
@@ -506,7 +506,7 @@
       },
       "children": "",
       "limits": {},
-      "longText": "Text inside scales with the drawing; `deck lint` reports text drawn below the brand’s caption size."
+      "longText": "Text inside scales with the drawing; `deckster lint` reports text drawn below the brand’s caption size."
     },
     {
       "name": "Node",
@@ -964,7 +964,7 @@
       },
       "children": "",
       "limits": {},
-      "longText": "The badge sits on one line on a corner of the node; keep it to a word or a number. It takes the top right corner, and moves to the top left, bottom right or bottom left when an edge drawn at that step runs through the top right (the corner is chosen from the edges visible at each step, so it can change between steps). When no corner is free it stays on the one with the fewest edges and `deck lint` warns diagram-badge-overlap: move that edge to another side of the node (`fromSide`/`toSide`) or drop the badge."
+      "longText": "The badge sits on one line on a corner of the node; keep it to a word or a number. It takes the top right corner, and moves to the top left, bottom right or bottom left when an edge drawn at that step runs through the top right (the corner is chosen from the edges visible at each step, so it can change between steps). When no corner is free it stays on the one with the fewest edges and `deckster lint` warns diagram-badge-overlap: move that edge to another side of the node (`fromSide`/`toSide`) or drop the badge."
     },
     {
       "name": "Focus",
@@ -1517,7 +1517,7 @@
       "tint": "The accent at a low opacity with an accent border and a filled icon tile.",
       "raised": "The surface fill, a hairline border and the brand's medium shadow."
     },
-    "custom": "Every brand has the five standard cards and may restyle them or define more of its own (`deck brand <name>` lists them). Stick to the standard names for a deck that should look right in any brand.",
+    "custom": "Every brand has the five standard cards and may restyle them or define more of its own (`deckster brand <name>` lists them). Stick to the standard names for a deck that should look right in any brand.",
     "rules": [
       "States still win over the card: highlighted, error and success recolor the outline and show the halo, muted and a focus dim the node.",
       "On <Layers> the items follow the stack's `card`; the bands keep the stack's own look unless a <Layer> names a card.",
@@ -1613,7 +1613,7 @@
     "titleLines": 3,
     "minBreakChars": 3
   },
-  "longText": "Node titles and subtitles wrap between words, up to 3 lines for a title; a node first widens (up to fourteen captions, taking room from the gutters down to their least, every one-column node keeping one width) until its widest whole word fits, and only a word wider than that breaks: at a camelCase boundary or after -, _, . or /, else with a hyphen, never leaving fewer than 3 characters on a line. Edge labels take about 18 characters a line (less between two columns the nodes widened into), at most 2 lines, broken the same way; what still does not fit is cut with an ellipsis, one identifier keeping its start and end (OrderCancelled…Event), several words ending after a whole word. The full text stays in the accessible summary; `deck lint` warns (diagram-long-word) for every text broken inside a word or cut. Keep labels to a word or two (HTTPS, publish) and titles to about 20 characters.",
+  "longText": "Node titles and subtitles wrap between words, up to 3 lines for a title; a node first widens (up to fourteen captions, taking room from the gutters down to their least, every one-column node keeping one width) until its widest whole word fits, and only a word wider than that breaks: at a camelCase boundary or after -, _, . or /, else with a hyphen, never leaving fewer than 3 characters on a line. Edge labels take about 18 characters a line (less between two columns the nodes widened into), at most 2 lines, broken the same way; what still does not fit is cut with an ellipsis, one identifier keeping its start and end (OrderCancelled…Event), several words ending after a whole word. The full text stays in the accessible summary; `deckster lint` warns (diagram-long-word) for every text broken inside a word or cut. Keep labels to a word or two (HTTPS, publish) and titles to about 20 characters.",
   "tsx": {
     "import": "import { Edge, Flow, Node } from '@deckster/kit/diagrams';",
     "icons": "`kind` icons resolve at run time from the brand's icon set, as in MDX. `icon` takes a component (`import Rocket from '~icons/lucide/rocket'`), an imported image URL (`import mark from './mark.svg?url'`), an HTTPS image URL, or \"none\". MDX also resolves Iconify names and bundles relative image paths.",
@@ -1624,9 +1624,9 @@
     "Use the `diagram` layout: a takeaway title over one diagram that fills the slide, with an optional <Aside>.",
     "Every diagram needs a `title` (its accessible name); the build fails without one, and on any prop it does not take or value outside its set, naming the closest.",
     "Place nodes on grid cells (col, row); never pixels. The diagram scales to its region and text stays at brand sizes.",
-    "Keep a slide to about 12 nodes and 16 edges and 5 columns by 3 rows; `deck lint` warns above that (diagram-too-dense) and reports nodes that overlap.",
+    "Keep a slide to about 12 nodes and 16 edges and 5 columns by 3 rows; `deckster lint` warns above that (diagram-too-dense) and reports nodes that overlap.",
     "One accent: let a journey, a highlight or a state carry the point; everything else stays in the quiet colors.",
-    "Nodes, actors, items and layers take `card` (a node style the brand defines: `default`, `outline`, `solid`, `tint`, `raised` or one of the brand's own, listed by `deck brand <name>`); a diagram's `card` sets it for all its nodes. Without one a node takes the card the brand maps its kind to, else `default`; a name the brand lacks is skipped. States still win over the card (`cards` in --json has the details).",
+    "Nodes, actors, items and layers take `card` (a node style the brand defines: `default`, `outline`, `solid`, `tint`, `raised` or one of the brand's own, listed by `deckster brand <name>`); a diagram's `card` sets it for all its nodes. Without one a node takes the card the brand maps its kind to, else `default`; a name the brand lacks is skipped. States still win over the card (`cards` in --json has the details).",
     "Static mode and exports show each step as a still: packets frozen partway along with a tail that shows their direction.",
     "Every diagram puts a JSON description in `data-diagram-description` for native exports (`@deckster/kit/diagram-description`).",
     "Designer-made motion no diagram expresses (an illustrated loop, a product animation) is a <Lottie> from After Effects; see the media components."

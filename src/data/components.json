@@ -327,7 +327,7 @@
           "type": "string[]",
           "required": false,
           "default": null,
-          "description": "One still per part of a cued video, so static mode and `deck shot --steps` show each part; without them every step shows `poster`, which `deck lint` reports as video-cue-posters."
+          "description": "One still per part of a cued video, so static mode and `deckster shot --steps` show each part; without them every step shows `poster`, which `deckster lint` reports as video-cue-posters."
         },
         "alt": {
           "type": "string",
@@ -556,7 +556,7 @@
     {
       "name": "Download",
       "kind": "link",
-      "useWhen": "A button that downloads one of the deck's exports, built with `deck build --with-exports`.",
+      "useWhen": "A button that downloads one of the deck's exports, built with `deckster build --with-exports`.",
       "avoid": "Files the build does not write; link to them with Button.",
       "props": {
         "file": {
@@ -664,7 +664,7 @@
     {
       "name": "AppFrame",
       "kind": "app",
-      "useWhen": "A mini app (decks/<deck>/apps/<name>/, `deck new app`) or an external page in a sandboxed frame, with the brand and the steps.",
+      "useWhen": "A mini app (decks/<deck>/apps/<name>/, `deckster new app`) or an external page in a sandboxed frame, with the brand and the steps.",
       "avoid": "An external page without fallback=: the venue Wi-Fi decides whether it shows.",
       "props": {
         "app": {
@@ -1014,9 +1014,9 @@
   ],
   "insight": {
     "props": "Each component takes the props its catalog entry lists; another name is refused with the closest one (\"`href` is not a prop of Download; did you mean `file`?\"), at build time in MDX and when the slide renders in TSX. A missing required prop is refused the same way.",
-    "files": "Paths to images, video, posters and Lottie files are relative to the slide and become imports; a missing one is reported by `deck lint` as media-missing. A markdown image alone in its paragraph becomes an <Image>.",
-    "static": "Static mode, `deck shot` and exports never play video or load frames: they show posters, the last state of a CodeMove and the whole terminal session up to the step.",
+    "files": "Paths to images, video, posters and Lottie files are relative to the slide and become imports; a missing one is reported by `deckster lint` as media-missing. A markdown image alone in its paragraph becomes an <Image>.",
+    "static": "Static mode, `deckster shot` and exports never play video or load frames: they show posters, the last state of a CodeMove and the whole terminal session up to the step.",
     "steps": "Code highlights, CodeMove states, Terminal commands, Video cues and AppFrame steps are deck steps: each press moves one.",
-    "warnings": "What the build warns about reaches `deck lint` with a rule id: media-missing, media-gif, code-unknown-language, code-step-range, terminal-tone."
+    "warnings": "What the build warns about reaches `deckster lint` with a rule id: media-missing, media-gif, code-unknown-language, code-step-range, terminal-tone."
   }
 }
