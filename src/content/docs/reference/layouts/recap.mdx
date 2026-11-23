@@ -8,7 +8,7 @@ sidebar:
 The `recap` layout sets two to four takeaways, each a large numeral beside one sentence and, optionally, a second line of detail. Use it at the end of a part or of the talk to leave the audience with the few things to remember.
 
 <Aside type="note" title="New in v0.6.0">
-The `recap` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "recap" layout.`
+The `recap` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "recap" layout.`
 </Aside>
 
 ## Example
@@ -37,10 +37,10 @@ Two points with no `detail`, eyebrow or body are set larger: the layout tries th
 - **Adding a third point without shortening the first two.** The variants apply to every point, so a sentence that was fine in a pair becomes a `schema` error:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/launch.mdx
     error   schema (launch): points[0].title: The recap layout sets at most 54 characters here (three takeaways), got 61.
-            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+            Fix: Shorten it to the essentials; `deckster layouts --json` lists the limits of each variant.
 
   launch-review: 1 error, 0 warnings.
   ```

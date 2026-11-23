@@ -15,12 +15,12 @@ Each component takes only the props its table lists. Any other name is refused w
 
 The catalog states a few rules that hold for all of them:
 
-- **Files.** A path to an image, video, poster or Lottie file starts at the slide file when it begins with `./` or `../`, at the deck folder when it is bare (`assets/x.png`), and at the deck's `public/` folder when it begins with `/`. Files in the deck folder become imports; `public/` files are served as they are. A missing file is reported by `deck lint` as `media-missing`. A Markdown image alone in its paragraph becomes an `<Image>`. See [where a path points](/write-slides/media/#where-a-path-points).
-- **Static mode.** Static mode, `deck shot` and the exports never play video or load frames: they show posters, the `<CodeMove>` version of the current step without animation, and the whole terminal session up to the step.
+- **Files.** A path to an image, video, poster or Lottie file starts at the slide file when it begins with `./` or `../`, at the deck folder when it is bare (`assets/x.png`), and at the deck's `public/` folder when it begins with `/`. Files in the deck folder become imports; `public/` files are served as they are. A missing file is reported by `deckster lint` as `media-missing`. A Markdown image alone in its paragraph becomes an `<Image>`. See [where a path points](/write-slides/media/#where-a-path-points).
+- **Static mode.** Static mode, `deckster shot` and the exports never play video or load frames: they show posters, the `<CodeMove>` version of the current step without animation, and the whole terminal session up to the step.
 - **Steps.** Code highlights, `<CodeMove>` states, `<Terminal>` commands, `<Video>` cues and `<AppFrame>` steps are deck steps: each press moves one.
-- **Build warnings.** What the build warns about reaches `deck lint` with a rule id: `media-missing`, `media-gif`, `code-unknown-language`, `code-step-range` and `terminal-tone`.
+- **Build warnings.** What the build warns about reaches `deckster lint` with a rule id: `media-missing`, `media-gif`, `code-unknown-language`, `code-step-range` and `terminal-tone`.
 
-`deck components --json` prints the same catalog. The `<LinkCard>` and `<Step>` below are the deck components, not the ones this site uses.
+`deckster components --json` prints the same catalog. The `<LinkCard>` and `<Step>` below are the deckster components, not the ones this site uses.
 
 ## Code and terminals
 

@@ -36,7 +36,7 @@ The cover hides the page chrome by default (`chrome: false`). The logo sits at t
 
 ## Common mistakes
 
-- **A long title.** A 47-character title fails [`deck lint`](/review/lint/) with a `schema` error: "title: The title layout sets at most 36 characters, got 47." Put the rest in the subtitle.
+- **A long title.** A 47-character title fails [`deckster lint`](/review/lint/) with a `schema` error: "title: The title layout sets at most 36 characters, got 47." Put the rest in the subtitle.
 - **A long subtitle.** A 19-word subtitle fails with `content-budget`: "The body slot holds 19 words; its layout allows 14."
 - **More than one picture.** `<Media>` takes one image with alt text. Two images fail with `slot-content`: "The media slot holds 2 images; the title layout takes exactly one: image there."
 - **A busy photo behind the text.** With `picture: full`, the text covers the lower left, so a subject there ends up under the title. Use the side picture instead and set `focal` on the `<Image>`, as the lookbook's `cover` slide does.

@@ -35,7 +35,7 @@ Pick another layout when the order or the count is different:
 
 ## Common mistakes
 
-- **Long titles in a row of five.** The five-step variant allows 20 characters per title. A 25-character title fails [`deck lint`](/review/lint/) with a `schema` error before the slide renders: "steps[0].title: The steps layout sets at most 20 characters here (five steps), got 25."
+- **Long titles in a row of five.** The five-step variant allows 20 characters per title. A 25-character title fails [`deckster lint`](/review/lint/) with a `schema` error before the slide renders: "steps[0].title: The steps layout sets at most 20 characters here (five steps), got 25."
 - **A sixth step.** `steps:` takes at most five: "steps: Expected at most 5 steps, got a list of 6 items." Group the steps into phases instead.
 - **A `current` past the end.** With four steps, `current: 5` is an error: "current: 5 names step 5, but there are 4 steps." Steps count from 1.
 - **The steps in the body.** Put them in `steps:`; the body takes one sentence of text, and a list there is a `slot-content` error.

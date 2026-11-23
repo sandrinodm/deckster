@@ -18,7 +18,7 @@ This slide is a scripted agent run. Click into it and press the left arrow to st
 1. Create the app in a deck:
 
    ```console
-   $ deck new app launch-review agent-demo
+   $ deckster new app launch-review agent-demo
    decks/launch-review/apps/agent-demo/index.html
    decks/launch-review/apps/agent-demo/main.tsx
    decks/launch-review/apps/agent-demo/app.tsx
@@ -32,17 +32,17 @@ This slide is a scripted agent run. Click into it and press the left arrow to st
 2. Add a slide for it on the [`demo` layout](/reference/layouts/demo/), which gives the frame the whole region under the title:
 
    ```console
-   $ deck new slide launch-review demo --layout demo
+   $ deckster new slide launch-review demo --layout demo
    decks/launch-review/slides/demo.mdx
    decks/launch-review/deck.config.ts
    ```
 
    It writes `slides/demo.mdx` with a `<Live>` placeholder and adds `demo` to the `slides` list in `deck.config.ts`.
 
-3. Give the frame a poster. `poster` is required: it is the still that static mode, `deck shot`, exports and offline runs show instead of the frame, and the file must exist, or `deck lint` reports `media-missing` and `broken-image`. Until you have a picture of the app, use a still of the title slide and replace the file later:
+3. Give the frame a poster. `poster` is required: it is the still that static mode, `deckster shot`, exports and offline runs show instead of the frame, and the file must exist, or `deckster lint` reports `media-missing` and `broken-image`. Until you have a picture of the app, use a still of the title slide and replace the file later:
 
    ```sh
-   deck shot launch-review title --out decks/launch-review/assets
+   deckster shot launch-review title --out decks/launch-review/assets
    mv decks/launch-review/assets/01-title.png decks/launch-review/assets/agent-poster.png
    ```
 
@@ -72,14 +72,14 @@ This slide is a scripted agent run. Click into it and press the left arrow to st
 5. Check it:
 
    ```console
-   $ deck lint launch-review
+   $ deckster lint launch-review
    launch-review: no problems in 2 slides (2 steps checked).
    ```
 
 6. Build the deck. The app is built with it, into `dist/apps/<name>/`:
 
    ```console
-   $ deck build launch-review
+   $ deckster build launch-review
    ...
    $ ls decks/launch-review/dist/apps/agent-demo
    assets
@@ -92,7 +92,7 @@ This slide is a scripted agent run. Click into it and press the left arrow to st
 
 ## How the app talks to the deck
 
-The app reads the deck through `useDeckApp()` from `@deckster/app-bridge/react`. This is the component `deck new app` writes:
+The app reads the deck through `useDeckApp()` from `@deckster/app-bridge/react`. This is the component `deckster new app` writes:
 
 ```tsx
 import { useDeckApp } from '@deckster/app-bridge/react';
@@ -131,20 +131,20 @@ function Demo() {
 
 On connecting, the app gets the brand's `--brand-*` CSS custom properties and the deck's fonts on its page, so style it with the same variables a slide uses. Clicks inside the frame do not move the deck; once the app has focus the keyboard is the app's until Escape.
 
-In static mode the frame never loads, so an app that owns steps should also say how many with `steps={n}` on the `<AppFrame>`, so `deck shot --steps` and exports see them. A `poster` can be a function of the step, as on the slide above, to draw the app's state at each one.
+In static mode the frame never loads, so an app that owns steps should also say how many with `steps={n}` on the `<AppFrame>`, so `deckster shot --steps` and exports see them. A `poster` can be a function of the step, as on the slide above, to draw the app's state at each one.
 
 ## What is checked
 
 | Problem | Reported as |
 | --- | --- |
 | No `poster` | A build error in MDX, a `render-error` in TSX. |
-| `app` names a folder the deck does not have | A build error in MDX; `app-missing` in `deck lint` for a name computed in TSX. |
+| `app` names a folder the deck does not have | A build error in MDX; `app-missing` in `deckster lint` for a name computed in TSX. |
 | `src` loads an external page with no `fallback` | `app-external-src` warning. |
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/demo.mdx
-  error   schema (demo): Line 7, column 1: <AppFrame app="agent-dmeo"> names an app that does not exist: there is no decks/launch-review/apps/agent-dmeo/index.html. Its apps: agent-demo. Create it with `deck new app launch-review agent-dmeo`, or fix the name.
+  error   schema (demo): Line 7, column 1: <AppFrame app="agent-dmeo"> names an app that does not exist: there is no decks/launch-review/apps/agent-dmeo/index.html. Its apps: agent-demo. Create it with `deckster new app launch-review agent-dmeo`, or fix the name.
           Fix: Change the element as the message says.
 
 launch-review: 1 error, 0 warnings.

@@ -17,7 +17,7 @@ Every file path a slide names, in `src`, `poster`, `posters`, `fallback`, a Mark
 | `/harbour.png` | The deck's `public/` folder. The file is served as it is, not imported. |
 | `./harbour.png` or `../assets/harbour.png` | The folder of the slide file, so `../` from `slides/` reaches the deck folder. |
 
-The file, with links followed, must be inside the deck folder (inside `public/` for a `/` path) and be of the prop's kind; anything else fails the build. A path to a file that does not exist does not stop the build: `deck lint` reports it as `media-missing` and names the path it looked for. A web address (`https://...`) is left as it is.
+The file, with links followed, must be inside the deck folder (inside `public/` for a `/` path) and be of the prop's kind; anything else fails the build. A path to a file that does not exist does not stop the build: `deckster lint` reports it as `media-missing` and names the path it looked for. A web address (`https://...`) is left as it is.
 
 ## Add an image
 
@@ -36,7 +36,7 @@ A Markdown image alone in its paragraph becomes an `<Image>`. Write `<Image>` wh
 
 Pictures go in a layout's `<Media>` slot. Four layouts have one: `title` and `section` (a photo that bleeds off the right edge), `split` (beside the text) and `image` (the whole slide). The brand's treatments and imagery are on [fonts and assets](/brands/fonts-and-assets/).
 
-**Text over a photo** belongs to the `image` layout, or a `title` cover with `picture: full`: they set the text in white on a dark scrim sized to it, and `deck lint` checks the contrast against the pixels underneath. Do not place text over a picture by hand.
+**Text over a photo** belongs to the `image` layout, or a `title` cover with `picture: full`: they set the text in white on a dark scrim sized to it, and `deckster lint` checks the contrast against the pixels underneath. Do not place text over a picture by hand.
 
 <SlideShot deck="showcase" slide="photo" alt="A photo of a residential street under tall maples fills the whole slide; the eyebrow, the title 'Text over a photo stays readable' and a line of text sit in light type at the bottom left, and a photo credit sits at the bottom right." />
 
@@ -50,7 +50,7 @@ Pictures go in a layout's `<Media>` slot. Four layouts have one: `title` and `se
 | `media-gif` | A local GIF that cannot be converted to video because `ffmpeg` is not installed. With `ffmpeg`, the build converts it. |
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/harbour-map.mdx
   warning low-res-image (harbour-map step 0): harbour-map.png is 320x180 pixels but is drawn at 816x856 canvas pixels.
           Fix: Use an image at least 816x856 pixels (twice that for 2x exports), an SVG, or draw it smaller.
@@ -60,9 +60,9 @@ launch-review: 0 errors, 1 warning in 4 slides (4 steps checked).
 
 ## Add video and cut it into steps
 
-`<Video>` plays when its slide appears and pauses when the deck leaves. Use WebM. `poster` is required: static mode, `deck shot` and exports show it instead of the video.
+`<Video>` plays when its slide appears and pauses when the deck leaves. Use WebM. `poster` is required: static mode, `deckster shot` and exports show it instead of the video.
 
-`cues` cut the video into parts, one per step: the first part plays on arrival and holds, and each press plays the next. Stepping back plays a part again from its start. Give one still per part in `posters`, so each step exports as its own picture; without them every step shows `poster` and `deck lint` warns with `video-cue-posters`.
+`cues` cut the video into parts, one per step: the first part plays on arrival and holds, and each press plays the next. Stepping back plays a part again from its start. Give one still per part in `posters`, so each step exports as its own picture; without them every step shows `poster` and `deckster lint` warns with `video-cue-posters`.
 
 <SlideExample deck="components" slide="video-cues" />
 
@@ -89,17 +89,17 @@ Video is muted by default (`muted={false}` to hear it); `loop`, `controls`, `fit
 Find a name from the terminal:
 
 ```console
-$ deck icons --search rocket
+$ deckster icons --search rocket
 1 icon names matching "rocket" in every one of: default (lucide)
 Sets: lucide
 
 rocket
 ```
 
-`deck icons` lists the names every brand in the workspace shares. A name the set does not have fails the build with the closest ones:
+`deckster icons` lists the names every brand in the workspace shares. A name the set does not have fails the build with the closest ones:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/icon.mdx
   error   schema (icon): Line 6, column 3: <Icon name="rockett"> is not an icon of the lucide set.
           Fix: Closest names in the lucide set: rocket, pocket, brackets, ticket, tickets. Browse the set at https://icon-sets.iconify.design/lucide/. A deck that renders in several brands needs a name that every brand's set has.
@@ -144,4 +144,4 @@ background:
 
 ## In static mode and exports
 
-Static mode, `deck shot` and exports never play video or animation: they show the posters, and a Lottie's chosen frame. See [static mode and readiness](/concepts/static-mode-and-readiness/). Buttons, link cards and QR codes are on [links](/write-slides/links/); every media prop is on [components](/reference/components/#props-Image).
+Static mode, `deckster shot` and exports never play video or animation: they show the posters, and a Lottie's chosen frame. See [static mode and readiness](/concepts/static-mode-and-readiness/). Buttons, link cards and QR codes are on [links](/write-slides/links/); every media prop is on [components](/reference/components/#props-Image).

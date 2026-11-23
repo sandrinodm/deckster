@@ -8,7 +8,7 @@ sidebar:
 The `market` layout sets two or three nested sizes of a market, outermost first, each with a label, a figure and a one-line note. Circles drawn with areas that follow the figures sit beside a list that gives every size the same stack. Use it to show total, serviceable and obtainable demand, or a whole market and the segment you can reach.
 
 <Aside type="note" title="New in v0.6.0">
-The `market` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "market" layout.`
+The `market` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "market" layout.`
 </Aside>
 
 ## Example
@@ -39,7 +39,7 @@ Two sizes are enough. This slide leaves out `reveal`, so both show at once.
 - **Smallest size first.** A figure larger than the one before it is a `schema` error:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/market-order.mdx
     error   schema (market-order): sizes.1.value: A nested market cannot be larger than its parent.
             Fix: List sizes from the whole market to the smallest part within it.

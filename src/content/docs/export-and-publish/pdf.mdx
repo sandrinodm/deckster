@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-`deck export --pdf` turns a deck into a PDF you can send, print or hand out: one vector page per slide, with its links, bookmarks and fonts. After this page you can export the whole deck, a subset, every step, or a version with speaker notes.
+`deckster export --pdf` turns a deck into a PDF you can send, print or hand out: one vector page per slide, with its links, bookmarks and fonts. After this page you can export the whole deck, a subset, every step, or a version with speaker notes.
 
 ## Export a PDF
 
@@ -14,7 +14,7 @@ sidebar:
 1. Export the deck:
 
    ```console
-   $ deck export launch-review --pdf
+   $ deckster export launch-review --pdf
    /Users/you/talks/.deck/exports/launch-review/launch-review.pdf (3 pages, 3 bookmarks, 0 slide links, 0 external links)
    ```
 
@@ -24,7 +24,7 @@ sidebar:
 
 </Steps>
 
-Without a format flag, `deck export launch-review` writes the PDF and the PowerPoint file side by side (see [PowerPoint](/export-and-publish/powerpoint/)). `--png` writes the slide pictures that [`deck shot`](/review/screenshots/) takes, in a `png/` folder inside the export folder. Export needs Chromium: `npx playwright@1.65.0 install chromium`.
+Without a format flag, `deckster export launch-review` writes the PDF and the PowerPoint file side by side (see [PowerPoint](/export-and-publish/powerpoint/)). `--png` writes the slide pictures that [`deckster shot`](/review/screenshots/) takes, in a `png/` folder inside the export folder. Export needs Chromium: `npx playwright@1.65.0 install chromium`.
 
 ## Where it goes
 
@@ -39,7 +39,7 @@ Exporting again overwrites the file.
 
 ## What is in it
 
-The PDF is printed by Chromium from the deck in [static mode](/concepts/static-mode-and-readiness/), the same rendering `deck shot` and `deck lint` use:
+The PDF is printed by Chromium from the deck in [static mode](/concepts/static-mode-and-readiness/), the same rendering `deckster shot` and `deckster lint` use:
 
 - **One page per slide, at its last step**, with everything revealed.
 - **Vector pages**: text stays text and charts stay shapes. The 1920x1080 canvas is set on 1440x810 pt pages (20x11.25 in).
@@ -47,14 +47,14 @@ The PDF is printed by Chromium from the deck in [static mode](/concepts/static-m
 - **Links**: links to the web, and links from one slide to another, stay clickable. [Links](/write-slides/links/) covers how to write both.
 - **A bookmark and a page label per slide**, so a PDF viewer's sidebar lists the slides.
 - **Tagged for screen readers**, with the deck title as the document title and the brand's language as its language.
-- **Posters for live media**: videos, iframes and apps show their poster image. Without a poster, live media exports as a stray frame or nothing; `deck lint` warns about that (`export-missing-poster`).
+- **Posters for live media**: videos, iframes and apps show their poster image. Without a poster, live media exports as a stray frame or nothing; `deckster lint` warns about that (`export-missing-poster`).
 
 ## One page per step
 
 `--steps` prints a page for every step of every slide, so the reader sees each reveal in order. The hello deck from the repository (copy `decks/hello/` into your workspace and delete its `package.json` and `tsconfig.json`; see [the hello deck](/examples/hello/)) has 4 slides and 8 steps:
 
 ```console
-$ deck export hello --pdf --steps --out handout.pdf
+$ deckster export hello --pdf --steps --out handout.pdf
 /Users/you/talks/handout.pdf (8 pages, 4 bookmarks, 0 slide links, 0 external links)
 ```
 
@@ -65,16 +65,16 @@ There is still one bookmark per slide, at its first page.
 `--slides` takes a comma-separated list of 1-based numbers, ranges and slide ids, such as `3,5-9` or `title,risks`:
 
 ```console
-$ deck export launch-review --pdf --slides title,risks --out two.pdf
+$ deckster export launch-review --pdf --slides title,risks --out two.pdf
 /Users/you/talks/two.pdf (2 pages, 2 bookmarks, 0 slide links, 0 external links)
 ```
 
 A number outside the deck is an error:
 
 ```console
-$ deck export hello --pdf --slides 9
+$ deckster export hello --pdf --slides 9
 --slides: "9" is outside the deck: slides are numbered 1 to 4.
-Run `deck export --help` for the usage.
+Run `deckster export --help` for the usage.
 ```
 
 ## Hidden slides
@@ -82,7 +82,7 @@ Run `deck export --help` for the usage.
 New in 0.5.0. A slide with `hidden: true` is not in the talk, so the export leaves it out of the PDF and says how many it left out. This `launch-review` deck has a fourth slide, `pricing-backup`, that is hidden (see [hidden slides](/write-slides/hidden-slides/)):
 
 ```console
-$ deck export launch-review --pdf
+$ deckster export launch-review --pdf
 /Users/you/talks/.deck/exports/launch-review/launch-review.pdf (3 pages, 3 bookmarks, 0 slide links, 0 external links)
 1 hidden slide left out (add --include-hidden to export).
 ```
@@ -90,25 +90,25 @@ $ deck export launch-review --pdf
 `--include-hidden` puts hidden slides in as ordinary pages, with a bookmark each, in the order of the slide list:
 
 ```console
-$ deck export launch-review --pdf --include-hidden --out handout.pdf
+$ deckster export launch-review --pdf --include-hidden --out handout.pdf
 /Users/you/talks/handout.pdf (4 pages, 4 bookmarks, 0 slide links, 0 external links)
 ```
 
 A hidden slide that `--slides` names is exported without the flag, also inside a range such as `3-4`. A selection is your choice of slides, so no line about hidden slides follows it:
 
 ```console
-$ deck export launch-review --pdf --slides risks,pricing-backup --out backup.pdf
+$ deckster export launch-review --pdf --slides risks,pricing-backup --out backup.pdf
 /Users/you/talks/backup.pdf (2 pages, 2 bookmarks, 0 slide links, 0 external links)
 ```
 
-Slide numbers in `--slides` count every slide, hidden ones included. `deck export --png` follows the same rules, while `deck shot` shoots every slide.
+Slide numbers in `--slides` count every slide, hidden ones included. `deckster export --png` follows the same rules, while `deckster shot` shoots every slide.
 
 ## Speaker notes pages
 
 `--notes` adds a notes page per slide (the slide with its notes) after the slides, under one more bookmark, "Speaker notes":
 
 ```console
-$ deck export launch-review --pdf --notes --out notes.pdf
+$ deckster export launch-review --pdf --notes --out notes.pdf
 /Users/you/talks/notes.pdf (6 pages, 4 bookmarks, 0 slide links, 0 external links)
 ```
 

@@ -1,11 +1,11 @@
 ---
 title: "Quickstart"
-description: "Install the deck CLI, create a deck with deck new and open it with deck dev."
+description: "Install the deckster CLI, create a deck with deckster new and open it with deckster dev."
 sidebar:
   order: 2
 ---
 
-In six steps you install the `deck` CLI, create a workspace with one deck, open it in the browser with hot reload, install the browser the checks use, and check the deck with `deck lint`. You need Node.js 26 or later.
+In six steps you install the `deckster` CLI, create a workspace with one deck, open it in the browser with hot reload, install the browser the checks use, and check the deck with `deckster lint`. You need Node.js 26 or later.
 
 ## Create and open a deck
 
@@ -20,7 +20,7 @@ In six steps you install the `deck` CLI, create a workspace with one deck, open 
    npm prints two `npm warn ERESOLVE overriding peer dependency` warnings about `vite`, from `@tailwindcss/vite` and `@vitejs/plugin-react`: the CLI bundles its own Vite build, and the install succeeds. `pnpm add --global @deckster/cli` works too. Check the version:
 
    ```console
-   $ deck --version
+   $ deckster --version
    0.8.0
    ```
 
@@ -30,7 +30,7 @@ In six steps you install the `deck` CLI, create a workspace with one deck, open 
    mkdir talks && cd talks
    ```
 
-   This folder is your workspace. The CLI works in the nearest folder at or above the current one that has a `decks/` folder, and in the current folder when there is none, so make the folder first. From your home folder or `/`, a command such as `deck dev` stops with this message instead:
+   This folder is your workspace. The CLI works in the nearest folder at or above the current one that has a `decks/` folder, and in the current folder when there is none, so make the folder first. From your home folder or `/`, a command such as `deckster dev` stops with this message instead:
 
    ```text
    /Users/you is a home or root folder, so deck will not use it as a workspace: a deck's dev server would sit next to your keys and tokens.
@@ -40,24 +40,24 @@ In six steps you install the `deck` CLI, create a workspace with one deck, open 
 3. Create a deck with a title and a talk length:
 
    ```console
-   $ deck new launch-review --title "Launch review" --duration 20m
+   $ deckster new launch-review --title "Launch review" --duration 20m
    decks/launch-review/deck.config.ts
    decks/launch-review/slides/title.mdx
-   Next: run `deck dev launch-review`. For editor type checking, run `deck types` once (again after upgrading @deckster/cli).
+   Next: run `deckster dev launch-review`. For editor type checking, run `deckster types` once (again after upgrading @deckster/cli).
    ```
 
    Deck names are kebab-case. The title must fit the `title` layout, which allows 36 characters. If you try a longer title, the command refuses it and suggests a shorter one:
 
    ```console
-   $ deck new board-update --title "A very long title that goes on and on and on and on and on and on and on and on"
+   $ deckster new board-update --title "A very long title that goes on and on and on and on and on and on and on and on"
    --title is 79 characters, but the title layout allows a title of at most 36. Shorten it, for example to "A very long title that goes on and o".
-   Run `deck new --help` for the usage.
+   Run `deckster new --help` for the usage.
    ```
 
 4. Serve it:
 
    ```console
-   $ deck dev launch-review
+   $ deckster dev launch-review
      ➜  Local:   http://localhost:5173/
      ➜  press h + enter to show help
    ```
@@ -68,10 +68,10 @@ In six steps you install the `deck` CLI, create a workspace with one deck, open 
 
    The server takes the first free port from 5173 (`--port <n>` picks one and fails if it is taken) and reloads the slide when you save a file. The first run can also print a line about Vite optimizing dependencies. Type `q` and press Enter, or press Ctrl+C, to stop it.
 
-5. Install Chromium once. `deck lint`, `deck shot`, `deck diff` and `deck export` render the deck in Playwright's Chromium, and without it they stop with the command to run (the path is cut here):
+5. Install Chromium once. `deckster lint`, `deckster shot`, `deckster diff` and `deckster export` render the deck in Playwright's Chromium, and without it they stop with the command to run (the path is cut here):
 
    ```console
-   $ deck lint launch-review
+   $ deckster lint launch-review
    Could not start Chromium: browserType.launch: Executable doesn't exist at ...
    Install the browser with `npx playwright@1.65.0 install chromium`.
    ```
@@ -87,15 +87,15 @@ In six steps you install the `deck` CLI, create a workspace with one deck, open 
 6. Check the deck:
 
    ```console
-   $ deck lint launch-review
+   $ deckster lint launch-review
    launch-review: no problems in 1 slide (1 step checked).
    ```
 
 </Steps>
 
-To work with several decks from the same folder, see [how `deck dev` picks a deck](/get-started/workspace-layout/#how-deck-dev-picks-a-deck).
+To work with several decks from the same folder, see [how `deckster dev` picks a deck](/get-started/workspace-layout/#how-deck-dev-picks-a-deck).
 
-## What `deck new` wrote
+## What `deckster new` wrote
 
 Two files, and nothing else: no `package.json`, no `node_modules` to install.
 
@@ -136,17 +136,17 @@ Say what the audience should do or believe when the talk ends.
 </Notes>
 ```
 
-`--brand <name>` on `deck new` writes another brand folder name instead of `default`. Only `default` ships with the CLI; [Use a brand](/brands/use-a-brand/) shows how to add others. Once you run commands, the workspace also gets a `.deck/` folder for screenshots and exports; [Workspace layout](/get-started/workspace-layout/) explains each folder.
+`--brand <name>` on `deckster new` writes another brand folder name instead of `default`. Only `default` ships with the CLI; [Use a brand](/brands/use-a-brand/) shows how to add others. Once you run commands, the workspace also gets a `.deck/` folder for screenshots and exports; [Workspace layout](/get-started/workspace-layout/) explains each folder.
 
 ## Type checking in your editor
 
-Optional. Run `deck types` once in the workspace so your editor and `tsc` resolve the `@deckster/*` imports in `deck.config.ts` and TSX slides:
+Optional. Run `deckster types` once in the workspace so your editor and `tsc` resolve the `@deckster/*` imports in `deck.config.ts` and TSX slides:
 
 ```console
-$ deck types
+$ deckster types
 tsconfig.json
 .deck/env.d.ts
-Mapped 71 @deckster/* entry points. The paths name this install: run `deck types` again after upgrading @deckster/cli.
+Mapped 71 @deckster/* entry points. The paths name this install: run `deckster types` again after upgrading @deckster/cli.
 ```
 
 The paths it writes point into your global install, so run it again after upgrading the CLI, and do not commit `tsconfig.json` to a repository that others install differently.

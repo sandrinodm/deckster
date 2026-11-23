@@ -59,7 +59,7 @@ The deck sets no `duration`, so the `budget` on three of its slides is not check
 One warning: `closing` has no speaker notes. Warnings do not fail the run.
 
 ```console
-$ deck lint hello
+$ deckster lint hello
 decks/hello/slides/closing.mdx
   warning missing-notes (closing): The slide has no speaker notes.
           Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
@@ -69,15 +69,15 @@ hello: 0 errors, 1 warning in 4 slides (8 steps checked).
 
 ## Run it in your workspace
 
-A workspace made with `deck new` has no hello deck. [Quickstart](/get-started/quickstart/) makes a deck of your own; to run this one, copy it from the repository at the release tag:
+A workspace made with `deckster new` has no hello deck. [Quickstart](/get-started/quickstart/) makes a deck of your own; to run this one, copy it from the repository at the release tag:
 
 ```sh
 git clone --depth 1 --branch v0.7.0 https://github.com/sandrinodm/deckster.git ../deckster
 cp -R ../deckster/decks/hello decks/
 rm decks/hello/package.json decks/hello/tsconfig.json
-deck dev hello
+deckster dev hello
 ```
 
 Delete those two files: in the repository every deck is a workspace package, and they point into the monorepo. Left in place, every slide fails with `schema` errors that read "Transform failed with 1 error".
 
-To match the preview, [add Fieldnote to the workspace](/brands/use-a-brand/#add-a-published-brand) and run `deck dev hello --brand fieldnote`. The source comment also suggests `nocturne`, another brand you can install the same way.
+To match the preview, [add Fieldnote to the workspace](/brands/use-a-brand/#add-a-published-brand) and run `deckster dev hello --brand fieldnote`. The source comment also suggests `nocturne`, another brand you can install the same way.

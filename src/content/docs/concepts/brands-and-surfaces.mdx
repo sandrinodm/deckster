@@ -38,7 +38,7 @@ The four slides of the `hello` deck use one surface each. The site renders them 
 Each [layout](/concepts/layouts-and-slots/) has a default surface: `title` and `closing` are on `gradient`, `section` on `accent`, `statement` and `image` on `inverse`, most others on `default`. A slide picks another with `surface:` in its frontmatter, and a surface the brand doesn't have fails the build:
 
 ```console
-$ deck build launch-review
+$ deckster build launch-review
 transforming...
 ✓ 852 modules transformed.
 ✗ Build failed in 641ms
@@ -51,14 +51,14 @@ Surfaces give a deck its rhythm without any slide naming a colour. A surface can
 
 ## How a deck gets its brand
 
-The deck's `deck.config.ts` names it with `brand: 'default'`, and a deck without that line uses `default`. To see a deck in another brand without editing anything, pass `--brand <name>` to `deck dev`, `deck present`, `deck shot`, `deck diff`, `deck lint` or `deck export`. The slide files stay the same: they name only roles, surfaces and type steps, which every brand defines.
+The deck's `deck.config.ts` names it with `brand: 'default'`, and a deck without that line uses `default`. To see a deck in another brand without editing anything, pass `--brand <name>` to `deckster dev`, `deckster present`, `deckster shot`, `deckster diff`, `deckster lint` or `deckster export`. The slide files stay the same: they name only roles, surfaces and type steps, which every brand defines.
 
 ## A brand that is wrong does not load
 
-Before a brand is used, deckster checks it: the fields and their types, every palette step, gradient, surface and logo it refers to, and its colours. On every surface, text needs a WCAG contrast of 4.5:1 against its background, and graphics 3:1. The data colours must stay distinguishable on the chart background and under colour-vision deficiencies. A brand that fails stops `deck build`, `deck shot` and `deck lint` before they render anything, and each error names the file, the field and the fix. A brand whose `muted` role was set to the pale `ink.200`:
+Before a brand is used, deckster checks it: the fields and their types, every palette step, gradient, surface and logo it refers to, and its colours. On every surface, text needs a WCAG contrast of 4.5:1 against its background, and graphics 3:1. The data colours must stay distinguishable on the chart background and under colour-vision deficiencies. A brand that fails stops `deckster build`, `deckster shot` and `deckster lint` before they render anything, and each error names the file, the field and the fix. A brand whose `muted` role was set to the pale `ink.200`:
 
 ```console
-$ deck brand check acme
+$ deckster brand check acme
 brands/acme/brand.ts
   error   color.roles.muted: On the default surface, muted #d9dce4 on bg #fcfcfd has contrast 1.34:1; secondary text needs 4.5:1.
           Fix: Change muted to a color such as "#71747b", or change color.roles.bg.
@@ -73,13 +73,13 @@ A brand that passes is compiled to one stylesheet, with brand-wide values set on
 
 ## Why slides never name a colour
 
-The Tailwind theme a slide's classes come from holds only the brand's names. The colour, font, type size, radius, shadow and easing scales are replaced outright, so `text-red-500` or `font-serif` matches nothing. You write role classes such as `text-fg`, `text-muted` or `bg-surface`, and type steps such as `type-headline`, instead. A colour written by hand, for example in a `style` attribute, still renders. `deck lint` measures the rendered slide and reports it as `off-brand`, as it does Tailwind numeric spacing and fonts or sizes outside the brand:
+The Tailwind theme a slide's classes come from holds only the brand's names. The colour, font, type size, radius, shadow and easing scales are replaced outright, so `text-red-500` or `font-serif` matches nothing. You write role classes such as `text-fg`, `text-muted` or `bg-surface`, and type steps such as `type-headline`, instead. A colour written by hand, for example in a `style` attribute, still renders. `deckster lint` measures the rendered slide and reports it as `off-brand`, as it does Tailwind numeric spacing and fonts or sizes outside the brand:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/why-now.mdx
   error   off-brand (why-now step 0): "Support is fully staffed from February" uses the text color #e11d48, which is not a default brand token on the "default" surface.
-          Fix: Use a role class such as `text-fg`, `text-muted`, `bg-surface` or `border-accent`, a palette step or a chart color instead of a hard-coded color. `deck brand --json` lists every color.
+          Fix: Use a role class such as `text-fg`, `text-muted`, `bg-surface` or `border-accent`, a palette step or a chart color instead of a hard-coded color. `deckster brand --json` lists every color.
 
 launch-review: 1 error, 0 warnings in 2 slides (2 steps checked).
 ```

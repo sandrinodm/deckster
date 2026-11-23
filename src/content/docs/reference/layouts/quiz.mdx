@@ -8,7 +8,7 @@ sidebar:
 The `quiz` layout puts one question to the room with two to four lettered choices. All the choices show first, and the next step marks the right one and shows a short explanation. Use it to test an assumption or to run a quick knowledge check before you give the reason.
 
 <Aside type="note" title="New in v0.6.0">
-The `quiz` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "quiz" layout.`
+The `quiz` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "quiz" layout.`
 </Aside>
 
 ## Example
@@ -45,10 +45,10 @@ labels:
 
 ## Common mistakes
 
-- **An answer letter with no option.** `answer` must name a choice that exists, and `deck lint` says how many there are:
+- **An answer letter with no option.** `answer` must name a choice that exists, and `deckster lint` says how many there are:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/same-hour.mdx
     error   schema (same-hour): answer: Answer D has no option; this quiz has 2 options.
             Fix: Set `answer` to one of A, B.

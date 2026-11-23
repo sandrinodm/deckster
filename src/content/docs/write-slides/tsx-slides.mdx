@@ -56,7 +56,7 @@ export default function LiveCounter(): ReactNode {
 The build reads `frontmatter` and the `<Notes>` text from the source without running the slide, so both must stay literal: strings, numbers, booleans, lists and objects, and plain text in `<Notes>`. A computed value stops the build:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/in-tsx.tsx
   error   schema (in-tsx): The frontmatter value on line 12 is not a literal; the build reads frontmatter without running the slide.
           Fix: Use only strings, numbers, booleans, lists and objects in `export const frontmatter`.
@@ -73,7 +73,7 @@ launch-review: 1 error, 0 warnings.
 | `@deckster/kit/diagrams` | `Flow`, `Node`, `Edge`, `Journey`, `State` and the other diagram components |
 | A relative path | Your own helpers and widgets, such as `../lib/counter.tsx` |
 
-In an MDX slide the kit components need no import; in TSX you import each one. Images, videos and posters are imports too: `import street from '../assets/street.jpg'`, then `<Image src={street} ... />`. A plain string path is not resolved in TSX. A kit `<Image>` then shows an "Image not found" placeholder that `deck lint` does not report, so look at the slide with `deck shot`; a raw `<img>` is reported as `broken-image`.
+In an MDX slide the kit components need no import; in TSX you import each one. Images, videos and posters are imports too: `import street from '../assets/street.jpg'`, then `<Image src={street} ... />`. A plain string path is not resolved in TSX. A kit `<Image>` then shows an "Image not found" placeholder that `deckster lint` does not report, so look at the slide with `deckster shot`; a raw `<img>` is reported as `broken-image`.
 
 ## Fill a layout's slots
 
@@ -87,28 +87,28 @@ A diagram in TSX can be built from data, so the picture cannot drift from the li
 
 ## How props are checked
 
-In MDX the build refuses an unknown prop on most components, such as `<Code>` and diagram nodes. Charts, and every component in TSX, check their props when the slide renders, so the slide shows an error in its place and `deck lint` reports it as `render-error`, with the closest prop name:
+In MDX the build refuses an unknown prop on most components, such as `<Code>` and diagram nodes. Charts, and every component in TSX, check their props when the slide renders, so the slide shows an error in its place and `deckster lint` reports it as `render-error`, with the closest prop name:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/in-tsx.tsx
-  error   render-error (in-tsx step 0): The slide shows an error instead of its content: `lineNumber` is not a prop of <Code>. Did you mean `lineNumbers`? Its props are: code, children, lang, data, file, label, lineNumbers, start, highlight, at, dim, diff, words. `deck components --json` describes each one.
-          Fix: Fix the error in decks/launch-review/slides/in-tsx.tsx; `deck dev` shows it with its stack in the browser.
+  error   render-error (in-tsx step 0): The slide shows an error instead of its content: `lineNumber` is not a prop of <Code>. Did you mean `lineNumbers`? Its props are: code, children, lang, data, file, label, lineNumbers, start, highlight, at, dim, diff, words. `deckster components --json` describes each one.
+          Fix: Fix the error in decks/launch-review/slides/in-tsx.tsx; `deckster dev` shows it with its stack in the browser.
 
 launch-review: 1 error, 0 warnings in 4 slides (9 steps checked).
 ```
 
-A missing required prop is refused the same way. In `deck dev` the slide shows the error with its stack.
+A missing required prop is refused the same way. In `deckster dev` the slide shows the error with its stack.
 
 ## Editor types
 
-Run `deck types` once in the workspace so your editor resolves the `@deckster/*` imports and checks the props as you type:
+Run `deckster types` once in the workspace so your editor resolves the `@deckster/*` imports and checks the props as you type:
 
 ```console
-$ deck types
+$ deckster types
 tsconfig.json
 .deck/env.d.ts
-Mapped 71 @deckster/* entry points. The paths name this install: run `deck types` again after upgrading @deckster/cli.
+Mapped 71 @deckster/* entry points. The paths name this install: run `deckster types` again after upgrading @deckster/cli.
 ```
 
 It writes `tsconfig.json` with paths into this install of the CLI, so run it again after an upgrade and do not commit it to a repository others install differently. More on the workspace is on [workspace layout](/get-started/workspace-layout/). For content that loads late, such as data a widget fetches, see `useReadyHold` on [static mode and readiness](/concepts/static-mode-and-readiness/). Every component's props are on [components](/reference/components/).

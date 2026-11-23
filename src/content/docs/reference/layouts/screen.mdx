@@ -27,10 +27,10 @@ The title takes up to 60 characters. The body is one optional sentence of up to 
 
 ## Common mistakes
 
-**Fields that need another field.** An `address` needs the browser frame, and `reveal` needs callouts to reveal. Both are checked when the slide is built, so [`deck lint`](/review/lint/) reports them before it renders any slide:
+**Fields that need another field.** An `address` needs the browser frame, and `reveal` needs callouts to reveal. Both are checked when the slide is built, so [`deckster lint`](/review/lint/) reports them before it renders any slide:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/map.mdx
   error   schema (map): address: Only the browser frame shows an address; this screen's frame is phone.
           Fix: Write `frame: browser` to show the address, or leave `address` out.

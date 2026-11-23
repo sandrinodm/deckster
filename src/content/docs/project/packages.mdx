@@ -15,24 +15,24 @@ Only `@deckster/cli` is on npm. The other ten packages have `"private": true` in
 
 | Package | What it does |
 | --- | --- |
-| [`@deckster/cli`](https://github.com/sandrinodm/deckster/blob/main/packages/cli/README.md) | `deck`, the command line. The only published package. |
+| [`@deckster/cli`](https://github.com/sandrinodm/deckster/blob/main/packages/cli/README.md) | `deckster`, the command line. The only published package. |
 | [`@deckster/engine`](https://github.com/sandrinodm/deckster/blob/main/packages/engine/README.md) | The React runtime that renders a deck (canvas, steps, navigation, the URL hash, `window.__deck`) and the typed contracts for the deck config, slide frontmatter and layouts. |
 | [`@deckster/vite-plugin`](https://github.com/sandrinodm/deckster/blob/main/packages/vite-plugin/README.md) | Turns one folder under `decks/` into a Vite app: finds and validates the deck, compiles MDX slides, serves the `virtual:deck*` modules, builds mini apps and locks down the dev server. |
 | [`@deckster/brand`](https://github.com/sandrinodm/deckster/blob/main/packages/brand/README.md) | The brand schema, resolver and checks; compiles a `brand.ts` to CSS custom properties, a Tailwind theme, `@font-face` rules and code themes. |
 | [`@deckster/kit`](https://github.com/sandrinodm/deckster/blob/main/packages/kit/README.md) | The 63 layouts and the code, media, link, chart, diagram and mini-app components. |
 | [`@deckster/presenter`](https://github.com/sandrinodm/deckster/blob/main/packages/presenter/README.md) | The presenting tools: sidebar, overview, presenter window with notes and pacing, go-to, blackout, laser pointer, shortcut help. |
 | [`@deckster/comments`](https://github.com/sandrinodm/deckster/blob/main/packages/comments/README.md) | Review comments: the overlay in the dev server and the files they are saved to. |
-| [`@deckster/export`](https://github.com/sandrinodm/deckster/blob/main/packages/export/README.md) | The PDF and PowerPoint writer behind `deck export`, and its `--verify` tooling. |
-| [`@deckster/shell`](https://github.com/sandrinodm/deckster/blob/main/packages/shell/README.md) | The Electron app behind `deck present`: the audience and presenter windows. |
+| [`@deckster/export`](https://github.com/sandrinodm/deckster/blob/main/packages/export/README.md) | The PDF and PowerPoint writer behind `deckster export`, and its `--verify` tooling. |
+| [`@deckster/shell`](https://github.com/sandrinodm/deckster/blob/main/packages/shell/README.md) | The Electron app behind `deckster present`: the audience and presenter windows. |
 | [`@deckster/agent`](https://github.com/sandrinodm/deckster/blob/main/packages/agent/README.md) | The deck MCP server, the host that runs your own `claude` or `codex` CLI one turn at a time, and the chat panel. |
 | [`@deckster/app-bridge`](https://github.com/sandrinodm/deckster/blob/main/packages/app-bridge/README.md) | The `postMessage` protocol between a deck and the mini apps it shows in `<AppFrame>`. |
 
 ## How they fit together
 
-Every `deck` command starts in the CLI. To serve, build or capture a deck, it drives `@deckster/vite-plugin`, which validates the deck and serves a page of the engine with three runtime plugins loaded into every deck, in dev and in builds: the brand's stylesheet from `@deckster/brand`, the layouts and components from `@deckster/kit`, and the tools from `@deckster/presenter`.
+Every `deckster` command starts in the CLI. To serve, build or capture a deck, it drives `@deckster/vite-plugin`, which validates the deck and serves a page of the engine with three runtime plugins loaded into every deck, in dev and in builds: the brand's stylesheet from `@deckster/brand`, the layouts and components from `@deckster/kit`, and the tools from `@deckster/presenter`.
 
-Some parts exist only while a deck is served by `deck dev` or `deck present`: `@deckster/comments` adds its overlay and endpoint, and `@deckster/agent` adds the MCP endpoint with `--mcp` and the chat panel with `--agent`. A build, `deck shot`, `deck lint` and the exports have neither.
+Some parts exist only while a deck is served by `deckster dev` or `deckster present`: `@deckster/comments` adds its overlay and endpoint, and `@deckster/agent` adds the MCP endpoint with `--mcp` and the chat panel with `--agent`. A build, `deckster shot`, `deckster lint` and the exports have neither.
 
-`@deckster/export` runs only inside the CLI, for `deck export` and `deck diff`, on slides Chromium has rendered. `@deckster/shell` is a separate Electron process that `deck present` starts and drives over standard input and output; it loads no deck itself. `@deckster/app-bridge` runs in the deck page and inside each mini app.
+`@deckster/export` runs only inside the CLI, for `deckster export` and `deckster diff`, on slides Chromium has rendered. `@deckster/shell` is a separate Electron process that `deckster present` starts and drives over standard input and output; it loads no deck itself. `@deckster/app-bridge` runs in the deck page and inside each mini app.
 
 Why it is split this way, and why the engine is its own runtime, is on [design decisions](/project/design-decisions/). To work on the packages, start from [work from a clone](/get-started/work-from-a-clone/) and [contributing](/project/contributing/).

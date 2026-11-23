@@ -34,7 +34,7 @@ Say the three rules, then say they come from the pilot: we broke each one once, 
 </Notes>
 ```
 
-The file is `slides/<id>.mdx` in the deck folder, and the slide shows only once `deck.config.ts` lists its id. `deck new slide <deck> <id> --layout <name>` writes the file from the layout's example and adds it to the list. The same slide rendered:
+The file is `slides/<id>.mdx` in the deck folder, and the slide shows only once `deck.config.ts` lists its id. `deckster new slide <deck> <id> --layout <name>` writes the file from the layout's example and adds it to the list. The same slide rendered:
 
 <SlideExample deck="layouts" slide="cards-principles" />
 
@@ -44,7 +44,7 @@ Every slide takes seven keys, whatever its layout:
 
 | Key | What it sets |
 | --- | --- |
-| `layout` | The layout, by name. Default: `default`. `deck layouts` lists them. |
+| `layout` | The layout, by name. Default: `default`. `deckster layouts` lists them. |
 | `title` | The slide's title. |
 | `surface` | The brand surface: `default`, `inverse`, `accent`, `gradient` or one the brand adds. |
 | `background` | A picture behind the whole slide. See [media](/write-slides/media/). |
@@ -87,7 +87,7 @@ import teams from '../data/teams.csv';
 
 Keep Markdown inside a component separated from the tags by blank lines, and write a literal `{` or `<` in text as `\{` or `&lt;`.
 
-To look up a component's props from the terminal, run `deck components` (code, media, link and demo components; `--json` for agents), `deck charts` or `deck diagrams`. The same catalogs are on [components](/reference/components/).
+To look up a component's props from the terminal, run `deckster components` (code, media, link and demo components; `--json` for agents), `deckster charts` or `deckster diagrams`. The same catalogs are on [components](/reference/components/).
 
 In one sentence each: `<Step at={n}>` reveals content on a later press ([builds](/write-slides/builds/)); a fence is a code block ([code](/write-slides/code/)); `<Notes>` holds what the speaker says ([speaker notes](/write-slides/speaker-notes/)); images and video are on [media](/write-slides/media/).
 
@@ -106,7 +106,7 @@ A `content` slide with a fact beside the list in `<Aside>`:
 A layout that requires a slot fails the build without it:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/harbour.mdx
   error   schema (harbour): The split layout needs its media slot.
           Fix: Add <Media>…</Media> at the top level of the slide: What the text points at: one <img> with alt text (imported from the deck's assets/ or served from its public/ folder), a chart, diagram, table or component. Photos fill the frame and are cropped to it; anything else is centred and may fill it with `height: 100%` (the frame is a size container, so `100cqh` works too).
@@ -114,14 +114,14 @@ decks/launch-review/slides/harbour.mdx
 launch-review: 1 error, 0 warnings.
 ```
 
-Content of a kind the slot does not take, such as a list where it takes no bullets, is a `slot-content` error in `deck lint`.
+Content of a kind the slot does not take, such as a list where it takes no bullets, is a `slot-content` error in `deckster lint`.
 
 ## Build errors and their fixes
 
-The build checks every slide against its layout before it renders. `deck lint` runs the same checks as `deck build` and reports each problem with the file, the line and a fix. A key that is close to a known one names it:
+The build checks every slide against its layout before it renders. `deckster lint` runs the same checks as `deckster build` and reports each problem with the file, the line and a fix. A key that is close to a known one names it:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/title.mdx
   error   schema (title): "eyebrw" is not a frontmatter field.
           Fix: Rename it to "eyebrow".
@@ -132,7 +132,7 @@ launch-review: 1 error, 0 warnings.
 A key that is close to none lists the fields the layout takes:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/title.mdx
   error   schema (title): "subtitel" is not a frontmatter field.
           Fix: Remove it. Known fields: layout, title, surface, background, budget, transition, hidden, eyebrow, byline, date, treatment, picture, align, chrome.
@@ -140,4 +140,4 @@ decks/launch-review/slides/title.mdx
 launch-review: 1 error, 0 warnings.
 ```
 
-Fix what the message says and save; `deck dev` reloads the slide. The checks as a whole are on [lint](/review/lint/).
+Fix what the message says and save; `deckster dev` reloads the slide. The checks as a whole are on [lint](/review/lint/).

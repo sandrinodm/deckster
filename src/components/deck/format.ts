@@ -497,7 +497,7 @@ type DiagramLook = {
 };
 
 /**
- * A brand's diagram look as the lines `deck brand <name>` prints before its cards: edges, groups,
+ * A brand's diagram look as the lines `deckster brand <name>` prints before its cards: edges, groups,
  * edge labels and the card each mapped kind uses. Sizes are canvas px.
  */
 export function diagramLookLines(look: DiagramLook): string[] {
@@ -522,7 +522,7 @@ type CardGeometry = {
 };
 
 /**
- * A card's border, look (radius, shape, shadow, icon, stripe, in the words `deck brand` uses) and
+ * A card's border, look (radius, shape, shadow, icon, stripe, in the words `deckster brand` uses) and
  * title type as table cells, sizes in canvas px.
  */
 export function cardCells(card: CardGeometry, border: string | null): { border: string; look: string; title: string } {

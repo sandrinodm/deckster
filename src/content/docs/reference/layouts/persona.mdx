@@ -8,7 +8,7 @@ sidebar:
 The `persona` layout sets one research persona on a slide: a portrait with a name and role on the left, and on the right a quotation in the person's own words above two lists, goals and frustrations. Use it to tie a design decision to what one participant wants and what gets in their way.
 
 <Aside type="note" title="New in v0.6.0">
-The `persona` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "persona" layout.`
+The `persona` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "persona" layout.`
 </Aside>
 
 ## Example
@@ -39,10 +39,10 @@ With two items in each list, the quotation and lists are set larger: the layout 
 - **A quotation that runs on.** The body is a quotation of up to 24 words, not a paragraph about the person:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/p-quote.mdx
     error   content-budget (p-quote): The body slot holds 30 words; its layout allows 24.
-            Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+            Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deckster layouts`).
 
   launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
   ```

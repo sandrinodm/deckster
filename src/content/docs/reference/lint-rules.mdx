@@ -1,13 +1,13 @@
 ---
 title: "Lint rules"
-description: "Every rule deck lint checks, with its severity and fix."
+description: "Every rule deckster lint checks, with its severity and fix."
 sidebar:
   order: 2
 ---
 
-Use this page to look up a rule id from a `deck lint` finding: what it checks, whether it fails the run, and the short fix. How to run lint, read a finding and fix the common ones is on [lint](/review/lint/).
+Use this page to look up a rule id from a `deckster lint` finding: what it checks, whether it fails the run, and the short fix. How to run lint, read a finding and fix the common ones is on [lint](/review/lint/).
 
-The tables list the 43 rules `deck lint --help` prints in 0.7.0, plus `schema` and `brand`, and then the findings the slide compiler adds. An `error` makes `deck lint` exit with 1; a `warning` does not. Each finding prints its own fix, which names the file and is usually longer than the one here. The minimum type size is 20px on the 1920x1080 canvas. To skip decoration in the overflow and text rules, see [exempt decoration](/review/lint/#exempt-decoration).
+The tables list the 43 rules `deckster lint --help` prints in 0.7.0, plus `schema` and `brand`, and then the findings the slide compiler adds. An `error` makes `deckster lint` exit with 1; a `warning` does not. Each finding prints its own fix, which names the file and is usually longer than the one here. The minimum type size is 20px on the 1920x1080 canvas. To skip decoration in the overflow and text rules, see [exempt decoration](/review/lint/#exempt-decoration).
 
 ## Schema and rendering
 
@@ -15,7 +15,7 @@ The tables list the 43 rules `deck lint --help` prints in 0.7.0, plus `schema` a
 | --- | --- | --- |
 | `schema` | error | Deck config, frontmatter or MDX problem from the build; the message names the field. A slide file that `deck.config.ts` does not list is a `schema` warning: list it or delete it. |
 | `brand` | error or warning | A problem in the brand, reported once under the brand's file: an error when the brand does not load, such as a contrast failure; a warning for one that does not stop it, such as a waived contrast pair. See [check a brand](/brands/check-a-brand/). |
-| `render-error` | error | A slide or the page threw. Fix the code; `deck dev` shows the stack. |
+| `render-error` | error | A slide or the page threw. Fix the code; `deckster dev` shows the stack. |
 
 ## Layout and text
 
@@ -42,8 +42,8 @@ The tables list the 43 rules `deck lint --help` prints in 0.7.0, plus `schema` a
 | `broken-image` | error | Import the file from the deck's `assets/`, or fix the URL. |
 | `low-res-image` | warning | Use an image at least as large as drawn (twice for 2x exports), or an SVG. |
 | `app-missing-poster` | error | Add `poster="./poster.png"` to the `<AppFrame>`. |
-| `app-missing` | error | Create the app with `deck new app <deck> <name>`, or fix the name. |
-| `app-external-src` | warning | Add `fallback="./demo.mp4"`, or bundle the demo with `deck new app`. |
+| `app-missing` | error | Create the app with `deckster new app <deck> <name>`, or fix the name. |
+| `app-external-src` | warning | Add `fallback="./demo.mp4"`, or bundle the demo with `deckster new app`. |
 | `video-cue-posters` | warning | Add `posters={[...]}` with one still per cued part. |
 | `export-missing-poster` | warning | Use `<Video src poster alt>`, `<AppFrame src poster>` or `<Live component poster>`. |
 
@@ -74,7 +74,7 @@ The tables list the 43 rules `deck lint --help` prints in 0.7.0, plus `schema` a
 | `diagram-edge-overlap` | warning | Move a node or pick other sides with `fromSide`/`toSide`. |
 | `diagram-badge-overlap` | warning | Move the edge with `fromSide`/`toSide`, or drop the badge. |
 | `diagram-long-word` | warning | Use a shorter name or put a space in it ("Order cancelled"). |
-| `diagram-card-missing` | warning | A node, actor, layer or item names a card the brand does not have, and is drawn with the next card in the order. Use one of the brand's cards (`deck brand <name>`); the five standard cards exist in every brand. See [pick a card](/data-and-diagrams/flow-diagrams/#pick-a-card). |
+| `diagram-card-missing` | warning | A node, actor, layer or item names a card the brand does not have, and is drawn with the next card in the order. Use one of the brand's cards (`deckster brand <name>`); the five standard cards exist in every brand. See [pick a card](/data-and-diagrams/flow-diagrams/#pick-a-card). |
 
 ## Content and deck
 
@@ -91,7 +91,7 @@ The tables list the 43 rules `deck lint --help` prints in 0.7.0, plus `schema` a
 
 ## From the slide compiler
 
-The compiler that turns slide files into the deck reports a few more problems, each with its own fix. `deck lint --help` does not list them.
+The compiler that turns slide files into the deck reports a few more problems, each with its own fix. `deckster lint --help` does not list them.
 
 | Rule | Severity | What it means |
 | --- | --- | --- |

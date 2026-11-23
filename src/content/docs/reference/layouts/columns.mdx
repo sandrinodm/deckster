@@ -31,20 +31,20 @@ Each column comes from one entry in `columns:`. Its `note:` is the tag above the
 
 ## Common mistakes
 
-- **Long headings on a board of four.** The "four columns" variant tightens every column, so adding a fourth column can push existing headings over. `deck lint` reports a `schema` error that names the field:
+- **Long headings on a board of four.** The "four columns" variant tightens every column, so adding a fourth column can push existing headings over. `deckster lint` reports a `schema` error that names the field:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/cities.mdx
     error   schema (cities): columns[0].title: The columns layout sets at most 16 characters here (four columns), got 21.
-            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+            Fix: Shorten it to the essentials; `deckster layouts --json` lists the limits of each variant.
 
   launch-review: 1 error, 0 warnings.
   ```
 
 - **A fifth item in a column.** The schema stops at four: "columns[0].items: Expected at most 4 items in a column, got a list of 5 items." Merge items or move detail into the notes.
 - **A `current:` past the last column.** It is a `schema` error that names the count, such as "current: 4 names column 4, but there are 3 columns."
-- **Text outside `<Footnote>`.** The layout draws only its columns and the footnote. A paragraph under the frontmatter is not shown, and `deck lint` does not report it.
+- **Text outside `<Footnote>`.** The layout draws only its columns and the footnote. A paragraph under the frontmatter is not shown, and `deckster lint` does not report it.
 
 ## Related layouts
 

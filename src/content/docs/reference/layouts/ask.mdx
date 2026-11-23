@@ -28,10 +28,10 @@ The title takes up to 40 characters, three lines in the panel, and the body one 
 
 ## Common mistakes
 
-**Shares that do not add up to 100.** The shares in `funds` must add up to 100, within 0.5, so three shares of 33.3 pass and a missing point does not. The build fails, and [`deck lint`](/review/lint/) reports it before it renders any slide:
+**Shares that do not add up to 100.** The shares in `funds` must add up to 100, within 0.5, so three shares of 33.3 pass and a missing point does not. The build fails, and [`deckster lint`](/review/lint/) reports it before it renders any slide:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/the-ask.mdx
   error   schema (the-ask): funds: The shares add up to 95, not 100.
           Fix: Give each allocation its share of the amount in percent, so the shares add up to 100; round one share up or down, or add the rest as its own allocation such as "Reserve".

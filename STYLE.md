@@ -33,16 +33,16 @@ what to tell their agent.
   mkdir -p "$TMPDIR/talks" && cd "$TMPDIR/talks"
   export DECK_ROOT="$PWD"                      # the CLI climbs to the nearest folder with decks/
   export PATH="$TMPDIR/deck-0.8.0/node_modules/.bin:$PATH"
-  deck --version                               # 0.8.0
+  deckster --version                               # 0.8.0
   ```
 
   Before a release is on npm, pack the CLI as the publish workflow does
   (`pnpm --filter @deckster/cli pack --out <dir>/deckster-cli.tgz` in the checkout) and install
   that tarball the same way, and say so in your report. Keep both folders out of `/tmp` on macOS
   (`$TMPDIR` is fine): a stray `/tmp/node_modules` resolves a brand's font packages that a
-  reader's workspace would not have, and `deck brand check` and `deck brand add` then print the
+  reader's workspace would not have, and `deckster brand check` and `deckster brand add` then print the
   wrong output. Running `packages/cli/dist/deck.js` from the checkout through a wrapper finds the
-  checkout's own fonts the same way, and `deck brand add` there writes the repository's package
+  checkout's own fonts the same way, and `deckster brand add` there writes the repository's package
   files; use it only for commands that touch no brand.
 
   An agent's shell keeps no state between calls: repeat the `cd`, `DECK_ROOT` and `PATH` lines in
@@ -54,14 +54,14 @@ what to tell their agent.
   same Playwright, 1.65.0.
 - **What an npm workspace has and the repository does not, or the other way round.** Confirmed by
   running 0.3.0, again with 0.4.0 and 0.5.0 from npm, and with the 0.6.0 tarball and then 0.6.0 from npm:
-  - `deck new <deck>` writes only `decks/<deck>/deck.config.ts` and `decks/<deck>/slides/title.mdx`
-    (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deck types` writes the
+  - `deckster new <deck>` writes only `decks/<deck>/deck.config.ts` and `decks/<deck>/slides/title.mdx`
+    (no `package.json`, no `tsconfig.json`, no `pnpm install`). `deckster types` writes the
     `tsconfig.json`.
   - Only the `default` brand ships with the CLI. `nocturne`, `fieldnote`, `kinetic` and `tidewater`
     live in the repository's `brands/` folder. To use one, run
-    `deck brand add gh:sandrinodm/deckster/brands/<name>#v0.6.0`: it copies the folder without
+    `deckster brand add gh:sandrinodm/deckster/brands/<name>#v0.6.0`: it copies the folder without
     its `package.json` and `tsconfig.json` and prints the `npm install` line for its font
-    packages, which go in the workspace folder; `deck brand check <name>` then passes. With 0.5.0
+    packages, which go in the workspace folder; `deckster brand check <name>` then passes. With 0.5.0
     and earlier, copy the folder, delete those two files and install the fonts by hand.
   - Only `fieldnote` of the published brands has a `layouts.ts`. The `brand-layouts` deck that
     uses its four layouts is not on the docs allowlist, so no still shows a brand layout: show its
@@ -69,7 +69,7 @@ what to tell their agent.
   - There is no `hello` deck in a new workspace. To run a published deck, copy
     `decks/<name>/` from the repository and delete its `package.json` and `tsconfig.json` (they
     point into the monorepo and make every slide fail with "Transform failed").
-  - `deck icons` lists the names shared by the brands in the workspace: 2,377 Lucide names with
+  - `deckster icons` lists the names shared by the brands in the workspace: 2,377 Lucide names with
     only `default`. The site's `icons.json` lists the 776 names shared by all five published
     brands.
 - `src/data/*.json` was generated from the repository. `cli.json` carries the help as the npm CLI
@@ -89,7 +89,7 @@ what to tell their agent.
 
 ## Voice
 
-- Second person, present tense, plain words: "Run `deck lint`", "The slide shows...".
+- Second person, present tense, plain words: "Run `deckster lint`", "The slide shows...".
 - Specific over general: name the flag, the default, the file, the rule id.
 - No marketing adjectives (powerful, seamless, beautiful, blazing, robust) and no "simply",
   "just", "easily", "of course".
@@ -145,7 +145,7 @@ heading you write above them.
 | `<SlideExample deck slide />` | A slide and the source that made it, in tabs | Any slide; use it when the source is the point |
 | `<StepStrip deck slide />` | Every step of one slide side by side | Only: showcase `review-rounds`, `lint-path`, `agent-turn`, `no-styling`; data-stories `redesign-effect`; diagrams-demo `request-journey`; components `handler-evolves`, `middleware-order`, `rollout-checks`, `edge-latency`; hello `steps`; lookbook `motion-rise` |
 | `<BrandGrid slide />` | One slide in all five brands | Only `cover`, `review-rounds`, `lint-path` |
-| `<UiShot name alt />` | The product UI in `deck dev` (showcase deck, 1440x900), the `deck present` windows, and one each of a `deck diff` report, a lint fix, a build gallery and a verify picture | Only `sidebar`, `overview`, `help`, `presenter`, `comments`, `comment-list`, `tools`, `tools-detail` (the tool buttons up close, 1120x400), `agent-panel`, `present-audience`, `present-presenter`, `diff-report` (the hello deck's report, staged: never call it a real change), `lint-before` and `lint-after` (a scratch slide, 1920x1080), `build-gallery`, `export-verify` (hello's title slide in LibreOffice; the CLI's one-row picture rearranged into two rows, 1920x1160: say so), `agent-turn` (a replayed fake-provider turn relabelled "Claude": caption it as a recorded example, never quote its figures; it is on `/ai-agents/agent-panel/`) |
+| `<UiShot name alt />` | The product UI in `deckster dev` (showcase deck, 1440x900), the `deckster present` windows, and one each of a `deckster diff` report, a lint fix, a build gallery and a verify picture | Only `sidebar`, `overview`, `help`, `presenter`, `comments`, `comment-list`, `tools`, `tools-detail` (the tool buttons up close, 1120x400), `agent-panel`, `present-audience`, `present-presenter`, `diff-report` (the hello deck's report, staged: never call it a real change), `lint-before` and `lint-after` (a scratch slide, 1920x1080), `build-gallery`, `export-verify` (hello's title slide in LibreOffice; the CLI's one-row picture rearranged into two rows, 1920x1160: say so), `agent-turn` (a replayed fake-provider turn relabelled "Claude": caption it as a recorded example, never quote its figures; it is on `/ai-agents/agent-panel/`) |
 | `<Diagram name alt />` | One of the six explanatory SVGs, on concept pages and where a brief names one | `build-pipeline`, `step-model`, `brand-resolution`, `agent-turn`, `export-pipeline`, `review-loop`; one per page |
 | `<FrontmatterReference />`, `<SchemaReference of section? />`, `<ChartTypes of? />`, `<DiagramKinds part? />` | The slide frontmatter keys; every field of `brand.ts` (`of="brand"`, one `section` per table) or `deck.config.ts` (`of="deck-config"`); the chart prop types (`Highlight`, `Annotation.*`, ...); diagram node kinds, states, edge options and the cards guide | Types, allowed values, ranges and required. `SchemaReference` also shows a one-line description and default per field from `src/components/deck/schema-descriptions.ts`; the others have none. Write formats, patterns and how fields work together in prose from the code |
 | `<LayoutReference name />`, `<LayoutIndex />`, `<PropsTable of />` (and `<PropsTable shared />` once on charts and diagrams), `<CatalogIndex kind />`, `<CliCommand name />`, `<IconGrid />`, `<BrandTokens name />` | Reference pages and, sparingly, one entry quoted on a guide. Each layout's `<LayoutReference>` is on its own page, `/reference/layouts/<name>/`; `<LayoutIndex />` is on `/reference/layouts/` | Names exactly as in the JSON |
@@ -182,15 +182,15 @@ Three features are new in 0.6.0. Twenty layouts: `recap`, `sources`, `definition
 `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`; each of
 their pages carries `<Aside type="note" title="New in v0.6.0">` right after its opening
 paragraph, with the error 0.5.0 prints for the name, and another page that names them as a group
-says "new in 0.6.0" once. Brand layouts (`layouts.ts`, `deck layouts --brand`, the
-`brand-layout-fallback` rule), owned by `/brands/brand-layouts/`. And `deck brand add`, owned by
+says "new in 0.6.0" once. Brand layouts (`layouts.ts`, `deckster layouts --brand`, the
+`brand-layout-fallback` rule), owned by `/brands/brand-layouts/`. And `deckster brand add`, owned by
 the "Add a published brand" and "Add a brand from another repository" sections of
 `/brands/use-a-brand/`.
 A page that describes a feature new in a release says it needs that release: an
 `<Aside type="note" title="New in v0.X.0">` on the page that owns it, or "New in 0.X.0." in a
 sentence or a table row on the others. These notes stay after later releases, because they tell
 a reader on an older CLI what is missing: hidden slides are new in 0.5.0 (`hidden: true` in a
-slide's frontmatter, `deck export --include-hidden`, the `hidden` field of `deck shot --json` and
+slide's frontmatter, `deckster export --include-hidden`, the `hidden` field of `deckster shot --json` and
 of `window.__deck.slides`; owned by `/write-slides/hidden-slides/`), and embed mode (`?embed`) and
 diagram looks and cards (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` in `brand.ts`,
 `card="..."` on diagram parts, `diagram-card-missing`) are new in 0.4.0. Every other behaviour you

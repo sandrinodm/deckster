@@ -15,7 +15,7 @@ The table gives each key's type, allowed values and limits. It marks no key as r
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `layout` | `default` | The layout the slide fills, by name in kebab-case. `deck layouts` lists the names. |
+| `layout` | `default` | The layout the slide fills, by name in kebab-case. `deckster layouts` lists the names. |
 | `title` | the slide's first heading, else its id | The slide's name in the outline, the presenter window and the slide's accessible label. Some layouts also set it on the slide and limit its length. |
 | `surface` | the layout's default surface, else `default` | The brand surface the slide is painted with, such as `inverse` or `accent`. It must be a surface of the deck's brand; the build fails otherwise and suggests the closest name. See [brands and surfaces](/concepts/brands-and-surfaces/). |
 | `background` | the surface's own background | `none` hides the surface's background layers. An image path paints that image instead of them. The object form takes `src` and options: `fit` (`cover`, the default, crops around `focal`; `contain` shows the whole image), `focal` (`{ x, y }` in percent, default the centre), `opacity` (0 to 1, default 1), `tint` (`{ role, opacity }`, a colour of the surface laid over the image: `bg`, `surface`, `fg` or `accent`) and `layers` (`replace`, the default, or `over` to paint the image above the surface's layers). See [media](/write-slides/media/). |
@@ -62,10 +62,10 @@ See [TSX slides](/write-slides/tsx-slides/).
 
 ## Errors
 
-A key that neither the slide nor its layout defines is refused, so a misspelled key never passes. The fix suggests the closest key only for a near miss (`surfce` becomes `surface`); for a key another layout takes, it names the layouts that have it; otherwise it lists the known fields. A bad value names the key, what was expected and how to write it. `deck build` fails on either, and `deck lint` reports them as `schema` errors:
+A key that neither the slide nor its layout defines is refused, so a misspelled key never passes. The fix suggests the closest key only for a near miss (`surfce` becomes `surface`); for a key another layout takes, it names the layouts that have it; otherwise it lists the known fields. A bad value names the key, what was expected and how to write it. `deckster build` fails on either, and `deckster lint` reports them as `schema` errors:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/claim.mdx
   error   schema (claim): "surfce" is not a frontmatter field.
           Fix: Rename it to "surface".

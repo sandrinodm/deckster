@@ -57,7 +57,7 @@ component, chart or command has no reference entry. CI runs both before the buil
 `.github/workflows/pages.yml` runs on every push and pull request to `docs-site`. It checks out
 deckster at `DECKSTER_REF` (`v0.8.0`, the documented release), regenerates `src/data` and fails if it differs from the
 committed files, syncs the stills and decks under a virtual display (Xvfb, for the Electron
-windows of `deck present`) with `DECKSTER_SHOTS_STRICT=1`, then runs the same three steps. It does
+windows of `deckster present`) with `DECKSTER_SHOTS_STRICT=1`, then runs the same three steps. It does
 not deploy (see the top of this file).
 
 `AGENT.md` has the conventions for coding agents working on this branch: deckster-specific

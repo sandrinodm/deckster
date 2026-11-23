@@ -11,14 +11,14 @@ A brand is a folder under `brands/` that sets a deck's colours, type, logo, icon
 
 ## Which brands you have
 
-Only `default` ships with the npm CLI. It works in every workspace, even one without a `brands/` folder. The other four published brands, `nocturne`, `fieldnote`, `kinetic` and `tidewater`, are folders in the [repository's `brands/` folder](https://github.com/sandrinodm/deckster/tree/main/brands). The site's ordinary slide previews use Fieldnote, which you can add to your own workspace. `deck brand add` copies one into your workspace, and so it does any brand folder in a git repository you can read.
+Only `default` ships with the npm CLI. It works in every workspace, even one without a `brands/` folder. The other four published brands, `nocturne`, `fieldnote`, `kinetic` and `tidewater`, are folders in the [repository's `brands/` folder](https://github.com/sandrinodm/deckster/tree/main/brands). The site's ordinary slide previews use Fieldnote, which you can add to your own workspace. `deckster brand add` copies one into your workspace, and so it does any brand folder in a git repository you can read.
 
 ## Add a published brand
 
-These steps add `nocturne` to a workspace called `talks`. The other three work the same way. Only the font packages differ, and `deck brand add` names them.
+These steps add `nocturne` to a workspace called `talks`. The other three work the same way. Only the font packages differ, and `deckster brand add` names them.
 
 <Aside type="note" title="New in v0.6.0">
-`deck brand add` needs `@deckster/cli` 0.6.0 or later. 0.5.0 reads `add` as a brand name and prints `No such brand in brands/add/brand.ts`; with it, copy the brand's folder from a clone of the repository into `brands/` and delete its `package.json` and `tsconfig.json`.
+`deckster brand add` needs `@deckster/cli` 0.6.0 or later. 0.5.0 reads `add` as a brand name and prints `No such brand in brands/add/brand.ts`; with it, copy the brand's folder from a clone of the repository into `brands/` and delete its `package.json` and `tsconfig.json`.
 </Aside>
 
 <Steps>
@@ -26,13 +26,13 @@ These steps add `nocturne` to a workspace called `talks`. The other three work t
 1. Add the brand from the repository. Use the tag that matches your CLI version, and make sure `git` is on your `PATH`.
 
    ```console
-   $ deck brand add gh:sandrinodm/deckster/brands/nocturne#v0.7.0
+   $ deckster brand add gh:sandrinodm/deckster/brands/nocturne#v0.7.0
    Fetching gh:sandrinodm/deckster/brands/nocturne#v0.7.0 with git...
    Added brands/nocturne/ from gh:sandrinodm/deckster/brands/nocturne#v0.7.0 at d9d67a4 (4 files).
    Left out: package.json (package file), tsconfig.json (package file).
    Next:
      npm install @fontsource-variable/fraunces@5.3.0 @fontsource-variable/manrope@5.3.0 @fontsource/ibm-plex-mono@5.3.0
-     deck brand check nocturne
+     deckster brand check nocturne
    ```
 
    It writes `brands/nocturne/` with `brand.ts`, the two logos and the README, and leaves out the `package.json` and `tsconfig.json` that tie the folder to the repository. Fonts are not installed: the `Next:` lines say what to run, with the versions the source repository gives the font packages (the brand's `package.json`, read through the repository's pnpm catalog where it says `catalog:`).
@@ -51,7 +51,7 @@ These steps add `nocturne` to a workspace called `talks`. The other three work t
 3. Check the brand:
 
    ```console
-   $ deck brand check nocturne
+   $ deckster brand check nocturne
    brands/nocturne/brand.ts
    nocturne: is valid (0 errors, 0 warnings).
    ```
@@ -60,11 +60,11 @@ These steps add `nocturne` to a workspace called `talks`. The other three work t
 
 </Steps>
 
-The CLI already carries the fonts of `default` (Bricolage Grotesque, Inter and JetBrains Mono), so a brand that uses only those needs no install. [Check a brand](/brands/check-a-brand/) explains the rest of what `deck brand check` reports.
+The CLI already carries the fonts of `default` (Bricolage Grotesque, Inter and JetBrains Mono), so a brand that uses only those needs no install. [Check a brand](/brands/check-a-brand/) explains the rest of what `deckster brand check` reports.
 
 ## Add a brand from another repository
 
-`deck brand add <source>` reads a git repository over HTTPS or SSH. The source names the repository, the folder that holds `brand.ts`, and optionally a ref after `#`, a branch, a tag or a full commit hash. Without a ref it takes the default branch.
+`deckster brand add <source>` reads a git repository over HTTPS or SSH. The source names the repository, the folder that holds `brand.ts`, and optionally a ref after `#`, a branch, a tag or a full commit hash. Without a ref it takes the default branch.
 
 | Source | Example |
 | --- | --- |
@@ -76,25 +76,25 @@ It runs your own `git`, so your credential helper, SSH key and `url.<base>.inste
 
 What it copies and what it refuses:
 
-- **Plain data.** The importer reads `brand.ts` and `layouts.ts` without running them. Write `brand.ts` as one `defineBrand` call around plain values. The importer checks the brand before installing it. After you install any missing font packages, run `deck brand check <name>` to check the installed files and layouts.
+- **Plain data.** The importer reads `brand.ts` and `layouts.ts` without running them. Write `brand.ts` as one `defineBrand` call around plain values. The importer checks the brand before installing it. After you install any missing font packages, run `deckster brand check <name>` to check the installed files and layouts.
 - **Only brand files.** `brand.ts`, `layouts.ts`, images (`svg`, `png`, `webp`, `jpg`, `jpeg`), fonts (`woff2`, `woff`, `ttf`, `otf`), documents (`md`, `txt`, `json`) and licence files. Other code, symlinks, hidden files and package files (`package.json`, lock files, `tsconfig.json` and the like) are left out, and `Left out:` lists them. At most 500 files and 50 MiB.
 - **Replacement.** When the workspace already has a brand of that name, the command stops with `The workspace already has brands/nocturne/.` Pass `--force` to replace it. A successful replacement starts its report with `Replaced`. See [Recover an interrupted replacement](#recover-an-interrupted-replacement) for the recovery behavior.
 
 A source that is not a brand folder fails before anything is written:
 
 ```console
-$ deck brand add gh:sandrinodm/deckster/decks/hello#v0.6.0
+$ deckster brand add gh:sandrinodm/deckster/decks/hello#v0.6.0
 Fetching gh:sandrinodm/deckster/decks/hello#v0.6.0 with git...
 gh:sandrinodm/deckster/decks/hello#v0.6.0 has no brand.ts, so it is not a brand folder.
 Point at the folder that holds brand.ts, such as gh:owner/repo/brands/<name>.
 ```
 
-`--json` prints `{ ok, brand, dir, source, commit, replaced, files, written, skipped, fonts, warnings, next }`: `skipped` has each left-out file with its reason, `fonts` each font package with its version and whether it is `installed`, and `next` the commands to run. The full help is under [`deck brand`](/reference/cli/#cli-brand).
+`--json` prints `{ ok, brand, dir, source, commit, replaced, files, written, skipped, fonts, warnings, next }`: `skipped` has each left-out file with its reason, `fonts` each font package with its version and whether it is `installed`, and `next` the commands to run. The full help is under [`deckster brand`](/reference/cli/#cli-brand).
 
 ### SVG artwork during installation
 
 <Aside type="note" title="New in v0.8.0">
-  Starting in v0.8.0, `deck brand add` checks SVG artwork before installing it. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
+  Starting in v0.8.0, `deckster brand add` checks SVG artwork before installing it. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
 </Aside>
 
 The importer cleans SVG files in the staged brand before installing it. It preserves intrinsic dimensions and supported references within the same SVG, such as gradients and clip paths. It strips scripts, event handlers, and external references. When it removes unsupported markup, it warns with the asset's path. Preview the brand after import to check the artwork.
@@ -105,7 +105,7 @@ An SVG must be well-formed UTF-8 XML with one SVG root. A file the importer cann
 
 For HTTPS, use your git credential helper. For GitHub you can sign in with `gh auth login` and choose HTTPS and Git authentication when prompted. For SSH, load the key your git host accepts into your SSH agent. Use a source address without a token or password. HTTPS sources omit the user name, and SSH sources can include the account name, such as `git@`.
 
-If the fetch fails, run `git ls-remote <repository-url>` in the same terminal, with the repository URL alone. Leave off the `//` folder suffix and the `#` ref. This checks whether Git can reach and authenticate to the repository. Once it works, check the folder path and ref in your `deck brand add` command.
+If the fetch fails, run `git ls-remote <repository-url>` in the same terminal, with the repository URL alone. Leave off the `//` folder suffix and the `#` ref. This checks whether Git can reach and authenticate to the repository. Once it works, check the folder path and ref in your `deckster brand add` command.
 
 **New in v0.7.0.** The importer validates the source before printing the fetch line. Invalid-source errors explain what to fix without echoing the supplied address. If Git fails, the importer prints the failed step and its status where available, while keeping Git's raw diagnostics out of the CLI output. See [Credential-safe brand sources](/project/changelog/#credential-safe-brand-sources).
 
@@ -113,21 +113,21 @@ If the fetch fails, run `git ls-remote <repository-url>` in the same terminal, w
 
 New in v0.7.0. [Brand installation changelog](/project/changelog/#transaction-safe-brand-installs).
 
-`deck brand add <source> --force` stages and checks the replacement under `brands/` before publishing it. Installs of the same brand take turns. If publication fails after moving the previous brand, the installer restores it when the destination is free. After a process interruption, retry the same source. The installer recovers the previous brand or finishes cleaning up a published install before it checks whether it can proceed. Leave out `--force` on that retry if you want to check the recovered brand first.
+`deckster brand add <source> --force` stages and checks the replacement under `brands/` before publishing it. Installs of the same brand take turns. If publication fails after moving the previous brand, the installer restores it when the destination is free. After a process interruption, retry the same source. The installer recovers the previous brand or finishes cleaning up a published install before it checks whether it can proceed. Leave out `--force` on that retry if you want to check the recovered brand first.
 
 If the error says the destination already exists and the previous brand is preserved, keep both folders while you check them. The message gives the paths. Move the conflicting destination aside and restore the previous brand to `brands/<name>/`, or move the saved copy somewhere safe before retrying. The transaction files live under `brands/.deck/brand-add/<name>/`. Keep `brands/.deck/` out of git and leave its lock files in place. The directories `.deck/`, `brand-add/` and `<name>/` in that path must be real directories. If the installer reports an existing link or other entry there, move that entry somewhere safe before retrying.
 
-After a successful install, follow the printed font commands and run [`deck brand check <name>`](/brands/check-a-brand/). See [layout checks during installation](/brands/check-a-brand/#layout-checks-during-installation) for the catalog checks.
+After a successful install, follow the printed font commands and run [`deckster brand check <name>`](/brands/check-a-brand/). See [layout checks during installation](/brands/check-a-brand/#layout-checks-during-installation) for the catalog checks.
 
 ## Which brand a deck uses
 
-A deck names its brand in `deck.config.ts`. `deck new` writes it, `default` unless you pass `--brand`:
+A deck names its brand in `deck.config.ts`. `deckster new` writes it, `default` unless you pass `--brand`:
 
 ```console
-$ deck new board-update --brand nocturne
+$ deckster new board-update --brand nocturne
 decks/board-update/deck.config.ts
 decks/board-update/slides/title.mdx
-Next: run `deck dev board-update`. For editor type checking, run `deck types` once (again after upgrading @deckster/cli).
+Next: run `deckster dev board-update`. For editor type checking, run `deckster types` once (again after upgrading @deckster/cli).
 ```
 
 ```ts
@@ -143,29 +143,29 @@ export default defineDeck({
 Change `brand:` to switch the deck for good. A deck config without a `brand` key uses `default`. The brand must already be in the workspace. Before you add `nocturne`, the same command fails:
 
 ```console
-$ deck new board-update --brand nocturne
+$ deckster new board-update --brand nocturne
 There is no brand "nocturne". Brands: default.
-Run `deck new --help` for the usage.
+Run `deckster new --help` for the usage.
 ```
 
 ## Render a deck in another brand
 
-To try a brand without touching the deck, pass `--brand <name>` to `deck dev`, `present`, `shot`, `lint`, `diff` or `export`. The slides stay the same; the brand changes every colour, family, size and logo they draw.
+To try a brand without touching the deck, pass `--brand <name>` to `deckster dev`, `present`, `shot`, `lint`, `diff` or `export`. The slides stay the same; the brand changes every colour, family, size and logo they draw.
 
 ```sh
-deck dev launch-review --brand nocturne
-deck lint launch-review --brand nocturne
-deck shot launch-review --brand nocturne
+deckster dev launch-review --brand nocturne
+deckster lint launch-review --brand nocturne
+deckster shot launch-review --brand nocturne
 ```
 
-Commands that write files keep each brand apart with an `@<brand>` suffix: `deck shot` writes to `.deck/shots/launch-review@nocturne/`, `deck export` to `.deck/exports/launch-review@nocturne`, and `deck diff` adds the same suffix to its folders. `deck present --built` can't be combined with `--brand`. To compare a deck across every published brand at once, see [one deck in every brand](/examples/brands/).
+Commands that write files keep each brand apart with an `@<brand>` suffix: `deckster shot` writes to `.deck/shots/launch-review@nocturne/`, `deckster export` to `.deck/exports/launch-review@nocturne`, and `deckster diff` adds the same suffix to its folders. `deckster present --built` can't be combined with `--brand`. To compare a deck across every published brand at once, see [one deck in every brand](/examples/brands/).
 
 ## See what a brand sets
 
-`deck brand <name>` prints a summary: the three families, the type scale in canvas pixels, the spacing, the brand's own layouts, every role on every surface, the diagram look and the cards:
+`deckster brand <name>` prints a summary: the three families, the type scale in canvas pixels, the spacing, the brand's own layouts, every role on every surface, the diagram look and the cards:
 
 ```console
-$ deck brand nocturne
+$ deckster brand nocturne
 Nocturne (brands/nocturne/brand.ts)
 Fonts: display Fraunces, body Manrope, mono IBM Plex Mono
 Type: display 168px, headline 84px, title 56px, lead 38px, body 34px, small 26px, caption 24px, label 22px, stat 184px, quote 88px, code 26px
@@ -183,17 +183,17 @@ Cards (colors on the default surface):
   solid: fill #ff8f6b, no border, radius 0px, plain icon, title display 400
   tint: fill #ff8f6b1f, border #ff8f6b 1px, radius 0px, plain icon, title display 400
   raised: fill #181426, border #ff8f6b 1px, radius 0px, lg shadow, plain icon, title display 400
-Run `deck brand nocturne --json` for every token.
+Run `deckster brand nocturne --json` for every token.
 ```
 
 Without a name it prints `default`. `--json` prints every resolved token as hex colours and canvas pixels: palette, surfaces, gradients, typography, shape, spacing, logo, icons, imagery, chrome, motion, data and charts, and the brand's layouts with their defaults filled in. The fields themselves are listed in the [brand schema](/reference/brand-schema/).
 
 ## Icons when you switch brands
 
-Each brand draws its icons from one Iconify set: `default` and `tidewater` use Lucide, and `nocturne`, `fieldnote` and `kinetic` use Tabler. An icon name that exists in only one set breaks the deck in the other brand. Say a `risks` slide of `launch-review` has `<Icon name="arrow-big-down-dash" />`, a Lucide name. `deck lint launch-review` passes, but in `nocturne` lint reports the icon, and `deck dev` shows the same error:
+Each brand draws its icons from one Iconify set: `default` and `tidewater` use Lucide, and `nocturne`, `fieldnote` and `kinetic` use Tabler. An icon name that exists in only one set breaks the deck in the other brand. Say a `risks` slide of `launch-review` has `<Icon name="arrow-big-down-dash" />`, a Lucide name. `deckster lint launch-review` passes, but in `nocturne` lint reports the icon, and `deckster dev` shows the same error:
 
 ```console
-$ deck lint launch-review --brand nocturne
+$ deckster lint launch-review --brand nocturne
 decks/launch-review/slides/risks.mdx
   error   schema (risks): Line 21, column 3: <Icon name="arrow-big-down-dash"> is not an icon of the tabler set.
           Fix: Closest names in the tabler set: arrow-big-down-line, arrow-big-down, arrow-big-down-lines, arrow-big-down-filled, arrow-down-dashed, arrow-bar-down. Browse the set at https://icon-sets.iconify.design/tabler/. A deck that renders in several brands needs a name that every brand's set has.
@@ -201,10 +201,10 @@ decks/launch-review/slides/risks.mdx
 launch-review: 1 error, 0 warnings.
 ```
 
-For a deck that renders in several brands, pick names from `deck icons`, which lists only the names every brand you name has:
+For a deck that renders in several brands, pick names from `deckster icons`, which lists only the names every brand you name has:
 
 ```console
-$ deck icons --brand default,nocturne --search arrow-big
+$ deckster icons --brand default,nocturne --search arrow-big
 4 icon names matching "arrow-big" in every one of: default (lucide), nocturne (tabler)
 Sets: lucide, tabler
 

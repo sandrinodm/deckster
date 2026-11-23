@@ -67,7 +67,7 @@ const UI_RELAYOUT = {
 };
 
 /**
- * `deck export --verify`'s comparison picture is three slide-sized panels in a row (web, the
+ * `deckster export --verify`'s comparison picture is three slide-sized panels in a row (web, the
  * converted file, the difference), each under its label: 2880x580 for a 960-wide panel. Scaled to
  * 1280 px wide as one row, each panel is 427 px wide and its text can't be read, even zoomed. So the
  * first two panels stay side by side and the difference goes under them, centred: 1920x1160, which

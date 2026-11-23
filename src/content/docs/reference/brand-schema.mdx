@@ -54,7 +54,7 @@ Named gradients, each `linear` (an `angle` in CSS degrees, 0 pointing up), `radi
 
 Three `families`, `display`, `body` and `mono`, each with a CSS family name, a `fallback` list that must end in a generic family (`sans-serif`, `serif`, `monospace` and so on), and a `source`: a Fontsource package installed in the workspace (`fontsource`), font files in the brand folder (`files`), the viewer's system (`system`), or `unavailable` with a `reason`, which renders the fallback and warns on every build. `substitute` names the installed family a PowerPoint export falls back to. See [fonts and assets](/brands/fonts-and-assets/).
 
-`scale` must define all eleven type steps (`TYPE_STEPS`): `display`, `headline`, `title`, `lead`, `body`, `small`, `caption`, `label`, `stat`, `quote` and `code`. Each picks a family role and sets size, line height, tracking in em and weight. No size may be below 20 canvas pixels (`MIN_TYPE_SIZE_PX`); `deck lint` holds rendered text to the same number.
+`scale` must define all eleven type steps (`TYPE_STEPS`): `display`, `headline`, `title`, `lead`, `body`, `small`, `caption`, `label`, `stat`, `quote` and `code`. Each picks a family role and sets size, line height, tracking in em and weight. No size may be below 20 canvas pixels (`MIN_TYPE_SIZE_PX`); `deckster lint` holds rendered text to the same number.
 
 ## shape
 
@@ -122,10 +122,10 @@ Optional. Gridlines, axes, the type steps of chart text, number formatting (`loc
 
 ## Errors
 
-The build, `deck lint` and `deck brand check` report every schema problem with its path and a fix, and a brand with errors does not load:
+The build, `deckster lint` and `deckster brand check` report every schema problem with its path and a fix, and a brand with errors does not load:
 
 ```console
-$ deck brand check acme
+$ deckster brand check acme
 brands/acme/brand.ts
   error   lable: "lable" is not a field of a brand.
           Fix: Rename it to "label".
@@ -140,6 +140,6 @@ After the schema, the checks follow palette references, gradient, surface and lo
 
 ## Resolved tokens
 
-What the schema becomes once a brand loads: the `default` brand's palette, surfaces, type scale and diagram cards, with every reference and derivation resolved. `deck brand default --json` prints the full set.
+What the schema becomes once a brand loads: the `default` brand's palette, surfaces, type scale and diagram cards, with every reference and derivation resolved. `deckster brand default --json` prints the full set.
 
 <BrandTokens name="default" />

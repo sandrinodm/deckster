@@ -65,7 +65,7 @@ diagram: {
 - A card's `subtitle` overrides the same properties on `diagram.nodes.subtitle` and inherits any subtitle properties on `diagram.cards.default`. Set `subtitle: null` on a card to use the diagram-wide settings directly. An unspecified property falls back to the selected typography step. `diagram.notes` styles the detail under a timeline milestone. The slide's `<Notes>` holds speaker notes separately.
 - Set `borderStyle` on a card for a solid, dashed or dotted node outline. Cards inherit this setting from `diagram.cards.default`. Set `icon.border`, `icon.borderWidth` and `icon.borderStyle` on the card for its icon tile. The tile uses the card's detail colour when you set a width and leave its border colour out. Use `icon.borderWidth: 0` to remove a tile outline. To change only the icon border colour on one surface, put `icon: { border: '…' }` under `color.surfaces.<name>.diagram.cards.<card>`.
 
-Run `deck brand check <name>` to validate the brand, and `deck brand <name>` to read the resolved diagram defaults.
+Run `deckster brand check <name>` to validate the brand, and `deckster brand <name>` to read the resolved diagram defaults.
 
 ## Where the controls apply
 

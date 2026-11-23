@@ -54,16 +54,16 @@ Only `decks/<deck>/deck.config.ts` and the slide files are required. Everything 
 
 ## How the CLI finds the workspace
 
-Every `deck` command works in one workspace folder, chosen in this order:
+Every `deckster` command works in one workspace folder, chosen in this order:
 
-1. `DECK_ROOT`, when it is set and not empty. Use it to run `deck` from outside the folder.
-2. The nearest folder at or above the current one that contains `decks/`. You can run `deck lint launch-review` from inside `decks/launch-review/slides/`.
-3. The current folder, when no folder above has `decks/`. That is how `deck new` starts a workspace in an empty folder.
+1. `DECK_ROOT`, when it is set and not empty. Use it to run `deckster` from outside the folder.
+2. The nearest folder at or above the current one that contains `decks/`. You can run `deckster lint launch-review` from inside `decks/launch-review/slides/`.
+3. The current folder, when no folder above has `decks/`. That is how `deckster new` starts a workspace in an empty folder.
 
 The CLI never picks your home folder or `/` on its own; it stops and asks you to make a project folder or set `DECK_ROOT`. When the workspace is not the current folder, it says which one it uses on standard error:
 
 ```console
-$ cd decks/launch-review && deck new slide launch-review risks
+$ cd decks/launch-review && deckster new slide launch-review risks
 Using the workspace /Users/you/talks
 decks/launch-review/slides/risks.mdx
 decks/launch-review/deck.config.ts
@@ -71,7 +71,7 @@ decks/launch-review/deck.config.ts
 
 ## A deck folder
 
-Each folder in `decks/` is one deck, named in kebab-case; commands take that name (`deck dev launch-review`).
+Each folder in `decks/` is one deck, named in kebab-case; commands take that name (`deckster dev launch-review`).
 
 | Path | What it holds |
 | --- | --- |
@@ -79,26 +79,26 @@ Each folder in `decks/` is one deck, named in kebab-case; commands take that nam
 | `slides/` | One `.mdx` or `.tsx` file per slide, named by its id. Only ids listed in `deck.config.ts` are slides; other files there are helpers. |
 | `assets/` | Pictures, video and other files a slide imports by relative path, such as `../assets/mark.svg`. |
 | `public/` | Files served as they are, next to the built deck. |
-| `apps/<name>/` | A mini app, made with `deck new app`, shown on a slide with `<AppFrame>` and built to `dist/apps/<name>/`. |
+| `apps/<name>/` | A mini app, made with `deckster new app`, shown on a slide with `<AppFrame>` and built to `dist/apps/<name>/`. |
 | `lib/`, `data/` or any other folder | Ordinary folders of code or data that slides import by relative path. deckster gives these names no meaning of their own. |
-| `.feedback/` | Review comments: one `<slide-id>.json` file per slide, plus the PNG screenshots comments carry, written by the dev server's comment mode and by `deck comments add`. See [Comments](/review/comments/). |
-| `dist/` | The static site `deck build` writes. |
+| `.feedback/` | Review comments: one `<slide-id>.json` file per slide, plus the PNG screenshots comments carry, written by the dev server's comment mode and by `deckster comments add`. See [Comments](/review/comments/). |
+| `dist/` | The static site `deckster build` writes. |
 
 A deck folder needs no `package.json`. Decks copied from the deckster repository bring one along with a `tsconfig.json`; delete both, or every slide fails to build.
 
-## How deck dev picks a deck
+## How deckster dev picks a deck
 
-`deck dev launch-review` opens that folder. Leave the name out and `deck dev` uses `DECK` if it is set and nonempty. With neither a name nor `DECK`, it opens the only deck in the workspace or offers a choice when there are several.
+`deckster dev launch-review` opens that folder. Leave the name out and `deckster dev` uses `DECK` if it is set and nonempty. With neither a name nor `DECK`, it opens the only deck in the workspace or offers a choice when there are several.
 
 ### Choose a deck in your browser
 
-New in v0.7.0. In a workspace with several decks, use `deck dev hello` to open the starter deck directly. [Browser chooser changelog](/project/changelog/#browser-deck-chooser).
+New in v0.7.0. In a workspace with several decks, use `deckster dev hello` to open the starter deck directly. [Browser chooser changelog](/project/changelog/#browser-deck-chooser).
 
-Run `deck dev` with no deck argument and with `DECK` unset or empty. One deck opens directly, and an empty workspace tells you to create one with `deck new <name>`. With several decks, including workspaces that have `hello`, open the **Deck chooser** URL the terminal prints.
+Run `deckster dev` with no deck argument and with `DECK` unset or empty. One deck opens directly, and an empty workspace tells you to create one with `deckster new <name>`. With several decks, including workspaces that have `hello`, open the **Deck chooser** URL the terminal prints.
 
 Pick a card by its deck title, folder name or a preview of its first visible slide. If a preview cannot render, you can still select the card by name. The chooser opens one deck at a time. Use **Back to decks** in the lower-right corner to pick another. If an agent is working in the deck, confirm before closing it or switching away. Refresh the chooser to see decks added or removed while it is running. If an older tab reports that the selected deck has changed, reload the chooser before trying again; it leaves the current deck open.
 
-`--port` sets the chooser's port, and the selected deck uses a separate port. With `--host`, another device can open the chooser URL using the computer's network IP in place of `127.0.0.1`, then click **Open deck** for the current deck. Select or switch decks on the computer running `deck dev`.
+`--port` sets the chooser's port, and the selected deck uses a separate port. With `--host`, another device can open the chooser URL using the computer's network IP in place of `127.0.0.1`, then click **Open deck** for the current deck. Select or switch decks on the computer running `deckster dev`.
 
 ## A brand folder
 
@@ -110,26 +110,26 @@ Generated files go to `.deck/` at the workspace root, one folder per deck inside
 
 | Folder | Written by | Holds |
 | --- | --- | --- |
-| `.deck/shots/<deck>/` | `deck shot` | PNGs named `02-results.png`, or `02-results.step1.png` with `--steps` |
-| `.deck/exports/<deck>/` | `deck export` | `<deck>.pdf`, `<deck>.pptx` and the `fonts/` the PPTX embeds |
-| `.deck/baseline/<deck>/` | `deck diff --save-baseline` | The pictures later diffs compare against |
-| `.deck/diff/<deck>/` | `deck diff` | The report, `index.html`, and its pictures |
-| `.deck/agent/<deck>/` | `deck dev --mcp` or `--agent` | `server.json` with the port and the per-run bearer token (mode 0600) while the server runs, and the working copies of agent turns; see [How a turn runs](/ai-agents/how-a-turn-runs/) |
+| `.deck/shots/<deck>/` | `deckster shot` | PNGs named `02-results.png`, or `02-results.step1.png` with `--steps` |
+| `.deck/exports/<deck>/` | `deckster export` | `<deck>.pdf`, `<deck>.pptx` and the `fonts/` the PPTX embeds |
+| `.deck/baseline/<deck>/` | `deckster diff --save-baseline` | The pictures later diffs compare against |
+| `.deck/diff/<deck>/` | `deckster diff` | The report, `index.html`, and its pictures |
+| `.deck/agent/<deck>/` | `deckster dev --mcp` or `--agent` | `server.json` with the port and the per-run bearer token (mode 0600) while the server runs, and the working copies of agent turns; see [How a turn runs](/ai-agents/how-a-turn-runs/) |
 | `.deck/chooser/previews/` | Deck chooser | Cached previews of the decks' opening slides |
-| `.deck/shell/` | `deck present` | The window positions (`windows.json`) and browser profile of the presenter app, and on macOS a branded copy of the Electron app (`app/`) |
-| `.deck/env.d.ts` | `deck types` | Type declarations for your editor |
+| `.deck/shell/` | `deckster present` | The window positions (`windows.json`) and browser profile of the presenter app, and on macOS a branded copy of the Electron app (`app/`) |
+| `.deck/env.d.ts` | `deckster types` | Type declarations for your editor |
 
 With `--brand <name>`, the shot, export, diff and baseline folders are named `<deck>@<name>`.
 
 ## `node_modules`, `package.json` and `tsconfig.json`
 
-- **`node_modules/`** appears the first time you run `deck dev` or `deck lint`: it holds Vite's cache in `node_modules/.vite/`. It also holds any package you install in the workspace.
-- **`package.json`** appears when you `npm install` something in the workspace, usually the font packages a copied brand needs (`deck brand check <name>` names them).
-- **`tsconfig.json`** and `.deck/env.d.ts` are written by `deck types`, so that your editor and `tsc` resolve `@deckster/*` imports. Settings you already have in `tsconfig.json` are kept. The paths point into your installed CLI, so run `deck types` again after upgrading `@deckster/cli`.
+- **`node_modules/`** appears the first time you run `deckster dev` or `deckster lint`: it holds Vite's cache in `node_modules/.vite/`. It also holds any package you install in the workspace.
+- **`package.json`** appears when you `npm install` something in the workspace, usually the font packages a copied brand needs (`deckster brand check <name>` names them).
+- **`tsconfig.json`** and `.deck/env.d.ts` are written by `deckster types`, so that your editor and `tsc` resolve `@deckster/*` imports. Settings you already have in `tsconfig.json` are kept. The paths point into your installed CLI, so run `deckster types` again after upgrading `@deckster/cli`.
 
 ## What to commit
 
-Commit `decks/`, including each deck's `.feedback/`, and `brands/`. Keep `.deck/` out of git: it holds generated files and, while a dev server with `--mcp` runs, its bearer token. Leave out `node_modules/`, each deck's `dist/` and a `site/` folder from `deck build --out site` too. `deck new` writes no `.gitignore`, so add one yourself:
+Commit `decks/`, including each deck's `.feedback/`, and `brands/`. Keep `.deck/` out of git: it holds generated files and, while a dev server with `--mcp` runs, its bearer token. Leave out `node_modules/`, each deck's `dist/` and a `site/` folder from `deckster build --out site` too. `deckster new` writes no `.gitignore`, so add one yourself:
 
 ```text
 .deck/

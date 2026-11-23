@@ -8,7 +8,7 @@ sidebar:
 The `dashboard` layout sets two to four small charts or number components under one takeaway title, each in a panel with its own heading: two side by side, three in a row, or four in a two-by-two grid. Use it when several measures together make one argument, such as an operating review.
 
 <Aside type="note" title="New in v0.6.0">
-The `dashboard` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "dashboard" layout.`
+The `dashboard` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "dashboard" layout.`
 </Aside>
 
 ## Example
@@ -42,16 +42,16 @@ Two panels leave room for full-height charts, and both highlight `2026`.
 - **Headings and components that do not match.** A different count of each is a `render-error`: the slide shows the message instead of its content. Three headings and two components:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/dashboard-count.mdx
     error   render-error (dashboard-count step 0): The slide shows an error instead of its content: Dashboard has 3 panel headings but 2 body components. Write one direct chart or number component per panel, in heading order.
-            Fix: Fix the error in decks/launch-review/slides/dashboard-count.mdx; `deck dev` shows it with its stack in the browser.
+            Fix: Fix the error in decks/launch-review/slides/dashboard-count.mdx; `deckster dev` shows it with its stack in the browser.
 
   launch-review: 1 error, 0 warnings in 1 slide (1 step checked).
   ```
 
 - **A heading that was fine for two panels.** In a row of three, "Warden cover, %, 2026" is a `schema` error: "panels[1].title: The dashboard layout sets at most 18 characters here (three or four panels), got 21."
-- **A chart with no unit.** `deck lint` warns with `chart-missing-unit` on each `<BarChart>` that has no `unit`, no currency or percent `format` and no caption: "`<BarChart>` shows values without a unit or a caption naming the measure."
+- **A chart with no unit.** `deckster lint` warns with `chart-missing-unit` on each `<BarChart>` that has no `unit`, no currency or percent `format` and no caption: "`<BarChart>` shows values without a unit or a caption naming the measure."
 
 ## Related layouts
 

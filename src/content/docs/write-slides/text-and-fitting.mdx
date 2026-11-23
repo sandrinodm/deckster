@@ -5,14 +5,14 @@ sidebar:
   order: 3
 ---
 
-Write slide text that fits the first time, and fix a slide whose text is too long, too small or cut off. You never set a font size: the layout picks it from the brand's type scale and steps it down when the content is long, and `deck lint` tells you when it still does not fit.
+Write slide text that fits the first time, and fix a slide whose text is too long, too small or cut off. You never set a font size: the layout picks it from the brand's type scale and steps it down when the content is long, and `deckster lint` tells you when it still does not fit.
 
 ## How slide text is sized
 
 Every slide is drawn on a 1920x1080 canvas and scaled to the screen, so sizes are canvas pixels. The brand's type scale names the sizes; the `default` brand's (the output goes on with spacing and surfaces, cut here):
 
 ```console
-$ deck brand default
+$ deckster brand default
 Default (brands/default/brand.ts)
 Fonts: display Bricolage Grotesque, body Inter, mono JetBrains Mono
 Type: display 160px, headline 80px, title 48px, lead 40px, body 36px, small 26px, caption 24px, label 22px, stat 184px, quote 84px, code 28px
@@ -58,10 +58,10 @@ A long and a short `statement` side by side:
 
 ## When text is too long anyway
 
-**Before rendering**, the build checks each layout's title limit and `deck lint` checks the slot budgets, in words, bullets and lines of code. A title over the limit stops the build:
+**Before rendering**, the build checks each layout's title limit and `deckster lint` checks the slot budgets, in words, bullets and lines of code. A title over the limit stops the build:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/risks.mdx
   error   schema (risks): title: The cards layout sets at most 60 characters, got 74.
           Fix: Shorten the title to the point itself and move detail into the body or the notes.
@@ -72,15 +72,15 @@ launch-review: 1 error, 0 warnings.
 and a slot over its budget is a `content-budget` error:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/claim.mdx
   error   content-budget (claim): The body slot holds 31 words; its layout allows 24.
-          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deckster layouts`).
 
 launch-review: 1 error, 0 warnings in 2 slides (2 steps checked).
 ```
 
-**After rendering**, `deck lint` measures every step of every slide:
+**After rendering**, `deckster lint` measures every step of every slide:
 
 | Rule | What it finds |
 | --- | --- |
@@ -94,7 +94,7 @@ All five are errors. How to read a finding and fix it is on [lint](/review/lint/
 
 ## Keep text short
 
-Write the title as the point, within the layout's limit (60 characters on `cards`, 48 on `code`; each layout's limit and budgets are on its page under [layouts](/reference/layouts/)). Make one point per slide and split a slide that makes two. Move detail into the notes, where the speaker can say it. When the content is a list or a comparison, pick a layout made for it from `deck layouts`.
+Write the title as the point, within the layout's limit (60 characters on `cards`, 48 on `code`; each layout's limit and budgets are on its page under [layouts](/reference/layouts/)). Make one point per slide and split a slide that makes two. Move detail into the notes, where the speaker can say it. When the content is a list or a comparison, pick a layout made for it from `deckster layouts`.
 
 ## Automatic typography
 

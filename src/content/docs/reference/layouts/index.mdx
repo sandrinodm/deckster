@@ -11,7 +11,7 @@ Pick a layout for what the slide needs to say or show. Set its name in frontmatt
 
 ## Choose a layout
 
-If your brand brings a template, run `deck layouts <deck> --summary` to see its layouts first. Use a brand layout if its fixed regions fit the slide's message and content. The kit layouts cover the other slides. [Brand layouts](/brands/brand-layouts/)
+If your brand brings a template, run `deckster layouts <deck> --summary` to see its layouts first. Use a brand layout if its fixed regions fit the slide's message and content. The kit layouts cover the other slides. [Brand layouts](/brands/brand-layouts/)
 
 | What the audience needs | Which layout to try |
 | --- | --- |
@@ -26,17 +26,17 @@ If your brand brings a template, run `deck layouts <deck> --summary` to see its 
 | Something to recall or practise | Use [`recap`](/reference/layouts/recap/) to leave two to four takeaways, [`quiz`](/reference/layouts/quiz/) to check an answer, or [`exercise`](/reference/layouts/exercise/) to give the audience a timed task. |
 | What to decide or do next | Use [`ask`](/reference/layouts/ask/) for one resource request with milestones, [`actions`](/reference/layouts/actions/) to name owners and due dates, or [`closing`](/reference/layouts/closing/) for the final takeaway and how to follow up. |
 
-Open the layout's page before writing the slide. Check the title limit, required fields, slot types and budgets. If the slide needs to carry two takeaways, give each its own slide. For a brand layout, start with its example from `deck layouts <deck> --json` and check which slots its regions bind in `layouts.ts`. [MDX body content in brand layouts](/brands/brand-layouts/#mdx-body-content)
+Open the layout's page before writing the slide. Check the title limit, required fields, slot types and budgets. If the slide needs to carry two takeaways, give each its own slide. For a brand layout, start with its example from `deckster layouts <deck> --json` and check which slots its regions bind in `layouts.ts`. [MDX body content in brand layouts](/brands/brand-layouts/#mdx-body-content)
 
 ## Visual catalog
 
 <Aside type="note" title="New in v0.6.0">
-Twenty layouts need `@deckster/cli` 0.6.0 or later: `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`. Each of their pages says so; in 0.5.0, `deck lint` reports `There is no "<name>" layout.` for a slide that names one.
+Twenty layouts need `@deckster/cli` 0.6.0 or later: `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`. Each of their pages says so; in 0.5.0, `deckster lint` reports `There is no "<name>" layout.` for a slide that names one.
 </Aside>
 
 Version 0.7.0 adds the 11 layouts in the first three groups under [Layouts by purpose](#layouts-by-purpose). See them alongside the new chart and demo components. [Presentation patterns](/examples/presentation-patterns/)
 
-The grid shows the kit layouts in Fieldnote, in the order that `deck layouts` prints them. Your deck applies its own brand when it renders the same slide source.
+The grid shows the kit layouts in Fieldnote, in the order that `deckster layouts` prints them. Your deck applies its own brand when it renders the same slide source.
 
 <LayoutIndex />
 
@@ -65,17 +65,17 @@ The groups follow the parts of the [lookbook](/examples/lookbook/) deck, which s
 Each layout page explains when to use the layout and shows a lookbook slide with the source file that made it. The reference entry lists the fields, slots and budgets to keep at hand while you author a slide.
 
 - **Frontmatter, surface, title.** The line to write, the surface the slide gets unless its frontmatter sets `surface`, and whether `title:` is required and how many characters it may have. "Optional" with no limit means the title names the slide in the outline and may not be shown.
-- **PowerPoint.** The PowerPoint slide layout `deck export --pptx` maps the slide to, so its title and body stay editable placeholders.
+- **PowerPoint.** The PowerPoint slide layout `deckster export --pptx` maps the slide to, so its title and body stay editable placeholders.
 - **Description.** What the layout is for and how it sets its content.
-- **Slots.** Each named region: the tag you write it with (`body` is the content outside any slot tag), what it accepts (text, bullets, an image, a component), and its budget in words, bullets or code lines. A `*` or a `required` mark means `deck lint` reports a `schema` error when the slot is empty. The budgets are the same in every brand; `deck lint` holds each slide to them.
+- **Slots.** Each named region: the tag you write it with (`body` is the content outside any slot tag), what it accepts (text, bullets, an image, a component), and its budget in words, bullets or code lines. A `*` or a `required` mark means `deckster lint` reports a `schema` error when the slot is empty. The budgets are the same in every brand; `deckster lint` holds each slide to them.
 - **Fields.** The layout's own frontmatter keys, with their default and allowed values. The keys every slide takes are on [slide frontmatter](/reference/slide-frontmatter/).
 - **Variants.** A variant applies when the slide matches its condition (a field set, a slot filled, a number of items), and tightens the budget it lists.
-- **Example.** A complete slide in that layout: `deck new slide <deck> <id> --layout <name>` writes this example as the new slide. It is the catalog's example, not the published slide under the page's own Example heading.
+- **Example.** A complete slide in that layout: `deckster new slide <deck> <id> --layout <name>` writes this example as the new slide. It is the catalog's example, not the published slide under the page's own Example heading.
 
-The same data comes from the CLI for the layouts your workspace has. `deck layouts <deck> --summary` prints one compact entry per layout:
+The same data comes from the CLI for the layouts your workspace has. `deckster layouts <deck> --summary` prints one compact entry per layout:
 
 ```console
-$ deck layouts launch-review --summary
+$ deckster layouts launch-review --summary
 default       surface default   title any
               One column of content under an accent rule, centred on the slide: a heading with a lead paragraph, or a heading with a short list.
               slots: body* heading/text/bullets/image/component 80 words 6 bullets
@@ -85,4 +85,4 @@ title         surface gradient  title <= 36
 ...
 ```
 
-The output above is cut after two layouts. `deck layouts <deck> --json` prints everything the reference entries show, for every layout.
+The output above is cut after two layouts. `deckster layouts <deck> --json` prints everything the reference entries show, for every layout.

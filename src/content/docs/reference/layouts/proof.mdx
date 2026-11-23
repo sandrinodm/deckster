@@ -32,7 +32,7 @@ Pick another layout when one half is missing:
 
 ## Common mistakes
 
-- **A long quote.** A 51-word quote fails [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 51 words; its layout allows 36." Keep the sentence that names the change and move the rest to the notes.
+- **A long quote.** A 51-word quote fails [`deckster lint`](/review/lint/) with `content-budget`: "The body slot holds 51 words; its layout allows 36." Keep the sentence that names the change and move the rest to the notes.
 - **A long title.** The title has a 52-character limit, checked before the slide renders: "title: The proof layout sets at most 52 characters, got 54." State the result, not the story.
 - **Numbers in the quote.** The figures belong in `metrics:`, each with `value`, `label` and optionally `from`, so the panel can set them large and show the before and after. Write the quote without them.
 - **Long figures.** A metric's `value` and `from` take at most 8 characters as text (`38%`, `$1.2M`, `11 days`), and its `label` at most 40. Put the unit in the value and what it measures in the label.

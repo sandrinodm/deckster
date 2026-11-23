@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-A PowerPoint file can look different in each app that opens it, and different again on a machine without the brand's fonts. `deck export --verify` checks the file for you before you send it. After this page you can run it, read its report per renderer, and decide whether to send the fonts or export with other options. How to export the file in the first place is on [PowerPoint](/export-and-publish/powerpoint/).
+A PowerPoint file can look different in each app that opens it, and different again on a machine without the brand's fonts. `deckster export --verify` checks the file for you before you send it. After this page you can run it, read its report per renderer, and decide whether to send the fonts or export with other options. How to export the file in the first place is on [PowerPoint](/export-and-publish/powerpoint/).
 
 ## What it checks
 
@@ -20,7 +20,7 @@ A PowerPoint file can look different in each app that opens it, and different ag
 2. Export with `--verify`:
 
    ```console
-   $ deck export launch-review --verify
+   $ deckster export launch-review --verify
    /Users/you/talks/.deck/exports/launch-review/launch-review.pptx (3 slides, hybrid mode, masters: default, gradient, fonts embedded: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Bricolage Deck Stat, Inter Deck Caption, Inter Deck Lead)
    /Users/you/talks/.deck/exports/launch-review/fonts: 6 static TrueType instance(s) in 6 families (Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Bricolage Deck Stat, Inter Deck Caption, Inter Deck Lead), cut from the brand fonts at the exact axes the deck uses and embedded in the PPTX; install them where an app ignores embedded fonts (Keynote, Google Slides, LibreOffice).
    Open XML SDK 3.3 validator (Microsoft 365 format): valid
@@ -46,7 +46,7 @@ A PowerPoint file can look different in each app that opens it, and different ag
 
 3. Open the `verify/` folder beside the PPTX, here `.deck/exports/launch-review/verify/`. Its pictures show each slide side by side with the web, with crops of the regions that differ, and `report.json` sits beside them.
 
-   Each side-by-side picture is one slide in one renderer: the web slide, the renderer's picture of the PPTX, and the difference between them. This one is the title slide of the `hello` deck, from `deck export hello --verify --renderer libreoffice`. The CLI writes the three panels in one row; here the difference panel is moved under the other two so the text stays readable:
+   Each side-by-side picture is one slide in one renderer: the web slide, the renderer's picture of the PPTX, and the difference between them. This one is the title slide of the `hello` deck, from `deckster export hello --verify --renderer libreoffice`. The CLI writes the three panels in one row; here the difference panel is moved under the other two so the text stays readable:
 
    <UiShot name="export-verify" alt="Three panels of the slide 'Hello, deck': 'web (Chromium)' and 'libreoffice' side by side, which look the same, and under them 'difference' with a similarity percentage, a pale grey copy with the outlines of the title and subtitle drawn in red where the two renders do not line up." />
 
@@ -65,4 +65,4 @@ Read it per renderer. Here, with the fonts installed, LibreOffice moved the titl
 
 Without `--strict`, `--verify` exits with 1 only when the validator finds errors or cannot run (for example, when Docker is not running). Regions that differ leave the exit code at 0, as in the run above.
 
-The full option list is in `deck export --help` and on the [CLI reference](/reference/cli/#cli-export).
+The full option list is in `deckster export --help` and on the [CLI reference](/reference/cli/#cli-export).

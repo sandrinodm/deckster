@@ -46,7 +46,7 @@ The [create-presentation skill](/ai-agents/skills/) writes notes this way and si
 `budget:` in the frontmatter is how long you plan to speak on the slide, in minutes and seconds: `30s`, `2m`, `1m30s`. Anything else fails the build:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/plan.mdx
   error   schema (plan): budget: Expected a duration such as "90s", "2m" or "1m30s", got "30 seconds".
           Fix: Write the speaking time as minutes and seconds, for example `budget: 90s` or `1m30s`.
@@ -54,7 +54,7 @@ decks/launch-review/slides/plan.mdx
 launch-review: 1 error, 0 warnings.
 ```
 
-The talk's length is `duration` in `deck.config.ts` (`deck new <deck> --duration 20m` writes it):
+The talk's length is `duration` in `deck.config.ts` (`deckster new <deck> --duration 20m` writes it):
 
 ```ts
 export default defineDeck({
@@ -69,10 +69,10 @@ export default defineDeck({
 
 **The presenter window** paces the talk against them, scaled to fit the `duration` when there is one, and leaves out hidden slides (new in 0.5.0). It needs at least one budget: a deck with a `duration` and no budgets shows No budgets, because the duration alone is not spread over the slides. [How pacing works](/present/presenter-tools-and-shortcuts/#how-pacing-works) explains the figures it shows.
 
-**`deck lint`** adds the budgets up. When they come to more than the deck's `duration`, `time-budget` is an error; without a `duration` the rule reports nothing. A [hidden slide](/write-slides/hidden-slides/) is not in the talk, so its budget is left out of the total (new in 0.5.0). A slide without notes is a `missing-notes` warning:
+**`deckster lint`** adds the budgets up. When they come to more than the deck's `duration`, `time-budget` is an error; without a `duration` the rule reports nothing. A [hidden slide](/write-slides/hidden-slides/) is not in the talk, so its budget is left out of the total (new in 0.5.0). A slide without notes is a `missing-notes` warning:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/plan.mdx
   warning missing-notes (plan): The slide has no speaker notes.
           Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
@@ -89,5 +89,5 @@ More on reading findings is on [lint](/review/lint/).
 ## Where notes show
 
 - In the presenter window, beside the current and next slide.
-- In the PDF, as a notes page (the slide with its notes) after the slides, with `deck export <deck> --notes`. See [PDF](/export-and-publish/pdf/).
+- In the PDF, as a notes page (the slide with its notes) after the slides, with `deckster export <deck> --notes`. See [PDF](/export-and-publish/pdf/).
 - In the PowerPoint export, as each slide's speaker notes.

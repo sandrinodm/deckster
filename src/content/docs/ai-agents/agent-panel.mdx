@@ -1,11 +1,11 @@
 ---
 title: "The agent panel"
-description: "Ask an agent to change a deck from inside deck dev."
+description: "Ask an agent to change a deck from inside deckster dev."
 sidebar:
   order: 2
 ---
 
-`deck dev <deck> --agent claude` (or `--agent codex`) adds a chat panel beside the slide. You ask for a change to the slide you are looking at, the agent edits the deck's content, the slide reloads, and every turn can be undone. The agent is the `claude` or `codex` CLI you installed, run on your machine with your own login: deckster bundles no model. This page gets the panel running and shows how to use it.
+`deckster dev <deck> --agent claude` (or `--agent codex`) adds a chat panel beside the slide. You ask for a change to the slide you are looking at, the agent edits the deck's content, the slide reloads, and every turn can be undone. The agent is the `claude` or `codex` CLI you installed, run on your machine with your own login: deckster bundles no model. This page gets the panel running and shows how to use it.
 
 ## Install and sign in to an agent CLI
 
@@ -35,7 +35,7 @@ Or set `CODEX_API_KEY` in the terminal that starts the deck.
 Then check both without starting a deck:
 
 ```console
-$ deck agent doctor
+$ deckster agent doctor
 Claude Code 2.1.326: signed in with claude.ai (max)
 Codex 0.169.0: signed in with ChatGPT
   Note: Codex 0.169.0 is installed; the adapter was tested with 0.167.x (recorded with 0.167.2). If turns fail, check the recorded transcripts against this version.
@@ -52,10 +52,10 @@ The doctor runs each CLI's version and sign-in check, never a turn, and never pr
 1. Start the deck with an agent:
 
    ```console
-   $ deck dev launch-review --agent codex --agent-panel bottom
+   $ deckster dev launch-review --agent codex --agent-panel bottom
      ➜  Local:   http://127.0.0.1:5173/
      MCP:     http://127.0.0.1:5173/__deck/mcp
-     Run `deck mcp launch-review` for the configuration of Claude Code and Codex.
+     Run `deckster mcp launch-review` for the configuration of Claude Code and Codex.
      Agent:   Codex 0.169.0: signed in with ChatGPT (panel bottom)
               Note: Codex 0.169.0 is installed; the adapter was tested with 0.167.x (recorded with 0.167.2). If turns fail, check the recorded transcripts against this version.
    ```
@@ -77,7 +77,7 @@ The flags:
 | `--agent-model <name>` | The model for the turns. Default: the CLI's own default (for Codex, the model in `$CODEX_HOME/config.toml`). |
 | `--agent-web` | Lets the agent search the web and read pages. Off by default. |
 
-`deck present <deck> --agent claude` puts the same panel in the [desktop window](/present/deck-present-and-displays/). The panel exists only with `--agent`, only in the audience window, and never in a build or an export. When the CLI is missing or signed out, the panel shows the fix; sign in in a terminal and press Retry on the failed turn, without restarting the deck.
+`deckster present <deck> --agent claude` puts the same panel in the [desktop window](/present/deck-present-and-displays/). The panel exists only with `--agent`, only in the audience window, and never in a build or an export. When the CLI is missing or signed out, the panel shows the fix; sign in in a terminal and press Retry on the failed turn, without restarting the deck.
 
 ## Ask for a change
 
@@ -120,4 +120,4 @@ Only the deck's content: `.mdx` and `.tsx` files in `slides/`, and images, video
 | Reads files with | its Read tool | shell commands, shown as "Read" |
 | How edits are limited | permission rules that allow edits only in the working copy | its sandbox, writable only in the working copy, with no network |
 
-Both get the same deck tools, resume the same conversation from turn to turn, and keep it when you restart `deck dev`.
+Both get the same deck tools, resume the same conversation from turn to turn, and keep it when you restart `deckster dev`.

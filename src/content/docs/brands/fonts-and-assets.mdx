@@ -5,7 +5,7 @@ sidebar:
   order: 6
 ---
 
-A brand ships its own typefaces, logos, icon set and image treatments. This page shows where each font can come from, how to install it in an npm workspace, how logo variants appear on each surface, and what `deck brand check` says when a file is missing.
+A brand ships its own typefaces, logos, icon set and image treatments. This page shows where each font can come from, how to install it in an npm workspace, how logo variants appear on each surface, and what `deckster brand check` says when a file is missing.
 
 ## Font sources
 
@@ -40,7 +40,7 @@ display: {
 A variable package (`@fontsource-variable/*`) loads one file set, `axes`. The default is `wght`. Fontsource's larger sets, `standard` and `full`, carry more axes, such as the `opsz` and `wdth` that `default` sets in its type scale. A variable package takes no `weights`. A static package (`@fontsource/*`) needs `weights`, and every weight the type scale uses must be one of them. Without a match, the check fails:
 
 ```console
-$ deck brand check nocturne
+$ deckster brand check nocturne
 brands/nocturne/brand.ts
   error   typography.scale.label.weight: Weight 500 (normal) is not loaded for IBM Plex Mono, so the browser would fake it.
           Fix: Load that weight and style in the family's source, or pick a loaded weight.
@@ -49,7 +49,7 @@ nocturne: cannot be used (1 error, 0 warnings).
 
 That run had `weights: [400]` where `nocturne` lists `[400, 500]`. Without `subsets`, a family loads `latin` and `latin-ext`.
 
-The CLI carries three packages: `@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono` and `@fontsource-variable/bricolage-grotesque`. Install any other package with `npm install <package>` in the workspace folder, the one with `decks/` and `brands/`. The brand's fonts resolve from there, and `npm install` creates a `package.json` if the folder has none. Until you do, `deck brand check` fails with `<package> is not installed for brands/<name>.` and prints the command. [Use a brand](/brands/use-a-brand/#add-a-published-brand) shows the full output.
+The CLI carries three packages: `@fontsource-variable/inter`, `@fontsource-variable/jetbrains-mono` and `@fontsource-variable/bricolage-grotesque`. Install any other package with `npm install <package>` in the workspace folder, the one with `decks/` and `brands/`. The brand's fonts resolve from there, and `npm install` creates a `package.json` if the folder has none. Until you do, `deckster brand check` fails with `<package> is not installed for brands/<name>.` and prints the command. [Use a brand](/brands/use-a-brand/#add-a-published-brand) shows the full output.
 
 ### Files, system and unavailable fonts
 
@@ -62,7 +62,7 @@ source: { kind: 'files', files: [{ path: 'fonts/acme-sans.woff2', weight: [100, 
 A file that isn't there fails the check:
 
 ```console
-$ deck brand check acme
+$ deckster brand check acme
 brands/acme/brand.ts
   error   typography.families.body.source.files[0].path: fonts/acme-sans.woff2 does not exist in brands/acme/.
           Fix: Put the font file itself (a .woff2, .woff, .ttf or .otf, not a link to a file elsewhere) in the brand folder, usually fonts/, or fix the path.
@@ -74,7 +74,7 @@ acme: cannot be used (1 error, 0 warnings).
 `unavailable` is for a commercial face whose files you don't have yet. The brand loads, and the check warns until you switch the family to `files`. With the `mono` family of a copy of `default` set to `source: { kind: 'unavailable', reason: 'Acme Mono is licensed; web font files not supplied yet.' }`:
 
 ```console
-$ deck brand check acme
+$ deckster brand check acme
 brands/acme/brand.ts
   warning typography.families.mono.source: JetBrains Mono has no font files (Acme Mono is licensed; web font files not supplied yet.), so text renders in "JetBrains Mono", ui-monospace, monospace.
           Fix: Add the licensed files to the brand's fonts/ folder and use `kind: "files"`.
@@ -83,10 +83,10 @@ acme: is valid (0 errors, 1 warning).
 
 ### Substitutes
 
-`substitute` is the installed family that exported documents fall back to where the brand font is neither embedded nor installed. PowerPoint writes it next to the brand font, and `deck export --fonts system` renders with it. Pick one of the same kind as the family: Arial for a sans, Georgia for a serif, Courier New for a mono. For a family the export doesn't know, give its `panose` (20 hex digits). The check judges the family's kind from its fallback stack and warns on a mismatch:
+`substitute` is the installed family that exported documents fall back to where the brand font is neither embedded nor installed. PowerPoint writes it next to the brand font, and `deckster export --fonts system` renders with it. Pick one of the same kind as the family: Arial for a sans, Georgia for a serif, Courier New for a mono. For a family the export doesn't know, give its `panose` (20 hex digits). The check judges the family's kind from its fallback stack and warns on a mismatch:
 
 ```console
-$ deck brand check acme
+$ deckster brand check acme
 brands/acme/brand.ts
   warning typography.families.display.substitute.family: "Georgia" is a serif family, but Bricolage Grotesque reads as sans.
           Fix: Pick a sans substitute, such as Arial.

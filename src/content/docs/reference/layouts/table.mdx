@@ -29,10 +29,10 @@ The `table` layout sets one table of exact values under a title that states the 
 
 ## Common mistakes
 
-- **A sentence above the table.** The body takes one table and nothing else; the takeaway goes in `title:` and the comment in `<Aside>`. `deck lint` reports text there with the `slot-content` rule:
+- **A sentence above the table.** The body takes one table and nothing else; the takeaway goes in `title:` and the comment in `<Aside>`. `deckster lint` reports text there with the `slot-content` rule:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/schedule.mdx
     error   slot-content (schedule): The body slot holds text; the table layout takes exactly one: table there.
             Fix: One table: a Markdown table or a kit <Table>, and nothing else. Write the takeaway in `title:`, and keep to about eight rows and five columns. Move the rest to another slide or slot.
@@ -42,7 +42,7 @@ The `table` layout sets one table of exact values under a title that states the 
 
 - **Two tables on one slide.** The same rule reports "The body slot holds 2 tables". Split them over two slides.
 - **A table too big to fit.** Once it would have to shrink below the brand's smallest type, `table-too-dense` reports "The table needs more room than the slide has, even set at the smallest type the brand allows", usually with `canvas-overflow` and `container-overflow` errors. Keep the rows and columns the title rests on, and put the full table in an appendix or handout.
-- **A highlight that matches no row.** `highlight: { row: Eastgatee }` on a table without that row passes `deck lint` without a finding. Copy the first cell exactly as written, or use the row's number, and look at the slide.
+- **A highlight that matches no row.** `highlight: { row: Eastgatee }` on a table without that row passes `deckster lint` without a finding. Copy the first cell exactly as written, or use the row's number, and look at the slide.
 
 ## Related layouts
 

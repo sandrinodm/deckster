@@ -34,7 +34,7 @@ Pick another layout as soon as one fits the content:
 
 ## Common mistakes
 
-- **Too many bullets.** Seven bullets fail [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 7 bullets; its layout allows 6." Merge two, or move to `content` and put the detail in its `<Aside>`.
+- **Too many bullets.** Seven bullets fail [`deckster lint`](/review/lint/) with `content-budget`: "The body slot holds 7 bullets; its layout allows 6." Merge two, or move to `content` and put the detail in its `<Aside>`.
 - **Layout fields from other layouts.** `eyebrow:` on a `default` slide is a `schema` error: `"eyebrow" is not a frontmatter field.` The fix lists the layouts that do have it. The keys every slide takes, such as `surface` and `budget`, still work; see [slide frontmatter](/reference/slide-frontmatter/).
 - **No heading.** `title:` names the slide in the outline but is not drawn. Without a `#` or `##` heading in the body, the slide has no visible heading.
 - **A run of default slides.** Three slides in a row on the same layout and surface give the `layout-repetition` warning. Its fix is to give one of them another layout or surface, or to merge slides that make the same point.

@@ -8,7 +8,7 @@ sidebar:
 The `exercise` layout sets a task for the audience: a title naming what to do, the duration as a large figure, two to five numbered instructions and a one-line output naming what to produce, with an optional line saying who works together. Use it for a workshop activity, a short practice task or a discussion that must end with something concrete, and leave it on screen while people work.
 
 <Aside type="note" title="New in v0.6.0">
-The `exercise` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "exercise" layout.`
+The `exercise` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "exercise" layout.`
 </Aside>
 
 ## Example
@@ -41,15 +41,15 @@ With two instructions and no `groups`, body or footnote, the instructions are se
 - **Long instructions in a long list.** The limit drops from 80 to 64 characters at four instructions, so a line that was fine in a list of three becomes a `schema` error:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/exercise-long.mdx
     error   schema (exercise-long): instructions[0]: The exercise layout sets at most 64 characters here (four or five instructions), got 71.
-            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+            Fix: Shorten it to the essentials; `deckster layouts --json` lists the limits of each variant.
 
   launch-review: 1 error, 0 warnings.
   ```
 
-- **Asking for `reveal: true`.** The exercise has no such field. `deck lint` reports a `schema` error: ``"reveal" is not a frontmatter field.`` and lists the layouts that have it.
+- **Asking for `reveal: true`.** The exercise has no such field. `deckster lint` reports a `schema` error: ``"reveal" is not a frontmatter field.`` and lists the layouts that have it.
 - **The task in the body.** The body is context, up to 14 words. Write each action as an item of `instructions:`.
 - **A single instruction.** The schema asks for at least two: "Expected at least 2 instructions".
 

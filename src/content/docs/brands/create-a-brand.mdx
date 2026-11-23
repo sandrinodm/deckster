@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-A brand is one file, `brands/<name>/brand.ts`, plus its logo and font files. This page takes you from a copy of the `default` brand to a brand of your own that passes `deck brand check` and renders your decks. It doubles as the checklist for reviewing a brand an agent wrote.
+A brand is one file, `brands/<name>/brand.ts`, plus its logo and font files. This page takes you from a copy of the `default` brand to a brand of your own that passes `deckster brand check` and renders your decks. It doubles as the checklist for reviewing a brand an agent wrote.
 
 ## What a brand file looks like
 
@@ -52,10 +52,10 @@ These steps make a brand called `acme` in a workspace called `talks`.
    rm brands/acme/package.json brands/acme/tsconfig.json
    ```
 
-3. Run `deck brand check acme`. The copy still calls itself `default`, and `name` must match the folder:
+3. Run `deckster brand check acme`. The copy still calls itself `default`, and `name` must match the folder:
 
    ```console
-   $ deck brand check acme
+   $ deckster brand check acme
    brands/acme/brand.ts
      error   name: The brand is named "default" but lives in brands/acme/.
              Fix: Set `name: "acme"`, or rename the folder to brands/default/.
@@ -65,19 +65,19 @@ These steps make a brand called `acme` in a workspace called `talks`.
 4. Set `name: 'acme'` and a `label`, the name people read. Check again:
 
    ```console
-   $ deck brand check acme
+   $ deckster brand check acme
    brands/acme/brand.ts
    acme: is valid (0 errors, 0 warnings).
    ```
 
-5. Replace the colours. Put your scales in `color.palette`, point the ten roles at them, and give the `inverse`, `accent` and `gradient` surfaces their own roles. You can also delete a surface and let the CLI derive it. Replace the `data` palettes too. [Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/) shows how each part works. Run `deck brand check acme` after each change. It checks contrast on every surface, and each fix names a colour that passes.
+5. Replace the colours. Put your scales in `color.palette`, point the ten roles at them, and give the `inverse`, `accent` and `gradient` surfaces their own roles. You can also delete a surface and let the CLI derive it. Replace the `data` palettes too. [Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/) shows how each part works. Run `deckster brand check acme` after each change. It checks contrast on every surface, and each fix names a colour that passes.
 
-6. Set the three font families and the type scale. The CLI carries Inter, JetBrains Mono and Bricolage Grotesque. A family from any other Fontsource package needs `npm install <package>` in the workspace folder, and `deck brand check` prints the exact command. [Fonts and assets](/brands/fonts-and-assets/) covers the other font sources and the `substitute` each family takes.
+6. Set the three font families and the type scale. The CLI carries Inter, JetBrains Mono and Bricolage Grotesque. A family from any other Fontsource package needs `npm install <package>` in the workspace folder, and `deckster brand check` prints the exact command. [Fonts and assets](/brands/fonts-and-assets/) covers the other font sources and the `substitute` each family takes.
 
 7. Replace the files in `logos/` and update each variant's `file` and `aspect` (its width divided by its height). A variant whose file is missing fails the check:
 
    ```console
-   $ deck brand check acme
+   $ deckster brand check acme
    brands/acme/brand.ts
      error   logo.variants.reversed.file: logos/mark-reversed.svg does not exist in brands/acme/.
              Fix: Put the logo itself (an SVG, PNG or WebP, not a link to a file elsewhere) in the brand folder, usually logos/, or fix the path.
@@ -91,23 +91,23 @@ These steps make a brand called `acme` in a workspace called `talks`.
 10. Look at the brand on a real deck, then render stills:
 
    ```sh
-   deck dev launch-review --brand acme
-   deck shot launch-review --brand acme
+   deckster dev launch-review --brand acme
+   deckster shot launch-review --brand acme
    ```
 
-   `deck shot` writes one PNG per slide to `.deck/shots/launch-review@acme/`. A deck with one slide per layout shows the most, so lint and shoot one with `--brand acme` before you call the brand done.
+   `deckster shot` writes one PNG per slide to `.deck/shots/launch-review@acme/`. A deck with one slide per layout shows the most, so lint and shoot one with `--brand acme` before you call the brand done.
 
-11. When it looks right, set `brand: 'acme'` in the deck's `deck.config.ts`, or start new decks with `deck new <deck> --brand acme`.
+11. When it looks right, set `brand: 'acme'` in the deck's `deck.config.ts`, or start new decks with `deckster new <deck> --brand acme`.
 
 </Steps>
 
 <Aside type="caution" title="Icon sets">
-`deck brand check` accepts any Iconify set name in `icons.set`, but the CLI reads icon data from the folder it's installed in, and 0.7.0 ships only `lucide` and `tabler`. With another set, such as `ph`, the first `<Icon>`, layout `icon` or diagram node `icon` makes `deck lint` and `deck dev` fail with `needs the "ph" icon set, which is not installed`. Installing `@iconify-json/ph` in the workspace doesn't fix it for a globally installed CLI. When the CLI is installed in the workspace, `npm install @iconify-json/ph` next to it makes `deck lint` pass.
+`deckster brand check` accepts any Iconify set name in `icons.set`, but the CLI reads icon data from the folder it's installed in, and 0.7.0 ships only `lucide` and `tabler`. With another set, such as `ph`, the first `<Icon>`, layout `icon` or diagram node `icon` makes `deckster lint` and `deckster dev` fail with `needs the "ph" icon set, which is not installed`. Installing `@iconify-json/ph` in the workspace doesn't fix it for a globally installed CLI. When the CLI is installed in the workspace, `npm install @iconify-json/ph` next to it makes `deckster lint` pass.
 </Aside>
 
 ## What stops a brand from loading
 
-A brand that fails its checks doesn't load. `deck dev`, `build`, `shot` and `lint` stop and print the brand file, the field and the fix. The checks run in stages, and you see every problem from the first stage that finds one:
+A brand that fails its checks doesn't load. `deckster dev`, `build`, `shot` and `lint` stop and print the brand file, the field and the fix. The checks run in stages, and you see every problem from the first stage that finds one:
 
 - **Schema:** a missing field, a value out of range, or an unknown field (the fix names the nearest valid one).
 - **References:** a palette step, gradient, surface, logo variant, image treatment, easing, duration, font weight or diagram card that the brand uses but doesn't define.

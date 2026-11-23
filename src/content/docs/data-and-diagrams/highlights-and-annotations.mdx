@@ -21,7 +21,7 @@ A chart on a slide has a few seconds to make its point, so it should show the au
 <LineChart data={tickets} x="month" y="2026" highlight={{ range: ['Jun', 'Sep'] }} />
 ```
 
-A chart that draws three or more series, or six or more categories, and highlights nothing gets `chart-no-highlight` from `deck lint`, checked on the slide's last step; `<BigNumber>`, `<Pictogram>`, `<Heatmap>` and `<Sparkline>` are exempt. `<Heatmap>` and `<Table>` take their own highlight (a cell, row or column to outline or mark), and `<Sparkline>` takes `last`, `max` or `min`; [the chart reference](/reference/charts/) has each one.
+A chart that draws three or more series, or six or more categories, and highlights nothing gets `chart-no-highlight` from `deckster lint`, checked on the slide's last step; `<BigNumber>`, `<Pictogram>`, `<Heatmap>` and `<Sparkline>` are exempt. `<Heatmap>` and `<Table>` take their own highlight (a cell, row or column to outline or mark), and `<Sparkline>` takes `last`, `max` or `min`; [the chart reference](/reference/charts/) has each one.
 
 ## Annotate the chart
 
@@ -48,14 +48,14 @@ This `<AreaChart>` uses three of them:
 
 ## Labels or a legend
 
-Charts label the marks themselves: line ends, bar tips, slices. On `<BarChart>`, `<LineChart>` and `<AreaChart>`, `labels` chooses which values are written: `auto` (the default) labels every value when there are few enough to read, and drops the value axis, else only the highlighted ones; `all`, `highlight`, `ends` and `none` do what they say. A legend appears only where direct labels cannot name the series, as on grouped and stacked bars; `legend` forces it on or off. When a legend shows where direct labels would do, `deck lint` warns with `chart-legend-avoidable`.
+Charts label the marks themselves: line ends, bar tips, slices. On `<BarChart>`, `<LineChart>` and `<AreaChart>`, `labels` chooses which values are written: `auto` (the default) labels every value when there are few enough to read, and drops the value axis, else only the highlighted ones; `all`, `highlight`, `ends` and `none` do what they say. A legend appears only where direct labels cannot name the series, as on grouped and stacked bars; `legend` forces it on or off. When a legend shows where direct labels would do, `deckster lint` warns with `chart-legend-avoidable`.
 
 ## Keep the axis honest
 
 Bars and areas start at zero. A `<BarChart>` with `min` above zero is an error unless you also set `truncate`, which draws an axis break across every bar, the value axis and an "Axis starts at" note:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/truncated.mdx
   error   chart-truncated-axis (truncated): <BarChart> sets `min` above zero; bars start at zero, so the chart draws from zero.
           Fix: In decks/launch-review/slides/truncated.mdx, remove `min`, or show the values with a <LineChart> or dots, which may zoom. Add `truncate` only if the cut is essential: the chart then draws an axis break.
@@ -113,11 +113,11 @@ The same pattern on another slide; the bracket has no `label`, so it writes the 
 />
 ```
 
-Here the four bars arrive on steps 1 to 4, and on step 5 Billing keeps its colour while the others go grey, under a reference line at 30%. The last step is the complete chart, which static mode, `deck shot` and every export show. Write a `[click]` cue in the speaker notes for each step, so the talk and the build stay in order; [Builds](/write-slides/builds/) covers steps across a slide.
+Here the four bars arrive on steps 1 to 4, and on step 5 Billing keeps its colour while the others go grey, under a reference line at 30%. The last step is the complete chart, which static mode, `deckster shot` and every export show. Write a `[click]` cue in the speaker notes for each step, so the talk and the build stay in order; [Builds](/write-slides/builds/) covers steps across a slide.
 
 ## What lint checks
 
-`deck lint` renders every step and reports these chart rules ([lint rules](/reference/lint-rules/#charts) has them all):
+`deckster lint` renders every step and reports these chart rules ([lint rules](/reference/lint-rules/#charts) has them all):
 
 | Rule | Severity | Reports |
 | --- | --- | --- |

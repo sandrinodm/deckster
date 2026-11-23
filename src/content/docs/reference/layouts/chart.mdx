@@ -15,7 +15,7 @@ The title carries the number the bars prove (9.4 stops an hour), the `caption` n
 
 ## When to use it
 
-- **One figure carries the point.** The body slot is required and holds one chart, number or table component: `<BarChart>`, `<LineChart>`, `<Slope>`, `<Waterfall>`, `<BigNumber>`, `<Table>` and the rest that `deck charts` lists.
+- **One figure carries the point.** The body slot is required and holds one chart, number or table component: `<BarChart>`, `<LineChart>`, `<Slope>`, `<Waterfall>`, `<BigNumber>`, `<Table>` and the rest that `deckster charts` lists.
 - **The title is the takeaway.** It takes up to 90 characters, enough for a sentence with its number: "Tickets fell 40% after the redesign", not "Tickets by month".
 - **The reason fits in a few words.** An `<Aside>` takes up to 36 words: the base budget is 40, and filling the aside switches on the "with aside" variant, which narrows it to 36. A `<Footnote>` takes up to 30 words; the chart's own `source` prop works too.
 - **The data can sit in the frontmatter.** List datasets by name under `data:`, and name one from the chart with `data="name"`; inline rows and imported JSON or CSV files work too.
@@ -31,12 +31,12 @@ When the chart needs a paragraph beside it, use [`split`](/reference/layouts/spl
 **A topic for a title, and too much aside.** This slide names its subject instead of its finding and explains the gap at length:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/stops.mdx
   warning chart-topic-title (stops): "Canopy cover by district" looks like a topic, not a takeaway (a heuristic: it reads as "X by Y").
           Fix: State what the chart shows in the title of decks/launch-review/slides/stops.mdx, with the number when there is one: "Billing tickets doubled in Q3", not "Tickets by queue". Put the measure and period in the chart's `caption`.
   error   content-budget (stops): The aside slot holds 43 words; its layout allows 36 (with aside).
-          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deckster layouts`).
 
 launch-review: 1 error, 1 warning in 1 slide (1 step checked).
 ```

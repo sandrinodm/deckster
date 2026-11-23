@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Every running deck, in `deck dev` and in a build, carries its own presenting tools: a slide sidebar, an overview, go-to, blackout, a laser pointer and a presenter window with notes and a pacing timer. This page shows each tool and the keys you use while presenting from a browser. For a desktop window on a second display, see [deck present and displays](/present/deck-present-and-displays/).
+Every running deck, in `deckster dev` and in a build, carries its own presenting tools: a slide sidebar, an overview, go-to, blackout, a laser pointer and a presenter window with notes and a pacing timer. This page shows each tool and the keys you use while presenting from a browser. For a desktop window on a second display, see [deckster present and displays](/present/deck-present-and-displays/).
 
 ## The tool cluster
 
@@ -17,14 +17,14 @@ Move the pointer to the bottom-left corner of the slide and a row of small icon 
 | Overview | `o` | everywhere |
 | Presenter window | `p` | everywhere |
 | Fullscreen | `f` | everywhere |
-| Displays | none | only in the `deck present` window |
+| Displays | none | only in the `deckster present` window |
 | Keyboard shortcuts | `?` | everywhere |
-| Comment mode | `c` | `deck dev` and `deck present` without `--built`, after a divider |
+| Comment mode | `c` | `deckster dev` and `deckster present` without `--built`, after a divider |
 | Agent | `a` | with `--agent` |
 
 A built deck has five: Slide sidebar, Overview, Presenter window, Fullscreen and Keyboard shortcuts.
 
-<UiShot name="tools-detail" alt="Close up of the bottom-left corner of a slide in deck dev: a rounded bar of six outline icons for the slide sidebar, overview, presenter window, fullscreen and keyboard shortcuts, then a divider and a speech bubble for comment mode." />
+<UiShot name="tools-detail" alt="Close up of the bottom-left corner of a slide in deckster dev: a rounded bar of six outline icons for the slide sidebar, overview, presenter window, fullscreen and keyboard shortcuts, then a divider and a speech bubble for comment mode." />
 
 ## Keys while presenting
 
@@ -51,7 +51,7 @@ A key pressed with Ctrl, Alt or Meta is left to the browser. Next, previous, Hom
 
 <UiShot name="sidebar" alt="The slide sidebar is open on the left with thumbnails of slides 14 to 19, each with its number, title and time budget; slide 17 is outlined in red." />
 
-In `deck dev` you can also drag a thumbnail to reorder the slides, and the dev server writes the new order into `deck.config.ts`. A build has no server to write to, so dragging is dev only.
+In `deckster dev` you can also drag a thumbnail to reorder the slides, and the dev server writes the new order into `deck.config.ts`. A build has no server to write to, so dragging is dev only.
 
 `o` opens the overview, the whole deck as a grid: the arrow keys move, Enter opens the selected slide, Escape closes. A slide that builds shows its step count.
 

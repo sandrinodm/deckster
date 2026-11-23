@@ -36,7 +36,7 @@ Pick another layout when the slide is about more than one person or about what t
 
 ## Common mistakes
 
-- **Too many facts.** A fourth bullet fails [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 4 bullets; its layout allows 3." Keep the best three, or turn them into one sentence of at most 28 words.
+- **Too many facts.** A fourth bullet fails [`deckster lint`](/review/lint/) with `content-budget`: "The body slot holds 4 bullets; its layout allows 3." Keep the best three, or turn them into one sentence of at most 28 words.
 - **A third contact.** `contacts:` takes at most two entries. A third is a `schema` error before the slide renders: "contacts: Expected at most 2 contacts, got a list of 3 items." Each contact needs `label` (up to 16 characters) and `text` (up to 40); `href` is optional and makes it a link.
 - **Expecting `title:` on the slide.** The name is the heading. Write the person's name in `name:` (up to 32 characters) and use `title:` for how the slide reads in the outline, such as "Who is speaking".
 - **A face cropped off.** The portrait is cropped to a tall frame, keeping the centre of the upper third unless you say otherwise. When the face sits elsewhere, set `focal:` as a CSS position, such as `focal: 40% 20%`.
@@ -50,4 +50,4 @@ Pick another layout when the slide is about more than one person or about what t
 - [`title`](/reference/layouts/title/): the cover that comes before the bio, with the presenter in `byline:`.
 - [`persona`](/reference/layouts/persona/): a user persona from research, with a portrait, a quotation, goals and frustrations.
 
-How paths in `photo:` resolve, and what `deck lint` checks about images, is on [media](/write-slides/media/).
+How paths in `photo:` resolve, and what `deckster lint` checks about images, is on [media](/write-slides/media/).

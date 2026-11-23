@@ -112,14 +112,14 @@ Exports show a slide's last step, so every slide must read whole. Reveal what th
 The opposite mistake has a lint rule. `few-builds` warns when a deck has 4 or more chart, diagram and code slides and fewer than 25% of them build in steps:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/deck.config.ts
   warning few-builds: 0 of 4 chart, diagram and code slides build in steps; these show everything at once: routes, auth, limits, deploy.
-          Fix: Stage the figures the notes walk through, in the order the notes explain them: `reveal` or `at` on a chart and its highlight and annotations, `at` on diagram nodes and edges or a <Journey>, step ranges on a code fence (```ts {2-4|7}), and a [click] cue in the notes for each step. Check the order with `deck shot <deck> <slide> --steps`.
+          Fix: Stage the figures the notes walk through, in the order the notes explain them: `reveal` or `at` on a chart and its highlight and annotations, `at` on diagram nodes and edges or a <Journey>, step ranges on a code fence (```ts {2-4|7}), and a [click] cue in the notes for each step. Check the order with `deckster shot <deck> <slide> --steps`.
 
 launch-review: 0 errors, 1 warning in 4 slides (4 steps checked).
 ```
 
 ## Where nothing moves
 
-Static mode, `deck shot` and exports show each step's end state, and every revealed step at full strength: nothing recedes. So do the slide copies in thumbnails and the presenter's panes. Viewers who ask for reduced motion get a fade for every effect, and a PowerPoint export turns each step into a fade on click. To move a whole slide or carry an element to the next one, see [transitions and morphs](/write-slides/transitions-and-morphs/). Every prop of `<Step>` is on [components](/reference/components/#props-Step).
+Static mode, `deckster shot` and exports show each step's end state, and every revealed step at full strength: nothing recedes. So do the slide copies in thumbnails and the presenter's panes. Viewers who ask for reduced motion get a fade for every effect, and a PowerPoint export turns each step into a fade on click. To move a whole slide or carry an element to the next one, see [transitions and morphs](/write-slides/transitions-and-morphs/). Every prop of `<Step>` is on [components](/reference/components/#props-Step).

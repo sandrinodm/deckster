@@ -26,18 +26,18 @@ You need Node.js 26 or later. You do not need to install pnpm 12.16.1 yourself: 
    ```console
    $ pnpm dev hello
    ...
-   $ deck dev hello
+   $ deckster dev hello
      ➜  Local:   http://localhost:5173/
      ➜  press h + enter to show help
    ```
 
-   `pnpm dev` is a script for `deck dev`, and pnpm echoes it as `$ deck dev hello`. When the workspace has changed since the last install, pnpm first runs an install and prints its progress (cut here as `...`). Type `q` and press Enter, or press Ctrl+C, to stop it.
+   `pnpm dev` is a script for `deckster dev`, and pnpm echoes it as `$ deckster dev hello`. When the workspace has changed since the last install, pnpm first runs an install and prints its progress (cut here as `...`). Type `q` and press Enter, or press Ctrl+C, to stop it.
 
-3. Run the two longer decks with `pnpm deck`, which runs the repository's own `deck` CLI:
+3. Run the two longer decks with `pnpm deck`, which runs the repository's own `deckster` CLI:
 
    ```sh
-   pnpm deck dev showcase      # a 45-slide talk about deckster
-   pnpm deck dev lookbook      # every layout, option, chart, diagram and component
+   pnpm deckster dev showcase      # a 45-slide talk about deckster
+   pnpm deckster dev lookbook      # every layout, option, chart, diagram and component
    ```
 
    [Showcase](/examples/showcase/) and [Lookbook](/examples/lookbook/) say what is in each.
@@ -51,7 +51,7 @@ You need Node.js 26 or later. You do not need to install pnpm 12.16.1 yourself: 
    Then check a deck:
 
    ```console
-   $ pnpm deck lint hello
+   $ pnpm deckster lint hello
    decks/hello/slides/closing.mdx
      warning missing-notes (closing): The slide has no speaker notes.
              Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
@@ -59,13 +59,13 @@ You need Node.js 26 or later. You do not need to install pnpm 12.16.1 yourself: 
    hello: 0 errors, 1 warning in 4 slides (8 steps checked).
    ```
 
-5. For `deck present`, download Electron's binary once (about 120 MB). `pnpm install` does not:
+5. For `deckster present`, download Electron's binary once (about 120 MB). `pnpm install` does not:
 
    ```sh
    pnpm --filter @deckster/shell exec install-electron
    ```
 
-   Until you do, `pnpm deck present` stops and prints this command, and says that `--browser` presents in Chrome instead.
+   Until you do, `pnpm deckster present` stops and prints this command, and says that `--browser` presents in Chrome instead.
 
 </Steps>
 
@@ -73,22 +73,22 @@ You need Node.js 26 or later. You do not need to install pnpm 12.16.1 yourself: 
 
 | | npm CLI | Clone |
 | --- | --- | --- |
-| Command | `deck lint hello` | `pnpm deck lint hello` |
+| Command | `deckster lint hello` | `pnpm deckster lint hello` |
 | Workspace | Your folder with `decks/` | The repository root |
 | Output | `.deck/` in your workspace | `.deck/` at the repository root |
 | Brands | `default` only | `default`, `nocturne`, `fieldnote`, `kinetic`, `tidewater` in `brands/` |
 | Decks | Only the ones you make or copy | `hello`, `showcase`, `lookbook` and six test decks in `decks/` |
-| `deck new <deck>` | Writes `deck.config.ts` and one slide | Also writes `package.json` and `tsconfig.json` |
+| `deckster new <deck>` | Writes `deck.config.ts` and one slide | Also writes `package.json` and `tsconfig.json` |
 
 Every deck folder in the clone is a workspace package (`@deckster/deck-<name>`), so a new deck has to be linked by `pnpm install`, and the CLI tells you to run it:
 
 ```console
-$ pnpm deck new launch-review --title "Launch review"
+$ pnpm deckster new launch-review --title "Launch review"
 decks/launch-review/package.json
 decks/launch-review/tsconfig.json
 decks/launch-review/deck.config.ts
 decks/launch-review/slides/title.mdx
-Next: run `pnpm install` to link decks/launch-review, then `pnpm deck dev launch-review`.
+Next: run `pnpm install` to link decks/launch-review, then `pnpm deckster dev launch-review`.
 ```
 
 pnpm 12 may also run the install for you before the next `pnpm` command, because the workspace changed. Those two extra files are also why a deck copied out of the repository into an npm workspace must lose them: they point into the monorepo.
@@ -100,7 +100,7 @@ The six test decks (`layouts`, `components`, `data-stories`, `diagrams-demo`, `e
 The pages on this site describe `@deckster/cli` 0.8.0. A clone of `main` can be ahead of that release, and a feature you find there may not be in the npm package yet. Check what you have:
 
 ```console
-$ pnpm deck --version
+$ pnpm deckster --version
 0.8.0
 ```
 

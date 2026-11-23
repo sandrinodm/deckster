@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-A brand can bring slide layouts of its own: the slides of an organisation's template, such as a cover with a mark in one corner or a photo that runs off the edge. They live in `brands/<name>/layouts.ts`, next to `brand.ts`. This page shows you how to find a brand's layouts, put one on a slide, what happens when the deck moves to a brand without it, and how to write `layouts.ts` for a brand of your own so it passes `deck brand check`.
+A brand can bring slide layouts of its own: the slides of an organisation's template, such as a cover with a mark in one corner or a photo that runs off the edge. They live in `brands/<name>/layouts.ts`, next to `brand.ts`. This page shows you how to find a brand's layouts, put one on a slide, what happens when the deck moves to a brand without it, and how to write `layouts.ts` for a brand of your own so it passes `deckster brand check`.
 
 <Aside type="note" title="New in v0.6.0">
 Brand layouts need `@deckster/cli` 0.6.0 or later. 0.5.0 ignores `layouts.ts`, and a slide that names one of its layouts fails with `layout: There is no "fieldnote-section" layout.`
@@ -26,10 +26,10 @@ Of the five published brands, `fieldnote` brings four layouts; `default`, `noctu
 | `fieldnote-photo` | Fieldnote photo right | [`image`](/reference/layouts/image/) | `default` |
 | `fieldnote-columns` | Fieldnote two columns | [`content`](/reference/layouts/content/) | `default` |
 
-`deck brand <name>` names a brand's layouts on its `Layouts:` line (`Layouts: 4 (fieldnote-cover, fieldnote-section, fieldnote-photo, fieldnote-columns)`), and `deck layouts` lists them with the kit's. With `--summary`, the brand's layouts come first, under a heading that names the brand, each with the layout it falls back to. `--brand <name>` lists another brand's layouts than the deck's:
+`deckster brand <name>` names a brand's layouts on its `Layouts:` line (`Layouts: 4 (fieldnote-cover, fieldnote-section, fieldnote-photo, fieldnote-columns)`), and `deckster layouts` lists them with the kit's. With `--summary`, the brand's layouts come first, under a heading that names the brand, each with the layout it falls back to. `--brand <name>` lists another brand's layouts than the deck's:
 
 ```console
-$ deck layouts launch-review --brand fieldnote --summary
+$ deckster layouts launch-review --brand fieldnote --summary
 Layouts from the fieldnote brand (prefer these):
 fieldnote-cover    surface inverse  title <= 36
                    A cover with a notebook margin rule down the left and a sprig mark top right: eyebrow, title, subtitle, byline and date set against the rule.
@@ -73,10 +73,10 @@ These steps use `fieldnote` in a workspace called `talks` with a deck called `la
    });
    ```
 
-2. Add a slide in the layout. `deck new slide` takes a brand layout like any other:
+2. Add a slide in the layout. `deckster new slide` takes a brand layout like any other:
 
    ```console
-   $ deck new slide launch-review part-one --layout fieldnote-section
+   $ deckster new slide launch-review part-one --layout fieldnote-section
    decks/launch-review/slides/part-one.mdx
    decks/launch-review/deck.config.ts
    ```
@@ -100,7 +100,7 @@ These steps use `fieldnote` in a workspace called `talks` with a deck called `la
 3. Lint the deck:
 
    ```console
-   $ deck lint launch-review
+   $ deckster lint launch-review
    launch-review: no problems in 2 slides (2 steps checked).
    ```
 
@@ -112,21 +112,21 @@ The layout's boxes stay fixed as the text steps down to fit them. Kit layouts ad
 
 ### MDX body content
 
-Content outside named slot tags fills `body`. To see whether a brand layout draws that content, look for a region with `bind: { slot: 'body' }` in `layouts.ts`. You can also use the example from `deck layouts <deck> --json` as a starting point. The catalog includes a generic `slots.body` entry even for layouts with no body region. For example, a cover can bind a title and a byline without drawing a body.
+Content outside named slot tags fills `body`. To see whether a brand layout draws that content, look for a region with `bind: { slot: 'body' }` in `layouts.ts`. You can also use the example from `deckster layouts <deck> --json` as a starting point. The catalog includes a generic `slots.body` entry even for layouts with no body region. For example, a cover can bind a title and a byline without drawing a body.
 
 <Aside type="note" title="New in v0.8.0">
-  The build reports MDX slide content outside named slots when a brand layout has no body region. The same check runs during `deck lint`. Speaker notes, Markdown definitions, and MDX comments still work on a slide with no body region. Move the content into a supported named slot, choose another layout, or add a region with `bind: { slot: 'body' }` when the fallback offers that slot. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
+  The build reports MDX slide content outside named slots when a brand layout has no body region. The same check runs during `deckster lint`. Speaker notes, Markdown definitions, and MDX comments still work on a slide with no body region. Move the content into a supported named slot, choose another layout, or add a region with `bind: { slot: 'body' }` when the fallback offers that slot. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
 </Aside>
 
 ## In another brand: the fallback
 
-A deck can be rendered in another brand without an edit (see [use a brand](/brands/use-a-brand/#render-a-deck-in-another-brand)). A slide on a layout the other brand lacks renders with the layout's fallback, and `deck lint` reports `brand-layout-fallback`, a warning, for each such slide:
+A deck can be rendered in another brand without an edit (see [use a brand](/brands/use-a-brand/#render-a-deck-in-another-brand)). A slide on a layout the other brand lacks renders with the layout's fallback, and `deckster lint` reports `brand-layout-fallback`, a warning, for each such slide:
 
 ```console
-$ deck lint launch-review --brand default
+$ deckster lint launch-review --brand default
 decks/launch-review/slides/part-one.mdx
   warning brand-layout-fallback (part-one): The slide names the layout "fieldnote-section" of the "fieldnote" brand, which this deck's brand does not have, so it renders with the section layout.
-          Fix: Switch the deck back to that brand, or pick a layout from `deck layouts launch-review` and set it in the slide's frontmatter.
+          Fix: Switch the deck back to that brand, or pick a layout from `deckster layouts launch-review` and set it in the slide's frontmatter.
 
 launch-review: 0 errors, 1 warning in 2 slides (2 steps checked).
 ```
@@ -160,7 +160,7 @@ export default defineBrandLayouts([
 ```
 
 <Aside type="note" title="New in v0.8.0">
-  Deckster reads `layouts.ts` as static data for the active brand as well as for fallback lookup. If your workspace builds the array with variables, spreads or helper functions, put the final values directly inside `defineBrandLayouts([...])`, then run `deck brand check <name>`. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
+  Deckster reads `layouts.ts` as static data for the active brand as well as for fallback lookup. If your workspace builds the array with variables, spreads or helper functions, put the final values directly inside `defineBrandLayouts([...])`, then run `deckster brand check <name>`. [PR #31](https://github.com/sandrinodm/deckster/pull/31)
 </Aside>
 
 Every box is `[x, y, width, height]` in pixels on the 1920x1080 canvas, measured from its top-left corner. A file holds up to 64 layouts. Each layout has the following fields.
@@ -169,7 +169,7 @@ Every box is `[x, y, width, height]` in pixels on the 1920x1080 canvas, measured
 | --- | --- |
 | `name` | Required. Kebab-case and unique in the file. It cannot be the name of a kit or engine layout: prefix it with the brand, as in `fieldnote-section`. |
 | `label` | The layout's name in the source template. A PowerPoint export names the slide layout after it. |
-| `description` | Required. When to use it; `deck layouts` prints it. |
+| `description` | Required. When to use it; `deckster layouts` prints it. |
 | `fallback` | Required. The kit or engine layout a deck on another brand renders the slide with. It also sets which slots and fields the layout may take. |
 | `surface` | The surface a slide on the layout gets unless its frontmatter sets one; without it, the fallback's. |
 | `title` | Required. `{ box, type?, align?, anchor?, color? }`, or `false` for no title, which a fallback that requires one refuses. `type` is a type step (`title` by default), `color` a role, `align` `start`, `center` or `end` across the box (`start` by default), and `anchor` the same down it (`end` by default). |
@@ -185,10 +185,10 @@ The art is made of the same background layers as a surface's `background` (`imag
 
 ## Check it
 
-`deck brand check <name>` checks `layouts.ts` after `brand.ts` and names it on its own line when the brand has one. Each problem has its path in the file and a fix. Here a layout takes a kit layout's name, and another binds a slot its fallback does not have:
+`deckster brand check <name>` checks `layouts.ts` after `brand.ts` and names it on its own line when the brand has one. Each problem has its path in the file and a fix. Here a layout takes a kit layout's name, and another binds a slot its fallback does not have:
 
 ```console
-$ deck brand check fieldnote
+$ deckster brand check fieldnote
 brands/fieldnote/brand.ts
 brands/fieldnote/layouts.ts
   error   layouts[2].name: The layout name "quote" is already a layout of the kit or the engine.
@@ -200,14 +200,14 @@ fieldnote: cannot be used (2 errors, 0 warnings).
 
 The other errors: a fallback that is not a kit or engine layout; a field in `fields` the fallback lacks; a slot or field the fallback requires that the layout does not take; a field bound to a text region that is not a string or a number; no title when the fallback requires one; a budget for a slot no region binds, or `maxLines` for a slot of prose; two layouts with one name; a slot or field bound twice; a box outside the canvas or smaller than 40x40 pixels; a surface, type step, role, treatment or gradient the brand does not have; and a layout with no title and no regions. Text boxes that overlap are a warning, and so is a media region on a slot that takes no pictures, or a text region on one that takes only pictures. A brand with errors in `layouts.ts` cannot be used, like one with errors in `brand.ts`; [check a brand](/brands/check-a-brand/) covers the rest of the check.
 
-**New in v0.7.0.** When someone installs your brand with `deck brand add`, the importer runs the catalog checks before publishing it. See [Layout checks during installation](/brands/check-a-brand/#layout-checks-during-installation).
+**New in v0.7.0.** When someone installs your brand with `deckster brand add`, the importer runs the catalog checks before publishing it. See [Layout checks during installation](/brands/check-a-brand/#layout-checks-during-installation).
 
 ## In PowerPoint
 
-`deck export --pptx` writes each brand layout the deck uses as a PowerPoint slide layout named after its `label`, such as `Fieldnote section`. The text stays editable on the template's layout, and the first media region bound to a slot becomes a picture placeholder. The exporter places the art once in the slide layout. The dry run counts it.
+`deckster export --pptx` writes each brand layout the deck uses as a PowerPoint slide layout named after its `label`, such as `Fieldnote section`. The text stays editable on the template's layout, and the first media region bound to a slot becomes a picture placeholder. The exporter places the art once in the slide layout. The dry run counts it.
 
 ```console
-$ deck export launch-review --pptx --dry-run
+$ deckster export launch-review --pptx --dry-run
 PPTX dry run (hybrid mode): native / picture / simplified / dropped
 01 title [title]: 4 / 0 / 0 / 0
 02 part-one [fieldnote-section, art in layout: 1]: 6 / 0 / 0 / 0

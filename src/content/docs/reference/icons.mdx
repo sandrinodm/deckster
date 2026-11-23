@@ -9,10 +9,10 @@ Use this page to find an icon name that works on your slides. The grid below lis
 
 ## Where icon names go
 
-An icon name goes in three places: `<Icon name="rocket" />` on a slide (see [media](/write-slides/media/)), the `icon` field of a layout that has one, and the `icon` prop of a diagram node. A name the brand's set does not have fails the build, and `deck lint` reports it with the closest names:
+An icon name goes in three places: `<Icon name="rocket" />` on a slide (see [media](/write-slides/media/)), the `icon` field of a layout that has one, and the `icon` prop of a diagram node. A name the brand's set does not have fails the build, and `deckster lint` reports it with the closest names:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/claim.mdx
   error   schema (claim): Line 6, column 22: <Icon name="rocket-ship"> is not an icon of the lucide set.
           Fix: Closest names in the lucide set: rocket. Browse the set at https://icon-sets.iconify.design/lucide/. A deck that renders in several brands needs a name that every brand's set has.
@@ -36,10 +36,10 @@ Switching a deck to a brand with another set can turn a working name into a buil
 
 ## Search your own workspace
 
-`deck icons` lists the names shared by every brand your workspace has. In a workspace with only the `default` brand that ships with the CLI, that is every Lucide name:
+`deckster icons` lists the names shared by every brand your workspace has. In a workspace with only the `default` brand that ships with the CLI, that is every Lucide name:
 
 ```console
-$ deck icons --search arrow-right
+$ deckster icons --search arrow-right
 15 icon names matching "arrow-right" in every one of: default (lucide)
 Sets: lucide
 

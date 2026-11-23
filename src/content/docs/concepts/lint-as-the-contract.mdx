@@ -1,23 +1,23 @@
 ---
 title: "Lint as the contract"
-description: "Why deck lint defines a finished slide and what it checks."
+description: "Why deckster lint defines a finished slide and what it checks."
 sidebar:
   order: 5
 ---
 
-In deckster, a slide is finished when `deck lint` reports no errors on it: not when it compiles, and not when an agent says it is done. This page explains why, and what kinds of problem lint catches, so you can decide how far to trust slides an agent wrote. [Lint](/review/lint/) covers running it and the fixes, and [lint rules](/reference/lint-rules/) lists every rule.
+In deckster, a slide is finished when `deckster lint` reports no errors on it: not when it compiles, and not when an agent says it is done. This page explains why, and what kinds of problem lint catches, so you can decide how far to trust slides an agent wrote. [Lint](/review/lint/) covers running it and the fixes, and [lint rules](/reference/lint-rules/) lists every rule.
 
 ## An agent cannot see its slides
 
 An agent writes slide files as text and never sees the result. A slide can pass every check the build runs and still show a title cut off at the edge, a list spilling out of its column, grey text on a grey photo, or a colour the brand doesn't have. Without a check it can run, the agent can't tell a good slide from a broken one, and you become the check, one screenshot at a time.
 
-`deck lint` is that check: a command with an exit code and a fix for each finding, so an agent can run it, fix what it reports and run it again without a person. [Before and after a fix](/review/lint/#before-and-after-a-fix) shows one slide of nine wrapped bullets that compiles but runs off the canvas, its four lint errors, and the clean run once it is cut to three.
+`deckster lint` is that check: a command with an exit code and a fix for each finding, so an agent can run it, fix what it reports and run it again without a person. [Before and after a fix](/review/lint/#before-and-after-a-fix) shows one slide of nine wrapped bullets that compiles but runs off the canvas, its four lint errors, and the clean run once it is cut to three.
 
 ## Three phases, on the rendered slide
 
-A schema check reads the source. `deck lint` also renders it:
+A schema check reads the source. `deckster lint` also renders it:
 
-1. **Schema.** The deck config, the brand and every slide file go through the same checks as `deck build`, each problem with its file and fix. If a file fails, lint stops here, because the deck can't render.
+1. **Schema.** The deck config, the brand and every slide file go through the same checks as `deckster build`, each problem with its file and fix. If a file fails, lint stops here, because the deck can't render.
 2. **Rendered.** The deck opens in Chromium in [static mode](/concepts/static-mode-and-readiness/), and every step of every slide is measured: the boxes, the text, the colours, the images.
 3. **Deck.** Rules run over the whole deck, such as the order of layouts.
 
@@ -36,10 +36,10 @@ Elements marked `aria-hidden="true"` or `data-decorative` are skipped by the ove
 
 ## Errors and warnings
 
-An error is something wrong on the slide: clipped, unreadable, off-brand or over budget. Any error makes `deck lint` exit non-zero, and the slide isn't finished. A warning is a judgement call, such as a missing note, a dense diagram or a chart title that reads like a topic: read it and decide. A deck with warnings only passes:
+An error is something wrong on the slide: clipped, unreadable, off-brand or over budget. Any error makes `deckster lint` exit non-zero, and the slide isn't finished. A warning is a judgement call, such as a missing note, a dense diagram or a chart title that reads like a topic: read it and decide. A deck with warnings only passes:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/why-now.mdx
   warning missing-notes (why-now): The slide has no speaker notes.
           Fix: Add a `<Notes>` block saying what the slide proves and what to say, in a sentence or two.
@@ -51,12 +51,12 @@ $ echo $?
 
 ## Where pictures fit
 
-Lint measures; it doesn't judge taste, such as whether the chart makes the point or the photo suits the talk. For that someone has to look. `deck shot` renders any slide, or every step of it, to a PNG that you can open or an agent can read. The two go together in each round of review:
+Lint measures; it doesn't judge taste, such as whether the chart makes the point or the photo suits the talk. For that someone has to look. `deckster shot` renders any slide, or every step of it, to a PNG that you can open or an agent can read. The two go together in each round of review:
 
-<Diagram name="review-loop" alt="A review cycle runs Write (deck dev), Lint (deck lint), Shot (deck shot), Diff (deck diff), Comment (c in deck dev, saved with file:line:column in .feedback/<slide>.json) and Fix (deck comments --json, then resolve), with deck lint warning open-comments in the middle." />
+<Diagram name="review-loop" alt="A review cycle runs Write (deckster dev), Lint (deckster lint), Shot (deckster shot), Diff (deckster diff), Comment (c in deckster dev, saved with file:line:column in .feedback/<slide>.json) and Fix (deckster comments --json, then resolve), with deckster lint warning open-comments in the middle." />
 
-`deck lint` also warns with `open-comments` while a slide has open review comments. [Screenshots](/review/screenshots/) covers `deck shot`.
+`deckster lint` also warns with `open-comments` while a slide has open review comments. [Screenshots](/review/screenshots/) covers `deckster shot`.
 
 ## How agents use it
 
-An agent connected to `deck dev --mcp` runs lint through the `deck_lint` tool ([MCP tools](/ai-agents/mcp-tools/)). In the [agent panel](/ai-agents/agent-panel/), deckster lints the slides each turn touched. When the turn left new errors, one automatic fix turn follows, labelled Auto-fix. Findings that were there before the turn are listed apart and don't count against it.
+An agent connected to `deckster dev --mcp` runs lint through the `deck_lint` tool ([MCP tools](/ai-agents/mcp-tools/)). In the [agent panel](/ai-agents/agent-panel/), deckster lints the slides each turn touched. When the turn left new errors, one automatic fix turn follows, labelled Auto-fix. Findings that were there before the turn are listed apart and don't count against it.

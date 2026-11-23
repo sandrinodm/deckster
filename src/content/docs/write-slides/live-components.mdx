@@ -38,7 +38,7 @@ Click the counter and press the arrow keys.
 | --- | --- |
 | `component` | The component to host. Or write the widget as children instead; not both. |
 | `props` | The props passed to `component`. |
-| `poster` | What static mode, `deck shot` and exports show instead of the widget: an image path, or a function that renders it and gets the slide's `step`. |
+| `poster` | What static mode, `deckster shot` and exports show instead of the widget: an image path, or a function that renders it and gets the slide's `step`. |
 | `alt` | The poster image's alt text. |
 | `label` | What the region is called to assistive technology. |
 | `mount` | `adjacent` (default) mounts the widget as soon as its slide is on the stage, so it is ready on arrival; `active` mounts it only while its slide is on screen. |
@@ -55,7 +55,7 @@ The widget runs inside an error boundary. If it throws while rendering, the regi
 
 ## Posters, screenshots and exports
 
-Static mode, `deck shot`, `deck lint` and exports draw the `poster` and never mount the widget. Without a poster, the widget itself renders there, which is right only for a widget with no timers, fetches or randomness. Nothing in `deck lint` asks for a `<Live>` poster, so give one to every widget that changes on its own. More on what static mode draws is on [static mode and readiness](/concepts/static-mode-and-readiness/).
+Static mode, `deckster shot`, `deckster lint` and exports draw the `poster` and never mount the widget. Without a poster, the widget itself renders there, which is right only for a widget with no timers, fetches or randomness. Nothing in `deckster lint` asks for a `<Live>` poster, so give one to every widget that changes on its own. More on what static mode draws is on [static mode and readiness](/concepts/static-mode-and-readiness/).
 
 A poster as a function draws the widget's opening state with the same markup, so the still matches the live widget:
 
