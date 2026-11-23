@@ -19,9 +19,8 @@ pnpm deckster lint lookbook
 pnpm deckster lint lookbook --brand nocturne
 ```
 
-The deck has 204 slides and 427 steps in 12 parts. The slide budgets add up to 142 minutes 20
-seconds within the 147-minute runtime. The fictional forty-minute launch talk selects slides
-from the lookbook.
+The deck has 208 slides and 435 steps in 12 parts. The slide budgets add up to 144 minutes within
+the 149-minute runtime. The fictional forty-minute launch talk selects slides from the lookbook.
 
 ## Parts
 

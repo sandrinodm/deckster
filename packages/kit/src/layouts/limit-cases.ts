@@ -142,6 +142,7 @@ import {
   PICTURE_CAPTION_MAX_CHARS_IN_FOUR,
 } from '#layouts/gallery-layout.contract.ts';
 import { IMAGE_TEXT_PLACES } from '#layouts/image-layout.contract.ts';
+import { IMAGE_REVEAL_DOCKS, IMAGE_REVEAL_FITS } from '#layouts/image-reveal-layout.contract.ts';
 import {
   CONTACT_LABEL_MAX_CHARS,
   CONTACT_TEXT_MAX_CHARS,
@@ -2078,6 +2079,22 @@ export const LIMIT_CASES: Readonly<Record<string, readonly LimitCase[]>> = {
     frontmatter: { text },
     filled: ['media', 'caption'],
   })),
+
+  /**
+   * Both dock edges and fits at the longest title, eyebrow and subtitle, including centred copy.
+   */
+  'image-reveal': IMAGE_REVEAL_DOCKS.flatMap((dock) =>
+    IMAGE_REVEAL_FITS.map((fit) => ({
+      name: `${dock}-${fit}`,
+      frontmatter: {
+        dock,
+        fit,
+        align: dock === 'top' ? 'center' : 'left',
+        barSurface: dock === 'top' ? 'inverse' : 'default',
+      },
+      filled: ['media'],
+    })),
+  ),
 
   /**
    * Two, three and four pictures with the longest descriptions and captions, half of them shown
