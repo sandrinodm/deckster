@@ -53,7 +53,7 @@ workflow:
    so a run started by hand on another branch, or on a commit whose CI failed, builds nothing.
 2. Checks out `docs-site` into `docs-site/`.
 3. Installs the workspace with pnpm and Node 26, Chromium, Electron's binary
-   (`pnpm --filter @deckster/shell exec install-electron`) with Xvfb and the libraries Electron
+   (`pnpm deckster electron install`) with Xvfb and the libraries Electron
    links, and builds the LibreOffice Docker image that `deckster export --verify` renders with
    (`pnpm --filter @deckster/export prepare:verify`).
 4. Runs `npm ci` in `docs-site/`, then `npm run check:briefs`, which fails while a page still

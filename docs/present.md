@@ -21,12 +21,13 @@ Deckster stops the command.
 
 ```sh
 pnpm install
-pnpm --filter @deckster/shell exec install-electron   # downloads the binary, once
+pnpm deckster electron install   # downloads the binary, once
 pnpm deckster present hello
 ```
 
-Electron's binary is not part of `pnpm install`: since Electron 42 it downloads on first use or with
-`install-electron`. It is about 121 MB to download and 380 MB on disk (258 MB extracted, 128 MB in
+Electron's binary is not part of `pnpm install` (or of `npm install --global @deckster/cli`, whose
+package manager usually skips the download): `deckster electron install` fetches it, `deckster electron
+status` shows what is there, and `deckster electron update` fetches the version a newer CLI needs. It is about 121 MB to download and 380 MB on disk (258 MB extracted, 128 MB in
 Electron's cache). The CLI never imports `electron`; it reads `node_modules/electron/path.txt` and
 starts the binary itself, so a missing binary is an error with the fix, never a download in the
 middle of a command.

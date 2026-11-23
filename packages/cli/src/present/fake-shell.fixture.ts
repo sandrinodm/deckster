@@ -135,7 +135,7 @@ export function fakeShell(options: FakeShellOptions = {}): FakeShell {
     started.push(startOptions);
     if (options.binaryMissing === true) {
       return yield* shellError(
-        "Electron's binary is not downloaded (fake). Run `pnpm --filter @deckster/shell exec install-electron`, or pass --browser.",
+        "Electron's binary is not downloaded (fake). Run `deckster electron install`, or pass --browser.",
       );
     }
 

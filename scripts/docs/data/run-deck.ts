@@ -20,7 +20,7 @@ const PACKED_BIN = path.join('packages', 'cli', 'dist', 'deckster.js');
  * The command `deckster present --help` names only in the repository's wording; the packed CLI,
  * worded for an npm install, never prints it.
  */
-const REPOSITORY_WORDING = 'pnpm --filter @deckster/shell exec install-electron';
+const REPOSITORY_WORDING = 'pnpm deckster electron install';
 
 /**
  * How to start one `deckster`: a program and the arguments that come before the command line.

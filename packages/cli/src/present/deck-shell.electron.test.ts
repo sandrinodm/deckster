@@ -110,7 +110,7 @@ const PAGE = `<!doctype html><title>Tiny deck</title><body style="background:#12
 
 /**
  * Whether Electron's binary is downloaded; every test here is skipped without it, so the suite
- * passes on a machine that never ran `install-electron`.
+ * passes on a machine that never ran `deckster electron install`.
  */
 const binary = await Effect.runPromise(
   resolveShellBinary(FRAMEWORK_ROOT).pipe(Effect.provide(NodeServices.layer), Effect.option),

@@ -19,7 +19,7 @@ describe('checkInstalledWording', () => {
         const error = yield* Effect.flip(
           checkInstalledWording({ executable: DECK_BIN, prefix: [] }, REPO_ROOT),
         );
-        expect(error.message).toContain('install-electron');
+        expect(error.message).toContain('pnpm deckster electron install');
       }).pipe(Effect.provide(NodeServices.layer)),
     HELP_TIMEOUT_MS,
   );

@@ -6,7 +6,21 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { fakeToolSpawner, writeFakeElectron } from '#present/fake-electron.fixture.ts';
-import { INSTALL_ELECTRON_COMMAND, resolveShellBinary } from '#present/shell-binary.ts';
+import { resolveShellBinary } from '#present/shell-binary.ts';
+
+/**
+ * The part of the missing-binary message that names the download command.
+ */
+const INSTALL_HINT = 'electron install`';
+
+/**
+ * Writes the `package.json` every real `electron` package folder has.
+ *
+ * @param fs - The file system.
+ * @param dir - The package folder.
+ */
+const writeManifest = (fs: FileSystem.FileSystem, dir: string) =>
+  fs.writeFileString(path.join(dir, 'package.json'), '{"name":"electron","version":"45.3.2"}');
 
 describe('resolveShellBinary', () => {
   layer(NodeServices.layer)((it) => {
@@ -17,11 +31,12 @@ describe('resolveShellBinary', () => {
           directory: os.tmpdir(),
           prefix: 'deck-electron-',
         });
+        yield* writeManifest(fs, dir);
         const error = yield* Effect.flip(resolveShellBinary(dir, dir));
         expect(error._tag).toBe('ShellError');
-        expect(error.message).toContain(INSTALL_ELECTRON_COMMAND);
+        expect(error.message).toContain(INSTALL_HINT);
         expect(error.message).toContain('--browser');
-        expect(error.message).toContain(path.join(dir, 'dist'));
+        expect(error.message).toContain('Electron 45.3.2 is not downloaded');
       }).pipe(Effect.scoped),
     );
 
@@ -36,8 +51,9 @@ describe('resolveShellBinary', () => {
           path.join(dir, 'path.txt'),
           'Electron.app/Contents/MacOS/Electron',
         );
+        yield* writeManifest(fs, dir);
         const error = yield* Effect.flip(resolveShellBinary(dir, dir));
-        expect(error.message).toContain(INSTALL_ELECTRON_COMMAND);
+        expect(error.message).toContain(INSTALL_HINT);
       }).pipe(Effect.scoped),
     );
 
@@ -51,6 +67,7 @@ describe('resolveShellBinary', () => {
         yield* fs.makeDirectory(path.join(dir, 'dist'), { recursive: true });
         yield* fs.writeFileString(path.join(dir, 'dist', 'electron-fake'), '');
         yield* fs.writeFileString(path.join(dir, 'path.txt'), 'electron-fake');
+        yield* writeManifest(fs, dir);
         const binary = yield* resolveShellBinary(dir, dir);
         expect(path.basename(binary.executable)).toBe('electron-fake');
         expect(binary.branded).toBe(false);
@@ -90,7 +107,7 @@ describe('resolveShellBinary', () => {
       Effect.gen(function* () {
         const result = yield* Effect.result(resolveShellBinary(FRAMEWORK_ROOT));
         if (result._tag === 'Failure') {
-          expect(result.failure.message).toContain(INSTALL_ELECTRON_COMMAND);
+          expect(result.failure.message).toContain(INSTALL_HINT);
         } else {
           expect(result.success.executable).toMatch(/Deckster|Electron/);
         }
