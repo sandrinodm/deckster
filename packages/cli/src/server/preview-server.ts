@@ -87,7 +87,7 @@ function servePreview(
       preview: {
         port: options.port,
         strictPort: options.port !== undefined,
-        host: chooser === undefined ? options.host : '127.0.0.1',
+        host: options.host && chooser === undefined ? true : '127.0.0.1',
       },
       ...(chooser === undefined || chooser.desktop === true
         ? {}

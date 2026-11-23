@@ -6,6 +6,7 @@ import { AGENT_ARG_OPTIONS, readAgentFlags } from '#agent/agent-flag-options.ts'
 import { chooseInteractiveDeck } from '#chooser/deck-choice.ts';
 import { EXIT_OK, type Command } from '#command.ts';
 import { parseCommandArgs, readBrandName, readPort } from '#parse-command-args.ts';
+import { registerDevServer } from '#server/dev-registry.ts';
 import { startDevServer } from '#server/dev-server.ts';
 import { awaitShutdown, bindQuitKey, requestShutdown } from '#server/shutdown.ts';
 import { Workspace } from '#workspace.ts';
@@ -63,10 +64,12 @@ export const run: Command['run'] = Effect.fn('deck.dev')(function* (argv) {
         };
       }),
     });
+    yield* registerDevServer(workspaceRoot, { url });
     yield* bindQuitKey;
     yield* Console.log(`  Deck chooser: ${url}`);
   } else {
-    const { server } = yield* startDevServer({ ...options, deck });
+    const { server, url } = yield* startDevServer({ ...options, deck });
+    yield* registerDevServer(workspaceRoot, { url, deck });
     // Vite's default q exits before the command's scoped cleanup runs.
     server.bindCLIShortcuts({
       print: true,

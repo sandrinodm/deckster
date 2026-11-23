@@ -1,3 +1,4 @@
+import { FRAMEWORK_ROOT } from '@deckster/brand/node';
 import { describe, expect, it } from '@effect/vitest';
 import { Effect, Fiber } from 'effect';
 import fs from 'node:fs';
@@ -103,7 +104,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
         presenter: true,
         presenterDisplay: undefined,
       });
-      expect(opened?.url).toMatch(/^http:\/\/localhost:5641\//);
+      expect(opened?.url).toMatch(/^http:\/\/127\.0\.0\.1:5641\//);
       expect(opened?.title).toBe('Hello, deck');
       expect(opened?.backgroundColor).toMatch(/^#[0-9a-f]{6}$/i);
       expect(opened?.stateFile).toMatch(/\.deck\/shell\/windows\.json$/);
@@ -112,7 +113,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
       expect(fake.started[0]).not.toHaveProperty('url');
       expect(fake.quits.count).toBe(1);
       expect(run.output).toContain('Window open on display 1, presenter on display 0');
-      expect(yield* Effect.promise(() => answers('http://localhost:5641/'))).toBe(false);
+      expect(yield* Effect.promise(() => answers('http://127.0.0.1:5641/'))).toBe(false);
     }),
   );
 
@@ -123,12 +124,12 @@ describe('deckster present', { timeout: 30_000 }, () => {
         closeImmediately: true,
         onRelease: () =>
           Effect.promise(async () => {
-            seen.push(await answers('http://localhost:5642/'));
+            seen.push(await answers('http://127.0.0.1:5642/'));
           }),
       });
       yield* runCaptured(['present', 'hello', '--port', '5642'], { shell: fake.layer });
       expect(seen).toEqual([true]);
-      expect(yield* Effect.promise(() => answers('http://localhost:5642/'))).toBe(false);
+      expect(yield* Effect.promise(() => answers('http://127.0.0.1:5642/'))).toBe(false);
     }),
   );
 
@@ -138,7 +139,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
       const fake = fakeShell({
         onRelease: () =>
           Effect.promise(async () => {
-            seen.push(await answers('http://localhost:5643/'));
+            seen.push(await answers('http://127.0.0.1:5643/'));
           }),
       });
       const fiber = yield* Effect.forkChild(
@@ -148,7 +149,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
       yield* Effect.sleep('200 millis');
       yield* Fiber.interrupt(fiber);
       expect(seen).toEqual([true]);
-      expect(yield* Effect.promise(() => answers('http://localhost:5643/'))).toBe(false);
+      expect(yield* Effect.promise(() => answers('http://127.0.0.1:5643/'))).toBe(false);
     }),
   );
 
@@ -159,7 +160,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
         runCaptured(['present', 'hello', '--port', '5644'], { shell: fake.layer }),
       );
       expect(error.message).toContain('start-up timeout');
-      expect(yield* Effect.promise(() => answers('http://localhost:5644/'))).toBe(false);
+      expect(yield* Effect.promise(() => answers('http://127.0.0.1:5644/'))).toBe(false);
     }),
   );
 
@@ -176,7 +177,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
         expect(fake.started).toHaveLength(1);
         expect(fake.opened).toEqual([]);
         expect(fake.browserOpened).toEqual([]);
-        expect(yield* Effect.promise(() => answers('http://localhost:5645/'))).toBe(false);
+        expect(yield* Effect.promise(() => answers('http://127.0.0.1:5645/'))).toBe(false);
       }),
   );
 
@@ -190,6 +191,33 @@ describe('deckster present', { timeout: 30_000 }, () => {
       expect(fake.started.map((options) => options.stateKey)).toEqual(['no-such-deck']);
       expect(fake.opened).toEqual([]);
       expect(fake.quits.count).toBe(1);
+    }),
+  );
+
+  it.live('serves on a random 127.0.0.1 port and warns about a running dev server', () =>
+    Effect.gen(function* () {
+      const root = scratchWorkspace('deck-present-dev-running-');
+      fs.cpSync(path.join(FRAMEWORK_ROOT, 'decks', 'hello'), path.join(root, 'decks', 'hello'), {
+        recursive: true,
+      });
+      const records = path.join(root, '.deck', 'dev-servers');
+      fs.mkdirSync(records, { recursive: true });
+      fs.writeFileSync(
+        path.join(records, `${process.ppid}.json`),
+        JSON.stringify({ pid: process.ppid, url: 'http://127.0.0.1:5173/', deck: 'hello' }),
+      );
+      const fake = fakeShell({ closeImmediately: true });
+      const run = yield* runCaptured(['present', 'hello'], { root, shell: fake.layer }).pipe(
+        Effect.ensuring(Effect.sync(() => fs.rmSync(root, { recursive: true, force: true }))),
+      );
+      expect(run.code).toBe(0);
+      expect(run.output).toContain(
+        `Warning: a dev server for "hello" is still running at http://127.0.0.1:5173/ (process ${process.ppid}).`,
+      );
+      const url = new URL(fake.opened[0]?.url ?? '');
+      expect(url.hostname).toBe('127.0.0.1');
+      expect(Number(url.port)).toBeGreaterThan(0);
+      expect(url.port).not.toBe('5173');
     }),
   );
 
@@ -254,7 +282,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
       yield* until(() => fake.opened.length > 0);
       yield* Fiber.interrupt(fiber);
       expect(fake.quits.count).toBe(1);
-      expect(yield* Effect.promise(() => answers('http://localhost:5652/'))).toBe(false);
+      expect(yield* Effect.promise(() => answers('http://127.0.0.1:5652/'))).toBe(false);
     }),
   );
 
@@ -266,7 +294,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
       );
       expect(error.message).toContain('exited with code 1');
       expect(fake.quits.count).toBe(1);
-      expect(yield* Effect.promise(() => answers('http://localhost:5649/'))).toBe(false);
+      expect(yield* Effect.promise(() => answers('http://127.0.0.1:5649/'))).toBe(false);
     }),
   );
 
@@ -279,7 +307,7 @@ describe('deckster present', { timeout: 30_000 }, () => {
       yield* until(() => fake.browserOpened.length > 0);
       yield* Fiber.interrupt(fiber);
       expect(fake.browserOpened.map((opened) => opened.url)).toEqual([
-        expect.stringMatching(/^http:\/\/localhost:5646\//),
+        expect.stringMatching(/^http:\/\/127\.0\.0\.1:5646\//),
       ]);
       expect(fake.opened).toEqual([]);
       expect(fake.started).toEqual([]);
