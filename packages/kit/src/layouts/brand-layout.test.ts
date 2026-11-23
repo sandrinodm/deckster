@@ -454,19 +454,29 @@ describe('brandLayoutCatalog', () => {
   });
 });
 
+/**
+ * Room for the first import of the whole runtime (every layout, chart, diagram and component),
+ * which alone takes about 5 s on a cold CI runner.
+ */
+const RUNTIME_IMPORT_TIMEOUT_MS = 60_000;
+
 describe('the runtime plugin', () => {
-  it('registers the brand layouts after the kit layouts, under the catalog names', async () => {
-    const { default: runtime } = await import('#runtime.ts');
-    const registered = (runtime.layouts ?? []).map((layout) => layout.name);
-    const catalogNames = [
-      ...BASE.map((contract) => contract.name),
-      ...brandLayoutCatalog(
-        { name: 'fixture', layouts: FIXTURE_LAYOUTS } as unknown as BrandTokens,
-        BASE,
-      ).layouts.map((contract) => contract.name),
-    ];
-    expect(registered).toEqual(catalogNames);
-  });
+  it(
+    'registers the brand layouts after the kit layouts, under the catalog names',
+    async () => {
+      const { default: runtime } = await import('#runtime.ts');
+      const registered = (runtime.layouts ?? []).map((layout) => layout.name);
+      const catalogNames = [
+        ...BASE.map((contract) => contract.name),
+        ...brandLayoutCatalog(
+          { name: 'fixture', layouts: FIXTURE_LAYOUTS } as unknown as BrandTokens,
+          BASE,
+        ).layouts.map((contract) => contract.name),
+      ];
+      expect(registered).toEqual(catalogNames);
+    },
+    RUNTIME_IMPORT_TIMEOUT_MS,
+  );
 });
 
 describe('bleedSides', () => {
