@@ -1233,3 +1233,88 @@ Where phase 3 differs from §3.2, §3.6 and §5, and why:
 - **`kitLayoutModule`** (exported from `@deckster/kit/catalog`) states the
   `layouts/<name>-layout.tsx` / `<camelName>Layout` convention. The generator uses it, and a kit
   test checks every catalog layout against it.
+
+### 10.9 Phase 4 notes
+
+Where phase 4 differs from §3.10 and §3.11, and what it found:
+
+- **Count.** `--all` ejects 64 layouts, not 65: `brand`, the renderer of data layouts, is not in the
+  catalog and is refused by name. `--all` skips layouts the brand already has a folder for and lists
+  them; naming such a layout is still an error.
+- **Exports.** The kit's modules keep their named exports (`titleLayoutContract`, `titleLayout`),
+  which the component file imports, and gain the default export a code layout needs.
+- **Helper classes are renamed, with `own-`.** A copied helper's stylesheet lives in `_shared/`, used
+  by several layouts, so it cannot be scoped to one. Its classes are renamed from `kit-…` to `own-…`
+  in every ejected file instead. Which classes a helper owns is computed from the kit: the classes
+  its stylesheet selects that no kit code outside `layouts/` and the copied helpers uses (21 classes
+  in 7 stylesheets). The prefix has the length of `kit-` on purpose, so a rename moves no line break
+  and the files stay formatted. A layout's own files are renamed only for the helpers it copies.
+- **Shared layout stylesheets are scoped with `:where`.** `display-align.css`, `image-layout.css`
+  (for `title`) and `stat-cards.css` (for `stats`) are copied into the layout's folder. A selector
+  that names the frame gets `:where([data-layout='<name>'])`, any other is put under
+  `:where(.kit-frame[data-layout='<name>'])`, and rules keyed on another layout are dropped.
+  `:where` keeps the specificity, so the cascade inside the layout does not move. The kit's copy of
+  these three still applies to the ejected layout while something else loads it (another display layout, the kit's `image`; `stat-cards.css` always, through the `StatRow` chart): their classes are also used by kit components
+  (`.kit-stat-value`, `.kit-image-caption`, `.kit-eyebrow`), so they cannot be renamed. Removing a
+  rule from such a copy therefore shows only once the kit's copy is not loaded. The CSS removal test
+  uses `title`'s own `layout.css`, as §3.2 asks.
+- **`_shared` policy.** A helper already in `_shared/` is reused when it is byte for byte what the
+  eject would write. When it differs (edited, or written by another version) eject refuses and
+  writes nothing; `--keep-shared` keeps the existing file, which the new layout then imports. The
+  pristine helper is always stored under the layout's `.eject/_shared/`, so `diff` covers helpers.
+- **Provenance paths.** `eject.json` keys a layout's files by name and its helpers as
+  `_shared/<file>`; `.eject/` mirrors that.
+- **`diff`** takes `--deck` too, exits with 0 unless `--fail-on-change`, and reports three things
+  besides the patch: files the kit's layout now needs or stopped needing, why the kit's layout does
+  not eject cleanly any more (unexported shared state, a contract import the loader refuses, a
+  package a workspace cannot resolve), and `.eject/` files changed since the eject.
+- **Contracts.** No kit contract needed special handling: all 64 reach only `.ts` files
+  (`pattern-slide.contract.ts`, `quiz-values.ts`, `stat-value.ts`, `link-target.ts` go to `_shared/`)
+  and allowed packages. `layout-fields` was not extended, and `Portrait` and `Marks` stay private:
+  their copies (with `initials.ts` and `slide-file.ts`) eject cleanly.
+- **Formatting.** The transform prints import blocks, scoped selectors and `limits.ts` the way the
+  repository's formatter does. Running `vp fmt` over all 64 ejected layouts and 33 helpers changed
+  no file (checked by hand in a scratch folder, not by a test: the formatter needs the repository's
+  configuration).
+- **Kit fixes eject exposed** (each also affects hand-written replacements):
+  - `image-layout.css` set `.kit-image-caption { text-wrap: balance }`, which `media.css` always
+    overrode in the kit (same specificity, loaded later). A code layout's stylesheet loads after the
+    kit's, so an ejected `image` wrapped its caption differently. The dead declaration is removed.
+  - `equation` picked its fit level without `restartOnFontLoad`. `useFitLevel` only steps down, so
+    the kit layout, measured once in the fallback face in a static render (`deckster shot`), kept a
+    smaller step than the same layout loaded lazily as a code layout, which is first measured with
+    the real fonts (`layouts` deck, `equation-budget`; in `deckster dev` both gave the same step).
+    The code layout's render was the right one: nothing overflowed. `equation` now passes
+    `restartOnFontLoad: true`, which changes that one slide in the kit's static renders. The same
+    can happen in any of the layouts that call `useFitLevel` without that option; none showed a
+    difference on the `layouts` or `exemplars` decks. Not checked in a production build.
+- **Known gap, phase 3.** An ejected `image` beside the kit's `title` still gets the kit's
+  `image-layout.css`, because `title-layout.tsx` imports it and four of its rules are keyed on
+  `[data-layout='image']` (read from the code, not rendered; the tests eject both). Ejecting
+  `title` as well avoids it.
+- **The `Image` component owns its styles (kit change).** `image-layout.css` had rules for the
+  layout's own `.kit-image-frame` and `.kit-image-caption` that were not keyed on the layout, and
+  `media/image.tsx` emits the same class names on any slide. In the kit every layout's stylesheet
+  is always loaded, so an `<Image caption>` on a `content` slide took them (its caption stands
+  over the bottom of the photo). A code layout's stylesheet loads when the layout first renders,
+  so with `image` and `title` ejected the same slide rendered without them until an `image` slide
+  had been shown. Now those rules are keyed on the layout in `image-layout.css`
+  (`:where(.kit-frame[data-layout='image'])`, no added specificity), and `media.css` starts with
+  what `<Image>` took from them, under `:where(.kit-image) >`, in the same order relative to its own
+  rules. The kit renders as before: 376 slides of `layouts`, `exemplars`, `lookbook` and
+  `components` are byte for byte the same PNG before and after. The copy keeps the odd parts on
+  purpose (the caption's colors name `--kit-photo-text`, which is only set inside the image layout,
+  so the caption inherits its color); whether a caption should stand over the photo is a design
+  question this did not touch. `title`'s scoped copy of `image-layout.css` no longer carries those
+  rules. The eject test has a probe slide for it, shot alone. `stat-cards.css` has rules of the
+  same kind, but the kit's plugin always loads it through the `StatRow` chart.
+- **Guarantee test** (`cli/src/layouts/eject/eject-all.test.ts`, about three minutes): on a real copy
+  of the default brand it renders `exemplars` and `layouts` before any eject, then with all 64
+  ejected checks that the layouts load with no problem or warning, replace all 64, keep their limit
+  cases, typecheck, build, lint with no new finding, and that all 150 slides are byte for byte the
+  same PNG. A second case ejects 13 layouts (one per helper stylesheet, the four that share a
+  stylesheet with a kit layout, `table`, `code`) and compares all 124 slides again with the kit and
+  the copies side by side, then runs the CSS removal check. `layouts check` over all 64 (393
+  cases, 142 s alone) is not part of the test. Run by hand it reports two `canvas-overflow` errors
+  on `image-reveal`'s example, which the kit layout gives for the same slide (the example's inline
+  SVG), and one `off-brand` warning on a `bento` limit case; everything else is clean.

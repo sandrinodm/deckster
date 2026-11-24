@@ -29,6 +29,8 @@ await Promise.all([
   import('#commands/export-run.ts'),
   import('#commands/icons-run.ts'),
   import('#commands/layouts-check-run.ts'),
+  import('#commands/layouts-diff-run.ts'),
+  import('#commands/layouts-eject-run.ts'),
   import('#commands/layouts-new-run.ts'),
   import('#commands/layouts-run.ts'),
   import('#commands/lint-run.ts'),

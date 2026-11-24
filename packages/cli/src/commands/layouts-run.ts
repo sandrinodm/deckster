@@ -3,7 +3,7 @@ import { Console, Effect } from 'effect';
 import { chooseDeck, defaultDeck } from '#choose-deck.ts';
 import { usageError } from '#cli-error.ts';
 import { EXIT_OK, lazyRun, type Command } from '#command.ts';
-import { listLayouts, type LayoutInfo } from '#layouts/list-layouts.ts';
+import { describeReplacement, listLayouts, type LayoutInfo } from '#layouts/list-layouts.ts';
 import { ownLayoutsFirst, formatSummaries, summarizeLayout } from '#layouts/summarize-layouts.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
 import { DEFAULT_DECK, Workspace } from '#workspace.ts';
@@ -15,7 +15,30 @@ import { DEFAULT_DECK, Workspace } from '#workspace.ts';
 const SUBCOMMANDS: ReadonlyMap<string, Command['run']> = new Map([
   ['new', lazyRun('layouts-new-run.ts', () => import('#commands/layouts-new-run.ts'))],
   ['check', lazyRun('layouts-check-run.ts', () => import('#commands/layouts-check-run.ts'))],
+  ['eject', lazyRun('layouts-eject-run.ts', () => import('#commands/layouts-eject-run.ts'))],
+  ['diff', lazyRun('layouts-diff-run.ts', () => import('#commands/layouts-diff-run.ts'))],
 ]);
+
+/**
+ * The options only a subcommand takes, with the subcommand that takes each. They are parsed here
+ * too, so the word that names the subcommand is found among the arguments.
+ */
+const SUBCOMMAND_FLAGS = {
+  /**
+   * Every kit layout at once.
+   */
+  all: 'eject',
+
+  /**
+   * Keep helpers that differ from the kit's.
+   */
+  'keep-shared': 'eject',
+
+  /**
+   * Exit with 1 when the kit changed.
+   */
+  'fail-on-change': 'diff',
+} as const;
 
 /**
  * Parses the arguments and runs the command, or the subcommand its first argument names; succeeds
@@ -28,6 +51,9 @@ export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
     summary: { type: 'boolean', default: false },
     brand: { type: 'string' },
     deck: { type: 'string' },
+    all: { type: 'boolean', default: false },
+    'keep-shared': { type: 'boolean', default: false },
+    'fail-on-change': { type: 'boolean', default: false },
   });
   const [first] = positionals;
   const subcommand = first === undefined ? undefined : SUBCOMMANDS.get(first);
@@ -38,10 +64,19 @@ export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
 
   if (values.deck !== undefined) {
     return yield* usageError(
-      "--deck is for `deckster layouts new` and `deckster layouts check`; to list a deck's " +
+      "--deck is for `deckster layouts new`, `check`, `eject` and `diff`; to list a deck's " +
         'layouts, name the deck as the first argument.',
       'layouts',
     );
+  }
+
+  for (const [flag, subcommandName] of Object.entries(SUBCOMMAND_FLAGS)) {
+    if (values[flag as keyof typeof SUBCOMMAND_FLAGS]) {
+      return yield* usageError(
+        `--${flag} is for \`deckster layouts ${subcommandName}\`.`,
+        'layouts',
+      );
+    }
   }
 
   const deck =
@@ -81,10 +116,12 @@ function formatLayout(layout: LayoutInfo): string {
     .filter((tag) => tag !== null)
     .map((tag) => `<${tag}>`);
   const slots = tags.length === 0 ? 'body only' : `body, ${tags.join(', ')}`;
+  const replacement = describeReplacement(layout);
   const lines = [
     `${layout.name}  (${layout.source})`,
     `  ${layout.description}`,
     ...(layout.fallback === null ? [] : [`  Falls back to: ${layout.fallback}`]),
+    ...(replacement === undefined ? [] : [`  ${replacement}`]),
     `  Slots: ${slots}`,
   ];
   const fields = Object.entries(layout.fields).map(([name, field]) => formatField(name, field));

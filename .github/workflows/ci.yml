@@ -162,7 +162,9 @@ jobs:
 
       # The brand has a code layout and the deck a slide on it, so `layouts`, `new slide`, `lint`,
       # `build`, `shot` and `export` run its contract through the installed contract loader: the
-      # only CI run of that loader outside the repository.
+      # only CI run of that loader outside the repository. `layouts eject` copies two kit layouts
+      # (one with a shared helper) from the packed kit source, so the same commands also render the
+      # ejected cover, and `layouts diff` must find the kit unchanged.
       - name: Create, check, build, shoot and export a deck
         working-directory: ${{ runner.temp }}
         run: |
@@ -210,8 +212,10 @@ jobs:
               process.exit(1);
             }
           '
+          deckster layouts eject title quote --brand smoke
           deckster lint smoke
           deckster build smoke
+          deckster layouts diff title --brand smoke --fail-on-change
           deckster shot smoke
           deckster export smoke --pdf
           deckster types
