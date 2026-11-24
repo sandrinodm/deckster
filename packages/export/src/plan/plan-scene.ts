@@ -478,7 +478,11 @@ function planBox(node: BoxNode, mode: ExportMode, notes: PlanNote[]): PlanItem[]
   }
 
   const paints =
-    node.fill !== null || node.borders.some((border) => border !== null) || node.shadows.length > 0;
+    node.fill !== null ||
+    node.borders.some((border) => border !== null) ||
+    node.shadows.length > 0 ||
+    node.shapePreset !== undefined ||
+    (node.paragraphs !== undefined && node.paragraphs.length > 0);
   if (!paints) {
     return [];
   }
@@ -600,7 +604,12 @@ export function hasGrainOnly(node: BoxNode): boolean {
  * @param node - A full-bleed box.
  */
 function isBackgroundBox(node: BoxNode): boolean {
-  return node.borders.every((border) => border === null) && node.shadows.length === 0;
+  return (
+    node.borders.every((border) => border === null) &&
+    node.shadows.length === 0 &&
+    node.shapePreset === undefined &&
+    (node.paragraphs === undefined || node.paragraphs.length === 0)
+  );
 }
 
 /**

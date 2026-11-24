@@ -1,15 +1,27 @@
+import type { PlacedMeta } from '@deckster/engine/manifest';
 import type { MdxPlugins } from '@deckster/engine/mdx';
 
 import { SLIDE_META_EXPORT } from '@deckster/engine/manifest';
-import { SLOT_ELEMENT, SLOT_NAME_ATTRIBUTE, SLOTS_ELEMENT } from '@deckster/engine/slots';
+import {
+  PLACED_SLOT,
+  SLOT_ELEMENT,
+  SLOT_NAME_ATTRIBUTE,
+  SLOTS_ELEMENT,
+} from '@deckster/engine/slots';
 import { compile, type CompileOptions } from '@mdx-js/mdx';
 import { Effect } from 'effect';
 import remarkGfm from 'remark-gfm';
 
+import type { SlideBrand } from '#slides/check-surface.ts';
 import type { SlotCandidate } from '#slides/slot-usage.ts';
 
 import { invalidMdx, type DeckBuildError, type FileRef, type Problem } from '#errors.ts';
 import { decodeCharacterReferences, normalizeNotes, NOTES_SEPARATOR } from '#slides/notes-text.ts';
+import {
+  extractPlacedElements,
+  type PlacedRemarkFile,
+  type SlideMdastNode,
+} from '#slides/placed-elements.ts';
 
 /**
  * The element whose text is the slide's speaker notes.
@@ -45,42 +57,7 @@ const FLOW_ELEMENT_TYPE = 'mdxJsxFlowElement';
 /**
  * The parts of an mdast node this module reads and writes.
  */
-type MdastNode = {
-  /**
-   * The node type, such as `heading` or `mdxJsxFlowElement`.
-   */
-  type: string;
-
-  /**
-   * The element name of a JSX node, such as `Notes`; `null` for a fragment.
-   */
-  name?: string | null;
-
-  /**
-   * The attributes of a JSX node.
-   */
-  attributes?: unknown[];
-
-  /**
-   * The text of a text or inline code node.
-   */
-  value?: unknown;
-
-  /**
-   * The child nodes, in source order.
-   */
-  children?: MdastNode[];
-
-  /**
-   * Extra data; for an ESM block, its program as `estree`.
-   */
-  data?: { estree?: { body?: unknown[] } };
-
-  /**
-   * Where the node is in the source: 1-based lines and offsets in UTF-16 code units, when known.
-   */
-  position?: { start: { line?: number; offset?: number }; end: { offset?: number } };
-};
+type MdastNode = SlideMdastNode;
 
 /**
  * How to compile an MDX file.
@@ -104,6 +81,12 @@ export type CompileMdxOptions = {
    * kit resolves the icons and image paths that layout fields name). Omitted for partials.
    */
   frontmatter?: Readonly<Record<string, unknown>>;
+
+  /**
+   * The deck's brand, supplying spacing tokens and surface role colors for placed-element
+   * validation when available.
+   */
+  brand?: SlideBrand;
 
   /**
    * Plugins from the deck's MDX extensions, added after the build's own.
@@ -178,6 +161,12 @@ export type CompiledMdx = {
    * reserved `slideMeta`.
    */
   exportProblems: Problem[];
+
+  /**
+   * Top-level placed elements declared on the slide, in source order; empty when the slide has
+   * none.
+   */
+  placed: PlacedMeta[];
 };
 
 /**
@@ -202,19 +191,25 @@ export const compileMdx = Effect.fn('compileMdx')(function* (
     candidates: [],
     hasBody: false,
     exportProblems: [],
+    placed: [],
   };
 
   /**
-   * A remark plugin that reads the slide's metadata from the tree and, for a slide, wraps its
-   * top-level content for the layout.
+   * A remark plugin that reads the slide's metadata from the tree and, for a slide, extracts and
+   * validates placed elements before wrapping its top-level content for the layout.
    */
-  const remarkSlide = () => (tree: MdastNode) => {
+  const remarkSlide = () => (tree: MdastNode, file: PlacedRemarkFile) => {
     read.notes = collectNotes(tree, body).join(NOTES_SEPARATOR);
     read.heading = firstHeading(tree);
     read.candidates = slotCandidates(tree);
     read.exportProblems = exportProblems(tree);
     if (options.slotTags !== undefined) {
-      read.hasBody = wrapForLayout(tree, options.slotTags);
+      const extracted = extractPlacedElements(tree, file, {
+        ...(options.frontmatter === undefined ? {} : { frontmatter: options.frontmatter }),
+        ...(options.brand === undefined ? {} : { brand: options.brand }),
+      });
+      read.placed = extracted.placed;
+      read.hasBody = wrapForLayout(tree, options.slotTags, extracted.nodes);
     }
   };
 
@@ -261,17 +256,23 @@ export const compileMdx = Effect.fn('compileMdx')(function* (
 
 /**
  * Wraps the slide's top-level content (everything but `import` and `export` blocks) in
- * `<DeckSlots>` and renames each top-level slot tag to `<DeckSlot name="...">`, so the engine can
- * sort the content into the layout's slots.
+ * `<DeckSlots>`, renames each top-level slot tag to `<DeckSlot name="...">`, and groups top-level
+ * placed elements into `<DeckSlot name="__placed">` so they never count as body content.
  *
  * @param tree - The mdast root, changed in place.
  * @param slotTags - The layout's slot tags, mapped to their slot names.
+ * @param placedNodes - Lifted top-level placed elements to route into {@link PLACED_SLOT}.
  * @returns Whether any top-level content is left for `body`.
  */
-function wrapForLayout(tree: MdastNode, slotTags: ReadonlyMap<string, string>): boolean {
+function wrapForLayout(
+  tree: MdastNode,
+  slotTags: ReadonlyMap<string, string>,
+  placedNodes: readonly MdastNode[],
+): boolean {
   const children = tree.children ?? [];
+  const placedSet = new Set(placedNodes);
   const esm = children.filter((node) => node.type === ESM_TYPE);
-  const content = children.filter((node) => node.type !== ESM_TYPE);
+  const content = children.filter((node) => node.type !== ESM_TYPE && !placedSet.has(node));
   let hasBody = false;
   for (const node of content) {
     const slot = node.type === FLOW_ELEMENT_TYPE ? slotTags.get(node.name ?? '') : undefined;
@@ -286,9 +287,24 @@ function wrapForLayout(tree: MdastNode, slotTags: ReadonlyMap<string, string>): 
     }
   }
 
+  const slotChildren =
+    placedNodes.length === 0
+      ? content
+      : [
+          ...content,
+          {
+            type: FLOW_ELEMENT_TYPE,
+            name: SLOT_ELEMENT,
+            attributes: [
+              { type: 'mdxJsxAttribute', name: SLOT_NAME_ATTRIBUTE, value: PLACED_SLOT },
+            ],
+            children: [...placedNodes],
+          },
+        ];
+
   tree.children = [
     ...esm,
-    { type: FLOW_ELEMENT_TYPE, name: SLOTS_ELEMENT, attributes: [], children: content },
+    { type: FLOW_ELEMENT_TYPE, name: SLOTS_ELEMENT, attributes: [], children: slotChildren },
   ];
   return hasBody;
 }

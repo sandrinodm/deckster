@@ -1,0 +1,46 @@
+---
+layout: statement
+title: Four zones frame a slide from margin to edge
+surface: inverse
+budget: 45s
+---
+
+Same-hour drops across six cities, from 14 hubs.
+
+<Place place="bottom-left" zone="header">
+  <Icon name="map-pin" role="accent" /> Kestwick launch
+</Place>
+
+<Shape
+  place="top-left"
+  width={3}
+  fill="surface"
+  border="accent"
+  stroke="regular"
+  radius="md"
+  inset="xs"
+  type="small"
+  name="Monthly volume">
+  182,000 drops in Oct
+</Shape>
+
+<Shape
+  place="right"
+  zone="canvas"
+  width={2}
+  height={2}
+  surface="accent"
+  align="center"
+  anchor="center"
+  name="Launch date">
+  3 Dec 2026
+</Shape>
+
+<Text place="center" zone="footer" width={5} align="center" type="caption" color="muted">
+  Wrenhaul operating report, October 2026
+</Text>
+
+<Notes>
+`statement` on `inverse` showing all four zones: `<Place>` with an `<Icon>` in `header`, a `<Shape>` with `inset` in `safe`, a full-bleed `<Shape>` against the right edge of `canvas`, and a `<Text>` source line centred in `footer` clear of corner chrome.
+Every zone follows the brand's margins: header and footer sit in the margin bands, safe sits inside them, and canvas runs edge to edge.
+</Notes>

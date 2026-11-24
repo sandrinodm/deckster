@@ -514,7 +514,22 @@ export type SceneNodeBase = {
    * other backdrop nodes are the layers of the surface or of a brand layout's art.
    */
   slideImage?: true;
+
+  /**
+   * Whether the node belongs to a placed element (`[data-placed]`).
+   */
+  placed?: boolean;
 };
+
+/**
+ * The DrawingML preset geometry a `<Shape>` element maps to.
+ */
+export type ShapePreset = 'rect' | 'roundRect' | 'ellipse' | 'diamond' | 'triangle';
+
+/**
+ * The vertical text anchor inside a `<Shape>` element.
+ */
+export type TextAnchor = 'start' | 'center' | 'end';
 
 /**
  * A painted box: background, border, rounded corners, shadow.
@@ -549,6 +564,26 @@ export type BoxNode = SceneNodeBase & {
    * Whether the box covers the whole canvas (a slide background).
    */
   fullBleed: boolean;
+
+  /**
+   * The preset geometry of a `<Shape>` element (`data-export-shape`), when set.
+   */
+  shapePreset?: ShapePreset;
+
+  /**
+   * Custom selection-pane name from `data-placed-name`, when set.
+   */
+  exportName?: string;
+
+  /**
+   * Vertical text anchor inside the shape (`data-anchor`), when set.
+   */
+  anchor?: TextAnchor;
+
+  /**
+   * Paragraphs collected inside a `<Shape>` so it exports as one `p:sp` with a `p:txBody`.
+   */
+  paragraphs?: readonly SceneParagraph[];
 };
 
 /**
@@ -575,6 +610,16 @@ export type TextNode = SceneNodeBase & {
    * The placeholder selectors (from the layout's `pptx` mapping) that contain the text.
    */
   matches: string[];
+
+  /**
+   * Custom selection-pane name from `data-placed-name`, when set.
+   */
+  exportName?: string;
+
+  /**
+   * Whether the text belongs to a `<Text>` element (`data-export-text`).
+   */
+  exportText?: boolean;
 };
 
 /**

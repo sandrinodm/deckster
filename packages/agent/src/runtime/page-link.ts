@@ -2,7 +2,12 @@ import { definePlugin, useDeck } from '@deckster/engine';
 import { windowKind } from '@deckster/presenter';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
-import type { PageGotoDone, PageGotoRequest, PageStateReport } from '#protocol/page-link-events.ts';
+import type {
+  PageGotoDone,
+  PageGotoRequest,
+  PageStateReport,
+  PlacedElementReport,
+} from '#protocol/page-link-events.ts';
 
 import {
   PAGE_GOTO_DONE_EVENT,
@@ -21,6 +26,28 @@ const MAX_SELECTION_CHARS = 4000;
 const REPORT_DELAY_MS = 150;
 
 /**
+ * Logical slide canvas width in canvas pixels, used when scaling DOM rects back to canvas space.
+ */
+const CANVAS_WIDTH_PX = 1920;
+
+/**
+ * Logical slide canvas height in canvas pixels, used when scaling DOM rects back to canvas space.
+ */
+const CANVAS_HEIGHT_PX = 1080;
+
+/**
+ * Attributes whose changes on the slide can alter the placed-element report.
+ */
+const PLACED_OBSERVED_ATTRIBUTES = [
+  'data-slide-active',
+  'data-placed',
+  'data-placed-name',
+  'data-placed-spec',
+  'data-placed-zone',
+  'data-placed-rect',
+];
+
+/**
  * Gives the page a random id.
  */
 function makePageId(): string {
@@ -32,6 +59,127 @@ function makePageId(): string {
  */
 function readSelection(): string {
   return (window.getSelection()?.toString() ?? '').trim().slice(0, MAX_SELECTION_CHARS);
+}
+
+/**
+ * Checks whether an attribute value is one of the supported placed-element kinds.
+ *
+ * @param value - The raw `data-placed` attribute value.
+ */
+function isPlacedKind(value: string | null): value is PlacedElementReport['kind'] {
+  return value === 'place' || value === 'shape' || value === 'text';
+}
+
+/**
+ * Reads an element attribute, returning undefined when absent or empty.
+ *
+ * @param element - The DOM element to inspect.
+ * @param attribute - The attribute name.
+ */
+function readNonEmptyAttr(element: Element, attribute: string): string | undefined {
+  const value = element.getAttribute(attribute);
+  return value === null || value === '' ? undefined : value;
+}
+
+/**
+ * Parses a `data-placed-rect="x,y,w,h"` attribute into a 4-number canvas tuple, or returns
+ * undefined when missing or malformed.
+ *
+ * @param raw - The raw `data-placed-rect` attribute value.
+ */
+function parsePlacedRect(
+  raw: string | null,
+): readonly [number, number, number, number] | undefined {
+  if (raw === null) {
+    return undefined;
+  }
+
+  const parts = raw.split(',');
+  if (parts.length !== 4) {
+    return undefined;
+  }
+
+  const numbers: number[] = [];
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (trimmed === '') {
+      return undefined;
+    }
+
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed)) {
+      return undefined;
+    }
+
+    numbers.push(parsed);
+  }
+
+  return [numbers[0] ?? 0, numbers[1] ?? 0, numbers[2] ?? 0, numbers[3] ?? 0];
+}
+
+/**
+ * Computes a placed element's bounding rect in 1920x1080 canvas coordinates relative to
+ * `.deck-canvas` when `data-placed-rect` is missing or invalid.
+ *
+ * @param element - The placed DOM element.
+ * @param canvas - The enclosing `.deck-canvas` element, if present.
+ */
+function measurePlacedRect(
+  element: Element,
+  canvas: Element | null,
+): readonly [number, number, number, number] {
+  const box = element.getBoundingClientRect();
+  const canvasBox = canvas?.getBoundingClientRect();
+  if (canvasBox !== undefined && canvasBox.width > 0 && canvasBox.height > 0) {
+    const scaleX = CANVAS_WIDTH_PX / canvasBox.width;
+    const scaleY = CANVAS_HEIGHT_PX / canvasBox.height;
+    return [
+      Math.round((box.left - canvasBox.left) * scaleX),
+      Math.round((box.top - canvasBox.top) * scaleY),
+      Math.round(box.width * scaleX),
+      Math.round(box.height * scaleY),
+    ];
+  }
+
+  return [Math.round(box.left), Math.round(box.top), Math.round(box.width), Math.round(box.height)];
+}
+
+/**
+ * Collects all placed elements (`[data-placed]`) rendered inside the active slide section
+ * (`section[data-slide-active="true"]`), preserving DOM order.
+ *
+ * @param root - The document or container to query; defaults to `document`.
+ */
+export function readPlacedElements(root: ParentNode = document): readonly PlacedElementReport[] {
+  const activeSlide = root.querySelector('section[data-slide-active="true"]');
+  if (activeSlide === null) {
+    return [];
+  }
+
+  const canvas = activeSlide.closest('.deck-canvas') ?? root.querySelector('.deck-canvas');
+  const reports: PlacedElementReport[] = [];
+  for (const element of activeSlide.querySelectorAll('[data-placed]')) {
+    const kind = element.getAttribute('data-placed');
+    if (!isPlacedKind(kind)) {
+      continue;
+    }
+
+    const name = readNonEmptyAttr(element, 'data-placed-name');
+    const place = readNonEmptyAttr(element, 'data-placed-spec');
+    const zone = readNonEmptyAttr(element, 'data-placed-zone');
+    const rect =
+      parsePlacedRect(element.getAttribute('data-placed-rect')) ??
+      measurePlacedRect(element, canvas);
+    reports.push({
+      kind,
+      ...(name !== undefined ? { name } : {}),
+      ...(place !== undefined ? { place } : {}),
+      ...(zone !== undefined ? { zone } : {}),
+      rect,
+    });
+  }
+
+  return reports;
 }
 
 /**
@@ -77,6 +225,7 @@ function PageLink(): null {
   const { position } = deck;
   const [page] = useState(makePageId);
   const focusedAt = useRef(0);
+  const lastPlacedKey = useRef('');
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const report = useEffectEvent((closed: boolean) => {
@@ -85,6 +234,8 @@ function PageLink(): null {
       return;
     }
 
+    const placed = readPlacedElements();
+    lastPlacedKey.current = JSON.stringify(placed);
     const state: PageStateReport = {
       page,
       closed,
@@ -100,6 +251,7 @@ function PageLink(): null {
       stepCount: slide.stepCount ?? deck.stepCount ?? 0,
       brand: deck.manifest.brand ?? '',
       selection: readSelection(),
+      placed,
     };
     import.meta.hot?.send(PAGE_STATE_EVENT, state);
   });
@@ -116,7 +268,7 @@ function PageLink(): null {
     if (active) {
       schedule();
     }
-  }, [active, position.slide, position.step, deck.stepCount]);
+  }, [active, position.slide, position.step, deck.stepCount, deck.slides]);
 
   useEffect(() => {
     if (!active) {
@@ -168,8 +320,27 @@ function PageLink(): null {
     document.addEventListener('visibilitychange', visible);
     document.addEventListener('selectionchange', schedule);
     hot?.on(PAGE_GOTO_EVENT, goto);
+
+    const observeTarget = document.querySelector('.deck-canvas') ?? document.body;
+    const observer =
+      typeof MutationObserver === 'undefined' || observeTarget === null
+        ? undefined
+        : new MutationObserver(() => {
+            const key = JSON.stringify(readPlacedElements());
+            if (key !== lastPlacedKey.current) {
+              schedule();
+            }
+          });
+    observer?.observe(observeTarget, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: PLACED_OBSERVED_ATTRIBUTES,
+    });
+
     return () => {
       clearTimeout(timer.current);
+      observer?.disconnect();
       leave();
       window.removeEventListener('focus', focus);
       window.removeEventListener('pointerdown', focus, true);

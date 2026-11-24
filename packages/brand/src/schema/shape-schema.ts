@@ -8,6 +8,11 @@ import { ColorRef, PixelOffset, Pixels } from '#schema/primitives.ts';
 export const RADIUS_NAMES = ['sm', 'md', 'lg', 'xl'] as const;
 
 /**
+ * A corner radius name.
+ */
+export type RadiusName = (typeof RADIUS_NAMES)[number];
+
+/**
  * Stroke widths every brand defines, for borders, rules and diagram edges.
  */
 export const STROKE_NAMES = ['hairline', 'regular', 'bold'] as const;
@@ -33,9 +38,24 @@ export type ShadowName = (typeof SHADOW_NAMES)[number];
 export const SPACE_NAMES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl'] as const;
 
 /**
+ * A spacing step name.
+ */
+export type SpaceName = (typeof SPACE_NAMES)[number];
+
+/**
  * Most columns a layout grid may have.
  */
 export const MAX_GRID_COLUMNS = 24;
+
+/**
+ * Default number of layout rows when a brand omits `spacing.grid.rows`.
+ */
+export const DEFAULT_GRID_ROWS = 6;
+
+/**
+ * Most rows a layout grid may have.
+ */
+export const MAX_GRID_ROWS = 12;
 
 /**
  * One layer of a shadow, as CSS `box-shadow` and PowerPoint's shadow effects both describe it. The
@@ -141,6 +161,14 @@ export const BrandSpacing = Schema.Struct({
       Schema.isBetween(
         { minimum: 1, maximum: MAX_GRID_COLUMNS },
         { message: `Expected a whole number of columns from 1 to ${MAX_GRID_COLUMNS}` },
+      ),
+    ),
+    rows: Schema.optionalKey(
+      Schema.Int.check(
+        Schema.isBetween(
+          { minimum: 1, maximum: MAX_GRID_ROWS },
+          { message: `Expected a whole number of rows from 1 to ${MAX_GRID_ROWS}` },
+        ),
       ),
     ),
     gutter: Pixels,

@@ -362,3 +362,19 @@ describe('resolveBrand image treatments', () => {
     }),
   );
 });
+
+describe('resolveBrand spacing grid', () => {
+  it.effect('defaults spacing.grid.rows to 6 when omitted', () =>
+    Effect.gen(function* () {
+      const { tokens } = yield* resolveBrand(testBrand());
+      expect(tokens.spacing.grid).toEqual({ columns: 12, rows: 6, gutter: 32 });
+    }),
+  );
+
+  it.effect('keeps a custom spacing.grid.rows override', () =>
+    Effect.gen(function* () {
+      const { tokens } = yield* resolveBrand(testBrand({ 'spacing.grid.rows': 8 }));
+      expect(tokens.spacing.grid).toEqual({ columns: 12, rows: 8, gutter: 32 });
+    }),
+  );
+});

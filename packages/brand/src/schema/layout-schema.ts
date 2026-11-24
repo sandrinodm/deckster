@@ -69,14 +69,34 @@ const LayoutBoxSchema = Schema.Tuple([
 export type LayoutBox = typeof LayoutBoxSchema.Type;
 
 /**
+ * Horizontal alignment values for text in its box.
+ */
+export const REGION_ALIGNS = ['start', 'center', 'end'] as const;
+
+/**
  * Horizontal alignment of text in its box.
  */
-const RegionAlign = Schema.Literals(['start', 'center', 'end']);
+export type RegionAlign = (typeof REGION_ALIGNS)[number];
+
+/**
+ * Vertical placement values for text in its box.
+ */
+export const REGION_ANCHORS = ['start', 'center', 'end'] as const;
 
 /**
  * Vertical placement of text in its box.
  */
-const RegionAnchor = Schema.Literals(['start', 'center', 'end']);
+export type RegionAnchor = (typeof REGION_ANCHORS)[number];
+
+/**
+ * Horizontal alignment of text in its box.
+ */
+const RegionAlignSchema = Schema.Literals(REGION_ALIGNS);
+
+/**
+ * Vertical placement of text in its box.
+ */
+const RegionAnchorSchema = Schema.Literals(REGION_ANCHORS);
 
 /**
  * A type step from the brand's scale.
@@ -124,8 +144,8 @@ const BrandLayoutRegion = Schema.Struct({
   box: LayoutBoxSchema,
   kind: Schema.optionalKey(Schema.Literals(['text', 'media', 'content'])),
   type: Schema.optionalKey(TypeStepName),
-  align: Schema.optionalKey(RegionAlign),
-  anchor: Schema.optionalKey(RegionAnchor),
+  align: Schema.optionalKey(RegionAlignSchema),
+  anchor: Schema.optionalKey(RegionAnchorSchema),
   color: Schema.optionalKey(RoleName),
   fit: Schema.optionalKey(Schema.Literals(['cover', 'contain'])),
   treatment: Schema.optionalKey(KebabName('treatment name', 'duotone')),
@@ -137,8 +157,8 @@ const BrandLayoutRegion = Schema.Struct({
 const BrandLayoutTitle = Schema.Struct({
   box: LayoutBoxSchema,
   type: Schema.optionalKey(TypeStepName),
-  align: Schema.optionalKey(RegionAlign),
-  anchor: Schema.optionalKey(RegionAnchor),
+  align: Schema.optionalKey(RegionAlignSchema),
+  anchor: Schema.optionalKey(RegionAnchorSchema),
   color: Schema.optionalKey(RoleName),
 });
 

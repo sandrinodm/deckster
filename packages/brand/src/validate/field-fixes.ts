@@ -400,6 +400,11 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
   'spacing.grid.columns': 'Write a whole number of columns, usually `columns: 12`.',
 
   /**
+   * The number of layout rows.
+   */
+  'spacing.grid.rows': 'Write a whole number of rows, usually `rows: 6`, or leave it out.',
+
+  /**
    * The whole `logo` section.
    */
   logo: 'Give logo variants, a default variant, clearSpace and placement { corner, height }.',
@@ -800,11 +805,20 @@ const FIELD_FIXES: Readonly<Record<string, string>> = {
  */
 export function fixFor(path: readonly PropertyKey[]): string {
   const segments = path.map(String);
-  let best: { length: number; fix: string } | undefined;
+  let best: { length: number; literals: number; fix: string } | undefined;
   for (const [pattern, fix] of Object.entries(FIELD_FIXES)) {
     const parts = pattern.split('.');
-    if (matchesPrefix(parts, segments) && parts.length > (best?.length ?? 0)) {
-      best = { length: parts.length, fix };
+    if (!matchesPrefix(parts, segments)) {
+      continue;
+    }
+
+    const literals = parts.filter((part) => part !== WILDCARD).length;
+    if (
+      best === undefined ||
+      parts.length > best.length ||
+      (parts.length === best.length && literals > best.literals)
+    ) {
+      best = { length: parts.length, literals, fix };
     }
   }
 

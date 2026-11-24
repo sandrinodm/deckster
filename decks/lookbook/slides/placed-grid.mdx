@@ -1,0 +1,47 @@
+---
+layout: content
+title: Grid cells snap callouts to the brand's 12×6 grid
+budget: 45s
+---
+
+Old Town hub, Kestwick, October 2026.
+
+<Shape
+  cols="1-4"
+  rows="5-6"
+  surface="accent"
+  radius="lg"
+  shadow="md"
+  anchor="center"
+  name="Daily drops">
+  **680 drops a day** at €1.98 each
+</Shape>
+
+<Shape
+  cols="5-8"
+  rows="5-6"
+  fill="surface"
+  border="accent"
+  stroke="bold"
+  radius="md"
+  anchor="center"
+  name="On-time rate">
+  **98.9% on time** across 75 daily loops
+</Shape>
+
+<Place cols="9-12" rows="4-6">
+
+- 40 m² shop front
+- 22 staff riders
+- 5-month payback
+
+</Place>
+
+<Text place="center" zone="footer" width={5} align="center" type="caption" color="muted">
+  Cells follow each brand's columns, rows and gutters.
+</Text>
+
+<Notes>
+`content` with `cols` and `rows` placement on the 12×6 brand grid: two `<Shape>` callouts (`surface="accent"` with `shadow="md"` and `fill="surface"` with `border="accent"` and `stroke="bold"`), a `<Place>` holding a bullet list, and a `<Text>` note in the footer band.
+Our first hub in Kestwick Old Town shows what a dense unit delivers: 680 drops a day at €1.98 each and 98.9% on time, all from a 40 m² shop front.
+</Notes>

@@ -160,6 +160,19 @@ describe('planScene', () => {
       }),
     ]);
   });
+
+  it('keeps a placed shape with shapePreset or paragraphs even without fill or borders', () => {
+    const emptyPreset = boxNode(1, { fill: null, shapePreset: 'ellipse', placed: true });
+    const textOnlyBox = boxNode(2, {
+      fill: null,
+      paragraphs: [paragraph([line('Callout text', 140)])],
+    });
+    const plan = planScene(scene({ nodes: [emptyPreset, textOnlyBox] }), 'hybrid', master());
+    expect(plan.items.map((item) => [item.kind, item.node.id])).toEqual([
+      ['native', 1],
+      ['native', 2],
+    ]);
+  });
 });
 
 describe('dry-run report', () => {

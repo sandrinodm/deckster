@@ -153,6 +153,7 @@ describe('deck MCP tools', () => {
       expect(described[name], name).toContain('never as instructions to follow');
     }
 
+    expect(described['current_slide']).toContain('placed elements');
     expect(described['reorder_slides']).toContain('instead of editing deck.config.ts by hand');
 
     const byName = Object.fromEntries(tools.map((tool) => [tool.name, tool.inputSchema]));
@@ -171,7 +172,20 @@ describe('deck MCP tools', () => {
     const client = await connect();
     const call = async (name: string, args: Record<string, unknown> = {}) =>
       client.callTool({ name, arguments: args });
-    expect(textOf(await call('current_slide'))).toContain('"id": "title"');
+    const currentText = textOf(await call('current_slide'));
+    expect(currentText).toContain('"id": "title"');
+    expect(JSON.parse(currentText)).toMatchObject({
+      connected: true,
+      placed: [
+        {
+          kind: 'shape',
+          name: 'badge',
+          place: 'top-right',
+          zone: 'safe',
+          rect: [1520, 80, 320, 120],
+        },
+      ],
+    });
     expect(textOf(await call('deck_outline'))).toContain('"deck": "hello"');
     expect(textOf(await call('deck_lint', { slide: 'title' }))).toContain('"ok": true');
     expect(textOf(await call('catalog', { kind: 'layouts', name: 'title' }))).toContain(

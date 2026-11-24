@@ -245,3 +245,141 @@ describe('collectScene in Chromium', () => {
     expect(leftovers).toBe(0);
   });
 });
+
+/**
+ * A slide with placed `<Shape>`, `<Text>`, and `<Place>` elements covering preset geometries,
+ * `clip-path` polygons, bullet lists inside shapes, floating text, and `releaseScene`
+ * preservation.
+ */
+const PLACED_HTML = `<!doctype html><html><head><style>
+  body { margin: 0; font-family: Arial, sans-serif; }
+  .deck-canvas { position: relative; width: 1920px; height: 1080px; }
+  section { position: absolute; inset: 0; background: #fcfcfd; }
+  .deck-placed { position: absolute; inset: 0; pointer-events: none; }
+  .callout { position: absolute; left: 100px; top: 100px; width: 420px; height: 240px; padding: 24px;
+    box-sizing: border-box; background: #2d4ae0; color: #ffffff; border-radius: 16px; font-size: 26px; line-height: 36px; }
+  .callout p { margin: 0 0 12px 0; }
+  .callout ul { margin: 0; padding: 0; list-style: none; }
+  .callout li { position: relative; margin-left: 28px; }
+  .callout li::before { content: ''; position: absolute; left: -20px; top: 12px; width: 10px; height: 10px; border-radius: 5px; background: #ffffff; }
+  .diamond { position: absolute; left: 600px; top: 100px; width: 200px; height: 200px; background: #e8ecf8;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .triangle { position: absolute; left: 860px; top: 100px; width: 200px; height: 180px; background: #fde68a;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }
+  .floating-text { position: absolute; left: 1200px; top: 960px; width: 520px; font-size: 20px; line-height: 28px; color: #555c6a; }
+  .floating-text p { margin: 0 0 6px 0; }
+  .placed-wrap { position: absolute; left: 100px; top: 500px; width: 120px; height: 120px; }
+</style></head><body><div class="deck-canvas"><section data-slide-active="true" data-surface="default">
+  <div data-layout="content">
+    <div class="deck-placed">
+      <div class="callout" data-placed="shape" data-placed-rect="100,100,420,240" data-placed-zone="safe" data-placed-name="Key callout" data-export-shape="roundRect" data-shape="rect" data-anchor="center" data-align="start">
+        <p>Headline inside shape</p>
+        <ul><li>First bullet</li><li>Second bullet</li></ul>
+      </div>
+      <div class="diamond" data-placed="shape" data-placed-rect="600,100,200,200" data-placed-zone="safe" data-export-shape="diamond" data-shape="diamond" data-anchor="center" data-align="center">
+        <span>Gate</span>
+      </div>
+      <div class="triangle" data-placed="shape" data-placed-rect="860,100,200,180" data-placed-zone="safe" data-export-shape="triangle" data-shape="triangle"></div>
+      <div class="floating-text kit-title" data-placed="text" data-placed-rect="1200,960,520,70" data-placed-zone="footer" data-placed-name="Footnote" data-export-text="true" data-anchor="end" data-align="end">
+        <p>Source: Q3 survey</p>
+        <p>n = 412</p>
+      </div>
+      <div class="placed-wrap" data-placed="place" data-placed-rect="100,500,120,120" data-placed-zone="safe">
+        <svg width="48" height="48" viewBox="0 0 10 10"><rect width="10" height="10" fill="#2d4ae0"/></svg>
+      </div>
+    </div>
+  </div>
+</section></div></body></html>`;
+
+describe('collectScene placed elements in Chromium', () => {
+  let browser: Browser;
+  let page: Page;
+  let scene: CollectedScene;
+
+  beforeAll(async () => {
+    browser = await chromium.launch();
+    page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    await page.setContent(PLACED_HTML);
+    scene = await page.evaluate(collectScene, { placeholderSelectors: ['.kit-title'] });
+  }, BROWSER_TIMEOUT_MS);
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  it('merges shape text and list bullets onto BoxNode.paragraphs with no duplicate TextNodes', () => {
+    const callout = scene.nodes.find(
+      (node): node is BoxNode => node.kind === 'box' && node.selector.includes('div.callout'),
+    );
+    expect(callout).toMatchObject({
+      shapePreset: 'roundRect',
+      exportName: 'Key callout',
+      placed: true,
+      anchor: 'center',
+    });
+    expect(callout?.paragraphs).toHaveLength(3);
+    expect(callout?.paragraphs?.[0]?.lines[0]?.runs[0]?.text).toBe('Headline inside shape');
+    expect(callout?.paragraphs?.[1]?.bullet).toMatchObject({
+      kind: 'shape',
+      color: '#ffffff',
+      radius: 5,
+    });
+    expect(callout?.paragraphs?.[2]?.bullet).toMatchObject({ kind: 'shape', color: '#ffffff' });
+    const duplicateTexts = scene.nodes.filter(
+      (node) => node.kind === 'text' && node.selector.includes('div.callout'),
+    );
+    expect(duplicateTexts).toHaveLength(0);
+  });
+
+  it('suppresses clip-path raster hints on diamond and triangle export shapes', () => {
+    const diamond = scene.nodes.find(
+      (node): node is BoxNode => node.kind === 'box' && node.selector.includes('div.diamond'),
+    );
+    const triangle = scene.nodes.find(
+      (node): node is BoxNode => node.kind === 'box' && node.selector.includes('div.triangle'),
+    );
+    expect(diamond).toMatchObject({
+      shapePreset: 'diamond',
+      placed: true,
+      anchor: 'center',
+      hints: [],
+    });
+    expect(diamond?.paragraphs).toHaveLength(1);
+    expect(diamond?.paragraphs?.[0]?.lines[0]?.runs[0]?.text).toBe('Gate');
+    expect(triangle).toMatchObject({
+      shapePreset: 'triangle',
+      placed: true,
+      hints: [],
+    });
+  });
+
+  it('marks [data-export-text] with exportText, exportName, null slot and empty matches', () => {
+    const texts = scene.nodes.filter(
+      (node): node is TextNode =>
+        node.kind === 'text' && node.selector.includes('div.floating-text'),
+    );
+    expect(texts).toHaveLength(2);
+    expect(texts[0]).toMatchObject({
+      exportText: true,
+      placed: true,
+      exportName: 'Footnote',
+      slot: null,
+      matches: [],
+    });
+    expect(texts[0]?.container).not.toBeNull();
+    expect(texts[0]?.container).toBe(texts[1]?.container);
+  });
+
+  it('propagates placed to children of <Place> and preserves placed attributes on releaseScene', async () => {
+    const svg = scene.nodes.find((node) => node.kind === 'svg');
+    expect(svg?.placed).toBe(true);
+    await page.evaluate(releaseScene);
+    const preserved = await page.evaluate(() => ({
+      shapes: document.querySelectorAll('[data-export-shape]').length,
+      texts: document.querySelectorAll('[data-export-text]').length,
+      placed: document.querySelectorAll('[data-placed]').length,
+      ids: document.querySelectorAll('[data-export-id]').length,
+    }));
+    expect(preserved).toEqual({ shapes: 3, texts: 1, placed: 5, ids: 0 });
+  });
+});

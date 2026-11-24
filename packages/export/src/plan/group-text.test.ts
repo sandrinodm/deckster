@@ -62,4 +62,40 @@ describe('groupText', () => {
       ]),
     ).toHaveLength(1);
   });
+
+  it('merges paragraphs inside the same exportText container and keeps separate ones apart', () => {
+    const heading = textNode(
+      1,
+      paragraph([line('Heading', 140)], { align: 'center', wrapWidth: null }),
+      { exportText: true, placed: true, slot: null, container: 10 },
+    );
+    const bullet = textNode(
+      2,
+      paragraph([line('Bullet item', 240)], {
+        align: 'left',
+        wrapWidth: 400,
+        bullet: {
+          kind: 'shape',
+          rect: { x: 104, y: 224, width: 10, height: 10 },
+          color: '#2d4ae0',
+          radius: 5,
+        },
+      }),
+      { exportText: true, placed: true, slot: null, container: 10 },
+    );
+    const other = textNode(3, paragraph([line('Separate text box', 320)]), {
+      exportText: true,
+      placed: true,
+      slot: null,
+      container: 20,
+    });
+    const merged = groupText([
+      { kind: 'native', node: heading },
+      { kind: 'native', node: bullet },
+      { kind: 'native', node: other },
+    ]);
+    expect(merged).toHaveLength(2);
+    expect(merged[0]?.node.kind === 'text' && merged[0].node.paragraphs).toHaveLength(2);
+    expect(merged[1]?.node.kind === 'text' && merged[1].node.paragraphs).toHaveLength(1);
+  });
 });

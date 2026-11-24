@@ -12,6 +12,7 @@ import {
   type ChromeItem,
   type ChromePlan,
 } from '#chrome/chrome-plan.ts';
+import { resolvePlace } from '#place/resolve-place.ts';
 
 /**
  * Converts the progress fraction to a CSS percentage.
@@ -182,6 +183,9 @@ function useChromeLook(): ChromeLook {
   const mediaBoxes = own?.regions
     .filter((region) => region.kind === 'media')
     .map((region) => region.box);
+  const placedBoxes = entry?.module.slideMeta.placed?.map(
+    (item) => resolvePlace(item, brand.spacing).rect,
+  );
   const layoutChrome = own?.chrome;
   const plan = planChrome({
     chrome: brand.chrome,
@@ -190,8 +194,10 @@ function useChromeLook(): ChromeLook {
     hidden: deck.slides.map((slide) => slide.hidden),
     frontmatter,
     bleed,
+    margin: brand.spacing.margin,
     ...(layoutChrome === undefined ? {} : { layoutChrome }),
     ...(mediaBoxes === undefined ? {} : { mediaBoxes }),
+    ...(placedBoxes === undefined || placedBoxes.length === 0 ? {} : { placedBoxes }),
   });
   const surface = frontmatter.surface ?? DEFAULT_SURFACE;
   return {

@@ -273,6 +273,7 @@ export const deckToolsLive = Effect.fn('deckToolsLive')(function* (
       brand: page.brand,
       selection: page.selection,
       pages: page.pages,
+      ...(page.placed === undefined ? {} : { placed: page.placed }),
     } satisfies CurrentSlide;
   });
 
@@ -320,12 +321,14 @@ export const deckToolsLive = Effect.fn('deckToolsLive')(function* (
 
         const findings = report.findings.filter((finding) => finding.slide === slide);
         const errors = findings.filter((finding) => finding.severity === 'error').length;
+        const warnings = findings.filter((finding) => finding.severity === 'warning').length;
+        const info = findings.filter((finding) => finding.severity === 'info').length;
         return {
           deck: report.deck,
           brand: report.brand,
           slide,
           ok: errors === 0,
-          summary: { ...report.summary, errors, warnings: findings.length - errors },
+          summary: { ...report.summary, errors, warnings, info },
           findings,
         };
       }),

@@ -35,9 +35,18 @@ describe('compileBrand CSS', () => {
     expect(compiled.css).toContain('  --brand-palette-blue-600: #2f4fd8;');
     expect(compiled.css).toContain('  --brand-type-display-size: 140px;');
     expect(compiled.css).toContain('  --brand-type-label-case: uppercase;');
+    expect(compiled.css).toContain('  --brand-grid-columns: 12;');
+    expect(compiled.css).toContain('  --brand-grid-rows: 6;');
+    expect(compiled.css).toContain('  --brand-grid-gutter: 32px;');
     expect(compiled.css).toContain(
       '[data-brand="test"] [data-surface="inverse"],\n[data-brand="test"][data-surface="inverse"] {',
     );
+  });
+
+  it('emits custom --brand-grid-rows when spacing.grid.rows is overridden', () => {
+    const custom = Effect.runSync(resolveBrand(testBrand({ 'spacing.grid.rows': 9 })));
+    const css = compileBrand(custom.tokens).css;
+    expect(css).toContain('  --brand-grid-rows: 9;');
   });
 
   it('remaps the role variables per surface and paints the surface', () => {

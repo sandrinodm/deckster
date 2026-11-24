@@ -3,7 +3,13 @@ import type { BleedSide } from '@deckster/engine';
 
 import { describe, expect, it } from 'vite-plus/test';
 
-import { formatPageNumber, planChrome, type ChromeInput } from '#chrome/chrome-plan.ts';
+import {
+  cornersCoveredByPlaced,
+  formatPageNumber,
+  planChrome,
+  type ChromeBox,
+  type ChromeInput,
+} from '#chrome/chrome-plan.ts';
 
 const CHROME: ChromeTokens = {
   pageNumber: { show: true, format: '{n} / {total}', corner: 'bottom-right' },
@@ -110,6 +116,80 @@ describe('planChrome', () => {
 
   it('keeps every corner when nothing bleeds', () => {
     expect(planChrome(input(4)).corners['bottom-right']).toEqual(['footer', 'page']);
+  });
+
+  it('yields chrome off corners covered by placed elements in the header or footer band', () => {
+    const margin = { x: 96, y: 72 };
+    const headerRight: ChromeBox = [1400, 0, 424, 72];
+    const footerRight: ChromeBox = [1400, 1008, 424, 72];
+    const plan = planChrome({
+      ...input(4),
+      margin,
+      placedBoxes: [headerRight, footerRight],
+    });
+    expect(plan.corners).toEqual({
+      'top-left': ['logo'],
+      'top-right': [],
+      'bottom-left': ['footer', 'page'],
+      'bottom-right': [],
+    });
+  });
+
+  it('does not move chrome for placed boxes that stay strictly inside the safe area', () => {
+    const margin = { x: 96, y: 72 };
+    const safeTopRight: ChromeBox = [1400, 72, 424, 160];
+    const safeBottomRight: ChromeBox = [1400, 848, 424, 160];
+    const plan = planChrome({
+      ...input(4),
+      margin,
+      placedBoxes: [safeTopRight, safeBottomRight],
+    });
+    expect(plan.corners).toEqual({
+      'top-left': [],
+      'top-right': ['logo'],
+      'bottom-left': [],
+      'bottom-right': ['footer', 'page'],
+    });
+  });
+
+  it('drops chrome items when placed boxes cover both corners on the same edge', () => {
+    const margin = { x: 96, y: 72 };
+    const footerLeft: ChromeBox = [96, 1008, 400, 72];
+    const footerRight: ChromeBox = [1424, 1008, 400, 72];
+    const plan = planChrome({
+      ...input(4),
+      margin,
+      placedBoxes: [footerLeft, footerRight],
+    });
+    expect(plan.corners['bottom-left']).toEqual([]);
+    expect(plan.corners['bottom-right']).toEqual([]);
+    expect(plan.corners['top-right']).toEqual(['logo']);
+  });
+
+  it('yields chrome for full-bleed canvas placed boxes that enter a corner band', () => {
+    const margin = { x: 96, y: 72 };
+    const fullRightPanel: ChromeBox = [1440, 0, 480, 1080];
+    const plan = planChrome({
+      ...input(4),
+      margin,
+      placedBoxes: [fullRightPanel],
+    });
+    expect(plan.corners['top-right']).toEqual([]);
+    expect(plan.corners['top-left']).toEqual(['logo']);
+    expect(plan.corners['bottom-right']).toEqual([]);
+    expect(plan.corners['bottom-left']).toEqual(['footer', 'page']);
+  });
+
+  it('leaves chrome alone when a centered footer placed box sits between the left and right corners', () => {
+    const margin = { x: 96, y: 72 };
+    const footerCenter: ChromeBox = [760, 1008, 400, 72];
+    expect(cornersCoveredByPlaced(footerCenter, margin)).toEqual([]);
+    expect(planChrome({ ...input(4), margin, placedBoxes: [footerCenter] }).corners).toEqual({
+      'top-left': [],
+      'top-right': ['logo'],
+      'bottom-left': [],
+      'bottom-right': ['footer', 'page'],
+    });
   });
 });
 

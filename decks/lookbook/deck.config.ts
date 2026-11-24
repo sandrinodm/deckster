@@ -9,7 +9,7 @@ import { defineDeck } from '@deckster/engine/config';
 export default defineDeck({
   title: 'Same hour, no van',
   brand: 'default',
-  duration: '149m',
+  duration: '152m',
   slides: [
     // Part 1: open
     'cover',
@@ -221,7 +221,14 @@ export default defineDeck({
     'motion-blur',
     'motion-wipe',
     'motion-focus',
-    // Part 12: close
+    // Part 12: placed elements
+    'part-placed',
+    'placed-anchors',
+    'placed-zones',
+    'placed-grid',
+    'placed-shapes',
+    'placed-geometries',
+    // Part 13: close
     'part-close',
     'recap-network',
     'recap-launch',

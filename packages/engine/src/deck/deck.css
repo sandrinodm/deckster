@@ -32,10 +32,21 @@
 .deck-slide {
   position: absolute;
   inset: 0;
+  isolation: isolate;
 }
 
 .deck-slide[data-slide-active='false'] {
   visibility: hidden;
+}
+
+.deck-placed {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.deck-placed > * {
+  pointer-events: auto;
 }
 
 .deck-slide-view {

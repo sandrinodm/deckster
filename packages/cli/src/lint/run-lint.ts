@@ -66,18 +66,19 @@ export type LintReport = {
   brand: string | null;
 
   /**
-   * `true` when there are no errors; warnings do not fail a deck.
+   * `true` when there are no errors; warnings and info findings do not fail a deck.
    */
   ok: boolean;
 
   /**
-   * The error and warning counts, how many slides and steps were rendered (0 when the deck does not
-   * compile), and the total of the slides' speaking budgets in seconds (`null` when no slide has
-   * one).
+   * The error, warning and info counts, how many slides and steps were rendered (0 when the deck
+   * does not compile), and the total of the slides' speaking budgets in seconds (`null` when no
+   * slide has one).
    */
   summary: {
     errors: number;
     warnings: number;
+    info: number;
     slides: number;
     steps: number;
     budgetSeconds: number | null;
@@ -470,7 +471,7 @@ function totalBudget(slides: readonly SlideContext[]): number | null {
 }
 
 /**
- * The report for a deck's findings, counting errors and warnings.
+ * The report for a deck's findings, counting errors, warnings and info findings.
  *
  * @param deck - The deck folder name.
  * @param brand - The brand it rendered with, or `null`.
@@ -488,11 +489,13 @@ function buildReport(
   },
 ): LintReport {
   const errors = findings.filter((finding) => finding.severity === 'error').length;
+  const warnings = findings.filter((finding) => finding.severity === 'warning').length;
+  const info = findings.filter((finding) => finding.severity === 'info').length;
   return {
     deck,
     brand,
     ok: errors === 0,
-    summary: { errors, warnings: findings.length - errors, ...rendered },
+    summary: { errors, warnings, info, ...rendered },
     findings,
   };
 }

@@ -72,6 +72,15 @@ export function fakeDeckTools(): FakeDeckTools {
         brand: 'default',
         selection: '',
         pages: 1,
+        placed: [
+          {
+            kind: 'shape',
+            name: 'badge',
+            place: 'top-right',
+            zone: 'safe',
+            rect: [1520, 80, 320, 120],
+          },
+        ],
       } as const;
     }),
     deckOutline: Effect.sync(() => {

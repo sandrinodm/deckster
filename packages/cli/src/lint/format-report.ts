@@ -86,13 +86,18 @@ function findingLocation(finding: LintFinding): string {
  * @param report - The lint result.
  */
 function formatSummary(report: LintReport): string {
-  const { errors, warnings, slides, steps } = report.summary;
-  if (errors === 0 && warnings === 0) {
+  const { errors, warnings, info, slides, steps } = report.summary;
+  if (errors === 0 && warnings === 0 && info === 0) {
     const rendered = `${count(slides, 'slide')} (${count(steps, 'step')} checked)`;
     return `${report.deck}: no problems in ${rendered}.`;
   }
 
-  const counts = `${count(errors, 'error')}, ${count(warnings, 'warning')}`;
+  const parts = [count(errors, 'error'), count(warnings, 'warning')];
+  if (info > 0) {
+    parts.push(`${info} info`);
+  }
+
+  const counts = parts.join(', ');
   return `${report.deck}: ${counts}${fromBrandNote(report)}${checkedNote(slides, steps)}.`;
 }
 

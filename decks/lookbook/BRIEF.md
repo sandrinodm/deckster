@@ -502,6 +502,6 @@ to execution once the team agrees who records the handover. Shop enrollment rema
 
 ## Complete lookbook edition
 
-The kit has 64 layouts. This reference edition has 208 slides and 435 steps in twelve parts.
-Slide budgets total 142 minutes 20 seconds within a 147-minute duration. The forty-minute launch
+The kit has 64 layouts. This reference edition has 214 slides and 436 steps in thirteen parts.
+Slide budgets total 147 minutes 55 seconds within a 152-minute duration. The forty-minute launch
 talk above selects from this edition.

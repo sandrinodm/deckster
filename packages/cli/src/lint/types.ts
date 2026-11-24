@@ -4,12 +4,12 @@ import type { AnyLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
 /**
- * How serious a finding is. Errors make `deckster lint` exit non-zero.
+ * How serious a finding is. Errors make `deckster lint` exit non-zero; warnings and info do not.
  */
-export const Severity = Schema.Literals(['error', 'warning']);
+export const Severity = Schema.Literals(['error', 'warning', 'info']);
 
 /**
- * How serious a finding is. Errors make `deckster lint` exit non-zero.
+ * How serious a finding is. Errors make `deckster lint` exit non-zero; warnings and info do not.
  */
 export type Severity = typeof Severity.Type;
 
@@ -420,6 +420,28 @@ export type RenderErrorSnapshot = {
 };
 
 /**
+ * One visible chrome item measured on the canvas, such as a corner logo, footer text or page
+ * number.
+ */
+export type ChromeItemSnapshot = {
+  /**
+   * The corner the item sits in (`top-left`, `top-right`, `bottom-left`, `bottom-right`), or `page`
+   * for a brand layout's fixed page-number box.
+   */
+  readonly corner: string;
+
+  /**
+   * What kind of chrome item it is (`logo`, `text` or `page`).
+   */
+  readonly kind: string;
+
+  /**
+   * The item's bounding box in canvas pixels.
+   */
+  readonly box: Box;
+};
+
+/**
  * Everything measured on one slide at one step. Hidden elements (display none, `visibility:
  * hidden`, such as steps not yet revealed) are not recorded.
  */
@@ -448,6 +470,12 @@ export type StepSnapshot = {
    * The filled slots of the slide's layout, in document order.
    */
   slots: readonly SlotSnapshot[];
+
+  /**
+   * Visible chrome items measured on the canvas (corner logos, footer text, page numbers); absent
+   * in synthetic snapshots that omit chrome.
+   */
+  readonly chrome?: readonly ChromeItemSnapshot[];
 
   /**
    * The error the slide shows instead of its content, or `null` when it rendered.

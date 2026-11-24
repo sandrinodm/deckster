@@ -5,6 +5,13 @@
 export const BODY_SLOT = 'body';
 
 /**
+ * The reserved slot name the MDX build routes top-level placed elements (`<Shape>`, `<Text>`,
+ * `<Place>`) into. Its leading underscores cannot match {@link SLOT_NAME_PATTERN}, so it can never
+ * collide with a layout's named slots.
+ */
+export const PLACED_SLOT = '__placed' as const;
+
+/**
  * Matches a slot name: a lowercase letter, then letters and digits, such as `left` or
  * `quoteSource`. The tag authors write is the same name with a capital first letter.
  */

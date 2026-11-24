@@ -44,6 +44,7 @@ import { resolveSurfaceColors, type SurfaceColors } from '#resolve/surface-color
 import { deriveTextColors } from '#resolve/text-colors.ts';
 import { DEFAULT_SURFACE } from '#schema/color-schema.ts';
 import { withPlainTreatment } from '#schema/identity-schema.ts';
+import { DEFAULT_GRID_ROWS } from '#schema/shape-schema.ts';
 import { DIAGRAM_TOKENS, type DiagramToken } from '#schema/theme-schema.ts';
 import { GENERIC_FAMILIES, TYPE_STEPS, type TypeStep } from '#schema/typography-schema.ts';
 
@@ -106,7 +107,15 @@ export function buildTokens(brand: Brand, colors: ColorResolver): BrandTokens {
     gradients,
     typography,
     shape,
-    spacing: brand.spacing,
+    spacing: {
+      scale: brand.spacing.scale,
+      margin: brand.spacing.margin,
+      grid: {
+        columns: brand.spacing.grid.columns,
+        rows: brand.spacing.grid.rows ?? DEFAULT_GRID_ROWS,
+        gutter: brand.spacing.grid.gutter,
+      },
+    },
     logo: brand.logo,
     icons: brand.icons,
     imagery: {

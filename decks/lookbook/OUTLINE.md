@@ -330,7 +330,18 @@ Single charts and related measures in a dashboard, each supporting one takeaway.
 | `motion-wipe` | `statement`, `surface: inverse`, one sentence with three phrases in `<Step effect="wipe">` | Wipe: each leg is drawn from shop to door | `wipe` travelling across the words | 1 to 3 | G2 |
 | `motion-focus` | `statement`, `surface: default`, three Track statuses, each a paragraph in `<Step focus>` | Focus: only the latest status is lit | `focus` with the default effect | 1 to 3 | G2 |
 
-### Part 12: Close (G5)
+### Part 12: Placed elements
+
+| Id | Layout and options | Claim | Shows | Build | Group |
+| --- | --- | --- | --- | --- | --- |
+| `part-placed` | `section`, divider form | Placed elements | Divider | whole | done |
+| `placed-anchors` | `content`, `<Shape>`, `<Place>` with Markdown list, `<Text>` in `safe` | Named places pin callouts without pixel math | Named `place` anchors, `at` reveal on `<Place>`, bullet list inside `<Place>` | 1 bottom-right list | done |
+| `placed-zones` | `statement` (inverse), `<Place>` with `<Icon>` in `header`, `<Shape>` in `safe` and `canvas`, `<Text>` in `footer` | Four zones frame a slide from margin to edge | All four zones (`header`, `safe`, `canvas`, `footer`), `inset`, `<Icon>` inside `<Place>` | whole | done |
+| `placed-grid` | `default`, `cols`/`rows` on 12×6 grid | Grid cells snap callouts to the brand's 12×6 grid | Grid cell placement, `surface`, `fill`, `border`, `stroke`, `radius`, `shadow`, `<Place>` list, `<Text>` | whole | done |
+| `placed-shapes` | `content` (inverse), `rect`, `square`, `circle`, `pill` | Four shape geometries frame a callout on the grid | 1:1 `square`/`circle`, `rect`, `pill`, brand radii, borders and shadows | whole | done |
+| `placed-geometries` | `content`, `ellipse`, `diamond`, `triangle` | Ellipses, diamonds and triangles export as native shapes | Remaining `<Shape>` geometries with native PPTX contours | whole | done |
+
+### Part 13: Close (G5)
 
 | Id | Layout and options | Claim | Shows | Build | Group |
 | --- | --- | --- | --- | --- | --- |
@@ -387,7 +398,7 @@ Where each capability lives. The coverage test lists what is still missing; this
   Layers, Layer, Item; Cycle; Tree; Timeline, Milestone; Svg.
 - **Slide components:** Code (fences), CodeMove, CodeStep, Terminal, Cmd, Out (part 7); Icon
   (`content-text`), Image (`split-photo-right`), Lottie (`split-lottie`) (part 3); Video,
-  Morph (part 8); Live (TSX), AppFrame, CommandDemo, GroundedAnswer, ReviewDiff and RunTrace (part 7); LinkCard, Download, QR, Button (part 12); Step
+  Morph (part 8); Live (TSX), AppFrame, CommandDemo, GroundedAnswer, ReviewDiff and RunTrace (part 7); Place, Shape, Text (part 12); LinkCard, Download, QR, Button (part 13); Step
   and Notes everywhere.
 - **TSX slides:** only `demo-live`. **Apps:** only `apps/dispatch-sim` for `demo-appframe`.
 

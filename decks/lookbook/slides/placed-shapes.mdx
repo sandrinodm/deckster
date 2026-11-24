@@ -1,0 +1,65 @@
+---
+layout: content
+title: Four shape geometries frame a callout on the grid
+surface: inverse
+budget: 45s
+---
+
+Rectangles, squares, circles and pills draw their radii, borders and shadows from the brand.
+
+<Shape
+  shape="rect"
+  cols="1-3"
+  rows="5-6"
+  surface="accent"
+  radius="lg"
+  shadow="md"
+  align="center"
+  anchor="center"
+  name="Rect shape">
+  **Rect** · €3.10
+</Shape>
+
+<Shape
+  shape="square"
+  cols="4-6"
+  rows="5-6"
+  fill="surface"
+  border="accent"
+  stroke="regular"
+  radius="md"
+  align="center"
+  anchor="center"
+  name="Square shape">
+  **Square** · 1:1
+</Shape>
+
+<Shape
+  shape="circle"
+  cols="7-9"
+  rows="5-6"
+  surface="default"
+  shadow="lg"
+  align="center"
+  anchor="center"
+  name="Circle shape">
+  **Circle** · 90s
+</Shape>
+
+<Shape
+  shape="pill"
+  cols="10-12"
+  rows="5-6"
+  fill="surface"
+  border="border"
+  stroke="hairline"
+  align="center"
+  anchor="center"
+  name="Pill shape">
+  **Pill** · Same hour
+</Shape>
+
+<Notes>
+`content` on `inverse` with four `<Shape>` geometries placed in grid cells: `rect` with `surface="accent"`, `radius="lg"` and `shadow="md"`, 1:1 locked `square` with `border="accent"` and `stroke="regular"`, 1:1 locked `circle` with `shadow="lg"`, and `pill` with `stroke="hairline"`.
+Every shape pulls its colour, stroke, radius and shadow from the active brand, so switching brands restyles every callout together.
+</Notes>

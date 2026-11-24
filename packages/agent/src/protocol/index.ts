@@ -5,6 +5,7 @@
  */
 export * from '#protocol/mcp-endpoint.ts';
 export * from '#protocol/agent-events.ts';
+export type { PlacedElementReport } from '#protocol/page-link-events.ts';
 export {
   AgentErrorKind,
   AgentEvent as AgentEventSchema,

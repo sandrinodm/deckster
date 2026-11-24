@@ -119,6 +119,10 @@ describe('decodeBrand map keys', () => {
         },
       ],
       ['spacing.margin.x', Number.POSITIVE_INFINITY],
+      ['spacing.grid.rows', 0],
+      ['spacing.grid.rows', 13],
+      ['spacing.grid.rows', 4.5],
+      ['spacing.grid.rows', Number.NaN],
       ['logo.variants.primary.aspect', Number.POSITIVE_INFINITY],
       ['logo.clearSpace', Number.POSITIVE_INFINITY],
       ['motion.easings.standard', [0.2, Number.NaN, 0, 1]],
@@ -127,6 +131,18 @@ describe('decodeBrand map keys', () => {
     ] as const) {
       const problems = problemsOf(testBrand({ [path]: value }));
       expect(problems.length, path).toBeGreaterThan(0);
+    }
+  });
+
+  it('accepts an optional integer spacing.grid.rows in 1..12 and explains invalid values', () => {
+    expect(Result.isSuccess(decodeBrand(testBrand({ 'spacing.grid.rows': 1 })))).toBe(true);
+    expect(Result.isSuccess(decodeBrand(testBrand({ 'spacing.grid.rows': 8 })))).toBe(true);
+    expect(Result.isSuccess(decodeBrand(testBrand({ 'spacing.grid.rows': 12 })))).toBe(true);
+
+    for (const invalid of [0, 13, 4.5]) {
+      const [problem] = problemsOf(testBrand({ 'spacing.grid.rows': invalid }));
+      expect(problem?.path).toBe('spacing.grid.rows');
+      expect(problem?.fix).toContain('rows: 6');
     }
   });
 });

@@ -97,6 +97,18 @@ export function canMerge(frame: TextNode, next: TextNode): boolean {
     return false;
   }
 
+  const sameReplacement =
+    frame.replacedAt === next.replacedAt && last.replacedAt === first.replacedAt;
+  if (frame.exportText === true || next.exportText === true) {
+    return (
+      frame.exportText === true &&
+      next.exportText === true &&
+      frame.container !== null &&
+      frame.container === next.container &&
+      sameReplacement
+    );
+  }
+
   const sameContext =
     frame.container === next.container &&
     frame.slot === next.slot &&
@@ -112,8 +124,6 @@ export function canMerge(frame: TextNode, next: TextNode): boolean {
   const narrower = Math.min(last.box.width, first.box.width);
   const sideBySide = narrower > 0 && overlap / narrower >= MIN_HORIZONTAL_OVERLAP;
   const sameWrap = (last.wrapWidth === null) === (first.wrapWidth === null);
-  const sameReplacement =
-    frame.replacedAt === next.replacedAt && last.replacedAt === first.replacedAt;
   return (
     sameContext &&
     sameReplacement &&

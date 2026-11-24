@@ -1,3 +1,4 @@
+import type { BrandTokens, SpacingTokens } from '@deckster/brand';
 import type { SlideFrontmatter } from '@deckster/engine/frontmatter';
 
 import { Effect } from 'effect';
@@ -6,7 +7,9 @@ import { invalidFields, type DeckBuildError, type FileRef } from '#errors.ts';
 import { suggest } from '#suggest.ts';
 
 /**
- * The brand a slide is checked against: its name and the surfaces it defines.
+ * The brand a slide is checked against: its name, the surfaces it defines, and (when resolved
+ * tokens are available) its spacing grid and per-surface role hex colors for placed-element
+ * checks.
  */
 export type SlideBrand = {
   /**
@@ -18,7 +21,37 @@ export type SlideBrand = {
    * The surfaces the brand defines, such as `default` and `inverse`.
    */
   surfaces: readonly string[];
+
+  /**
+   * The brand's spacing scale, margins and grid, used to validate placed elements.
+   */
+  spacing?: SpacingTokens;
+
+  /**
+   * Resolved role hex colors per surface name (`surface -> role -> hex`), used to check text
+   * contrast on `<Shape fill="...">`.
+   */
+  surfaceColors?: Readonly<Record<string, Readonly<Record<string, string>>>>;
 };
+
+/**
+ * Builds the {@link SlideBrand} summary a slide compile needs from resolved {@link BrandTokens}.
+ *
+ * @param tokens - The resolved brand tokens.
+ */
+export function slideBrandOf(tokens: BrandTokens): SlideBrand {
+  const surfaceColors: Record<string, Readonly<Record<string, string>>> = {};
+  for (const [surfaceName, surface] of Object.entries(tokens.surfaces)) {
+    surfaceColors[surfaceName] = surface.roles;
+  }
+
+  return {
+    name: tokens.name,
+    surfaces: Object.keys(tokens.surfaces),
+    spacing: tokens.spacing,
+    surfaceColors,
+  };
+}
 
 /**
  * Fills in the surface a layout asks for when the slide names none: the contract's `surface`, if

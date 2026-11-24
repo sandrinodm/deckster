@@ -30,7 +30,7 @@ For layout choice, start with the [layout chooser](slide-craft.md#3-choosing-the
 | `deckster layouts <deck> --json` | The full contract, including frontmatter, fields, slots, `title.maxChars`, `budget`, `variants`, default `surface`, `example.mdx` and `pptx`. |
 | `deckster charts --json` | The chart and number components, their `messages` map, `useWhen`, `avoid`, props, limits and examples. |
 | `deckster diagrams --json` | Diagram components and parts, node kinds, edge options, animation and limits. |
-| `deckster components --json` | Code, terminal, image, video, icon, link, QR, live demo, `Step` and `Notes`. |
+| `deckster components --json` | Code, terminal, image, video, icon, link, QR, live demo, `Place`, `Shape`, `Text`, `Step` and `Notes`. |
 | `deckster brand <name> --json` | The brand's surfaces, palettes, type scale, icon set and resolved diagram defaults. |
 | `deckster icons --brand a,b` | Icon names the listed brands have in common. Add `--search <text>` to narrow the list. |
 
@@ -102,6 +102,20 @@ What the presenter says, cues, the transition. If asked: the source and caveats.
 - **Media.** Reference only files that exist under the deck (lint reports a missing or low-resolution image). Do not invent a photo: use a chart, diagram, number or statement instead, and note in the handoff where a real image would help. A product screenshot goes on a `screen` slide, cut to the app itself, since the frame draws the browser bar or the device. Icons come from the brand's set (`<Icon name>`); list names with `deckster icons --brand <all the deck's brands>`, so one that exists in one set but not the other never ships.
 - **Live demos** need a `poster`, which static mode and exports show instead of the live thing.
 
+## Placed elements
+
+Three top-level components put an element on the slide's placed layer, outside the layout's slots, using only brand tokens and surfaces:
+
+- `<Shape>` — geometric container (`rect`, `square`, `ellipse`, `circle`, `pill`, `diamond`, `triangle`) styled with `surface`, `fill`, `border`, `stroke`, `radius`, `shadow`, `padding`, `type`, `align`, `anchor`, `color` and optional text or Markdown lists. Prefer `surface="accent"` (or another brand surface) over raw `fill` roles so text contrast is checked automatically.
+- `<Text>` — unboxed floating text (`type`, `align`, `anchor`, `color`) for labels, captions, stamps and footers.
+- `<Place>` — unstyled positioning wrapper for any Markdown block, bullet list, `<Icon>` or other kit component.
+
+Place them at the top level of the slide (never nested inside a slot, list or another component) using a named anchor (`place`: `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`) inside a `zone` (`safe` default, `header`, `footer`, `canvas`) with optional `width`, `height` and `inset`, or a 1-based range on the brand's 12×6 grid (`cols="9-12" rows="2-4"`). All three take `at` and `effect` for step reveals. Avoid pixel `box={[x, y, w, h]}` unless matching an imported template (`placed-pixels` reports it at `info` with a named or grid replacement).
+
+- **When to reach for them:** a concise badge or stamp ("Launch day"), a short accent callout next to a chart or product screen, or a footer/header label (placed in an open area of `zone="footer"` or `zone="header"`, such as `place="bottom"` centred clear of corner chrome).
+- **When not to:** never build a slide's main structure out of floating boxes. If a box carries a paragraph, a multi-point argument or covers a large share of the canvas, pick a layout (`split`, `columns`, `cards`, `bento`, `chart` with `<Aside>`) instead.
+- **Caps and lint rules:** `placed-count` (error) caps a slide at 4 placed elements; `placed-words` (warning) caps copy at 25 words per element and 40 words across the slide; `placed-size` (warning) flags any box outside `zone="canvas"` over 35% of the safe area; `placed-off-canvas` (error) and `placed-covers-text` (error) catch elements leaving their zone or overlapping slot text; `placed-chrome` (warning) flags boxes that collide with or displace corner chrome.
+
 ## Brand layouts
 
 `deckster layouts <deck> --summary` lists the active brand's layouts first. In the full JSON, `source: "brand:<name>"` identifies them, `label` names the template, and `fallback` names the kit layout used when another brand lacks it. A fallback can rearrange the slide, so run lint and view screenshots under every requested brand. Lint reports `brand-layout-fallback` when it uses one. If a layout you expect is missing from the active brand's catalog, read the catalog warnings and run `deckster brand check <name>`.
@@ -144,7 +158,7 @@ Each slide's `budget` is the time spent on it; the deck's `duration` is the time
 
 ## What lint checks, so you do not have to
 
-`deckster lint <deck> --help` lists every rule. In short: schema and frontmatter, overflow and clipping, text overlap, minimum type size, contrast, off-brand values, per-slot content budgets, missing notes, layout repetition, a deck whose chart, diagram and code slides almost never build (`few-builds`), the time budget, chart rules (empty chart, truncated bar axis, too many series or categories, no highlight, topic-style title, missing unit, avoidable legend, donut slices, growing funnel), diagram rules (too dense, overlaps, long words, unlabeled edges, a card the brand does not have), media and demo posters, and open review comments.
+`deckster lint <deck> --help` lists every rule. In short: schema and frontmatter, overflow and clipping, text overlap, minimum type size, contrast, off-brand values, per-slot content budgets, placed-element caps and overlaps (`placed-*`), missing notes, layout repetition, a deck whose chart, diagram and code slides almost never build (`few-builds`), the time budget, chart rules (empty chart, truncated bar axis, too many series or categories, no highlight, topic-style title, missing unit, avoidable legend, donut slices, growing funnel), diagram rules (too dense, overlaps, long words, unlabeled edges, a card the brand does not have), media and demo posters, and open review comments.
 
 Errors must be fixed. Treat warnings as findings to resolve too: each names its fix, and most point at a real weakness (a chart with no highlight has usually not decided its point). Leave a warning only when you can say why it does not apply, and say so in the handoff.
 

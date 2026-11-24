@@ -16,6 +16,17 @@ import {
 const GOTO_TIMEOUT_MS = 5000;
 
 /**
+ * Checks one placed element reported by a page.
+ */
+const PlacedElementSchema = Schema.Struct({
+  kind: Schema.Literals(['place', 'shape', 'text']),
+  name: Schema.optionalKey(Schema.String),
+  place: Schema.optionalKey(Schema.String),
+  zone: Schema.optionalKey(Schema.String),
+  rect: Schema.Tuple([Schema.Number, Schema.Number, Schema.Number, Schema.Number]),
+});
+
+/**
  * Checks what a page reports; anything else is dropped.
  */
 const decodeReport = Schema.decodeUnknownResult(
@@ -34,6 +45,7 @@ const decodeReport = Schema.decodeUnknownResult(
     stepCount: Schema.Number,
     brand: Schema.String,
     selection: Schema.String,
+    placed: Schema.optionalKey(Schema.Array(PlacedElementSchema)),
   }),
 );
 
