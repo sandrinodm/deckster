@@ -7,12 +7,19 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { vi } from 'vite-plus/test';
 
 import { addBrand, type AddBrandRequest } from '#brand-add/add-brand.ts';
 import { parseBrandSource } from '#brand-add/brand-source.ts';
 import { DECKSTER_SOURCE_FILE } from '#brand-add/deckster-source.ts';
 import { NETWORK_PROTOCOLS } from '#brand-add/fetch-brand.ts';
+import { checkCatalogLayouts } from '#layouts/check-brand-layouts.ts';
 import { contractRan, writeThrowingLayout } from '#layouts/code-layouts.fixture.ts';
+
+vi.mock('#layouts/check-brand-layouts.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('#layouts/check-brand-layouts.ts')>();
+  return { ...actual, checkCatalogLayouts: vi.fn(actual.checkCatalogLayouts) };
+});
 
 /**
  * The address the tests name; a `url.<base>.insteadOf` rule sends it to the repository on disk, as
@@ -225,6 +232,7 @@ function writeLayoutVariants(repo: string, brandDir: string): void {
     fs.writeFileSync(path.join(dir, 'layouts.ts'), layouts);
   }
 
+  writeCodeFallbacks(repo, newFont);
   fs.writeFileSync(path.join(repo, 'brands', 'invalid-artwork', ARTWORK_FILE), 'Plain text\n');
   writeCodeLayouts(path.join(repo, 'brands', 'code-layouts'), path.join(repo, 'brands', BRAND));
 
@@ -255,6 +263,11 @@ function writeCodeLayouts(dir: string, template: string): void {
     'layouts/kpi-wall/contract.ts',
     'layouts/kpi-wall/layout.tsx',
     'layouts/kpi-wall/layout.css',
+    'layouts/kpi-wall/README.md',
+    'layouts/kpi-wall/preview.png',
+    'layouts/kpi-wall/notes/LICENSE',
+    'layouts/_shared/README.md',
+    'layouts/notes/README.md',
     'layouts/title/layout.tsx',
     'layouts/_shared/contract.ts',
     'layouts/.hidden/contract.ts',
@@ -274,6 +287,40 @@ function writeCodeLayouts(dir: string, template: string): void {
     path.join(dir, DECKSTER_SOURCE_FILE),
     JSON.stringify({ source: 'gh:evil/brand', commit: null, codeLayoutsSkipped: ['evil'] }),
   );
+}
+
+/**
+ * Builds the brands whose data layouts fall back to their own code layout `kpi-wall`:
+ * `code-fallback` with only that layout, and `code-fallback-mixed` with a second layout whose
+ * fallback is unknown.
+ *
+ * @param repo - The repository.
+ * @param brandTs - The text of a `brand.ts` that needs no installed font.
+ */
+function writeCodeFallbacks(repo: string, brandTs: string): void {
+  const onCode = { ...SPLIT_LAYOUT, name: 'acme-kpi', fallback: 'kpi-wall' };
+  const unknown = { ...SPLIT_LAYOUT, fallback: 'nowhere' };
+  const variants = {
+    'code-fallback': [onCode],
+    'code-fallback-mixed': [onCode, unknown],
+  };
+  for (const [name, layouts] of Object.entries(variants)) {
+    const dir = path.join(repo, 'brands', name);
+    fs.mkdirSync(path.join(dir, 'layouts', 'kpi-wall'), { recursive: true });
+    fs.cpSync(path.join(repo, 'brands', BRAND, 'logos'), path.join(dir, 'logos'), {
+      recursive: true,
+    });
+    fs.writeFileSync(path.join(dir, 'brand.ts'), brandTs);
+    fs.writeFileSync(
+      path.join(dir, 'layouts.ts'),
+      [
+        "import { defineBrandLayouts } from '@deckster/brand';",
+        `export default defineBrandLayouts(${JSON.stringify(layouts)});`,
+        '',
+      ].join('\n'),
+    );
+    writeThrowingLayout(path.join(dir, 'layouts'), 'kpi-wall', CODE_RAN_MARKER);
+  }
 }
 
 /**
@@ -354,7 +401,7 @@ layer(NodeServices.layer)('addBrand', (it) => {
       });
       expect(added.commit).toMatch(/^[0-9a-f]{40}$/);
       expect(added.files).toContain('brand.ts');
-      expect(added.written).toEqual(['package.json', 'tsconfig.json']);
+      expect(added.written).toEqual(['package.json', 'tsconfig.json', DECKSTER_SOURCE_FILE]);
       expect(added.skipped).toEqual(
         expect.arrayContaining([
           { path: '.env', reason: 'hidden' },
@@ -394,7 +441,7 @@ layer(NodeServices.layer)('addBrand', (it) => {
           codeLayoutsSkipped: [],
         });
         expect(text).toBe(`${JSON.stringify(value, null, 2)}\n`);
-        expect(added.written).toEqual(['package.json', 'tsconfig.json']);
+        expect(added.written).toEqual(['package.json', 'tsconfig.json', DECKSTER_SOURCE_FILE]);
       }),
   );
 
@@ -414,9 +461,68 @@ layer(NodeServices.layer)('addBrand', (it) => {
           path: 'layouts/kpi-wall/layout.tsx',
           reason: 'code',
         });
-        expect(fs.existsSync(path.join(root, added.dir, 'layouts'))).toBe(false);
+        for (const layout of ['kpi-wall', 'title']) {
+          expect(fs.existsSync(path.join(root, added.dir, 'layouts', layout)), layout).toBe(false);
+        }
+
         expect(contractRan(CODE_RAN_MARKER)).toBe(false);
       }),
+  );
+
+  it.effect('leaves out the documents and images of a code layout folder with its code', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const added = yield* addBrand(root, request('//brands/code-layouts'));
+      for (const file of ['README.md', 'preview.png', 'notes/LICENSE']) {
+        const left = `layouts/kpi-wall/${file}`;
+        expect(added.skipped, left).toContainEqual({ path: left, reason: 'code layout' });
+        expect(added.files, left).not.toContain(left);
+      }
+
+      expect(added.files.filter((file) => file.startsWith('layouts/'))).toEqual([
+        'layouts/_shared/README.md',
+        'layouts/notes/README.md',
+      ]);
+      expect(fs.existsSync(path.join(root, added.dir, 'layouts', 'kpi-wall'))).toBe(false);
+    }),
+  );
+
+  it.effect('adds a brand whose data layout falls back to a code layout it left out', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const added = yield* addBrand(root, request('//brands/code-fallback'));
+      expect(added.codeLayoutsSkipped).toEqual(['kpi-wall']);
+      expect(added.files).toContain('layouts.ts');
+      expect(added.warnings).toContainEqual({
+        file: LAYOUTS_FILE,
+        path: 'layouts[0].fallback',
+        message: expect.stringContaining('"kpi-wall"'),
+        fix: expect.stringContaining('layouts/kpi-wall/'),
+      });
+      expect(contractRan(CODE_RAN_MARKER)).toBe(false);
+    }),
+  );
+
+  it.effect('still reports the other layouts of such a brand, at their own position', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      const error = yield* Effect.flip(addBrand(root, request('//brands/code-fallback-mixed')));
+      expect(error).toMatchObject({
+        _tag: 'BrandError',
+        problems: [{ path: 'layouts[1].fallback', message: expect.stringContaining('nowhere') }],
+      });
+      expect(fs.existsSync(path.join(root, 'brands', BRAND))).toBe(false);
+    }),
+  );
+
+  it.effect('checks the staged brand without running its code', () =>
+    Effect.gen(function* () {
+      vi.mocked(checkCatalogLayouts).mockClear();
+      yield* addBrand(workspace(), request('//brands/code-layouts'));
+      const calls = vi.mocked(checkCatalogLayouts).mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      expect(calls.map((call) => call[2])).toEqual(calls.map(() => 'skip'));
+    }),
   );
 
   it.effect('replaces the file when the brand is added again', () =>
@@ -437,7 +543,7 @@ layer(NodeServices.layer)('addBrand', (it) => {
     Effect.gen(function* () {
       const root = workspace();
       const added = yield* addBrand(root, request(`//brands/${BRAND}`, { installed: true }));
-      expect(added.written).toEqual([]);
+      expect(added.written).toEqual([DECKSTER_SOURCE_FILE]);
       expect(added.next.at(-1)).toBe(`pnpm deckster brand check ${BRAND}`);
       expect(fs.existsSync(path.join(root, 'brands', BRAND, 'package.json'))).toBe(false);
     }),

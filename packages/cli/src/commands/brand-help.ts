@@ -53,7 +53,13 @@ from a git repository.
                            and url.<base>.insteadOf rules apply. brand.ts and layouts.ts are read
                            as data and never run; the brand is checked before anything is
                            written, and only brand.ts, layouts.ts, images, fonts and documents
-                           are copied (no other code, symlinks or package files). Fonts are not
+                           are copied (no other code, symlinks or package files). A code layout
+                           (a folder layouts/<name>/ with a contract.ts or layout.tsx) is left out
+                           whole, its README and images too; a data layout in layouts.ts that falls
+                           back to one is added with a warning, and slides that use a code layout
+                           fail until its folder is copied from the brand's own repository. It
+                           writes brands/<name>/.deckster-source.json with the source, the commit
+                           and the names of the code layouts left out. Fonts are not
                            installed: it prints the commands to run next (pnpm install in this
                            repository, or npm install for missing fonts), then deckster brand check,
                            which checks what needs the fonts. Each git step that uses the
@@ -65,7 +71,10 @@ Options:
                 layout-load-failed, and the layout's folder name). The warnings of a code layout
                 also have level: "warning" (layout-replace-pptx) or "note" (layout-replace-budget).
                 For add: { ok, brand, dir, source, commit, replaced, files, written,
-                skipped: [{ path, reason }], fonts: [{ name, version, installed }], warnings,
-                next }. A failure prints { ok: false, error: { type, message } }.
+                skipped: [{ path, reason }], codeLayoutsSkipped, fonts: [{ name, version,
+                installed }], warnings, next }. written lists .deckster-source.json and, in the
+                repository checkout, package.json and tsconfig.json. codeLayoutsSkipped is the
+                sorted names of the code layouts left out. A failure prints
+                { ok: false, error: { type, message } }.
   --force       For add: replace a brand of the same name the workspace already has.
   -h, --help    Show this help.`;

@@ -2,8 +2,6 @@ import { isSafeName } from '@deckster/brand';
 import { Effect, FileSystem, Schema } from 'effect';
 import path from 'node:path';
 
-import type { SkippedFile } from '#brand-add/brand-files.ts';
-
 import { fileSystemError, type FileSystemError } from '#cli-error.ts';
 
 /**
@@ -104,6 +102,21 @@ export const writeDecksterSource = Effect.fn('writeDecksterSource')(function* (
 });
 
 /**
+ * A file a brand add left out, as far as the code layout names need to know it.
+ */
+type LeftOutFile = {
+  /**
+   * The path inside the brand folder.
+   */
+  readonly path: string;
+
+  /**
+   * Why it was left out; only `code` can prove a code layout.
+   */
+  readonly reason: string;
+};
+
+/**
  * The names of the code layouts among the files a brand add left out. Only the files skipped as
  * `code` count: a hidden folder or a symbolic link is never a layout, `_shared` and any other name
  * that is not a safe folder name is not one either, and nothing is read or run.
@@ -111,7 +124,7 @@ export const writeDecksterSource = Effect.fn('writeDecksterSource')(function* (
  * @param skipped - The files left out of the added brand.
  * @returns The layout names, sorted and without duplicates.
  */
-export function codeLayoutNames(skipped: readonly SkippedFile[]): string[] {
+export function codeLayoutNames(skipped: readonly LeftOutFile[]): string[] {
   const names = new Set<string>();
   for (const file of skipped) {
     const name = codeLayoutName(file);
@@ -128,7 +141,7 @@ export function codeLayoutNames(skipped: readonly SkippedFile[]): string[] {
  *
  * @param file - A file left out of the added brand.
  */
-function codeLayoutName(file: SkippedFile): string | undefined {
+function codeLayoutName(file: LeftOutFile): string | undefined {
   if (file.reason !== 'code') {
     return undefined;
   }

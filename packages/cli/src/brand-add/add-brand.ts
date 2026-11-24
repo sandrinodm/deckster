@@ -28,7 +28,11 @@ import path from 'node:path';
 import type { BrandSource } from '#brand-add/brand-source.ts';
 
 import { planBrandFiles, type SkippedFile } from '#brand-add/brand-files.ts';
-import { codeLayoutNames, writeDecksterSource } from '#brand-add/deckster-source.ts';
+import {
+  codeLayoutNames,
+  DECKSTER_SOURCE_FILE,
+  writeDecksterSource,
+} from '#brand-add/deckster-source.ts';
 import { fetchBrand, type FetchedBrand, type GitProtocol } from '#brand-add/fetch-brand.ts';
 import {
   catalogPackages,
@@ -143,7 +147,8 @@ export type AddedBrand = {
   files: readonly string[];
 
   /**
-   * The files written for this workspace, such as `package.json`.
+   * The files written for this workspace, such as `package.json`, and always the brand's
+   * `.deckster-source.json`.
    */
   written: readonly string[];
 
@@ -266,10 +271,11 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
           commit: fetched.commit,
           codeLayoutsSkipped,
         });
-        const written =
+        const packageFiles =
           dependencies === undefined
             ? []
             : yield* writePackageFiles(location.dir, brand.name, dependencies);
+        const written = [...packageFiles, DECKSTER_SOURCE_FILE];
         const staged = yield* loadBrand(stageRoot, brand.name, { read: 'data', fontPackages });
         const brandWarnings = yield* checkStagedLayouts(stageRoot, staged);
         return {

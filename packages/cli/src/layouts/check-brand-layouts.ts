@@ -1,10 +1,16 @@
 import type { LoadedBrand } from '@deckster/brand/node';
 
 import { LAYOUTS_FILE, type BrandProblem } from '@deckster/brand';
-import { checkBrandLayouts, type BrandLayoutCheck } from '@deckster/kit/catalog';
 import {
+  checkBrandLayouts,
+  type BrandLayoutCheck,
+  type BrandLayoutProblem,
+} from '@deckster/kit/catalog';
+import {
+  BRAND_CODE_SOURCE_PREFIX,
   checkReplacedSlides,
   deckCatalog,
+  readSkippedCodeLayouts,
   type DeckBuildError,
   type DeckCatalog,
   type DeckLocation,
@@ -16,6 +22,16 @@ import { Effect, Result, type FileSystem } from 'effect';
 import path from 'node:path';
 
 import { BRAND_SOURCE_PREFIX } from '#layouts/list-layouts.ts';
+
+/**
+ * A data layout of `layouts.ts`.
+ */
+type DataLayout = LoadedBrand['tokens']['layouts'][number];
+
+/**
+ * The index of a layout at the start of a problem's path, such as `layouts[2]`.
+ */
+const LAYOUT_INDEX_PATTERN = /^layouts\[(\d+)\]/;
 
 /**
  * A finding with the workspace-relative brand, layouts or code layout file it describes. A code
@@ -82,18 +98,30 @@ export const checkCatalogLayouts = Effect.fn('checkCatalogLayouts')(function* (
   code: 'load' | 'skip',
 ): Effect.fn.Return<CatalogLayoutCheck, DeckBuildError, FileSystem.FileSystem> {
   const { layouts } = brand.tokens;
+  // A brand added with `deckster brand add` has no code layouts to find. A data layout that falls
+  // back to one the add left out cannot be checked and must not stop the brand from being added.
+  const leftOut = new Set(
+    code === 'skip' ? (yield* readSkippedCodeLayouts(brand.location.dir))?.names : [],
+  );
   // Data layouts that do not fit fail the whole catalog, so the catalog is then loaded without
   // them, for the contracts they are checked against.
-  const withData = yield* Effect.result(deckCatalog({ root, brand, code }));
+  const withData = yield* Effect.result(
+    deckCatalog({ root, brand: withoutDataLayouts(brand, leftOut), code }),
+  );
   const catalogBrand = Result.isSuccess(withData) ? brand : withoutDataLayouts(brand);
   const found = Result.isSuccess(withData)
     ? withData.success
     : yield* deckCatalog({ root, brand: catalogBrand, code });
+  if (code === 'skip') {
+    for (const layout of found.local.layouts) {
+      leftOut.add(layout.name);
+    }
+  }
+
   const base = [...found.index.values()]
     .filter((layout) => !layout.source.startsWith(BRAND_SOURCE_PREFIX))
     .map((layout) => layout.contract);
-  const data =
-    layouts.length === 0 ? { errors: [], warnings: [] } : checkBrandLayouts(layouts, base);
+  const data = checkDataLayouts(layouts, base, leftOut, unavailableDataLayouts(brand, found.local));
   // A deck's own replacement is that deck's to check, as `layouts check --deck` does.
   const replacing = yield* checkReplacements(root, catalogBrand, found.local);
   const slideProblems = replacing.filter((problem) => isInside(brand.location.dir, problem.file));
@@ -126,12 +154,111 @@ export const checkReplacements = Effect.fn('checkReplacements')(function* (
 });
 
 /**
- * The brand without its data layouts.
+ * The brand without its data layouts, or without the ones that fall back to a layout that is not
+ * there to be checked against.
  *
  * @param brand - The loaded brand.
+ * @param leftOut - The names of the code layouts left out; omit it to drop every data layout.
  */
-function withoutDataLayouts(brand: LoadedBrand): LoadedBrand {
-  return { ...brand, tokens: { ...brand.tokens, layouts: [] } };
+function withoutDataLayouts(brand: LoadedBrand, leftOut?: ReadonlySet<string>): LoadedBrand {
+  const layouts =
+    leftOut === undefined
+      ? []
+      : brand.tokens.layouts.filter((layout) => !leftOut.has(layout.fallback));
+  return { ...brand, tokens: { ...brand.tokens, layouts } };
+}
+
+/**
+ * The names of the data layouts whose fallback is a code layout of the brand that did not load.
+ * With `load` the catalog reports each as a `layout-fallback-unavailable` problem that names the
+ * code layout's reasons, so the check must not report it again as an unknown fallback. When other
+ * data layouts do not fit, the catalog is loaded without any data layout and reports none of them,
+ * so the fallbacks are matched by name as well; the code layout's own problem is reported either
+ * way.
+ *
+ * @param brand - The loaded brand.
+ * @param local - The code layouts of the brand from `deckCatalog`.
+ */
+function unavailableDataLayouts(brand: LoadedBrand, local: LocalLayouts): ReadonlySet<string> {
+  const brandCode = `${BRAND_CODE_SOURCE_PREFIX}${brand.tokens.name}`;
+  const loaded = new Set(local.catalogs.map((entry) => entry.ref.file));
+  const notLoaded = new Set(
+    local.layouts
+      .filter((layout) => layout.source === brandCode && !loaded.has(layout.contractFile))
+      .map((layout) => layout.name),
+  );
+  const reported = local.problems.flatMap((problem) =>
+    problem.code === 'layout-fallback-unavailable' && problem.layout !== undefined
+      ? [problem.layout]
+      : [],
+  );
+  const unfit = brand.tokens.layouts
+    .filter((layout) => notLoaded.has(layout.fallback))
+    .map((layout) => layout.name);
+  return new Set([...reported, ...unfit]);
+}
+
+/**
+ * Checks the data layouts against the layouts they fall back to. A layout that falls back to a code
+ * layout that was left out cannot be checked: it is not an error, and gets a warning. One the
+ * catalog left out for a fallback that did not load is not checked either: its problem is reported
+ * with the code layout's.
+ *
+ * @param layouts - The brand's data layouts, in file order.
+ * @param base - The contracts a data layout may fall back to.
+ * @param leftOut - The names of the code layouts that were left out, never loaded.
+ * @param unavailable - The names of the data layouts the catalog left out for a fallback that did
+ *   not load.
+ */
+function checkDataLayouts(
+  layouts: readonly DataLayout[],
+  base: Parameters<typeof checkBrandLayouts>[1],
+  leftOut: ReadonlySet<string>,
+  unavailable: ReadonlySet<string>,
+): BrandLayoutCheck {
+  const checked = layouts.flatMap((layout, index) =>
+    leftOut.has(layout.fallback) || unavailable.has(layout.name) ? [] : [{ layout, index }],
+  );
+  const { errors, warnings } =
+    checked.length === 0
+      ? { errors: [], warnings: [] }
+      : checkBrandLayouts(
+          checked.map((entry) => entry.layout),
+          base,
+        );
+  /**
+   * The problem with its path pointing at the layout's position in `layouts.ts`, not in the checked
+   * subset.
+   */
+  const original = (problem: BrandLayoutProblem): BrandLayoutProblem => ({
+    ...problem,
+    path: problem.path.replace(LAYOUT_INDEX_PATTERN, (_match, position: string) => {
+      const entry = checked[Number(position)];
+      return `layouts[${entry?.index ?? position}]`;
+    }),
+  });
+  const notChecked = layouts.flatMap((layout, index) =>
+    leftOut.has(layout.fallback) ? [notCheckedWarning(index, layout)] : [],
+  );
+  return { errors: errors.map(original), warnings: [...warnings.map(original), ...notChecked] };
+}
+
+/**
+ * The warning for a data layout whose fallback is a code layout `brand add` left out.
+ *
+ * @param index - The layout's position in `layouts.ts`.
+ * @param layout - The layout.
+ */
+function notCheckedWarning(index: number, layout: DataLayout): BrandLayoutProblem {
+  return {
+    path: `layouts[${index}].fallback`,
+    message:
+      `The layout "${layout.name}" falls back to the code layout "${layout.fallback}", which was ` +
+      'left out, so its bindings are not checked.',
+    fix:
+      `Copy layouts/${layout.fallback}/ from the brand's own repository, then run ` +
+      'deckster brand check.',
+  };
 }
 
 /**

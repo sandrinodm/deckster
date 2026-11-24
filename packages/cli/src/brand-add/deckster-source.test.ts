@@ -1,3 +1,4 @@
+import { readSkippedCodeLayouts } from '@deckster/vite-plugin';
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { describe, expect, it, layer } from '@effect/vitest';
 import { Effect } from 'effect';
@@ -119,6 +120,23 @@ layer(NodeServices.layer)('writeDecksterSource', (it) => {
           commit: 'a'.repeat(40),
           codeLayoutsSkipped: [],
         });
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    }),
+  );
+
+  it.effect('writes what the build reads back as the skipped code layouts', () =>
+    Effect.gen(function* () {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'deck-source-roundtrip-'));
+      try {
+        yield* writeDecksterSource(dir, {
+          source: 'gh:acme/kit/brands/acme',
+          commit: null,
+          codeLayoutsSkipped: ['alpha', 'zebra'],
+        });
+        const read = yield* readSkippedCodeLayouts(dir);
+        expect(read).toEqual({ source: 'gh:acme/kit/brands/acme', names: ['alpha', 'zebra'] });
       } finally {
         fs.rmSync(dir, { recursive: true, force: true });
       }

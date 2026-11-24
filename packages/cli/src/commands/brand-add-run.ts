@@ -105,7 +105,7 @@ function formatAdded(added: AddedBrand): string {
   }
 
   if (added.written.length > 0) {
-    lines.push(`Wrote ${added.written.join(' and ')} for this workspace.`);
+    lines.push(`Wrote ${added.written.join(', ')} for this workspace.`);
   }
 
   for (const warning of added.warnings) {

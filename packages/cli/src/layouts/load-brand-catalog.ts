@@ -130,18 +130,33 @@ export const loadBrandCatalog = Effect.fn('loadBrandCatalog')(function* (
 });
 
 /**
- * The warning for a code layout left out of the catalog: the file, what is wrong and the fix.
+ * The warning for a layout left out of the catalog, a code layout or a data layout whose fallback
+ * is not loaded: the file, what is wrong and the fix.
  *
  * @param workspaceRoot - The workspace, which file names are relative to.
  * @param problem - The layout's problem; its file is named unless the message names it.
  */
 export function layoutProblemWarning(workspaceRoot: string, problem: LayoutProblem): string {
-  const subject =
-    problem.layout === undefined ? 'Code layouts are' : `The code layout "${problem.layout}" is`;
+  const subject = problemSubject(problem);
   const message = firstLine(problem.message).replace(TRAILING_PERIOD_PATTERN, '');
   const file = displayFile(workspaceRoot, problem.file);
   const where = message.includes(file) ? '' : ` in ${file}`;
   return `${subject} left out (${problem.code}${where}): ${message}. Fix: ${problem.fix}`;
+}
+
+/**
+ * Who the warning is about: every code layout, one code layout or, for a fallback that is not
+ * loaded, a data layout of the brand.
+ *
+ * @param problem - The layout's problem.
+ */
+function problemSubject(problem: LayoutProblem): string {
+  if (problem.layout === undefined) {
+    return 'Code layouts are';
+  }
+
+  const kind = problem.code === 'layout-fallback-unavailable' ? 'data' : 'code';
+  return `The ${kind} layout "${problem.layout}" is`;
 }
 
 /**
