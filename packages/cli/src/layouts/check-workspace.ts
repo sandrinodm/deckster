@@ -26,6 +26,13 @@ const LINKED_ROOT_FILES = ['tsconfig.base.json'] as const;
 const NODE_MODULES = 'node_modules';
 
 /**
+ * The folder in `node_modules` where the deck server caches what it builds. It is the one entry of
+ * the real `node_modules` that is not linked into the temporary workspace, so the server writes its
+ * cache in the temporary workspace and never in the real one.
+ */
+const SERVER_CACHE_DIR = '.vite';
+
+/**
  * What a copied deck leaves behind: its slides and config (the generated ones replace them), its
  * build output and its installed packages (linked instead).
  */
@@ -83,8 +90,9 @@ export type CheckWorkspaceOptions = {
  * layouts check` to render through the lint server. The brand's folder and the deck's folder (all
  * but its slides, config, build output, packages and hidden entries) are copied, so the code
  * layouts render from files under the temporary workspace as they do from the real one; installed
- * packages and the shared TypeScript config are linked. The workspace is removed when the scope
- * closes.
+ * packages (each entry of the root `node_modules`, in a folder of the workspace's own, so the deck
+ * server's cache never lands in the real one) and the shared TypeScript config are linked. The
+ * workspace is removed when the scope closes.
  *
  * @param options - The real workspace, what to copy and the slides.
  * @returns The temporary workspace root, a real path (Vite resolves real paths).
@@ -100,9 +108,14 @@ export const writeCheckWorkspace = Effect.fn('writeCheckWorkspace')(function* (
       fileSystemError('create a temporary folder in', os.tmpdir(), error, TEMP_FIX),
     ),
   );
-  for (const name of [...LINKED_ROOT_FILES, NODE_MODULES]) {
+  for (const name of LINKED_ROOT_FILES) {
     yield* linkIfPresent(path.join(options.root, name), path.join(temp, name));
   }
+
+  yield* linkInstalledPackages(
+    path.join(options.root, NODE_MODULES),
+    path.join(temp, NODE_MODULES),
+  );
 
   if (options.brandDir !== undefined) {
     const target = path.join(temp, 'brands', path.basename(options.brandDir));
@@ -187,4 +200,32 @@ const linkIfPresent = Effect.fn('linkIfPresent')(function* (
   yield* fs
     .symlink(from, to)
     .pipe(Effect.mapError((error) => fileSystemError('link', to, error, TEMP_FIX)));
+});
+
+/**
+ * Makes `to` a real folder with a link to each entry of the folder of installed packages `from`,
+ * except the deck server's cache folder, when `from` exists. Linking the whole folder would let the
+ * server write its cache through the link into the real workspace.
+ *
+ * @param from - The absolute folder of installed packages to link.
+ * @param to - The absolute folder to create.
+ */
+const linkInstalledPackages = Effect.fn('linkInstalledPackages')(function* (
+  from: string,
+  to: string,
+): Effect.fn.Return<void, FileSystemError, FileSystem.FileSystem> {
+  const fs = yield* FileSystem.FileSystem;
+  if (!(yield* fs.exists(from).pipe(Effect.orElseSucceed(() => false)))) {
+    return;
+  }
+
+  yield* fs
+    .makeDirectory(to, { recursive: true })
+    .pipe(Effect.mapError((error) => fileSystemError('create', to, error, TEMP_FIX)));
+  const names = yield* fs
+    .readDirectory(from)
+    .pipe(Effect.mapError((error) => fileSystemError('read', from, error, TEMP_FIX)));
+  for (const name of names.filter((entry) => entry !== SERVER_CACHE_DIR)) {
+    yield* linkIfPresent(path.join(from, name), path.join(to, name));
+  }
 });

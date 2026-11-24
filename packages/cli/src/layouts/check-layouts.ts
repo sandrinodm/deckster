@@ -30,14 +30,26 @@ import { cliError, type CliError, type FileSystemError } from '#cli-error.ts';
 import { checkReplacements } from '#layouts/check-brand-layouts.ts';
 import { writeCheckWorkspace } from '#layouts/check-workspace.ts';
 import { loadLayoutLimits, LIMITS_FILE } from '#layouts/layout-limits.ts';
-import { exampleSlide, limitSlides, type LimitSlide } from '#layouts/limit-deck.ts';
+import {
+  EXAMPLE_CASE,
+  exampleSlide,
+  limitSlides,
+  uniqueSlideIds,
+  type LimitSlide,
+} from '#layouts/limit-deck.ts';
+import { renderIsolated, type RenderOutcome } from '#layouts/render-isolated.ts';
 import { LINT_RULES } from '#lint/rules/index.ts';
-import { lintDeck, type LintError } from '#lint/run-lint.ts';
+import { lintDeck, type LintError, type LintReport } from '#lint/run-lint.ts';
 
 /**
  * The id of the generated deck when the layouts are a brand's.
  */
 const BRAND_CHECK_DECK = 'layouts-check';
+
+/**
+ * The problem id of a layout whose slides were not rendered and that has no other error.
+ */
+const NOT_RENDERED = 'layout-not-rendered';
 
 /**
  * Rules about a deck as a talk, not about one slide's layout: they would only report the generated
@@ -287,10 +299,12 @@ export const checkLayouts = Effect.fn('checkLayouts')(function* (
   attachProblems(root, replacing, target, results, shared);
 
   const slides = yield* layoutSlides(root, target, readyLayouts(catalog, target, results), results);
-  if (slides.length > 0 && !hasError(shared)) {
-    const findings = yield* renderSlides(root, target, slides);
-    attachFindings(root, target, findings, slides, results, shared);
-  }
+  const outcome: RenderOutcome =
+    slides.length > 0 && !hasError(shared)
+      ? yield* renderIsolated(slides, (deck) => renderSlides(root, target, deck))
+      : { findings: [], rendered: new Set() };
+  attachFindings(root, target, outcome.findings, slides, results, shared);
+  markUnrendered(root, target, slides, outcome.rendered, results, shared);
 
   const layouts = [...results.values()].map((result) => ({
     ...result,
@@ -374,7 +388,7 @@ function attachProblems(
 /**
  * The slides of the layouts to render: each one's example and, when its `limits.ts` holds valid
  * cases, every case. A `limits.ts` that does not load or is not valid is the layout's error, and
- * only its example is rendered then.
+ * the layout is not rendered at all then. Slide ids are made unique across the layouts.
  *
  * @param root - The absolute workspace root.
  * @param target - The owner.
@@ -392,7 +406,7 @@ const layoutSlides = Effect.fn('layoutSlides')(function* (
     dir: path.join(target.layoutsDir, layout.name),
   }));
   const limits = yield* loadLayoutLimits(subjects, root);
-  return ready.flatMap(({ name, contract }, index) => {
+  const slides = ready.flatMap(({ name, contract }, index) => {
     const load = limits[index];
     const result = results.get(name);
     if (load === undefined || result === undefined) {
@@ -405,13 +419,14 @@ const layoutSlides = Effect.fn('layoutSlides')(function* (
         ...load.problem,
         file: display(root, load.problem.file),
       });
+      return [];
     }
 
-    const cases = load.kind === 'cases' ? load.cases : [];
-    const slides = [exampleSlide(contract), ...limitSlides([{ contract, cases }])];
-    result.cases = [...new Set(slides.map((slide) => slide.case))];
-    return slides;
+    const own = [exampleSlide(contract), ...limitSlides([{ contract, cases: load.cases }])];
+    result.cases = [...new Set(own.map((slide) => slide.case))];
+    return own;
   });
+  return uniqueSlideIds(slides);
 });
 
 /**
@@ -526,14 +541,14 @@ function readyLayouts(
  * @param root - The absolute workspace root.
  * @param target - The owner and the brand.
  * @param slides - The generated slides.
- * @returns The lint findings.
+ * @returns The lint report; no slide is counted as rendered when the deck did not build.
  */
 const renderSlides = Effect.fn('renderSlides')(function* (
   root: string,
   target: Target,
   slides: readonly LimitSlide[],
 ): Effect.fn.Return<
-  readonly LintFinding[],
+  LintReport,
   FileSystemError | LintError,
   FileSystem.FileSystem | DeckServer | DeckBrowser | Workspace | Scope.Scope
 > {
@@ -547,14 +562,65 @@ const renderSlides = Effect.fn('renderSlides')(function* (
     slides,
     brand,
   });
-  const report = yield* lintDeck({
+  return yield* lintDeck({
     deck: target.deck?.id ?? BRAND_CHECK_DECK,
     brand,
     rules: CHECK_RULES,
     workspaceRoot,
   });
-  return report.findings;
 });
+
+/**
+ * Takes the cases that were not rendered off their layouts. A layout with slides that were not
+ * rendered and no error of its own would pass without being checked, so it fails with an error
+ * unless a problem of the owner (which stopped the rendering) already fails the check.
+ *
+ * @param root - The absolute workspace root.
+ * @param target - The owner and the brand.
+ * @param slides - The generated slides.
+ * @param rendered - The ids of the slides that were rendered.
+ * @param results - The checked layouts.
+ * @param shared - The problems of no one layout.
+ */
+function markUnrendered(
+  root: string,
+  target: Target,
+  slides: readonly LimitSlide[],
+  rendered: ReadonlySet<string>,
+  results: ReadonlyMap<string, LayoutCheckResult>,
+  shared: readonly LayoutCheckProblem[],
+): void {
+  for (const result of results.values()) {
+    const missed = slides.filter(
+      (slide) => slide.layout === result.name && !rendered.has(slide.id),
+    );
+    if (missed.length === 0) {
+      continue;
+    }
+
+    const missedCases = new Set(missed.map((slide) => slide.case));
+    result.cases = result.cases.filter((name) => !missedCases.has(name));
+    if (hasError(shared) || hasError(result.problems)) {
+      continue;
+    }
+
+    const owner =
+      target.deck === undefined
+        ? `--brand ${target.brand.tokens.name}`
+        : `--deck ${target.deck.id}`;
+    result.problems.push({
+      severity: 'error',
+      code: NOT_RENDERED,
+      file: display(root, path.join(target.layoutsDir, result.name)),
+      message:
+        `The slides of ${[...missedCases].join(', ')} were not rendered, because the generated ` +
+        'deck did not build or open, so nothing was checked.',
+      fix:
+        `Fix the errors reported for the deck, then run \`${deckCommand()} layouts check ` +
+        `${result.name} ${owner}\` again to check this layout alone.`,
+    });
+  }
+}
 
 /**
  * Hands each lint finding to the layout whose slide it is on, or to the shared problems, naming the
@@ -588,7 +654,7 @@ function attachFindings(
       continue;
     }
 
-    const file = slide.case === 'example' ? 'contract.ts' : LIMITS_FILE;
+    const file = slide.case === EXAMPLE_CASE ? 'contract.ts' : LIMITS_FILE;
     result.problems.push({
       ...lintProblem(finding),
       file: display(root, path.join(target.layoutsDir, slide.layout, file)),

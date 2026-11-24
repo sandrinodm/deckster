@@ -24,6 +24,7 @@ import {
   type CliError,
   type FileSystemError,
 } from '#cli-error.ts';
+import { exampleFrontmatter } from '#layouts/example-frontmatter.ts';
 import { exampleMdx } from '#layouts/list-layouts.ts';
 import { loadBrandCatalog } from '#layouts/load-brand-catalog.ts';
 import { assertKebabName } from '#scaffold/names.ts';
@@ -110,11 +111,7 @@ export const addSlide = Effect.fn('addSlide')(function* (
   yield* assertSlidePath(options.workspaceRoot, deck.id, slideFile).pipe(
     Effect.mapError((error) => cliError(error.message)),
   );
-  const frontmatter = {
-    layout: contract.name,
-    ...contract.example.frontmatter,
-    title: slideTitle(id),
-  };
+  const frontmatter = { ...exampleFrontmatter(contract), title: slideTitle(id) };
   const fs = yield* FileSystem.FileSystem;
   // Created exclusively, so nothing already at the path (a file, a link) is ever written through.
   // During an agent turn the guard records it and puts it in the turn's working copy.
@@ -183,8 +180,9 @@ const existingSlideFiles = Effect.fn('existingSlideFiles')(function* (
  * @param deck - The deck folder name, for the fix.
  * @param problems - The problems of the brand's and the deck's code layouts, which are left out of
  *   the catalog.
- * @throws CliError in the error channel when the catalog has no such layout: the code layout's
- *   problem when a code layout of that name has one, else the list of layouts.
+ * @throws CliError in the error channel when a code layout of that name has a problem (even when
+ *   the catalog has a kit layout of that name), or when the catalog has no such layout: the list of
+ *   layouts.
  */
 const chooseLayout = Effect.fn('chooseLayout')(function* (
   catalog: LayoutCatalogIndex,
@@ -192,16 +190,18 @@ const chooseLayout = Effect.fn('chooseLayout')(function* (
   deck: string,
   problems: readonly LayoutProblem[],
 ): Effect.fn.Return<AnyLayoutContract, CliError> {
-  const layout = catalog.get(name);
-  if (layout !== undefined) {
-    return layout.contract;
-  }
-
+  // A code layout with a problem is not used even when the catalog still has a layout of that name
+  // (a broken replacement leaves the kit layout in), as the build treats a slide that names it.
   const problem = problems.find((entry) => entry.layout === name);
   if (problem !== undefined) {
     return yield* cliError(
       `The layout "${name}" cannot be used: ${firstLine(problem.message)}\n${problem.fix}`,
     );
+  }
+
+  const layout = catalog.get(name);
+  if (layout !== undefined) {
+    return layout.contract;
   }
 
   return yield* cliError(

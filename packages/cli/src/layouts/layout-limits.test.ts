@@ -129,6 +129,18 @@ describe('loadLayoutLimits', () => {
               "export default [{ name: 'a', frontmatter: {}, filled: [], title: 'x' }];",
               'is not a list of limit cases',
             ],
+            [
+              "export default [{ name: 'example', frontmatter: {}, filled: [] }];",
+              'A limit case is named "example"',
+            ],
+            [
+              "export default [{ name: 'a', frontmatter: { amount: 1n }, filled: [] }];",
+              'The case "a" has frontmatter that cannot be written into a slide: amount is a bigint.',
+            ],
+            [
+              "export default [{ name: 'a', frontmatter: { layout: 'content' }, filled: [] }];",
+              '`layout` is set by the check',
+            ],
           ] as const;
           for (const [text, message] of cases) {
             const load = yield* loadWith(`${text}\n`);

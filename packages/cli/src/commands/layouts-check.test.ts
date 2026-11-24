@@ -279,8 +279,47 @@ describe('deckster layouts check', () => {
             `brands/${CODE_BRAND}/layouts/content/contract.ts`,
           );
           const brief = report.layouts.find((layout) => layout.name === NEW_LAYOUT);
-          expect(brief?.cases).toEqual(['example']);
+          expect(brief?.cases).toEqual([]);
           expect(brief?.problems[0]?.message).toContain('Expected a kebab-case case name');
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    BROWSER_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'still renders the other layouts when one limit case does not compile',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          const layoutsDir = path.join(root, 'brands', 'code-brand', 'layouts');
+          for (const name of [NEW_LAYOUT, 'other', 'third']) {
+            yield* runCaptured(['layouts', 'new', name, '--brand', CODE_BRAND], { root });
+          }
+
+          // `brief` overflows, which only shows when it is rendered; `other` has a case whose
+          // frontmatter has a field no layout has, so the generated deck does not compile.
+          const contract = path.join(layoutsDir, NEW_LAYOUT, 'contract.ts');
+          fs.writeFileSync(
+            contract,
+            fs
+              .readFileSync(contract, 'utf8')
+              .replace('maxWords: 60, maxBullets: 5', 'maxWords: 400, maxBullets: 30'),
+          );
+          fs.writeFileSync(
+            path.join(layoutsDir, 'other', 'limits.ts'),
+            "export default [{ name: 'bogus', frontmatter: { bogusField: 'x' }, filled: [] }];\n",
+          );
+
+          const { code, report } = yield* checkJson(root, ['--brand', CODE_BRAND]);
+          expect(code).toBe(1);
+          const byName = new Map(report.layouts.map((layout) => [layout.name, layout]));
+          const brief = byName.get(NEW_LAYOUT);
+          expect(brief?.ok).toBe(false);
+          expect(brief?.problems.some((problem) => /overflow/u.test(problem.code))).toBe(true);
+          expect(byName.get('other')).toMatchObject({ ok: false });
+          expect(byName.get('other')?.cases).toEqual(['example']);
+          expect(byName.get('third')).toMatchObject({ ok: true, cases: ['example', 'full-body'] });
         }),
       ).pipe(Effect.provide(NodeServices.layer)),
     BROWSER_TEST_TIMEOUT_MS,

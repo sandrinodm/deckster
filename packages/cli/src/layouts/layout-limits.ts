@@ -5,8 +5,10 @@ import { deckCommand } from '@deckster/engine/command';
 import { KEBAB_CASE_PATTERN } from '@deckster/engine/names';
 import { BODY_SLOT } from '@deckster/engine/slots';
 import { importContracts } from '@deckster/vite-plugin';
-import { Effect, FileSystem, Result, Schema, SchemaIssue } from 'effect';
+import { Effect, FileSystem, Predicate, Result, Schema, SchemaIssue } from 'effect';
 import path from 'node:path';
+
+import { EXAMPLE_CASE } from '#layouts/limit-deck.ts';
 
 /**
  * The optional file in a code layout's folder whose default export lists its limit cases.
@@ -233,6 +235,27 @@ function decodeCases(subject: LimitsSubject, file: string, exported: unknown): L
     return invalid(subject, file, `Two limit cases are named "${twice}".`);
   }
 
+  if (names.includes(EXAMPLE_CASE)) {
+    return invalid(
+      subject,
+      file,
+      `A limit case is named "${EXAMPLE_CASE}", which is the name of the contract's example slide; ` +
+        'name the case for what it fills, such as "full-body".',
+    );
+  }
+
+  for (const limitCase of cases) {
+    const unwritable = unwritablePath(limitCase.frontmatter);
+    if (unwritable !== undefined) {
+      return invalid(
+        subject,
+        file,
+        `The case "${limitCase.name}" has frontmatter that cannot be written into a slide: ` +
+          `${unwritable}.`,
+      );
+    }
+  }
+
   const slots = new Set(Object.keys(subject.contract.slots));
   for (const limitCase of cases) {
     const unknown = limitCase.filled.find((slot) => slot === BODY_SLOT || !slots.has(slot));
@@ -248,6 +271,53 @@ function decodeCases(subject: LimitsSubject, file: string, exported: unknown): L
   }
 
   return { name: subject.name, kind: 'cases', cases };
+}
+
+/**
+ * The first value in a case's frontmatter that a slide's frontmatter cannot hold, named by its
+ * path: `layout` (the check sets it), a function, symbol, bigint or `undefined`, or a value that
+ * contains itself.
+ *
+ * @param value - The case's frontmatter.
+ * @param at - The path to `value`; empty for the frontmatter itself.
+ * @param seen - The objects on the way to `value`.
+ * @returns A description such as `amount is a bigint`, or `undefined` when all of it can be
+ *   written.
+ */
+function unwritablePath(
+  value: unknown,
+  at: readonly string[] = [],
+  seen: readonly object[] = [],
+): string | undefined {
+  const where = at.length === 0 ? 'the frontmatter' : at.join('.');
+  if (at.length === 1 && at[0] === 'layout') {
+    return '`layout` is set by the check to the layout being checked, so leave it out';
+  }
+
+  if (value === undefined || typeof value === 'function' || typeof value === 'symbol') {
+    return `${where} is ${typeof value}`;
+  }
+
+  if (typeof value === 'bigint') {
+    return `${where} is a bigint`;
+  }
+
+  if (!Predicate.isObject(value)) {
+    return undefined;
+  }
+
+  if (seen.includes(value)) {
+    return `${where} contains itself`;
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    const found = unwritablePath(child, [...at, key], [...seen, value]);
+    if (found !== undefined) {
+      return found;
+    }
+  }
+
+  return undefined;
 }
 
 /**

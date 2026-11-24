@@ -1,8 +1,11 @@
+import { deckCommand } from '@deckster/engine/command';
 import { Console, Effect } from 'effect';
+import { parseArgs } from 'node:util';
 
 import { chooseDeck, defaultDeck } from '#choose-deck.ts';
 import { usageError } from '#cli-error.ts';
 import { EXIT_OK, lazyRun, type Command } from '#command.ts';
+import { withJsonErrors } from '#json-output.ts';
 import { describeReplacement, listLayouts, type LayoutInfo } from '#layouts/list-layouts.ts';
 import { ownLayoutsFirst, formatSummaries, summarizeLayout } from '#layouts/summarize-layouts.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
@@ -41,31 +44,72 @@ const SUBCOMMAND_FLAGS = {
 } as const;
 
 /**
- * Parses the arguments and runs the command, or the subcommand its first argument names; succeeds
- * with the process exit code.
+ * The options of the command and of every subcommand, which the command parses to find the word
+ * that selects a subcommand.
  */
-export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
+const OPTIONS = {
+  /**
+   * Print the result as JSON.
+   */
+  json: { type: 'boolean', default: false },
+
+  /**
+   * List one line per layout.
+   */
+  summary: { type: 'boolean', default: false },
+
+  /**
+   * The brand to list or work on, by name.
+   */
+  brand: { type: 'string' },
+
+  /**
+   * The deck to work on, by name.
+   */
+  deck: { type: 'string' },
+
+  /**
+   * Every kit layout at once, for `eject`.
+   */
+  all: { type: 'boolean', default: false },
+
+  /**
+   * Keep helpers that differ from the kit's, for `eject`.
+   */
+  'keep-shared': { type: 'boolean', default: false },
+
+  /**
+   * Exit with 1 when the kit changed, for `diff`.
+   */
+  'fail-on-change': { type: 'boolean', default: false },
+} as const;
+
+/**
+ * Parses the arguments and runs the command, or the subcommand its first argument names; succeeds
+ * with the process exit code. With `--json`, a failure, an unknown option included, is printed as
+ * JSON on standard output and the exit code is 1.
+ */
+export const run: Command['run'] = (argv): ReturnType<Command['run']> =>
+  withJsonErrors(argv, runLayouts(argv));
+
+/**
+ * Lists the layouts, or runs the subcommand the first argument names.
+ *
+ * @param argv - The arguments after `layouts`.
+ */
+const runLayouts = Effect.fn('deck.layouts')(function* (argv: readonly string[]) {
   const { root: workspaceRoot } = yield* Workspace;
-  const { values, positionals } = yield* parseCommandArgs('layouts', argv, {
-    json: { type: 'boolean', default: false },
-    summary: { type: 'boolean', default: false },
-    brand: { type: 'string' },
-    deck: { type: 'string' },
-    all: { type: 'boolean', default: false },
-    'keep-shared': { type: 'boolean', default: false },
-    'fail-on-change': { type: 'boolean', default: false },
-  });
+  const { values, positionals } = yield* parseCommandArgs('layouts', argv, OPTIONS);
   const [first] = positionals;
   const subcommand = first === undefined ? undefined : SUBCOMMANDS.get(first);
   if (first !== undefined && subcommand !== undefined) {
-    const at = argv.indexOf(first);
-    return yield* subcommand([...argv.slice(0, at), ...argv.slice(at + 1)]);
+    return yield* subcommand(withoutArgument(argv, firstPositionalIndex(argv)));
   }
 
   if (values.deck !== undefined) {
     return yield* usageError(
-      "--deck is for `deckster layouts new`, `check`, `eject` and `diff`; to list a deck's " +
-        'layouts, name the deck as the first argument.',
+      `--deck is for \`${deckCommand()} layouts new\`, \`check\`, \`eject\` and \`diff\`; to list ` +
+        "a deck's layouts, name the deck as the first argument.",
       'layouts',
     );
   }
@@ -73,7 +117,7 @@ export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
   for (const [flag, subcommandName] of Object.entries(SUBCOMMAND_FLAGS)) {
     if (values[flag as keyof typeof SUBCOMMAND_FLAGS]) {
       return yield* usageError(
-        `--${flag} is for \`deckster layouts ${subcommandName}\`.`,
+        `--${flag} is for \`${deckCommand()} layouts ${subcommandName}\`.`,
         'layouts',
       );
     }
@@ -103,6 +147,35 @@ export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
   );
   return EXIT_OK;
 });
+
+/**
+ * The position of the first argument that is not an option or an option's value: the word that
+ * selects a subcommand. Looking the word up by value would find an option's value that is the same
+ * word (`--brand check check`).
+ *
+ * @param argv - The arguments, which parse without error.
+ * @returns The index, or `-1` when there is none.
+ */
+function firstPositionalIndex(argv: readonly string[]): number {
+  const { tokens } = parseArgs({
+    args: [...argv],
+    options: OPTIONS,
+    allowPositionals: true,
+    tokens: true,
+  });
+  const first = tokens.find((token) => token.kind === 'positional');
+  return first === undefined ? -1 : first.index;
+}
+
+/**
+ * The arguments without the one at a position.
+ *
+ * @param argv - The arguments.
+ * @param at - The position to leave out.
+ */
+function withoutArgument(argv: readonly string[], at: number): string[] {
+  return [...argv.slice(0, at), ...argv.slice(at + 1)];
+}
 
 /**
  * The plain listing of one layout: the name and source, the description, its slot tags, its fields

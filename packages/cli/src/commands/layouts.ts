@@ -63,9 +63,10 @@ Subcommands:
                 @deckster/kit/layout-parts, @deckster/kit/layout-fields, @deckster/kit and
                 @deckster/kit/diagrams; other helpers are copied once to layouts/_shared/ and
                 shared by the ejected layouts, with the classes of a helper's own stylesheet renamed
-                from kit-… to own-…, so the copy and the kit never style each other. A stylesheet
-                the layout shares with other kit layouts is copied into its folder and scoped to
-                it. The kit layout and its stylesheet are no longer loaded for that brand or deck.
+                from kit-… to own-… in a brand and to dck-… in a deck, so the copy, the kit and the
+                other owners never style each other. A stylesheet the layout shares with other kit
+                layouts is copied into its folder and scoped to it. A kit layout without a
+                stylesheet of its own (demo) gets an empty layout.css that layout.tsx imports. The kit layout and its stylesheet are no longer loaded for that brand or deck.
                 Each folder also gets .eject/: the files as written and eject.json ({ layout,
                 deckster, files: { <path>: <sha256> } }), which \`diff\` reads; leave it as it is.
                 Refuses a name that is not a kit layout (\`brand\`, the renderer of data layouts,
@@ -111,8 +112,8 @@ Options:
                 problems }, each problem { severity, code, file, message, fix } and, for a rendered
                 slide's, case, slide, step and selector; severity is error, warning or note (only
                 errors fail); code is a layout problem id (such as layout-name-mismatch,
-                layout-replace-breaks or layout-limits-invalid) or a lint rule id (such as
-                content-budget). problems at the top level belong to no one layout. A failure
+                layout-replace-breaks, layout-limits-invalid, layout-fallback-unavailable or
+                layout-not-rendered) or a lint rule id (such as content-budget). problems at the top level belong to no one layout. A failure
                 prints { ok: false, error: { type, message } }.
                 For eject: { ok, brand, deck, layouts: [{ name, dir, files }], shared: { written,
                 reused, kept }, skipped, warnings, next }; skipped lists the layouts --all left

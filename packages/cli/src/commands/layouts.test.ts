@@ -59,3 +59,31 @@ it.effect('deckster layouts without --summary keeps printing the full contracts'
     expect(Object.keys(catalog.layouts[0] ?? {})).not.toContain('titleMaxChars');
   }),
 );
+
+it.effect('deckster layouts prints a usage error as JSON when asked for JSON', () =>
+  Effect.gen(function* () {
+    for (const argv of [
+      ['layouts', 'check', '--json', '--unknown-flag'],
+      ['layouts', '--json', '--unknown-flag'],
+      ['layouts', '--deck', 'hello', '--json'],
+    ]) {
+      const run = yield* runCaptured(argv);
+      expect(run.code, argv.join(' ')).toBe(1);
+      const failure = JSON.parse(run.output) as { ok: boolean; error: { message: string } };
+      expect(failure.ok).toBe(false);
+      expect(failure.error.message.length).toBeGreaterThan(0);
+    }
+  }),
+);
+
+it.effect('deckster layouts hands a subcommand the arguments without its own word', () =>
+  Effect.gen(function* () {
+    // The brand is named like the subcommand: only the word that selects `check` is taken out.
+    const run = yield* runCaptured(['layouts', '--brand', 'check', '--json', 'check']);
+    expect(run.code).toBe(1);
+    const { error } = JSON.parse(run.output) as { error: { type: string; message: string } };
+    expect(error.type).toBe('BrandError');
+    expect(error.message).toContain('check');
+    expect(error.message).not.toMatch(/argument missing|ambiguous/iu);
+  }),
+);
