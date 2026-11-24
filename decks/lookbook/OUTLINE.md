@@ -97,18 +97,22 @@ Columns: **Id**; **Layout and options** (frontmatter beyond `title`, `eyebrow`, 
 | --- | --- | --- | --- | --- | --- |
 | `part-say` | `section`, divider form | Say one thing | Divider | whole | done |
 | `statement-claim` | `statement`, `emphasis: underline` (inverse, left, defaults) | A shop should promise *the same hour* without owning a van | The big idea with two marked words over the accent rule | whole | G1 |
+| `image-reveal-footer` | `image-reveal`, defaults (`dock: bottom`, `align: left`, `barSurface: default`, `fit: cover`), `eyebrow`, `focal` | Every loop starts from one square | Full-slide title cover that docks to a full-width footer bar and reveals the hub square | 0 title cover; 1 footer bar and image | G1 |
 | `definition-loop` | `definition`, `term: Loop`, `pronunciation`, `kind`, `example`, footnote, `surface: default` | A loop is the unit Flock plans | The full entry, with a concrete example set apart | whole | G1 |
 | `definition-drop` | `definition`, `term: Drop` (inverse, default), no metadata or example | Every figure from here counts one unit: the drop | The bare dictionary entry, with a short meaning sized up | whole | G1 |
 | `quote-portrait` | `quote`, Odile's `photo` with `focal`, `transition: fade` | Bread that arrives warm is a different product | A customer quote beside her portrait; fade transition | whole | G1 |
 | `image-bottom` | `image`, the rider in the Old Town, `text: bottom` (default), a caption | A rider stops at nine doors an hour | A picture edge to edge, title and a line along the bottom | whole | G1 |
 | `statement-center` | `statement`, `align: center`, `surface: accent` | Vans are leaving the old towns. Deliveries are not. | The centred turn in the story, on accent | whole | G1 |
+| `image-reveal-header` | `image-reveal`, `dock: top`, `align: center`, `barSurface: inverse`, `fit: contain` | One dispatch board runs the hour | Centred cover docking to an inverse header bar above an uncropped screen | 0 title cover; 1 header bar and screen | G1 |
 | `quote-plain` | `quote`, Dr Imogen Hale, no photo, `surface: inverse` | A sample used to wait for the van | The quote without a portrait, on inverse | whole | G1 |
 | `image-left` | `image`, the evening street, `text: left`, `focal` | We deliver until nine at night | Text in the left third over a calm part of the picture | whole | G1 |
 | `statement-giant` | `statement`, `size: giant` (up to five words), `transition: none` | Same hour. No van. | The giant statement; a hard cut | whole | G1 |
+| `image-reveal-accent` | `image-reveal`, `dock: bottom`, `barSurface: accent`, `focal` | Doorstep handover takes twelve seconds | Cover docking to an accent footer bar below a full-bleed scene | 0 title cover; 1 accent footer bar and image | G1 |
 | `image-right` | `image`, inside the hub, `text: right` | Every parcel leaves the hub in its own slot | Text in the right third, on the hub's dark wall | whole | G1 |
 | `statement-quote` | `statement`, `<Attribution>` (Councillor Fenna Vos), `surface: gradient` | The Old Town got its streets back and its shops kept their customers | A statement set as a quote; the attribution arrives with `<Step at={1} effect="fade">` | 0 the quote; 1 who said it (fade) | G1 |
 | `quote-accent` | `quote`, Lotte's `photo`, `surface: accent` | We stopped turning down same-day orders at noon | The quote with a portrait on the accent surface | whole | G1 |
 | `image-alone` | `image`, the van at the bollards, `text: none`, `transition: zoom` | The van stops here, the bike rides on (title only, not shown) | The picture alone, no text; zoom transition | whole | G1 |
+| `image-reveal-gradient` | `image-reveal`, `dock: top`, `barSurface: gradient`, `focal` | Five minutes across the Old Town | Cover docking to a gradient header bar above an aerial view | 0 title cover; 1 gradient header bar and image | G1 |
 
 ### Part 3: Explain (G2)
 
@@ -367,7 +371,8 @@ Where each capability lives. The coverage test lists what is still missing; this
   `title-center`); section numeral small/large, align left/center (`section-numeral-small`,
   dividers, `section-center`); statement emphasis underline, align left/center, `size: giant`
   (`statement-claim`, `statement-center`, `statement-giant`); content width text/full; split
-  ratio 1:1, 5:7, 7:5, side left/right, bleed; image text bottom/left/right/none; table numbers
+  ratio 1:1, 5:7, 7:5, side left/right, bleed; image text bottom/left/right/none; image-reveal dock
+  bottom/top, align left/center, barSurface default/inverse/accent/gradient, fit cover/contain; table numbers
   right/left; logos tone mono/color; screen frame browser/phone/laptop/none; `reveal: true` on
   cards, bento, steps, comparison, pricing, shift, timeline, equation, proof, screen, columns,
   matrix, ask, actions, status, risks, quadrants, market, schedule, dashboard, recap, faq, product-cutaway, service-blueprint,
@@ -398,6 +403,7 @@ Where each capability lives. The coverage test lists what is still missing; this
 - `exercise`: `exercise-window`, `exercise-first-drop`.
 - `faq`: `faq-booking`, `faq-windows`.
 - `features`: `features-network`, `features-operations`.
+- `image-reveal`: `image-reveal-footer`, `image-reveal-header`, `image-reveal-accent`, `image-reveal-gradient`.
 - `market`: `market-reachable`, `market-first`.
 - `persona`: `persona-hub-lead`, `persona-recipient`.
 - `product-cutaway`: `product-cutaway`.

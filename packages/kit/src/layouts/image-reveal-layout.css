@@ -1,0 +1,178 @@
+/*
+ * The image-reveal layout: step 0 opens as a full-canvas title slide over the slide's surface and
+ * optional backdrop; step 1 docks the title and subtitle into a full-width header or footer bar
+ * with its own surface background and crisp edge border, revealing the <Media> image across the
+ * rest of the slide. Live step transitions are driven smoothly with FLIP Web Animations in the
+ * layout component; static mode and reduced motion settle directly into either state.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='image-reveal'] > .kit-safe {
+    inset: 0;
+    overflow: hidden;
+  }
+
+  /*
+   * The image stage: hidden behind the cover on step 0, and filling the entire remaining height
+   * beside the docked bar on step 1.
+   */
+  .kit-image-reveal-stage {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='false'] .kit-image-reveal-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .kit-image-reveal-frame {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-image-reveal-frame > .deck-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kit-image-reveal-frame > .deck-slot > :is(img, video, svg, figure) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    object-fit: cover;
+    object-position: var(--kit-focal);
+  }
+
+  .kit-image-reveal-frame > .deck-slot > figure :is(img, video) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--kit-focal);
+  }
+
+  /* `fit: contain`: show the entire image uncropped inside the stage with clean breathing room. */
+  .kit-frame[data-layout='image-reveal'][data-fit='contain'] .kit-image-reveal-stage {
+    padding: var(--brand-space-lg) var(--brand-margin-x);
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-fit='contain']
+    .kit-image-reveal-frame
+    > .deck-slot
+    > :is(img, video, svg, figure),
+  .kit-frame[data-layout='image-reveal'][data-fit='contain']
+    .kit-image-reveal-frame
+    > .deck-slot
+    > figure
+    :is(img, video) {
+    object-fit: contain;
+    object-position: center;
+  }
+
+  /*
+   * The title / bar panel. On step 0 it spans the full canvas with a transparent ground so the
+   * slide's surface and backdrop show behind the title cover. On step 1 it settles into a
+   * full-width header or footer bar carrying its own surface background and edge border.
+   */
+  .kit-image-reveal-panel {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='false'] .kit-image-reveal-panel {
+    flex: 1 1 100%;
+    padding: var(--brand-margin-y) var(--brand-margin-x);
+    background: transparent;
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='true'] .kit-image-reveal-panel {
+    flex: none;
+    padding: var(--brand-space-md) var(--brand-margin-x);
+    background: var(--kit-image-reveal-bar-bg, var(--brand-background, var(--brand-color-bg)));
+    color: var(--brand-color-fg);
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='true'][data-dock='bottom']
+    .kit-image-reveal-panel {
+    border-top: var(--brand-stroke-regular) solid
+      var(--kit-image-reveal-bar-border, var(--brand-color-border));
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='true'][data-dock='top']
+    .kit-image-reveal-panel {
+    border-bottom: var(--brand-stroke-regular) solid
+      var(--kit-image-reveal-bar-border, var(--brand-color-border));
+  }
+
+  .kit-image-reveal-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-align='center'] .kit-image-reveal-copy {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Step 0 cover rhythm: generous title-slide spacing and measure. */
+  .kit-frame[data-layout='image-reveal'][data-revealed='false'] .kit-image-reveal-eyebrow {
+    margin-bottom: var(--brand-space-md);
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='false'] .kit-image-reveal-title {
+    max-width: var(--kit-measure-wide);
+    padding-bottom: 0.04em;
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='false'] .kit-image-reveal-subtitle {
+    margin-top: var(--brand-space-lg);
+    max-width: calc(8 * var(--kit-column) + 7 * var(--kit-gutter));
+    color: var(--brand-color-muted);
+  }
+
+  /* Step 1 docked bar rhythm: compact full-width header/footer leaving room for the image. */
+  .kit-frame[data-layout='image-reveal'][data-revealed='true'] .kit-image-reveal-copy {
+    gap: var(--brand-space-2xs);
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='true'] .kit-image-reveal-title {
+    max-width: 100%;
+  }
+
+  .kit-frame[data-layout='image-reveal'][data-revealed='true'] .kit-image-reveal-subtitle {
+    max-width: var(--kit-measure-wide);
+    color: var(--brand-color-muted);
+  }
+
+  .kit-image-reveal-subtitle p {
+    margin: 0;
+    color: inherit;
+  }
+}

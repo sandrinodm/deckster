@@ -14,7 +14,7 @@ Start with these candidates, then verify the installed contracts. For authoring 
 | Opening cover, part divider, full-slide claim | `title`, `section`, `statement` based on the slide's role in the deck |
 | Prose or bullets, sometimes with a small callout | `content` and its `aside` slot |
 | Freeform text beside a photo, figure or diagram | `split` for a visual with accompanying text. Inspect its side, ratio and bleed controls. |
-| Full-bleed photo with sparse overlaid text | `image` and its title-placement field |
+| Full-bleed photo with sparse overlaid text, or a title beat that docks into a header/footer bar above or below an image | `image` (and its title-placement field) or `image-reveal` (`dock`, `barSurface`, `fit`) |
 | Parallel list lanes or options sharing comparison criteria | `columns` for short structured lists, `comparison` for options and criteria. For two freeform text columns, inspect `content` with a body and aside. |
 | A few headline metrics, a main chart, a table or several distinct measures | `stats`, `chart`, `table` or `dashboard`. Match the content and required fields to the actual visual. |
 | Process drawing, short sequence of steps or ordered meeting sections | `diagram` for a diagram component, `steps` for a short sequence of steps, `agenda` for an outline |

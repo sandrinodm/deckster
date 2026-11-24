@@ -9,7 +9,8 @@
   .kit-frame:is(
       [data-layout='title'],
       [data-layout='section'],
-      [data-layout='statement']
+      [data-layout='statement'],
+      [data-layout='image-reveal']
     )[data-align='center']
     .kit-eyebrow {
     justify-content: center;
@@ -18,7 +19,8 @@
   .kit-frame:is(
       [data-layout='title'],
       [data-layout='section'],
-      [data-layout='statement']
+      [data-layout='statement'],
+      [data-layout='image-reveal']
     )[data-align='center']
     .kit-eyebrow:not(:empty)::after {
     content: '';
@@ -42,7 +44,8 @@
   .kit-frame:is(
       [data-layout='title'],
       [data-layout='section'],
-      [data-layout='statement']
+      [data-layout='statement'],
+      [data-layout='image-reveal']
     )[data-align='center']
     > .kit-backdrop:not(:has([data-backdrop-layer]:not([data-backdrop-kind='placed']))) {
     mask-image: radial-gradient(closest-side, transparent 60%, #000);
