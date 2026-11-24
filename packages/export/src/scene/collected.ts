@@ -115,7 +115,8 @@ export type CollectedScene = {
   surface: string;
 
   /**
-   * The slide's layout, from the frame's `data-layout`, else `default`.
+   * The slide's layout, from the `data-deck-layout` the engine stamps on the slide, else the first
+   * `data-layout` inside it, else `default`.
    */
   layout: string;
 

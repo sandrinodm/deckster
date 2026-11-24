@@ -6,7 +6,6 @@ import {
   isValidElement,
   useContext,
   useMemo,
-  type ComponentType,
   type ReactNode,
 } from 'react';
 
@@ -15,8 +14,10 @@ import type { LayoutDefinition, LayoutSlots } from '#layouts/layout.ts';
 
 import { BODY_SLOT, PLACED_SLOT, SLOT_ELEMENT, SLOTS_ELEMENT, slotTag } from '#contract/slots.ts';
 import { useDeckRuntime } from '#deck/deck-runtime.ts';
+import { isComponent } from '#deck/is-component.ts';
 import { PlacedLayerHost } from '#deck/placed-layer.tsx';
 import { SlideProblem } from '#deck/slide-problem.tsx';
+import { SlotGuard } from '#deck/slot-guard.tsx';
 import { Notes } from '#notes/notes.tsx';
 
 /**
@@ -254,7 +255,8 @@ function tsxSlots(entry: SlideEntry, body: ReactNode): LayoutSlots {
 
 /**
  * Wraps each filled slot in `<span class="deck-slot" data-slot="<name>">`, which has `display:
- * contents`, so `deckster lint` can find and measure it.
+ * contents`, so `deckster lint` can find and measure it. The content sits in a {@link SlotGuard},
+ * which tells an error it throws from one the layout throws.
  *
  * @param slots - The filled slots.
  */
@@ -264,24 +266,11 @@ function wrapSlots(slots: LayoutSlots): LayoutSlots {
     if (content !== undefined) {
       wrapped[name] = (
         <span className="deck-slot" data-slot={name}>
-          {content}
+          <SlotGuard>{content}</SlotGuard>
         </span>
       );
     }
   }
 
   return wrapped;
-}
-
-/**
- * Whether a module export can be rendered as a component: a function, or an object React wraps
- * components in (`memo`, `forwardRef`, `lazy`).
- *
- * @param value - The export.
- */
-function isComponent(value: unknown): value is ComponentType {
-  return (
-    typeof value === 'function' ||
-    (typeof value === 'object' && value !== null && '$$typeof' in value)
-  );
 }

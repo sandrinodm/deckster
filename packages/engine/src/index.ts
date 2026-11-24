@@ -46,6 +46,7 @@ export {
   type LayoutSlotName,
   type LayoutSlots,
 } from '#layouts/layout.ts';
+export { lazyLayout, type LayoutModule } from '#layouts/lazy-layout.tsx';
 export { useLayouts } from '#layouts/use-layouts.ts';
 export { MORPH_ATTRIBUTE } from '#morph/morph-elements.ts';
 export { INTERACTIVE_ATTRIBUTE, isInteractiveTarget } from '#navigation/interactive-target.ts';

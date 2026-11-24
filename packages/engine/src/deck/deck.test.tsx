@@ -591,6 +591,48 @@ describe('Deck layouts', () => {
     );
   });
 
+  it('stamps each slide section with the layout its frontmatter names, `default` when none', () => {
+    mounted = renderDeck(
+      manifestOf(
+        mdxSlide('plain', () => <p>Plain</p>),
+        mdxSlide('cols', () => null, { frontmatter: { layout: 'columns' } }),
+        mdxSlide('lost', () => null, { frontmatter: { layout: 'splitt' } }),
+      ),
+      { plugins: [COLUMNS_PLUGIN], isStatic: true },
+    );
+    const stamps = [...document.querySelectorAll('section[data-slide-id]')].map((section) => [
+      section.getAttribute('data-slide-id'),
+      section.getAttribute('data-deck-layout'),
+    ]);
+    expect(stamps).toEqual([
+      ['plain', 'default'],
+      ['cols', 'columns'],
+      ['lost', 'splitt'],
+    ]);
+  });
+
+  it('stamps the layout name whatever markup the layout draws', () => {
+    /**
+     * A layout that draws no `data-layout` of its own.
+     */
+    const Bare = ({ slots }: LayoutProps): ReactNode => <main>{slots.body}</main>;
+    mounted = renderDeck(
+      manifestOf(mdxSlide('bare', () => <p>Hi</p>, { frontmatter: { layout: 'bare' } })),
+      {
+        plugins: [
+          definePlugin({
+            name: 'bare',
+            layouts: [defineLayout({ name: 'bare', component: Bare })],
+          }),
+        ],
+      },
+    );
+    expect(document.querySelector('[data-layout]')).toBeNull();
+    expect(
+      document.querySelector('section[data-slide-active="true"]')?.getAttribute('data-deck-layout'),
+    ).toBe('bare');
+  });
+
   it('renders a plugin Step from the Step a TSX slide imports', () => {
     /**
      * A plugin step that marks its output.

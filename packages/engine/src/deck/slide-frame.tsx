@@ -77,7 +77,8 @@ type SlideFrameProps = {
  * suspends, and never while it unmounts), and again whenever steps mount or unmount or its
  * readiness holds change: the count is final once nothing holds the slide, so a step the deck was
  * sent to before a lazy part registered it lands then. It holds the deck's `ready()` while its
- * content suspends and shows a render error in place of the slide.
+ * content suspends and shows a render error in place of the slide. The section is stamped with
+ * `data-deck-layout`, the layout name the slide's frontmatter gives, which export reads.
  */
 export const SlideFrame = memo(function SlideFrame({
   entry,
@@ -147,7 +148,8 @@ export const SlideFrame = memo(function SlideFrame({
       data-slide-index={index}
       {...placementAttributes(state, direction, isActive)}
       data-transition={state === undefined ? undefined : transition}
-      data-surface={frontmatter.surface ?? DEFAULT_SURFACE}>
+      data-surface={frontmatter.surface ?? DEFAULT_SURFACE}
+      data-deck-layout={frontmatter.layout}>
       <SlideContext value={slide}>
         <SlideErrorBoundary
           file={entry.file}
