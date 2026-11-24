@@ -11,6 +11,7 @@ import {
 } from '#layout-api.fixture.ts';
 import * as layoutFields from '#layout-fields.ts';
 import * as layoutParts from '#layout-parts.ts';
+import { KIT_SRC_DIR, transitiveImports } from '#layouts/eject-closure.ts';
 
 const SRC_DIR = fileURLToPath(new URL('.', import.meta.url));
 
@@ -72,6 +73,13 @@ describe('@deckster/kit/layout-fields', () => {
     expect(JSON.parse(output)).toEqual(valueNames(reexportedNames(SRC_DIR, 'layout-fields.ts')));
   });
 
+  it('imports no React, no stylesheet and no .tsx file, however deep', () => {
+    const { modules, packages } = transitiveImports(KIT_SRC_DIR, 'layout-fields.ts');
+    expect(modules.filter((module) => !module.endsWith('.ts'))).toEqual([]);
+    expect(packages.filter((name) => name === 'react' || name.startsWith('react/'))).toEqual([]);
+    expect(packages.filter((name) => name.startsWith('react-'))).toEqual([]);
+  });
+
   it('keeps its signatures', async () => {
     await expect(
       printModule('@deckster/kit/layout-fields', 'layout-fields.ts'),
@@ -95,5 +103,12 @@ describe('@deckster/kit/layout-fields', () => {
       .map(([name, schema]) => `${name}: ${JSON.stringify(Schema.toJsonSchemaDocument(schema))}`)
       .join('\n');
     await expect(`${text}\n`).toMatchFileSnapshot('./layout-fields.schemas.snapshot.txt');
+  });
+
+  it('fills an omitted chrome field with the default it is given', () => {
+    const decode = (shown: boolean): unknown =>
+      Schema.decodeUnknownSync(Schema.Struct({ chrome: layoutFields.chromeField(shown) }))({});
+    expect(decode(true)).toEqual({ chrome: true });
+    expect(decode(false)).toEqual({ chrome: false });
   });
 });

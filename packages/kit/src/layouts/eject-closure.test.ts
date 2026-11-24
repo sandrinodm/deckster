@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vite-plus/test';
 
+import catalog from '#catalog.ts';
 import {
   catalogLayoutNames,
   ejectClosures,
@@ -11,6 +12,7 @@ import {
   moduleStateHits,
   SAFE_STATE_MODULES,
   SHARED_STATE_MODULES,
+  toModuleId,
   transitiveImports,
   type LayoutClosure,
 } from '#layouts/eject-closure.ts';
@@ -46,6 +48,26 @@ describe('the eject closure of the kit layouts', () => {
   it('covers every layout in the catalog', () => {
     expect(Object.keys(closures)).toEqual(catalogLayoutNames(srcDir));
     expect(Object.keys(closures)).toHaveLength(64);
+  });
+
+  it('lists the layouts in the order the catalog registers them', () => {
+    expect(catalogLayoutNames(srcDir)).toEqual(catalog.layouts.map((layout) => layout.name));
+  });
+
+  it('copies no stylesheet of another layout', () => {
+    for (const [name, closure] of Object.entries(closures)) {
+      const others = closure.css.filter(
+        (file) =>
+          /^layouts\/[a-z0-9-]+-layout\.css$/u.test(file) && file !== `layouts/${name}-layout.css`,
+      );
+      expect(others, `${name} imports another layout's stylesheet`).toEqual([]);
+    }
+  });
+
+  it('shares only the scrim between the title and the image layouts', () => {
+    expect(closures['title']?.css).toContain('layouts/image-scrim.css');
+    expect(closures['title']?.css).not.toContain('layouts/image-layout.css');
+    expect(closures['image']?.css).toEqual(['layouts/image-layout.css', 'layouts/image-scrim.css']);
   });
 
   it('reaches no unexported shared state from any layout', () => {
@@ -133,6 +155,19 @@ describe('the closure walk', () => {
     ]);
   });
 
+  it('names each listed contract after the file it is imported from, aliases included', () => {
+    const dir = scratchSrc({
+      'catalog.ts': [
+        "import { b } from '#layouts/b-layout.contract.ts';",
+        "import { aContract as first } from '#layouts/a-layout.contract.ts';",
+        "import { c } from '#layouts/c-layout.contract.ts';",
+        'export default defineLayoutCatalog({ layouts: [first, b] });',
+        '',
+      ].join('\n'),
+    });
+    expect(catalogLayoutNames(dir)).toEqual(['a', 'b', 'c']);
+  });
+
   it('flags a copied module that creates a context', () => {
     const unsafe = findUnsafeCopies(srcDir, ejectClosures(srcDir));
     expect(unsafe['a']?.map((copy) => copy.module)).toEqual(['foundation/ctx.ts']);
@@ -165,6 +200,16 @@ describe('the closure walk', () => {
     ]);
     expect(moduleStateHits('function f() {\n  let n = 0;\n  return new Map();\n}\n')).toEqual([]);
     expect(moduleStateHits('// let x = 1;\n/* createContext() */\n')).toEqual([]);
+  });
+});
+
+describe('toModuleId', () => {
+  it('joins the parts of a Windows path with /', () => {
+    expect(toModuleId('layouts\\title-layout.tsx', '\\')).toBe('layouts/title-layout.tsx');
+  });
+
+  it('leaves a / path as it is', () => {
+    expect(toModuleId('foundation/frame.tsx', '/')).toBe('foundation/frame.tsx');
   });
 });
 

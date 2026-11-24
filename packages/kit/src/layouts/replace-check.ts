@@ -1,7 +1,9 @@
 import type {
   AnyLayoutContract,
   ContentBudget,
+  FieldProblem,
   LayoutExample,
+  LayoutVariant,
   SlotContract,
 } from '@deckster/engine/layout';
 
@@ -44,7 +46,8 @@ export type ReplacementProblem = {
 export type ReplacementCheck = {
   /**
    * Slides written for the original would stop building: a field, slot or title the replacement
-   * drops or narrows, or an example of the original it rejects. The replacement must not be used.
+   * drops, narrows or newly requires, or an example of the original it rejects. The replacement
+   * must not be used.
    */
   readonly errors: readonly ReplacementProblem[];
 
@@ -54,8 +57,9 @@ export type ReplacementCheck = {
   readonly warnings: readonly ReplacementProblem[];
 
   /**
-   * Changes worth knowing about: every budget and title limit that differs from the original.
-   * Tighter limits are allowed; lint then flags the slides over them.
+   * Changes worth knowing about: every budget, variant budget and title limit that differs from the
+   * original, and every variant the replacement adds or drops. Tighter limits are allowed; lint
+   * then flags the slides over them.
    */
   readonly notes: readonly ReplacementProblem[];
 };
@@ -77,11 +81,13 @@ type SampleFrontmatter = {
 
 /**
  * Checks that a code layout can replace a kit or engine layout of the same name without breaking a
- * deck written for the original: every field the original requires stays required and every field
- * it accepts is accepted; every slot it has stays, required where it was, accepting at least what
- * it accepted; its example and every limit case of the kit's stress test (`LIMIT_CASES`) decode
- * against the replacement and pass its `checks`; and a required title stays required. A dropped
- * PowerPoint mapping is a warning, and every changed budget or title limit a note.
+ * deck written for the original: every field the original requires stays required, every field it
+ * accepts is accepted, and no field it leaves optional or lacks becomes required; every slot it has
+ * stays, required where it was, accepting at least what it accepted, and no slot becomes required
+ * that was not; its example and every limit case of the kit's stress test (`LIMIT_CASES`) decode
+ * against the replacement and pass its `checks` (a throwing `checks` is an error, not a crash); and
+ * the title is required exactly when the original requires it. A dropped PowerPoint mapping is a
+ * warning, and every changed budget, variant or title limit a note.
  *
  * A limit case the original itself does not accept alone (the stress test adds fields to some) is
  * skipped. Real slides are checked by the build and by `checkReplacedSlides` in the deck plugin.
@@ -102,7 +108,11 @@ export function checkReplacement(
       ...titleProblems(original, replacement),
     ],
     warnings: pptxWarnings(original, replacement),
-    notes: [...budgetNotes(original, replacement), ...titleNotes(original, replacement)],
+    notes: [
+      ...budgetNotes(original, replacement),
+      ...variantNotes(original, replacement),
+      ...titleNotes(original, replacement),
+    ],
   };
 }
 
@@ -126,8 +136,9 @@ export function replacementSamples(original: AnyLayoutContract): readonly Sample
 }
 
 /**
- * The errors for the original's fields: one the replacement does not have, and one the original
- * requires that the replacement leaves optional.
+ * The errors for fields: one of the original's the replacement does not have, one the original
+ * requires that the replacement leaves optional, and one the replacement requires that the original
+ * leaves optional or does not have.
  *
  * @param original - The replaced layout's contract.
  * @param replacement - The replacement's contract.
@@ -137,7 +148,8 @@ function fieldProblems(
   replacement: AnyLayoutContract,
 ): ReplacementProblem[] {
   const name = original.name;
-  return Object.keys(original.schema.fields).flatMap((field): ReplacementProblem[] => {
+  const originalFields = Object.keys(original.schema.fields);
+  const missing = originalFields.flatMap((field): ReplacementProblem[] => {
     const isRequired = isRequiredField(original, field);
     if (ownField(replacement, field) === undefined) {
       return [
@@ -165,12 +177,45 @@ function fieldProblems(
 
     return [];
   });
+  const required = newlyRequiredFields(original, replacement).map((field): ReplacementProblem => ({
+    message:
+      `The replacement requires the field "${field}", which the original ${name} layout ` +
+      `${originalStance(ownField(original, field) !== undefined)}, so ` +
+      'slides that leave it out stop building.',
+    fix: `Make \`${field}\` optional or give it a default in the replacement's schema.`,
+  }));
+  return [...missing, ...required];
 }
 
 /**
- * The errors for the original's slots: one the replacement drops, makes optional where the original
- * requires it, or lets accept less than the original did. `body`, which every layout has, can only
- * lose its `required` flag or what it accepts.
+ * How a message says the original treats a field or slot the replacement requires.
+ *
+ * @param present - Whether the original has it at all.
+ */
+function originalStance(present: boolean): string {
+  return present ? 'leaves optional' : 'does not have';
+}
+
+/**
+ * The fields the replacement requires that the original leaves optional or does not have.
+ *
+ * @param original - The replaced layout's contract.
+ * @param replacement - The replacement's contract.
+ */
+function newlyRequiredFields(
+  original: AnyLayoutContract,
+  replacement: AnyLayoutContract,
+): string[] {
+  return Object.keys(replacement.schema.fields).filter(
+    (field) => isRequiredField(replacement, field) && !isRequiredField(original, field),
+  );
+}
+
+/**
+ * The errors for slots: one of the original's the replacement drops, makes optional where the
+ * original requires it, or lets accept less than the original did, and one the replacement requires
+ * that the original leaves optional or does not have. `body`, which every layout has, can only lose
+ * its `required` flag or what it accepts.
  *
  * @param original - The replaced layout's contract.
  * @param replacement - The replacement's contract.
@@ -179,7 +224,7 @@ function slotProblems(
   original: AnyLayoutContract,
   replacement: AnyLayoutContract,
 ): ReplacementProblem[] {
-  return Object.keys(original.slots).flatMap((slot): ReplacementProblem[] => {
+  const kept = Object.keys(original.slots).flatMap((slot): ReplacementProblem[] => {
     const before = ownSlot(original, slot);
     const after = ownSlot(replacement, slot);
     if (before === undefined) {
@@ -195,6 +240,38 @@ function slotProblems(
       ...acceptsProblems(original.name, slot, before, after),
     ];
   });
+  const required = Object.keys(replacement.slots).flatMap((slot) =>
+    newlyRequiredSlot(original, slot, ownSlot(replacement, slot)),
+  );
+  return [...kept, ...required];
+}
+
+/**
+ * The error for a slot the replacement requires and the original leaves optional or does not have.
+ *
+ * @param original - The replaced layout's contract.
+ * @param slot - The slot name.
+ * @param after - The replacement's slot contract.
+ */
+function newlyRequiredSlot(
+  original: AnyLayoutContract,
+  slot: string,
+  after: SlotContract | undefined,
+): ReplacementProblem[] {
+  const before = ownSlot(original, slot);
+  if (after?.required !== true || before?.required === true) {
+    return [];
+  }
+
+  return [
+    {
+      message:
+        `The replacement requires the slot "${slot}", which the original ${original.name} ` +
+        `layout ${originalStance(before !== undefined)}, so slides that ` +
+        'leave it empty stop building.',
+      fix: `Drop \`required: true\` from the replacement's \`${slot}\` slot.`,
+    },
+  ];
 }
 
 /**
@@ -282,7 +359,7 @@ function acceptsProblems(
  * The errors for frontmatter the original accepts and the replacement does not: its example and its
  * limit cases that fail to decode or fail the replacement's `checks`. Samples that fail the same
  * way give one error, naming the first and how many others; a sample that fails on a field
- * {@link fieldProblems} already reports as missing gives none.
+ * {@link fieldProblems} already reports (missing, or newly required) gives none.
  *
  * @param original - The replaced layout's contract.
  * @param replacement - The replacement's contract.
@@ -291,15 +368,16 @@ function sampleProblems(
   original: AnyLayoutContract,
   replacement: AnyLayoutContract,
 ): ReplacementProblem[] {
-  const missing = new Set(
-    Object.keys(original.schema.fields).filter(
+  const reported = new Set([
+    ...Object.keys(original.schema.fields).filter(
       (field) => ownField(replacement, field) === undefined,
     ),
-  );
+    ...newlyRequiredFields(original, replacement),
+  ]);
   const failures = new Map<string, { problem: ReplacementProblem; labels: string[] }>();
   for (const sample of replacementSamples(original)) {
     for (const failure of sampleFailures(original, replacement, sample)) {
-      if (missing.has(failure.field)) {
+      if (reported.has(failure.field)) {
         continue;
       }
 
@@ -375,8 +453,21 @@ function sampleFailures(
     ];
   }
 
-  const failed = replacement.checks?.(decoded.success) ?? [];
-  return failed.map((problem) => ({
+  const ran = runChecks(replacement, decoded.success);
+  if (!ran.ok) {
+    return [
+      {
+        field: '',
+        reason: `checks failed: ${ran.reason}`,
+        problem: {
+          message: `${lead}, and the replacement's checks ${ran.reason}.`,
+          fix: "Make the replacement's `checks` return a list of `{ path, message, fix }` problems.",
+        },
+      },
+    ];
+  }
+
+  return ran.problems.map((problem) => ({
     field: problem.path.split(/[.[]/u)[0] ?? '',
     reason: `${problem.path}: ${problem.message}`,
     problem: {
@@ -384,6 +475,77 @@ function sampleFailures(
       fix: "Loosen the replacement's `checks` so they pass every slide the original accepts.",
     },
   }));
+}
+
+/**
+ * What running a layout's `checks` gave: its problems, or why they could not be read.
+ */
+type ChecksRun =
+  | {
+      /**
+       * The checks returned a list of problems.
+       */
+      readonly ok: true;
+
+      /**
+       * The problems; empty when the checks pass or the layout has none.
+       */
+      readonly problems: readonly FieldProblem[];
+    }
+  | {
+      /**
+       * The checks threw or returned something other than a list of problems.
+       */
+      readonly ok: false;
+
+      /**
+       * What went wrong, as the end of a sentence: `threw on it: <message>`.
+       */
+      readonly reason: string;
+    };
+
+/**
+ * Runs a layout's `checks` on decoded frontmatter. They are user code, so a throw, or a result that
+ * is not a list of problems with a string `path` and `message` (a promise, say), is returned as a
+ * reason instead of failing the whole catalog.
+ *
+ * @param contract - The layout's contract.
+ * @param frontmatter - The decoded frontmatter.
+ * @returns The problems the checks report (none without `checks`), or why they could not be read.
+ */
+function runChecks(contract: AnyLayoutContract, frontmatter: Record<string, unknown>): ChecksRun {
+  let returned: unknown;
+  try {
+    returned = contract.checks?.(frontmatter) ?? [];
+  } catch (error) {
+    return {
+      ok: false,
+      reason: `threw on it: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+
+  if (!Array.isArray(returned) || !returned.every(isFieldProblem)) {
+    return { ok: false, reason: 'did not return a list of problems for it' };
+  }
+
+  return { ok: true, problems: returned };
+}
+
+/**
+ * Whether a value has the parts of a {@link FieldProblem} this check reads: a string `path` and
+ * `message`.
+ *
+ * @param value - One entry `checks` returned.
+ */
+function isFieldProblem(value: unknown): value is FieldProblem {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'path' in value &&
+    typeof value.path === 'string' &&
+    'message' in value &&
+    typeof value.message === 'string'
+  );
 }
 
 /**
@@ -410,7 +572,8 @@ function givenValue(sample: SampleFrontmatter, field: string): string {
 const SHOWN_VALUE_MAX_CHARS = 60;
 
 /**
- * The error for a title the original requires and the replacement does not.
+ * The error for a title one layout requires and the other does not: the original's that the
+ * replacement leaves optional, or the replacement's that the original leaves optional.
  *
  * @param original - The replaced layout's contract.
  * @param replacement - The replacement's contract.
@@ -419,8 +582,21 @@ function titleProblems(
   original: AnyLayoutContract,
   replacement: AnyLayoutContract,
 ): ReplacementProblem[] {
-  if (original.title?.required !== true || replacement.title?.required === true) {
+  const before = original.title?.required === true;
+  const after = replacement.title?.required === true;
+  if (before === after) {
     return [];
+  }
+
+  if (after) {
+    return [
+      {
+        message:
+          `The replacement requires a title, and the original ${original.name} layout does ` +
+          'not, so slides without one stop building.',
+        fix: "Drop `required: true` from the replacement's `title`.",
+      },
+    ];
   }
 
   return [
@@ -470,10 +646,105 @@ function budgetNotes(
   original: AnyLayoutContract,
   replacement: AnyLayoutContract,
 ): ReplacementProblem[] {
-  const slots = new Set([...Object.keys(original.budget), ...Object.keys(replacement.budget)]);
+  return limitNotes({
+    layout: original.name,
+    where: 'The budget',
+    before: original.budget,
+    after: replacement.budget,
+  });
+}
+
+/**
+ * A note for every variant the replacement adds or drops, and for every budget limit that differs
+ * in a variant both have. Variants are matched by name.
+ *
+ * @param original - The replaced layout's contract.
+ * @param replacement - The replacement's contract.
+ */
+function variantNotes(
+  original: AnyLayoutContract,
+  replacement: AnyLayoutContract,
+): ReplacementProblem[] {
+  const before = variantsByName(original);
+  const after = variantsByName(replacement);
+  const names = new Set([...before.keys(), ...after.keys()]);
+  return [...names].flatMap((name): ReplacementProblem[] => {
+    const was = before.get(name);
+    const is = after.get(name);
+    if (was === undefined || is === undefined) {
+      return [variantPresenceNote(name, is !== undefined)];
+    }
+
+    return limitNotes({
+      layout: original.name,
+      where: `In the variant "${name}", the budget`,
+      before: was.budget ?? {},
+      after: is.budget ?? {},
+    });
+  });
+}
+
+/**
+ * The note for a variant only one of the layouts has.
+ *
+ * @param name - The variant's name.
+ * @param added - Whether the replacement has it (and the original not), rather than the reverse.
+ */
+function variantPresenceNote(name: string, added: boolean): ReplacementProblem {
+  const message = added
+    ? `The replacement adds the variant "${name}", so slides it matches get its budget instead ` +
+      'of the base budget.'
+    : `The replacement drops the variant "${name}", so slides it matches get the base budget ` +
+      'instead of its budget.';
+  return { message, fix: budgetFix() };
+}
+
+/**
+ * The fix of every budget note: lint checks existing slides against the new budget.
+ */
+function budgetFix(): string {
+  return (
+    `Nothing to do if that is intended: \`${deckCommand()} lint\` checks existing slides ` +
+    'against the new budget.'
+  );
+}
+
+/**
+ * What {@link limitNotes} compares: two sets of slot budgets and how to name them in messages.
+ */
+type LimitComparison = {
+  /**
+   * The replaced layout's name.
+   */
+  readonly layout: string;
+
+  /**
+   * How a message names the budgets, such as `The budget`.
+   */
+  readonly where: string;
+
+  /**
+   * The original's budgets by slot.
+   */
+  readonly before: Readonly<Record<string, ContentBudget | undefined>>;
+
+  /**
+   * The replacement's budgets by slot.
+   */
+  readonly after: Readonly<Record<string, ContentBudget | undefined>>;
+};
+
+/**
+ * A note for every limit that differs between two sets of slot budgets.
+ *
+ * @param comparison - The budgets and how to name them.
+ */
+function limitNotes(comparison: LimitComparison): ReplacementProblem[] {
+  const { layout, where } = comparison;
+  const slots = new Set([...Object.keys(comparison.before), ...Object.keys(comparison.after)]);
   return [...slots].flatMap((slot) => {
-    const before = budgetOf(original, slot);
-    const after = budgetOf(replacement, slot);
+    const before = budgetOf(comparison.before, slot);
+    const after = budgetOf(comparison.after, slot);
     return BUDGET_LIMITS.flatMap((limit): ReplacementProblem[] => {
       if (before?.[limit] === after?.[limit]) {
         return [];
@@ -482,15 +753,22 @@ function budgetNotes(
       return [
         {
           message:
-            `The budget of "${slot}" sets ${limit} to ${describeLimit(after?.[limit])}; the ` +
-            `original ${original.name} layout sets ${describeLimit(before?.[limit])}.`,
-          fix:
-            `Nothing to do if that is intended: \`${deckCommand()} lint\` checks existing ` +
-            'slides against the new budget.',
+            `${where} of "${slot}" sets ${limit} to ${describeLimit(after?.[limit])}; the ` +
+            `original ${layout} layout sets ${describeLimit(before?.[limit])}.`,
+          fix: budgetFix(),
         },
       ];
     });
   });
+}
+
+/**
+ * A layout's variants by name.
+ *
+ * @param contract - The layout's contract.
+ */
+function variantsByName(contract: AnyLayoutContract): Map<string, LayoutVariant> {
+  return new Map((contract.variants ?? []).map((variant) => [variant.name, variant]));
 }
 
 /**
@@ -522,14 +800,16 @@ function titleNotes(
 }
 
 /**
- * A layout's budget for one slot.
+ * The budget for one slot, counting only own keys.
  *
- * @param contract - The layout's contract.
+ * @param budgets - Budgets by slot.
  * @param slot - The slot name.
  */
-function budgetOf(contract: AnyLayoutContract, slot: string): ContentBudget | undefined {
-  const budget: Readonly<Record<string, ContentBudget | undefined>> = contract.budget;
-  return Object.hasOwn(budget, slot) ? budget[slot] : undefined;
+function budgetOf(
+  budgets: Readonly<Record<string, ContentBudget | undefined>>,
+  slot: string,
+): ContentBudget | undefined {
+  return Object.hasOwn(budgets, slot) ? budgets[slot] : undefined;
 }
 
 /**

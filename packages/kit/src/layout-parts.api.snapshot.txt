@@ -111,6 +111,9 @@ foundation/stat-figure.tsx type StatValueProps = {
   className?: string;
   countUp?: boolean;
 };
+layouts/stat-value.ts type DeltaDirection = 'up' | 'down' | 'flat';
+layouts/stat-value.ts type DeltaTone = 'positive' | 'negative' | 'neutral';
+motion/step-effects.ts type StepEffect = (typeof STEP_EFFECTS)[number];
 motion/step.tsx type KitStepProps = StepProps & {
   effect?: StepEffect;
   focus?: boolean;

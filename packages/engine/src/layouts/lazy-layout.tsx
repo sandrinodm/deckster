@@ -1,5 +1,6 @@
 import { use, type ReactNode } from 'react';
 
+import { BODY_SLOT } from '#contract/slots.ts';
 import { isComponent } from '#deck/is-component.ts';
 import { announceLayoutLoad } from '#layouts/layout-loads.ts';
 import { LayoutProblem } from '#layouts/layout-problem.tsx';
@@ -62,7 +63,9 @@ type LayoutLoad =
  * slides that use it ("Layout `kpi-wall` failed to load: ..."); every other slide keeps working.
  * The slide is not ready (`window.__deck.ready()`) until the layout has loaded. The layout's
  * `bleed` is read once it has loaded: until then it names no edges, and anything that reads it
- * through `useLayouts()` renders again when the load finishes.
+ * through `useLayouts()` renders again when the load finishes. A `bleed` that throws names no edges
+ * to its caller (page chrome renders outside every slide) and shows as the layout's render problem
+ * on the slide it threw for.
  *
  * @param name - The layout's name, which its default export must carry too.
  * @param load - Imports the layout's module; it is called at most once.
@@ -100,6 +103,7 @@ export function lazyLayout(name: string, load: () => Promise<LayoutModule>): Lay
     const Layout = result.layout.component;
     return (
       <LayoutRenderBoundary layout={name} resetKey={props.frontmatter}>
+        <BleedCheck layout={result.layout} props={props} />
         <Layout {...props} />
       </LayoutRenderBoundary>
     );
@@ -114,9 +118,50 @@ export function lazyLayout(name: string, load: () => Promise<LayoutModule>): Lay
         return [];
       }
 
-      return loaded.bleed?.(input) ?? [];
+      try {
+        return loaded.bleed?.(input) ?? [];
+      } catch {
+        // Chrome reads this outside every slide's error boundary; the slide's own render runs
+        // the same callback in BleedCheck, which shows the error there.
+        return [];
+      }
     },
   };
+}
+
+/**
+ * Props of {@link BleedCheck}.
+ */
+type BleedCheckProps = {
+  /**
+   * The loaded layout.
+   */
+  layout: LayoutDefinition;
+
+  /**
+   * The props the slide gives the layout.
+   */
+  props: LayoutProps;
+};
+
+/**
+ * Runs a loaded layout's `bleed` for the slide inside the layout's error boundary and renders
+ * nothing, so a `bleed` that throws shows as the layout's problem on this slide rather than only
+ * being swallowed where the page chrome reads it.
+ */
+function BleedCheck({ layout, props }: BleedCheckProps): ReactNode {
+  layout.bleed?.({ frontmatter: props.frontmatter, slots: filledSlots(props) });
+  return null;
+}
+
+/**
+ * The named slots a slide fills, without `body`, as a layout's `bleed` reads them.
+ *
+ * @param props - The props the slide gives the layout.
+ */
+function filledSlots(props: LayoutProps): string[] {
+  const slots: Readonly<Record<string, unknown>> = props.slots;
+  return Object.keys(slots).filter((slot) => slot !== BODY_SLOT && slots[slot] !== undefined);
 }
 
 /**

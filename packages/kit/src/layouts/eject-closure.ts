@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -218,20 +218,56 @@ const MODULE_COLLECTION =
   /^(?:export\s+)?const\s+\w+[^=\n]*=\s*new\s+(?:Map|Set|WeakMap|WeakSet)\b/mu;
 
 /**
- * Matches the import of a layout's contract in `catalog.ts`, capturing its name.
+ * Matches the import of a layout's contract in `catalog.ts`, capturing its import clause and its
+ * name.
  */
 const LAYOUT_CONTRACT_IMPORT =
-  /^import\s[^'";]*\sfrom\s'#layouts\/([a-z0-9-]+)-layout\.contract\.ts'/gmu;
+  /^import\s([^'";]*)\sfrom\s'#layouts\/([a-z0-9-]+)-layout\.contract\.ts'/gmu;
 
 /**
- * The names of the layouts in the kit's catalog, in catalog order: every
- * `<name>-layout.contract.ts` `catalog.ts` imports.
+ * Matches the `layouts: [ … ]` array of `catalog.ts`, capturing what is between the brackets.
+ */
+const CATALOG_LAYOUTS_ARRAY = /\blayouts:\s*\[([^\]]*)\]/u;
+
+/**
+ * Matches an identifier.
+ */
+const IDENTIFIER = /[A-Za-z_$][\w$]*/gu;
+
+/**
+ * The names of the layouts in the kit's catalog, in catalog order: the order of the `layouts` array
+ * in `catalog.ts`, each entry named after the `<name>-layout.contract.ts` it is imported from. A
+ * contract `catalog.ts` imports but does not list comes after them, in import order.
  *
  * @param srcDir - The kit's `src` folder.
  */
 export function catalogLayoutNames(srcDir: string = KIT_SRC_DIR): string[] {
-  const catalog = readFileSync(join(srcDir, 'catalog.ts'), 'utf8');
-  return [...catalog.matchAll(LAYOUT_CONTRACT_IMPORT)].map((match) => match[1] ?? '');
+  const catalog = stripComments(readFileSync(join(srcDir, 'catalog.ts'), 'utf8'));
+  const byIdentifier = new Map<string, string>();
+  for (const match of catalog.matchAll(LAYOUT_CONTRACT_IMPORT)) {
+    for (const local of localNames(match[1] ?? '')) {
+      byIdentifier.set(local, match[2] ?? '');
+    }
+  }
+
+  const listed = CATALOG_LAYOUTS_ARRAY.exec(catalog)?.[1] ?? '';
+  const ordered = [...listed.matchAll(IDENTIFIER)].flatMap((match) => {
+    const name = byIdentifier.get(match[0]);
+    return name === undefined ? [] : [name];
+  });
+  return [...new Set([...ordered, ...byIdentifier.values()])];
+}
+
+/**
+ * Turns a path relative to the kit's `src` folder into the `/`-separated form every module id in a
+ * closure uses, whatever the platform's separator.
+ *
+ * @param path - A relative path, with the platform's separators.
+ * @param separator - The separator `path` uses; the platform's by default.
+ * @returns The path with `/` between its parts.
+ */
+export function toModuleId(path: string, separator: string = sep): string {
+  return separator === '/' ? path : path.split(separator).join('/');
 }
 
 /**
@@ -512,6 +548,7 @@ function importersOutsideLayouts(srcDir: string): Map<string, string[]> {
  */
 function listCodeFiles(srcDir: string): string[] {
   return readdirSync(srcDir, { recursive: true, encoding: 'utf8' })
+    .map((file) => toModuleId(file))
     .filter((file) => CODE_FILE.test(file) && !TEST_OR_FIXTURE_FILE.test(file))
     .sort();
 }
@@ -564,7 +601,7 @@ function resolveSpecifier(srcDir: string, from: string, specifier: string): stri
     return undefined;
   }
 
-  const path = relative(srcDir, base);
+  const path = toModuleId(relative(srcDir, base));
   const isModule = /\.(?:ts|tsx|css)$/u.test(path);
   return isModule && isFile(base) ? path : undefined;
 }
@@ -596,6 +633,28 @@ function isFile(path: string): boolean {
  */
 function stripComments(source: string): string {
   return source.replace(BLOCK_COMMENT, '').replace(LINE_COMMENT, '');
+}
+
+/**
+ * The local names an import clause binds: `b` for `{ a as b }`, the default import's name, and the
+ * namespace name.
+ */
+function localNames(clause: string): string[] {
+  const braces = /\{([^}]*)\}/u.exec(clause);
+  const outside = braces === null ? clause : clause.replace(braces[0], '');
+  const inside = (braces?.[1] ?? '').split(',').map((part) => {
+    const names = part
+      .trim()
+      .replace(/^type\s+/u, '')
+      .split(/\s+as\s+/u);
+    return names.at(-1)?.trim() ?? '';
+  });
+  const bare = outside
+    .replace(/^\s*type\s+/u, '')
+    .replace(/\*\s+as\s+/u, '')
+    .split(',')
+    .map((part) => part.trim());
+  return [...bare, ...inside].filter((name) => name !== '');
 }
 
 /**

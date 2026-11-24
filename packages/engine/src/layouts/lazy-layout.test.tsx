@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, memo, type ReactNode } from 'react';
+import { act, cloneElement, isValidElement, memo, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import type { BleedSide, LayoutDefinition, LayoutProps } from '#layouts/layout.ts';
@@ -12,6 +12,7 @@ import {
   wait,
   type MountedDeck,
 } from '#deck/deck.fixture.tsx';
+import { SlotGuard } from '#deck/slot-guard.tsx';
 import { defineLayout } from '#layouts/layout.ts';
 import { lazyLayout, type LayoutModule } from '#layouts/lazy-layout.tsx';
 import { useLayouts } from '#layouts/use-layouts.ts';
@@ -359,5 +360,121 @@ describe('lazyLayout bleed', () => {
     });
     await wait(COMMIT_INTERVAL_MS * 3);
     expect(document.querySelector('[data-testid="chrome-bleed"]')?.textContent).toBe('left');
+  });
+
+  it('keeps the deck up when bleed throws and shows the error on the slide', async () => {
+    const Wall = ({ slots }: LayoutProps): ReactNode => <div data-testid="wall">{slots.body}</div>;
+    const throwing = defineLayout({
+      name: 'kpi-wall',
+      component: Wall,
+      bleed: () => {
+        throw new Error('no media');
+      },
+    });
+    /**
+     * Chrome that reads the bleed of the `kpi-wall` layout, as the kit's does.
+     */
+    const BleedChrome = (): ReactNode => {
+      const bleed =
+        useLayouts()
+          .get('kpi-wall')
+          ?.bleed?.({ frontmatter: { layout: 'kpi-wall' }, slots: [] }) ?? [];
+      return <i data-testid="chrome-bleed">{bleed.join(',')}</i>;
+    };
+    mounted = renderDeck(DECK, {
+      plugins: [
+        definePlugin({
+          name: 'local-layouts',
+          layouts: [lazyLayout('kpi-wall', async () => ({ default: throwing }))],
+          chrome: BleedChrome,
+        }),
+      ],
+    });
+    await act(async () => {
+      window.__deck!.goto(1, 0);
+      await wait(0);
+    });
+    await wait(COMMIT_INTERVAL_MS * 3);
+    expect(document.querySelector('[data-testid="chrome-bleed"]')?.textContent).toBe('');
+    const [problem, ...rest] = problems();
+    expect(rest).toEqual([]);
+    expect(problem).toMatchObject({ slide: 'wall', problem: 'layout-load-failed' });
+    expect(problem?.text).toContain('Layout `kpi-wall` failed to render: no media');
+  });
+});
+
+describe('slot content under a lazy layout', () => {
+  /**
+   * Throws as a broken slide component does.
+   */
+  const Boom = (): ReactNode => {
+    throw new Error('slide component broke');
+  };
+
+  /**
+   * Renders a deck whose only slide puts `<Boom />` in the body of a lazy layout with this
+   * component.
+   *
+   * @param component - The layout's component.
+   */
+  async function renderBroken(component: (props: LayoutProps) => ReactNode): Promise<void> {
+    const layout = defineLayout({ name: 'kpi-wall', component });
+    mounted = renderDeck(
+      manifestOf(mdxSlide('wall', () => <Boom />, { frontmatter: { layout: 'kpi-wall' } })),
+      {
+        isStatic: true,
+        plugins: [
+          definePlugin({
+            name: 'local-layouts',
+            layouts: [lazyLayout('kpi-wall', async () => ({ default: layout }))],
+          }),
+        ],
+      },
+    );
+    await wait(0);
+  }
+
+  it('gives the layout a SlotGuard element with only data-slot and children', async () => {
+    let body: ReactNode;
+    const Spy = ({ slots }: LayoutProps): ReactNode => {
+      body = slots.body;
+      return null;
+    };
+    renderWith(
+      lazyLayout('kpi-wall', async () => ({
+        default: defineLayout({ name: 'kpi-wall', component: Spy }),
+      })),
+    );
+    await wait(0);
+    expect(isValidElement(body) && body.type).toBe(SlotGuard);
+    expect(isValidElement<object>(body) && Object.keys(body.props).toSorted()).toEqual([
+      'children',
+      'data-slot',
+    ]);
+  });
+
+  it('keeps a content error the slide’s when the layout replaces the children with cloneElement', async () => {
+    await renderBroken(({ slots }) => {
+      const body = slots.body;
+      return isValidElement<{ children?: ReactNode }>(body) ? (
+        <div>{cloneElement(body, {}, <section>{body.props.children}</section>)}</div>
+      ) : null;
+    });
+    const [problem, ...rest] = problems();
+    expect(rest).toEqual([]);
+    expect(problem?.problem).toBeNull();
+    expect(problem?.text).toContain('slide component broke');
+  });
+
+  it('counts a content error as the layout’s when the layout renders the children unguarded', async () => {
+    await renderBroken(({ slots }) => {
+      const body = slots.body;
+      return isValidElement<{ children?: ReactNode }>(body) ? (
+        <div>{body.props.children}</div>
+      ) : null;
+    });
+    expect(problems()[0]?.text).toContain(
+      'Layout `kpi-wall` failed to render: slide component broke',
+    );
   });
 });

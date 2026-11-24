@@ -6,6 +6,7 @@ import type { imageLayoutContract } from '#layouts/image-layout.contract.ts';
 
 import { treatmentProps } from '#layout-fields.ts';
 import { Eyebrow, FittedText, Frame, TreatedMedia, useEnter } from '#layout-parts.ts';
+import '#layouts/image-scrim.css';
 import '#layouts/image-layout.css';
 
 /**

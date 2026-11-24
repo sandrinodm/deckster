@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, posix } from 'node:path';
 
 /**
  * One name a public entry module re-exports.
@@ -22,6 +22,7 @@ export type ReexportedName = {
 };
 
 const REEXPORT = /^export\s+(?:type\s+)?\{([^}]*)\}\s+from\s+'([^']+)'/gmu;
+const IMPORT = /^import\s+(?:type\s+)?\{([^}]*)\}\s+from\s+'([^']+)'/gmu;
 const BLOCK_COMMENT = /\/\*[\s\S]*?\*\//gu;
 const LINE_COMMENT = /^[ \t]*\/\/.*$/gmu;
 const TYPE_NAME = /\b[A-Z][A-Za-z0-9]*\b/gu;
@@ -85,8 +86,8 @@ export function printDeclaration(srcDir: string, declaration: ReexportedName): s
 }
 
 /**
- * Prints the types a module's source declares that the given printed declarations name, each once
- * and with the types they name in turn.
+ * Prints the project types the given printed declarations name, each once and with the types they
+ * name in turn: those their module declares, and those it imports from another project module.
  *
  * @param srcDir - The kit's `src` folder.
  * @param declarations - The names whose signatures to read.
@@ -103,18 +104,69 @@ export function printReferencedTypes(srcDir: string, declarations: ReexportedNam
   }));
   while (pending.length > 0) {
     const { module, text } = pending.pop() ?? { module: '', text: '' };
-    const source = stripComments(readFileSync(join(srcDir, module), 'utf8'));
     for (const name of new Set(text.match(TYPE_NAME) ?? [])) {
-      const definition = seen.has(`${module}#${name}`) ? undefined : printType(source, name);
-      if (definition !== undefined) {
-        seen.add(`${module}#${name}`);
-        printed.push(`${module} ${definition}`);
-        pending.push({ module, text: definition });
+      const found = findType(srcDir, module, name);
+      if (found !== undefined && !seen.has(`${found.module}#${found.name}`)) {
+        seen.add(`${found.module}#${found.name}`);
+        printed.push(`${found.module} ${found.definition}`);
+        pending.push({ module: found.module, text: found.definition });
       }
     }
   }
 
   return printed.sort(compareText);
+}
+
+/**
+ * Finds the definition of a type a module names: in the module itself, or in the project module it
+ * imports the name from (following one import, under the name that module declares it by).
+ */
+function findType(
+  srcDir: string,
+  module: string,
+  name: string,
+): { module: string; name: string; definition: string } | undefined {
+  const source = stripComments(readFileSync(join(srcDir, module), 'utf8'));
+  const own = printType(source, name);
+  if (own !== undefined) {
+    return { module, name, definition: own };
+  }
+
+  const imported = importOf(source, name);
+  if (imported === undefined) {
+    return undefined;
+  }
+
+  if (!imported.specifier.startsWith('#') && !imported.specifier.startsWith('.')) {
+    return undefined;
+  }
+
+  const target = imported.specifier.startsWith('#')
+    ? imported.specifier.slice(1)
+    : posix.join(dirname(module), imported.specifier);
+  const targetSource = stripComments(readFileSync(join(srcDir, target), 'utf8'));
+  const definition = printType(targetSource, imported.name);
+  return definition === undefined ? undefined : { module: target, name: imported.name, definition };
+}
+
+/**
+ * The import that brings a local name into a module: its specifier and the name the imported module
+ * declares it by.
+ */
+function importOf(source: string, local: string): { specifier: string; name: string } | undefined {
+  for (const match of source.matchAll(IMPORT)) {
+    for (const part of (match[1] ?? '').split(',')) {
+      const [name = '', alias = name] = part
+        .trim()
+        .replace(/^type\s+/u, '')
+        .split(/\s+as\s+/u);
+      if (alias.trim() === local) {
+        return { specifier: match[2] ?? '', name: name.trim() };
+      }
+    }
+  }
+
+  return undefined;
 }
 
 function printExport(source: string, name: string): string | undefined {

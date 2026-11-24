@@ -5,6 +5,8 @@
  * running to the slide edges it touches. Under the text the scrim is black at 58% or more: white
  * text on it keeps 5.3:1 even over a white photo (the photo shows through at 42%, 107 of 255). Away
  * from the text it fades to clear in percentage stops, which the PPTX export writes as a gradient.
+ * The scrim's own rules are in `image-scrim.css`, which the title layout shares; the strengths are
+ * set here.
  */
 @layer theme, base, components, utilities;
 
@@ -73,16 +75,9 @@
     object-position: var(--kit-focal);
   }
 
-  .kit-image-scrim {
-    position: absolute;
-    z-index: -1;
-    pointer-events: none;
-  }
-
   /*
-   * Along the bottom: the band (text block and caption) sits on the bottom line, and its scrim runs
-   * across the slide from the bottom edge to twice the band's height. The lower half, under the
-   * band, holds the strength the text needs; the upper half fades out.
+   * Along the bottom: the band (text block and caption) sits on the bottom line, and its scrim
+   * (`image-scrim.css`) runs across the slide from the bottom edge to twice the band's height.
    */
   .kit-image-band {
     position: relative;
@@ -91,81 +86,6 @@
     gap: var(--kit-gutter);
     margin-top: auto;
     isolation: isolate;
-  }
-
-  .kit-image-scrim[data-at='bottom'] {
-    bottom: calc(-1 * var(--brand-margin-y));
-    left: calc(-1 * var(--brand-margin-x));
-    width: var(--kit-canvas-width);
-    height: calc(2 * (100% + var(--brand-margin-y)));
-    background: linear-gradient(
-      to top,
-      rgb(var(--kit-scrim-ink) / var(--kit-scrim-edge)) 0%,
-      rgb(var(--kit-scrim-ink) / var(--kit-scrim-under-text)) 50%,
-      rgb(var(--kit-scrim-ink) / 0.42) 60%,
-      rgb(var(--kit-scrim-ink) / 0.24) 72%,
-      rgb(var(--kit-scrim-ink) / 0.09) 86%,
-      rgb(var(--kit-scrim-ink) / 0) 100%
-    );
-  }
-
-  /*
-   * In a corner: an ellipse from the slide's corner, twice the block and its margins in each
-   * direction, so the block's far corner sits at 71% of the way out, inside the full strength
-   * (to 72%), and the rest fades out softly.
-   */
-  .kit-image-scrim:is(
-    [data-at='top-left'],
-    [data-at='top-right'],
-    [data-at='bottom-left'],
-    [data-at='bottom-right']
-  ) {
-    width: calc(2 * (100% + var(--brand-margin-x)));
-    height: calc(2 * (100% + var(--brand-margin-y)));
-  }
-
-  .kit-image-scrim[data-at^='top'] {
-    top: calc(-1 * var(--brand-margin-y));
-  }
-
-  .kit-image-scrim[data-at^='bottom-'] {
-    bottom: calc(-1 * var(--brand-margin-y));
-  }
-
-  .kit-image-scrim[data-at$='left'] {
-    left: calc(-1 * var(--brand-margin-x));
-  }
-
-  .kit-image-scrim[data-at$='right'] {
-    right: calc(-1 * var(--brand-margin-x));
-  }
-
-  .kit-image-scrim[data-at='top-left'] {
-    --kit-scrim-origin: 0% 0%;
-  }
-
-  .kit-image-scrim[data-at='top-right'] {
-    --kit-scrim-origin: 100% 0%;
-  }
-
-  .kit-image-scrim[data-at='bottom-left'] {
-    --kit-scrim-origin: 0% 100%;
-  }
-
-  .kit-image-scrim[data-at='bottom-right'] {
-    --kit-scrim-origin: 100% 100%;
-  }
-
-  .kit-image-scrim:not([data-at='bottom']) {
-    background: radial-gradient(
-      100% 100% at var(--kit-scrim-origin),
-      rgb(var(--kit-scrim-ink) / var(--kit-scrim-edge)) 0%,
-      rgb(var(--kit-scrim-ink) / var(--kit-scrim-under-text)) 72%,
-      rgb(var(--kit-scrim-ink) / 0.4) 80%,
-      rgb(var(--kit-scrim-ink) / 0.2) 88%,
-      rgb(var(--kit-scrim-ink) / 0.06) 95%,
-      rgb(var(--kit-scrim-ink) / 0) 100%
-    );
   }
 
   .kit-image-text {

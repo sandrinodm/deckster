@@ -1,0 +1,96 @@
+/*
+ * The dark scrim behind light text over a photo (`.kit-image-scrim`), shared by the image layout
+ * and the title layout's full-bleed cover. Each layout sets the scrim's strengths on its frame
+ * (`--kit-scrim-ink`, `--kit-scrim-under-text`, `--kit-scrim-edge`) and places the scrim with
+ * `data-at`: `bottom` for a band along the bottom edge, or a corner. It lives apart from either
+ * layout's stylesheet so that ejecting one layout neither copies nor keeps the other's rules.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-image-scrim {
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /*
+   * Along the bottom: the scrim runs across the slide from the bottom edge to twice the height of
+   * the band it backs. The lower half, under the band, holds the strength the text needs; the upper
+   * half fades out.
+   */
+  .kit-image-scrim[data-at='bottom'] {
+    bottom: calc(-1 * var(--brand-margin-y));
+    left: calc(-1 * var(--brand-margin-x));
+    width: var(--kit-canvas-width);
+    height: calc(2 * (100% + var(--brand-margin-y)));
+    background: linear-gradient(
+      to top,
+      rgb(var(--kit-scrim-ink) / var(--kit-scrim-edge)) 0%,
+      rgb(var(--kit-scrim-ink) / var(--kit-scrim-under-text)) 50%,
+      rgb(var(--kit-scrim-ink) / 0.42) 60%,
+      rgb(var(--kit-scrim-ink) / 0.24) 72%,
+      rgb(var(--kit-scrim-ink) / 0.09) 86%,
+      rgb(var(--kit-scrim-ink) / 0) 100%
+    );
+  }
+
+  /*
+   * In a corner: an ellipse from the slide's corner, twice the block and its margins in each
+   * direction, so the block's far corner sits at 71% of the way out, inside the full strength
+   * (to 72%), and the rest fades out softly.
+   */
+  .kit-image-scrim:is(
+    [data-at='top-left'],
+    [data-at='top-right'],
+    [data-at='bottom-left'],
+    [data-at='bottom-right']
+  ) {
+    width: calc(2 * (100% + var(--brand-margin-x)));
+    height: calc(2 * (100% + var(--brand-margin-y)));
+  }
+
+  .kit-image-scrim[data-at^='top'] {
+    top: calc(-1 * var(--brand-margin-y));
+  }
+
+  .kit-image-scrim[data-at^='bottom-'] {
+    bottom: calc(-1 * var(--brand-margin-y));
+  }
+
+  .kit-image-scrim[data-at$='left'] {
+    left: calc(-1 * var(--brand-margin-x));
+  }
+
+  .kit-image-scrim[data-at$='right'] {
+    right: calc(-1 * var(--brand-margin-x));
+  }
+
+  .kit-image-scrim[data-at='top-left'] {
+    --kit-scrim-origin: 0% 0%;
+  }
+
+  .kit-image-scrim[data-at='top-right'] {
+    --kit-scrim-origin: 100% 0%;
+  }
+
+  .kit-image-scrim[data-at='bottom-left'] {
+    --kit-scrim-origin: 0% 100%;
+  }
+
+  .kit-image-scrim[data-at='bottom-right'] {
+    --kit-scrim-origin: 100% 100%;
+  }
+
+  .kit-image-scrim:not([data-at='bottom']) {
+    background: radial-gradient(
+      100% 100% at var(--kit-scrim-origin),
+      rgb(var(--kit-scrim-ink) / var(--kit-scrim-edge)) 0%,
+      rgb(var(--kit-scrim-ink) / var(--kit-scrim-under-text)) 72%,
+      rgb(var(--kit-scrim-ink) / 0.4) 80%,
+      rgb(var(--kit-scrim-ink) / 0.2) 88%,
+      rgb(var(--kit-scrim-ink) / 0.06) 95%,
+      rgb(var(--kit-scrim-ink) / 0) 100%
+    );
+  }
+}

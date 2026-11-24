@@ -15,7 +15,7 @@ import {
   useEnter,
 } from '#layout-parts.ts';
 import '#layouts/display-align.css';
-import '#layouts/image-layout.css';
+import '#layouts/image-scrim.css';
 import '#layouts/title-layout.css';
 
 /**

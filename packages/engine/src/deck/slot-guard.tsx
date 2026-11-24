@@ -41,13 +41,17 @@ type SlotGuardState = {
 };
 
 /**
- * A filled slot's wrapper: `<span class="deck-slot" data-slot="<name>">`, which has `display:
- * contents`, so `deckster lint` can find and measure it. It also marks what the slot's content
- * throws while rendering and throws it again, so a boundary around the layout can leave it to the
- * slide's own error boundary: a broken slide component is not the layout's failure.
+ * A filled slot's wrapper. It renders `<span class="deck-slot" data-slot="<name>">`, which has
+ * `display: contents`, so `deckster lint` can find and measure it. It also marks what the slot's
+ * content throws while rendering and throws it again, so a boundary around the layout can leave it
+ * to the slide's own error boundary: a broken slide component is not the layout's failure.
  *
- * The element a layout receives keeps the shape it always had (`data-slot` and `children` props
- * directly on it), so a layout may still read or replace the slot's children.
+ * The element a layout receives in `slots` is a `SlotGuard` element, not the `<span>`: its type is
+ * this class, and its only props are `data-slot` (the slot's name) and `children` (the content). It
+ * has no `className`, and other props given to it (through `cloneElement`, say) are not passed to
+ * the `<span>`. A layout may read the content from `props.children` and replace it with
+ * `cloneElement(slot, {}, newChildren)`, which keeps the guard. Content a layout renders on its
+ * own, outside that element, is not guarded: what it throws counts as the layout's error.
  */
 export class SlotGuard extends Component<SlotGuardProps, SlotGuardState> {
   /**

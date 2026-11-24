@@ -84,6 +84,22 @@ describe('checkReplacement', () => {
       );
     });
 
+    it('fails a replacement that makes an optional field required', () => {
+      const strict = replacement({ schema: titleFields({ byline: Schema.String }) });
+      expect(errorsOf(strict)).toEqual([
+        'The replacement requires the field "byline", which the original title layout leaves ' +
+          'optional, so slides that leave it out stop building.',
+      ]);
+    });
+
+    it('fails a replacement with a new required field, once', () => {
+      const strict = replacement({ schema: titleFields({ kicker: Schema.String }) });
+      expect(errorsOf(strict)).toEqual([
+        'The replacement requires the field "kicker", which the original title layout does not ' +
+          'have, so slides that leave it out stop building.',
+      ]);
+    });
+
     it('accepts a replacement with a new optional field', () => {
       const wider = replacement({
         schema: titleFields({ kicker: Schema.optionalKey(Schema.String) }),
@@ -114,6 +130,36 @@ describe('checkReplacement', () => {
       expect(checkReplacement(required, replacement({})).errors.map((e) => e.message)).toEqual([
         'The original title layout requires the slot "media", and the replacement does not.',
       ]);
+    });
+
+    it('fails a replacement that makes an optional slot required', () => {
+      const strict = replacement({
+        slots: { ...TITLE.slots, media: { ...TITLE.slots.media!, required: true } },
+      });
+      expect(errorsOf(strict)).toEqual([
+        'The replacement requires the slot "media", which the original title layout leaves ' +
+          'optional, so slides that leave it empty stop building.',
+      ]);
+    });
+
+    it('fails a replacement with a new required slot', () => {
+      const strict = replacement({
+        slots: {
+          ...TITLE.slots,
+          aside: { description: 'Aside', accepts: ['text'], required: true },
+        },
+      });
+      expect(errorsOf(strict)).toEqual([
+        'The replacement requires the slot "aside", which the original title layout does not ' +
+          'have, so slides that leave it empty stop building.',
+      ]);
+    });
+
+    it('accepts a replacement with a new optional slot', () => {
+      const wider = replacement({
+        slots: { ...TITLE.slots, aside: { description: 'Aside', accepts: ['text'] } },
+      });
+      expect(errorsOf(wider)).toEqual([]);
     });
 
     it('accepts a replacement whose slots accept more', () => {
@@ -149,6 +195,26 @@ describe('checkReplacement', () => {
       expect(errorsOf(strict)[0]).toContain("the replacement's checks reject it: date: No dates.");
     });
 
+    it('reports checks that throw as an error instead of throwing', () => {
+      const throwing = replacement({
+        checks: () => {
+          throw new TypeError('boom');
+        },
+      });
+      expect(errorsOf(throwing)).toEqual([
+        "The original title layout accepts its example and 4 more, and the replacement's checks " +
+          'threw on it: boom.',
+      ]);
+    });
+
+    it('reports checks that return something other than a list of problems', () => {
+      const asynchronous = replacement({ checks: (async () => []) as never });
+      expect(errorsOf(asynchronous)).toEqual([
+        "The original title layout accepts its example and 4 more, and the replacement's checks " +
+          'did not return a list of problems for it.',
+      ]);
+    });
+
     it('accepts a replacement whose checks pass', () => {
       expect(errorsOf(replacement({ checks: () => [] }))).toEqual([]);
     });
@@ -167,6 +233,32 @@ describe('checkReplacement', () => {
       expect(check.notes.map((note) => note.message)).toEqual([
         'The budget of "body" sets maxWords to 10; the original title layout sets 14.',
         "The title's maxChars is 30; the original title layout sets 36.",
+      ]);
+    });
+
+    it('notes a changed limit in a variant, and an added or dropped variant', () => {
+      const original = {
+        ...TITLE,
+        variants: [
+          { name: 'wide', when: { fields: { byline: 'x' } }, budget: { body: { maxWords: 40 } } },
+          { name: 'gone', when: { filled: ['media'] }, budget: { body: { maxWords: 8 } } },
+        ],
+      };
+      const changed = replacement({
+        variants: [
+          { name: 'wide', when: { fields: { byline: 'x' } }, budget: { body: { maxWords: 1 } } },
+          { name: 'new', when: { filled: ['media'] }, budget: { body: { maxWords: 8 } } },
+        ],
+      });
+      const check = checkReplacement(original, changed);
+      expect(check.errors).toEqual([]);
+      expect(check.notes.map((note) => note.message)).toEqual([
+        'In the variant "wide", the budget of "body" sets maxWords to 1; the original title ' +
+          'layout sets 40.',
+        'The replacement drops the variant "gone", so slides it matches get the base budget ' +
+          'instead of its budget.',
+        'The replacement adds the variant "new", so slides it matches get its budget instead ' +
+          'of the base budget.',
       ]);
     });
 
@@ -195,6 +287,15 @@ describe('checkReplacement', () => {
     it('fails a replacement that makes a required title optional', () => {
       expect(errorsOf(replacement({ title: { maxChars: 36 } }))).toEqual([
         'The original title layout requires a title, and the replacement does not.',
+      ]);
+    });
+
+    it('fails a replacement that requires a title the original leaves optional', () => {
+      const original = { ...TITLE, title: { maxChars: 36 } };
+      const check = checkReplacement(original, replacement({}));
+      expect(check.errors.map((error) => error.message)).toEqual([
+        'The replacement requires a title, and the original title layout does not, so slides ' +
+          'without one stop building.',
       ]);
     });
 
