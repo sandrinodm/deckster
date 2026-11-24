@@ -11,7 +11,7 @@ The workflow has eight steps. Steps 1 to 4 need no tooling at all and produce mo
 
 ## Running the skill
 
-This skill needs the `deckster` command on PATH (`npm install --global @deckster/cli`, Node 26 or newer; `deckster --help` lists everything). Run deck commands from the user's workspace: the folder that holds `decks/<name>/` and, optionally, `brands/<name>/`. In an empty folder, `deckster new` starts one; it never picks the home folder, so make a project folder first. `deckster lint`, `deckster shot` and `deckster export` need Chromium, downloaded once; if one of them says so, run the command it prints. Run `deckster types` once in the workspace if the user wants editor type checking.
+This skill needs the `deckster` command on PATH (`npm install --global @deckster/cli`, Node 26 or newer; `deckster --help` lists everything). Releases before v0.9.0 named the command `deck`; if only `deck` exists, the CLI is older than this guide, so suggest upgrading. [Framework](references/framework.md) says which release added each newer feature. Run deck commands from the user's workspace: the folder that holds `decks/<name>/` and, optionally, `brands/<name>/`. In an empty folder, `deckster new` starts one; it never picks the home folder, so make a project folder first. `deckster lint`, `deckster shot` and `deckster export` need Chromium, downloaded once; if one of them says so, run the command it prints. Run `deckster types` once in the workspace if the user wants editor type checking.
 
 Resolve supporting files (`references/`, `scripts/`) relative to this skill's directory, wherever the agent installed it. To inspect a PNG, view it with your image-viewing tool; reading a filename or a tool log is not visual review. If you have no way to view images, say so in the handoff and do not describe the deck as visually checked.
 
@@ -145,7 +145,7 @@ Expand the storyline into a slide-by-slide outline and save it as `OUTLINE.md`:
 
 - **Assertion:** a full sentence the audience could repeat, ideally 12 words or fewer. "Q3 results" is a topic; "Q3 revenue grew 18% while headcount stayed flat" is an assertion. Titles such as Agenda, Overview, Background, Results and Next steps are signs the thinking is unfinished. Structural slides (title, section, closing) are exempt.
 - **Evidence:** what the audience looks at while the speaker makes the point: a chart, diagram, screenshot, demo, quote, code, big number, or two to four short supporting lines. Prefer a visual to bullets when one exists. If the evidence is a number or dataset, or the claim is about how something works or flows, decide the form now using `references/data-visuals.md` (which chart for which message; when a diagram beats bullets).
-- **Layout.** Choose from the installed catalog with `deckster layouts <deck> --summary` and use the [layout chooser](references/slide-craft.md#3-choosing-the-evidence) to match each slide's evidence to a layout. Check the title limit, required slots and item counts before committing to the outline. For an outline in a workspace without a deck, create a probe in a temporary workspace with `probe_root=$(mktemp -d)`, `DECK_ROOT="$probe_root" deck new probe` and `DECK_ROOT="$probe_root" deck layouts probe --summary`. Add `--brand <name>` when inspecting another available brand.
+- **Layout.** Choose from the installed catalog with `deckster layouts <deck> --summary` and use the [layout chooser](references/slide-craft.md#3-choosing-the-evidence) to match each slide's evidence to a layout. Check the title limit, required slots and item counts before committing to the outline. For an outline in a workspace without a deck, create a probe in a temporary workspace with `probe_root=$(mktemp -d)`, `DECK_ROOT="$probe_root" deckster new probe` and `DECK_ROOT="$probe_root" deckster layouts probe --summary`. Add `--brand <name>` when inspecting another available brand.
 - **Build:** what arrives at each step, in the order the notes will explain it, or "whole". A chart builds from its context to its highlight, a diagram along the path the notes walk, code through the lines being discussed, a list the speaker walks through one `focus` item at a time; a photo, a quote, a statement or a single number stays whole. `references/slide-craft.md` (section 7) says when a build helps and when it is noise. Deciding it here keeps the notes and the slide in step, and a column of "whole" down a talk full of charts and diagrams is a sign the deck will show everything at once.
 - **Read-through test:** read only the assertion column top to bottom. It should tell the whole story with no gaps and no repeats. Fix the outline, not the slides, until it does.
 - **Budget:** seconds per slide, summing to the time budget from step 3. There is no reliable "minutes per slide" rule; a big-number slide takes 20 seconds and a demo takes five minutes. Budget by content, then sanity-check the pace: a slide with a table, a comparison or several numbers needs 90 seconds or more with a senior audience, and if most slides sit under a minute the talk will feel rushed however the total adds up. Cut slides before you cut seconds.
@@ -163,7 +163,7 @@ deckster layouts <deck> --summary       # first look: the brand's own layouts fi
 deckster layouts <deck> --json   # the full catalog; read it for the one layout you are writing
 deckster charts --json           # charts and numbers: which form for which message, props, limits
 deckster diagrams --json         # diagrams, node kinds, step animation
-deckster components --json       # code, terminal, media, links, QR, live demos, Step, Notes
+deckster components --json       # code, terminal, media, links, QR, live demos, Step, Notes, placed Shape, Text and Place
 deckster brand <name> --json     # surfaces, palettes, type scale, icon set
 deckster icons --brand a,b       # icon names every brand of the deck has (add --search text)
 ```
@@ -172,7 +172,8 @@ Then write one file per slide, following `references/slide-craft.md`:
 
 - Match the layout to the evidence. Read its title limit, required slots, accepted content, field limits and tighter variants. Scaffold it with `deckster new slide <deck> <id> --layout <name>` or use its `example.mdx` in the JSON catalog. Split a crowded slide or move detail into notes. See the [lookbook](https://sandrinodm.github.io/deckster/examples/lookbook/) for rendered examples.
 - Prefer the deck's brand layout when its fixed regions fit the slide's purpose and evidence. Read [Brand layouts](references/framework.md#brand-layouts) for slot bindings, alternate brands and scaffold behavior.
-- Use the brand's tokens and the layout's documented options for styling. Layout fields and component props can define content geometry, such as screenshot callout coordinates or diagram node dimensions when the installed build supports them.
+- Use the brand's tokens and the layout's documented options for styling. Layout fields and component props can define content geometry, such as screenshot callout coordinates or diagram node dimensions.
+- A badge, stamp, short callout or source line that sits outside the layout's regions is a placed element (`<Shape>`, `<Text>` or `<Place>`; see [Placed elements](references/framework.md#placed-elements)). Never build a slide's structure from placed boxes: choose a layout.
 - Vary layouts and surfaces to give the deck rhythm, and show the audience where they are: section slides in a long deck (all with the same options, such as `numeral: large`), eyebrows in a deck of about twelve slides or fewer. Put the peak on a surface its neighbours do not have. A run of slides that look alike is the most common way a correct deck ends up dull.
 - Give every slide enough to look at. A slide whose evidence is one short line or a three-box strip leaves most of the canvas empty and reads as unfinished; give the claim its evidence, or fold it into a neighbour.
 - For any slide carrying numbers, follow `references/data-visuals.md`: choose the form from the message, highlight the one thing, title with the takeaway, caption with the measure and period.
@@ -197,7 +198,7 @@ python3 <skill dir>/scripts/read_through.py decks/<deck>   # titles in order, no
 
 The build is done when both of these are true, in every brand the deck must support:
 
-1. **Lint is clean.** No errors, and no warnings you cannot justify. Each finding names its fix. A warning is usually a real weakness (a chart with no highlight, a diagram too dense to read), so fix it rather than explain it away.
+1. **Lint is clean.** No errors, and no warnings you cannot justify. `info` findings (such as `placed-pixels`) are suggestions. Each finding names its fix. A warning is usually a real weakness (a chart with no highlight, a diagram too dense to read), so fix it rather than explain it away.
 2. **You have opened every screenshot, every step of a slide that builds, and it passes section G of `references/rubric.md`.** View the PNGs with your image-viewing tool; do not infer how a slide looks from its source. Is the title the first thing the eye lands on? Is anything cramped, clipped, or stranded as a small island in a mostly empty slide? Can you state each chart's point in five seconds, and is its highlight unmistakable? Does each diagram's main path read at a glance? Do three slides in a row look the same? `references/framework.md` has the full list of what to look for.
 
 Fix what you find, then lint and shoot again; repeat until a full pass changes nothing. Text can be right and the slide still wrong, and the screenshot is the only way you see what the audience sees. For each further brand, run both commands with `--brand <name>` and open every one of its screenshots too: a second brand changes type and line breaks, so three spot checks miss the broken slides.
@@ -208,7 +209,7 @@ If a command cannot run, say exactly which one and what it printed, and do not d
 
 Read `references/rubric.md` and score every row honestly (this is required, not optional: lint and screenshots do not judge the argument), as a skeptical member of the primary audience would. Fix what fails, then hand off. The handoff is for a person who has not read this skill, so write it in plain language and keep it short enough to read in a minute:
 
-- Where the deck is and how to run it
+- Where the deck is and how to run it: `deckster present <deck>` opens it in its own window (run `deckster electron install` once after installing the CLI, or add `--browser` to present in Chrome), and `deckster dev <deck>` serves it for editing and review
 - The storyline in five to nine sentences
 - What they must supply before it can be presented (the blocking `[NEEDS]` items, most important first), then what would strengthen it, then assumptions to confirm
 - The two or three weakest points of the deck in plain words, and what is strong. No rubric codes or scores unless asked; they mean nothing to the reader

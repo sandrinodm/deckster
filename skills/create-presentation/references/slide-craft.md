@@ -123,7 +123,7 @@ Choose a layout by what the audience needs to read, compare, or do. If the deck 
 | `demo` | A live or scripted component should do the work in front of the audience. Prepare its still or poster for preview and export. |
 | `choose-path` | The presenter should be able to select either of two authored workflows and show its outcome. The static view shows both paths. |
 | `image` | One photo should convey place, scale or a moment at full bleed. Use `split` if the explanation needs more space. |
-| `image-reveal` | A title beat should open the slide before animating into a full-width header or footer bar (`dock: bottom` or `top`) to reveal an image across the rest of the page. |
+| `image-reveal` | A title beat should open the slide before animating into a full-width header or footer bar (`dock: bottom` or `top`) to reveal an image across the rest of the page. It costs a click; use `image` when the photo should show from the start. |
 | `screen` | One interface should be readable whole, in a device or browser frame with optional callouts. |
 | `gallery` | Several separate views belong together and one deserves the largest frame. |
 | `before-after` | Two visual states need equal weight in a side-by-side comparison. |
@@ -160,6 +160,8 @@ Choose a layout by what the audience needs to read, compare, or do. If the deck 
 | `status` | A review needs each workstream's state and any exceptions requiring attention. |
 | `actions` | The audience needs to leave with an owner and deadline for each next action. |
 | `ask` | A specific amount or commitment should buy concrete dated milestones. State the decision and what it enables. |
+
+A badge, stamp or short callout beside the evidence does not need another layout: place it with `<Shape>`, `<Text>` or `<Place>` (`framework.md`, Placed elements). When the extra content is a second argument or a paragraph, it needs a layout with a region for it, or its own slide.
 
 For build and artwork guidance on the product and strategy layouts, see [Visual patterns](visual-patterns.md).
 

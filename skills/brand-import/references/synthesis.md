@@ -145,7 +145,7 @@ Rules that keep this honest:
 - **Shadows.** Present on the web as exact CSS. Preserve colour alpha as well as offsets and blur: an 8% shadow becoming opaque is a different treatment even when schema validation passes. Compare the resolved shadow with the extracted CSS. In decks, read them off the image: none, soft, or hard. Most deck brands use none.
 - **Alignment accidents.** When the extractor warns that a 16:9 deck sits on a 4:3 master, titles "centred" in the left three quarters are an accident. Choose left-aligned or truly centred from the rest of the deck and put the choice on the review list.
 - **Margins.** Left edge of the title block and top edge of the first element, as canvas pixels: `bbox x * 1920`, `bbox y * 1080`. Use the most common value across content pages. PPTX placeholders give this exactly.
-- **Grid.** If text and visuals align to visible columns (two halves, thirds), record that. The kit has a 12-column grid; you only need margin and gutter.
+- **Grid.** If text and visuals align to visible columns (two halves, thirds), record that. The kit has a 12-column, 6-row grid; you usually need only margin and gutter.
 - **Density.** A one-line note: how much of a typical content slide is empty. It tells layout authors more than numbers do.
 
 ## Diagrams
@@ -197,7 +197,7 @@ and on the inverse surface, next to its roles:
 
 Use the source crops to distinguish settings that recur across diagrams from choices made for a single drawing. Record the measured values in the draft's `diagram` and surface sections, with their provenance. Measure line widths, node boxes and icon tile outlines in canvas pixels. Use `diagram.align` only when whole-drawing alignment is consistent. Measure subtitles separately from node titles, and use `diagram.notes` for the text under a timeline milestone.
 
-These controls require a build that includes the expanded diagram schema. The bundled emitter understands the earlier schema and can omit newer keys or reject their values, including numeric `edges.stroke` and `groups.stroke`. For the emission pass, use named strokes and `groups.dashed` as compatible baseline values. After the final emit, apply the newer settings as static fields in `brand.ts` from the recorded measurements. On an earlier build, record the values the target cannot represent in the handover. See [Diagram design controls](brand-schema.md#diagram-design-controls) for accepted values.
+These controls require v0.8.0 or newer. The bundled emitter understands the earlier schema and can omit newer keys or reject their values, including numeric `edges.stroke` and `groups.stroke`. For the emission pass, use named strokes and `groups.dashed` as compatible baseline values. After the final emit, apply the newer settings as static fields in `brand.ts` from the recorded measurements. On an earlier release, record the values the target cannot represent in the handover. See [Diagram design controls](brand-schema.md#diagram-design-controls) for accepted values.
 
 For example, the following override represents a centered family of diagrams with dotted connectors, dashed groups and a consistent subtitle style. Merge its fields into the emitted `diagram` object, keeping the existing card definitions.
 
@@ -222,7 +222,7 @@ diagram: {
 },
 ```
 
-Source-specific diagram symbols belong with the specimen or deck. On a compatible build use an approved, bundled image icon where the component supports it. An MDX asset path such as `icon="../assets/parcel-mark.svg"` or a `?url` import keeps the icon available to local rendering and export. Use `diagram.cards.<name>.icon` for the tile's shared treatment. Use slide-level adjustments only for differences specific to that drawing, such as a wider node or a single dotted edge. Check `deckster diagrams --json` for the target build's component props and inspect the rendered slide.
+Source-specific diagram symbols belong with the specimen or deck. On v0.8.0 or newer use an approved, bundled image icon where the component supports it. An MDX asset path such as `icon="../assets/parcel-mark.svg"` or a `?url` import keeps the icon available to local rendering and export. Use `diagram.cards.<name>.icon` for the tile's shared treatment. Use slide-level adjustments only for differences specific to that drawing, such as a wider node or a single dotted edge. Check `deckster diagrams --json` for the target build's component props and inspect the rendered slide.
 
 Run `deckster brand check <name> --json` and read the resolved values with `deckster brand <name> --json`. Compare a representative diagram on its source surface and on any other surfaces that use those cards. For a native or hybrid PowerPoint handoff, verify editability, connector attachment and image icons in the exported file. Supported straight and bent routes can attach to node connection sites. Curved or unusual routes appear as editable freeform lines. Image icons are embedded pictures.
 
