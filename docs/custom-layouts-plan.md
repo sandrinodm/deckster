@@ -1,7 +1,9 @@
 # Plan: custom code layouts in brands and decks
 
-Status: proposal, 2026-11-24. Nothing is built. Reviewed by a second model the same day; its findings
-are folded in and listed in §8. The open decisions are settled in §9.
+Status: phase 0 done, 2026-11-24; phases 1–4 not started. Reviewed by a second model the same day;
+its findings are folded in and listed in §8. The open decisions are settled in §9. The phase 0 spike
+(§10) changed the contract loader (§3.4), the kit runtime design (§3.2), the call sites (§1.3,
+§3.5) and the public parts (§3.8); the text below is updated to match.
 
 The goal: a brand or a deck can ship its own slide layouts as React code, with no limits beyond what
 React and CSS can do, and every deckster tool treats them like kit layouts: frontmatter and slot
@@ -20,7 +22,8 @@ changed freely. `deckster layouts diff` shows what the kit changed since.
   is this mechanism.
 
 It also interacts with `docs/page-chrome-plan.md`, which adds `role` to layout contracts and moves
-`chrome` into the base frontmatter. Custom layouts get both like kit layouts do (§3.13).
+`chrome` into the base frontmatter. Neither exists today (§10.6), so this plan leaves `role` out
+until that plan lands; custom layouts then get both like kit layouts do (§3.13).
 
 ## 1. What exists today
 
@@ -89,7 +92,9 @@ Node-side `loadLayoutCatalog` calls:
 `cli/src/server/dev-server.ts:298-305`, `cli/src/server/preview-server.ts:84`,
 `cli/src/site/build-deck.ts:27` and `cli/src/server/deck-server-live.ts:57-61` (the server lint,
 export and `shot` render through: a new Vite server and plugin instance per run, which may load the
-workspace's own vite-plugin copy, `:119-135`).
+workspace's own vite-plugin copy, `:119-135`). The spike showed none of them needs a change: the
+deck plugin knows the workspace, the deck and the brand, so it finds local layouts itself, and every
+one of these paths rendered them with only `plugin.ts` changed (§10.2).
 
 ### 1.4 Brands are data, on purpose
 
@@ -126,14 +131,16 @@ editors (`cli/src/commands/types.ts`).
 
 ### 1.6 What kit layouts depend on
 
-Imports across the 65 layouts and their contracts:
+Imports across the 65 layouts (64 catalog layouts plus the data-layout renderer `brand`) and their
+contracts, counted in files (checked in phase 0, §10.4):
 
-- **Engine:** `@deckster/engine/layout` (73), `@deckster/engine` (65: `defineLayout`, `LayoutProps`,
-  `useStatic`), `@deckster/engine/command` (4). `effect` (66).
+- **Engine:** `@deckster/engine/layout` (65 files, 73 import statements), `@deckster/engine` (65:
+  `defineLayout`, `LayoutProps`, `useStatic`), `@deckster/engine/command` (4). `effect` (65).
+  `@deckster/brand` (4).
 - **Kit, private** (`#` imports, `kit/package.json` `imports: { "#*": "./src/*" }`):
   `#layouts/layout-fields.ts` (68), `#foundation/slide-parts.tsx` (58), `#motion/enter.ts` (54),
   `#foundation/smart-punctuation.ts` (50), `#foundation/fit-level.ts` (35), `#motion/step.tsx` (29),
-  `#foundation/fit-text.ts` (13), `#foundation/stat-figure.tsx` (9),
+  `#foundation/fit-text.ts` (12), `#foundation/stat-figure.tsx` (9),
   `#foundation/frontmatter-assets.ts` (8), `#foundation/media-treatment.tsx` (7),
   `#foundation/portrait.tsx` (6), `#foundation/layout-geometry.ts` (6), `#foundation/marks.tsx` (5),
   and a long tail used by one to four layouts (`quote-marks`, `slide-file`, `badges`,
@@ -141,10 +148,15 @@ Imports across the 65 layouts and their contracts:
   `#links/link-target`, `#links/qr`, `#motion/still-motion`, `#motion/css-duration`,
   `#foundation/table-context`, `#diagrams/{form-parts,lazy-diagrams,word-breaks}`).
 - **`@deckster/brand/runtime`** (17, `useBrand`).
-- **Modules with shared React context**, which cannot be copied without breaking the link to the
-  kit's providers: `foundation/table-context.ts`, `motion/still-motion.ts` and `media/media-frame.ts`
-  (reached through `TreatedMedia` and `Step`, and directly by `table`, `image-reveal` and
-  `screen-story`).
+- **Modules with shared state**, which cannot be copied without breaking the link to the kit's
+  instance: `foundation/table-context.ts` (a context; `table` provides it, kit `markdown-table` and
+  `data-table` read it), `motion/still-motion.ts` (`RevealContext`; `image-reveal` and
+  `screen-story` import `useStillMotion` directly, and `stat-figure` → `use-count-up.ts:144` reads
+  the context), `foundation/frontmatter-assets.ts` (a module-level registry, `:18`, that every MDX
+  slide fills by importing this exact file, `mdx/remark-frontmatter.ts:68`; a copy is always empty)
+  and `media/media-frame.ts` (a context reached only through `TreatedMedia` and `slide-parts`, never
+  imported by a layout). `diagrams/form-parts.tsx`'s `Milestone` is checked by element type inside
+  `Timeline` (`diagrams/timeline.tsx:24,193`), so it must never be copied either.
 
 Already public in `kit/src/index.ts`: `useEnter`, `enterProps`, `Step`, `Morph` and the components
 (`Image`, `Icon`, `Code`, `Place`, …). Not public: `Frame`, `Region`, `SlideHeader`, `Eyebrow`,
@@ -154,7 +166,17 @@ Already public in `kit/src/index.ts`: `useEnter`, `enterProps`, `Step`, `Morph` 
 **Eject hazards** (code that does not travel cleanly):
 
 - every layout imports its own CSS and contract through `#layouts/…`;
-- `title-layout.tsx:13-15` imports `display-align.css`, `image-layout.css` and its own CSS;
+- `title-layout.tsx:13-15` imports `display-align.css`, `image-layout.css` and its own CSS (title
+  uses only `.kit-image-scrim`, `image-layout.css:69`);
+- seven helpers import their own global `.kit-*` CSS (`badges`, `portrait`, `marks`, `contact-list`,
+  `frontmatter-picture`, `mono-mark`, `pattern-slide`); a copy edited on eject leaks into the kit
+  layouts that still load the kit's copy, because neither is scoped to a layout;
+- two layout stylesheets load outside their layout: `code-layout.css` from `kit/src/runtime.ts:100`
+  and `stats-layout.css` from `charts/figures/stat-row.tsx:29`, so replacing `code` or `stats` does
+  not drop them;
+- layouts reach already-public kit parts (`Step`, `QR`, `Timeline`, `Milestone`, `useEnter`) through
+  `#` paths, never `@deckster/kit`, so the rewrite must map to `@deckster/kit` and
+  `@deckster/kit/diagrams` too. No layout file uses a relative import;
 - `dashboard-layout.contract.ts:4` imports `DATA_HINT` and `DataField` from the chart contract;
 - seven pattern layouts share `pattern-slide.{tsx,css,contract.ts}`;
 - `content-layout.tsx` and `split-layout.tsx` share `layout-limits.ts`; quiz, market, matrix, logos
@@ -304,13 +326,41 @@ kit's was.
 and its CSS (1.1), so a replacement that keeps the name (every eject does, §3.10) would still get the
 kit's `.kit-frame[data-layout='title']` rules, in the same layer and with the same selectors. Rules
 deleted from the ejected copy would keep applying, and which copy wins would depend on stylesheet
-order. Fix: the Vite plugin generates the kit's layout list as a virtual module from the catalog,
-importing one module per kit layout and **skipping replaced names**. `kit/src/runtime.ts` keeps its
-components, chrome and CSS that are not per-layout, and takes the layout list from that module. CSS
-shared by several layouts (`display-align.css`, `image-layout.css` imported by `title`) stays
+order. Fix: the Vite plugin generates the kit's runtime plugin as a virtual module from the
+catalog, importing one module per kit layout and **skipping replaced names** (verified in the
+spike: with `columns` and `title` replaced, a production build has none of
+`columns-layout.css` or `title-layout.css`, §10.3). How, so that every importer that is not the
+Vite plugin keeps working:
+
+- `kit/src/kit-plugin.ts` (new, export `@deckster/kit/plugin`): `kitPlugin(layouts)` returns the
+  `definePlugin({...})` that `runtime.ts` has today, with the given layouts plus
+  `brandLayoutDefinitions(tokens.layouts)`, the components, the chrome and the CSS that is not
+  per-layout.
+- `kit/src/layouts/all-layouts.ts` (new): the 64 kit layout definitions in catalog order, the
+  default export.
+- `kit/src/runtime.ts` stays a static module: `export default kitPlugin(allLayouts)`. Its importers
+  outside the Vite plugin (the kit's `catalog.test.ts`, `component-catalog.test.tsx` and
+  `brand-layout.test.ts`) and the dependency scan entry (`framework-resolve.ts:21`) keep seeing
+  every layout.
+- The Vite plugin replaces `@deckster/kit/runtime` in the runtime plugin list with
+  `virtual:deck/kit-runtime`: `import { kitPlugin } from '<kit>/src/kit-plugin.ts'`, then
+  `import { <camel>Layout } from '<kit>/src/layouts/<name>-layout.tsx'` for each kit catalog name
+  not replaced, and `export default kitPlugin([...])`. A kit unit test asserts that every catalog
+  name has that file and export, and that `all-layouts.ts` matches the catalog's order.
+- Two traps the spike hit: `this.resolve` skips the calling plugin, so `resolveRuntimePlugins` must
+  return the virtual ids itself, unresolved (an import of a `\0` id fails in the build); and the
+  brand stylesheet's Tailwind `@source` list is built from the runtime plugins' folders
+  (`brand/active-brand.ts:156`), so the virtual id must still contribute the kit's `src/` folder,
+  or kit-only utilities drop out of the CSS (467 bytes on the spike deck).
+
+CSS shared by several layouts (`display-align.css`, `image-layout.css` imported by `title`) stays
 loaded while any layout that imports it is loaded; eject copies such files and scopes them to the
-ejected layout (§3.10). An e2e test removes a rule from an ejected `title` and asserts the computed
-style changes.
+ejected layout (§3.10). This is not enough for `display-align.css`: it is keyed on layout names
+(`title`, `section`, …), not on the importing layout, so with `title` replaced its three
+`[data-layout='title']` rules still match a replacement that keeps `.kit-frame` and
+`data-layout="title"` (the spike's built CSS kept exactly those three). Phase 3 rekeys it on an
+attribute the layout sets (`data-display-align`) instead of names. An e2e test removes a rule from
+an ejected `title` and asserts the computed style changes.
 
 ### 3.3 The engine stamps the layout name
 
@@ -321,7 +371,7 @@ whatever markup it draws, and a typo cannot silently pick the `default` mapping.
 
 ### 3.4 Loading contracts: static check, module runner, turn gate (decided, §9)
 
-**Static import check first, for both loaders.** Before anything is evaluated, `importContracts`
+**Static import check first.** Before anything is evaluated, `importContracts`
 parses `contract.ts` and follows its relative imports, and rejects, with the file and the import:
 
 - any import that is not a `.ts` file (`.tsx`, `.css`, assets);
@@ -335,27 +385,39 @@ name the import: through the runner, a contract helper importing a `.tsx` fails 
 module 'react/jsx-dev-runtime'" or "module is not defined", and one importing a `.css` with a
 `TypeError` inside Vite.
 
-**Then the loader.** Two options:
+**Then the loader (decided in phase 0, §10.1): one Vite runnable environment per load, with the
+allowed packages handed to Node.** `importContracts(files, { root })` builds one environment for the
+whole batch and closes it afterwards:
 
-| Option                              | Edits reload                            | Transitive helpers reload           | Resolution                                  | Status                                                 |
-| ----------------------------------- | --------------------------------------- | ----------------------------------- | ------------------------------------------- | ------------------------------------------------------ |
-| Node `import()` + `?mtime=`         | the contract only                       | no: an imported helper stays cached | the CLI's loader hooks                      | stable                                                 |
-| Vite module runner (`runnerImport`) | yes, a fresh runner per catalog rebuild | yes                                 | Vite, with the framework aliases and plugin | `@experimental` in Vite 8.3.8 (`index.d.ts:3822-3826`) |
-
-**Recommended: the module runner**, hidden behind `importContracts(files)` so it can be swapped.
-Verified in the repository with the installed Vite 8.3.8 (vite-plus 1.7.0): the fixture catalog
-loads in 367 ms cold and 8–20 ms after, and `checkContract` passes on the result. Caveats to settle in
-phase 0:
-
-- `runnerImport` forces `configFile: false`, `envDir: false`, `cacheDir: process.cwd()` and
-  `resolve.external: true` over the inline config (`vite-plus-core` `chunks/node.js:42400-42418`).
-  Always pass `frameworkAliases()` and `frameworkDependenciesPlugin()`; set `cacheDir` explicitly to
-  a temp folder so a user's workspace gets no cache folder.
-- In the repository, linked engine source is inlined, so contracts are built by a second instance of
-  the engine module. Nothing may compare contracts or schemas by identity; a test asserts it.
-- Unverified for the installed CLI, where the framework sits under `node_modules` and may be
-  externalized. If it fails there, fall back to `createServerModuleRunner` on a lightweight server,
-  or to Node `import()` with `?mtime=` plus the rule that helpers changes need a restart.
+- `resolveConfig({ root, configFile: false, envDir: false, cacheDir: <os temp>, logLevel: 'silent',
+  environments: { contracts: { consumer: 'server', dev: { moduleRunnerTransform: true }, resolve: {
+  external: true, mainFields: [], conditions: ['node'], builtins: [...builtinModules, /^node:/,
+  ...ALLOWED] } } } }, 'serve')`, then `createRunnableDevEnvironment('contracts', config, {
+  runnerOptions: { hmr: false, evaluator }, hot: false })` and `environment.runner.import(file)` per
+  contract. This is what `runnerImport` does inside (`vite-plus-core` `chunks/node.js:42400-42418`),
+  minus its forced `cacheDir: process.cwd()`, plus two settings it does not let us pass.
+- `ALLOWED` (`/^effect(\/|$)/`, `/^@deckster\//`) is wider than the import check's allowlist
+  above on purpose: the static check is the gate, the loader only decides who evaluates. Listing them as `resolve.builtins` makes Vite's
+  `fetchModule` externalize them unresolved, and `evaluator` (a subclass of `ESModulesEvaluator`
+  from `vite/module-runner`) imports them with `import(import.meta.resolve(specifier))` from
+  vite-plugin's own file: the workspace links in the repository, the CLI's loader hooks when
+  installed. Contracts therefore get **the CLI's own `effect` and engine instances**, and only the
+  user's files (contracts and their helpers) go through Vite.
+- Do **not** pass `frameworkAliases()` or `frameworkDependenciesPlugin()` here: the alias turns
+  `@deckster/engine/layout` into a file path before the builtins check, so the engine is inlined
+  again (measured: 14 inlined modules instead of 12 for 11 contracts), and the dependency plugin
+  resolves `effect` to a file, which inlines all of it.
+- Not chosen, with the measurements in §10.1: `runnerImport` per contract (6.5–13 s for ten
+  contracts in a workspace that has no `node_modules`, the normal installed case, with a second
+  `effect` instance); Node `import()` with `?mtime=` (fast, but a helper edit was not seen).
+- Two Vite behaviours the choice rests on, each pinned by a phase 1 test: the builtins short-circuit
+  in `fetchModule`, and the evaluator receiving the bare specifier. The test loads a contract and
+  asserts that the contract's `schema` has the same prototype as a `Schema.Struct` built in the
+  test (one `effect`; the spike compared against a `Schema.Struct`, not other schema kinds) and that the runner inlined only workspace files. `createRunnableDevEnvironment` is not
+  marked experimental in Vite 8.3.8; the `ModuleRunner` it builds on is.
+- No code compares contracts or schemas by identity today (grep for `===`, `instanceof`, `WeakMap`
+  and `Map` keyed by contract or schema: only name comparisons), so even a second instance would
+  pass `checkContract`; the spike saw it pass in every mode.
 
 **Then the turn gate.** `importContracts` itself checks `isCodeHeld`: during an agent turn it never
 evaluates a contract, returns the contract last loaded for that file from the process-wide gate
@@ -365,50 +427,114 @@ does for `brand.ts`. The dev server preloads all local contracts at start, befor
 cache inside the plugin instance is not enough: lint, export and `shot` start a fresh server per run,
 and the agent's catalog tool calls `listLayouts` outside any plugin.
 
+The gate API is usable from vite-plugin as it is (checked in phase 0): `isCodeHeld`,
+`rememberLoaded`, `onCodeReleased` and `gatedLoad` are exported from `@deckster/brand/node`
+(`brand/src/node/index.ts:47-55`). There is no "last loaded value" getter; `gatedLoad(file, text,
+{ name: 'defineLayoutContract', … })` gives it: a held contract is never a static literal, so it
+returns the remembered value or `held` (read from the code, not run in the spike). `forgetLoaded` is not exported and is needed for a contract
+deleted during a hold. `loadedWhileHeld` is not a brand API: it is `trackHeldLoads()` in
+`vite-plugin/src/held-loads.ts`, which `plugin.ts` already uses for the deck config.
+
 ### 3.5 One resolver for every path
 
+Frozen for phase 1 (after the spike). All in `vite-plugin/src/layouts/`, exported from
+`@deckster/vite-plugin`:
+
 ```ts
-localLayouts({
+// import-contracts.ts: the loader in §3.4, after the import check, through the turn gate
+importContracts(
+  files: readonly string[],            // absolute contract.ts paths
+  options: { root: string },           // workspace root, the runner's root
+): Effect<readonly ContractLoad[], never, FileSystem>
+
+type ContractLoad =
+  | { readonly file: string; readonly kind: 'loaded'; readonly exported: unknown }
+  | { readonly file: string; readonly kind: 'held' }        // in a turn, never loaded before
+  | { readonly file: string; readonly kind: 'failed'; readonly problem: Problem };
+
+// local-layouts.ts: discovery, version check, parity, importContracts
+localLayouts(options: {
   root: string,
-  brand?: string,          // brand code layouts
-  deck?: string,           // deck code layouts
+  brand?: BrandLocation,   // from LoadedBrand.location: built-in brands live under FRAMEWORK_ROOT
+                           // (load-brand.ts:354) and `brand add` checks a staged folder
+  deck?: DeckLocation,     // from findDeck: deck code layouts
   code: 'load' | 'skip',   // 'skip': discover and list, never import
-}): Effect<LocalLayouts>
+}): Effect<LocalLayouts, never, FileSystem>
+
+type LocalLayout = {
+  readonly name: string;                                    // the folder name
+  readonly source: `brand-code:${string}` | `deck:${string}`;
+  readonly contractFile: string;                            // absolute
+  readonly componentFile: string;                           // absolute layout.tsx
+};
 
 type LocalLayouts = {
-  readonly catalogs: readonly LocalCatalog[];      // brand code, then deck code
-  readonly components: readonly string[];          // absolute layout.tsx paths, for the runtime plugin
+  readonly layouts: readonly LocalLayout[];        // brand code, then deck code, by folder name
+  readonly catalogs: readonly LocalCatalog[];      // { source, ref: FileRef, exported }, per loaded
+                                                   // contract, in the same order; empty for 'skip'
   readonly replaced: readonly string[];            // kit names not to load (§3.2)
   readonly files: readonly string[];               // everything found, for watching
-  readonly problems: readonly LayoutProblem[];
+  readonly problems: readonly LayoutProblem[];     // Problem & { code, file }, §5
 };
+
+// deck-catalog.ts: what every Node-side caller uses
+deckCatalog(options: {
+  root: string,
+  brand?: LoadedBrand,     // its data layouts and its code layouts
+  deck?: DeckLocation,
+  code: 'load' | 'skip',
+  specifiers?: readonly string[],   // default DEFAULT_LAYOUT_CATALOGS
+}): Effect<{ index: LayoutCatalogIndex; local: LocalLayouts }, DeckBuildError, FileSystem>
 ```
 
-Per call site:
+Problems are values, not failures, so a caller can still list the kit's layouts.
+`loadLayoutCatalog(specifiers, { brand, layoutsFile, local })` takes `LocalLayouts['catalogs']`:
+brand code after the module catalogs, then brand data layouts (the clash check now also covers
+brand code names), then deck code. The spike's version of `local` is in §10.
 
-| Call site                                                       | brand | deck | code                                                |
-| --------------------------------------------------------------- | ----- | ---- | --------------------------------------------------- |
-| Vite plugin (dev, preview, site build, lint/export/shot server) | yes   | yes  | `load`                                              |
-| `deckster layouts`, agent `catalog` tool, `new slide`           | yes   | yes  | `load`                                              |
-| `deckster new <deck>` (`createDeck`, before the deck exists)    | yes   | no   | `load`                                              |
-| `deckster brand check`                                          | yes   | no   | `load`                                              |
-| `deckster brand add` (staging)                                  | yes   | no   | `skip`, or `load` after `--allow-code` is confirmed |
-| `run-lint.ts:173`, `run-export.ts:200`                          | yes   | yes  | `load`                                              |
-| `scripts/docs/data/deck-slides.ts`                              | yes   | yes  | `load`                                              |
-| `skills/brand-import/.../fw_layouts_check.mts`                  | no    | no   | kit only                                            |
+Virtual modules, served by the deck plugin: `virtual:deck/kit-runtime` (§3.2) and
+`virtual:deck/local-layouts` (below), both in `vite-plugin/src/virtual-modules.ts` next to
+`VIRTUAL_PLUGINS_ID`.
+
+Per call site (line numbers at `11a86f2`; the spike changed the ones marked ✓ and saw them work):
+
+| Call site                                                                          | brand | deck | code                                                |
+| ---------------------------------------------------------------------------------- | ----- | ---- | --------------------------------------------------- |
+| `vite-plugin/src/plugin.ts:264` `layoutCatalog()` ✓                                | yes   | yes  | `load`                                              |
+| `vite-plugin/src/slides/slide-meta.ts:66`, inside `slideMetaReader`                | yes   | yes  | `load`                                              |
+| `cli/src/layouts/load-brand-catalog.ts:64` (new `deck?` parameter at `:51-53`) ✓   | yes   | opt. | `load`                                              |
+| ↳ `list-layouts.ts:262` (`deckster layouts`, agent `catalog`) ✓, `new-slide.ts:79` | yes   | yes  | `load`                                              |
+| ↳ `new-deck.ts:78` (`createDeck`, before the deck exists)                          | yes   | no   | `load`                                              |
+| `cli/src/layouts/check-brand-layouts.ts:23` (`checkCatalogLayouts`)                | yes   | no   | as below                                            |
+| ↳ `commands/brand-run.ts:133` (`deckster brand check`)                             | yes   | no   | `load`                                              |
+| ↳ `brand-add/add-brand.ts:332` (`deckster brand add`, staging)                     | yes   | no   | `skip`, or `load` after `--allow-code` is confirmed |
+| `cli/src/lint/run-lint.ts:173` ✓, `cli/src/export/run-export.ts:200` ✓             | yes   | yes  | `load`                                              |
+| `skills/brand-import/scripts/tests/fw_layouts_check.mts:21`                        | no    | no   | kit only, unchanged                                 |
+
+No change: `scripts/docs/data/deck-slides.ts:96` (its `slideMetaReader` call gets local layouts
+from inside), `agent/deck-tools-live.ts:473` (calls `listLayouts`), and every `deckViteConfig`
+caller (§1.3): `dev-server.ts`, `preview-server.ts`, `build-deck.ts` and `deck-server-live.ts`,
+because the deck plugin calls `localLayouts` itself. Without the lint change, the spike showed lint
+silently checking a deck layout's slide against no contract (its budget was ignored); by the code,
+a replaced kit layout's slide is checked against the kit's contract (not observed). Export was only
+run with its change; that it needs one is read from the code (`run-export.ts:200` feeds the PPTX
+contracts), not observed.
 
 - **Runtime plugin:** a virtual module `virtual:deck/local-layouts` lists the components. Each is
   imported lazily and wrapped so that one layout that fails to compile or throws on import becomes a
   slide problem on the slides that use it ("layout `kpi-wall` failed to load: …"), not a broken deck.
   Paths are written with `normalizePath` and `JSON.stringify`, as `pluginsModuleCode` does, for
-  Windows. It is appended after the kit plugin and before the dev-only plugins, which define no
-  layouts; a test keeps it that way.
-- **`loadLayoutCatalog`** gets a `local` option next to `brand`: brand code catalogs after the kit,
-  then brand data layouts (the clash check now also covers brand code names), then deck code.
+  Windows. It comes right after `virtual:deck/kit-runtime` (where `@deckster/kit/runtime` was) and
+  before the presenter and dev-only plugins, which define no layouts; a test keeps it that way.
+  `layout.tsx` files are added to `optimizeDeps.entries`, because the dependency scan does not
+  follow virtual modules (`framework-resolve.ts:14-18`) and a layout's own dependency found late
+  reloads the page (not verified in the spike).
 - **The kit-only fallback** in `load-brand-catalog.ts:89` stays for a broken brand, and now also for
   broken local layouts, so `deckster layouts` still answers, with the problem as a warning.
-- **`deck-server-live.ts`'s workspace-copy path** (`:119-135`) loads the workspace's vite-plugin; it
-  must be new enough to know `localLayouts`, or the run fails with a clear message.
+- **`deck-server-live.ts`'s workspace-copy path** (`:119-135`) only applies when the workspace is
+  itself a framework checkout (`packages/vite-plugin/src/index.ts` exists there), which is how
+  `deckster diff` renders an older revision. That revision's plugin simply does not know code
+  layouts; no message is needed, and nothing else changes there.
 
 ### 3.6 Replacing a kit layout: the compatibility check
 
@@ -427,7 +553,8 @@ build and `layouts check` run, for a contract with `replaces: true` against the 
    `brand check` lists every changed limit as a note.
 6. **PPTX:** if the original has a `pptx` mapping and the replacement does not, a warning: exported
    decks lose their placeholders.
-7. **Title and role:** a required title stays required; the role (page chrome plan) stays the same.
+7. **Title:** a required title stays required. (When the page chrome plan lands and contracts get
+   `role`, the replacement must keep the original's role too; not before, §10.6.)
 
 Failing 1–4 or 7 is an error with the original's value and the fix. This generalises the rule
 `checkBrandLayouts` applies to data layouts and their fallback
@@ -449,32 +576,48 @@ Failing 1–4 or 7 is an error with the original's value and the fix. This gener
 Two new kit exports, documented and covered by an API snapshot test (the exported names and their
 types), so a breaking change is deliberate and shows up in review:
 
-**`@deckster/kit/layout-parts`** (browser; imports its own CSS):
+**`@deckster/kit/layout-parts`** (browser; imports its own CSS). Checked against what the 64 kit
+layouts import in phase 0 (§10.4); the "uses" column counts layouts importing it directly:
 
-| Export                                                  | From                                                    | Why                                                                                                    |
-| ------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `Frame`, `Region`                                       | `foundation/slide-parts.tsx:77,129`                     | brand margins, safe area, grid variables, backdrop, `.kit-frame` scoping for kit type and table styles |
-| `SlideHeader`, `Eyebrow`, `Footnote`, `TITLE_MAX_LINES` | `slide-parts.tsx:159,197,300`                           | the standard header, with `.kit-title` for PPTX                                                        |
-| `FittedText`                                            | `slide-parts.tsx:262`, `fit-text.ts`                    | type that steps down to fit, `data-fit` for lint, readiness hold                                       |
-| `useFitLevel`, `fitsRegion`                             | `foundation/fit-level.ts:87,116`                        | density steps for content that may not fit                                                             |
-| `TreatedMedia`, `treatmentProps`                        | `foundation/media-treatment.tsx:56`                     | brand image treatments (owns the media-frame context)                                                  |
-| `BrandLogo`                                             | `foundation/brand-logo.tsx:26`                          | the surface's logo variant                                                                             |
-| `smartPunctuation`                                      | `foundation/smart-punctuation.ts`                       | typographic quotes and dashes in frontmatter text                                                      |
-| `TableContext` hooks, `useStillMotion`                  | `foundation/table-context.ts`, `motion/still-motion.ts` | shared context: must be the kit's instance, never a copy (1.6)                                         |
-| `useEnter`, `enterProps`, `Step`                        | already in `@deckster/kit`, re-exported                 | entrance order and steps                                                                               |
+| Export                                                            | From                                    | Uses | Why                                                                                                    |
+| ----------------------------------------------------------------- | --------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------ |
+| `Frame`, `Region`                                                 | `foundation/slide-parts.tsx:77,129`     | 58   | brand margins, safe area, grid variables, backdrop, `.kit-frame` scoping for kit type and table styles |
+| `Eyebrow`, `SlideHeader`, `Footnote`                              | `slide-parts.tsx:159,197,300`           | 48   | the standard header, with `.kit-title` for PPTX                                                        |
+| `FittedText`                                                      | `slide-parts.tsx:262`, `fit-text.ts`    | 11   | type that steps down to fit, `data-fit` for lint, readiness hold                                       |
+| `useFitGroupWidth`, `useRenderOnFontLoad`, type `FitRung`         | `foundation/fit-text.ts`                | 12   | the fit ladder; otherwise 14 layouts copy it and drift from the kit's `data-fit` steps                 |
+| `useFitLevel`                                                     | `foundation/fit-level.ts:116`           | 35   | density steps for content that may not fit                                                             |
+| `TreatedMedia`                                                    | `foundation/media-treatment.tsx:56`     | 7    | brand image treatments (provides the media-frame context)                                              |
+| `BrandLogo`                                                       | `foundation/brand-logo.tsx:26`          | 2    | the surface's logo variant                                                                             |
+| `smartPunctuation`                                                | `foundation/smart-punctuation.ts`       | 50   | typographic quotes and dashes in frontmatter text                                                      |
+| `frontmatterAsset`, `frontmatterIcon`, type `IconComponent`       | `foundation/frontmatter-assets.ts`      | 8    | shared state: the registry MDX slides fill; a copy is always empty (23 reach it through helpers)       |
+| `TableLayoutContext`, type `TableLayoutSettings`                  | `foundation/table-context.ts`           | 1    | shared state: `table` provides the context object itself, not a hook                                   |
+| `useStillMotion`                                                  | `motion/still-motion.ts:33`             | 2    | shared state module (`RevealContext`)                                                                  |
+| `StatValue`, `StatDelta`                                          | `foundation/stat-figure.tsx`            | 9    | moved up from phase 4: a copy reaches `RevealContext` through `use-count-up.ts:144`                    |
+| `useEnter`, `enterProps`, `EnterProps`, `MAX_ENTER_ORDER`, `Step` | already in `@deckster/kit`, re-exported | 54   | entrance order and steps                                                                               |
 
 **`@deckster/kit/layout-fields`** (Node-safe; no React, no CSS), for contracts:
 `EyebrowField`, `EYEBROW_HINT`, `chromeField`, `CHROME_HINT`, `TreatmentField`, `TREATMENT_HINT`,
-`textField`, `IconNameField`, `FocalField`, `RevealField`, `SafeHrefField`, `ContactItem`,
-`contactsHint`, `AlignField`, `alignHint`, `DISPLAY_ALIGNS` (`kit/src/layouts/layout-fields.ts`,
-`display-fields.ts`).
+`treatmentProps` (it lives in `layout-fields.ts:82`), `textField`, `CONTEXT_MAX_WORDS`,
+`IconNameField`, `FocalField`, `FOCAL_HINT`, `RevealField`, `REVEAL_HINT`, `ContactItem`,
+`ContactEntry`, `contactsHint`, `currentProblems`, `AlignField`, `alignHint`
+(`kit/src/layouts/layout-fields.ts`, `display-fields.ts`), and `DATA_HINT`, `DataField`, moved from
+`chart-layout.contract.ts` so `dashboard` stops importing another layout's contract. Without the
+five added names (`CONTEXT_MAX_WORDS`, `REVEAL_HINT`, `FOCAL_HINT`, `currentProblems`,
+`ContactEntry`), 37 ejected layouts would copy all of `layout-fields.ts` and `link-target.ts`.
+
+Dropped from the first list because no kit layout uses them: `TITLE_MAX_LINES` (title keeps its own
+3), `fitsRegion` (used only inside `fit-level.ts`), `SafeHrefField` and `DISPLAY_ALIGNS` (used only
+inside the fields modules).
+
+The eject rewrite also maps `#` imports of parts that are public already: `Step`, `useEnter`,
+`enterProps`, `QR` to `@deckster/kit`, and `Timeline`, `Milestone` to `@deckster/kit/diagrams`.
 
 Also used directly from the engine, already public: `defineLayoutContract`, `defineLayout`,
 `LayoutProps`, `useStatic`, `useReadyHold`; from the brand: `useBrand`.
 
 The kit's own layouts switch to these exports for the parts they use (a mechanical import change),
-so the API is exercised by 65 layouts and cannot rot. `StatFigure`, `Portrait` and `Marks` (used by
-5–9 layouts each) are candidates for phase 4; until then eject copies them.
+so the API is exercised by 64 layouts and cannot rot. `Portrait` and `Marks` (used by 5–6 layouts
+each) are candidates for phase 4; until then eject copies them.
 
 **What "fully custom" means here.** A layout built on `layout-parts` still changes when the kit
 changes `Frame` or `FittedText`, within the API's semver promise. Authors who want nothing to move
@@ -502,8 +645,13 @@ deckster layouts eject --all --brand <brand>
     `/layout-fields`.
   - A stateless private helper (`pattern-slide.*`, `layout-limits.ts`, `quiz-values.ts`,
     `stat-value.ts`, `matrix-labels.ts`, `logo-state.ts`, `sources-address.ts`, `layout-geometry`,
-    `density`, `stat-figure`, `portrait`, `marks`, …) is copied into `layouts/_shared/` once and
-    imported relatively. Phase 0 classifies every private import in 1.6.
+    `density`, `portrait`, `marks`, …) is copied into `layouts/_shared/` once and imported
+    relatively. Phase 0 classified every private import (§10.4).
+  - A copied helper that imports its own CSS (`badges`, `portrait`, `marks`, `contact-list`,
+    `frontmatter-picture`, `mono-mark`, `pattern-slide`) keeps global `.kit-*` selectors, which
+    the kit's copy also loads whenever a kit layout still uses that helper. Eject renames the copied
+    classes (a `brand-` prefix, or scoping under the ejected layout) so an edit cannot leak into kit
+    layouts.
   - A module with shared state (1.6) is never copied: it must be public. **Phase 2 exits only when no
     kit layout's closure reaches unexported shared state**, so `--all` always works.
   - Shared CSS (`display-align.css`, `image-layout.css` for `title`) is copied next to the layout and
@@ -521,12 +669,19 @@ deckster layouts eject --all --brand <brand>
 - **`--all`** ejects all 65 into one brand, with a warning that from then on kit fixes reach none of
   them except through `layout-parts`.
 - **Guarantee:** a CI test ejects every kit layout into a temporary brand and builds and lints the
-  `exemplars` deck against it with zero new problems, and runs the CSS removal test from §3.2.
+  `exemplars` deck against it with zero new problems, and runs the CSS removal test from §3.2. Its
+  home is `packages/cli/src/layouts/eject/eject-all.test.ts`, a `vp test` unit test in `pnpm test`
+  (CI "Test" step), on a `scratchWorkspace` (`cli/src/lint/scratch-workspace.fixture.ts`), as
+  `commands/build.test.ts` and `lint/layout-probes.test.ts` already build and lint real decks in
+  scratch workspaces. The computed-style check needs a browser page, which those tests already open
+  through `deckster lint`'s server. `code` and `stats` are exempt from the CSS removal assertion
+  until `code-layout.css` and `stats-layout.css` stop loading outside their layouts (1.6).
 
 ### 3.11 New, check, diff
 
 - **`deckster layouts new <name> --brand <brand> | --deck <deck>`**: a minimal folder: a contract
-  with one `body` slot, a description, an `example` and `role: 'content'`; a `layout.tsx` with
+  with one `body` slot, a description and an `example` (and `role: 'content'` once the page chrome
+  plan adds roles); a `layout.tsx` with
   `Frame`, `SlideHeader` and `Region`; a `layout.css` with the `@layer` line every kit CSS file
   starts with; and a `limits.ts` with one case.
 - **`deckster layouts check [<name>] --brand <brand> | --deck <deck>`**: §3.6 and §3.7, then renders
@@ -562,7 +717,10 @@ working-copy sync to carry `layouts/` and contract loading to be restricted.
 ### 3.13 Interaction with other plans
 
 - **Page chrome** (`docs/page-chrome-plan.md`): contracts get `role`, and `chrome` moves into the base
-  frontmatter. Custom contracts get both; a replacement keeps the original's role (§3.6).
+  frontmatter. Neither exists today: `layout-contract.ts` has no `role`, and `chrome` is a per-layout
+  field (`chromeField` in `kit/src/layouts/layout-fields.ts:41`), not base frontmatter (§10.6). This
+  plan does not depend on either. When that plan lands, custom contracts get both, a replacement
+  keeps the original's role (§3.6 item 7), and `layouts new` writes one (§3.11).
 - **Cross-brand fallback** (`brand-layouts-plan.md` §3.3): a slide naming another brand's _data_
   layout falls back as today. Naming another brand's _code_ layout is a build error naming the brand
   that has it, found by listing folders, never by importing them. A static `fallback` on code layout
@@ -574,8 +732,8 @@ working-copy sync to carry `layouts/` and contract loading to be restricted.
 
 **Engine** (`engine/`)
 
-- `LayoutContract` gains `replaces?: true` (and `role` from the chrome plan); `checkContract`
-  accepts it.
+- `LayoutContract` gains `replaces?: true`; `checkContract` accepts it. (`role` comes with the
+  chrome plan, not here.)
 - `slide-content.tsx` stamps `data-deck-layout` on the slide (§3.3); lazy local components with a
   per-layout error boundary (§3.5).
 
@@ -584,8 +742,8 @@ working-copy sync to carry `layouts/` and contract loading to be restricted.
 - `layouts/local-layouts.ts`: discovery (§3.1), version check, `importContracts` with the import
   check, loader and turn gate (§3.4), parity (§3.7).
 - `layouts/load-layout-catalog.ts`: `local` option; clash checks; the replacement check (§3.6).
-- Virtual modules: `virtual:deck/local-layouts`, and the generated kit layout list that skips replaced
-  names (§3.2).
+- Virtual modules: `virtual:deck/local-layouts`, and `virtual:deck/kit-runtime`, the generated kit
+  plugin that skips replaced names (§3.2).
 - `plugin.ts`: call `localLayouts` from the active deck and brand. Watching:
   - `watchBrand` stops full-reloading for `layouts/*/layout.tsx` and `.css` (Vite HMR handles them);
   - a `contract.ts`, `limits.ts` or helper change under brand or deck `layouts/` re-runs
@@ -597,13 +755,16 @@ working-copy sync to carry `layouts/` and contract loading to be restricted.
 
 - `src/layout-parts.ts`, `src/layout-fields.ts`, `package.json` exports, kit layouts migrated to
   them, API snapshot test.
-- `src/runtime.ts` takes its layout list from the generated module (§3.2); `catalog.test.ts` keeps
-  checking names and order against it.
+- `src/kit-plugin.ts` (`kitPlugin(layouts)`, export `@deckster/kit/plugin`) and
+  `src/layouts/all-layouts.ts`; `src/runtime.ts` becomes `kitPlugin(allLayouts)` (§3.2).
+  `catalog.test.ts` keeps checking names and order; a new test checks the `<name>-layout.tsx` /
+  `<camel>Layout` convention the generated module relies on.
 - `layouts/replace-check.ts` (§3.6), sharing helpers with `brand-layout.contract.ts`.
 
 **Export** (`export/`): read `data-deck-layout` (§3.3).
 
-**Brand** (`brand/`): `isCodeHeld`/`rememberLoaded` used by `importContracts`;
+**Brand** (`brand/`): `isCodeHeld`, `gatedLoad`, `rememberLoaded` used by `importContracts`, and
+`forgetLoaded` exported;
 `find-layout-in-brands.ts` reports a code layout found in another brand (§3.13).
 
 **CLI** (`cli/`)
@@ -651,7 +812,7 @@ title placeholder.
 
 ## 6. Phases
 
-### Phase 0: spike (one agent, one day)
+### Phase 0: spike (one agent, one day) — done, results in §10
 
 1. Load the fixture's `columns` contract through `runnerImport` from the CLI with no dev server, in
    the repository and from a packed CLI (`pnpm pack`, run from a temp folder with `decks/` and
@@ -669,6 +830,10 @@ title placeholder.
 - **engine + export:** `data-deck-layout`; lazy local components with error boundaries.
 - **cli:** every call site on `deckCatalog`; `deckster layouts` sources; `brand` and `brand check`
   output; `.deckster-source.json` written by `brand add`.
+- From the spike (§10): the loader exactly as in §3.4 with its identity test; `resolveRuntimePlugins`
+  returning virtual ids unresolved; the brand stylesheet's Tailwind sources unchanged by virtual
+  plugin ids; `layout.tsx` files in `optimizeDeps.entries`; a code layout in the CI package smoke
+  job, which is the only CI run of the installed loader.
 
 Exit: a hand-written brand layout and a deck layout work in dev (with HMR for components), build,
 lint, `shot`, PDF and PPTX export, `deckster layouts --json` and the agent's catalog tool; an e2e case
@@ -676,15 +841,19 @@ covers each; a broken layout breaks only its own slides.
 
 ### Phase 2: public parts
 
-- `layout-parts` and `layout-fields`, kit layouts migrated, API snapshot test.
+- `layout-parts` and `layout-fields`, kit layouts migrated, API snapshot test. Required for the exit
+  criterion: `frontmatterAsset`, `frontmatterIcon`, `TableLayoutContext`, `useStillMotion` and
+  `StatValue`/`StatDelta` (§3.8, §10.4). Proposed, not required: the fit-text hooks, the five added
+  `layout-fields` names, moving `DATA_HINT`/`DataField`, dropping the four unused names.
 - `layouts new` and `layouts check` (with the limit deck moved into shipped source).
 - The authoring reference and docs.
 - Exit: no kit layout's closure reaches unexported shared state.
 
 ### Phase 3: replace
 
-- `replaces`, the generated kit layout list skipping replaced names, the compatibility check,
-  `layout-replace-*` problems, replacements in `deckster layouts`.
+- `replaces`, the generated kit layout list skipping replaced names (`kitPlugin`,
+  `all-layouts.ts`, `virtual:deck/kit-runtime`, §3.2), `display-align.css` rekeyed on an attribute,
+  the compatibility check, `layout-replace-*` problems, replacements in `deckster layouts`.
 - A data layout's `fallback` may name a brand code layout.
 
 ### Phase 4: eject and diff
@@ -692,7 +861,7 @@ covers each; a broken layout breaks only its own slides.
 - `eject` with closure, rewrite, CSS scoping and provenance; `--all`.
 - The eject-everything CI test and the CSS removal test.
 - `diff`.
-- `StatFigure`, `Portrait`, `Marks` made public if eject copies of them prove awkward.
+- `Portrait`, `Marks` made public if eject copies of them prove awkward.
 
 ### Phase 5: later
 
@@ -707,8 +876,10 @@ covers each; a broken layout breaks only its own slides.
   `--allow-code` being explicit and interactive, by provenance, and by the turn gate. A user who opts
   in still runs that code in Node (contracts) and in the browser (components) with their
   permissions.
-- **Experimental loader.** `runnerImport` is marked experimental in Vite 8.3.8. It sits behind
-  `importContracts` with a documented fallback, and the spike tests the installed CLI.
+- **Loader built on Vite internals.** The chosen loader (§3.4) uses public APIs
+  (`createRunnableDevEnvironment`, `resolve.builtins`, `ESModulesEvaluator`), but relies on two
+  behaviours a Vite upgrade could change. It sits behind `importContracts`, a test pins both, and
+  the fallback is Node `import()` with `?mtime=` (helper edits then need a restart).
 - **Public API weight.** `layout-parts` becomes a promise. The snapshot test and the kit's own use
   keep it honest; the list is deliberately short.
 - **Ejected copies drift** and miss kit fixes. `diff` and the version in `eject.json` make it
@@ -764,9 +935,234 @@ Settled on 2026-11-24, on the recommendations below.
    drop the kit's CSS for that name, and without it eject does not deliver "fully custom". The cost
    is one virtual module and a small change to `kit/src/runtime.ts`.
 3. **The public building blocks are the list in §3.8.** It is what most kit layouts actually use,
-   plus the two shared-state modules that must never be copied. `StatFigure`, `Portrait` and `Marks`
-   wait for phase 4; adding to the API later is cheap, taking something back is not.
-4. **Contracts load through Vite's module runner (§3.4),** behind `importContracts`. It reloads
-   contracts and their helpers on edit and resolves imports the way slides do; it is measured fast
-   in the repository. Phase 0 must confirm it from an installed CLI; if it fails there, the
-   fallback is Node `import()` with `?mtime=`, and helper edits need a restart.
+   plus every shared-state module that must never be copied (four, after phase 0; §10.4).
+   `StatValue` and `StatDelta` moved into phase 2 because they reach shared state; `Portrait` and
+   `Marks` wait for phase 4. Adding to the API later is cheap, taking something back is not.
+4. **Contracts load through Vite's module runner (§3.4),** behind `importContracts`: one runnable
+   environment per load, with `effect` and `@deckster/*` handed to Node. Phase 0 measured it in the
+   repository and from an installed CLI (9–60 ms for eleven contracts, helper edits seen, one
+   `effect` and engine instance) and rejected per-file `runnerImport` (6.5–13 s for ten contracts
+   in a workspace without `node_modules`, §10.1). The fallback stays Node `import()` with
+   `?mtime=`, where helper edits need a restart.
+
+## 10. Spike results
+
+Phase 0, 2026-11-24, on `feat/custom-layouts` at `11a86f2`, Node 26.13.1, vite-plus 1.7.0 (Vite
+8.3.8000). The spike code was thrown away; the patch (it applies to `11a86f2`) and the test
+workspaces were kept outside the repository for the phase 1 agents. Nothing below that says "not
+verified" was skipped silently.
+
+Two layouts were used: the repository (`node packages/cli/src/bin.ts …`, no loader hooks) and the
+CLI packed with `pnpm pack`, installed with `npm install <tarball>` into one temp folder and run as
+`node <install>/node_modules/@deckster/cli/dist/deckster.js` from a **separate** workspace folder
+with only `brands/` and `decks/`. The separate folder matters: a first try installed the CLI into
+the workspace itself, npm hoisted `effect` into the workspace's `node_modules`, and every loader
+looked fine. A real user workspace has no `node_modules` (1.5).
+
+### 10.1 Contract loader
+
+Ten copies of the fixture `columns` contract, each importing `../_shared/helper.ts`, under a
+workspace brand's `layouts/<name>/contract.ts`, plus an eleventh that imports
+`@deckster/kit/chart-spec` (a value) and a type from `@deckster/brand` (type only, so nothing of
+`@deckster/brand` was evaluated; a value import from it is not verified). Each run loads them three times in
+one process: round 0 is cold (after Vite is imported, about 110 ms), the helper is edited before
+the last round. Times are for the whole batch: ten contracts, except all eleven in the chosen
+loader's row (the kit and brand imports were added for it).
+
+| Loader                                                 | Repo, ms (rounds 0/1/2) | Installed, ms        | Helper edit seen | One `effect` |
+| ------------------------------------------------------ | ----------------------- | -------------------- | ---------------- | ------------ |
+| `runnerImport` per contract, aliases and dep plugin    | 7160 / 6480 / 6707      | 8858 / 13106 / 10132 | yes              | no           |
+| One runnable environment, aliases and dep plugin       | 960 / 803 / 640         | 792 / 789 / 655      | yes              | no           |
+| `createServerModuleRunner` on a middleware-mode server | 936 / 1374 / 1034       | 891 / 753 / 723      | yes              | no           |
+| **One runnable environment, packages as builtins**     | **60 / 10 / 10**        | **37 / 11 / 12**     | yes              | yes          |
+| Node `import()` with `?mtime=`                         | fails (see below)       | 5 / 4 / 4            | **no**           | yes          |
+
+- Why the first three are slow and duplicate `effect`: the workspace cannot resolve `effect`, so
+  `frameworkDependenciesPlugin` resolves it to a file from the framework, and a resolved file is
+  inlined: about 280 `effect` modules transformed per load, and a second `effect` instance
+  (`Object.getPrototypeOf(contract.schema)` differs from the CLI's). Returning
+  `{ id, external: true }` from `resolveId` does not help: `fetchModule` only externalizes bare
+  specifiers and builtins. The plan's "367 ms cold, 8–20 ms after" held only for the in-repository
+  fixture, whose folder resolves `effect` itself (measured again: 30 ms, 8 ms, with the engine's
+  `layout-contract.ts` inlined as a second engine instance).
+- The chosen loader (§3.4) lists `effect` and `@deckster/*` as `resolve.builtins` and imports them
+  in a custom evaluator with `import.meta.resolve`; the runner then inlines only the 11 contracts
+  and the helper (12 modules). Passing `frameworkAliases()` as well inlined 14 (the engine's
+  `layout-contract.ts` and the kit module came back), so the aliases must be left out.
+- Node `import()` fails in the repository layout for a workspace outside the checkout
+  (`ERR_MODULE_NOT_FOUND` for a bare import of the contract; the output did not show which):
+  there are no loader hooks there. Installed, it works but a
+  helper edit stays at the old value, as the plan said.
+- `checkContract` passed on every loaded contract in every mode and layout. No code compares
+  contracts or schemas by identity (only by `name`).
+- Cache folders: none appeared in the workspace in any mode. `runnerImport` overrides `cacheDir`
+  with `process.cwd()` whatever is passed (so its "no folder" means nothing was written, not that
+  the setting was honoured); the chosen loader's own temp `cacheDir` was never created either.
+- Decision: **one runnable environment per load, packages as builtins** (§3.4, §9.4).
+
+### 10.2 End to end
+
+A workspace in a temp folder: brand `spike` (a copy of `default`) with code layouts
+`layouts/columns/` (the fixture, `replaces: true`, plus a `layout.css`) and `layouts/title/` (a
+contract built from the kit's `title`, `replaces: true`), and deck `spike-deck` with a deck layout
+`layouts/kpi-wall/` (a new name, budget `maxBullets: 1`) and slides on `title`, `columns` and
+`kpi-wall`. A minimal `localLayouts` (discovery, the loader above, a `local` option on
+`loadLayoutCatalog`, `virtual:deck/local-layouts` and `virtual:deck/kit-runtime`) was wired into
+`plugin.ts`.
+
+| Command                          | Repository | Installed | Needed a call site change                              |
+| -------------------------------- | ---------- | --------- | ------------------------------------------------------ |
+| `deckster build`                 | works      | works     | no (plugin only)                                       |
+| `deckster dev` (module graph)    | works      | not run   | no                                                     |
+| `deckster shot`                  | works      | works     | no; renders through `deck-server-live.ts`              |
+| `deckster lint`                  | works      | works     | yes: `run-lint.ts:173`                                 |
+| `deckster export` (PDF and PPTX) | works      | works     | yes: `run-export.ts:200`                               |
+| `deckster layouts --json`        | works      | works     | yes: `load-brand-catalog.ts:64`, `list-layouts.ts:262` |
+
+- `shot` showed the brand `columns` with its own CSS. The PPTX listed `columns` and `kpi-wall` as
+  layouts. `deckster layouts` listed `title` and `columns` as `brand-code:spike` in the kit's
+  positions and `kpi-wall` as `deck:spike-deck`.
+- Before the lint change, lint rendered the slides but checked `kpi-wall`'s slide against no
+  contract (three bullets, no `content-budget` finding); after it, `content-budget` fired. That
+  `columns` was checked against the kit's contract before is read from `run-lint.ts`, not observed.
+  The export row's "yes" is likewise read from the code: export was only run after the change.
+- Dev was checked by fetching `virtual:deck/plugins`, `virtual:deck/local-layouts` and
+  `virtual:deck/kit-runtime` from a running `deckster dev` (kit runtime without
+  `columns-layout.tsx`); the slides themselves were rendered through `shot`, which uses a dev-mode
+  server. HMR and the watchers in §4 were not verified.
+- `deck-server-live.ts:119-135` loads the workspace's own vite-plugin only when the workspace is a
+  framework checkout; no change needed (§3.5).
+- Every place the spike changed, at `11a86f2`: `vite-plugin/src/plugin.ts` (`:264` catalog,
+  `:289` runtime plugin list, `:310` `resolveId`, `:326` `load`, `:333` brand CSS plugin folders,
+  `:463` `resolveRuntimePlugins`), `vite-plugin/src/layouts/load-layout-catalog.ts` (`local` option,
+  `:64` and `:92`), `vite-plugin/src/index.ts`, `cli/src/lint/run-lint.ts:173`,
+  `cli/src/export/run-export.ts:200`, `cli/src/layouts/load-brand-catalog.ts:51-53,64`,
+  `cli/src/layouts/list-layouts.ts:262`, `kit/src/runtime.ts`, `kit/package.json`; new
+  `vite-plugin/src/layouts/local-layouts.ts`, `kit/src/runtime-base.ts` (`kitPlugin`) and
+  `kit/src/layouts/all-layouts.ts`. Not exercised: `new-slide.ts:79`, `new-deck.ts:78`,
+  `check-brand-layouts.ts:23`, `slide-meta.ts:66`.
+
+### 10.3 Generated kit layout list
+
+Prototyped as in §3.2 (`kitPlugin(layouts)`, `all-layouts.ts`, `runtime.ts` unchanged for its
+importers, `@deckster/kit/runtime` swapped for `virtual:deck/kit-runtime`); the kit's
+`catalog.test.ts` still passed. In a production build of the spike deck:
+
+- with `columns` replaced, `columns-layout.css` was gone (no `--kit-lane-head-pad`) and the brand's
+  `layout.css` was in;
+- with `title` replaced too, `[data-layout=title]` selectors went from 12 to 3, the 3 being
+  `display-align.css`, which `section`, `statement` and `image-reveal` still load (§3.2).
+
+Every importer of the kit runtime, which is why `runtime.ts` stays static: `kit/src/catalog.test.ts`,
+`kit/src/components/component-catalog.test.tsx`, `kit/src/layouts/brand-layout.test.ts` (all under
+the kit's `vite.config.ts`, which already stubs `virtual:deck/brand`), `vite-plugin/src/plugin.ts:61`
+(`DEFAULT_RUNTIME_PLUGINS`, also used by `e2e/support/case-servers.ts:44`) and
+`vite-plugin/src/framework-resolve.ts:21` (dependency scan entry). Nothing in `scripts/`, `skills/`
+or the export tests imports it. `presenter-deck.fixture.tsx` imports the presenter's own runtime.
+
+### 10.4 Private imports
+
+A script followed every `#`, relative and CSS import from every file in `kit/src/layouts/`,
+stopping where all imported symbols are public (§3.8 as first written, or an existing
+`@deckster/kit` export), and grepped each module for contexts, module-level `let` and
+collections, registries and listeners; each hit was read by hand. "Direct" counts layouts that
+import the module; "eject" counts layouts whose eject closure would copy it under the first §3.8.
+
+| Module                                                                                               | Direct | Eject | Class                  | Notes                                                                                       |
+| ---------------------------------------------------------------------------------------------------- | ------ | ----- | ---------------------- | ------------------------------------------------------------------------------------------- |
+| `foundation/slide-parts.tsx`                                                                         | 58     | 0     | public                 | Frame 58, SlideHeader 48, Footnote 47, Region 46, FittedText 11, Eyebrow 8                  |
+| `motion/enter.ts`                                                                                    | 54     | 0     | public                 | also `EnterProps` (6), `MAX_ENTER_ORDER` (1), already in `@deckster/kit`                    |
+| `foundation/smart-punctuation.ts`                                                                    | 50     | 0     | public                 |                                                                                             |
+| `layouts/layout-fields.ts`                                                                           | 63     | 37    | public, list too short | `CONTEXT_MAX_WORDS` 23, `REVEAL_HINT` 19, `FOCAL_HINT` 10, `currentProblems` 6 were missing |
+| `foundation/fit-level.ts`                                                                            | 35     | 0     | public                 |                                                                                             |
+| `motion/step.tsx`                                                                                    | 29     | 0     | public (existing)      | provides `RevealContext`                                                                    |
+| `foundation/fit-text.ts`                                                                             | 12     | 14    | made public            | `useFitGroupWidth` 8, `FitRung` 4, `useRenderOnFontLoad` 1                                  |
+| `foundation/stat-figure.tsx`                                                                         | 9      | 9     | made public            | its copy reaches `RevealContext` via `use-count-up.ts:144`, and 9 diagram modules           |
+| `foundation/frontmatter-assets.ts`                                                                   | 8      | 23    | **shared state**       | registry `:18` filled by MDX slides; missing from the first §3.8                            |
+| `foundation/media-treatment.tsx`                                                                     | 7      | 0     | public                 | provides `MediaFrameContext`                                                                |
+| `media/media-frame.ts`                                                                               | 0      | 0     | shared state, internal | reached only behind `TreatedMedia`; no hook needed                                          |
+| `foundation/portrait.tsx`                                                                            | 6      | 6     | copy                   | own CSS; imports frontmatter-assets (rewritten), initials, slide-file                       |
+| `foundation/layout-geometry.ts`                                                                      | 6      | 19    | copy                   | imports `lists`                                                                             |
+| `foundation/marks.tsx`                                                                               | 5      | 5     | copy                   | own CSS                                                                                     |
+| `layouts/pattern-slide.{tsx,contract.ts,css}`                                                        | 7      | 7     | copy                   | imports frontmatter-assets (rewritten), slide-file                                          |
+| `foundation/quote-marks.ts`                                                                          | 4      | 4     | copy                   |                                                                                             |
+| `foundation/slide-file.ts`                                                                           | 4      | 20    | copy                   | `useSlide().file`; no state                                                                 |
+| `layouts/display-fields.ts`                                                                          | 4      | 0     | public                 |                                                                                             |
+| `layouts/display-align.css`                                                                          | 4      | 4     | copy, scoped           | names four layouts (§3.2)                                                                   |
+| `foundation/badges.tsx`                                                                              | 3      | 3     | copy                   | own CSS                                                                                     |
+| `foundation/frontmatter-picture.tsx`                                                                 | 3      | 3     | copy                   | own CSS; imports frontmatter-assets (rewritten)                                             |
+| `links/link-target.ts`                                                                               | 2      | 38    | copy                   | constant set only; reached through layout-fields                                            |
+| `foundation/contact-list.tsx`                                                                        | 2      | 2     | copy                   | own CSS; imports `links/link.tsx`, layout-fields' `ContactEntry`                            |
+| `foundation/mono-mark.tsx`                                                                           | 2      | 2     | copy                   | own CSS; imports frontmatter-assets (rewritten), `layouts/logo-state`                       |
+| `foundation/density.ts`                                                                              | 2      | 2     | copy                   | imports fit-text, layout-geometry                                                           |
+| `foundation/brand-logo.tsx`                                                                          | 2      | 0     | public                 |                                                                                             |
+| `motion/still-motion.ts`                                                                             | 2      | 9     | public, shared state   | `RevealContext` `:11`; `useStillMotion` itself reads no context                             |
+| `apps/app-chrome.tsx`                                                                                | 2      | 2     | copy                   | no state, styled by global `apps.css`                                                       |
+| `layouts/layout-limits.ts`                                                                           | 2      | 2     | copy                   | content, split                                                                              |
+| `foundation/table-context.ts`                                                                        | 1      | 1     | **shared state**       | `table` needs `TableLayoutContext` itself, not a hook                                       |
+| `links/qr.tsx`                                                                                       | 1      | 0     | public (existing)      | `QR` in `@deckster/kit`                                                                     |
+| `diagrams/lazy-diagrams.tsx`                                                                         | 1      | 0     | public (existing)      | `Timeline` in `@deckster/kit/diagrams`; its subtree has caches                              |
+| `diagrams/form-parts.tsx`                                                                            | 1      | 0     | public (existing)      | `Milestone`, checked by element type in `Timeline`: never copy                              |
+| `diagrams/word-breaks.ts`                                                                            | 1      | 1     | copy                   | features                                                                                    |
+| `motion/css-duration.ts`                                                                             | 1      | 10    | copy                   | image-reveal; also via use-count-up                                                         |
+| `layouts/quiz-values.ts`, `stat-value.ts`, `logo-state.ts`, `matrix-labels.ts`, `sources-address.ts` | 1 each | 1–9   | copy                   | constants and pure functions                                                                |
+| `layouts/chart-layout.contract.ts`                                                                   | 1      | 1     | moved to layout-fields | `dashboard` imports `DATA_HINT`, `DataField`                                                |
+| `layouts/image-layout.css`                                                                           | 1      | 1     | copy, scoped           | `title` uses only `.kit-image-scrim`                                                        |
+
+With the first §3.8, **33 of the 64 layouts** reached unexported shared state
+(`frontmatter-assets` directly or through `portrait`, `frontmatter-picture`, `mono-mark` and
+`pattern-slide`; `RevealContext` through `stat-figure`; `table-context`). §3.8 now exports
+`frontmatterAsset`, `frontmatterIcon`, `TableLayoutContext` and `StatValue`/`StatDelta`, after
+which no closure should reach unexported shared state (expected from the table; the script was not
+re-run with the amended list, and `links/link.tsx`, reached through `contact-list`, was not checked
+for state); the eject transform must still rewrite those
+imports inside copied helpers. The §1.6 counts were right except `@deckster/engine/layout` (65
+files, 73 statements), `effect` (65) and `fit-text` (12), and its media-frame sentence was wrong;
+both are corrected there, with the hazards the plan missed.
+
+### 10.5 Other checks
+
+- **Test fixtures.** The vite-plugin e2e suites serve `e2e/fixtures/` as their workspace
+  (`brands/fx-brand`, `fx-other`, `decks/*`; `case-servers.ts:39-48` adds the `layouts/` catalog
+  and runtime, whose `columns` silently overrides the kit's). CLI unit tests copy decks from
+  `cli/fixtures/decks/` into `scratchWorkspace()` (`cli/src/lint/scratch-workspace.fixture.ts`,
+  framework brands symlinked, fixture brands written by `fixture-brands.fixture.ts`).
+  Recommended homes: vite-plugin e2e code layouts in `e2e/fixtures/brands/fx-code/layouts/<name>/`
+  with a deck `e2e/fixtures/decks/code-layouts/` that has its own `layouts/`; CLI cases as
+  `cli/fixtures/brand-files/<name>/layouts/…` and `cli/fixtures/decks/code-layouts/`, copied into a
+  scratch workspace; `localLayouts` and `importContracts` unit tests in `mkdtemp` folders as
+  `deck-css-guard.test.ts` does. The e2e `layouts/` catalog fixture can move to `fx-code` once code
+  layouts work. Never under the repository's top-level `brands/` or `decks/`, which are built and
+  published.
+- **Turn gate.** Usable from vite-plugin; details and the two gaps in §3.4.
+- **CI home** for eject-everything: `pnpm test` (`vp test` in `@deckster/cli`), §3.10. CI runs
+  `pnpm test` in the main job and on Node 26.0.0, `pnpm test:e2e` only in the main job, and the
+  package smoke job (packed CLI in an empty folder) runs only `new`, `lint`, `build`, `shot`,
+  `export --pdf` and `types`. Adding a code layout to that smoke job would cover the installed
+  loader in CI; recommended for phase 1.
+- **`isSafeName`** (`brand/src/schema/safe-name.ts:25`: kebab-case, at most 64 characters) fits
+  layout folder names: `checkContract` already demands kebab-case names but has no length limit, so
+  discovery checks each folder name with `isSafeName`, and `_shared`, `.eject` and other names
+  starting with `_` or `.` can never be layouts. `layouts new` and `eject` check their `<name>`
+  arguments with it before joining a path.
+
+### 10.6 `role` and `chrome`
+
+`engine/src/contract/layout-contract.ts` has no `role`, and `chrome` is not in the base frontmatter
+(`engine/src/contract/slide-frontmatter.ts`; its only `role` is a background tint's). `chrome` is
+a per-layout field from `chromeField` (`kit/src/layouts/layout-fields.ts:41`). So `role` is out of
+§3.6 item 7, §3.11 and §3.13 until the page chrome plan lands; `chromeField` and `CHROME_HINT` stay
+in `layout-fields` meanwhile.
+
+### 10.7 What the spike changed in the plan
+
+- §3.4: the loader is one runnable environment with packages as builtins, not `runnerImport`;
+  `frameworkAliases()` must not be passed; the second-instance caveat is gone.
+- §3.2: concrete kit runtime design, two traps (`this.resolve` skips the caller; Tailwind sources),
+  and `display-align.css` needs rekeying.
+- §1.3, §3.5: `deckViteConfig` callers and `deck-server-live.ts` need no change; `slideMetaReader`
+  gets local layouts itself; frozen phase 1 API and call sites with line numbers.
+- §1.6, §3.8, §3.10: shared state the plan missed (`frontmatter-assets`, `RevealContext` through
+  `stat-figure`, `TableLayoutContext` itself), missing and unused names, helper CSS, `code` and
+  `stats` CSS loaded outside their layouts, rewrites to existing exports.
+- §3.6, §3.11, §3.13, §4: `role` waits for the page chrome plan.
