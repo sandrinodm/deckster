@@ -65,7 +65,7 @@ Pictures must be evidence. Decorative stock imagery adds processing without addi
 
 Show the product rather than describing it: one screen per slide, as large as the slide allows, with at most a few callouts on the parts the notes talk about. Ten thumbnails on one slide is a screenshot dump; nobody can read any of them.
 
-Choose a layout by what the audience needs to read, compare, or do. If the deck lists a brand layout for that job, start there and check that its fixed regions hold the evidence. Otherwise use the kit choices below. Confirm the name in `deckster layouts <deck> --summary`, then open its full catalog entry for the exact fields, slots, limits and example. The [layout reference](https://sandrinodm.github.io/deckster/reference/layouts/) shows the rendered layouts. The installed catalog determines which ones you can use.
+Choose a layout by what the audience needs to read, compare, or do. If the deck lists a deck or brand layout for that job (including a code layout), start there and check that its slots and fixed regions hold the evidence. Otherwise use the kit choices below. Confirm the name in `deckster layouts <deck> --summary`, then open its full catalog entry for the exact fields, slots, limits and example. The [layout reference](https://sandrinodm.github.io/deckster/reference/layouts/) shows the rendered layouts. The installed catalog determines which ones you can use.
 
 ### Open, orient and close
 

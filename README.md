@@ -129,7 +129,15 @@ Brands are data. A brand is a typed `brand.ts` in `brands/<name>` with colours, 
 icons, motion and chart palettes; slides hold no raw colours or pixel positions. The same deck
 renders in another brand without an edit: `pnpm deckster lint hello --brand nocturne`. To use a
 brand that lives in another git repository, `pnpm deckster brand add gh:<owner>/<repo>/brands/<name>`
-copies it into `brands/`. The reasons behind these choices are in [docs/design.md](docs/design.md).
+copies its data into `brands/`; it leaves code out. The reasons behind these choices are in
+[docs/design.md](docs/design.md).
+
+When the kit has no layout for a slide, a brand or a deck can ship one as React code: a folder
+`layouts/<name>/` with a `contract.ts` and a `layout.tsx`. The build, lint, export, `deckster
+layouts` and the agent treat it like a kit layout. `pnpm deckster layouts new <name> --brand
+<brand>` writes a starting point, `layouts check` renders it at its limits, and `layouts eject
+<name>` copies a kit layout so a brand or a deck can change it. [Writing a code
+layout](skills/create-presentation/references/code-layouts.md) has the rules and a worked example.
 
 ## What it does
 

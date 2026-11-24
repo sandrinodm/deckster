@@ -28,6 +28,7 @@ For the outline, read the matching format and the [layout chooser](references/sl
 - `references/audiences.md`: mixed, senior, expert or unfamiliar audiences.
 - [Data visuals](references/data-visuals.md) for numbers, tables, charts and diagrams. See [Diagram controls](references/data-visuals.md#diagram-design-controls) for design options and image icons, and [PowerPoint connectors](references/data-visuals.md#keep-connectors-attached-in-powerpoint) for editable diagrams.
 - [Visual patterns](references/visual-patterns.md) for screenshot stories, product cutaways, service blueprints, branching demos, storyboards and strategy or roadmap patterns.
+- [Writing a code layout](references/code-layouts.md): only when the user wants a layout of their own in a brand or a deck.
 - `references/rubric.md`: step 8, the scoring pass. It is part of the work, not an extra: a deck that was not scored is not done.
 - `references/sources.md`: only to answer why the guidance says what it says.
 
@@ -159,7 +160,7 @@ Keep the user's load small: at most three questions, only ones whose answer woul
 Scaffold the deck with `deckster new <deck> --title "…" --brand <name> --duration <length>` if it does not exist. Read [Framework](references/framework.md) for the authoring loop. Use the catalogs from the installed CLI to verify each layout and component before writing.
 
 ```
-deckster layouts <deck> --summary       # first look: the brand's own layouts first, then every kit layout, with title limit, slots and budgets
+deckster layouts <deck> --summary       # first look: the deck's and the brand's own layouts first, then every kit layout, with title limit, slots and budgets
 deckster layouts <deck> --json   # the full catalog; read it for the one layout you are writing
 deckster charts --json           # charts and numbers: which form for which message, props, limits
 deckster diagrams --json         # diagrams, node kinds, step animation
@@ -171,7 +172,7 @@ deckster icons --brand a,b       # icon names every brand of the deck has (add -
 Then write one file per slide, following `references/slide-craft.md`:
 
 - Match the layout to the evidence. Read its title limit, required slots, accepted content, field limits and tighter variants. Scaffold it with `deckster new slide <deck> <id> --layout <name>` or use its `example.mdx` in the JSON catalog. Split a crowded slide or move detail into notes. See the [lookbook](https://sandrinodm.github.io/deckster/examples/lookbook/) for rendered examples.
-- Prefer the deck's brand layout when its fixed regions fit the slide's purpose and evidence. Read [Brand layouts](references/framework.md#brand-layouts) for slot bindings, alternate brands and scaffold behavior.
+- Prefer the deck's own layouts and the brand's when they fit the slide's purpose and evidence. A data layout has fixed regions: read [Brand layouts](references/framework.md#brand-layouts) for slot bindings, alternate brands and scaffold behavior. A code layout (`deck:<name>` or `brand-code:<name>` in the JSON) has slots and a contract like a kit layout: [Code layouts](references/framework.md#code-layouts) says how they differ. Write a new one only when the user asks for it and no existing layout fits, using [Writing a code layout](references/code-layouts.md).
 - Use the brand's tokens and the layout's documented options for styling. Layout fields and component props can define content geometry, such as screenshot callout coordinates or diagram node dimensions when the installed build supports them.
 - Vary layouts and surfaces to give the deck rhythm, and show the audience where they are: section slides in a long deck (all with the same options, such as `numeral: large`), eyebrows in a deck of about twelve slides or fewer. Put the peak on a surface its neighbours do not have. A run of slides that look alike is the most common way a correct deck ends up dull.
 - Give every slide enough to look at. A slide whose evidence is one short line or a three-box strip leaves most of the canvas empty and reads as unfinished; give the claim its evidence, or fold it into a neighbour.

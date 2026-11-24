@@ -9,7 +9,8 @@ Agents write most of the slide content, and the result should still look designe
 carry that.
 
 1. **A brand is data.** A brand is a typed token file plus assets. Slides hold no raw colors, fonts
-   or pixel positions.
+   or pixel positions. A brand or a deck that needs a layout the kit cannot draw may add it as code
+   ([Custom layouts](#custom-layouts)); the tokens stay data.
 2. **Slides fill typed layouts.** An author picks a layout and fills its slots. The layout owns the
    type, the grid and the spacing, so a slide cannot go off-brand without the linter saying so.
 3. **Agents see their own work.** `deckster shot` renders any slide to a PNG and `deckster lint` reports
@@ -227,18 +228,95 @@ the same name with different fallbacks, the build fails and asks to rename one.
 Budgets come from the fallback too. A layout may tighten a slot's budget, never loosen it: each
 limit is the lower of the two. A slide within the brand layout's budget is then within the
 fallback's, so the swap cannot push it past what the kit layout holds. For the same reason a
-brand layout cannot take a name a kit layout has.
+data layout cannot take a name a kit layout has. A code layout can, and only by saying so (see
+[Custom layouts](#custom-layouts)).
 
 The trade-off is fixed boxes. A kit layout adapts: it sets its text in the brand's margins and
 grid and steps down to fit. A brand layout places each region at pixels, so it matches the
 template exactly and holds only what its boxes hold. The text still steps down to fit its box,
 but a slot's budget counts words, not the room they take, and a layout whose boxes are small
 should tighten its budget. Brand layouts are for the template's own slides; slides the template
-does not cover use kit layouts.
+does not cover use kit layouts, or a custom layout when the kit has none that fits.
 
 In a PPTX export, each brand layout a deck uses is written as its own PowerPoint slide layout,
 named after the layout's label. Its art is placed once in the layout, and media boxes become
 picture placeholders.
+
+## Custom layouts
+
+A data layout places regions at pixels on a kit layout's contract, and some slides need more than
+that: a structure the kit has no layout for, or a brand's own `title` on every deck. A brand
+(`brands/<name>/layouts/<layout>/`) or a deck (`decks/<deck>/layouts/<layout>/`) may therefore ship
+a layout as React code: a `contract.ts`, a `layout.tsx` and, if it needs one, a `layout.css`. Every
+tool treats it like a kit layout: the build, lint, export, `deckster layouts`, the agent's catalog
+and `deckster shot` find it the same way. [The authoring
+reference](../skills/create-presentation/references/code-layouts.md) has the rules and a worked
+example.
+
+This reverses two decisions of the brand layouts plan: that a brand cannot ship components, and
+that a brand layout never replaces a kit layout. Both held while a brand carried only data. Data
+layouts stay as they were, and stay the right answer for a template's fixed regions; code layouts
+are for what regions cannot do.
+
+- **A layout is two halves.** The contract is Node code: the build, lint, export and the agent
+  import it to validate slides and print the catalog. The component is browser code, and Node
+  cannot load it (no JSX), so the two live in two files and the component imports the contract as
+  a type only.
+- **Discovery by folder and file name.** A folder named after the layout, with fixed file names,
+  needs no registration file and cannot be half registered. A folder with a missing file is a
+  problem that names the file.
+- **Contracts load through Vite, after a static check of their imports.** A contract may import
+  only `effect`, a few `@deckster/*` entry points and `.ts` files inside its own folder or
+  `layouts/_shared/`. Checking the source first turns a crash deep in a loader into a problem that
+  names the import. Vite then evaluates the user's files only; `effect` and the engine come from
+  the CLI's own copies, so a contract's schema is built by the same `effect` that validates it, and
+  an edit to a helper is seen on the next load.
+- **One resolver for every path.** Every command that needs the catalog asks one function for the
+  brand's and the deck's code layouts. A layout with a problem is left out and reported, and only
+  the slides that use it fail. The others, and the kit's, keep working.
+- **The engine stamps the layout name.** Export used to trust the first `data-layout` a layout drew.
+  The engine now puts `data-deck-layout` on the slide from its frontmatter, so a layout cannot
+  export under the wrong PPTX mapping by what it draws. Lint and export still read the slot
+  wrappers and the kit components' classes, so a layout must keep those (the reference lists them).
+- **The kit publishes what its own layouts use.** `@deckster/kit/layout-parts` (browser) and
+  `@deckster/kit/layout-fields` (Node-safe, for contracts) are the public names, and the kit's
+  layouts import from them too. A test holds the names and signatures, so a breaking change is a
+  decision in review. A layout that wants nothing to move under it skips the parts and writes plain
+  React and CSS; every tool still works as long as the DOM rules hold.
+- **A code layout may replace a kit layout, on request.** A code layout, in a brand or in a deck,
+  may take a kit name when its contract says `replaces: true` and a compatibility check passes: it
+  keeps every required field and slot, accepts everything the original accepted, decodes the
+  original's example and limit cases and every real slide on the brand, and keeps a required
+  title. That check is the rule the build already applies to a data layout and its fallback,
+  applied to a replacement and the original. A replacement that breaks it is left out and the kit
+  layout stays, so the slides on it fail with the reasons rather than rendering something else.
+  A tighter or looser budget is allowed and noted, and a replacement without the original's PPTX
+  mapping is a warning. A deck layout may replace a kit layout but never a brand's layout. The
+  kit's component and stylesheet for a replaced name are not loaded at all. The kit's runtime is
+  generated from the catalog and skips replaced names, because two stylesheets keyed on the same
+  selectors would otherwise decide by their order, and rules deleted from the copy would keep
+  applying. A few stylesheets are shared with layouts or components that stay, and keep loading;
+  none of them is keyed on a layout name any more.
+- **Eject is the way in.** `deckster layouts eject <name>` copies a kit layout into the brand or
+  the deck under its own name with `replaces: true`, so the copy renders as the kit layout did and
+  is compatible by construction. Parts the kit publishes are imported from the public entry points;
+  private helpers are copied once into `layouts/_shared/`, with the classes of their stylesheets
+  renamed so an edit cannot reach the kit's own layouts that still use them. The copy is a
+  fork, and `.eject/` keeps what it started from, so `deckster layouts diff` can show what the kit
+  changed since. It prints that and applies nothing: merging stays a decision.
+- **A range says which deckster the layouts were written for.** A brand's `brand.json` or a deck's
+  config may declare one. Outside it, none of that owner's code layouts load, and each slide on
+  one says so, instead of failing somewhere inside a component.
+- **Fetched brands stay data.** `deckster brand add` leaves code out, as it always did, and records
+  which layouts it left out so a slide that uses one says why it fails. Running code from someone
+  else's repository on your machine is a decision, not a side effect of fetching a brand.
+- **The agent cannot write layouts.** The agent's turn changes slides and assets only, and the
+  contracts are held while a turn runs: read as they were, never evaluated mid-turn.
+
+The one difference from data layouts is portability. A data layout names a kit fallback, so a deck
+rendered in another brand still builds. A code layout has no fallback: another brand that lacks it
+fails the build for the slides that use it, and the message names the brand that has it. A deck
+meant to move between brands should use kit layouts on those slides.
 
 ## Diagrams, charts and code
 
