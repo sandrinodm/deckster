@@ -134,11 +134,12 @@ export const imageRevealLayoutContract = defineLayoutContract({
       'Choose a brand surface for the docked bar (`default`, `inverse`, `accent` or `gradient`), ' +
       'or leave it out for `default`.',
     barBackground:
-      'Optionally override the docked bar background with a CSS color or gradient such as ' +
-      '`#111827`; pair a dark color with `barSurface: inverse` so bar text keeps contrast.',
+      'Optionally override the docked bar background with a CSS color or gradient in at most ' +
+      `${IMAGE_REVEAL_PAINT_MAX_CHARS} characters, such as \`#111827\`; pair a dark color with ` +
+      '`barSurface: inverse` so bar text keeps contrast.',
     barBorder:
-      'Optionally override the docked bar edge border color with a CSS color such as `#3b82f6` ' +
-      'or `transparent`.',
+      'Optionally override the docked bar edge border color with a CSS color in at most ' +
+      `${IMAGE_REVEAL_PAINT_MAX_CHARS} characters, such as \`#3b82f6\` or \`transparent\`.`,
     fit:
       'Use `cover` (the default) to fill the remaining area edge to edge, or `contain` to show ' +
       'the whole image uncropped.',
