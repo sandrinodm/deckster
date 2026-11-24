@@ -15,7 +15,7 @@ The `layout:` key in a slide's frontmatter picks the layout. The rest of the fro
 
 The slide says nothing about where the cards go or how large the text is. The build checks `cards` against the layout, looks up each `icon` in the brand's icon set, and fails on a name the set doesn't have.
 
-The kit has 63 layouts, from `title`, `section` and `statement` to `stats`, `split`, `timeline` and `closing`. The engine ships a plain `default` layout, and the kit replaces it with its own. The [layouts reference](/reference/layouts/) shows every one. Twenty of them, such as `quiz`, `pricing` and `schedule`, are new in 0.6.0, and each of their pages says so.
+The kit has 64 layouts, from `title`, `section` and `statement` to `stats`, `split`, `timeline` and `closing`. The engine ships a plain `default` layout, and the kit replaces it with its own. The [layouts reference](/reference/layouts/) shows every one. Twenty of them, such as `quiz`, `pricing` and `schedule`, are new in 0.6.0, `image-reveal` is new in 0.10.0, and each of their pages says so.
 
 ## The contract
 
@@ -70,6 +70,8 @@ launch-review: 1 error, 0 warnings in 2 slides (2 steps checked).
 ```
 
 Whether the text fits a brand's type is a separate question, which the overflow rules answer: `container-overflow`, `canvas-overflow` and `text-truncated`. [Text and fitting](/write-slides/text-and-fitting/) covers what to do when a slide is within budget but still too full, and [lint as the contract](/concepts/lint-as-the-contract/) explains how the rules fit together.
+
+A badge, a stamp or a source line the layout has no slot for can be a [placed element](/write-slides/placed-elements/) (new in 0.10.0): a `<Shape>`, `<Text>` or `<Place>` at the top level of the slide, positioned by a named place or a cell of the brand's grid. Placed elements sit on a layer outside the slots, so no slot budget counts them; lint gives them caps of their own, at most 4 on a slide and 25 words each.
 
 ## Choosing a layout
 

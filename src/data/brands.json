@@ -1554,6 +1554,7 @@
           },
           "grid": {
             "columns": 12,
+            "rows": 6,
             "gutter": 32
           }
         },
@@ -3169,6 +3170,7 @@
           },
           "grid": {
             "columns": 12,
+            "rows": 6,
             "gutter": 40
           }
         },
@@ -5317,6 +5319,7 @@
           },
           "grid": {
             "columns": 12,
+            "rows": 6,
             "gutter": 36
           }
         },
@@ -7857,6 +7860,7 @@
           },
           "grid": {
             "columns": 12,
+            "rows": 6,
             "gutter": 32
           }
         },
@@ -10260,6 +10264,7 @@
           },
           "grid": {
             "columns": 12,
+            "rows": 6,
             "gutter": 32
           }
         },

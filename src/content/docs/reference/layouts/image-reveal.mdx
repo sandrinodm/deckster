@@ -1,0 +1,79 @@
+---
+title: "image-reveal"
+description: "A title beat that docks into a header or footer bar on the next press, revealing a picture across the rest of the slide."
+sidebar:
+  order: 10.5
+---
+
+The `image-reveal` layout opens on a title, then reveals a picture on the next press. On step 0 the slide reads as a title slide. On step 1 the title and subtitle move into a full-width bar at the bottom or top of the slide, and the picture fills the rest. Use it to set up a picture, screenshot or diagram with one line before the room sees it.
+
+<Aside type="note" title="New in v0.10.0">
+The `image-reveal` layout needs `@deckster/cli` 0.10.0 or later. In 0.9.0, `deckster lint` reports `layout: There is no "image-reveal" layout.`
+</Aside>
+
+## Example
+
+<SlideExample deck="lookbook" slide="image-reveal-footer" />
+
+This slide uses the defaults: `dock: bottom`, `align: left`, `barSurface: default` and `fit: cover`. The embed opens on the finished slide, step 1, with the bar along the bottom. Press the left arrow to go back to the title beat, where the eyebrow, title and subtitle sit on the slide's own surface and the picture is hidden.
+
+<SlideShot deck="lookbook" slide="image-reveal-header" alt="A dark green slide with the title One dispatch board runs the hour and a one-line subtitle centred in a bar across the top, above a dispatch screen shown whole with a list of loops on the left and a street map of routes on the right." />
+
+`dock: top` docks the bar as a header, and `align: center` centres the title and subtitle in it. `barSurface: inverse` gives the bar the brand's inverse surface. `fit: contain` shows the whole screen uncropped, with space around it.
+
+<SlideShot deck="lookbook" slide="image-reveal-accent" alt="An illustration of a rider handing a bakery bag to an older woman at a front door, filling the slide above a rust-coloured bar along the bottom with the title Doorstep handover takes twelve seconds and a one-line subtitle." />
+
+`barSurface: accent` sets the footer bar on the brand's accent surface.
+
+<SlideShot deck="lookbook" slide="image-reveal-gradient" alt="An aerial map of old-town rooftops and lanes with three delivery loops drawn from one hub, under a dark green gradient bar across the top with the title Five minutes across the Old Town and a one-line subtitle." />
+
+`barSurface: gradient` sets a header bar on the gradient surface, the same surface as the title beat before it.
+
+## How the two steps work
+
+The layout always has two steps. Nothing in the slide turns them on, and there is no option to turn them off.
+
+- **Step 0, the title beat.** The `eyebrow`, title and subtitle are set as on a title slide, over the slide's surface (`gradient` unless the frontmatter sets `surface`) and any `background:`. The picture is hidden.
+- **Step 1, the reveal.** The title and subtitle move into a full-width bar docked to the bottom (`dock: bottom`, the default) or the top (`dock: top`). The bar has its own surface and a border on the edge that faces the picture. The picture fills the rest of the slide.
+
+The move between them is animated with the brand's slow duration and emphasized easing, and runs backwards when you go back. Viewers who ask for reduced motion see the slide switch without the animation. Static mode, `deckster shot` and exports show the last step, the docked bar and the picture. `deckster shot <deck> <slide> --steps` writes one picture per step. See [builds](/write-slides/builds/) for how steps count.
+
+## When to use it
+
+- **A picture that needs a beat first.** Name the subject, let the room read it, then reveal it. When the picture should be seen at once, use [`image`](/reference/layouts/image/). For the deck's cover use [`title`](/reference/layouts/title/), and to open a part of the talk use [`section`](/reference/layouts/section/).
+- **Keep the text short.** `title:` is required and takes up to 44 characters. The subtitle is the body: one sentence of up to 16 words, text only. It is optional. `eyebrow:` takes up to 40 characters and shows above the title.
+- **Put one picture in `<Media>`.** It is required: an image file with alt text, as a Markdown image or `<img>`. [Media](/write-slides/media/) explains how `src` paths resolve.
+- **Choose `cover` or `contain`.** `fit: cover` (the default) fills the space beside the bar edge to edge, cropped around `focal`, which defaults to `center`. Set `focal` (`top`, `center 30%`, `40% 20%`) to keep the subject in view. `fit: contain` shows the whole picture uncropped with space around it, which suits a screenshot.
+- **Treatment follows `fit`.** Without `treatment`, `contain` shows the picture plain and `cover` uses the brand's default treatment. Set `treatment: plain` to keep a photo in its own colours. [Fonts and assets](/brands/fonts-and-assets/) lists the treatments.
+- **Style the bar with a surface.** `barSurface` takes `default` (the default), `inverse`, `accent` or `gradient`, each a surface every brand has. The bar's text takes that surface's colours.
+- **Override the bar's colours only when the surfaces don't fit.** `barBackground` takes a CSS colour or gradient and `barBorder` a CSS colour, each up to 120 characters, such as `#111827` or `transparent`. Neither may contain `url()`, `expression()`, a semicolon or a brace. The text keeps the colours of `barSurface`, so pair a dark `barBackground` with `barSurface: inverse`.
+- **Page chrome is off.** `chrome` defaults to `false`, which hides the page number, logo and progress bar. Write `chrome: true` to show them.
+
+## Reference
+
+<LayoutReference name="image-reveal" />
+
+## Common mistakes
+
+- **A subtitle longer than one line.** The body takes 16 words:
+
+  ```console
+  $ deckster lint launch-review
+  decks/launch-review/slides/hub.mdx
+    error   content-budget (hub): The body slot holds 20 words; its layout allows 16.
+            Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deckster layouts`).
+
+  launch-review: 1 error, 0 warnings in 2 slides (3 steps checked).
+  ```
+
+- **The picture outside `<Media>`.** A Markdown image at the top level of the slide is not the media slot, and `deckster lint` reports a `schema` error: "The image-reveal layout needs its media slot."
+- **A title over 44 characters.** It is a `schema` error: `title: The image-reveal layout sets at most 44 characters, got 61.`
+- **A bar background that loads a file.** `barBackground: "url(../assets/hub-square.svg)"` is a `schema` error: `barBackground: Expected a bar background as a CSS color or gradient without url(), semicolons or braces`. Put pictures in `<Media>`.
+- **Keeping the drawing that `deckster new slide` writes.** `deckster new slide <deck> <id> --layout image-reveal` writes the catalog's example, whose `<Media>` holds a drawn placeholder. With `@deckster/cli` 0.10.0, `deckster lint` reports two `canvas-overflow` errors for it on step 1, such as "extends past the canvas: 87px past the top edge". Replace the drawing with your picture, as a Markdown image of a file in the deck folder, and the errors go away.
+
+## Related layouts
+
+- [`image`](/reference/layouts/image/): one photo across the whole slide from the first moment, with a line of text over it.
+- [`title`](/reference/layouts/title/): the deck's cover, with a photo beside or behind the title.
+- [`section`](/reference/layouts/section/): opens a part of the talk and can take a photo.
+- [`before-after`](/reference/layouts/before-after/): two pictures of one change, which can come in one per step.

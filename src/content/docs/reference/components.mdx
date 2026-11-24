@@ -5,13 +5,13 @@ sidebar:
   order: 4
 ---
 
-Use this page to look up the props of a slide component that is not a chart or a diagram: code and terminals, images, video and Lottie, icons, links, live demos and mini apps, steps and morphs, and speaker notes. Charts are on [charts](/reference/charts/) and diagrams on [diagrams](/reference/diagrams/).
+Use this page to look up the props of a slide component that is not a chart or a diagram: code and terminals, images, video and Lottie, icons, links, live demos and mini apps, placed elements, steps and morphs, and speaker notes. Charts are on [charts](/reference/charts/) and diagrams on [diagrams](/reference/diagrams/).
 
 <CatalogIndex kind="components" />
 
 ## How props are checked
 
-Each component takes only the props its table lists. Any other name is refused with the closest prop, when one is close, and the list of props the component takes ("`href` is not a prop of `<Download>`. Did you mean `file`? Its props are: file, variant, children."), and so is a missing required prop: at build time in an MDX slide, and when the slide renders in a TSX slide. None of these components shares props with another, so no row is marked "shared".
+Each component takes only the props its table lists. Any other name is refused with the closest prop, when one is close, and the list of props the component takes ("`href` is not a prop of `<Download>`. Did you mean `file`? Its props are: file, variant, children."), and so is a missing required prop: at build time in an MDX slide, and when the slide renders in a TSX slide. No row is marked "shared": `<Place>`, `<Shape>` and `<Text>` take the same placement props, and each of their tables lists them.
 
 The catalog states a few rules that hold for all of them:
 
@@ -133,6 +133,22 @@ Supply the original words and the replacement with their surrounding text. Choos
 Give each call the input the audience should see and the observation it returns. Use `checkpoint` to say what a person must decide and `outcome` to show what is ready for review. [Run trace example](/decks/lookbook/#/agent-run-trace)
 
 <PropsTable of="RunTrace" />
+
+## Placed elements
+
+New in 0.10.0. Badges, callouts, labels and short lists positioned outside the layout's slots: [placed elements](/write-slides/placed-elements/).
+
+### Place
+
+<PropsTable of="Place" />
+
+### Shape
+
+<PropsTable of="Shape" />
+
+### Text
+
+<PropsTable of="Text" />
 
 ## Motion
 

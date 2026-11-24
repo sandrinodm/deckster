@@ -58,7 +58,7 @@ The keys themselves are in [Keyboard shortcuts](/reference/keyboard-shortcuts/).
 
 ## The presenter window does not open in a browser
 
-`p` opens the presenter window as a pop-up, which a browser's pop-up blocker can stop. Allow pop-ups for the deck's address, or open it yourself with `?presenter` before the hash, for example `http://localhost:5173/?presenter`. Use the same browser as the audience window: the two windows only stay in step within one browser. See [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/).
+`p` opens the presenter window as a pop-up, which a browser's pop-up blocker can stop. Allow pop-ups for the deck's address, or open it yourself with `?presenter` before the hash, for example `http://127.0.0.1:5173/?presenter`. Use the same browser as the audience window: the two windows only stay in step within one browser. See [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/).
 
 ## "Port 5173 is already in use"
 
@@ -68,7 +68,17 @@ Error: Port 5173 is already in use
 ...
 ```
 
-`--port <n>` takes that port or fails; the rest of the output is a stack trace. Stop the other server, or leave `--port` out: without it, `deckster present` and `deckster dev` take the first free port from 5173.
+`--port <n>` takes that port or fails; the rest of the output is a stack trace. Stop the other server, or leave `--port` out: without it, `deckster dev` takes the first free port from 5173 and `deckster present` a free port the operating system picks.
+
+## The window shows an older version of the deck
+
+Before 0.10.0, `deckster present` could share a port with a `deckster dev` server that was still running: one listened on `127.0.0.1` and the other on `localhost`, which macOS resolves to the IPv6 address `::1`, so neither saw the port as taken and the window could load the dev server's deck. Upgrade to 0.10.0: both servers listen on `127.0.0.1`, `deckster present` picks a free port of its own, and it warns about a dev server that is still running:
+
+```console
+Warning: a dev server for "launch-review" is still running at http://127.0.0.1:5173/ (process 12345). This presentation uses its own server; stop the dev server if you no longer need it.
+```
+
+Stop that server with Ctrl+C in its terminal if you no longer need it.
 
 ## A link opens in my browser, not in the window
 

@@ -82,7 +82,7 @@ Every tool answers in JSON, except `deck_screenshot`, which returns the image an
 
 | Tool | Inputs | What it returns |
 | --- | --- | --- |
-| `current_slide` | none | The slide on screen: id, number, file to edit, layout, step, brand and any selected text. `connected: false` when no deck window is open. |
+| `current_slide` | none | The slide on screen: id, number, file to edit, layout, step, brand and any selected text. `connected: false` when no deck window is open. New in 0.10.0: `placed`, the slide's [placed elements](/write-slides/placed-elements/), each with `kind` (`place`, `shape` or `text`), `name` when it has one, `place` (the named place, `cols=… rows=…` or `box=x,y,w,h`), `zone` and `rect`, its box in canvas pixels as `[x, y, width, height]`. |
 | `deck_outline` | none | Every slide in order: id, number, file, title, layout, step count, budget in seconds, length of its notes and `hidden` (`true` for a slide with `hidden: true`; new in 0.5.0). |
 | `deck_lint` | `slide` (optional) | `{ ok, summary, findings }` as `deckster lint` checks it; each finding has slide, file, step, rule, severity, message and fix. Takes a few seconds. |
 | `deck_screenshot` | `slide` (id or 1-based number), `step` (from 0; default the last step), `width` (320 to 1920; default 1280) | A PNG of the slide, also saved under `.deck/agent/<deck>/shots/`, and `{ path, slide, step, width, height, error }`. |

@@ -9,13 +9,13 @@ The showcase is "Slides an agent can write", a 45-slide talk about deckster buil
 
 <DeckEmbed deck="showcase" slide="cover" />
 
-Open the [full showcase deck in Fieldnote](/decks/showcase/). It uses 23 of the 63 layouts; ten of the nineteen chart and number components; flow, sequence, layers, cycle and tree diagrams and an imported SVG; code, video, a Lottie animation and two live React demos. Its `deck.config.ts` sets `duration: '45m'`, and every slide has speaker notes and a time `budget`.
+Open the [full showcase deck in Fieldnote](/decks/showcase/). It uses 23 of the 64 layouts; ten of the nineteen chart and number components; flow, sequence, layers, cycle and tree diagrams and an imported SVG; code, video, a Lottie animation and two live React demos. Its `deck.config.ts` sets `duration: '45m'`, and every slide has speaker notes and a time `budget`.
 
 **The content is illustrative.** Halden, its people, its clients and every Halden number are fictional, and each chart of Halden data says so in a footnote. The portraits and logos are drawn stand-ins. Numbers about deckster itself (layouts, charts, rules, terminal output) were read from the repository.
 
 ## A chart with its source
 
-`review-rounds` is a `<LineChart>` with a highlight and annotations that arrive by step. The source tab shows the frontmatter, the chart props and the notes:
+`review-rounds` is a `<LineChart>` with a highlight and annotations that arrive by step, and a `<Shape>` badge in the top-right corner that arrives with the last one. The source tab shows the frontmatter, the chart props, the shape and the notes:
 
 <SlideExample deck="showcase" slide="review-rounds" />
 
@@ -47,7 +47,7 @@ The talk opens with five slides, then four parts, each opened by a `section` sli
 
 | Slide | Layout | Demonstrates |
 | --- | --- | --- |
-| [`review-rounds`](/decks/showcase/#/review-rounds) | `chart` | `<LineChart>` with a highlight and annotations by step |
+| [`review-rounds`](/decks/showcase/#/review-rounds) | `chart` | `<LineChart>` with a highlight and annotations by step, and a [placed](/write-slides/placed-elements/) `<Shape>` badge on step 3 |
 | [`deck-hours`](/decks/showcase/#/deck-hours) | `chart` | `<Comparison>` and a `<Sparkline>` |
 | [`where-hours-went`](/decks/showcase/#/where-hours-went) | `chart` | `<Waterfall>` |
 | [`effort-share`](/decks/showcase/#/effort-share) | `split` | `<Donut>` beside text |
@@ -78,7 +78,7 @@ The talk opens with five slides, then four parts, each opened by a `section` sli
 | [`agent-turn`](/decks/showcase/#/agent-turn) | `diagram` | `<SequenceDiagram>` with `<Actor>`s and `<Message>`s |
 | [`chat-demo`](/decks/showcase/#/chat-demo) | `demo` | `<AppFrame app="agent-chat">` driven by the slide's steps: a scripted replay, no model |
 | [`designer-quote`](/decks/showcase/#/designer-quote) | `quote` | A quote with a portrait |
-| [`presenter`](/decks/showcase/#/presenter) | `content` | Text with an `<Aside>` |
+| [`presenter`](/decks/showcase/#/presenter) | `content` | Text with an `<Aside>`, and a placed `<Text>` hint in the footer |
 | [`export-path`](/decks/showcase/#/export-path) | `diagram` | A `<Flow>` written in TSX with automatic layout |
 | [`export-share`](/decks/showcase/#/export-share) | `chart` | `<Pictogram>` |
 | [`week`](/decks/showcase/#/week) | `timeline` | Five milestones |

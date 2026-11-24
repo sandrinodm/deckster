@@ -7,7 +7,7 @@ sidebar:
 
 Use this page to look up a rule id from a `deckster lint` finding: what it checks, whether it fails the run, and the short fix. How to run lint, read a finding and fix the common ones is on [lint](/review/lint/).
 
-The tables list the 43 rules `deckster lint --help` prints in 0.7.0, plus `schema` and `brand`, and then the findings the slide compiler adds. An `error` makes `deckster lint` exit with 1; a `warning` does not. Each finding prints its own fix, which names the file and is usually longer than the one here. The minimum type size is 20px on the 1920x1080 canvas. To skip decoration in the overflow and text rules, see [exempt decoration](/review/lint/#exempt-decoration).
+The tables list the 50 rules `deckster lint --help` prints in 0.10.0, plus `schema` and `brand`, and then the findings the slide compiler adds. An `error` makes `deckster lint` exit with 1; a `warning` does not, and neither does an `info` finding (new in 0.10.0), which points at something allowed that has a better form. Each finding prints its own fix, which names the file and is usually longer than the one here. The minimum type size is 20px on the 1920x1080 canvas. To skip decoration in the overflow and text rules, see [exempt decoration](/review/lint/#exempt-decoration).
 
 ## Schema and rendering
 
@@ -23,10 +23,26 @@ The tables list the 43 rules `deckster lint --help` prints in 0.7.0, plus `schem
 | --- | --- | --- |
 | `canvas-overflow` | error | Cut, split or move detail to the notes; do not shrink type. |
 | `container-overflow` | error | Shorten the content inside the container, split the slide, or simplify the layout around it. |
-| `text-truncated` | error | Shorten the text or give it a wider column. |
+| `text-truncated` | error | Shorten the text or give it a wider column. Since 0.10.0 it also reports text that stepped down to its smallest size and was still clipped (`data-fit="overflow"`), such as too much text in a `<Shape>` with a fixed `height`. |
 | `text-overlap` | error | Move or cut one; check absolute positions, negative margins and line heights below 1. |
 | `min-font-size` | error | Use a type step of at least 20px, or remove the scaling that shrinks it. |
 | `table-too-dense` | error | Keep the rows and columns the title rests on; put the full table in an appendix. |
+
+## Placed elements
+
+New in 0.10.0. These rules check `<Shape>`, `<Text>` and `<Place>` elements on every step; see [placed elements](/write-slides/placed-elements/).
+
+| Rule | Severity | Fix |
+| --- | --- | --- |
+| `placed-off-canvas` | error | The element leaves the 1920x1080 canvas or its zone (`safe`, `header`, `footer`). Move or shrink it, or set `zone="canvas"` if it should bleed to the edge. |
+| `placed-covers-text` | error | The element covers text of the layout. Move it to another corner or grid cell, shrink it, or give it a fixed `height` so it does not grow into the text. |
+| `placed-chrome` | warning | The element overlaps the brand's chrome, or sits in a chrome corner so the logo, footer or page number moves or hides. Move it to an open corner or into the safe zone, or set `chrome: false` on the slide. |
+| `placed-count` | error | More than 4 placed elements on a slide. Use a layout such as `split`, `columns`, `cards` or `bento`, and keep placed elements to callouts, badges and labels. |
+| `placed-words` | warning | More than 25 words in one element, or 40 across the slide. Shorten it, or move the copy into a slot. |
+| `placed-size` | warning | An element outside `zone="canvas"` covers more than 35% of the safe area. Pick a layout, shrink the box, or use `zone="canvas"` for full-bleed art. |
+| `placed-pixels` | info | The element is placed with `box={[x, y, w, h]}`. Replace it with the named place or grid cell the fix suggests, so it follows the brand's margins and grid. |
+
+A placed element nested inside another element, a non-literal placement prop in MDX and a `<Shape fill>` whose text fails contrast stop the build, and lint reports them as `schema` errors.
 
 ## Colour
 

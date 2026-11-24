@@ -72,7 +72,7 @@ A component on that slide called `useReadyHold(true)` and never released it. Pas
 Run `deckster dev`, then open the URL it prints with `?static` added before the hash. Give the step you want to see, usually the slide's last:
 
 ```text
-http://localhost:5173/?static#/2/3
+http://127.0.0.1:5173/?static#/2/3
 ```
 
 That is slide 2 at step 3. In the `hello` deck it is the `steps` slide with all three points shown, the way `deckster shot` captures it. With `#/2/0` the same slide shows its title alone, because static mode keeps the step the hash names. `?static=0`, `false` or `no` turn static mode off again. To get the pictures themselves, use [screenshots](/review/screenshots/).

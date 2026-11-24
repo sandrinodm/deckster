@@ -4541,6 +4541,216 @@
       }
     },
     {
+      "name": "image-reveal",
+      "source": "@deckster/kit",
+      "fallback": null,
+      "label": null,
+      "description": "A two-step title-to-image reveal. Step 0 presents the slide as a title cover with the title, optional eyebrow and subtitle over the slide surface or `background:`. Step 1 animates the title and subtitle into a full-width bar docked to the `bottom` (footer, the default) or `top` (header) with a surface background and crisp edge border, revealing the <Media> image across the rest of the slide. Use `barSurface` (default, inverse, accent or gradient) for brand-matched bar styling, and optionally override `barBackground` or `barBorder` with custom CSS colors. `fit: cover` (the default) bleeds the image edge to edge around `focal`; `fit: contain` shows the whole image uncropped. Use it when you want to set up a visual moment with a title beat before unveiling the picture, screenshot or diagram. Use title for the deck cover and image when the photo should be visible immediately.",
+      "frontmatter": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "dock": {
+            "type": "string",
+            "enum": [
+              "bottom",
+              "top"
+            ],
+            "default": "bottom"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "left",
+              "center"
+            ],
+            "default": "left"
+          },
+          "barSurface": {
+            "type": "string",
+            "enum": [
+              "default",
+              "inverse",
+              "accent",
+              "gradient"
+            ],
+            "default": "default"
+          },
+          "barBackground": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "barBorder": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "fit": {
+            "type": "string",
+            "enum": [
+              "cover",
+              "contain"
+            ],
+            "default": "cover"
+          },
+          "focal": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"
+          },
+          "treatment": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "chrome": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "fields": {
+        "eyebrow": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Write a few words of at most 40 characters, for example `eyebrow: Budget committee`, or leave it out."
+        },
+        "dock": {
+          "required": false,
+          "default": "bottom",
+          "allowed": [
+            "bottom",
+            "top"
+          ],
+          "hint": "Write `dock: top` to dock the title bar as a full-width header, or leave it out (`bottom`) for a full-width footer."
+        },
+        "align": {
+          "required": false,
+          "default": "left",
+          "allowed": [
+            "left",
+            "center"
+          ],
+          "hint": "Write `align: center` to centre the title and subtitle on the slide, or leave it out to set them from the left."
+        },
+        "barSurface": {
+          "required": false,
+          "default": "default",
+          "allowed": [
+            "default",
+            "inverse",
+            "accent",
+            "gradient"
+          ],
+          "hint": "Choose a brand surface for the docked bar (`default`, `inverse`, `accent` or `gradient`), or leave it out for `default`."
+        },
+        "barBackground": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Optionally override the docked bar background with a CSS color or gradient in at most 120 characters, such as `#111827`; pair a dark color with `barSurface: inverse` so bar text keeps contrast."
+        },
+        "barBorder": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Optionally override the docked bar edge border color with a CSS color in at most 120 characters, such as `#3b82f6` or `transparent`."
+        },
+        "fit": {
+          "required": false,
+          "default": "cover",
+          "allowed": [
+            "cover",
+            "contain"
+          ],
+          "hint": "Use `cover` (the default) to fill the remaining area edge to edge, or `contain` to show the whole image uncropped."
+        },
+        "focal": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Name the part of the photo to keep when it is cropped, as a CSS position: `focal: top`, `focal: center 30%` (a face in the upper third) or `focal: 40% 20%`."
+        },
+        "treatment": {
+          "required": false,
+          "default": null,
+          "allowed": null,
+          "hint": "Name one of the brand's image treatments, for example `treatment: plain` (every brand has it) to show a screenshot, map or chart in its own colors; `deckster brand --json` lists them under imagery.treatments. With `fit: contain`, omitted treatment defaults to plain; `cover` uses the brand default."
+        },
+        "chrome": {
+          "required": false,
+          "default": false,
+          "allowed": [
+            true,
+            false
+          ],
+          "hint": "Write `chrome: false` to hide the page number, logo and progress bar on this slide, or `chrome: true` to show them."
+        }
+      },
+      "title": {
+        "required": true,
+        "maxChars": 44
+      },
+      "surface": "gradient",
+      "slots": {
+        "body": {
+          "tag": null,
+          "description": "The subtitle: one sentence shown under the title on step 0 and carried into the docked bar on step 1. Leave it out for a title alone.",
+          "required": false,
+          "accepts": [
+            "text"
+          ]
+        },
+        "media": {
+          "tag": "Media",
+          "description": "The revealed image: one <img> with alt text, or a markdown image, from the deck's assets/. Revealed on step 1 across the space outside the docked header or footer bar.",
+          "required": true,
+          "accepts": [
+            "image"
+          ]
+        }
+      },
+      "budget": {
+        "body": {
+          "maxWords": 16
+        }
+      },
+      "variants": [],
+      "example": {
+        "frontmatter": {
+          "title": "Shade is infrastructure",
+          "eyebrow": "Westgate, July",
+          "dock": "bottom"
+        },
+        "body": "A ten-year canopy plan for the neighbourhoods that heat up first.\n\n<Media>\n  <svg viewBox=\"0 0 1600 900\" role=\"img\" aria-label=\"A street under a full canopy, drawn\"\n    preserveAspectRatio=\"xMidYMid slice\" style={{ width: \"100%\", height: \"100%\" }}>\n    <rect width=\"1600\" height=\"900\" fill=\"var(--brand-color-surface)\" />\n    <circle cx=\"460\" cy=\"400\" r=\"300\" fill=\"var(--brand-color-border)\" />\n    <circle cx=\"1160\" cy=\"380\" r=\"340\" fill=\"var(--brand-color-muted)\" />\n    <rect y=\"720\" width=\"1600\" height=\"180\" fill=\"var(--brand-color-border)\" />\n  </svg>\n</Media>\n\n<Notes>\nHold on the cover beat for a moment, then advance to dock the title and reveal the street.\n</Notes>\n",
+        "mdx": "---\nlayout: image-reveal\ntitle: Shade is infrastructure\neyebrow: \"Westgate, July\"\ndock: bottom\n---\n\nA ten-year canopy plan for the neighbourhoods that heat up first.\n\n<Media>\n  <svg viewBox=\"0 0 1600 900\" role=\"img\" aria-label=\"A street under a full canopy, drawn\"\n    preserveAspectRatio=\"xMidYMid slice\" style={{ width: \"100%\", height: \"100%\" }}>\n    <rect width=\"1600\" height=\"900\" fill=\"var(--brand-color-surface)\" />\n    <circle cx=\"460\" cy=\"400\" r=\"300\" fill=\"var(--brand-color-border)\" />\n    <circle cx=\"1160\" cy=\"380\" r=\"340\" fill=\"var(--brand-color-muted)\" />\n    <rect y=\"720\" width=\"1600\" height=\"180\" fill=\"var(--brand-color-border)\" />\n  </svg>\n</Media>\n\n<Notes>\nHold on the cover beat for a moment, then advance to dock the title and reveal the street.\n</Notes>\n"
+      },
+      "pptx": {
+        "type": "title",
+        "placeholders": [
+          {
+            "kind": "title",
+            "from": {
+              "selector": ".kit-image-reveal-title"
+            }
+          },
+          {
+            "kind": "subtitle",
+            "from": {
+              "slot": "body"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "gallery",
       "source": "@deckster/kit",
       "fallback": null,

@@ -2713,6 +2713,11 @@
               "minimum": 1,
               "maximum": 24
             },
+            "rows": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
             "gutter": {
               "type": "number",
               "minimum": 0,

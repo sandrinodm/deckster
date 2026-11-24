@@ -32,11 +32,23 @@ Run `deckster electron install` once (about 120 MB), or pass --browser to presen
 
 ```console
 $ deckster present launch-review
-Presenting launch-review at http://localhost:5173/
+Presenting launch-review at http://127.0.0.1:52817/
 Window open on display 0. Close the window or press Ctrl+C to stop.
 ```
 
-The window opens on the primary display, not fullscreen. The terminal keeps a short status; `--verbose` adds the dev server's log. `--port <n>` and `--brand <name>` work as they do for `deckster dev`. Inside the window every presenting tool and key works as in a browser: see [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/).
+The window opens on the primary display, not fullscreen. The terminal keeps a short status; `--verbose` adds the dev server's log. `--brand <name>` works as it does for `deckster dev`.
+
+Since 0.10.0 the deck is served on a free port the operating system picks, so the port in the URL changes from run to run and never meets a `deckster dev` server that is still running; you don't type the address, the window opens it. `--port <n>` sets the port and fails if it is taken. Before 0.10.0, `deckster present` took the first free port from 5173 (4173 with `--built`). The deck gallery still starts at 5173.
+
+If a `deckster dev` server for a deck in the workspace is still running, `deckster present` says so and goes on with its own server:
+
+```console
+$ deckster present launch-review
+Warning: a dev server for "launch-review" is still running at http://127.0.0.1:5173/ (process 12345). This presentation uses its own server; stop the dev server if you no longer need it.
+Presenting launch-review at http://127.0.0.1:52817/
+```
+
+Inside the window every presenting tool and key works as in a browser: see [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/).
 
 ## Choose a deck in the desktop gallery
 
@@ -83,7 +95,7 @@ The desktop gallery runs on the presenting computer and displays only its local 
 
    ```console
    $ deckster present launch-review --display 3
-   Presenting launch-review at http://localhost:5173/
+   Presenting launch-review at http://127.0.0.1:52817/
    --display 3 does not exist. Connected displays: 0: display 1920x1080 @1x (primary).
    Run `deckster present --help` for the usage.
    ```
@@ -104,7 +116,7 @@ With one display, both windows share it, the presenter window opens beside the a
 
 ```console
 $ deckster present launch-review --presenter --fullscreen
-Presenting launch-review at http://localhost:5173/
+Presenting launch-review at http://127.0.0.1:52817/
 Only one display is connected: the presenter window opens beside the audience window.
 The audience window stays windowed: fullscreen would cover the presenter window.
 Window open on display 0, presenter on display 0. Close the window or press Ctrl+C to stop.
@@ -124,7 +136,7 @@ Window open on display 0, presenter on display 0. Close the window or press Ctrl
 $ deckster present launch-review --built
 Building launch-review...
 ...
-Presenting launch-review at http://localhost:4173/
+Presenting launch-review at http://127.0.0.1:52817/
 Window open on display 0. Close the window or press Ctrl+C to stop.
 ```
 

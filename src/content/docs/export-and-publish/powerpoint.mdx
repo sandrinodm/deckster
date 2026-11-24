@@ -109,6 +109,31 @@ The output is cut to the `deploy` slide.
 
 <Diagram name="export-pipeline" alt="deckster export opens the deck once in headless Chromium at 2x; for the PPTX it measures each slide, decides per element whether to draw it natively or as a picture, and writes the PowerPoint file; for the PDF it prints vector pages; both land in .deck/exports/<deck>/, and --verify validates the PPTX and renders it back to compare it with the web slide." />
 
+## Placed elements
+
+New in 0.10.0. [Placed elements](/write-slides/placed-elements/) come across as objects you can edit:
+
+- A `<Shape>` is one native shape with its text inside, so it moves and edits as one object. `rect` and `square` become a rectangle (rounded when they have a `radius`), `pill` a rounded rectangle, `ellipse` and `circle` an ellipse, and `diamond` and `triangle` the PowerPoint shapes of those names. A Markdown list in it becomes bulleted paragraphs.
+- A `<Text>` is a native text box with no fill.
+- The content of a `<Place>` is written as the same content is anywhere else on a slide.
+
+The `name` prop names the shape in PowerPoint's selection pane; an unnamed `<Shape>` is "Callout 1", "Callout 2" and so on, and an unnamed `<Text>` "Text 1". When a placed element overlaps the chrome of the slide's PowerPoint layout, the slide writes its own chrome on top of it instead of using the layout's. A shape's shadow keeps one layer, as on diagrams. On the lookbook's five placed-element slides nothing becomes a picture; the four simplified items are those shadows:
+
+```console
+$ deckster export lookbook --dry-run --slides placed-anchors,placed-zones,placed-grid,placed-shapes,placed-geometries
+PPTX dry run (hybrid mode): native / picture / simplified / dropped
+201 placed-anchors [content]: 7 / 0 / 1 / 0
+   simplified box    div.deck-placed:nth-of-type(2) > div.kit-placed:nth-of-type(1): box-shadow reduced to one PowerPoint shadow
+202 placed-zones [statement]: 6 / 0 / 0 / 0
+203 placed-grid [content]: 8 / 0 / 1 / 0
+   simplified box    div.deck-placed:nth-of-type(2) > div.kit-placed:nth-of-type(1): box-shadow reduced to one PowerPoint shadow
+204 placed-shapes [content]: 4 / 0 / 2 / 0
+   simplified box    div.deck-placed:nth-of-type(2) > div.kit-placed:nth-of-type(1): box-shadow reduced to one PowerPoint shadow
+   simplified box    div.deck-placed:nth-of-type(2) > div.kit-placed:nth-of-type(3): box-shadow reduced to one PowerPoint shadow
+205 placed-geometries [content]: 4 / 0 / 0 / 0
+Total: 29 native, 0 picture, 4 simplified, 0 dropped.
+```
+
 ## Fonts
 
 By default the brand's fonts are embedded in the PPTX as static instances, cut from the brand's variable fonts at the exact weights and axes the deck uses, and the same files are written to a `fonts/` folder beside it. Apps that ignore embedded fonts (the export names Keynote, Google Slides and LibreOffice) need the `fonts/` files installed on the machine that opens the file.

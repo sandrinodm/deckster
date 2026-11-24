@@ -26,7 +26,7 @@ The built deck reads three query parameters:
 | `?presenter` | Opens the page as the presenter window, with notes and timer, instead of the audience window. In a browser, `p` opens this URL at the current position. |
 | `?embed` | New in 0.4.0. Embed mode, for a deck shown in an iframe on another page: the slides and the brand's chrome without the presenter tools, overlays or plugin key and click handlers, and a small control with previous and next buttons, the slide count (shown slides only since 0.5.0) and an "Open full deck" link that opens the same position without `?embed` in a new tab. Takes the same values as `?static`. |
 
-They combine with the hash: `http://localhost:5173/?static#/steps/2`.
+They combine with the hash: `http://127.0.0.1:5173/?static#/steps/2`.
 
 ## `window.__deck`
 
@@ -48,7 +48,7 @@ While a deck is mounted, `window.__deck` holds its automation API, the one `deck
 
 ## Example
 
-Against `deckster dev hello` (the `hello` deck copied into the workspace), opened at `http://localhost:5173/?static`, in the browser console or a Playwright `page.evaluate`:
+Against `deckster dev hello` (the `hello` deck copied into the workspace), opened at `http://127.0.0.1:5173/?static`, in the browser console or a Playwright `page.evaluate`:
 
 ```js
 await window.__deck.ready();
