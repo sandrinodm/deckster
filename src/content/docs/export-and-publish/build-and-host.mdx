@@ -121,7 +121,7 @@ It also refuses to replace a folder that has files in it but no `.deck-site` mar
 A built deck or site is plain HTML, JavaScript, CSS, fonts and pictures. Any static host can serve it, including GitHub Pages, Cloudflare Pages, Netlify and Vercel: give the host the output folder (`site/`, or `decks/<deck>/dist/`) as what to publish. You can upload a folder you built locally, or let the host build it with your workspace's own commands:
 
 ```sh
-npm install --global @deckster/cli@0.10.0
+npm install --global @deckster/cli@0.10.1
 npx playwright@1.65.1 install chromium
 deckster build --all --out site
 ```
@@ -151,7 +151,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 26
-      - run: npm install --global @deckster/cli@0.10.0
+      - run: npm install --global @deckster/cli@0.10.1
       - run: npx playwright@1.65.1 install chromium --with-deps
       - run: deckster build --all --out site
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

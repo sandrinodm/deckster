@@ -21,7 +21,7 @@ The tables list the 50 rules `deckster lint --help` prints in 0.10.0, plus `sche
 
 | Rule | Severity | Fix |
 | --- | --- | --- |
-| `canvas-overflow` | error | Cut, split or move detail to the notes; do not shrink type. |
+| `canvas-overflow` | error | Cut, split or move detail to the notes; do not shrink type. A shape inside an inline `<svg>` counts only for the part the `<svg>` shows (since 0.10.1), so a drawing cropped with `preserveAspectRatio="… slice"` is not reported. |
 | `container-overflow` | error | Shorten the content inside the container, split the slide, or simplify the layout around it. |
 | `text-truncated` | error | Shorten the text or give it a wider column. Since 0.10.0 it also reports text that stepped down to its smallest size and was still clipped (`data-fit="overflow"`), such as too much text in a `<Shape>` with a fixed `height`. |
 | `text-overlap` | error | Move or cut one; check absolute positions, negative margins and line heights below 1. |

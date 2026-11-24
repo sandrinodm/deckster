@@ -1,9 +1,17 @@
 ---
 title: "Changelog"
-description: "Deckster v0.10.0, v0.9.0, v0.8.0 and v0.7.0 changes, with guides and links to the code."
+description: "Deckster v0.10.1, v0.10.0, v0.9.0, v0.8.0 and v0.7.0 changes, with guides and links to the code."
 sidebar:
   order: 6
 ---
+
+## v0.10.1
+
+[Release notes](https://github.com/sandrinodm/deckster/releases/tag/v0.10.1).
+
+### Cropped SVG drawings no longer fail `canvas-overflow`
+
+The slide `deckster new slide <deck> <id> --layout image-reveal` writes failed `deckster lint` with two `canvas-overflow` errors. Its placeholder drawing uses `preserveAspectRatio="xMidYMid slice"`, which crops it like a photo with `object-fit: cover`, and the rule measured each cropped shape in full. `canvas-overflow` now measures a shape inside an inline `<svg>` by the part the `<svg>` shows, unless the `<svg>` has `overflow: visible`; the `<svg>` itself is still checked. [Lint rules](/reference/lint-rules/) · [PR #42](https://github.com/sandrinodm/deckster/pull/42)
 
 ## v0.10.0
 

@@ -69,7 +69,7 @@ The move between them is animated with the brand's slow duration and emphasized 
 - **The picture outside `<Media>`.** A Markdown image at the top level of the slide is not the media slot, and `deckster lint` reports a `schema` error: "The image-reveal layout needs its media slot."
 - **A title over 44 characters.** It is a `schema` error: `title: The image-reveal layout sets at most 44 characters, got 61.`
 - **A bar background that loads a file.** `barBackground: "url(../assets/hub-square.svg)"` is a `schema` error: `barBackground: Expected a bar background as a CSS color or gradient without url(), semicolons or braces`. Put pictures in `<Media>`.
-- **Keeping the drawing that `deckster new slide` writes.** `deckster new slide <deck> <id> --layout image-reveal` writes the catalog's example, whose `<Media>` holds a drawn placeholder. With `@deckster/cli` 0.10.0, `deckster lint` reports two `canvas-overflow` errors for it on step 1, such as "extends past the canvas: 87px past the top edge". Replace the drawing with your picture, as a Markdown image of a file in the deck folder, and the errors go away.
+- **Linting the drawing that `deckster new slide` writes with 0.10.0.** `deckster new slide <deck> <id> --layout image-reveal` writes the catalog's example, whose `<Media>` holds a drawn placeholder that `preserveAspectRatio="xMidYMid slice"` crops in the area beside the bar. `@deckster/cli` 0.10.0 measured the cropped shapes in full and reported two `canvas-overflow` errors on step 1, such as "extends past the canvas: 87px past the top edge". 0.10.1 measures a shape by what its `<svg>` shows, so the example lints clean; upgrade, or replace the drawing with your picture.
 
 ## Related layouts
 

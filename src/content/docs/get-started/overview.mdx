@@ -42,7 +42,7 @@ The reasons behind these choices are on [Design decisions](/project/design-decis
 | For | You need |
 | --- | --- |
 | Every command | Node.js 26 or later |
-| `deckster lint`, `deckster shot`, `deckster diff`, `deckster export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.1 install chromium` for 0.10.0 |
+| `deckster lint`, `deckster shot`, `deckster diff`, `deckster export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.1 install chromium` for 0.10.1 |
 | `deckster present` | Electron's binary, downloaded once with `deckster electron install` (about 120 MB). Without it, `deckster present` prints that command; `--browser` presents in Chrome instead. Checked on macOS with one display only: several displays, Windows and Linux are untested |
 | `deckster diff` against a git ref | A git repository; otherwise compare with a folder saved by `deckster diff --save-baseline` |
 | `deckster export --verify` | Docker, for the LibreOffice and Open XML SDK checks. The `quicklook` and `keynote` renderers work on macOS only |
