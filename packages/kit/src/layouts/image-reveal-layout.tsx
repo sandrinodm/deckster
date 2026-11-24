@@ -299,6 +299,7 @@ function ImageRevealLayout({
       variant={{
         'data-revealed': String(revealed),
         'data-dock': dock,
+        'data-display-align': '',
         'data-align': align,
         'data-fit': fit,
         'data-motion': still ? 'off' : 'on',

@@ -14,6 +14,7 @@ import {
   useEnter,
   useFitGroupWidth,
 } from '#layout-parts.ts';
+import '#layouts/stat-cards.css';
 import '#layouts/stats-layout.css';
 
 /**

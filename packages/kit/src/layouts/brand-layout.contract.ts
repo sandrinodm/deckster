@@ -16,6 +16,8 @@ import { SlideFrontmatter } from '@deckster/engine/frontmatter';
 import { BODY_SLOT, slotTag } from '@deckster/engine/slots';
 import { Schema, SchemaAST } from 'effect';
 
+import { decodeField, isRequiredField, ownField, ownSlot } from '#layouts/contract-lookup.ts';
+
 /**
  * The selector of the title element a brand layout renders, for the PPTX title placeholder.
  */
@@ -182,10 +184,11 @@ export function brandLayoutContract(
  * What is wrong with brand layouts against the layouts they fall back to. An error is a layout that
  * clashes with a catalog name, names an unknown fallback, binds a slot or field the fallback lacks,
  * leaves one the fallback requires unbound, drops a title the fallback requires, or budgets a slot
- * it does not bind.
+ * it does not bind. A fallback may be a code layout of the same brand, held to the same rules.
  *
  * @param layouts - The brand's layouts, in file order.
- * @param catalog - Every other layout contract: the engine's and the kit's.
+ * @param catalog - Every other layout contract: the engine's and the kit's, and the brand's code
+ *   layouts (a kit layout one of them replaces is listed as the replacement).
  */
 export function checkBrandLayouts(
   layouts: readonly BrandLayoutTokens[],
@@ -219,7 +222,8 @@ export function checkBrandLayouts(
  * The layouts of a brand as a catalog, to load after the kit's: `source` is `brand:<name>`.
  *
  * @param brand - The brand's tokens.
- * @param base - The catalog the brand layouts fall back to: engine and kit contracts.
+ * @param base - The catalog the brand layouts fall back to: engine and kit contracts, and the
+ *   brand's code layouts.
  * @throws Error listing every problem when {@link checkBrandLayouts} finds an error; callers check
  *   first and report the problems as build errors.
  */
@@ -284,16 +288,6 @@ function boundSlots(
 }
 
 /**
- * The fallback's contract for a slot it declares.
- *
- * @param fallback - The fallback contract.
- * @param slot - The slot name.
- */
-function ownSlot(fallback: AnyLayoutContract, slot: string): SlotContract | undefined {
-  return Object.hasOwn(fallback.slots, slot) ? fallback.slots[slot] : undefined;
-}
-
-/**
  * The fallback's schema fields that the layout binds.
  *
  * @param fallback - The fallback contract.
@@ -309,19 +303,6 @@ function pickFields(fallback: AnyLayoutContract, fields: readonly string[]): Sch
   }
 
   return picked;
-}
-
-/**
- * The fallback's schema for one of its fields.
- *
- * @param fallback - The fallback contract.
- * @param field - The field name.
- */
-function ownField(
-  fallback: AnyLayoutContract,
-  field: string,
-): Schema.Struct.Fields[string] | undefined {
-  return Object.hasOwn(fallback.schema.fields, field) ? fallback.schema.fields[field] : undefined;
 }
 
 /**
@@ -415,32 +396,6 @@ function unboundDefaults(
   }
 
   return defaults;
-}
-
-/**
- * Decodes one field of the fallback alone, as a slide's frontmatter would.
- *
- * @param fallback - The fallback contract.
- * @param field - The field name.
- * @param input - The frontmatter to decode, which may have the field.
- * @returns The decoded object, or `undefined` when the field does not decode from the input.
- */
-function decodeField(
-  fallback: AnyLayoutContract,
-  field: string,
-  input: Readonly<Record<string, unknown>>,
-): object | undefined {
-  const schema = ownField(fallback, field);
-  if (schema === undefined) {
-    return undefined;
-  }
-
-  try {
-    const only: Schema.Decoder<object> = Schema.Struct({ [field]: schema }) as never;
-    return Schema.decodeUnknownSync(only)(input);
-  } catch {
-    return undefined;
-  }
 }
 
 /**
@@ -852,7 +807,7 @@ function unknownFallback(
     .slice(0, SUGGESTED_FALLBACKS);
   return {
     path: `${path}.fallback`,
-    message: `The fallback "${fallback}" is not a layout of the kit or the engine.`,
+    message: `The fallback "${fallback}" is not a layout of the kit, the engine or the brand's code layouts.`,
     fix: `Name a layout \`deckster layouts\` lists, such as ${closest.map((name) => `"${name}"`).join(', ')}.`,
   };
 }
@@ -948,16 +903,6 @@ function fieldFix(fieldNames: readonly string[]): string {
   return fieldNames.length === 0
     ? 'The fallback has no layout fields; bind a slot instead.'
     : `Bind one of its fields: ${fieldNames.join(', ')}.`;
-}
-
-/**
- * Whether a slide must write a field: it fails to decode without it and has no default.
- *
- * @param fallback - The fallback contract.
- * @param field - The field name.
- */
-function isRequiredField(fallback: AnyLayoutContract, field: string): boolean {
-  return ownField(fallback, field) !== undefined && decodeField(fallback, field, {}) === undefined;
 }
 
 /**

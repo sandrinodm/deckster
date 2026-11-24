@@ -26,7 +26,7 @@ import { smartPunctuation } from '#foundation/smart-punctuation.ts';
 import { StatDelta, StatValue } from '#foundation/stat-figure.tsx';
 import { deltaTone } from '#layouts/stat-value.ts';
 import '#charts/figures/figures.css';
-import '#layouts/stats-layout.css';
+import '#layouts/stat-cards.css';
 
 /**
  * The most stats a row holds, from the chart limits `deckster charts --json` prints; more belong in

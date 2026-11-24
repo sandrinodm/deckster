@@ -72,6 +72,12 @@ export {
   type BrandLayoutCheck,
   type BrandLayoutProblem,
 } from '#layouts/brand-layout.contract.ts';
+export { kitLayoutModule, type KitLayoutModule } from '#layouts/kit-layout-module.ts';
+export {
+  checkReplacement,
+  type ReplacementCheck,
+  type ReplacementProblem,
+} from '#layouts/replace-check.ts';
 
 /**
  * The contracts of every layout the kit registers, for the build and `deckster layouts`, in the

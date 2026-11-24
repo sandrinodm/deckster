@@ -5,6 +5,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 import type { codeLayoutContract } from '#layouts/code-layout.contract.ts';
 
 import { Footnote, Frame, Region, SlideHeader, useEnter } from '#layout-parts.ts';
+import '#layouts/code-layout.css';
 
 /**
  * The most lines the code layout's title takes before it steps down in size: one, so the code keeps

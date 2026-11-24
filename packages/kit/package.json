@@ -17,6 +17,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./runtime": "./src/runtime.ts",
+    "./plugin": "./src/kit-plugin.ts",
     "./catalog": "./src/catalog.ts",
     "./diagram-catalog": "./src/diagrams/diagram-catalog.ts",
     "./diagrams": "./src/diagrams.ts",
