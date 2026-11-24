@@ -103,6 +103,7 @@ function EquationLayout({
     JSON.stringify([terms, result]),
     {
       overflow: true,
+      restartOnFontLoad: true,
     },
   );
   const rowStyle: RowStyle = { '--kit-equation-fit': ROW_SCALES[level] ?? ROW_SCALES.at(-1) ?? 1 };
