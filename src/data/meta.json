@@ -1,6 +1,6 @@
 {
-  "version": "0.10.0",
-  "commit": "b5742738589b841c743ab749ff9a77d02d36dfb2",
+  "version": "0.10.1",
+  "commit": "b06585844135a6b49a4c7fc64b547b3b5c1055c1",
   "decks": [
     "hello",
     "showcase",
