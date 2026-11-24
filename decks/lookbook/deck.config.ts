@@ -9,7 +9,7 @@ import { defineDeck } from '@deckster/engine/config';
 export default defineDeck({
   title: 'Same hour, no van',
   brand: 'default',
-  duration: '150m',
+  duration: '152m',
   slides: [
     // Part 1: open
     'cover',
@@ -28,18 +28,22 @@ export default defineDeck({
     // Part 2: say one thing
     'part-say',
     'statement-claim',
+    'image-reveal-footer',
     'definition-loop',
     'definition-drop',
     'quote-portrait',
     'image-bottom',
     'statement-center',
+    'image-reveal-header',
     'quote-plain',
     'image-left',
     'statement-giant',
+    'image-reveal-accent',
     'image-right',
     'statement-quote',
     'quote-accent',
     'image-alone',
+    'image-reveal-gradient',
     // Part 3: explain
     'part-explain',
     'default-heading',

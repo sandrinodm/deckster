@@ -30,8 +30,9 @@ Arguments:
 
 Options:
   --brand <name>  Render with brands/<name> instead of the deck config's brand.
-  --port <n>      Set the deck or gallery port. Fail if it is taken. Default: first free port
-                  from 5173 (4173 for a direct --built presentation).
+  --port <n>      Set the deck or gallery port. Fail if it is taken. Default: a random free
+                  port for the deck (so it never meets a running dev server), and the first
+                  free port from 5173 for the gallery.
   --built         Build the deck and present the static build instead of the dev server: no hot
                   reload, comments, agent or other dev tools. Cannot be combined with --brand or
                   --agent.

@@ -117,7 +117,7 @@ An agent that writes slides needs rules it can read and a check it can run. deck
 Slides fill typed layouts. A layout such as `cards`, `stats` or `comparison` owns the grid, the type
 and the spacing, and its contract says which frontmatter fields and slots it takes and how much
 content fits: words, bullets and items, counted the same in every brand. `pnpm deckster layouts
---summary` prints that budget for all 63 layouts, and the `charts`, `diagrams`, `components` and
+--summary` prints that budget for all 64 layouts, and the `charts`, `diagrams`, `components` and
 `icons` commands list the rest. The build fails on an unknown layout, field or icon.
 
 `deckster lint` is the check. It renders every step of every slide in Chromium and reports overflow,
@@ -133,7 +133,7 @@ copies it into `brands/`. The reasons behind these choices are in [docs/design.m
 
 ## What it does
 
-- Write MDX or TSX slides on [63 kit layouts](packages/kit/README.md), with code blocks (Shiki,
+- Write MDX or TSX slides on [64 kit layouts](packages/kit/README.md), with code blocks (Shiki,
   line steps, diffs, `<CodeMove>`), `<Terminal>`, images, video with cues, Lottie and icons from
   the brand's icon set, plus token-styled placed elements (`<Shape>`, `<Text>`, `<Place>`) for
   badges, stamps, callouts and footer labels positioned by named anchor or grid cell.

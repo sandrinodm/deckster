@@ -88,7 +88,7 @@ const PHOTO =
 /**
  * The layouts whose media slot takes a photo rather than a chart.
  */
-const PHOTO_LAYOUTS = new Set(['title', 'image']);
+const PHOTO_LAYOUTS = new Set(['title', 'image', 'image-reveal']);
 
 /**
  * One generated slide.

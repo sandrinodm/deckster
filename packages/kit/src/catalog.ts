@@ -28,6 +28,7 @@ import { featuresLayoutContract } from '#layouts/features-layout.contract.ts';
 import { futureBackLayoutContract } from '#layouts/future-back-layout.contract.ts';
 import { galleryLayoutContract } from '#layouts/gallery-layout.contract.ts';
 import { imageLayoutContract } from '#layouts/image-layout.contract.ts';
+import { imageRevealLayoutContract } from '#layouts/image-reveal-layout.contract.ts';
 import { logosLayoutContract } from '#layouts/logos-layout.contract.ts';
 import { marketLayoutContract } from '#layouts/market-layout.contract.ts';
 import { matrixLayoutContract } from '#layouts/matrix-layout.contract.ts';
@@ -105,6 +106,7 @@ export default defineLayoutCatalog({
     conversationLayoutContract,
     proofLayoutContract,
     imageLayoutContract,
+    imageRevealLayoutContract,
     galleryLayoutContract,
     beforeAfterLayoutContract,
     screenLayoutContract,

@@ -61,7 +61,7 @@ Ask what would make a skeptical listener believe the title, then choose the most
 
 Bullets are the fallback, not the default. They are right for genuinely list-like content (three requirements, four steps). When you use them: parallel grammar, at most four, one level, fragments rather than sentences, and no bullet that merely restates the title.
 
-Pictures must be evidence. Decorative stock imagery adds processing without adding meaning (coherence principle, below). A photo of the actual customer site is evidence; a handshake photo is noise. Give a photo the slide or half of it, never a small frame in the middle: `image` runs it edge to edge with the text on the side where the picture is calm (`text: left`, `right` or `bottom`), `split` with `bleed: true` runs it to the edges of its half, and the cover and dividers take one in `<Media>`.
+Pictures must be evidence. Decorative stock imagery adds processing without adding meaning (coherence principle, below). A photo of the actual customer site is evidence; a handshake photo is noise. Give a photo the slide or half of it, never a small frame in the middle: `image` runs it edge to edge with the text on the side where the picture is calm (`text: left`, `right` or `bottom`), `image-reveal` opens with a full-slide title beat before docking the title and subtitle into a full-width header or footer bar to unveil the picture, `split` with `bleed: true` runs it to the edges of its half, and the cover and dividers take one in `<Media>`.
 
 Show the product rather than describing it: one screen per slide, as large as the slide allows, with at most a few callouts on the parts the notes talk about. Ten thumbnails on one slide is a screenshot dump; nobody can read any of them.
 
@@ -123,6 +123,7 @@ Choose a layout by what the audience needs to read, compare, or do. If the deck 
 | `demo` | A live or scripted component should do the work in front of the audience. Prepare its still or poster for preview and export. |
 | `choose-path` | The presenter should be able to select either of two authored workflows and show its outcome. The static view shows both paths. |
 | `image` | One photo should convey place, scale or a moment at full bleed. Use `split` if the explanation needs more space. |
+| `image-reveal` | A title beat should open the slide before animating into a full-width header or footer bar (`dock: bottom` or `top`) to reveal an image across the rest of the page. |
 | `screen` | One interface should be readable whole, in a device or browser frame with optional callouts. |
 | `gallery` | Several separate views belong together and one deserves the largest frame. |
 | `before-after` | Two visual states need equal weight in a side-by-side comparison. |

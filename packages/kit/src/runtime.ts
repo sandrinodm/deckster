@@ -45,6 +45,7 @@ import { featuresLayout } from '#layouts/features-layout.tsx';
 import { futureBackLayout } from '#layouts/future-back-layout.tsx';
 import { galleryLayout } from '#layouts/gallery-layout.tsx';
 import { imageLayout } from '#layouts/image-layout.tsx';
+import { imageRevealLayout } from '#layouts/image-reveal-layout.tsx';
 import { logosLayout } from '#layouts/logos-layout.tsx';
 import { marketLayout } from '#layouts/market-layout.tsx';
 import { matrixLayout } from '#layouts/matrix-layout.tsx';
@@ -141,6 +142,7 @@ export default definePlugin({
     conversationLayout,
     proofLayout,
     imageLayout,
+    imageRevealLayout,
     galleryLayout,
     beforeAfterLayout,
     screenLayout,

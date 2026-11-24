@@ -68,7 +68,8 @@ export type DevServerOptions = {
   port: number | undefined;
 
   /**
-   * Whether to listen on all network interfaces.
+   * Whether to listen on all network interfaces; otherwise only on 127.0.0.1, so a second server
+   * cannot take the same port on IPv6 `localhost` without a conflict.
    */
   host: boolean;
 
@@ -325,7 +326,7 @@ const startDevServerOnce = Effect.fn('startDevServerOnce')(function* (
     server: {
       port,
       strictPort: port !== undefined,
-      host: options.host || (mcp || options.chooser !== undefined ? '127.0.0.1' : false),
+      host: options.host || '127.0.0.1',
     },
     ...(plugins.length === 0 ? {} : { plugins }),
   });
@@ -397,7 +398,7 @@ const startDevServerOnce = Effect.fn('startDevServerOnce')(function* (
     yield* Effect.forkScoped(doctor);
   }
 
-  const url = server.resolvedUrls?.local[0] ?? `http://localhost:${listeningPort(server)}/`;
+  const url = server.resolvedUrls?.local[0] ?? `http://127.0.0.1:${listeningPort(server)}/`;
   return { server, url, sessions };
 });
 
