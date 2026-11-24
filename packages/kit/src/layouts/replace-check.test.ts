@@ -125,16 +125,21 @@ describe('checkReplacement', () => {
   });
 
   describe('examples and limit cases (3)', () => {
-    it('fails a replacement that narrows a field the limit cases fill', () => {
+    it('fails a replacement that narrows a field the limit cases fill, once per reason', () => {
       const narrow = replacement({
         schema: titleFields({
           byline: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(5))),
         }),
       });
-      const errors = errorsOf(narrow);
-      expect(errors.length).toBeGreaterThan(0);
-      expect(errors[0]).toContain('The original title layout accepts its example (');
-      expect(errors[0]).toContain('and the replacement rejects it: byline:');
+      expect(errorsOf(narrow)).toEqual([
+        'The original title layout accepts its example and 4 more (with byline: "Dana Okafor, ' +
+          'Urban Forestry Division"), and the replacement rejects it: byline: Expected a value ' +
+          'with a length of at most 5.',
+      ]);
+    });
+
+    it('reports a dropped field once, not again for every sample that sets it', () => {
+      expect(errorsOf(replacement({ schema: titleFields({ byline: undefined }) }))).toHaveLength(1);
     });
 
     it('fails a replacement whose checks reject the original’s example', () => {

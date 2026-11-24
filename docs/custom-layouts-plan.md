@@ -1218,12 +1218,18 @@ Where phase 3 differs from §3.2, §3.6 and §5, and why:
 - **Item 3** decodes the original's example and every `LIMIT_CASES[name]` entry that the original
   accepts on its own (`replacementSamples`). Today every kit layout accepts all of its cases; a kit
   test asserts that, and asserts that an unchanged copy of every kit contract passes the check.
+  Samples that fail for the same reason give one error ("its example and 4 more"), and a sample
+  that fails on a field item 1 already reports as missing gives none.
 - **Deck layouts** can replace a kit layout too (§3.2 allows any code layout). A deck layout named
   like a kit layout that the brand already replaces is a brand-layout clash (phase 5).
 - **§3.9.** A data layout's fallback is checked against the catalog modules' layouts and the
   brand's code layouts, including a replacement. The CLI's `brand check`
   (`cli/src/layouts/check-brand-layouts.ts`) still passes only the kit and engine contracts, so it
-  rejects such a fallback until the CLI follow-up passes `deckCatalog`'s index.
+  rejects such a fallback until the CLI follow-up passes `deckCatalog`'s index. A known gap: when
+  that brand code layout is not in the catalog (`code: 'skip'`, a contract that fails to load or
+  is held, a version mismatch), the data layout's fallback is unknown and the brand's data layouts
+  fail as a whole (`invalidBrandLayouts`, "not a layout of the kit, the engine or the brand's code
+  layouts"), as for any unknown fallback, instead of only that data layout being left out.
 - **`kitLayoutModule`** (exported from `@deckster/kit/catalog`) states the
   `layouts/<name>-layout.tsx` / `<camelName>Layout` convention. The generator uses it, and a kit
   test checks every catalog layout against it.

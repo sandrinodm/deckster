@@ -280,7 +280,9 @@ function acceptsProblems(
 
 /**
  * The errors for frontmatter the original accepts and the replacement does not: its example and its
- * limit cases that fail to decode or fail the replacement's `checks`.
+ * limit cases that fail to decode or fail the replacement's `checks`. Samples that fail the same
+ * way give one error, naming the first and how many others; a sample that fails on a field
+ * {@link fieldProblems} already reports as missing gives none.
  *
  * @param original - The replaced layout's contract.
  * @param replacement - The replacement's contract.
@@ -289,31 +291,123 @@ function sampleProblems(
   original: AnyLayoutContract,
   replacement: AnyLayoutContract,
 ): ReplacementProblem[] {
-  return replacementSamples(original).flatMap((sample): ReplacementProblem[] => {
-    const shown = JSON.stringify(sample.frontmatter);
-    const decoded = decodeSlide(replacement, sample.frontmatter);
-    if (Result.isFailure(decoded)) {
-      return [
-        {
-          message:
-            `The original ${original.name} layout accepts ${sample.label} (${shown}), and the ` +
-            `replacement rejects it: ${decoded.failure}.`,
+  const missing = new Set(
+    Object.keys(original.schema.fields).filter(
+      (field) => ownField(replacement, field) === undefined,
+    ),
+  );
+  const failures = new Map<string, { problem: ReplacementProblem; labels: string[] }>();
+  for (const sample of replacementSamples(original)) {
+    for (const failure of sampleFailures(original, replacement, sample)) {
+      if (missing.has(failure.field)) {
+        continue;
+      }
+
+      const known = failures.get(failure.reason);
+      if (known === undefined) {
+        failures.set(failure.reason, { problem: failure.problem, labels: [sample.label] });
+      } else {
+        known.labels.push(sample.label);
+      }
+    }
+  }
+
+  return [...failures.values()].map(({ problem, labels }) => {
+    const [first = '', ...others] = labels;
+    const which = others.length === 0 ? first : `${first} and ${others.length} more`;
+    return { message: problem.message.replace(SAMPLE_PLACEHOLDER, which), fix: problem.fix };
+  });
+}
+
+/**
+ * Stands for the samples an error is about, until they are known.
+ */
+const SAMPLE_PLACEHOLDER = '<samples>';
+
+/**
+ * One way a sample fails on the replacement: the top-level field at fault and the error.
+ */
+type SampleFailure = {
+  /**
+   * The top-level field the failure is about; empty when it is about none.
+   */
+  readonly field: string;
+
+  /**
+   * Why it fails, without the sample's values, so samples that fail alike give one error.
+   */
+  readonly reason: string;
+
+  /**
+   * The error, with {@link SAMPLE_PLACEHOLDER} where the samples go.
+   */
+  readonly problem: ReplacementProblem;
+};
+
+/**
+ * How one sample fails on the replacement: it does not decode, or the replacement's `checks` reject
+ * it.
+ *
+ * @param original - The replaced layout's contract.
+ * @param replacement - The replacement's contract.
+ * @param sample - Frontmatter the original accepts.
+ */
+function sampleFailures(
+  original: AnyLayoutContract,
+  replacement: AnyLayoutContract,
+  sample: SampleFrontmatter,
+): SampleFailure[] {
+  const lead = `The original ${original.name} layout accepts ${SAMPLE_PLACEHOLDER}`;
+  const decoded = decodeSlide(replacement, sample.frontmatter);
+  if (Result.isFailure(decoded)) {
+    const { field, text } = decoded.failure;
+    return [
+      {
+        field,
+        reason: text,
+        problem: {
+          message: `${lead}${givenValue(sample, field)}, and the replacement rejects it: ${text}.`,
           fix:
             "Accept every value the original accepts for its fields: widen the replacement's " +
             "schema to match the original's.",
         },
-      ];
-    }
+      },
+    ];
+  }
 
-    const failed = replacement.checks?.(decoded.success) ?? [];
-    return failed.map((problem) => ({
-      message:
-        `The original ${original.name} layout accepts ${sample.label} (${shown}), and the ` +
-        `replacement's checks reject it: ${problem.path}: ${problem.message}`,
+  const failed = replacement.checks?.(decoded.success) ?? [];
+  return failed.map((problem) => ({
+    field: problem.path.split(/[.[]/u)[0] ?? '',
+    reason: `${problem.path}: ${problem.message}`,
+    problem: {
+      message: `${lead}, and the replacement's checks reject it: ${problem.path}: ${problem.message}`,
       fix: "Loosen the replacement's `checks` so they pass every slide the original accepts.",
-    }));
-  });
+    },
+  }));
 }
+
+/**
+ * The value a sample gives a field, for messages: ` (with byline: "Dana Okafor")`, shortened to
+ * {@link SHOWN_VALUE_MAX_CHARS}; empty when the sample does not set the field.
+ *
+ * @param sample - The sample.
+ * @param field - The top-level field.
+ */
+function givenValue(sample: SampleFrontmatter, field: string): string {
+  if (field === '' || !Object.hasOwn(sample.frontmatter, field)) {
+    return '';
+  }
+
+  const shown = JSON.stringify(sample.frontmatter[field]) ?? '';
+  const short =
+    shown.length > SHOWN_VALUE_MAX_CHARS ? `${shown.slice(0, SHOWN_VALUE_MAX_CHARS - 1)}…` : shown;
+  return ` (with ${field}: ${short})`;
+}
+
+/**
+ * The longest value an error quotes whole, in characters.
+ */
+const SHOWN_VALUE_MAX_CHARS = 60;
 
 /**
  * The error for a title the original requires and the replacement does not.
@@ -463,12 +557,13 @@ function exampleFrontmatter(example: LayoutExample): Readonly<Record<string, unk
  *
  * @param contract - The layout's contract.
  * @param frontmatter - The layout's fields.
- * @returns The decoded frontmatter, or the first problem as `<path>: <message>`.
+ * @returns The decoded frontmatter, or the first problem: its top-level field and its text as
+ *   `<path>: <message>`.
  */
 function decodeSlide(
   contract: AnyLayoutContract,
   frontmatter: Readonly<Record<string, unknown>>,
-): Result.Result<Record<string, unknown>, string> {
+): Result.Result<Record<string, unknown>, { field: string; text: string }> {
   const schema: Schema.Decoder<Record<string, unknown>> = Schema.Struct({
     ...SlideFrontmatter.fields,
     ...contract.schema.fields,
@@ -482,6 +577,8 @@ function decodeSlide(
   }
 
   const [first] = formatIssues(decoded.failure.issue).issues;
-  const where = first?.path?.map(String).join('.') ?? '';
-  return Result.fail(where === '' ? (first?.message ?? 'invalid') : `${where}: ${first?.message}`);
+  const path = first?.path?.map(String) ?? [];
+  const message = first?.message ?? 'invalid';
+  const text = path.length === 0 ? message : `${path.join('.')}: ${message}`;
+  return Result.fail({ field: path[0] ?? '', text });
 }
