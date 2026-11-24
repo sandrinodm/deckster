@@ -243,13 +243,13 @@
     {
       "id": 13,
       "name": "slide-chart-placed-badge",
-      "prompt": "Adding one slide to my monthly product review deck (default brand, presented live). Weekly active teams by month: Jan 120, Feb 135, Mar 150, Apr 210, May 260, Jun 300. We launched the Slack integration on 2 April. Put a small \"Slack launch\" badge near the jump, and the source line \"Product analytics, weekly active teams\" at the bottom of the slide. Speaker notes too.",
-      "expected_output": "One chart slide whose title states the post-launch growth, with the April change highlighted, a short badge placed with a named place or grid cells, the source at the foot of the slide, and notes.",
+      "prompt": "Adding one slide to my monthly product review deck (default brand, presented live). Weekly active teams by month: Jan 120, Feb 135, Mar 150, Apr 210, May 260, Jun 300. We launched the Slack integration on 2 April. June isn't closed yet, so put a small \"Preliminary\" badge in a top corner of the slide, and the source line \"Product analytics, weekly active teams\" at the bottom. Speaker notes too.",
+      "expected_output": "One chart slide whose title states the post-launch growth, with the April change highlighted or annotated, a short \"Preliminary\" badge placed with a named place or grid cells, the source at the foot of the slide, and notes.",
       "files": [],
       "expectations": [
         "The slide is a `chart` slide (or another layout whose catalog entry accepts the chart) showing the six months as a line or bar chart, with April onward highlighted or annotated",
         "The title is a full sentence stating the takeaway with a figure from the data (for example 150 to 300 teams, or doubling since the launch), and any derived figure is arithmetically correct",
-        "The badge is a top-level `<Shape>` or `<Text>` positioned with `place` or `cols`/`rows`, not with a pixel `box`, not nested inside a slot or another component, and not a reason to switch to a different layout",
+        "The \"Preliminary\" badge is a top-level `<Shape>` or `<Text>` positioned with `place` or `cols`/`rows`, not with a pixel `box`, not nested inside a slot or another component, and not a reason to switch to a different layout",
         "The badge text is a few words, and the slide has at most four placed elements",
         "The source appears at the bottom of the slide, as the layout's footnote or a `<Text>` in `zone=\"footer\"`, and is not written as a claim",
         "`deckster lint <deck>` reports no errors and no `placed-*` warnings for the slide",
