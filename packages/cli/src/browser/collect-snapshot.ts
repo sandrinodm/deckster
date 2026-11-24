@@ -1,5 +1,6 @@
 import type {
   Box,
+  ChromeItemSnapshot,
   EffectiveBackground,
   ElementSnapshot,
   ImageSnapshot,
@@ -33,6 +34,12 @@ export type CollectedPage = {
   slots: SlotSnapshot[];
 
   /**
+   * Visible chrome items measured on the canvas (corner logos, footer text, page numbers); absent
+   * in synthetic snapshots that omit chrome.
+   */
+  readonly chrome?: readonly ChromeItemSnapshot[];
+
+  /**
    * The error the active slide shows in place of its content, or `null`.
    */
   renderError: RenderErrorSnapshot | null;
@@ -57,7 +64,7 @@ export function collectElements(): CollectedPage {
   const elements: ElementSnapshot[] = [];
   const recorded: Element[] = [];
   if (slide === null || canvasElement === null || canvas.width === 0) {
-    return { canvas, surface, elements, slots: [], renderError: null };
+    return { canvas, surface, elements, slots: [], chrome: [], renderError: null };
   }
 
   const canvasRect = canvasElement.getBoundingClientRect();
@@ -912,6 +919,74 @@ export function collectElements(): CollectedPage {
     };
   };
   const slots = Array.from(slide.querySelectorAll('.deck-slot[data-slot]')).map(measureSlot);
+
+  /**
+   * Measures visible chrome items drawn over the canvas: corner logos, footer text and page numbers
+   * inside the active `.kit-chrome-layer` (or `.kit-chrome` when no layer is present).
+   */
+  const collectChrome = (): ChromeItemSnapshot[] => {
+    const items: ChromeItemSnapshot[] = [];
+    const chromeRoot = canvasElement.querySelector<HTMLElement>('.kit-chrome');
+    if (chromeRoot === null || chromeRoot.getAttribute('data-visible') === 'false') {
+      return items;
+    }
+
+    const rootStyle = getComputedStyle(chromeRoot);
+    if (rootStyle.display === 'none' || rootStyle.visibility === 'hidden') {
+      return items;
+    }
+
+    const layer =
+      chromeRoot.querySelector<HTMLElement>('.kit-chrome-layer[data-leaving="false"]') ??
+      chromeRoot;
+    for (const cornerElement of Array.from(
+      layer.querySelectorAll<HTMLElement>('.kit-chrome-corner[data-corner]'),
+    )) {
+      const corner = cornerElement.getAttribute('data-corner') ?? '';
+      const children = Array.from(cornerElement.children);
+      if (children.length === 0) {
+        const cornerRect = cornerElement.getBoundingClientRect();
+        if (cornerRect.width > 0 && cornerRect.height > 0) {
+          items.push({ corner, kind: 'text', box: toBox(cornerRect) });
+        }
+
+        continue;
+      }
+
+      for (const child of children) {
+        const childStyle = getComputedStyle(child);
+        if (childStyle.display === 'none' || childStyle.visibility === 'hidden') {
+          continue;
+        }
+
+        const childRect = child.getBoundingClientRect();
+        if (childRect.width <= 0 || childRect.height <= 0) {
+          continue;
+        }
+
+        const kind = child.classList.contains('kit-chrome-logo') ? 'logo' : 'text';
+        items.push({ corner, kind, box: toBox(childRect) });
+      }
+    }
+
+    for (const pageBox of Array.from(layer.querySelectorAll<HTMLElement>('.kit-chrome-page-box'))) {
+      const pageStyle = getComputedStyle(pageBox);
+      if (pageStyle.display === 'none' || pageStyle.visibility === 'hidden') {
+        continue;
+      }
+
+      const pageRect = pageBox.getBoundingClientRect();
+      if (pageRect.width <= 0 || pageRect.height <= 0) {
+        continue;
+      }
+
+      items.push({ corner: 'page', kind: 'page', box: toBox(pageRect) });
+    }
+
+    return items;
+  };
+  const chrome = collectChrome();
+
   const problem = slide.querySelector(errorSelector);
   const renderError =
     problem === null
@@ -924,5 +999,5 @@ export function collectElements(): CollectedPage {
             ''
           ).trim(),
         };
-  return { canvas, surface, elements, slots, renderError };
+  return { canvas, surface, elements, slots, chrome, renderError };
 }

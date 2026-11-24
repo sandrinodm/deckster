@@ -35,7 +35,7 @@ Mark decoration with aria-hidden="true" or data-decorative: the overflow and tex
 
 Options:
   --brand <name>  Lint the deck rendered with brands/<name> instead of the deck config's brand.
-  --json          Print { deck, brand, ok, summary: { errors, warnings, slides, steps,
+  --json          Print { deck, brand, ok, summary: { errors, warnings, info, slides, steps,
                   budgetSeconds }, findings } as JSON. Each finding has slide, file, step, rule,
                   severity, message, fix and selector. A failure (bad arguments, unknown deck,
                   browser problems) prints { ok: false, error: { type, message } } instead.

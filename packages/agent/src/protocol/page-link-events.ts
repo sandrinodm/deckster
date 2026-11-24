@@ -14,8 +14,38 @@ export const PAGE_GOTO_EVENT = 'deck:page-goto';
 export const PAGE_GOTO_DONE_EVENT = 'deck:page-goto-done';
 
 /**
- * What a page reports: the slide and step on screen, the selected text and when the window was last
- * focused. Plain data, so the browser needs no schema library.
+ * One placed element rendered on the active slide, reported by the browser page.
+ */
+export type PlacedElementReport = {
+  /**
+   * Which placed primitive rendered the element (`place`, `shape` or `text`).
+   */
+  readonly kind: 'place' | 'shape' | 'text';
+
+  /**
+   * Optional author-supplied name for the element.
+   */
+  readonly name?: string;
+
+  /**
+   * How the element was placed: a named place, grid range (`cols=... rows=...`) or pixel box.
+   */
+  readonly place?: string;
+
+  /**
+   * Slide region the placement was resolved against (`safe`, `canvas`, `header` or `footer`).
+   */
+  readonly zone?: string;
+
+  /**
+   * Canvas-pixel bounding rectangle `[x, y, width, height]` on the 1920x1080 canvas.
+   */
+  readonly rect: readonly [number, number, number, number];
+};
+
+/**
+ * What a page reports: the slide and step on screen, the selected text, any placed elements and
+ * when the window was last focused. Plain data, so the browser needs no schema library.
  */
 export type PageStateReport = {
   /**
@@ -82,6 +112,11 @@ export type PageStateReport = {
    * The text the user has selected on the page, trimmed and cut to a few thousand characters.
    */
   readonly selection: string;
+
+  /**
+   * Placed elements rendered on the active slide, in DOM order.
+   */
+  readonly placed?: readonly PlacedElementReport[];
 };
 
 /**

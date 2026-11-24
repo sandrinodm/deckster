@@ -1,0 +1,37 @@
+export { Place, type PlaceProps } from '#place/place.tsx';
+export type { PlacementProps } from '#place/placed-box.tsx';
+export {
+  hasPlacementProps,
+  isSquareShape,
+  nearestPlaceSuggestion,
+  parseGridRange,
+  PLACED_MAX_COUNT,
+  PLACED_MAX_SAFE_AREA_RATIO,
+  PLACED_MAX_WORDS_PER_ELEMENT,
+  PLACED_MAX_WORDS_PER_SLIDE,
+  PLACED_NAMES,
+  PLACED_SIZE_WORDS,
+  PLACED_ZONES,
+  resolvePlace,
+  SHAPE_FILLS,
+  SHAPE_GEOMETRIES,
+  SHAPE_RADII,
+  SHAPE_SHADOWS,
+  shapeExportKind,
+  validatePlacementInput,
+  zoneRect,
+  type GridRange,
+  type PlacedInput,
+  type PlacedMode,
+  type PlacedPositionStyle,
+  type PlacedResolution,
+  type PlacedSizeWord,
+  type PlacementProblem,
+  type ShapeExportKind,
+  type ShapeFill,
+  type ShapeGeometry,
+  type ShapeRadius,
+  type ShapeShadow,
+} from '#place/resolve-place.ts';
+export { Shape, type ShapeProps } from '#place/shape.tsx';
+export { Text, type TextProps } from '#place/text.tsx';

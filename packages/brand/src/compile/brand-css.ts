@@ -229,6 +229,7 @@ function spacingDeclarations(tokens: BrandTokens): Declaration[] {
     [v.marginX, cssPx(margin.x)],
     [v.marginY, cssPx(margin.y)],
     [v.gridColumns, cssNumber(grid.columns)],
+    [v.gridRows, cssNumber(grid.rows)],
     [v.gridGutter, cssPx(grid.gutter)],
   ];
 }

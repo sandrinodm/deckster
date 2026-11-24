@@ -1,6 +1,13 @@
 export { contrastRatio } from '#color/contrast.ts';
 export { parseColorLiteral, type Rgba } from '#color/color.ts';
-export { GRAPHIC_CONTRAST, ROLE_PAIRS, TEXT_CONTRAST } from '#checks/contrast-checks.ts';
+export {
+  checkRolePair,
+  GRAPHIC_CONTRAST,
+  ROLE_PAIRS,
+  TEXT_CONTRAST,
+  type PairResult,
+} from '#checks/contrast-checks.ts';
+export { checkBoxBounds, type BoxBoundProblem } from '#checks/layout-checks.ts';
 export {
   COMFORTABLE_ADJACENT_DELTA_E,
   CONTEXT_CONTRAST,
@@ -78,8 +85,12 @@ export {
   MAX_BRAND_LAYOUTS,
   MAX_LAYOUT_REGIONS,
   MIN_BOX_SIZE_PX,
+  REGION_ALIGNS,
+  REGION_ANCHORS,
   type BrandLayoutSpecInput,
   type LayoutBox,
+  type RegionAlign,
+  type RegionAnchor,
 } from '#schema/layout-schema.ts';
 export { PLAIN_TREATMENT } from '#schema/identity-schema.ts';
 export {
@@ -88,7 +99,19 @@ export {
   type CodeToken,
   type DiagramToken,
 } from '#schema/theme-schema.ts';
-export { SHADOW_NAMES, type ShadowName } from '#schema/shape-schema.ts';
+export {
+  DEFAULT_GRID_ROWS,
+  MAX_GRID_COLUMNS,
+  MAX_GRID_ROWS,
+  RADIUS_NAMES,
+  SHADOW_NAMES,
+  SPACE_NAMES,
+  STROKE_NAMES,
+  type RadiusName,
+  type ShadowName,
+  type SpaceName,
+  type StrokeName,
+} from '#schema/shape-schema.ts';
 export {
   BOLD_WEIGHT,
   FAMILY_ROLES,

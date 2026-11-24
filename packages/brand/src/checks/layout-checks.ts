@@ -1,5 +1,5 @@
 import type { BackgroundLayer } from '#schema/background-schema.ts';
-import type { BrandLayoutSpec } from '#schema/layout-schema.ts';
+import type { BrandLayoutSpec, LayoutBox } from '#schema/layout-schema.ts';
 import type { BrandProblem } from '#validate/brand-error.ts';
 
 import {
@@ -138,48 +138,92 @@ function emptyLayout(layout: BrandLayoutSpec, path: string): BrandProblem[] {
 }
 
 /**
+ * One canvas-bounds or minimum-size problem on a box.
+ */
+export type BoxBoundProblem = {
+  /**
+   * Whether the box is below {@link MIN_BOX_SIZE_PX} or leaves the 1920x1080 canvas.
+   */
+  kind: 'too-small' | 'out-of-bounds';
+
+  /**
+   * What is wrong with the box.
+   */
+  message: string;
+
+  /**
+   * How to fix it.
+   */
+  fix: string;
+};
+
+/**
+ * Checks a single `[x, y, width, height]` box against the minimum size ({@link MIN_BOX_SIZE_PX})
+ * and the 1920x1080 canvas bounds.
+ *
+ * @param box - The box in canvas pixels.
+ * @returns Problems found for the box; empty when the box is valid.
+ */
+export function checkBoxBounds(box: LayoutBox): BoxBoundProblem[] {
+  const [x, y, width, height] = box;
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    width < MIN_BOX_SIZE_PX ||
+    height < MIN_BOX_SIZE_PX
+  ) {
+    return [
+      {
+        kind: 'too-small',
+        message: `The box is ${width}x${height}; it must be at least ${MIN_BOX_SIZE_PX}x${MIN_BOX_SIZE_PX}.`,
+        fix: 'Write the box as [x, y, width, height] with a width and a height in canvas pixels.',
+      },
+    ];
+  }
+
+  if (
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    x < 0 ||
+    y < 0 ||
+    x + width > LAYOUT_CANVAS_WIDTH ||
+    y + height > LAYOUT_CANVAS_HEIGHT
+  ) {
+    return [
+      {
+        kind: 'out-of-bounds',
+        message:
+          `The box [${box.join(', ')}] leaves the ${LAYOUT_CANVAS_WIDTH}x` +
+          `${LAYOUT_CANVAS_HEIGHT} canvas.`,
+        fix: `Keep x and y at 0 or more, x + width within ${LAYOUT_CANVAS_WIDTH} and y + height within ${LAYOUT_CANVAS_HEIGHT}.`,
+      },
+    ];
+  }
+
+  return [];
+}
+
+/**
  * Problems for every box that leaves the canvas or is too small to hold anything.
  *
  * @param layout - The layout.
  * @param path - Its path.
  */
 function boxProblems(layout: BrandLayoutSpec, path: string): BrandProblem[] {
-  const boxes = [
+  const pageNumber = layout.chrome?.pageNumber;
+  const boxes: { path: string; box: LayoutBox }[] = [
     ...(layout.title === false ? [] : [{ path: `${path}.title.box`, box: layout.title.box }]),
     ...layout.regions.map((region, index) => ({
       path: `${path}.regions[${index}].box`,
       box: region.box,
     })),
-    ...(Array.isArray(layout.chrome?.pageNumber)
-      ? [{ path: `${path}.chrome.pageNumber`, box: layout.chrome.pageNumber }]
+    ...(typeof pageNumber === 'object'
+      ? [{ path: `${path}.chrome.pageNumber`, box: pageNumber }]
       : []),
   ];
-  return boxes.flatMap(({ path: boxPath, box }) => {
-    const [x, y, width, height] = box;
-    if (width < MIN_BOX_SIZE_PX || height < MIN_BOX_SIZE_PX) {
-      return [
-        {
-          path: boxPath,
-          message: `The box is ${width}x${height}; it must be at least ${MIN_BOX_SIZE_PX}x${MIN_BOX_SIZE_PX}.`,
-          fix: 'Write the box as [x, y, width, height] with a width and a height in canvas pixels.',
-        },
-      ];
-    }
-
-    if (x < 0 || y < 0 || x + width > LAYOUT_CANVAS_WIDTH || y + height > LAYOUT_CANVAS_HEIGHT) {
-      return [
-        {
-          path: boxPath,
-          message:
-            `The box [${box.join(', ')}] leaves the ${LAYOUT_CANVAS_WIDTH}x` +
-            `${LAYOUT_CANVAS_HEIGHT} canvas.`,
-          fix: 'Keep x and y at 0 or more, x + width within 1920 and y + height within 1080.',
-        },
-      ];
-    }
-
-    return [];
-  });
+  return boxes.flatMap(({ path: boxPath, box }) =>
+    checkBoxBounds(box).map(({ message, fix }) => ({ path: boxPath, message, fix })),
+  );
 }
 
 /**

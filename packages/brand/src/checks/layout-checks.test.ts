@@ -3,7 +3,7 @@ import { Result } from 'effect';
 
 import type { BrandLayoutSpec } from '#schema/layout-schema.ts';
 
-import { checkLayouts, type LayoutNames } from '#checks/layout-checks.ts';
+import { checkBoxBounds, checkLayouts, type LayoutNames } from '#checks/layout-checks.ts';
 import { TEST_LAYOUTS } from '#test-brand.fixture.ts';
 import { decodeLayouts } from '#validate/decode-layouts.ts';
 
@@ -180,5 +180,40 @@ describe('checkLayouts', () => {
     );
     expect(paths).toEqual(['layouts[0].fields[1]', 'layouts[0].fields[2]']);
     expect(errorsOf({ fields: ['treatment', 'focal'] })).toEqual([]);
+  });
+});
+
+describe('checkBoxBounds', () => {
+  it('accepts boxes within the canvas and at least 40x40', () => {
+    expect(checkBoxBounds([0, 0, 40, 40])).toEqual([]);
+    expect(checkBoxBounds([0, 0, 1920, 1080])).toEqual([]);
+    expect(checkBoxBounds([120, 200, 800, 400])).toEqual([]);
+  });
+
+  it('reports too-small for boxes below 40x40 or with non-finite size', () => {
+    for (const box of [
+      [0, 0, 39, 100],
+      [0, 0, 100, 39],
+      [0, 0, -10, 100],
+      [0, 0, Number.NaN, 100],
+    ] as const) {
+      const [problem] = checkBoxBounds(box);
+      expect(problem?.kind).toBe('too-small');
+      expect(problem?.message).toContain('at least 40x40');
+    }
+  });
+
+  it('reports out-of-bounds for boxes extending past the 1920x1080 canvas', () => {
+    for (const box of [
+      [-1, 0, 100, 100],
+      [0, -1, 100, 100],
+      [1881, 0, 40, 100],
+      [0, 1041, 100, 40],
+      [Number.POSITIVE_INFINITY, 0, 100, 100],
+    ] as const) {
+      const [problem] = checkBoxBounds(box);
+      expect(problem?.kind).toBe('out-of-bounds');
+      expect(problem?.message).toContain('1920x1080');
+    }
   });
 });

@@ -36,6 +36,15 @@ import { minFontSizeRule } from '#lint/rules/min-font-size.ts';
 import { missingNotesRule } from '#lint/rules/missing-notes.ts';
 import { offBrandRule } from '#lint/rules/off-brand.ts';
 import { openCommentsRule } from '#lint/rules/open-comments.ts';
+import {
+  placedChromeRule,
+  placedCountRule,
+  placedCoversTextRule,
+  placedOffCanvasRule,
+  placedPixelsRule,
+  placedSizeRule,
+  placedWordsRule,
+} from '#lint/rules/placed.ts';
 import { loadErrorRule, renderErrorRule } from '#lint/rules/render-error.ts';
 import { slotContentRule } from '#lint/rules/slot-content.ts';
 import { tableTooDenseRule } from '#lint/rules/table-too-dense.ts';
@@ -54,6 +63,13 @@ export const LINT_RULES: readonly LintRule[] = [
   containerOverflowRule,
   textTruncatedRule,
   textOverlapRule,
+  placedOffCanvasRule,
+  placedCoversTextRule,
+  placedChromeRule,
+  placedCountRule,
+  placedWordsRule,
+  placedSizeRule,
+  placedPixelsRule,
   minFontSizeRule,
   contrastRule,
   offBrandRule,

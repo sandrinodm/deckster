@@ -718,9 +718,9 @@ export type SpacingTokens = {
   margin: { x: number; y: number };
 
   /**
-   * The number of layout columns and the gap between them in canvas pixels.
+   * The number of layout columns, layout rows and the gap between them in canvas pixels.
    */
-  grid: { columns: number; gutter: number };
+  grid: { columns: number; rows: number; gutter: number };
 };
 
 /**

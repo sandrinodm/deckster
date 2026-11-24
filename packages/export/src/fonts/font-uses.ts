@@ -101,6 +101,11 @@ function addNode(uses: Map<string, FontUse>, node: SceneNode): void {
     return;
   }
 
+  if (node.kind === 'box' && node.paragraphs !== undefined) {
+    addParagraphs(uses, node.paragraphs);
+    return;
+  }
+
   if (node.kind !== 'table') {
     return;
   }

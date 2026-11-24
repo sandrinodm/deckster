@@ -15,6 +15,95 @@ export const SLIDE_META_EXPORT = 'slideMeta';
 export type SlideKind = 'mdx' | 'tsx';
 
 /**
+ * Which placed-element primitive a slide declared.
+ */
+export type PlacedKind = 'place' | 'shape' | 'text';
+
+/**
+ * The slide region a placed element is positioned within.
+ */
+export type PlacedZone = 'safe' | 'canvas' | 'header' | 'footer';
+
+/**
+ * A named anchor position within a {@link PlacedZone}.
+ */
+export type PlacedName =
+  | 'top-left'
+  | 'top'
+  | 'top-right'
+  | 'left'
+  | 'center'
+  | 'right'
+  | 'bottom-left'
+  | 'bottom'
+  | 'bottom-right';
+
+/**
+ * A placed element's width: a grid column count or a named size token.
+ */
+export type PlacedWidth = number | 'sm' | 'md' | 'lg';
+
+/**
+ * Compile-time placement metadata extracted from a top-level placed element on a slide.
+ */
+export type PlacedMeta = {
+  /**
+   * Which placed primitive was authored (`place`, `shape`, or `text`).
+   */
+  readonly kind: PlacedKind;
+
+  /**
+   * Optional author-supplied name for the element, used in export and diagnostics.
+   */
+  readonly name?: string;
+
+  /**
+   * Named anchor position within {@link zone}.
+   */
+  readonly place?: PlacedName;
+
+  /**
+   * Inclusive 1-based column range on the brand grid, such as `"9-12"`.
+   */
+  readonly cols?: string;
+
+  /**
+   * Inclusive 1-based row range on the brand grid, such as `"1-2"`.
+   */
+  readonly rows?: string;
+
+  /**
+   * Explicit canvas-pixel box `[x, y, width, height]`.
+   */
+  readonly box?: readonly [number, number, number, number];
+
+  /**
+   * Frame the placement is resolved against; defaults to `safe`.
+   */
+  readonly zone?: PlacedZone;
+
+  /**
+   * Width in grid columns or a named width token.
+   */
+  readonly width?: PlacedWidth;
+
+  /**
+   * Fixed height in grid rows.
+   */
+  readonly height?: number;
+
+  /**
+   * Spacing token pulling a named placement inward from its zone edge.
+   */
+  readonly inset?: string;
+
+  /**
+   * Aspect-ratio lock for geometric variants such as `square` and `circle`.
+   */
+  readonly aspect?: 'square';
+};
+
+/**
  * What the build extracts from a slide file without rendering it.
  */
 export type SlideMeta = {
@@ -42,6 +131,12 @@ export type SlideMeta = {
    * listed. A TSX slide fills each with the export of the slot's tag name (`Left`).
    */
   slots: readonly string[];
+
+  /**
+   * Top-level placed elements declared on the slide, in source order; absent when the slide has
+   * none.
+   */
+  readonly placed?: readonly PlacedMeta[];
 };
 
 /**

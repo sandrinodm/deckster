@@ -1,0 +1,27 @@
+---
+layout: content
+title: Named places pin callouts without pixel math
+budget: 45s
+---
+
+Open Network opens today across all six cities, with every shop booking through one API.
+
+<Shape place="right" width={4} surface="accent" radius="md" shadow="sm" name="Launch badge">
+  **Open Network** · live today across six cities
+</Shape>
+
+<Place place="bottom-right" width={4} at={1}>
+
+- €3.10 blended drop
+- 97.8% on time
+
+</Place>
+
+<Text place="bottom-left" type="caption" color="muted">
+  Kestwick launch talk, 3 December 2026
+</Text>
+
+<Notes>
+`content` with named `place` positions inside the default `safe` zone: a `<Shape>` badge on the right, a `<Place>` holding a Markdown bullet list at `bottom-right` revealed with `at={1}`, and a `<Text>` caption at `bottom-left`.
+Open Network goes live across all six cities today. [click] Every drop blends to €3.10 with 97.8% arriving inside the promised window.
+</Notes>

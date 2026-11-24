@@ -78,6 +78,11 @@ export const brandVariables = {
   gridColumns: '--brand-grid-columns',
 
   /**
+   * The number of layout rows, unitless.
+   */
+  gridRows: '--brand-grid-rows',
+
+  /**
    * The gap between layout columns.
    */
   gridGutter: '--brand-grid-gutter',

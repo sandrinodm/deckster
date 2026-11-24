@@ -90,6 +90,9 @@ import { Lottie } from '#media/lottie.tsx';
 import { Video } from '#media/video.tsx';
 import { Morph } from '#motion/morph.tsx';
 import { Step } from '#motion/step.tsx';
+import { Place } from '#place/place.tsx';
+import { Shape } from '#place/shape.tsx';
+import { Text } from '#place/text.tsx';
 import '#apps/apps.css';
 import '#code/code.css';
 import '#icons/icon.css';
@@ -98,6 +101,7 @@ import '#media/media.css';
 import '#links/links.css';
 import '#chrome/chrome.css';
 import '#motion/motion.css';
+import '#place/place.css';
 
 /**
  * The kit's runtime plugin, loaded into every deck by `@deckster/vite-plugin`. It registers the
@@ -203,6 +207,9 @@ export default definePlugin({
     GroundedAnswer,
     ReviewDiff,
     RunTrace,
+    Place,
+    Shape,
+    Text,
     ...CHART_COMPONENTS,
     ...DIAGRAM_COMPONENTS,
   },

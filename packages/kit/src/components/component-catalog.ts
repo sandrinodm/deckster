@@ -1,4 +1,16 @@
+import {
+  RADIUS_NAMES,
+  REGION_ALIGNS,
+  REGION_ANCHORS,
+  ROLE_NAMES,
+  SHADOW_NAMES,
+  SPACE_NAMES,
+  STROKE_NAMES,
+  TYPE_STEPS,
+} from '@deckster/brand';
+
 import { DEFAULT_STEP_EFFECT, STEP_EFFECTS } from '#motion/step-effects.ts';
+import { PLACED_NAMES, PLACED_ZONES, SHAPE_GEOMETRIES } from '#place/resolve-place.ts';
 
 /**
  * One prop of a component, as `deckster components --json` prints it.
@@ -28,7 +40,15 @@ export type ComponentPropInfo = {
 /**
  * What a group of components is for.
  */
-export type ComponentKind = 'code' | 'media' | 'icon' | 'link' | 'app' | 'motion' | 'notes';
+export type ComponentKind =
+  | 'code'
+  | 'media'
+  | 'icon'
+  | 'link'
+  | 'app'
+  | 'motion'
+  | 'place'
+  | 'notes';
 
 /**
  * One MDX component, as `deckster components --json` prints it.
@@ -40,7 +60,7 @@ export type ComponentInfo = {
   name: string;
 
   /**
-   * What it is for: code, media, icon, link, app, motion or notes.
+   * What it is for: code, media, icon, link, app, motion, place or notes.
    */
   kind: ComponentKind;
 
@@ -188,6 +208,108 @@ const RATIO_PROP = prop('number', false, null, "The frame's width over height.")
  * The `loop` prop videos and animations share: play again from the start when they end.
  */
 const LOOP_PROP = prop('boolean', false, false, 'Play again from the start when it ends.');
+
+/**
+ * Placement and reveal props shared by `<Place>`, `<Shape>` and `<Text>`.
+ */
+const PLACEMENT_PROPS = props({
+  place: prop(
+    PLACED_NAMES.map((name) => `'${name}'`).join(' | '),
+    false,
+    null,
+    'Named anchor position within the zone (mutually exclusive with `cols`/`rows` and `box`).',
+  ),
+  cols: prop(
+    'string',
+    false,
+    null,
+    'Inclusive 1-based column range on the brand grid, such as "9-12" or "4".',
+  ),
+  rows: prop(
+    'string',
+    false,
+    null,
+    'Inclusive 1-based row range on the brand grid, such as "1-2" or "5".',
+  ),
+  box: prop(
+    '[number, number, number, number]',
+    false,
+    null,
+    'Explicit canvas-pixel box [x, y, width, height]; escape hatch for imported templates.',
+  ),
+  zone: prop(
+    PLACED_ZONES.map((zone) => `'${zone}'`).join(' | '),
+    false,
+    'safe',
+    'Slide frame the placement is measured in: safe, canvas, header or footer.',
+  ),
+  width: prop(
+    "number | 'sm' | 'md' | 'lg'",
+    false,
+    null,
+    'Width in grid columns or a named size token (sm=3, md=4, lg=6); content-sized when omitted.',
+  ),
+  height: prop(
+    'number',
+    false,
+    null,
+    'Fixed height in grid rows; follows content up to the zone height when omitted.',
+  ),
+  inset: prop(
+    SPACE_NAMES.map((space) => `'${space}'`).join(' | '),
+    false,
+    null,
+    'Brand spacing token pulling a named placement inward from its zone edge.',
+  ),
+  name: prop(
+    'string',
+    false,
+    null,
+    'Optional name for the element in PowerPoint export and diagnostics.',
+  ),
+  at: prop(
+    'number',
+    false,
+    null,
+    'Step index (1 or more) that reveals this element; animates with the slide entrance when omitted.',
+  ),
+  effect: prop(
+    STEP_EFFECTS.map((effect) => `'${effect}'`).join(' | '),
+    false,
+    DEFAULT_STEP_EFFECT,
+    'Step reveal effect when `at` is set: rise, fade, scale, blur or wipe.',
+  ),
+});
+
+/**
+ * Typography and alignment props shared by `<Shape>` and `<Text>`.
+ */
+const PLACED_TEXT_PROPS = props({
+  type: prop(
+    TYPE_STEPS.map((step) => `'${step}'`).join(' | '),
+    false,
+    'body',
+    'Brand type step for text inside the element.',
+  ),
+  align: prop(
+    REGION_ALIGNS.map((align) => `'${align}'`).join(' | '),
+    false,
+    null,
+    'Horizontal text alignment: start, center or end.',
+  ),
+  anchor: prop(
+    REGION_ANCHORS.map((anchor) => `'${anchor}'`).join(' | '),
+    false,
+    null,
+    'Vertical text placement inside the box: start, center or end.',
+  ),
+  color: prop(
+    ROLE_NAMES.map((role) => `'${role}'`).join(' | '),
+    false,
+    null,
+    'Brand color role for text inside the element.',
+  ),
+});
 
 /**
  * Every MDX component the kit registers, apart from charts (`deckster charts`) and diagrams (`deck
@@ -734,6 +856,100 @@ export const COMPONENT_INFOS = [
       ),
     }),
     example: '<Morph id="logo">\n  <Icon name="trees" role="accent" />\n</Morph>',
+  },
+  {
+    name: 'Place',
+    kind: 'place',
+    useWhen:
+      'Position an icon, badge, image, QR code, button, SVG or short Markdown list outside a layout slot (for example a confidential footer mark or a callout beside a chart).',
+    avoid:
+      'Building a multi-column slide by hand: pick a layout instead. Keep to at most four placed elements per slide and at most 25 words per element.',
+    props: props({
+      ...PLACEMENT_PROPS,
+      children: CHILDREN(
+        'Any Markdown block, bullet list or kit component (<Icon>, <Image>, <QR>, <Button>, <Svg>) to place.',
+      ),
+    }),
+    example:
+      '<Place place="bottom-left" zone="footer">\n  <Icon name="lock" /> Confidential\n</Place>',
+  },
+  {
+    name: 'Shape',
+    kind: 'place',
+    useWhen:
+      'Draw a token-styled geometric callout, badge, stamp or accent box (rect, square, ellipse, circle, pill, diamond or triangle) with optional fitted text or Markdown lists. Omit placement props to render it inline in normal flow.',
+    avoid:
+      'Large boxes covering more than 35% of the safe area or replacing a slide layout. Prefer `surface` over raw `fill` so text contrast is checked by the brand.',
+    props: props({
+      ...PLACEMENT_PROPS,
+      shape: prop(
+        SHAPE_GEOMETRIES.map((geometry) => `'${geometry}'`).join(' | '),
+        false,
+        'rect',
+        'Geometric shape; `square` and `circle` lock a 1:1 aspect ratio.',
+      ),
+      surface: prop(
+        'string',
+        false,
+        null,
+        'Brand surface (`default`, `inverse`, `accent`, `gradient` or custom) that re-themes fill and text colors with checked contrast.',
+      ),
+      fill: prop(
+        `'none' | ${ROLE_NAMES.map((role) => `'${role}'`).join(' | ')}`,
+        false,
+        null,
+        'Fill color role on the current surface, or `none` for transparent.',
+      ),
+      border: prop(
+        ROLE_NAMES.map((role) => `'${role}'`).join(' | '),
+        false,
+        null,
+        'Border color role on the current surface.',
+      ),
+      stroke: prop(
+        STROKE_NAMES.map((stroke) => `'${stroke}'`).join(' | '),
+        false,
+        'regular',
+        'Border width token when `border` is set.',
+      ),
+      radius: prop(
+        `'none' | ${RADIUS_NAMES.map((radius) => `'${radius}'`).join(' | ')} | 'full'`,
+        false,
+        'none',
+        'Corner radius token; ignored on ellipse, circle, diamond and triangle.',
+      ),
+      shadow: prop(
+        `'none' | ${SHADOW_NAMES.map((shadow) => `'${shadow}'`).join(' | ')}`,
+        false,
+        'none',
+        'Drop shadow token from the active surface.',
+      ),
+      padding: prop(
+        SPACE_NAMES.map((space) => `'${space}'`).join(' | '),
+        false,
+        'md',
+        'Inner spacing token from the brand scale.',
+      ),
+      ...PLACED_TEXT_PROPS,
+      children: CHILDREN('Optional text, Markdown paragraphs or bullet lists inside the shape.'),
+    }),
+    example:
+      '<Shape place="top-right" width={4} surface="accent" radius="md">\n  New in 0.9\n</Shape>',
+  },
+  {
+    name: 'Text',
+    kind: 'place',
+    useWhen:
+      'Place unboxed floating text directly on the slide: footer sources, corner labels, stamps or standalone callout figures without fill or border chrome. Omit placement props to render it inline.',
+    avoid:
+      'Main slide prose or titles; those belong in the layout slots and frontmatter. Keep placed text brief (25 words or fewer).',
+    props: props({
+      ...PLACEMENT_PROPS,
+      ...PLACED_TEXT_PROPS,
+      children: CHILDREN('Text, inline Markdown or short lists to render without box chrome.'),
+    }),
+    example:
+      '<Text place="bottom-right" zone="footer" type="caption" color="muted">\n  Source: Q3 customer survey, n = 412\n</Text>',
   },
   {
     name: 'Notes',

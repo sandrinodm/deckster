@@ -1,10 +1,19 @@
-import type { LinkTarget } from '#pptx/text-xml.ts';
+import type { LinkTarget, TextContext } from '#pptx/text-xml.ts';
 import type { SurfaceTheme } from '#pptx/theme.ts';
-import type { BoxNode, SceneBorder, SceneRect, SceneShadow, VectorShape } from '#scene/scene.ts';
+import type {
+  BoxNode,
+  SceneBorder,
+  SceneRect,
+  SceneShadow,
+  ShapePreset,
+  TextAnchor,
+  VectorShape,
+} from '#scene/scene.ts';
 import type { PathCommand, Point } from '#vector/svg-path.ts';
 
 import { el } from '#ooxml/xml.ts';
 import { SVG_BLIP_EXTENSION, SVG_BLIP_NAMESPACE } from '#pptx/namespaces.ts';
+import { layoutFrame, paragraphsXml } from '#pptx/text-xml.ts';
 import { colorXml, paintFill } from '#pptx/theme.ts';
 import { degreesToDrawing, EMU_PER_PX, fractionToDrawing, pxToEmu } from '#units.ts';
 import { pathBounds, readFormattedPath } from '#vector/svg-path.ts';
@@ -76,6 +85,53 @@ const MIN_VECTOR_BOX_PX = 0.01;
 const MITER_LIMIT = 800_000;
 
 /**
+ * Maps a placed `<Shape>` vertical anchor to DrawingML's `a:bodyPr/@anchor` attribute.
+ */
+const ANCHOR_MAP: Readonly<Record<TextAnchor, 't' | 'ctr' | 'b'>> = {
+  /**
+   * Top-anchored text.
+   */
+  start: 't',
+
+  /**
+   * Vertically centred text.
+   */
+  center: 'ctr',
+
+  /**
+   * Bottom-anchored text.
+   */
+  end: 'b',
+};
+
+/**
+ * The share of a `roundRect` corner radius that DrawingML's built-in text rectangle insets on each
+ * side (`1 - sqrt(2) / 2`).
+ */
+const ROUND_RECT_INSET_FACTOR = 1 - Math.SQRT1_2;
+
+/**
+ * The share of an `ellipse` box that DrawingML's inscribed text rectangle insets on each side.
+ */
+const ELLIPSE_TEXT_INSET_RATIO = (1 - Math.SQRT1_2) / 2;
+
+/**
+ * The share of a `diamond` box that DrawingML's inscribed text rectangle insets on each side.
+ */
+const DIAMOND_TEXT_INSET_RATIO = 0.25;
+
+/**
+ * The horizontal share of a `triangle` box that DrawingML's inscribed text rectangle insets on each
+ * side.
+ */
+const TRIANGLE_SIDE_INSET_RATIO = 0.25;
+
+/**
+ * The top share of a `triangle` box that DrawingML's inscribed text rectangle insets.
+ */
+const TRIANGLE_TOP_INSET_RATIO = 0.5;
+
+/**
  * Hands out shape ids, unique within one slide; id 1 is the slide's shape tree.
  */
 export type IdAllocator = () => number;
@@ -131,17 +187,26 @@ export function cNvPr(
 }
 
 /**
- * The geometry of a box with corner radii: a rectangle, a rounded rectangle when the radii are
- * equal, or a custom path when they differ.
+ * The geometry of a box with corner radii: an explicit preset (`rect`, `ellipse`, `diamond`,
+ * `triangle`), a rounded rectangle when the radii are equal, or a custom path when they differ.
  *
  * @param rect - The box.
  * @param radii - Top-left, top-right, bottom-right and bottom-left radii.
+ * @param preset - Optional preset geometry from a `<Shape>` element.
  */
-export function boxGeometry(rect: SceneRect, radii: readonly number[]): string {
+export function boxGeometry(
+  rect: SceneRect,
+  radii: readonly number[],
+  preset?: ShapePreset,
+): string {
+  if (preset === 'ellipse' || preset === 'diamond' || preset === 'triangle' || preset === 'rect') {
+    return el('a:prstGeom', { prst: preset }, el('a:avLst'));
+  }
+
   const [first = 0] = radii;
   const isUniform = radii.every((radius) => Math.abs(radius - first) < RADIUS_TOLERANCE_PX);
   if (isUniform && first <= RADIUS_TOLERANCE_PX) {
-    return el('a:prstGeom', { prst: 'rect' }, el('a:avLst'));
+    return el('a:prstGeom', { prst: preset === 'roundRect' ? 'roundRect' : 'rect' }, el('a:avLst'));
   }
 
   if (isUniform) {
@@ -385,12 +450,32 @@ function boxesOverlap(a: SceneRect, b: SceneRect): boolean {
 }
 
 /**
+ * Optional extras for writing a box shape: the slide's text context when the box holds paragraphs,
+ * and an explicit selection-pane name.
+ */
+export type BoxXmlOptions = {
+  /**
+   * The slide's theme, fonts and links for writing `node.paragraphs` inside `p:txBody`.
+   */
+  textContext?: TextContext;
+
+  /**
+   * Override for the shape's selection-pane name (for example, `"Callout 2"`).
+   */
+  name?: string;
+};
+
+/**
  * A painted box: its fill, a uniform border as the shape's outline (drawn inside the box, as CSS
- * does), its strongest shadow, and one thin rectangle per side for borders that differ by side.
+ * does), its strongest shadow, optional text body when it holds paragraphs (so a `<Shape>` exports
+ * as one editable PowerPoint object), and one thin rectangle per side for borders that differ by
+ * side.
  *
  * @param node - The box.
  * @param nextId - Allocates shape ids.
  * @param theme - The slide's surface theme.
+ * @param grain - Optional tiled grain fill.
+ * @param options - Optional text context and explicit name.
  * @returns The shapes.
  */
 export function boxXml(
@@ -398,6 +483,7 @@ export function boxXml(
   nextId: IdAllocator,
   theme: SurfaceTheme,
   grain: GrainFill | null = null,
+  options: BoxXmlOptions = {},
 ): string {
   const uniform = uniformBorder(node.borders);
   const inset = uniform === null ? 0 : uniform.width / 2;
@@ -410,25 +496,47 @@ export function boxXml(
   const radii = node.radii.map((radius) => Math.max(0, radius - inset));
   const fill = node.fill === null ? el('a:noFill') : paintFill(node.fill, theme);
   const line = uniform === null ? el('a:ln', {}, el('a:noFill')) : lineXml(uniform, theme);
-  const paintsMain = node.fill !== null || uniform !== null || node.shadows.length > 0;
+  const hasText = node.paragraphs !== undefined && node.paragraphs.length > 0;
+  const paintsMain =
+    node.fill !== null ||
+    uniform !== null ||
+    node.shadows.length > 0 ||
+    node.shapePreset !== undefined ||
+    hasText;
+  const textContext: TextContext = options.textContext ?? {
+    theme,
+    families: { major: theme.fonts.major, minor: theme.fonts.minor },
+    link: () => null,
+    slideNumber: null,
+  };
+  const txBody = hasText ? boxTextBodyXml(node, rect, radii, textContext) : '';
   const main = paintsMain
     ? el(
         'p:sp',
         {},
-        el('p:nvSpPr', {}, cNvPr(nextId(), boxName(node)), el('p:cNvSpPr'), el('p:nvPr')),
+        el(
+          'p:nvSpPr',
+          {},
+          cNvPr(nextId(), options.name ?? boxName(node)),
+          el('p:cNvSpPr'),
+          el('p:nvPr'),
+        ),
         el(
           'p:spPr',
           {},
           xfrm(rect),
-          boxGeometry(rect, radii),
+          boxGeometry(rect, radii, node.shapePreset),
           fill,
           line,
           shadowXml(node.shadows, node.rect, theme),
         ),
+        txBody,
       )
     : '';
   const grainShape =
-    grain === null ? '' : grainXml(rect, nextId(), grain.imageId, grain.size, radii);
+    grain === null
+      ? ''
+      : grainXml(rect, nextId(), grain.imageId, grain.size, radii, node.shapePreset);
   const sides =
     uniform === null
       ? sideRects(node).map(([side, border]) => sideXml(side, border, nextId, theme))
@@ -437,12 +545,120 @@ export function boxXml(
 }
 
 /**
- * The name the selection pane shows for a painted box, from its shape: a thin one is a rule, one
- * that covers the slide its background, others a panel.
+ * The `p:txBody` of a box holding paragraphs (a `<Shape>`), with `a:bodyPr` insets derived from the
+ * laid-out paragraphs relative to the shape's box (accounting for the preset geometry's own text
+ * rectangle) and vertical anchor mapped from `node.anchor`.
+ *
+ * @param node - The box with paragraphs.
+ * @param rect - The shape's box after uniform-border inset.
+ * @param radii - Corner radii after uniform-border inset.
+ * @param context - The slide's text context.
+ */
+function boxTextBodyXml(
+  node: BoxNode,
+  rect: SceneRect,
+  radii: readonly number[],
+  context: TextContext,
+): string {
+  const paragraphs = node.paragraphs ?? [];
+  const layout = layoutFrame(paragraphs);
+  const presetInsets = presetTextInsets(rect, radii, node.shapePreset);
+  const leftGap = Math.max(0, layout.rect.x - rect.x - presetInsets.left);
+  const rightGap = Math.max(
+    0,
+    rect.x + rect.width - (layout.rect.x + layout.rect.width) - presetInsets.right,
+  );
+  const topGap = Math.max(0, layout.rect.y - rect.y - presetInsets.top);
+  const bottomGap = Math.max(
+    0,
+    rect.y + rect.height - (layout.rect.y + layout.rect.height) - presetInsets.bottom,
+  );
+  const anchor = ANCHOR_MAP[node.anchor ?? 'start'];
+  const lIns = pxToEmu(leftGap);
+  const rIns = pxToEmu(rightGap);
+  const tIns = anchor === 't' ? pxToEmu(topGap) : 0;
+  const bIns = anchor === 'b' ? pxToEmu(bottomGap) : 0;
+  return el(
+    'p:txBody',
+    {},
+    el(
+      'a:bodyPr',
+      {
+        wrap: layout.wraps ? 'square' : 'none',
+        lIns,
+        tIns,
+        rIns,
+        bIns,
+        rtlCol: 0,
+        anchor,
+        anchorCtr: 0,
+      },
+      el('a:noAutofit'),
+    ),
+    el('a:lstStyle'),
+    paragraphsXml(layout, context),
+  );
+}
+
+/**
+ * The built-in text rectangle insets, in canvas pixels, that DrawingML applies inside a preset
+ * geometry before `a:bodyPr` margins are added.
+ *
+ * @param rect - The shape's box.
+ * @param radii - The shape's corner radii.
+ * @param preset - The shape's preset geometry, if any.
+ */
+function presetTextInsets(
+  rect: SceneRect,
+  radii: readonly number[],
+  preset: ShapePreset | undefined,
+): { left: number; top: number; right: number; bottom: number } {
+  if (preset === 'ellipse') {
+    const x = rect.width * ELLIPSE_TEXT_INSET_RATIO;
+    const y = rect.height * ELLIPSE_TEXT_INSET_RATIO;
+    return { left: x, top: y, right: x, bottom: y };
+  }
+
+  if (preset === 'diamond') {
+    const x = rect.width * DIAMOND_TEXT_INSET_RATIO;
+    const y = rect.height * DIAMOND_TEXT_INSET_RATIO;
+    return { left: x, top: y, right: x, bottom: y };
+  }
+
+  if (preset === 'triangle') {
+    const x = rect.width * TRIANGLE_SIDE_INSET_RATIO;
+    return { left: x, top: rect.height * TRIANGLE_TOP_INSET_RATIO, right: x, bottom: 0 };
+  }
+
+  if (preset === 'roundRect' || preset === undefined) {
+    const [first = 0] = radii;
+    const isUniform = radii.every((radius) => Math.abs(radius - first) < RADIUS_TOLERANCE_PX);
+    if (isUniform && first > RADIUS_TOLERANCE_PX) {
+      const side = Math.min(first, Math.min(rect.width, rect.height) / 2) * ROUND_RECT_INSET_FACTOR;
+      return { left: side, top: side, right: side, bottom: side };
+    }
+  }
+
+  return { left: 0, top: 0, right: 0, bottom: 0 };
+}
+
+/**
+ * The name the selection pane shows for a painted box: its custom `exportName` when given, a
+ * numbered `"Callout N"` for `<Shape>` presets, else from its shape (`Background`, `Rule`, or
+ * `Panel`).
  *
  * @param node - The box.
+ * @param calloutNumber - The 1-based callout index on the slide, defaulting to 1.
  */
-export function boxName(node: BoxNode): string {
+export function boxName(node: BoxNode, calloutNumber = 1): string {
+  if (node.exportName !== undefined && node.exportName !== '') {
+    return node.exportName;
+  }
+
+  if (node.shapePreset !== undefined) {
+    return `Callout ${calloutNumber}`;
+  }
+
   if (node.fullBleed) {
     return 'Background';
   }
@@ -530,6 +746,7 @@ export type GrainFill = {
  * @param imageId - The relationship id of the tile (one pixel per canvas pixel).
  * @param size - The tile's size in canvas pixels.
  * @param radii - The area's corner radii.
+ * @param preset - Optional preset geometry from a `<Shape>` element.
  */
 export function grainXml(
   rect: SceneRect,
@@ -537,6 +754,7 @@ export function grainXml(
   imageId: string,
   size: number,
   radii: readonly number[] = [0, 0, 0, 0],
+  preset?: ShapePreset,
 ): string {
   const tilePixels = size * GRAIN_TILE_DENSITY;
   const scale = Math.round(((size * EMU_PER_PX) / (tilePixels * EMU_PER_IMAGE_PX)) * FULL_SCALE);
@@ -554,7 +772,7 @@ export function grainXml(
       'p:spPr',
       {},
       xfrm(rect),
-      boxGeometry(rect, radii),
+      boxGeometry(rect, radii, preset),
       el(
         'a:blipFill',
         { dpi: 0, rotWithShape: 1 },

@@ -32,6 +32,7 @@ import {
 } from '#layouts/load-layout-catalog.ts';
 import { OPEN_IN_EDITOR_ENDPOINT, refuseOpenInEditor } from '#open-in-editor-guard.ts';
 import { makeRunEffect } from '#run-effect.ts';
+import { slideBrandOf } from '#slides/check-surface.ts';
 import {
   DEFAULT_MDX_EXTENSIONS,
   loadMdxExtensions,
@@ -383,7 +384,7 @@ export function deckPlugin(
         mdx,
         onWarning,
         layouts: await layoutCatalog(),
-        brand: { name: tokens.name, surfaces: Object.keys(tokens.surfaces) },
+        brand: slideBrandOf(tokens),
         fallback: { workspaceRoot, brand: tokens.name },
       };
       if (file.extension === 'mdx') {

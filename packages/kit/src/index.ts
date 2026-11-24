@@ -27,3 +27,6 @@ export { CommandDemo, type CommandDemoProps } from '#demo/command-demo.tsx';
 export { GroundedAnswer, type GroundedAnswerProps } from '#demo/grounded-answer.tsx';
 export { ReviewDiff, type ReviewDiffProps } from '#demo/review-diff.tsx';
 export { RunTrace, type RunTraceProps } from '#demo/run-trace.tsx';
+export { Place, type PlaceProps } from '#place/place.tsx';
+export { Shape, type ShapeProps } from '#place/shape.tsx';
+export { Text, type TextProps } from '#place/text.tsx';

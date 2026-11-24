@@ -208,6 +208,7 @@ const compileMdxSlide = Effect.fn('compileMdxSlide')(function* (
     development,
     frontmatter,
     slotTags: slotTagsOf(layout.contract),
+    ...(slide.brand === undefined ? {} : { brand: slide.brand }),
     ...extensionOptions(slide),
   });
   if (compiled.exportProblems.length > 0) {
@@ -225,7 +226,14 @@ const compileMdxSlide = Effect.fn('compileMdxSlide')(function* (
   }
 
   const title = frontmatter.title ?? compiled.heading ?? slide.id;
-  return { code: compiled.code, meta: { frontmatter, title, notes: compiled.notes, slots } };
+  const meta: SlideMeta = {
+    frontmatter,
+    title,
+    notes: compiled.notes,
+    slots,
+    ...(compiled.placed.length === 0 ? {} : { placed: compiled.placed }),
+  };
+  return { code: compiled.code, meta };
 });
 
 /**

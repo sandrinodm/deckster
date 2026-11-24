@@ -91,6 +91,22 @@ export type LayoutChrome = BrandLayoutChromeTokens;
 export type ChromeBox = readonly [number, number, number, number];
 
 /**
+ * Horizontal and vertical slide margins in canvas pixels, used to determine where corner chrome
+ * bands sit.
+ */
+export type ChromeMargin = {
+  /**
+   * Horizontal slide margin in canvas pixels.
+   */
+  readonly x: number;
+
+  /**
+   * Vertical slide margin in canvas pixels (the height of the header and footer bands).
+   */
+  readonly y: number;
+};
+
+/**
  * What {@link planChrome} needs to know about the deck and the slide on screen.
  */
 export type ChromeInput = {
@@ -137,6 +153,17 @@ export type ChromeInput = {
    * on its other half free.
    */
   mediaBoxes?: readonly ChromeBox[];
+
+  /**
+   * Canvas boxes of placed elements (`<Place>`, `<Shape>`, `<Text>`) on the slide: a placed box
+   * that overlaps a corner's chrome band causes chrome to yield off that corner.
+   */
+  placedBoxes?: readonly ChromeBox[];
+
+  /**
+   * The brand's slide margins, used with `placedBoxes` to locate the top and bottom chrome bands.
+   */
+  margin?: ChromeMargin;
 };
 
 /**
@@ -193,9 +220,11 @@ export function planChrome(input: ChromeInput): ChromePlan {
   const total = shown.length;
   const page = shownPageNumber(input.hidden, index);
   const reached = shown.filter((slide) => slide <= index).length;
+  const margin = input.margin ?? DEFAULT_CHROME_MARGIN;
   const covered = new Set<ChromeCorner>([
     ...input.bleed.flatMap((side) => SIDE_CORNERS[side]),
     ...(input.mediaBoxes ?? []).flatMap(cornersCovered),
+    ...(input.placedBoxes ?? []).flatMap((box) => cornersCoveredByPlaced(box, margin)),
   ]);
   const own = input.layoutChrome;
   const pageBox = page !== undefined && chrome.pageNumber.show ? pageBoxOf(own) : undefined;
@@ -258,6 +287,68 @@ const CANVAS = {
    */
   height: 1080,
 } as const;
+
+/**
+ * The default slide margins used when {@link ChromeInput.margin} is omitted.
+ */
+const DEFAULT_CHROME_MARGIN: ChromeMargin = {
+  /**
+   * Horizontal margin in canvas pixels.
+   */
+  x: 96,
+
+  /**
+   * Vertical margin in canvas pixels.
+   */
+  y: 72,
+};
+
+/**
+ * Horizontal reach from each slide edge that corner chrome (logo, footer text, page number)
+ * occupies inside the top or bottom margin band, in canvas pixels.
+ */
+const CHROME_CORNER_WIDTH = 560;
+
+/**
+ * The corners of the slide a placed box covers: any corner whose chrome band (top/bottom margin
+ * band and left/right corner span) the box overlaps.
+ *
+ * @param box - A placed box: x, y, width and height in canvas pixels.
+ * @param margin - The brand's slide margins in canvas pixels.
+ * @returns The corners overlapped by the placed box.
+ */
+export function cornersCoveredByPlaced(
+  box: ChromeBox,
+  margin: ChromeMargin,
+): readonly ChromeCorner[] {
+  const [x, y, width, height] = box;
+  if (width <= 0 || height <= 0) {
+    return [];
+  }
+
+  const inTop = y < margin.y && y + height > 0;
+  const inBottom = y + height > CANVAS.height - margin.y && y < CANVAS.height;
+  const inLeft = x < CHROME_CORNER_WIDTH && x + width > 0;
+  const inRight = x + width > CANVAS.width - CHROME_CORNER_WIDTH && x < CANVAS.width;
+  const corners: ChromeCorner[] = [];
+  if (inTop && inLeft) {
+    corners.push('top-left');
+  }
+
+  if (inTop && inRight) {
+    corners.push('top-right');
+  }
+
+  if (inBottom && inLeft) {
+    corners.push('bottom-left');
+  }
+
+  if (inBottom && inRight) {
+    corners.push('bottom-right');
+  }
+
+  return corners;
+}
 
 /**
  * The corners of the slide a box reaches: those where it touches both edges that meet there.

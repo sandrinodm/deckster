@@ -37,7 +37,7 @@ describe('brand findings in deckster lint', () => {
       brand: 'acme',
       ok: true,
       findings: findingsFromBrandWarnings('brands/acme/brand.ts', [MERGED_PAIR]),
-      summary: { errors: 0, warnings: 1, slides: 4, steps: 8, budgetSeconds: null },
+      summary: { errors: 0, warnings: 1, info: 0, slides: 4, steps: 8, budgetSeconds: null },
     };
     const text = formatReport(report);
     expect(text).toContain(

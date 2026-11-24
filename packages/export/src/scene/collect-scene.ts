@@ -18,6 +18,8 @@ import type {
   SceneRect,
   SceneRun,
   SceneShadow,
+  ShapePreset,
+  TextAnchor,
 } from '#scene/scene.ts';
 
 /**
@@ -63,6 +65,20 @@ export function collectScene(options: CollectOptions): CollectedScene {
   const PSEUDO_ATTRIBUTE = 'data-export-pseudo';
   const HOST_ATTRIBUTE = 'data-export-pseudo-host';
   const BULLET_ATTRIBUTE = 'data-export-bullet';
+  const PLACED_ATTRIBUTE = 'data-placed';
+  const PLACED_NAME_ATTRIBUTE = 'data-placed-name';
+  const EXPORT_SHAPE_ATTRIBUTE = 'data-export-shape';
+  const EXPORT_TEXT_ATTRIBUTE = 'data-export-text';
+  const EXPORT_TEXT_SELECTOR = `[${EXPORT_TEXT_ATTRIBUTE}]:not([${EXPORT_TEXT_ATTRIBUTE}="false"])`;
+  const ANCHOR_ATTRIBUTE = 'data-anchor';
+  const SHAPE_PRESETS = new Set<ShapePreset>([
+    'rect',
+    'roundRect',
+    'ellipse',
+    'diamond',
+    'triangle',
+  ]);
+  const TEXT_ANCHORS = new Set<TextAnchor>(['start', 'center', 'end']);
   const PSEUDO_STYLE_ID = 'deck-export-pseudo-style';
   // CHART_SPEC_ATTRIBUTE of @deckster/kit/chart-spec: this function runs in the page and cannot
   // import it.
@@ -558,7 +574,11 @@ export function collectScene(options: CollectOptions): CollectedScene {
       hints.push({ reason: 'mask', scope: 'subtree', detail: 'mask-image' });
     }
 
-    if (style.clipPath !== 'none' && style.clipPath !== '') {
+    if (
+      style.clipPath !== 'none' &&
+      style.clipPath !== '' &&
+      element.closest(`[${EXPORT_SHAPE_ATTRIBUTE}]`) === null
+    ) {
       hints.push({ reason: 'clip-path', scope: 'subtree', detail: `clip-path: ${style.clipPath}` });
     }
 
@@ -2184,6 +2204,92 @@ export function collectScene(options: CollectOptions): CollectedScene {
     });
   };
 
+  /**
+   * All text and list paragraphs inside a `[data-export-shape]` element, in document order, so the
+   * shape exports as a single `p:sp` with a `p:txBody`.
+   *
+   * @param root - The shape element.
+   */
+  const readShapeParagraphs = (
+    root: Element,
+  ): { paragraphs: SceneParagraph[]; complexHints: RasterHint[] } => {
+    const paragraphs: SceneParagraph[] = [];
+    const complexHints: RasterHint[] = [];
+    /**
+     * Walks block descendants inside the shape to collect paragraphs and bullet items.
+     *
+     * @param node - The current element.
+     */
+    const walk = (node: Element): void => {
+      const nodeStyle = getComputedStyle(node);
+      if (
+        SKIPPED_TAGS.has(node.tagName.toUpperCase()) ||
+        nodeStyle.display === 'none' ||
+        node.hasAttribute(BULLET_ATTRIBUTE) ||
+        node.matches('[data-slide-error]') ||
+        node instanceof SVGElement
+      ) {
+        return;
+      }
+
+      const nodeOpacity = effectiveOpacity(node);
+      if (nodeOpacity === 0) {
+        return;
+      }
+
+      const bounds = node.getBoundingClientRect();
+      const isVisuallyHidden =
+        nodeStyle.clipPath === 'inset(50%)' ||
+        nodeStyle.getPropertyValue('clip') === 'rect(0px, 0px, 0px, 0px)' ||
+        (bounds.width <= 1 && bounds.height <= 1 && nodeStyle.overflow === 'hidden');
+      if (isVisuallyHidden) {
+        return;
+      }
+
+      if (node.matches(CODE_SELECTOR)) {
+        if (nodeStyle.visibility === 'visible' && (bounds.width > 0 || bounds.height > 0)) {
+          paragraphs.push(...readCode(node));
+        }
+
+        return;
+      }
+
+      if (
+        nodeStyle.visibility === 'visible' &&
+        (bounds.width > 0 || bounds.height > 0) &&
+        !isInline(node) &&
+        hasOwnText(node)
+      ) {
+        const paragraph = readParagraph(node, nodeStyle, toRect(bounds), nodeOpacity);
+        if (paragraph !== null) {
+          paragraphs.push(paragraph);
+          const complex = complexText(node, nodeStyle);
+          if (complex !== null) {
+            complexHints.push({ reason: 'complex-text', scope: 'subtree', detail: complex });
+          }
+        }
+      }
+
+      for (const child of Array.from(node.children)) {
+        if (child.hasAttribute(EXPORT_SHAPE_ATTRIBUTE)) {
+          continue;
+        }
+
+        if (
+          child instanceof HTMLElement &&
+          isInline(child) &&
+          !child.hasAttribute(PSEUDO_ATTRIBUTE)
+        ) {
+          continue;
+        }
+
+        walk(child);
+      }
+    };
+    walk(root);
+    return { paragraphs, complexHints };
+  };
+
   const roots: Element[] = [
     slide,
     ...Array.from(canvasElement.children).filter(
@@ -2233,8 +2339,15 @@ export function collectScene(options: CollectOptions): CollectedScene {
    * @param element - The element.
    * @param parent - The id of the nearest recorded ancestor.
    * @param container - The id of the nearest painted ancestor.
+   * @param inExportShape - Whether the element sits inside a `[data-export-shape]` whose text has
+   *   already been collected onto the owning shape.
    */
-  const visit = (element: Element, parent: number | null, container: number | null): void => {
+  const visit = (
+    element: Element,
+    parent: number | null,
+    container: number | null,
+    inExportShape = false,
+  ): void => {
     const style = getComputedStyle(element);
     const isSkipped = SKIPPED_TAGS.has(element.tagName.toUpperCase()) || style.display === 'none';
     if (
@@ -2262,7 +2375,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
     tree[String(id)] = parent;
     if (!isVisible || style.display === 'contents') {
       if (opacity > 0 && !isVisuallyHidden) {
-        visitChildren(element, parent, container);
+        visitChildren(element, parent, container, inExportShape);
       }
 
       return;
@@ -2273,6 +2386,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
     const layer = paintLayer(element);
     const inBackdrop = element.closest(BACKDROP_SELECTOR) !== null;
     const inSlideImage = inBackdrop && element.closest(SLIDE_IMAGE_SELECTOR) !== null;
+    const inPlaced = element.closest(`[${PLACED_ATTRIBUTE}]`) !== null;
     const base = {
       id,
       parent,
@@ -2286,6 +2400,7 @@ export function collectScene(options: CollectOptions): CollectedScene {
       replacedAt: replacedAtOf(element),
       ...(inBackdrop ? { backdrop: true as const } : {}),
       ...(inSlideImage ? { slideImage: true as const } : {}),
+      ...(inPlaced ? { placed: true } : {}),
     };
     const chartSpec = element.getAttribute(CHART_ATTRIBUTE);
     const diagramSpec = element.getAttribute(DIAGRAM_ATTRIBUTE);
@@ -2406,6 +2521,18 @@ export function collectScene(options: CollectOptions): CollectedScene {
       return;
     }
 
+    const rawShapePreset = element.getAttribute(EXPORT_SHAPE_ATTRIBUTE);
+    const shapePreset =
+      rawShapePreset !== null && SHAPE_PRESETS.has(rawShapePreset as ShapePreset)
+        ? (rawShapePreset as ShapePreset)
+        : undefined;
+    const shapeText = shapePreset === undefined ? null : readShapeParagraphs(element);
+    const rawPlacedName = element.getAttribute(PLACED_NAME_ATTRIBUTE)?.trim() ?? '';
+    const rawAnchor = element.getAttribute(ANCHOR_ATTRIBUTE);
+    const shapeAnchor =
+      rawAnchor !== null && TEXT_ANCHORS.has(rawAnchor as TextAnchor)
+        ? (rawAnchor as TextAnchor)
+        : undefined;
     const { fill, hints: fillHints, image } = readFill(style, opacity);
     const borders: [
       SceneBorder | null,
@@ -2421,17 +2548,19 @@ export function collectScene(options: CollectOptions): CollectedScene {
     const shadows = readShadows(style.boxShadow, opacity);
     const paints =
       fill !== null || image || borders.some((border) => border !== null) || shadows.length > 0;
-    const hints = [...base.hints, ...fillHints];
+    const hints = [...base.hints, ...fillHints, ...(shapeText?.complexHints ?? [])];
     // A translucent box over the whole slide, such as a scrim over a photo, shows what is under it:
     // it is an overlay, never the slide's background.
     const fullBleed =
       !inBackdrop &&
+      !inPlaced &&
+      shapePreset === undefined &&
       rect.x <= FULL_BLEED_TOLERANCE_PX &&
       rect.y <= FULL_BLEED_TOLERANCE_PX &&
       rect.x + rect.width >= canvas.width - FULL_BLEED_TOLERANCE_PX &&
       rect.y + rect.height >= canvas.height - FULL_BLEED_TOLERANCE_PX &&
       (image || fill === null || isOpaquePaint(fill));
-    if (paints || hints.length > 0) {
+    if (paints || hints.length > 0 || shapePreset !== undefined) {
       if (fullBleed && (fill !== null || image)) {
         background = fill;
         backgroundIsImage = image;
@@ -2447,6 +2576,16 @@ export function collectScene(options: CollectOptions): CollectedScene {
           radii: readRadii(style, rect),
           shadows,
           fullBleed,
+          ...(shapePreset === undefined ? {} : { shapePreset }),
+          ...(shapePreset !== undefined && rawPlacedName !== ''
+            ? { exportName: rawPlacedName }
+            : {}),
+          ...(shapePreset !== undefined && shapeAnchor !== undefined
+            ? { anchor: shapeAnchor }
+            : {}),
+          ...(shapeText !== null && shapeText.paragraphs.length > 0
+            ? { paragraphs: shapeText.paragraphs }
+            : {}),
         },
         layer,
         isInline(element) && parent !== null ? parent + INLINE_BOX_OFFSET : id,
@@ -2473,54 +2612,72 @@ export function collectScene(options: CollectOptions): CollectedScene {
     }
 
     const nextContainer = paints ? id : container;
-    if (element.matches(CODE_SELECTOR)) {
-      const paragraphs = readCode(element);
-      if (paragraphs.length > 0) {
-        record(
-          {
-            ...base,
-            id: id + TEXT_ID_OFFSET,
-            parent: id,
-            hints: [],
-            kind: 'text',
-            paragraphs,
-            container: nextContainer,
-            matches: placeholderSelectors.filter((selector) => element.closest(selector) !== null),
-          },
-          // The code's text paints over its lines' highlights, which are positioned inside it.
-          [...layer.slice(0, -1), CODE_TEXT_LAYER],
-          id + TEXT_ID_OFFSET,
-        );
-      }
-    } else if (
-      !isInline(element) &&
-      element.closest(CODE_SELECTOR) === null &&
-      hasOwnText(element)
-    ) {
-      const paragraph = readParagraph(element, style, rect, opacity);
-      const complex = paragraph === null ? null : complexText(element, style);
-      if (paragraph !== null) {
-        record(
-          {
-            ...base,
-            id: id + TEXT_ID_OFFSET,
-            parent: id,
-            hints:
-              complex === null
-                ? []
-                : [{ reason: 'complex-text', scope: 'subtree', detail: complex }],
-            kind: 'text',
-            paragraphs: [paragraph],
-            container: nextContainer,
-            matches: placeholderSelectors.filter((selector) => element.closest(selector) !== null),
-          },
-          layer,
-          id + TEXT_ID_OFFSET,
-        );
+    const nextInExportShape = inExportShape || shapePreset !== undefined;
+    if (!nextInExportShape) {
+      const exportTextHost = element.closest(EXPORT_TEXT_SELECTOR);
+      const isExportText = exportTextHost !== null;
+      const exportTextContainer = isExportText
+        ? (documentIndexes.get(exportTextHost) ?? nextContainer)
+        : nextContainer;
+      const exportTextName = isExportText
+        ? (exportTextHost.getAttribute(PLACED_NAME_ATTRIBUTE)?.trim() ?? '')
+        : '';
+      const textMeta = {
+        slot: isExportText ? null : base.slot,
+        container: exportTextContainer,
+        matches: isExportText
+          ? []
+          : placeholderSelectors.filter((selector) => element.closest(selector) !== null),
+        ...(isExportText ? { exportText: true } : {}),
+        ...(exportTextName === '' ? {} : { exportName: exportTextName }),
+      };
+      if (element.matches(CODE_SELECTOR)) {
+        const paragraphs = readCode(element);
+        if (paragraphs.length > 0) {
+          record(
+            {
+              ...base,
+              ...textMeta,
+              id: id + TEXT_ID_OFFSET,
+              parent: id,
+              hints: [],
+              kind: 'text',
+              paragraphs,
+            },
+            // The code's text paints over its lines' highlights, which are positioned inside it.
+            [...layer.slice(0, -1), CODE_TEXT_LAYER],
+            id + TEXT_ID_OFFSET,
+          );
+        }
+      } else if (
+        !isInline(element) &&
+        element.closest(CODE_SELECTOR) === null &&
+        hasOwnText(element)
+      ) {
+        const paragraph = readParagraph(element, style, rect, opacity);
+        const complex = paragraph === null ? null : complexText(element, style);
+        if (paragraph !== null) {
+          record(
+            {
+              ...base,
+              ...textMeta,
+              id: id + TEXT_ID_OFFSET,
+              parent: id,
+              hints:
+                complex === null
+                  ? []
+                  : [{ reason: 'complex-text', scope: 'subtree', detail: complex }],
+              kind: 'text',
+              paragraphs: [paragraph],
+            },
+            layer,
+            id + TEXT_ID_OFFSET,
+          );
+        }
       }
     }
 
-    visitChildren(element, id, nextContainer);
+    visitChildren(element, id, nextContainer, nextInExportShape);
   };
 
   /**
@@ -2529,11 +2686,13 @@ export function collectScene(options: CollectOptions): CollectedScene {
    * @param element - The element.
    * @param parent - The id of the nearest recorded ancestor.
    * @param container - The id of the nearest painted ancestor.
+   * @param inExportShape - Whether the element sits inside a `[data-export-shape]`.
    */
   const visitChildren = (
     element: Element,
     parent: number | null,
     container: number | null,
+    inExportShape = false,
   ): void => {
     for (const child of Array.from(element.children)) {
       if (
@@ -2547,12 +2706,12 @@ export function collectScene(options: CollectOptions): CollectedScene {
           style.borderTopStyle !== 'none' ||
           style.boxShadow !== 'none';
         if (!paintsInline) {
-          visitInline(child, parent, container);
+          visitInline(child, parent, container, inExportShape);
           continue;
         }
       }
 
-      visit(child, parent, container);
+      visit(child, parent, container, inExportShape);
     }
   };
 
@@ -2563,14 +2722,20 @@ export function collectScene(options: CollectOptions): CollectedScene {
    * @param element - The inline element.
    * @param parent - The id of the nearest recorded ancestor.
    * @param container - The id of the nearest painted ancestor.
+   * @param inExportShape - Whether the element sits inside a `[data-export-shape]`.
    */
-  const visitInline = (element: Element, parent: number | null, container: number | null): void => {
+  const visitInline = (
+    element: Element,
+    parent: number | null,
+    container: number | null,
+    inExportShape = false,
+  ): void => {
     documentIndex += 1;
     for (const child of Array.from(element.children)) {
       if (child instanceof HTMLElement && isInline(child)) {
-        visitInline(child, parent, container);
+        visitInline(child, parent, container, inExportShape);
       } else {
-        visit(child, parent, container);
+        visit(child, parent, container, inExportShape);
       }
     }
   };

@@ -16,15 +16,17 @@ export const CLIPPING_VALUES = new Set(['hidden', 'clip', 'auto', 'scroll']);
 /**
  * The elements that count as decoration, which the overflow and text rules skip: those the author
  * marked (`aria-hidden="true"` or `data-decorative` on them or an ancestor), and absolutely or
- * fixed positioned elements with no text or media inside them, such as background shapes, with
- * everything inside those.
+ * fixed positioned elements with no text, media or placed elements (`data-placed`) inside them,
+ * such as background shapes, with everything inside those.
  *
  * @param snapshot - The measured slide.
  * @returns The indexes of the decorative elements.
  */
 export function decorativeElements(snapshot: StepSnapshot): ReadonlySet<number> {
   const elements = snapshot.elements;
-  const hasContent = elements.map((element) => element.text !== '' || element.isMedia);
+  const hasContent = elements.map(
+    (element) => element.text !== '' || element.isMedia || element.data['placed'] !== undefined,
+  );
   for (let index = elements.length - 1; index >= 0; index -= 1) {
     const parent = elements[index]?.parent;
     if (parent !== null && parent !== undefined && hasContent[index] === true) {
@@ -35,7 +37,9 @@ export function decorativeElements(snapshot: StepSnapshot): ReadonlySet<number> 
   const decorative = new Set<number>();
   for (const element of elements) {
     const isEmptyShape =
-      OUT_OF_FLOW_POSITIONS.has(element.position) && hasContent[element.index] !== true;
+      element.data['placed'] === undefined &&
+      OUT_OF_FLOW_POSITIONS.has(element.position) &&
+      hasContent[element.index] !== true;
     const inDecorative = element.parent !== null && decorative.has(element.parent);
     if (element.decorative || isEmptyShape || inDecorative) {
       decorative.add(element.index);

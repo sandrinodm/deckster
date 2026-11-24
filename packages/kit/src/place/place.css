@@ -1,0 +1,126 @@
+/*
+ * Placed elements (`<Place>`, `<Shape>`, `<Text>`): canvas-positioned containers and geometric
+ * shapes styled purely from brand tokens and surfaces.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-placed,
+  .kit-placed *,
+  .kit-placed *::before,
+  .kit-placed *::after,
+  .kit-shape,
+  .kit-shape *,
+  .kit-text,
+  .kit-text * {
+    box-sizing: border-box;
+  }
+
+  .kit-placed {
+    position: absolute;
+    pointer-events: auto;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /*
+   * Keep prose block-flow inside placed elements so inline children (such as `<Icon />` followed by
+   * a label) stay on one line, while Markdown paragraphs, headings and lists keep brand spacing.
+   */
+  .kit-placed.kit-prose,
+  .kit-placed .kit-prose,
+  .kit-shape .kit-prose,
+  .kit-text .kit-prose {
+    display: block;
+    max-width: none;
+    margin: 0;
+  }
+
+  .kit-placed.kit-prose > :is(p, ul, ol, h3, blockquote) + :is(p, ul, ol, h3, blockquote),
+  .kit-placed .kit-prose > :is(p, ul, ol, h3, blockquote) + :is(p, ul, ol, h3, blockquote),
+  .kit-shape .kit-prose > :is(p, ul, ol, h3, blockquote) + :is(p, ul, ol, h3, blockquote),
+  .kit-text .kit-prose > :is(p, ul, ol, h3, blockquote) + :is(p, ul, ol, h3, blockquote) {
+    margin-top: var(--kit-flow-gap);
+  }
+
+  .kit-placed.kit-prose > :first-child,
+  .kit-placed .kit-prose > :first-child,
+  .kit-shape .kit-prose > :first-child,
+  .kit-text .kit-prose > :first-child {
+    margin-top: 0;
+  }
+
+  .kit-placed.kit-prose > :last-child,
+  .kit-placed .kit-prose > :last-child,
+  .kit-shape .kit-prose > :last-child,
+  .kit-text .kit-prose > :last-child {
+    margin-bottom: 0;
+  }
+
+  .kit-shape {
+    --kit-shape-padding: var(--brand-space-md);
+
+    display: flex;
+    flex-direction: column;
+    padding: var(--kit-shape-padding);
+    overflow: hidden;
+  }
+
+  .kit-shape:not([data-surface]):not([data-fill]):not([data-border]) {
+    background: var(--brand-color-surface);
+  }
+
+  .kit-shape[data-shape='ellipse'],
+  .kit-shape[data-shape='circle'] {
+    border-radius: 50%;
+  }
+
+  .kit-shape[data-shape='pill'] {
+    border-radius: 9999px;
+  }
+
+  .kit-shape[data-shape='diamond'] {
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    padding: var(--brand-space-xl);
+  }
+
+  .kit-shape[data-shape='triangle'] {
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    padding: var(--brand-space-2xl) var(--brand-space-xl) var(--brand-space-lg);
+  }
+
+  .kit-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  :is(.kit-shape, .kit-text)[data-align='start'] {
+    text-align: start;
+  }
+
+  :is(.kit-shape, .kit-text)[data-align='center'] {
+    text-align: center;
+  }
+
+  :is(.kit-shape, .kit-text)[data-align='end'] {
+    text-align: end;
+  }
+
+  :is(.kit-shape, .kit-text)[data-anchor='start'] {
+    justify-content: flex-start;
+  }
+
+  :is(.kit-shape, .kit-text)[data-anchor='center'] {
+    justify-content: safe center;
+  }
+
+  :is(.kit-shape, .kit-text)[data-anchor='end'] {
+    justify-content: safe flex-end;
+  }
+
+  :is(.kit-shape, .kit-text)[data-colored] .kit-prose {
+    color: var(--kit-place-color);
+  }
+}

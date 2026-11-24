@@ -23,6 +23,9 @@ import type { LottieProps } from '#media/lottie.tsx';
 import type { VideoProps } from '#media/video.tsx';
 import type { MorphProps } from '#motion/morph.tsx';
 import type { KitStepProps } from '#motion/step.tsx';
+import type { PlaceProps } from '#place/place.tsx';
+import type { ShapeProps } from '#place/shape.tsx';
+import type { TextProps } from '#place/text.tsx';
 
 import { CHART_COMPONENTS } from '#charts/chart-components.ts';
 import { checkComponentProps, propsProblem } from '#components/check-component-props.ts';
@@ -85,6 +88,9 @@ const AGREE: Record<string, true> = {
   RunTrace: true satisfies Agrees<RunTraceProps, 'RunTrace'>,
   Step: true satisfies Agrees<KitStepProps, 'Step'>,
   Morph: true satisfies Agrees<MorphProps, 'Morph'>,
+  Place: true satisfies Agrees<PlaceProps, 'Place'>,
+  Shape: true satisfies Agrees<ShapeProps, 'Shape'>,
+  Text: true satisfies Agrees<TextProps, 'Text'>,
   Notes: true satisfies Agrees<NotesProps, 'Notes'>,
 };
 

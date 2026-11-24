@@ -109,9 +109,10 @@ export function registerDeckTools(server: McpServer, tools: DeckToolsApi): void 
       title: 'Current slide',
       description:
         'What the user is looking at right now: slide id, number, file to edit, ' +
-        'layout, step, brand and any text they selected. Call it first when the ' +
-        'user says "this slide", "here" or "this text". Returns connected:false ' +
-        'when no deck window is open.' +
+        "layout, step, brand, any text they selected and the slide's placed " +
+        'elements (kind, place/spec, zone and canvas rect). Call it first when ' +
+        'the user says "this slide", "here" or "this text". Returns ' +
+        'connected:false when no deck window is open.' +
         REPO_TEXT_NOTE,
       annotations: { readOnlyHint: true },
     },

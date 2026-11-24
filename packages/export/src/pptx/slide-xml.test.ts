@@ -9,6 +9,7 @@ import type { DiagramNode, ImageNode, SvgNode } from '#scene/scene.ts';
 import { describedDiagram, describedNode } from '#diagram/diagram.fixture.ts';
 import { createPackage } from '#ooxml/opc-package.ts';
 import { planScene } from '#plan/plan-scene.ts';
+import { chromeShapes } from '#pptx/chrome.ts';
 import { PIXEL_PNG, logoNode, slideInput, titleNode } from '#pptx/deck.fixture.ts';
 import { slideXml } from '#pptx/slide-xml.ts';
 import { layoutFrame } from '#pptx/text-xml.ts';
@@ -342,6 +343,130 @@ describe('slideXml', () => {
       expect(moving.xml).toContain('Replaced');
       expect(moving.xml).toContain('<p:pRg st="1" end="1"/>');
       expect(moving.xml.match(/presetClass="exit"/g)).toHaveLength(1);
+    });
+  });
+
+  describe('placed elements', () => {
+    it('writes placed <Text> as txBox="1" with numbered or custom names and never steals placeholders', () => {
+      const firstText = textNode(
+        60,
+        paragraph([line('Source: Q3 survey', 1020)], {
+          box: { x: 1200, y: 986, width: 500, height: 40 },
+        }),
+        {
+          slot: null,
+          matches: ['.kit-title'],
+          placed: true,
+          exportText: true,
+          container: 60,
+        },
+      );
+      const namedText = textNode(
+        61,
+        paragraph([line('Confidential', 60)], {
+          box: { x: 128, y: 26, width: 300, height: 40 },
+        }),
+        {
+          slot: null,
+          matches: [],
+          placed: true,
+          exportText: true,
+          exportName: 'Stamp',
+          container: 61,
+        },
+      );
+      const secondUnnamed = textNode(
+        62,
+        paragraph([line('Draft v2', 900)], {
+          box: { x: 128, y: 866, width: 300, height: 40 },
+        }),
+        {
+          slot: null,
+          matches: [],
+          placed: true,
+          exportText: true,
+          container: 62,
+        },
+      );
+      const written = slideXml(
+        createPackage(),
+        'ppt/slides/slide1.xml',
+        slideInput(0, [firstText, TITLE, namedText, secondUnnamed]),
+        options(),
+      );
+      expect(written.placeholders).toEqual(['title']);
+      expect(written.xml).toContain('name="Text 1"/><p:cNvSpPr txBox="1"/>');
+      expect(written.xml).toContain('name="Stamp"/><p:cNvSpPr txBox="1"/>');
+      expect(written.xml).toContain('name="Text 2"/><p:cNvSpPr txBox="1"/>');
+      expect(written.xml).toContain('name="Title"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr>');
+    });
+
+    it('numbers unnamed <Shape> callouts per slide and preserves custom names', () => {
+      const badge = boxNode(70, {
+        placed: true,
+        shapePreset: 'ellipse',
+        paragraphs: [
+          paragraph([line('01', 160)], { box: { x: 120, y: 120, width: 80, height: 50 } }),
+        ],
+      });
+      const custom = boxNode(71, {
+        placed: true,
+        shapePreset: 'diamond',
+        exportName: 'Decision gate',
+      });
+      const second = boxNode(72, {
+        placed: true,
+        shapePreset: 'triangle',
+      });
+      const written = slideXml(
+        createPackage(),
+        'ppt/slides/slide1.xml',
+        slideInput(0, [badge, custom, second]),
+        options(),
+      );
+      expect(written.xml).toContain('name="Callout 1"');
+      expect(written.xml).toContain('prst="ellipse"');
+      expect(written.xml).toContain('name="Decision gate"');
+      expect(written.xml).toContain('prst="diamond"');
+      expect(written.xml).toContain('name="Callout 2"');
+      expect(written.xml).toContain('prst="triangle"');
+      expect(written.xml.match(/<p:sp>/g)).toHaveLength(3);
+    });
+
+    it('writes slide chrome on top when a placed element overlaps inherited layout chrome', () => {
+      const logo = logoNode(80);
+      const layoutSlide = slideInput(0, [logo]);
+      const layoutChrome = chromeShapes(layoutSlide, layoutSlide.plan.items);
+      const overlappingBadge = boxNode(81, {
+        placed: true,
+        shapePreset: 'roundRect',
+        rect: { x: 1680, y: 40, width: 140, height: 80 },
+      });
+      const overlapping = slideXml(
+        createPackage(),
+        'ppt/slides/slide1.xml',
+        slideInput(0, [overlappingBadge, logo]),
+        options({ chrome: layoutChrome }),
+      );
+      expect(overlapping.xml).toContain('showMasterSp="0"');
+      expect(overlapping.xml).toContain('name="Logo"');
+      expect(overlapping.xml.indexOf('name="Callout 1"')).toBeLessThan(
+        overlapping.xml.indexOf('name="Logo"'),
+      );
+
+      const clearBadge = boxNode(82, {
+        placed: true,
+        shapePreset: 'roundRect',
+        rect: { x: 100, y: 300, width: 200, height: 100 },
+      });
+      const clear = slideXml(
+        createPackage(),
+        'ppt/slides/slide1.xml',
+        slideInput(0, [clearBadge, logo]),
+        options({ chrome: layoutChrome }),
+      );
+      expect(clear.xml).not.toContain('showMasterSp="0"');
+      expect(clear.xml).not.toContain('name="Logo"');
     });
   });
 });

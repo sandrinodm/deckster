@@ -10,6 +10,16 @@ import { decorativeElements } from '#lint/rules/elements.ts';
 const TRUNCATED_ATTRIBUTE = 'truncated';
 
 /**
+ * The `data-*` attribute (without its prefix) `FittedText` sets on a fitted text container.
+ */
+const FIT_ATTRIBUTE = 'fit';
+
+/**
+ * The value of `data-fit` when `FittedText` stepped down to its smallest size and still overflowed.
+ */
+const FIT_OVERFLOW_VALUE = 'overflow';
+
+/**
  * The fix for every cut text: less text or more room, never a silent cut.
  */
 const FIX =
@@ -19,8 +29,9 @@ const FIX =
 
 /**
  * Text the reader sees only part of: cut with an ellipsis by CSS (`text-overflow: ellipsis`, a
- * `line-clamp`) or by a kit chart that ran out of room for a label (`data-truncated`). Clipping by
- * a box that hides its overflow is `container-overflow`'s; this rule catches the cuts that leave no
+ * `line-clamp`), cut by a kit chart that ran out of room for a label (`data-truncated`), or clipped
+ * by `FittedText` after stepping down to its smallest size (`data-fit="overflow"`). Clipping by a
+ * box that hides its overflow is `container-overflow`'s; this rule catches the cuts that leave no
  * overflow behind. Decoration is skipped.
  */
 export const textTruncatedRule: SlideRule = {
@@ -88,7 +99,16 @@ function describeCut(element: ElementSnapshot): string | undefined {
     }
 
     case null: {
-      return undefined;
+      break;
     }
   }
+
+  if (element.data[FIT_ATTRIBUTE] === FIT_OVERFLOW_VALUE) {
+    return (
+      `${describeElement(element)} did not fit its box even after stepping down to the ` +
+      'smallest size and is clipped.'
+    );
+  }
+
+  return undefined;
 }

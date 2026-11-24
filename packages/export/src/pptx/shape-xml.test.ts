@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vite-plus/test';
 
 import {
   boxGeometry,
+  boxName,
   boxXml,
   customGeometry,
   idAllocator,
@@ -10,7 +11,7 @@ import {
   subpathGroups,
 } from '#pptx/shape-xml.ts';
 import { surfaceThemeFixture } from '#pptx/theme.fixture.ts';
-import { boxNode } from '#scene/scene.fixture.ts';
+import { boxNode, line, paragraph } from '#scene/scene.fixture.ts';
 import { parsePathData } from '#vector/svg-path.ts';
 
 describe('boxes', () => {
@@ -68,6 +69,86 @@ describe('boxes', () => {
       '<a:outerShdw blurRad="152400" dist="50800" dir="5400000" sx="96000" sy="92000"',
     );
     expect(xml).toContain('<a:alpha val="14118"/>');
+  });
+
+  it('emits preset geometries for ellipse, diamond, triangle, rect and roundRect', () => {
+    const rect = { x: 0, y: 0, width: 200, height: 200 };
+    expect(boxGeometry(rect, [0, 0, 0, 0], 'ellipse')).toBe(
+      '<a:prstGeom prst="ellipse"><a:avLst/></a:prstGeom>',
+    );
+    expect(boxGeometry(rect, [0, 0, 0, 0], 'diamond')).toBe(
+      '<a:prstGeom prst="diamond"><a:avLst/></a:prstGeom>',
+    );
+    expect(boxGeometry(rect, [0, 0, 0, 0], 'triangle')).toBe(
+      '<a:prstGeom prst="triangle"><a:avLst/></a:prstGeom>',
+    );
+    expect(boxGeometry(rect, [20, 20, 20, 20], 'rect')).toBe(
+      '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>',
+    );
+    expect(boxGeometry(rect, [100, 100, 100, 100], 'roundRect')).toContain(
+      '<a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val 50000"/></a:avLst></a:prstGeom>',
+    );
+  });
+
+  it('writes a shape with paragraphs and native bullets as one p:sp with p:txBody', () => {
+    const heading = paragraph([line('Key takeaways', 150, { left: 124, right: 360 })], {
+      box: { x: 124, y: 120, width: 352, height: 44 },
+      wrapWidth: 352,
+    });
+    const firstBullet = paragraph([line('First point', 210, { left: 152, right: 340 })], {
+      box: { x: 152, y: 180, width: 324, height: 44 },
+      wrapWidth: 324,
+      bullet: {
+        kind: 'shape',
+        rect: { x: 128, y: 196, width: 10, height: 10 },
+        color: '#2d4ae0',
+        radius: 5,
+      },
+    });
+    const secondBullet = paragraph([line('Second point', 260, { left: 152, right: 360 })], {
+      box: { x: 152, y: 230, width: 324, height: 44 },
+      wrapWidth: 324,
+      bullet: {
+        kind: 'shape',
+        rect: { x: 128, y: 246, width: 10, height: 10 },
+        color: '#2d4ae0',
+        radius: 5,
+      },
+    });
+    const xml = boxXml(
+      boxNode(10, {
+        rect: { x: 100, y: 100, width: 400, height: 220 },
+        shapePreset: 'roundRect',
+        radii: [16, 16, 16, 16],
+        anchor: 'center',
+        paragraphs: [heading, firstBullet, secondBullet],
+      }),
+      idAllocator(),
+      surfaceThemeFixture(),
+    );
+    expect(xml.match(/<p:sp>/g)).toHaveLength(1);
+    expect(xml).toContain('prst="roundRect"');
+    expect(xml).toContain('<p:txBody>');
+    expect(xml).toContain('anchor="ctr"');
+    expect(xml).toContain('<a:noAutofit/>');
+    expect(xml.match(/<a:p>/g)).toHaveLength(3);
+    expect(xml.match(/<a:buChar char="●"\/>/g)).toHaveLength(2);
+    expect(xml).toContain('Key takeaways');
+    expect(xml).toContain('First point');
+    expect(xml).toContain('Second point');
+  });
+
+  it('uses custom exportName or numbered Callout names for shapes', () => {
+    const named = boxNode(11, { shapePreset: 'ellipse', exportName: 'Step 01 badge' });
+    const unnamed = boxNode(12, { shapePreset: 'diamond' });
+    expect(boxName(named)).toBe('Step 01 badge');
+    expect(boxName(unnamed)).toBe('Callout 1');
+    expect(boxName(unnamed, 3)).toBe('Callout 3');
+    expect(boxXml(named, idAllocator(), surfaceThemeFixture())).toContain('name="Step 01 badge"');
+    expect(boxXml(unnamed, idAllocator(), surfaceThemeFixture())).toContain('name="Callout 1"');
+    expect(
+      boxXml(unnamed, idAllocator(), surfaceThemeFixture(), null, { name: 'Callout 2' }),
+    ).toContain('name="Callout 2"');
   });
 });
 

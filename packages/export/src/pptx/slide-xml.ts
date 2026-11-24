@@ -403,6 +403,8 @@ function newWriter(
     link,
     reveals: new Map(),
     droppedLinks,
+    calloutCount: 0,
+    textBoxCount: 0,
   };
 }
 
@@ -466,10 +468,18 @@ function contentShapes(writer: Writer): SlideShapes {
    */
   const inLayout = (item: PlanItem): boolean => shown && isLayoutArtNode(item.node);
   const backdrop = slide.plan.items.some((item) => item.node.backdrop === true && !inLayout(item));
+  const placedCoversChrome = slide.plan.items.some(
+    (item) =>
+      item.node.placed === true &&
+      layoutChrome.some((shape) => rectsOverlap(item.node.rect, shape.node.rect)),
+  );
   const hidesLayout = hasLayoutArt && !shown;
-  const inherits = !backdrop && !hidesLayout && sameChrome(chrome, layoutChrome);
+  const inherits =
+    !backdrop && !placedCoversChrome && !hidesLayout && sameChrome(chrome, layoutChrome);
   const showMaster =
-    !hidesLayout && (inherits || (!backdrop && chrome.length === 0 && layoutChrome.length === 0));
+    !hidesLayout &&
+    (inherits ||
+      (!backdrop && !placedCoversChrome && chrome.length === 0 && layoutChrome.length === 0));
   const chromeNodes = new Set<SceneNode>(chrome.map((shape) => shape.node));
   const items = grouped.filter((item) => !chromeNodes.has(item.node) && !inLayout(item));
   const assigned = assignPlaceholders(items, options);
@@ -541,6 +551,16 @@ type Writer = {
    * The links that could not be written, each once, in the order they were met.
    */
   droppedLinks: string[];
+
+  /**
+   * Unnamed `<Shape>` callouts written on this slide so far, for `"Callout 1"`, `"Callout 2"`, ….
+   */
+  calloutCount: number;
+
+  /**
+   * Unnamed `<Text>` boxes written on this slide so far, for `"Text 1"`, `"Text 2"`, ….
+   */
+  textBoxCount: number;
 };
 
 /**
@@ -589,6 +609,10 @@ function fillsPlaceholder(
   kind: PptxPlaceholderKind,
   source: Exclude<PptxPlaceholderSource, { field: string }>,
 ): boolean {
+  if (node.placed === true || (node.kind === 'text' && node.exportText === true)) {
+    return false;
+  }
+
   if (kind === 'picture') {
     return node.kind === 'image' && 'slot' in source && node.slot === source.slot;
   }
@@ -701,10 +725,22 @@ function itemXml(
 function boxItemXml(writer: Writer, node: BoxNode): string {
   writer.counts.shapes += 1;
   const grain = hasGrainOnly(node) ? grainFill(writer) : null;
+  let name: string | undefined;
+  if (node.exportName !== undefined && node.exportName !== '') {
+    name = node.exportName;
+  } else if (node.shapePreset !== undefined) {
+    writer.calloutCount += 1;
+    name = `Callout ${writer.calloutCount}`;
+  }
+
   const { xml, ids } = tracked(writer, (allocate) =>
-    boxXml(node, allocate, writer.options.theme, grain),
+    boxXml(node, allocate, writer.options.theme, grain, {
+      textContext: writer.context,
+      ...(name === undefined ? {} : { name }),
+    }),
   );
-  ids.forEach((id) => recordReveal(writer, node, id, false));
+  const hasText = node.paragraphs !== undefined && node.paragraphs.length > 0;
+  ids.forEach((id, index) => recordReveal(writer, node, id, index === 0 && hasText));
   return xml;
 }
 
@@ -783,7 +819,7 @@ function textXml(writer: Writer, node: TextNode, placeholder: PlaceholderSpec | 
     placeholder === null ? writer.context : { ...writer.context, defaults: placeholder.defaults };
   recordTextReveals(writer, node, id);
 
-  const name = frameName(node, placeholder);
+  const name = frameName(writer, node, placeholder);
   return textFrameXml(node.paragraphs, id, name, context, placeholder?.ref ?? null, {
     layoutRect: placeholder?.rect ?? null,
   });
@@ -827,14 +863,24 @@ function recordTextReveals(writer: Writer, node: TextNode, shapeId: number): voi
 /**
  * The name the selection pane shows for a text frame.
  *
+ * @param writer - The slide's state, for numbering unnamed `<Text>` boxes.
  * @param node - The frame.
  * @param placeholder - The placeholder it fills, if any.
  */
-function frameName(node: TextNode, placeholder: PlaceholderSpec | null): string {
+function frameName(writer: Writer, node: TextNode, placeholder: PlaceholderSpec | null): string {
   if (placeholder !== null) {
     return { title: 'Title', subtitle: 'Subtitle', body: 'Body', picture: 'Picture' }[
       placeholder.kind
     ];
+  }
+
+  if (node.exportText === true) {
+    if (node.exportName !== undefined && node.exportName !== '') {
+      return node.exportName;
+    }
+
+    writer.textBoxCount += 1;
+    return `Text ${writer.textBoxCount}`;
   }
 
   return `Text: ${excerpt(textOf(node))}`;
@@ -1273,9 +1319,27 @@ function rasterText(writer: Writer, node: SceneNode): string {
     return false;
   };
   return writer.slide.scene.nodes
-    .flatMap((candidate) =>
-      candidate.kind === 'text' && inside(candidate) ? [textOf(candidate)] : [],
-    )
+    .flatMap((candidate) => {
+      if (!inside(candidate)) {
+        return [];
+      }
+
+      if (candidate.kind === 'text') {
+        return [textOf(candidate)];
+      }
+
+      if (candidate.kind === 'box' && candidate.paragraphs !== undefined) {
+        return [
+          candidate.paragraphs
+            .map((paragraph) =>
+              paragraph.lines.map((line) => line.runs.map((run) => run.text).join('')).join(' '),
+            )
+            .join(' '),
+        ];
+      }
+
+      return [];
+    })
     .join(' ')
     .trim();
 }
@@ -1387,4 +1451,14 @@ function contains(outer: SceneRect, inner: SceneRect): boolean {
   const x = inner.x + inner.width / 2;
   const y = inner.y + inner.height / 2;
   return x >= outer.x && x <= outer.x + outer.width && y >= outer.y && y <= outer.y + outer.height;
+}
+
+/**
+ * Whether two rectangles overlap with a positive area.
+ *
+ * @param a - A rectangle.
+ * @param b - Another.
+ */
+function rectsOverlap(a: SceneRect, b: SceneRect): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 }

@@ -135,7 +135,8 @@ copies it into `brands/`. The reasons behind these choices are in [docs/design.m
 
 - Write MDX or TSX slides on [63 kit layouts](packages/kit/README.md), with code blocks (Shiki,
   line steps, diffs, `<CodeMove>`), `<Terminal>`, images, video with cues, Lottie and icons from
-  the brand's icon set.
+  the brand's icon set, plus token-styled placed elements (`<Shape>`, `<Text>`, `<Place>`) for
+  badges, stamps, callouts and footer labels positioned by named anchor or grid cell.
 - Put numbers on a slide with chart and number components in the brand's chart palette that
   highlight one value, take annotations and reveal by step (`pnpm deckster charts` lists them).
 - Draw `<Flow>` diagrams placed on a grid or by ELK, with routed edges and packets that travel

@@ -13,6 +13,9 @@ import type {
   RemoveSlideInput,
   ReorderSlidesInput,
 } from '#mcp/tool-schemas.ts';
+import type { PlacedElementReport } from '#protocol/page-link-events.ts';
+
+export type { PlacedElementReport } from '#protocol/page-link-events.ts';
 
 /**
  * What `current_slide` answers: the page the user looked at most recently.
@@ -89,6 +92,12 @@ export type CurrentSlide =
        * How many deck pages are open.
        */
       readonly pages: number;
+
+      /**
+       * Placed elements rendered on the active slide, with their kind, place/spec, zone and canvas
+       * rect.
+       */
+      readonly placed?: readonly PlacedElementReport[];
     };
 
 /**

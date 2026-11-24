@@ -19,8 +19,8 @@ pnpm deckster lint lookbook
 pnpm deckster lint lookbook --brand nocturne
 ```
 
-The deck has 204 slides and 427 steps in 12 parts. The slide budgets add up to 142 minutes 20
-seconds within the 147-minute runtime. The fictional forty-minute launch talk selects slides
+The deck has 210 slides and 428 steps in 13 parts. The slide budgets add up to 146 minutes 15
+seconds within the 150-minute runtime. The fictional forty-minute launch talk selects slides
 from the lookbook.
 
 ## Parts
@@ -42,7 +42,8 @@ problem. Slide ids say what the slide shows (`split-photo-left-bleed`, `chart-wa
 | 9   | People and proof       | Founders, team, testimonials, personas, logos and case studies                          |
 | 10  | Plan ahead and ask     | History, roadmap, status reports, schedules, actions and the ask                        |
 | 11  | Motion                 | The five step effects side by side, and focus                                           |
-| 12  | Close                  | Takeaways, references, links, a code to scan, the last slide                            |
+| 12  | Placed elements        | Named anchors, zones, 12×6 grid cells, shape geometries, `<Text>` and `<Place>`         |
+| 13  | Close                  | Takeaways, references, links, a code to scan, the last slide                            |
 
 ## Presentation patterns
 

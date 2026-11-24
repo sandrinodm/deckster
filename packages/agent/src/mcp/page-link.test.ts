@@ -2,7 +2,11 @@ import { Effect } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 
 import type { PageClient, PageListener } from '#mcp/page-link.ts';
-import type { PageGotoRequest, PageStateReport } from '#protocol/page-link-events.ts';
+import type {
+  PageGotoRequest,
+  PageStateReport,
+  PlacedElementReport,
+} from '#protocol/page-link-events.ts';
 
 import { createPageLink } from '#mcp/page-link.ts';
 import {
@@ -129,6 +133,43 @@ describe('page link', () => {
     expect(await Effect.runPromise(link.current)).toBeUndefined();
     page.report(report('a'));
     expect(await Effect.runPromise(link.current)).toMatchObject({ page: 'a' });
+  });
+
+  it('decodes and passes through optional placed element reports', async () => {
+    const { link, connect, listeners } = harness();
+    const page = connect('a');
+    const placed: readonly PlacedElementReport[] = [
+      {
+        kind: 'shape',
+        name: 'callout',
+        place: 'top-right',
+        zone: 'safe',
+        rect: [1520, 80, 320, 120],
+      },
+      { kind: 'text', place: 'bottom-left', zone: 'footer', rect: [96, 1000, 400, 48] },
+      { kind: 'place', rect: [100, 200, 300, 150] },
+    ];
+    page.report(report('a', { placed }));
+    expect(await Effect.runPromise(link.current)).toMatchObject({ page: 'a', placed });
+
+    // An invalid placed entry (bad kind or wrong rect length) causes the report to be dropped.
+    const badClient: PageClient = {
+      send: () => undefined,
+      socket: { once: () => undefined },
+    };
+    listeners.get(PAGE_STATE_EVENT)?.(
+      { ...report('b'), placed: [{ kind: 'invalid', rect: [0, 0, 10, 10] }] },
+      badClient,
+    );
+    listeners.get(PAGE_STATE_EVENT)?.(
+      { ...report('c'), placed: [{ kind: 'shape', rect: [0, 0, 10] }] },
+      badClient,
+    );
+    expect(await Effect.runPromise(link.current)).toMatchObject({ page: 'a', pages: 1 });
+
+    // Replacing with an empty placed array clears previous placed elements.
+    page.report(report('a', { placed: [] }));
+    expect(await Effect.runPromise(link.current)).toMatchObject({ page: 'a', placed: [] });
   });
 
   it('sends goto to the focused page and returns its answer', async () => {

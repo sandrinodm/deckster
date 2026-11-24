@@ -405,6 +405,64 @@ describe('live deck tools that need the page or write files', () => {
     }),
   );
 
+  it.effect('includes placed elements in currentSlide when the page reports them', () =>
+    Effect.gen(function* () {
+      const harness = tools(FIXTURE_WORKSPACE, 'over-budget');
+      const live = yield* harness.api;
+      const placed = [
+        {
+          kind: 'shape' as const,
+          name: 'Badge',
+          place: 'top-right',
+          zone: 'safe',
+          rect: [1480, 112, 312, 96] as const,
+        },
+        {
+          kind: 'text' as const,
+          place: 'bottom-left',
+          zone: 'footer',
+          rect: [128, 1000, 420, 40] as const,
+        },
+      ];
+      harness.listeners.get(PAGE_STATE_EVENT)?.(
+        {
+          page: 'b',
+          closed: false,
+          focusedAt: 2,
+          slide: {
+            id: 'eight-bullets',
+            index: 0,
+            file: 'slides/eight-bullets.mdx',
+            layout: 'default',
+            title: 'Eight bullets',
+          },
+          step: 0,
+          stepCount: 2,
+          brand: 'default',
+          selection: '',
+          placed,
+        },
+        harness.client,
+      );
+      expect(yield* live.currentSlide).toEqual({
+        connected: true,
+        slide: {
+          id: 'eight-bullets',
+          number: 1,
+          file: path.join('decks', 'over-budget', 'slides', 'eight-bullets.mdx'),
+          layout: 'default',
+          title: 'Eight bullets',
+        },
+        step: 0,
+        stepCount: 2,
+        brand: 'default',
+        selection: '',
+        pages: 1,
+        placed,
+      });
+    }),
+  );
+
   it.effect('adds a slide after another one and lists it in the manifest', () =>
     Effect.gen(function* () {
       const root = scratchWorkspace('deck-tools-new-');

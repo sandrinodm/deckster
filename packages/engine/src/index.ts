@@ -16,6 +16,11 @@ export type {
 } from '#contract/layout-contract.ts';
 export type {
   DeckManifest,
+  PlacedKind,
+  PlacedMeta,
+  PlacedName,
+  PlacedWidth,
+  PlacedZone,
   SlideContentProps,
   SlideEntry,
   SlideKind,
@@ -24,9 +29,10 @@ export type {
 } from '#contract/manifest.ts';
 export type { SlideFrontmatter, SlideFrontmatterInput } from '#contract/slide-frontmatter.ts';
 export type { TransitionKind } from '#contract/transition.ts';
-export { BODY_SLOT, slotTag } from '#contract/slots.ts';
+export { BODY_SLOT, PLACED_SLOT, slotTag } from '#contract/slots.ts';
 export { Deck, type DeckProps } from '#deck/deck.tsx';
 export { useDeck, type DeckControls } from '#deck/deck-context.ts';
+export { PlacedLayerContext, useInsidePlacedLayer, usePlacedLayer } from '#deck/placed-layer.tsx';
 export { SlideView, type SlideViewProps } from '#deck/slide-view.tsx';
 export type { SlideSummary } from '#deck/slide-summary.ts';
 export {

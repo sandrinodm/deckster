@@ -2,6 +2,7 @@ import {
   Children,
   createContext,
   createElement,
+  Fragment,
   isValidElement,
   useContext,
   useMemo,
@@ -12,8 +13,9 @@ import {
 import type { SlideEntry, SlideMeta } from '#contract/manifest.ts';
 import type { LayoutDefinition, LayoutSlots } from '#layouts/layout.ts';
 
-import { BODY_SLOT, SLOT_ELEMENT, SLOTS_ELEMENT, slotTag } from '#contract/slots.ts';
+import { BODY_SLOT, PLACED_SLOT, SLOT_ELEMENT, SLOTS_ELEMENT, slotTag } from '#contract/slots.ts';
 import { useDeckRuntime } from '#deck/deck-runtime.ts';
+import { PlacedLayerHost } from '#deck/placed-layer.tsx';
 import { SlideProblem } from '#deck/slide-problem.tsx';
 import { Notes } from '#notes/notes.tsx';
 
@@ -103,7 +105,11 @@ export function SlideContent({ entry }: SlideContentProps): ReactNode {
     );
   }
 
-  return <LayoutFrame host={host} slots={tsxSlots(entry, <Content components={components} />)} />;
+  return (
+    <PlacedLayerHost>
+      <LayoutFrame host={host} slots={tsxSlots(entry, <Content components={components} />)} />
+    </PlacedLayerHost>
+  );
 }
 
 /**
@@ -118,7 +124,7 @@ type SlotsHostProps = {
 
 /**
  * Renders the MDX slide's layout in place of the `<DeckSlots>` element the build wrapped the slide
- * in, with the top-level content sorted into slots.
+ * in, with the top-level content sorted into slots and any placed elements in `.deck-placed`.
  */
 function SlotsHost({ children }: SlotsHostProps): ReactNode {
   const host = useContext(LayoutHostContext);
@@ -126,10 +132,12 @@ function SlotsHost({ children }: SlotsHostProps): ReactNode {
     throw new Error(`<${SLOTS_ELEMENT}> is added by the build; do not write it in a slide.`);
   }
 
-  const { slots, notes } = sortIntoSlots(children, host.notesTypes);
+  const { slots, placed, notes } = sortIntoSlots(children, host.notesTypes);
   return (
     <>
-      <LayoutFrame host={host} slots={slots} />
+      <PlacedLayerHost placed={placed.length > 0 ? placed : undefined}>
+        <LayoutFrame host={host} slots={slots} />
+      </PlacedLayerHost>
       {notes}
     </>
   );
@@ -184,8 +192,9 @@ function LayoutFrame({ host, slots }: LayoutFrameProps): ReactNode {
 }
 
 /**
- * Sorts an MDX slide's top-level content: each `<DeckSlot>` into its slot, speaker notes aside,
- * everything else into `body` in source order. Whitespace between elements is dropped.
+ * Sorts an MDX slide's top-level content: `<DeckSlot name="__placed">` into the placed layer, every
+ * other `<DeckSlot>` into its slot, speaker notes aside, and everything else into `body` in source
+ * order. Whitespace between elements is dropped.
  *
  * @param children - The top-level content.
  * @param notesTypes - The element types that are speaker notes.
@@ -193,13 +202,23 @@ function LayoutFrame({ host, slots }: LayoutFrameProps): ReactNode {
 function sortIntoSlots(
   children: ReactNode,
   notesTypes: ReadonlySet<unknown>,
-): { slots: LayoutSlots; notes: ReactNode[] } {
+): { slots: LayoutSlots; placed: ReactNode[]; notes: ReactNode[] } {
   const slots: Record<string, ReactNode> = {};
   const body: ReactNode[] = [];
+  const placed: ReactNode[] = [];
   const notes: ReactNode[] = [];
   for (const child of Children.toArray(children)) {
     if (isValidElement<SlotMarkerProps>(child) && child.type === SlotMarker) {
-      slots[child.props.name] = Children.toArray(child.props.children);
+      if (child.props.name === PLACED_SLOT) {
+        const items = Children.toArray(child.props.children).filter(
+          (item) => typeof item !== 'string' || item.trim() !== '',
+        );
+        if (items.length > 0) {
+          placed.push(<Fragment key={child.key}>{items}</Fragment>);
+        }
+      } else {
+        slots[child.props.name] = Children.toArray(child.props.children);
+      }
     } else if (isValidElement(child) && notesTypes.has(child.type)) {
       notes.push(child);
     } else if (typeof child !== 'string' || child.trim() !== '') {
@@ -211,7 +230,7 @@ function sortIntoSlots(
     slots[BODY_SLOT] = body;
   }
 
-  return { slots, notes };
+  return { slots, placed, notes };
 }
 
 /**

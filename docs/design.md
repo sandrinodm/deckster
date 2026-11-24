@@ -173,6 +173,32 @@ Budgets count content (words, bullets, items), never the room the content takes.
 budget in one brand is then within budget in every brand. Whether it fits a brand's type is a
 separate question, answered by the overflow rules.
 
+### Placed elements
+
+Some slides genuinely need an accent callout, a badge, a stamp or a footer label that sits outside
+the layout's slots. Three kit components cover that on a dedicated slide-level layer: `<Shape>` (a
+geometric container — `rect`, `square`, `ellipse`, `circle`, `pill`, `diamond` or `triangle` — with
+fitted text or lists), `<Text>` (unboxed floating text) and `<Place>` (an unstyled wrapper for any
+Markdown list, `<Icon>` or other kit component).
+
+Three design rules keep them from turning slides back into freeform collages:
+
+- **Named and grid-first, never pixels by default.** Placement uses a named anchor (`place`) inside
+  a slide `zone` (`safe`, `header`, `footer` or `canvas`), or inclusive ranges (`cols`, `rows`) on
+  the brand's 12×6 grid. A raw canvas-pixel `box` exists only as an escape hatch for imported
+  templates, and `deckster lint` flags it at `info` level (`placed-pixels`) with the nearest named
+  place or grid cell.
+- **Token-only styling and yielding chrome.** `<Shape>` and `<Text>` accept only brand surfaces,
+  role colours, radii, strokes, shadows and spacing tokens; low-contrast role fills fail at build
+  time. Placed boxes never paint over chrome — the chrome planner treats them like bleeding media
+  and moves or hides corner chrome that collides, while `placed-chrome` warns so the tradeoff stays
+  visible.
+- **Hard caps.** Because placed elements sit outside slot budgets, `deckster lint` caps them per
+  slide: at most 4 placed elements (`placed-count`, error), at most 25 words per element and 40
+  across the slide (`placed-words`, warning), and at most 35% of the safe area per box outside
+  `zone="canvas"` (`placed-size`, warning, pointing to a layout instead). Placed elements stay
+  callouts, badges and labels; the argument still lives in a layout.
+
 ## Brand layouts
 
 An organisation's template has layouts of its own: a cover with a mark in one corner, a divider

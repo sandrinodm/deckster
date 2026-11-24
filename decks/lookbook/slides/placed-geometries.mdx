@@ -1,0 +1,49 @@
+---
+layout: content
+title: Ellipses, diamonds and triangles export as native shapes
+budget: 45s
+---
+
+Every contour maps to a native PowerPoint geometry with editable text inside.
+
+<Shape
+  shape="ellipse"
+  cols="1-4"
+  rows="5-6"
+  fill="surface"
+  border="accent"
+  stroke="bold"
+  align="center"
+  anchor="center"
+  name="Ellipse shape">
+  **Ellipse** · Loop 14
+</Shape>
+
+<Shape
+  shape="diamond"
+  cols="5-8"
+  rows="5-6"
+  surface="accent"
+  align="center"
+  anchor="center"
+  type="small"
+  name="Diamond shape">
+  **Diamond** · Batch
+</Shape>
+
+<Shape
+  shape="triangle"
+  cols="9-12"
+  rows="5-6"
+  surface="inverse"
+  align="center"
+  anchor="center"
+  type="small"
+  name="Triangle shape">
+  **Triangle** · Peak
+</Shape>
+
+<Notes>
+`content` on `default` with the remaining three `<Shape>` geometries in grid cells: `ellipse` with `stroke="bold"`, `diamond` on `surface="accent"` and `triangle` on `surface="inverse"`.
+Each shape exports as a single native PowerPoint shape with its text inside, so anyone editing the slide later moves the shape and its label as one object.
+</Notes>

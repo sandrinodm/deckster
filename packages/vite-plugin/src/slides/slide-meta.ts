@@ -9,6 +9,7 @@ import { loadDeckBrand } from '#brand/load-deck-brand.ts';
 import { displayPath } from '#decks/deck-paths.ts';
 import { type LoadedDeck, type LoadedSlide } from '#decks/load-deck.ts';
 import { DEFAULT_LAYOUT_CATALOGS, loadLayoutCatalog } from '#layouts/load-layout-catalog.ts';
+import { slideBrandOf } from '#slides/check-surface.ts';
 import {
   DEFAULT_MDX_EXTENSIONS,
   loadMdxExtensions,
@@ -68,7 +69,7 @@ export const slideMetaReader = Effect.fn('slideMetaReader')(function* (
   });
   const context = mdxContextOf(workspaceRoot, deck.location.dir, tokens);
   const mdx = yield* loadMdxExtensions(DEFAULT_MDX_EXTENSIONS, context);
-  const brand = { name: tokens.name, surfaces: Object.keys(tokens.surfaces) };
+  const brand = slideBrandOf(tokens);
   const fallback = { workspaceRoot, brand: tokens.name };
   return (slide, code) =>
     readSlideMeta({
