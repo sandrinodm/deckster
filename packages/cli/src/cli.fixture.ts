@@ -28,6 +28,8 @@ await Promise.all([
   import('#commands/diff-run.ts'),
   import('#commands/export-run.ts'),
   import('#commands/icons-run.ts'),
+  import('#commands/layouts-check-run.ts'),
+  import('#commands/layouts-new-run.ts'),
   import('#commands/layouts-run.ts'),
   import('#commands/lint-run.ts'),
   import('#commands/mcp-run.ts'),

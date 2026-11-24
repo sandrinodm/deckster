@@ -109,6 +109,12 @@ export type LintOptions = {
    * The rules to run. Defaults to {@link LINT_RULES}.
    */
   rules?: readonly LintRule[];
+
+  /**
+   * Lint the deck in this workspace instead of the current one, such as the temporary workspace of
+   * `deckster layouts check`; leave it out for the current workspace.
+   */
+  workspaceRoot?: string;
 };
 
 /**
@@ -163,13 +169,18 @@ export const lintDeck = Effect.fn('lintDeck')(function* (
   LintError,
   Workspace | FileSystem.FileSystem | DeckServer | DeckBrowser
 > {
-  const { root: workspaceRoot } = yield* Workspace;
+  const workspaceRoot = options.workspaceRoot ?? (yield* Workspace).root;
   const location = yield* findDeck(workspaceRoot, options.deck);
   const place: DeckPlace = { workspaceRoot, location };
   const rules = options.rules ?? LINT_RULES;
   const rendered = Effect.scoped(
     Effect.gen(function* () {
-      const opened = yield* openDeck({ deck: options.deck, brand: options.brand, scale: 1 });
+      const opened = yield* openDeck({
+        deck: options.deck,
+        brand: options.brand,
+        scale: 1,
+        ...(options.workspaceRoot === undefined ? {} : { workspaceRoot }),
+      });
       const { index: catalog } = yield* deckCatalog({
         root: workspaceRoot,
         brand: opened.brand,

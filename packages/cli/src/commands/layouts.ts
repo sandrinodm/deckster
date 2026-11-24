@@ -5,6 +5,8 @@ import { DEFAULT_DECK } from '#workspace.ts';
  * The text `deckster layouts --help` prints.
  */
 const HELP = `Usage: deckster layouts [deck] [--brand <name>] [--summary] [--json]
+       deckster layouts new <name> (--brand <brand> | --deck <deck>) [--json]
+       deckster layouts check [name] (--brand <brand> | --deck <deck>) [--json]
 
 Lists the layouts a slide can name in its \`layout:\` frontmatter: the engine's and the kit's, the
 ones the deck's brand brings in brands/<name>/layouts.ts (source "brand:<name>") and as code in
@@ -16,12 +18,45 @@ left out, with a warning on stderr (and in "warnings" with --json) that names it
 
 Arguments:
   deck          Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}", else the only deck.
+                The words new and check start the subcommands below; list a deck of either name
+                with DECK=<name>.
+
+Subcommands:
+  new <name>    Writes a new code layout to brands/<brand>/layouts/<name>/ (--brand) or
+                decks/<deck>/layouts/<name>/ (--deck): contract.ts (one body slot, a title and an
+                eyebrow, a description, an example and a PowerPoint mapping whose title is the
+                header's), layout.tsx (Frame, SlideHeader and Region from
+                @deckster/kit/layout-parts), layout.css and limits.ts with one limit case. They pass
+                \`deckster layouts check\` as written. The name is kebab-case and must be free: no
+                folder there has it, and it is not an engine or kit layout (to replace one, write
+                the folder yourself with \`replaces: true\` in its contract), a data layout of the
+                brand, or (for a deck) a code layout of the deck's brand. The brand must be a folder
+                of this workspace. It prints the files and the next step.
+  check [name]  Checks the code layouts of the brand (--brand) or the deck (--deck), or only the
+                one named: each folder has contract.ts and layout.tsx, both name the layout, the
+                contract imports only what a contract may, loads and passes the contract checks,
+                its name is not taken, a layout with \`replaces: true\` keeps what slides of the
+                kit layout it replaces use (the decks' own slides included), and limits.ts
+                (optional) is a list of limit cases. Then it renders each layout with no error
+                through the lint server, in a temporary folder (nothing is written to the
+                workspace): its contract's example, and every limit case with the title, eyebrow
+                and slots filled to their limits (as a paragraph and, when the body takes bullets,
+                as a list), in the deck's brand or, for a brand's layouts, in that brand. It reports
+                the lint problems of each slide (overflow, budgets, contrast and the other slide
+                rules) under the layout and case; rules about a deck as a talk (repetition, builds,
+                notes, timing) are not run. Exits with 1 when any layout has an error. limits.ts
+                runs like contract.ts (the same import rules), and never while an agent turn is
+                changing files: \`export default [{ name: 'full-body', frontmatter: {}, filled: [] }]
+                satisfies readonly LimitCase[]\`, with \`import type { LimitCase } from
+                '@deckster/kit/limit-cases'\`; case names are kebab-case, filled lists named slots to
+                fill besides body, and body: false leaves body empty.
 
 Options:
   --brand <name>
-                List the layouts of this brand instead of the deck config's, as \`deckster dev
-                --brand\` renders it. A brand that does not load leaves its own layouts out, with
-                a warning on stderr (and in "warnings" with --json).
+                For new and check, the brand whose layouts/ to use. Otherwise, list the layouts of
+                this brand instead of the deck config's, as \`deckster dev --brand\` renders it. A
+                brand that does not load leaves its own layouts out, with a warning on stderr (and
+                in "warnings" with --json).
   --summary     One compact entry per layout, for a first look: name, the first sentence of its
                 description, default surface, title limit, slots (\`*\` required) with what each
                 accepts and its budget, and item lists with their counts (stats[2-4]). With
@@ -31,7 +66,17 @@ Options:
                 names the deck, then the brand's, under a heading that names the brand; each
                 layout also has source and fallback. Without --summary the output is the full
                 catalog.
-  --json        Print { deck, slideFrontmatter, warnings, layouts }. slideFrontmatter is the JSON Schema of
+  --deck <deck>
+                For new and check, the deck whose layouts/ to use.
+  --json        For new: { ok, layout, brand, deck, dir, files, next } (brand or deck is null).
+                For check: { ok, brand, deck, dir, layouts: [{ name, dir, cases, ok, problems }],
+                problems }, each problem { severity, code, file, message, fix } and, for a rendered
+                slide's, case, slide, step and selector; severity is error, warning or note (only
+                errors fail); code is a layout problem id (such as layout-name-mismatch,
+                layout-replace-breaks or layout-limits-invalid) or a lint rule id (such as
+                content-budget). problems at the top level belong to no one layout. A failure
+                prints { ok: false, error: { type, message } }.
+                Otherwise print { deck, slideFrontmatter, warnings, layouts }. slideFrontmatter is the JSON Schema of
                 the fields every slide takes. Each layout has name, source (a package such as
                 "@deckster/kit", "brand:<name>" for a brand data layout, "brand-code:<name>" for
                 a brand code layout or "deck:<name>" for a deck code layout), fallback (the kit layout a brand layout falls
@@ -60,7 +105,7 @@ export const layoutsCommand: Command = {
   /**
    * The line `deckster --help` shows for this command.
    */
-  summary: 'List the layouts available to a deck',
+  summary: 'List the layouts available to a deck, or add and check code layouts',
 
   /**
    * The text `deckster layouts --help` prints.

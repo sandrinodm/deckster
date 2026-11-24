@@ -46,7 +46,7 @@
   },
   "scripts": {
     "test": "vp test",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p fixtures/layouts-new",
     "prepack": "vp pack && node scripts/stage-framework.ts"
   },
   "dependencies": {

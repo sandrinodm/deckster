@@ -1,14 +1,25 @@
 import { Console, Effect } from 'effect';
 
 import { chooseDeck, defaultDeck } from '#choose-deck.ts';
-import { EXIT_OK, type Command } from '#command.ts';
+import { usageError } from '#cli-error.ts';
+import { EXIT_OK, lazyRun, type Command } from '#command.ts';
 import { listLayouts, type LayoutInfo } from '#layouts/list-layouts.ts';
 import { ownLayoutsFirst, formatSummaries, summarizeLayout } from '#layouts/summarize-layouts.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
 import { DEFAULT_DECK, Workspace } from '#workspace.ts';
 
 /**
- * Parses the arguments and runs the command; succeeds with the process exit code.
+ * The subcommands of `deckster layouts`, by the word that selects them, each loaded on first use:
+ * `check` brings in the lint server and the browser, which listing never needs.
+ */
+const SUBCOMMANDS: ReadonlyMap<string, Command['run']> = new Map([
+  ['new', lazyRun('layouts-new-run.ts', () => import('#commands/layouts-new-run.ts'))],
+  ['check', lazyRun('layouts-check-run.ts', () => import('#commands/layouts-check-run.ts'))],
+]);
+
+/**
+ * Parses the arguments and runs the command, or the subcommand its first argument names; succeeds
+ * with the process exit code.
  */
 export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
   const { root: workspaceRoot } = yield* Workspace;
@@ -16,7 +27,23 @@ export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
     json: { type: 'boolean', default: false },
     summary: { type: 'boolean', default: false },
     brand: { type: 'string' },
+    deck: { type: 'string' },
   });
+  const [first] = positionals;
+  const subcommand = first === undefined ? undefined : SUBCOMMANDS.get(first);
+  if (first !== undefined && subcommand !== undefined) {
+    const at = argv.indexOf(first);
+    return yield* subcommand([...argv.slice(0, at), ...argv.slice(at + 1)]);
+  }
+
+  if (values.deck !== undefined) {
+    return yield* usageError(
+      "--deck is for `deckster layouts new` and `deckster layouts check`; to list a deck's " +
+        'layouts, name the deck as the first argument.',
+      'layouts',
+    );
+  }
+
   const deck =
     (yield* chooseDeck(positionals[0], yield* defaultDeck(workspaceRoot))) ?? DEFAULT_DECK;
   const catalog = yield* listLayouts(workspaceRoot, deck, values.brand);
