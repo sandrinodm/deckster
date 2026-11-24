@@ -1,8 +1,10 @@
 import type { ViteDevServer } from 'vite-plus';
 
 import { holdCode, resetCodeGate } from '@deckster/brand/node';
+import kitCatalog from '@deckster/kit/catalog';
 import { rmSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createServer, mergeConfig, normalizePath } from 'vite-plus';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 
@@ -10,13 +12,16 @@ import {
   componentSource,
   contractRuns,
   contractSource,
+  defaultReplacementSource,
   resetContractRuns,
   scratchRoot,
   writeFiles,
 } from '#layouts/layout-workspace.fixture.ts';
 import { DEFAULT_RUNTIME_PLUGINS, withLocalLayouts } from '#plugin.ts';
 import {
+  kitRuntimeModuleCode,
   localLayoutsModuleCode,
+  VIRTUAL_KIT_RUNTIME_ID,
   VIRTUAL_LOCAL_LAYOUTS_ID,
   VIRTUAL_PLUGINS_ID,
 } from '#virtual-modules.ts';
@@ -38,6 +43,11 @@ const WATCH_TIMEOUT_MS = 20_000;
 const POLL_INTERVAL_MS = 100;
 
 /**
+ * The kit's `src/` folder, where the generated kit runtime imports from.
+ */
+const KIT_SRC = path.dirname(fileURLToPath(import.meta.resolve('@deckster/kit/runtime')));
+
+/**
  * An MDX slide on a layout.
  *
  * @param layout - The layout name.
@@ -47,10 +57,10 @@ function slideSource(layout: string): string {
 }
 
 describe('withLocalLayouts', () => {
-  it('puts the code layouts right after the kit runtime, before the presenter', () => {
+  it('swaps in the generated kit runtime, with the code layouts right after it', () => {
     expect(withLocalLayouts(DEFAULT_RUNTIME_PLUGINS)).toEqual([
       '@deckster/brand/runtime',
-      '@deckster/kit/runtime',
+      VIRTUAL_KIT_RUNTIME_ID,
       VIRTUAL_LOCAL_LAYOUTS_ID,
       '@deckster/presenter/runtime',
     ]);
@@ -61,6 +71,31 @@ describe('withLocalLayouts', () => {
       '/abs/runtime.ts',
       VIRTUAL_LOCAL_LAYOUTS_ID,
     ]);
+  });
+});
+
+describe('kitRuntimeModuleCode', () => {
+  it('imports the plugin, each kit layout in file order, then the kit styles', () => {
+    const code = kitRuntimeModuleCode('/kit/src', ['default', 'title', 'do-dont'], []);
+    expect(code).toBe(
+      [
+        'import { kitPlugin } from "/kit/src/kit-plugin.ts";',
+        'import { defaultLayout } from "/kit/src/layouts/default-layout.tsx";',
+        'import { doDontLayout } from "/kit/src/layouts/do-dont-layout.tsx";',
+        'import { titleLayout } from "/kit/src/layouts/title-layout.tsx";',
+        'import "/kit/src/kit-styles.ts";',
+        '',
+        'export default kitPlugin([defaultLayout, titleLayout, doDontLayout]);',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('leaves out the replaced layouts, and ignores names the kit does not have', () => {
+    const code = kitRuntimeModuleCode('/kit/src', ['default', 'title'], ['title', 'kpi-wall']);
+    expect(code).not.toContain('title');
+    expect(code).not.toContain('kpi-wall');
+    expect(code).toContain('export default kitPlugin([defaultLayout]);');
   });
 });
 
@@ -194,13 +229,21 @@ describe('a deck with code layouts, served', () => {
     );
   });
 
-  it('loads the code layouts plugin right after the kit runtime', async () => {
+  it('loads the generated kit runtime, then the code layouts plugin, then the rest', async () => {
     const code = await virtualModule(VIRTUAL_PLUGINS_ID);
-    const order = ['kit/src/runtime.ts', VIRTUAL_LOCAL_LAYOUTS_ID, 'presenter/src/runtime']
+    const order = [VIRTUAL_KIT_RUNTIME_ID, VIRTUAL_LOCAL_LAYOUTS_ID, 'presenter/src/runtime']
       .map((part) => code.indexOf(part))
       .filter((at) => at !== -1);
     expect(order).toHaveLength(3);
     expect(order).toEqual(order.toSorted((left, right) => left - right));
+    expect(code).not.toContain('kit/src/runtime.ts');
+  });
+
+  it('registers every kit layout when none is replaced', async () => {
+    const code = await virtualModule(VIRTUAL_KIT_RUNTIME_ID);
+    for (const contract of kitCatalog.layouts) {
+      expect(code).toContain(`/layouts/${contract.name}-layout.tsx`);
+    }
   });
 
   it('registers only the layouts whose contract loaded', async () => {
@@ -274,4 +317,67 @@ describe('a deck with code layouts, served', () => {
     },
     WATCH_TIMEOUT_MS * 2,
   );
+});
+
+describe('a deck whose code layout replaces a kit layout, served', () => {
+  let server: ViteDevServer;
+  let root: string;
+
+  /**
+   * The code of one of the deck plugin's virtual modules.
+   *
+   * @param id - The virtual module id.
+   */
+  const virtualModule = async (id: string): Promise<string> =>
+    (await server.environments.client.transformRequest(id))?.code ?? '';
+
+  beforeAll(async () => {
+    resetCodeGate();
+    root = scratchRoot();
+    writeFiles(root, {
+      'decks/talk/deck.config.ts': [
+        "import { defineDeck } from '@deckster/engine/config';",
+        '',
+        "export default defineDeck({ title: 'Talk', slides: ['plain'] });",
+        '',
+      ].join('\n'),
+      'decks/talk/slides/plain.mdx': slideSource('default'),
+      'decks/talk/layouts/default/contract.ts': defaultReplacementSource(),
+      'decks/talk/layouts/default/layout.tsx': componentSource('default'),
+    });
+    server = await createServer(
+      mergeConfig(deckViteConfig({ workspaceRoot: root, deck: 'talk' }), {
+        logLevel: 'silent',
+        appType: 'custom',
+        server: { middlewareMode: true, hmr: false, ws: false },
+      }),
+    );
+  }, SERVER_TIMEOUT_MS);
+
+  afterAll(async () => {
+    await server.close();
+    resetCodeGate();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it('leaves the replaced layout out of the generated kit runtime', async () => {
+    const code = await virtualModule(VIRTUAL_KIT_RUNTIME_ID);
+    expect(code).not.toContain('/layouts/default-layout.tsx');
+    expect(code).not.toContain('defaultLayout');
+    expect(code).toContain('/layouts/title-layout.tsx');
+    expect(code).toContain('kit-plugin.ts');
+    expect(code).toContain('kit-styles.ts');
+  });
+
+  it('registers the replacement among the code layouts', async () => {
+    expect(await virtualModule(VIRTUAL_LOCAL_LAYOUTS_ID)).toContain('lazyLayout("default"');
+  });
+
+  it('keeps the kit’s sources in the brand stylesheet’s Tailwind scan', async () => {
+    const { pluginContainer } = server.environments.client;
+    const resolved = await pluginContainer.resolveId('virtual:deck/brand.css');
+    const loaded = await pluginContainer.load(resolved?.id ?? '');
+    const source = typeof loaded === 'string' ? loaded : (loaded?.code ?? '');
+    expect(source).toContain(`@source "${normalizePath(KIT_SRC)}"`);
+  });
 });

@@ -93,6 +93,18 @@ describe('checkContract', () => {
     expect(checkContract(splitContract)).toEqual([]);
   });
 
+  it('accepts `replaces: true` and nothing else there', () => {
+    expect(checkContract({ ...splitContract, replaces: true })).toEqual([]);
+    expect(checkContract({ ...splitContract, replaces: 'yes' })).toEqual([
+      {
+        message: 'Layout "split": `replaces` is "yes", not `true`.',
+        fix:
+          'Write `replaces: true` to replace the kit layout of the same name, or leave ' +
+          '`replaces` out.',
+      },
+    ]);
+  });
+
   it('reports every problem with a contract, each with a fix', () => {
     const problems = checkContract({
       ...splitContract,

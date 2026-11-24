@@ -16,7 +16,14 @@ const REF = {
 /**
  * No code layouts.
  */
-const NOTHING: LocalLayouts = { layouts: [], catalogs: [], replaced: [], files: [], problems: [] };
+const NOTHING: LocalLayouts = {
+  layouts: [],
+  catalogs: [],
+  replaced: [],
+  files: [],
+  problems: [],
+  warnings: [],
+};
 
 describe('checkLocalLayout', () => {
   it.effect('passes a slide on a layout of the catalog, on an unknown one and on none', () =>

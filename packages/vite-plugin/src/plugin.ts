@@ -2,6 +2,7 @@ import type { Plugin, Rollup, UserConfig, ViteDevServer } from 'vite';
 
 import { BRANDS_DIR, onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
 import { devSessionOf, issueDevSession } from '@deckster/comments/dev-session';
+import kitCatalog from '@deckster/kit/catalog';
 import { Effect } from 'effect';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,12 +51,15 @@ import {
 import {
   deckModuleCode,
   isVirtualPlugin,
+  kitRuntimeModuleCode,
   localLayoutsModuleCode,
   pluginsModuleCode,
   RESOLVED_DECK_ID,
+  RESOLVED_KIT_RUNTIME_ID,
   RESOLVED_LOCAL_LAYOUTS_ID,
   RESOLVED_PLUGINS_ID,
   VIRTUAL_DECK_ID,
+  VIRTUAL_KIT_RUNTIME_ID,
   VIRTUAL_LOCAL_LAYOUTS_ID,
   VIRTUAL_PLUGINS_ID,
 } from '#virtual-modules.ts';
@@ -71,8 +75,9 @@ export const DEFAULT_RUNTIME_PLUGINS: readonly string[] = [
 ];
 
 /**
- * The runtime plugin whose layouts the code layouts follow, so a code layout is registered after
- * the kit's and before the presenter's and the dev-only plugins, which define none.
+ * The kit's runtime plugin. The deck plugin loads `virtual:deck/kit-runtime` in its place, which
+ * leaves out the kit layouts a code layout replaces, and registers the code layouts right after it,
+ * before the presenter's and the dev-only plugins, which define none.
  */
 const KIT_RUNTIME_PLUGIN = '@deckster/kit/runtime';
 
@@ -387,6 +392,10 @@ export function deckPlugin(
         return RESOLVED_LOCAL_LAYOUTS_ID;
       }
 
+      if (id === VIRTUAL_KIT_RUNTIME_ID) {
+        return RESOLVED_KIT_RUNTIME_ID;
+      }
+
       return id === VIRTUAL_PLUGINS_ID ? RESOLVED_PLUGINS_ID : undefined;
     },
 
@@ -397,13 +406,18 @@ export function deckPlugin(
       }
 
       if (id === RESOLVED_BRAND_ID || id === (await brandCssId())) {
-        const pluginFiles = await resolveRuntimePlugins(this, workspaceRoot, runtimePlugins());
+        const resolved = await resolveRuntimePlugins(this, workspaceRoot, runtimePlugins());
+        const pluginFiles = await withKitRuntimeFile(this, workspaceRoot, resolved);
         const deck = await findActiveDeck();
         return brandModuleSource(this, { id, brand: await brand.load(), deck, pluginFiles });
       }
 
       if (id === RESOLVED_LOCAL_LAYOUTS_ID) {
         return localLayoutsModule(this, workspaceRoot, (await deckLayouts()).local);
+      }
+
+      if (id === RESOLVED_KIT_RUNTIME_ID) {
+        return kitRuntimeModule(this, workspaceRoot, (await deckLayouts()).local.replaced);
       }
 
       return id === RESOLVED_PLUGINS_ID
@@ -522,15 +536,19 @@ function deckModule(context: LoadContext, deck: LoadedDeck, brand: string): stri
 }
 
 /**
- * The runtime plugins with the code layouts' plugin added right after the kit's runtime, or last
- * when the kit's is not among them.
+ * The runtime plugins as the deck loads them: the kit's runtime swapped for
+ * `virtual:deck/kit-runtime`, which leaves out the kit layouts a code layout replaces, and the code
+ * layouts' plugin right after it, or last when the kit's runtime is not among the plugins.
  *
  * @param plugins - The runtime plugin specifiers, in load order.
  */
 export function withLocalLayouts(plugins: readonly string[]): string[] {
-  const kit = plugins.indexOf(KIT_RUNTIME_PLUGIN);
-  const at = kit === -1 ? plugins.length : kit + 1;
-  return [...plugins.slice(0, at), VIRTUAL_LOCAL_LAYOUTS_ID, ...plugins.slice(at)];
+  const swapped = plugins.map((specifier) =>
+    specifier === KIT_RUNTIME_PLUGIN ? VIRTUAL_KIT_RUNTIME_ID : specifier,
+  );
+  const kit = swapped.indexOf(VIRTUAL_KIT_RUNTIME_ID);
+  const at = kit === -1 ? swapped.length : kit + 1;
+  return [...swapped.slice(0, at), VIRTUAL_LOCAL_LAYOUTS_ID, ...swapped.slice(at)];
 }
 
 /**
@@ -575,12 +593,66 @@ function localLayoutsModule(
     context.addWatchFile(file);
   }
 
-  for (const problem of local.problems) {
+  for (const problem of [...local.problems, ...local.warnings]) {
     context.warn(`${displayPath(workspaceRoot, problem.file)}: ${problem.message} ${problem.fix}`);
   }
 
   const loaded = new Set(local.catalogs.map((entry) => entry.ref.file));
   return localLayoutsModuleCode(local.layouts.filter((layout) => loaded.has(layout.contractFile)));
+}
+
+/**
+ * Generates `virtual:deck/kit-runtime`: the kit's runtime plugin without the replaced kit layouts.
+ * The kit's folder is the one `@deckster/kit/runtime` resolves to, so the generated module imports
+ * the same files the static runtime does.
+ *
+ * @param context - The plugin context, to resolve the kit.
+ * @param workspaceRoot - The absolute workspace root, for the error.
+ * @param replaced - The kit layout names a code layout replaces.
+ * @throws DeckBuildError when the kit's runtime does not resolve.
+ */
+async function kitRuntimeModule(
+  context: LoadContext,
+  workspaceRoot: string,
+  replaced: readonly string[],
+): Promise<string> {
+  const runtime = await resolveKitRuntime(context, workspaceRoot);
+  const names = kitCatalog.layouts.map((contract) => contract.name);
+  return kitRuntimeModuleCode(path.dirname(runtime), names, replaced);
+}
+
+/**
+ * The runtime plugin files with `virtual:deck/kit-runtime` as the kit's runtime file, for the brand
+ * stylesheet's Tailwind sources: the generated module imports the kit's `src/` files, so the kit's
+ * classes must still be scanned there.
+ *
+ * @param context - The plugin context, to resolve the kit.
+ * @param workspaceRoot - The absolute workspace root, for the error.
+ * @param files - The resolved runtime plugin ids, virtual ones as written.
+ */
+async function withKitRuntimeFile(
+  context: LoadContext,
+  workspaceRoot: string,
+  files: readonly string[],
+): Promise<string[]> {
+  if (!files.includes(VIRTUAL_KIT_RUNTIME_ID)) {
+    return [...files];
+  }
+
+  const runtime = await resolveKitRuntime(context, workspaceRoot);
+  return files.map((file) => (file === VIRTUAL_KIT_RUNTIME_ID ? runtime : file));
+}
+
+/**
+ * The resolved file of the kit's static runtime, `@deckster/kit/runtime`, from this package.
+ *
+ * @param context - The plugin context, to resolve the specifier.
+ * @param workspaceRoot - The absolute workspace root, for the error.
+ * @throws DeckBuildError when it does not resolve.
+ */
+async function resolveKitRuntime(context: LoadContext, workspaceRoot: string): Promise<string> {
+  const [file] = await resolveRuntimePlugins(context, workspaceRoot, [KIT_RUNTIME_PLUGIN]);
+  return file ?? KIT_RUNTIME_PLUGIN;
 }
 
 /**

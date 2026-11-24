@@ -136,8 +136,9 @@ export type LocalLayouts = {
   readonly catalogs: readonly LocalCatalog[];
 
   /**
-   * The names of kit layouts these layouts replace, which the kit then does not load. Always empty
-   * until a contract can say `replaces`.
+   * The names of the kit and engine layouts these layouts replace (their contracts say `replaces:
+   * true` and passed the compatibility check), which the kit then does not load. Filled in by
+   * `deckCatalog`; `localLayouts` alone leaves it empty.
    */
   readonly replaced: readonly string[];
 
@@ -151,6 +152,13 @@ export type LocalLayouts = {
    * Everything wrong with the layouts. Only the slides that name a layout with a problem fail.
    */
   readonly problems: readonly LayoutProblem[];
+
+  /**
+   * What is worth reporting but fails nothing, each with its `level`: a replacement that drops the
+   * replaced layout's PowerPoint mapping (`layout-replace-pptx`) and every budget or title limit
+   * that differs from it (`layout-replace-budget`). Filled in by `deckCatalog`.
+   */
+  readonly warnings: readonly LayoutProblem[];
 };
 
 /**
@@ -265,7 +273,7 @@ export const localLayouts = Effect.fn('localLayouts')(function* (
   const files = found.flatMap((discovery) => discovery.files);
   const problems = found.flatMap((discovery) => discovery.problems);
   if (options.code === 'skip') {
-    return { layouts, catalogs: [], replaced: [], files, problems };
+    return { layouts, catalogs: [], replaced: [], files, problems, warnings: [] };
   }
 
   const loadable = found.flatMap((discovery) => (discovery.loadable ? discovery.layouts : []));
@@ -288,7 +296,7 @@ export const localLayouts = Effect.fn('localLayouts')(function* (
     }
   }
 
-  return { layouts, catalogs, replaced: [], files, problems };
+  return { layouts, catalogs, replaced: [], files, problems, warnings: [] };
 });
 
 /**

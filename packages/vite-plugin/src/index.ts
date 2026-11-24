@@ -20,6 +20,7 @@ export {
   type SkippedCodeLayouts,
 } from '#layouts/brand-source.ts';
 export { deckCatalog, type DeckCatalog, type DeckCatalogOptions } from '#layouts/deck-catalog.ts';
+export { checkReplacedSlides, type ReplacedSlidesOptions } from '#layouts/check-replaced-slides.ts';
 export {
   importContracts,
   type ContractLoad,
@@ -47,7 +48,12 @@ export {
   type DeckPluginApi,
   type DeckPluginOptions,
 } from '#plugin.ts';
-export { VIRTUAL_DECK_ID, VIRTUAL_LOCAL_LAYOUTS_ID, VIRTUAL_PLUGINS_ID } from '#virtual-modules.ts';
+export {
+  VIRTUAL_DECK_ID,
+  VIRTUAL_KIT_RUNTIME_ID,
+  VIRTUAL_LOCAL_LAYOUTS_ID,
+  VIRTUAL_PLUGINS_ID,
+} from '#virtual-modules.ts';
 export { deckViteConfig } from '#vite-config.ts';
 export { APPS_DIR, APP_ENTRY_FILE, discoverApps, type AppLocation } from '#apps/discover-apps.ts';
 export type { MdxWarning } from '#slides/compile-mdx.ts';

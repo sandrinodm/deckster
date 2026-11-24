@@ -40,6 +40,11 @@ export type ContractSourceOptions = {
    * An expression used as the description instead of the literal, such as an imported constant.
    */
   readonly descriptionExpression?: string;
+
+  /**
+   * Whether the contract says `replaces: true`.
+   */
+  readonly replaces?: boolean;
 };
 
 /**
@@ -47,7 +52,7 @@ export type ContractSourceOptions = {
  * under {@link RUNS_KEY}.
  *
  * @param name - The layout name.
- * @param options - The description and extra imports.
+ * @param options - The description, extra imports and whether it replaces a kit layout.
  */
 export function contractSource(name: string, options: ContractSourceOptions = {}): string {
   const description =
@@ -61,10 +66,41 @@ export function contractSource(name: string, options: ContractSourceOptions = {}
     '',
     'export default defineLayoutContract({',
     `  name: ${JSON.stringify(name)},`,
+    ...(options.replaces === true ? ['  replaces: true,'] : []),
     `  description: ${description},`,
     "  schema: Schema.Struct({ gap: Schema.optionalKey(Schema.Literals(['tight', 'loose'])) }),",
     "  slots: { body: { description: 'The content.', required: true, accepts: ['text'] } },",
     '  budget: {},',
+    "  example: { frontmatter: {}, body: 'Hello\\n' },",
+    '});',
+    '',
+  ].join('\n');
+}
+
+/**
+ * The source of a `contract.ts` named `default` that replaces the kit's `default` layout and fits
+ * it: the same required `body` slot, without a PowerPoint mapping.
+ *
+ * @param budget - The body budget, as a source literal; the kit's own when left out.
+ */
+export function defaultReplacementSource(budget = '{ maxWords: 80, maxBullets: 6 }'): string {
+  return [
+    "import { defineLayoutContract } from '@deckster/engine/layout';",
+    "import { Schema } from 'effect';",
+    '',
+    'export default defineLayoutContract({',
+    "  name: 'default',",
+    '  replaces: true,',
+    "  description: 'The brand default.',",
+    '  schema: Schema.Struct({}),',
+    '  slots: {',
+    '    body: {',
+    "      description: 'The content.',",
+    '      required: true,',
+    "      accepts: ['heading', 'text', 'bullets', 'image', 'component'],",
+    '    },',
+    '  },',
+    `  budget: { body: ${budget} },`,
     "  example: { frontmatter: {}, body: 'Hello\\n' },",
     '});',
     '',

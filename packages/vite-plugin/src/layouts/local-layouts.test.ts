@@ -114,7 +114,14 @@ layer(NodeFileSystem.layer)('localLayouts', (it) => {
         deck: deckLocation(root, 'talk'),
         code: 'load',
       });
-      expect(found).toEqual({ layouts: [], catalogs: [], replaced: [], files: [], problems: [] });
+      expect(found).toEqual({
+        layouts: [],
+        catalogs: [],
+        replaced: [],
+        files: [],
+        problems: [],
+        warnings: [],
+      });
       expect(yield* localLayouts({ root, code: 'load' })).toEqual(found);
       rmSync(root, { recursive: true, force: true });
     }),

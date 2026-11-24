@@ -5,7 +5,14 @@ import type { Problem } from '#errors.ts';
  *
  * - `layout-folder-incomplete`: a `layouts/<name>/` folder without `contract.ts` or `layout.tsx`;
  * - `layout-name-mismatch`: the folder name differs from the contract's or the component's name;
- * - `layout-name-clash`: the name is already a kit, engine or brand layout;
+ * - `layout-name-clash`: the name is already a kit, engine or brand layout, and the contract does not
+ *   say `replaces: true`;
+ * - `layout-replace-breaks`: the layout replaces a kit or engine layout, and slides written for that
+ *   layout would stop building (a field, slot or title it drops or narrows, an example it
+ *   rejects);
+ * - `layout-replace-pptx`: a warning: the replaced layout has a PowerPoint mapping, and the
+ *   replacement has none;
+ * - `layout-replace-budget`: a note: a budget or title limit differs from the replaced layout's;
  * - `layout-contract-imports`: `contract.ts` imports something a contract may not;
  * - `layout-contract-invalid`: the contract loaded but fails the build's contract checks;
  * - `layout-load-failed`: `contract.ts` threw while loading, or has no default export;
@@ -18,6 +25,9 @@ export type LayoutProblemCode =
   | 'layout-folder-incomplete'
   | 'layout-name-mismatch'
   | 'layout-name-clash'
+  | 'layout-replace-breaks'
+  | 'layout-replace-pptx'
+  | 'layout-replace-budget'
   | 'layout-contract-imports'
   | 'layout-contract-invalid'
   | 'layout-load-failed'
@@ -46,4 +56,11 @@ export type LayoutProblem = Problem & {
    * layout of a brand or deck, such as a version mismatch.
    */
   readonly layout?: string;
+
+  /**
+   * How much it matters, set only on what is not an error: `warning` for something a deck loses
+   * (`layout-replace-pptx`), `note` for a change worth knowing (`layout-replace-budget`). Those are
+   * listed in `LocalLayouts.warnings`, never in `problems`, and fail no slide.
+   */
+  readonly level?: 'warning' | 'note';
 };

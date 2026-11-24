@@ -1166,3 +1166,64 @@ in `layout-fields` meanwhile.
   `stat-figure`, `TableLayoutContext` itself), missing and unused names, helper CSS, `code` and
   `stats` CSS loaded outside their layouts, rewrites to existing exports.
 - §3.6, §3.11, §3.13, §4: `role` waits for the page chrome plan.
+
+### 10.8 Phase 3 notes
+
+Where phase 3 differs from §3.2, §3.6 and §5, and why:
+
+- **Stylesheet order.** `kitPlugin` (`kit/src/kit-plugin.ts`) imports no stylesheet. The nine
+  stylesheets `runtime.ts` imported last moved to `kit/src/kit-styles.ts`, which `runtime.ts` and
+  `virtual:deck/kit-runtime` import after the layouts. Without that, `media.css` came before
+  `image-layout.css` and the two `.kit-image-caption` rules swapped. With no layout replaced, the
+  built CSS of `decks/layouts` has the same rules as before (compared as a multiset; the only
+  change is the three rekeyed `display-align.css` selectors below), and the generated module gives
+  exactly the static runtime's CSS. The order is not byte-identical. The blocks of
+  `brand-layout.css`, `morph.css` and `foundation/badges.css` now come before the layouts'
+  stylesheets instead of after them, and the moved `code-layout.css` and `stats-layout.css` rules
+  follow their layouts. Those selectors exist only in their own files. A pairwise check of
+  reordered rules (same layer, same specificity, a shared property and subject class) found only
+  `.kit-demo-aside p`/`li` against `.kit-code-aside p`/`li`, which never match the same element.
+- **CSS loaded outside its layout (§10.3).** `code-layout.css` is now imported by
+  `code-layout.tsx` instead of `runtime.ts`; only that layout uses its classes. `stats-layout.css`
+  was split: the stat-card rules (`.kit-stat*`) moved to `layouts/stat-cards.css`, which
+  `stat-row.tsx` (the `StatRow` chart) and `stats-layout.tsx` both import. `stats-layout.css` keeps
+  only the layout's own rules (`.kit-frame[data-layout='stats']`, `.kit-stats`,
+  `.kit-stats-context`), which only `stats-layout.tsx` imports. With a kit layout replaced, these
+  still load: `kit-styles.ts` (component and chrome styles), `stat-cards.css` while `StatRow` is
+  loaded, and a stylesheet the replaced layout shares with a layout that stays (`image-layout.css`
+  through `title-layout.tsx`, `display-align.css` while one of `title`, `section`, `statement` or
+  `image-reveal` stays). None of these is keyed on the replaced layout's name any more.
+- **`display-align.css`** is keyed on `.kit-frame[data-display-align][data-align='center']`, which
+  keeps the old specificity. The four layouts set `data-display-align=""` on their frame.
+  Computed eyebrow and `::after` styles for all four, centred and not, are unchanged in dev and in
+  a build. The backdrop mask was not exercised: the default brand has no placed-art backdrop.
+- **Problem levels.** `LayoutProblem` gains an optional `level` (`warning` | `note`). Warnings and
+  notes go to the new `LocalLayouts.warnings` and are never in `problems`, because `problems`
+  fails every slide on the layout. The budget note has its own code, `layout-replace-budget`.
+  `replaces: true` on a name no kit or engine layout has is a `layout-contract-invalid` problem.
+- **A breaking replacement is left out.** If the replacement breaks the layout it replaces, it does
+  not join the catalog, and the kit layout keeps its name. The `layout-replace-breaks` problems
+  name the layout, so slides on it fail with the reason, as with a name clash. `replaced` lists
+  only replacements that joined the catalog, so the kit never skips a layout that nothing
+  registers.
+- **Where the check lives.** Items 1–3 and 5–7 are `checkReplacement` in
+  `kit/src/layouts/replace-check.ts`, exported from `@deckster/kit/catalog`. The deck plugin
+  already imports that module statically for `checkBrandLayouts`, and the kit imports nothing from
+  the plugin, so this adds no cycle. Item 4 needs decks, so it is `checkReplacedSlides` in the
+  deck plugin, exported from `@deckster/vite-plugin`. The build does not call it, because the
+  build already fails a slide that does not fit.
+- **Item 1** follows the plan literally: a field the original requires must stay required, even
+  though making it optional breaks no slide. The same goes for slots (item 2) and the title
+  (item 7). A `body` the replacement does not describe counts as accepting anything.
+- **Item 3** decodes the original's example and every `LIMIT_CASES[name]` entry that the original
+  accepts on its own (`replacementSamples`). Today every kit layout accepts all of its cases; a kit
+  test asserts that, and asserts that an unchanged copy of every kit contract passes the check.
+- **Deck layouts** can replace a kit layout too (§3.2 allows any code layout). A deck layout named
+  like a kit layout that the brand already replaces is a brand-layout clash (phase 5).
+- **§3.9.** A data layout's fallback is checked against the catalog modules' layouts and the
+  brand's code layouts, including a replacement. The CLI's `brand check`
+  (`cli/src/layouts/check-brand-layouts.ts`) still passes only the kit and engine contracts, so it
+  rejects such a fallback until the CLI follow-up passes `deckCatalog`'s index.
+- **`kitLayoutModule`** (exported from `@deckster/kit/catalog`) states the
+  `layouts/<name>-layout.tsx` / `<camelName>Layout` convention. The generator uses it, and a kit
+  test checks every catalog layout against it.

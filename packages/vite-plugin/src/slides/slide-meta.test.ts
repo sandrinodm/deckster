@@ -20,7 +20,7 @@ layer(NodeFileSystem.layer)('slideMetaReader', (it) => {
         layouts.push(meta.frontmatter.layout);
       }
 
-      expect(layouts).toEqual(['kpi-wall', 'funnel', 'broken', 'title']);
+      expect(layouts).toEqual(['kpi-wall', 'funnel', 'broken', 'section', 'title']);
     }),
   );
 });

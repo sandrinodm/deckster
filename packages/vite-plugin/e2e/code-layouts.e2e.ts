@@ -1,10 +1,18 @@
 import type { Browser } from '@e2e-dev/web';
 
+import kitCatalog from '@deckster/kit/catalog';
 import { describe, test as plainTest } from '@e2e-dev/web';
+import { NodeFileSystem } from '@effect/platform-node';
 import { expect } from 'e2e';
+import { Effect } from 'effect';
+
+import { loadDeckBrand } from '#brand/load-deck-brand.ts';
+import { findDeck } from '#decks/discover-decks.ts';
+import { deckCatalog } from '#layouts/deck-catalog.ts';
 
 import type { PageProblems } from './support/page-problems.ts';
 
+import { FIXTURE_WORKSPACE } from './support/case-servers.ts';
 import {
   CODE_LAYOUT_TARGETS,
   EDIT_URL,
@@ -59,6 +67,40 @@ type RenderedLayout = {
 };
 
 /**
+ * What the slide on the brand's replacement of the kit's `title` rendered, and which kit rules
+ * reached it.
+ */
+type RenderedCover = {
+  /**
+   * The text of the replacement's own label, or `null` when it did not render.
+   */
+  label: string | null;
+
+  /**
+   * The computed `display` of the element with the kit cover's `kit-cover-main` class: `flex` when
+   * the kit's `title-layout.css` is loaded.
+   */
+  mainDisplay: string | null;
+
+  /**
+   * The computed `justify-content` of the eyebrow, which the kit's centred display layouts set to
+   * `center`.
+   */
+  eyebrowJustify: string | null;
+
+  /**
+   * The layout name the engine stamped on the slide.
+   */
+  stamped: string | null;
+
+  /**
+   * The selectors of every style rule on the page that names the `title` layout or a kit cover
+   * class.
+   */
+  kitTitleRules: string[];
+};
+
+/**
  * The copy of the deck the editing tests change, served with hot updates.
  */
 const workspace = useCodeLayoutServers();
@@ -103,6 +145,53 @@ function rendered(browser: Browser, layout: string, labelId: string): Promise<Re
     },
     { active: ACTIVE, name: layout, testId: labelId },
   );
+}
+
+/**
+ * Reads what the slide on screen rendered for the brand's cover, and the page's style rules that
+ * target the kit's cover.
+ *
+ * @param browser - The browser fixture.
+ */
+function renderedCover(browser: Browser): Promise<RenderedCover> {
+  return browser.evaluate((active) => {
+    const slide = document.querySelector(active);
+    const main = slide?.querySelector('[data-testid="cover-main"]');
+    const eyebrow = slide?.querySelector('[data-testid="cover-eyebrow"]');
+    const selectors: string[] = [];
+    /**
+     * Collects the selectors of style rules, inside layers and media rules too.
+     *
+     * @param rules - A rule list.
+     */
+    const collect = (rules: CSSRuleList): void => {
+      for (const rule of Array.from(rules)) {
+        if (rule instanceof CSSStyleRule) {
+          selectors.push(rule.selectorText);
+        }
+
+        if ('cssRules' in rule && rule.cssRules instanceof CSSRuleList) {
+          collect(rule.cssRules);
+        }
+      }
+    };
+    for (const sheet of Array.from(document.styleSheets)) {
+      collect(sheet.cssRules);
+    }
+
+    return {
+      label: slide?.querySelector('[data-testid="cover-label"]')?.textContent ?? null,
+      mainDisplay: main ? getComputedStyle(main).display : null,
+      eyebrowJustify: eyebrow ? getComputedStyle(eyebrow).justifyContent : null,
+      stamped:
+        document
+          .querySelector(`${active}[data-deck-layout], ${active} [data-deck-layout]`)
+          ?.getAttribute('data-deck-layout') ?? null,
+      kitTitleRules: selectors.filter(
+        (selector) => /data-layout=["']?title\b/u.test(selector) || selector.includes('kit-cover'),
+      ),
+    };
+  }, ACTIVE);
 }
 
 /**
@@ -161,13 +250,47 @@ for (const target of CODE_LAYOUT_TARGETS) {
     test('keeps the other slides working next to the broken layout', async (fixtures) => {
       await openClean(fixtures, target.url, 4);
       const title = await fixtures.browser.evaluate(
-        (active) => document.querySelector(`${active} [data-layout="title"]`)?.textContent ?? null,
+        (active) =>
+          document.querySelector(`${active} [data-layout="section"]`)?.textContent ?? null,
         ACTIVE,
       );
       expect(title).toContain('A kit layout still works');
     });
+
+    test('renders the brand layout that replaces the kit title, with none of the kit title’s rules', async (fixtures) => {
+      await openClean(fixtures, target.url, 5);
+      expect(await renderedCover(fixtures.browser)).toEqual({
+        label: 'Brand cover',
+        mainDisplay: 'block',
+        eyebrowJustify: 'normal',
+        stamped: 'title',
+        kitTitleRules: [],
+      });
+    });
   });
 }
+
+describe('a brand layout that replaces a kit layout, in the catalog', () => {
+  plainTest('lists it where the kit layout was, with the brand as its source', async () => {
+    const catalog = await Effect.runPromise(
+      Effect.gen(function* () {
+        const brand = yield* loadDeckBrand(FIXTURE_WORKSPACE, 'fx-code');
+        const deck = yield* findDeck(FIXTURE_WORKSPACE, 'code-layouts');
+        return yield* deckCatalog({ root: FIXTURE_WORKSPACE, brand, deck, code: 'load' });
+      }).pipe(Effect.provide(NodeFileSystem.layer)),
+    );
+    const names = [...catalog.index.keys()];
+    const kitNames = kitCatalog.layouts.map((contract) => contract.name);
+    expect(catalog.index.get('title')?.source).toBe('brand-code:fx-code');
+    expect(catalog.index.get('title')?.replaces).toBe('@deckster/kit');
+    expect(names.indexOf('title')).toBe(kitNames.indexOf('title'));
+    expect(catalog.local.replaced).toEqual(['title']);
+    expect(catalog.local.warnings.map((warning) => `${warning.level} ${warning.code}`)).toEqual([
+      'warning layout-replace-pptx',
+      'note layout-replace-budget',
+    ]);
+  });
+});
 
 describe('editing a code layout while the dev server runs', () => {
   plainTest('applies a stylesheet edit without reloading the page', async ({ browser }) => {

@@ -70,9 +70,13 @@ export type DeckCatalog = {
  * layouts.
  *
  * A code layout with a problem is left out of the catalog and reported in `local.problems`: a
- * folder that is incomplete, a contract that does not load or is invalid, a version mismatch, and a
- * name that is taken (by a kit or engine layout, by a data layout of the same brand, or by a brand
- * layout when the code layout is the deck's).
+ * folder that is incomplete, a contract that does not load or is invalid, a version mismatch, a
+ * name that is taken (by a kit or engine layout it does not say it replaces, by a data layout of
+ * the same brand, or by a brand layout when the code layout is the deck's), and a replacement that
+ * would break slides written for the kit layout it replaces. A replacement that joins is listed in
+ * `local.replaced`, and its warnings and notes in `local.warnings`. Slides on real decks are
+ * checked against a replacement by the build, and by `checkReplacedSlides` for every deck of a
+ * brand.
  *
  * @param options - The workspace, the brand, the deck and whether to load code.
  * @returns The catalog and the code layouts.
@@ -101,6 +105,7 @@ export const deckCatalog = Effect.fn('deckCatalog')(function* (
     catalogs: found.catalogs.filter((entry) => !clashed.has(entry.ref.file)),
     replaced: merged.replaced,
     problems: [...found.problems, ...merged.clashes],
+    warnings: merged.warnings,
   };
   return { index: merged.index, local };
 });

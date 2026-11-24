@@ -14,7 +14,7 @@ import { Effect, Predicate, Result, Schema } from 'effect';
 
 import type { Problem } from '#errors.ts';
 
-import { decodeFields } from '#validation/decode-fields.ts';
+import { decodeFields, describeValue } from '#validation/decode-fields.ts';
 
 /**
  * Component names MDX slides use without importing them, which a slot tag must not shadow.
@@ -73,8 +73,8 @@ export function slideHintsFor(contract: AnyLayoutContract): Readonly<Record<stri
  * Everything wrong with a layout contract, each with its fix: a name that is not kebab-case, a
  * missing description, a default surface that is not a surface name, schema fields that redefine a
  * field every slide has, slot names that are not camelCase or shadow a built-in component, slots
- * without a description or with unknown content kinds, budgets for slots the layout lacks, and an
- * example whose frontmatter does not decode.
+ * without a description or with unknown content kinds, budgets for slots the layout lacks, a
+ * `replaces` other than `true`, and an example whose frontmatter does not decode.
  *
  * @param value - The contract as the catalog module exports it.
  * @param generated - Whether the contract is generated from a brand layout. Its example can have an
@@ -105,6 +105,7 @@ export function checkContract(value: unknown, generated = false): Problem[] {
     ...variantProblems(value, where),
     ...titleProblems(value, where),
     ...checksProblems(value, where),
+    ...replacesProblems(value, where),
     ...exampleProblems(value, where, generated),
   ];
 }
@@ -458,6 +459,26 @@ function checksProblems(contract: AnyLayoutContract, where: string): Problem[] {
           fix:
             'Write `checks(frontmatter) { return [] }` returning `{ path, message, fix }` ' +
             'problems.',
+        },
+      ];
+}
+
+/**
+ * Problems with the layout's `replaces` flag: a value other than `true`.
+ *
+ * @param contract - The contract.
+ * @param where - The layout, for messages.
+ */
+function replacesProblems(contract: AnyLayoutContract, where: string): Problem[] {
+  const replaces: unknown = Reflect.get(contract, 'replaces');
+  return replaces === undefined || replaces === true
+    ? []
+    : [
+        {
+          message: `${where}: \`replaces\` is ${describeValue(replaces)}, not \`true\`.`,
+          fix:
+            'Write `replaces: true` to replace the kit layout of the same name, or leave ' +
+            '`replaces` out.',
         },
       ];
 }

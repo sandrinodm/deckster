@@ -1,3 +1,5 @@
+import type { BrandLayoutTokens } from '@deckster/brand';
+
 import { holdCode, resetCodeGate, type LoadedBrand } from '@deckster/brand/node';
 import { NodeFileSystem } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
@@ -16,6 +18,7 @@ import {
   componentSource,
   contractRuns,
   contractSource,
+  defaultReplacementSource,
   resetContractRuns,
   scratchRoot,
   writeFiles,
@@ -187,6 +190,158 @@ layer(NodeFileSystem.layer)('deckCatalog', (it) => {
       expect(contractRuns()).toBe(3);
       expect(after.index.get('funnel')?.contract.description).toBe('Changed.');
       expect(after.index.has('added')).toBe(true);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+});
+
+/**
+ * The files of a brand code layout `default` that replaces the kit's, with a component.
+ *
+ * @param layoutsDir - The `layouts/` folder, relative to the workspace.
+ * @param budget - The body budget, as a source literal; the kit's own when left out.
+ */
+function defaultReplacementFiles(layoutsDir: string, budget?: string): Record<string, string> {
+  return {
+    [`${layoutsDir}/default/contract.ts`]: defaultReplacementSource(budget),
+    [`${layoutsDir}/default/layout.tsx`]: componentSource('default'),
+  };
+}
+
+layer(NodeFileSystem.layer)('deckCatalog with a replaced kit layout', (it) => {
+  it.effect('puts a replacement where the kit layout was, with its source and warnings', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, defaultReplacementFiles('brands/fx-brand/layouts', '{ maxWords: 60 }'));
+      const before = [...(yield* loadLayoutCatalog()).keys()];
+      const { index, local } = yield* deckCatalog({
+        root,
+        brand: yield* scratchBrand(root),
+        code: 'load',
+      });
+      expect(local.problems).toEqual([]);
+      expect([...index.keys()].indexOf('default')).toBe(before.indexOf('default'));
+      expect(index.get('default')?.source).toBe('brand-code:fx-brand');
+      expect(index.get('default')?.replaces).toBe('@deckster/kit');
+      expect(local.replaced).toEqual(['default']);
+      expect(local.catalogs).toHaveLength(1);
+      expect(local.warnings.map((warning) => `${warning.level} ${warning.code}`)).toEqual([
+        'warning layout-replace-pptx',
+        'note layout-replace-budget',
+        'note layout-replace-budget',
+      ]);
+      expect(local.warnings[1]?.message).toContain(
+        'The budget of "body" sets maxWords to 60; the original default layout sets 80.',
+      );
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('lets a deck replace a kit layout too', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, defaultReplacementFiles('decks/talk/layouts'));
+      const { index, local } = yield* deckCatalog({
+        root,
+        deck: deckLocation(root, 'talk'),
+        code: 'load',
+      });
+      expect(local.problems).toEqual([]);
+      expect(index.get('default')?.source).toBe('deck:talk');
+      expect(local.replaced).toEqual(['default']);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('leaves out a replacement that breaks slides of the kit layout, naming why', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/fx-brand/layouts/title/contract.ts': contractSource('title', { replaces: true }),
+        'brands/fx-brand/layouts/title/layout.tsx': componentSource('title'),
+      });
+      const { index, local } = yield* deckCatalog({
+        root,
+        brand: yield* scratchBrand(root),
+        code: 'load',
+      });
+      expect(index.get('title')?.source).toBe('@deckster/kit');
+      expect(local.replaced).toEqual([]);
+      expect(local.catalogs).toEqual([]);
+      expect(new Set(local.problems.map((problem) => problem.code))).toEqual(
+        new Set(['layout-replace-breaks']),
+      );
+      expect(local.problems.map((problem) => problem.message)).toContain(
+        'The code layout "title" (brands/fx-brand/layouts/title/contract.ts) replaces the title ' +
+          'layout of @deckster/kit, and slides written for that layout would stop building: The ' +
+          'replacement has no field "byline", which the original title layout accepts, so ' +
+          'slides that set it stop building.',
+      );
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('rejects `replaces: true` on a name no kit layout has, and on a brand layout', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/fx-brand/layouts/kpi-wall/contract.ts': contractSource('kpi-wall', {
+          replaces: true,
+        }),
+        'brands/fx-brand/layouts/kpi-wall/layout.tsx': componentSource('kpi-wall'),
+        ...defaultReplacementFiles('brands/fx-brand/layouts'),
+        ...defaultReplacementFiles('decks/talk/layouts'),
+      });
+      const { index, local } = yield* deckCatalog({
+        root,
+        brand: yield* scratchBrand(root),
+        deck: deckLocation(root, 'talk'),
+        code: 'load',
+      });
+      expect(
+        local.problems.map((problem) => `${problem.code} ${path.relative(root, problem.file)}`),
+      ).toEqual([
+        'layout-contract-invalid brands/fx-brand/layouts/kpi-wall/contract.ts',
+        'layout-name-clash decks/talk/layouts/default/contract.ts',
+      ]);
+      expect(local.problems[0]?.message).toContain('says `replaces: true`, but no kit or engine');
+      expect(index.has('kpi-wall')).toBe(false);
+      expect(index.get('default')?.source).toBe('brand-code:fx-brand');
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('lets a brand data layout fall back to a brand code layout, by the same rules', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, layoutFiles('brands/fx-brand/layouts', 'kpi-wall'));
+      const loaded = yield* scratchBrand(root);
+      const [cover] = loaded.tokens.layouts;
+      const onCode: BrandLayoutTokens = {
+        ...cover!,
+        fallback: 'kpi-wall',
+        regions: cover!.regions.filter((region) => 'slot' in region.bind),
+      };
+      /**
+       * The brand with the cover changed.
+       *
+       * @param layout - The cover's replacement.
+       */
+      const withCover = (layout: BrandLayoutTokens): LoadedBrand => ({
+        ...loaded,
+        tokens: { ...loaded.tokens, layouts: [layout] },
+      });
+      const { index } = yield* deckCatalog({ root, brand: withCover(onCode), code: 'load' });
+      expect(index.get('fx-cover')?.fallback).toBe('kpi-wall');
+      expect(Object.keys(index.get('fx-cover')?.contract.slots ?? {})).toEqual(['body']);
+      const error = yield* Effect.flip(
+        deckCatalog({
+          root,
+          brand: withCover({ ...onCode, regions: cover!.regions }),
+          code: 'load',
+        }),
+      );
+      expect(error.message).toContain('The fallback "kpi-wall" has no field "byline".');
       rmSync(root, { recursive: true, force: true });
     }),
   );
