@@ -794,18 +794,19 @@ working-copy sync to carry `layouts/` and contract loading to be restricted.
 No new slide lint rules are needed: budgets, slot checks, overflow and fit rules all work from the
 contract and the DOM (1.7). New build and `layouts check` problems:
 
-| Problem                    | Level   | When                                                                    |
-| -------------------------- | ------- | ----------------------------------------------------------------------- |
-| `layout-folder-incomplete` | error   | a `layouts/<name>/` without `contract.ts` or `layout.tsx`               |
-| `layout-name-mismatch`     | error   | folder name and `contract.name` (or the component's name) differ        |
-| `layout-name-clash`        | error   | §3.2 without `replaces`                                                 |
-| `layout-replace-breaks`    | error   | §3.6 items 1–4 or 7                                                     |
-| `layout-replace-pptx`      | warning | §3.6 item 6                                                             |
-| `layout-contract-imports`  | error   | §3.4 import check                                                       |
-| `layout-load-failed`       | error   | a contract or component throws while loading; on the slides that use it |
-| `layout-held`              | error   | a contract never loaded before an agent turn started                    |
-| `layout-version`           | error   | the declared `deckster` range does not match                            |
-| `layout-code-skipped`      | error   | a slide uses a code layout `brand add` left out                         |
+| Problem                       | Level   | When                                                                    |
+| ----------------------------- | ------- | ----------------------------------------------------------------------- |
+| `layout-folder-incomplete`    | error   | a `layouts/<name>/` without `contract.ts` or `layout.tsx`               |
+| `layout-name-mismatch`        | error   | folder name and `contract.name` (or the component's name) differ        |
+| `layout-name-clash`           | error   | §3.2 without `replaces`                                                 |
+| `layout-replace-breaks`       | error   | §3.6 items 1–4 or 7                                                     |
+| `layout-replace-pptx`         | warning | §3.6 item 6                                                             |
+| `layout-contract-imports`     | error   | §3.4 import check                                                       |
+| `layout-load-failed`          | error   | a contract or component throws while loading; on the slides that use it |
+| `layout-held`                 | error   | a contract never loaded before an agent turn started                    |
+| `layout-version`              | error   | the declared `deckster` range does not match                            |
+| `layout-code-skipped`         | error   | a slide uses a code layout `brand add` left out                         |
+| `layout-fallback-unavailable` | error   | a data layout falls back to a brand code layout that did not load       |
 
 **PPTX** uses the contract's `pptx` mapping and the engine's layout stamp (§3.3). `layouts new`
 writes a mapping with `.kit-title` from `SlideHeader`, so a scaffolded layout exports with a real
@@ -1244,16 +1245,21 @@ Where phase 4 differs from §3.10 and §3.11, and what it found:
   them; naming such a layout is still an error.
 - **Exports.** The kit's modules keep their named exports (`titleLayoutContract`, `titleLayout`),
   which the component file imports, and gain the default export a code layout needs.
-- **Helper classes are renamed, with `own-`.** A copied helper's stylesheet lives in `_shared/`, used
+- **Helper classes are renamed, with `own-` (or `dck-`).** A copied helper's stylesheet lives in `_shared/`, used
   by several layouts, so it cannot be scoped to one. Its classes are renamed from `kit-…` to `own-…`
   in every ejected file instead. Which classes a helper owns is computed from the kit: the classes
   its stylesheet selects that no kit code outside `layouts/` and the copied helpers uses (21 classes
   in 7 stylesheets). The prefix has the length of `kit-` on purpose, so a rename moves no line break
   and the files stay formatted. A layout's own files are renamed only for the helpers it copies.
+  A deck's copy uses `dck-…` instead, as long as `kit-` too: a deck's slides load its brand's
+  layouts as well, so a deck that ejects the same helper as its brand would otherwise restyle the
+  brand's copy. It does not start like the engine's `deck-…` classes.
 - **Shared layout stylesheets are scoped with `:where`.** `display-align.css`, `image-layout.css`
   (for `title`) and `stat-cards.css` (for `stats`) are copied into the layout's folder. A selector
   that names the frame gets `:where([data-layout='<name>'])`, any other is put under
-  `:where(.kit-frame[data-layout='<name>'])`, and rules keyed on another layout are dropped.
+  `:where(.kit-frame[data-layout='<name>'])`, and rules keyed only on other layouts are dropped. A
+  selector keyed on this layout and others is kept and narrowed with `:where([data-layout='<name>'])`;
+  a `:root` rule or an `@scope` block is copied as it is and reported as a problem.
   `:where` keeps the specificity, so the cascade inside the layout does not move. The kit's copy of
   these three still applies to the ejected layout while something else loads it (another display layout, the kit's `image`; `stat-cards.css` always, through the `StatRow` chart): their classes are also used by kit components
   (`.kit-stat-value`, `.kit-image-caption`, `.kit-eyebrow`), so they cannot be renamed. Removing a
