@@ -22,7 +22,9 @@ export {
 export { deckCatalog, type DeckCatalog, type DeckCatalogOptions } from '#layouts/deck-catalog.ts';
 export { checkReplacedSlides, type ReplacedSlidesOptions } from '#layouts/check-replaced-slides.ts';
 export {
+  CONTRACT_PACKAGES,
   importContracts,
+  isContractPackage,
   type ContractLoad,
   type ContractProblem,
   type ImportContractsOptions,

@@ -33,7 +33,13 @@ import { trackHeldLoads, type HeldLoads } from '#held-loads.ts';
 import { readSkippedCodeLayouts, type SkippedCodeLayouts } from '#layouts/brand-source.ts';
 import { deckCatalog, type DeckCatalog } from '#layouts/deck-catalog.ts';
 import { DEFAULT_LAYOUT_CATALOGS, type LayoutCatalogIndex } from '#layouts/load-layout-catalog.ts';
-import { COMPONENT_FILE, LAYOUTS_DIR, type LocalLayouts } from '#layouts/local-layouts.ts';
+import {
+  COMPONENT_FILE,
+  LAYOUTS_DIR,
+  type LocalLayout,
+  type LocalLayouts,
+} from '#layouts/local-layouts.ts';
+import { usedLayoutNames } from '#layouts/used-layouts.ts';
 import { watchDeckLayouts } from '#layouts/watch-layouts.ts';
 import { OPEN_IN_EDITOR_ENDPOINT, refuseOpenInEditor } from '#open-in-editor-guard.ts';
 import { makeRunEffect } from '#run-effect.ts';
@@ -242,6 +248,8 @@ export function deckPlugin(
   let location: Promise<DeckLocation> | undefined;
   let loadedDeck: Promise<LoadedDeck> | undefined;
   let catalog: { brand: LoadedBrand; layouts: Promise<DeckLayouts> } | undefined;
+  // The `layout.tsx` files of the code layouts the last settled catalog left unregistered.
+  let unregisteredComponents: ReadonlySet<string> = new Set();
   const deckLoads = trackHeldLoads();
   const contractLoads = trackHeldLoads();
 
@@ -291,9 +299,10 @@ export function deckPlugin(
    * the turn, and load for real once it ends.
    */
   const deckLayouts = async (): Promise<DeckLayouts> => {
-    const loaded = await brand.load();
+    // Both are awaited before the cache is checked, so the check and the new entry happen without
+    // a yield in between and requests that arrive together share one load.
+    const [loaded, deck] = await Promise.all([brand.load(), findActiveDeck()]);
     if (catalog?.brand !== loaded) {
-      const deck = await findActiveDeck();
       /**
        * Notes the layout folders, when an agent turn holds them now.
        */
@@ -318,11 +327,18 @@ export function deckPlugin(
       ).finally(noteHeld);
       const entry = { brand: loaded, layouts };
       catalog = entry;
-      layouts.catch(() => {
-        if (catalog === entry) {
-          catalog = undefined;
-        }
-      });
+      layouts.then(
+        (settled) => {
+          if (catalog === entry) {
+            unregisteredComponents = unregisteredComponentsOf(settled.local);
+          }
+        },
+        () => {
+          if (catalog === entry) {
+            catalog = undefined;
+          }
+        },
+      );
     }
 
     return catalog.layouts;
@@ -375,6 +391,18 @@ export function deckPlugin(
       await brand.load();
     },
 
+    watchChange() {
+      // The dev server has its own watchers, which keep component edits on the hot path. A build in
+      // watch mode has only this hook: any change may touch the deck, the brand or a contract.
+      if (serving) {
+        return;
+      }
+
+      loadedDeck = undefined;
+      brand.reset();
+      catalog = undefined;
+    },
+
     async resolveId(id) {
       if (id === VIRTUAL_DECK_ID) {
         return RESOLVED_DECK_ID;
@@ -413,7 +441,13 @@ export function deckPlugin(
       }
 
       if (id === RESOLVED_LOCAL_LAYOUTS_ID) {
-        return localLayoutsModule(this, workspaceRoot, (await deckLayouts()).local);
+        const layouts = await deckLayouts();
+        // A build registers only what the slides use, so an unused layout that does not compile
+        // cannot fail it; the dev server registers all, for slides added while it runs.
+        const used = serving
+          ? undefined
+          : await usedLayoutNames((await activeDeck()).slides, layouts.index);
+        return localLayoutsModule(this, workspaceRoot, { local: layouts.local, used });
       }
 
       if (id === RESOLVED_KIT_RUNTIME_ID) {
@@ -502,10 +536,17 @@ export function deckPlugin(
           guard: (request) => session.refusal(request),
         }),
       );
-      watchBrand(server, { workspaceRoot, deck, brand });
+      /**
+       * Whether a file is the component of a code layout the catalog left unregistered.
+       *
+       * @param file - An absolute path the watcher reported.
+       */
+      const isUnregistered = (file: string) => unregisteredComponents.has(file);
+      watchBrand(server, { workspaceRoot, deck, brand, isUnregistered });
       watchDeckLayouts(server, {
         deck,
         heldLoads: contractLoads,
+        isUnregistered,
         onChange: () => {
           catalog = undefined;
         },
@@ -582,13 +623,15 @@ async function layoutScanEntries(
  *
  * @param context - The plugin context.
  * @param workspaceRoot - The absolute workspace root, for the paths in warnings.
- * @param local - The code layouts found.
+ * @param input - The code layouts found, and the layout names the slides use (every layout is
+ *   registered when `undefined`).
  */
 function localLayoutsModule(
   context: LoadContext,
   workspaceRoot: string,
-  local: LocalLayouts,
+  input: { local: LocalLayouts; used: ReadonlySet<string> | undefined },
 ): string {
+  const { local, used } = input;
   for (const file of local.files) {
     context.addWatchFile(file);
   }
@@ -597,8 +640,33 @@ function localLayoutsModule(
     context.warn(`${displayPath(workspaceRoot, problem.file)}: ${problem.message} ${problem.fix}`);
   }
 
+  const registered = registeredLayouts(local);
+  return localLayoutsModuleCode(
+    used === undefined ? registered : registered.filter((layout) => used.has(layout.name)),
+  );
+}
+
+/**
+ * The code layouts the generated plugin registers: those whose contracts are in the catalog.
+ *
+ * @param local - The code layouts found.
+ */
+function registeredLayouts(local: LocalLayouts): LocalLayout[] {
   const loaded = new Set(local.catalogs.map((entry) => entry.ref.file));
-  return localLayoutsModuleCode(local.layouts.filter((layout) => loaded.has(layout.contractFile)));
+  return local.layouts.filter((layout) => loaded.has(layout.contractFile));
+}
+
+/**
+ * The `layout.tsx` files of the code layouts that are not registered. A component edit there is no
+ * hot update (nothing imports it), and may fix what kept it out, such as the name it registers.
+ *
+ * @param local - The code layouts found.
+ */
+function unregisteredComponentsOf(local: LocalLayouts): ReadonlySet<string> {
+  const registered = new Set(registeredLayouts(local));
+  return new Set(
+    local.layouts.filter((layout) => !registered.has(layout)).map((layout) => layout.componentFile),
+  );
 }
 
 /**

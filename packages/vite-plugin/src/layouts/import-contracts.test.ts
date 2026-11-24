@@ -2,14 +2,15 @@ import { holdCode, resetCodeGate } from '@deckster/brand/node';
 import { NodeFileSystem } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
 import { Effect, Schema } from 'effect';
-import { rmSync } from 'node:fs';
+import { rmSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
-import { afterEach, beforeEach } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, it } from 'vite-plus/test';
 
 import { checkContract } from '#layouts/check-contract.ts';
 import {
   evaluateContracts,
   importContracts,
+  isContractPackage,
   type ContractLoad,
 } from '#layouts/import-contracts.ts';
 import {
@@ -232,6 +233,186 @@ layer(NodeFileSystem.layer)('importContracts', (it) => {
       rmSync(root, { recursive: true, force: true });
     }),
   );
+});
+
+/**
+ * The global an outside file sets when it runs, so a test can prove it never ran.
+ */
+const OUTSIDE_RAN_KEY = '__decksterOutsideRan';
+
+/**
+ * A file outside the layout folders that records that it ran.
+ */
+const OUTSIDE_SOURCE = `Reflect.set(globalThis, '${OUTSIDE_RAN_KEY}', true);\nexport const X = 1;\n`;
+
+/**
+ * Whether the outside file ran.
+ */
+function outsideRan(): boolean {
+  return Reflect.get(globalThis, OUTSIDE_RAN_KEY) === true;
+}
+
+layer(NodeFileSystem.layer)('importContracts against ways around the import check', (it) => {
+  it.effect('rejects import.meta.glob, Vite runner names and query specifiers', () =>
+    Effect.gen(function* () {
+      Reflect.deleteProperty(globalThis, OUTSIDE_RAN_KEY);
+      const root = scratchRoot();
+      /**
+       * A contract with extra lines above it.
+       *
+       * @param line - The lines.
+       */
+      const withLine = (line: string) => contractSource('x', { imports: [line] });
+      writeFiles(root, {
+        'outside/evil.ts': OUTSIDE_SOURCE,
+        'brands/acme/layouts/glob/contract.ts': withLine(
+          "const mods = import.meta.glob('../../../../outside/*.ts', { eager: true });",
+        ),
+        'brands/acme/layouts/runner/contract.ts': withLine(
+          "await __vite_ssr_dynamic_import__('../../../../outside/evil.ts');",
+        ),
+        'brands/acme/layouts/query/helper.ts': 'export const Y = 1;\n',
+        'brands/acme/layouts/query/contract.ts': withLine(
+          "import '../../../../outside/evil.ts?/../../brands/acme/layouts/query/helper.ts';",
+        ),
+      });
+      const names = ['glob', 'runner', 'query'];
+      const loads = yield* importContracts(
+        names.map((name) => contractFile(root, name)),
+        { root },
+      );
+      expect(loads.map((load) => problemOf(load)?.code)).toEqual(
+        names.map(() => 'layout-contract-imports'),
+      );
+      expect(problemOf(loads[0])?.message).toContain('uses import.meta.glob');
+      expect(problemOf(loads[1])?.message).toContain('__vite_ssr_dynamic_import__');
+      expect(problemOf(loads[2])?.message).toContain('has a query or a hash');
+      expect(outsideRan()).toBe(false);
+      expect(contractRuns()).toBe(0);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('refuses to run a file the import check did not see, or a Node built-in', () =>
+    Effect.gen(function* () {
+      Reflect.deleteProperty(globalThis, OUTSIDE_RAN_KEY);
+      const root = scratchRoot();
+      // Direct eval reaches the runner's own import function without naming it in the source.
+      const runner = "eval('__vite_' + 'ssr_dynamic_import__')";
+      writeFiles(root, {
+        'outside/evil.ts': OUTSIDE_SOURCE,
+        'brands/acme/layouts/file/contract.ts': contractSource('file', {
+          imports: [`await ${runner}('../../../../outside/evil.ts');`],
+        }),
+        'brands/acme/layouts/builtin/contract.ts': contractSource('builtin', {
+          imports: [`await ${runner}('node:child_process');`],
+        }),
+        'brands/acme/layouts/fine/contract.ts': contractSource('fine'),
+      });
+      const names = ['file', 'builtin', 'fine'];
+      const loads = yield* importContracts(
+        names.map((name) => contractFile(root, name)),
+        { root },
+      );
+      expect(loads.map((load) => problemOf(load)?.code ?? load.kind)).toEqual([
+        'layout-load-failed',
+        'layout-load-failed',
+        'loaded',
+      ]);
+      expect(problemOf(loads[0])?.message).toContain('was not checked');
+      expect(problemOf(loads[1])?.message).toContain('node:child_process');
+      expect(outsideRan()).toBe(false);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('checks the imports of a linked helper from where the link points', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/acme/layouts/_shared/helper.ts': "export * from './sibling.ts';\n",
+        'brands/acme/layouts/_shared/sibling.ts': "import 'node:fs';\nexport const S = 1;\n",
+        'brands/acme/layouts/one/sibling.ts': 'export const S = 1;\n',
+        'brands/acme/layouts/one/contract.ts': contractSource('one', {
+          imports: ["import './helper.ts';"],
+        }),
+      });
+      symlinkSync(
+        path.join(root, 'brands/acme/layouts/_shared/helper.ts'),
+        path.join(root, 'brands/acme/layouts/one/helper.ts'),
+      );
+      const [load] = yield* importContracts([contractFile(root, 'one')], { root });
+      expect(problemOf(load)).toEqual(
+        expect.objectContaining({
+          code: 'layout-contract-imports',
+          message:
+            'brands/acme/layouts/_shared/sibling.ts imports "node:fs", which a contract may not ' +
+            'import.',
+        }),
+      );
+      expect(contractRuns()).toBe(0);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('reports a contract whose top-level await never settles, and loads the rest', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/acme/layouts/hangs/contract.ts': contractSource('hangs', {
+          imports: ['await new Promise(() => {});'],
+        }),
+        'brands/acme/layouts/fine/contract.ts': contractSource('fine'),
+      });
+      const loads = yield* importContracts(
+        [contractFile(root, 'hangs'), contractFile(root, 'fine')],
+        { root, timeoutMs: 300 },
+      );
+      expect(loads.map((load) => problemOf(load)?.code ?? load.kind)).toEqual([
+        'layout-load-failed',
+        'loaded',
+      ]);
+      expect(problemOf(loads[0])?.message).toContain('did not finish loading');
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('leaves NODE_ENV as it found it when loads overlap', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/acme/layouts/one/contract.ts': contractSource('one'),
+        'brands/acme/layouts/slow/contract.ts': contractSource('slow', {
+          imports: ['await new Promise((resolve) => setTimeout(resolve, 300));'],
+        }),
+      });
+      const before = process.env.NODE_ENV;
+      delete process.env.NODE_ENV;
+      const first = evaluateContracts([contractFile(root, 'one')], root);
+      const deadline = Date.now() + 10_000;
+      while (process.env.NODE_ENV === undefined && Date.now() < deadline) {
+        yield* Effect.promise(() => new Promise((resolve) => setTimeout(resolve, 1)));
+      }
+
+      const second = evaluateContracts([contractFile(root, 'slow')], root);
+      yield* Effect.promise(() => first);
+      yield* Effect.promise(() => second);
+      const after = process.env.NODE_ENV;
+      process.env.NODE_ENV = before;
+      expect(after).toBeUndefined();
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+});
+
+describe('isContractPackage', () => {
+  it('allows the listed packages and effect entry points, and nothing else', () => {
+    expect(isContractPackage('@deckster/engine/layout')).toBe(true);
+    expect(isContractPackage('effect/Schema')).toBe(true);
+    expect(isContractPackage('@deckster/engine')).toBe(false);
+    expect(isContractPackage('node:fs')).toBe(false);
+    expect(isContractPackage('./helper.ts')).toBe(false);
+  });
 });
 
 layer(NodeFileSystem.layer)('importContracts during an agent turn', (it) => {

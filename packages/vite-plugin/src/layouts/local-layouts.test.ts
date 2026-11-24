@@ -2,7 +2,7 @@ import { brandLocation, holdCode, resetCodeGate } from '@deckster/brand/node';
 import { NodeFileSystem } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
 import { Effect } from 'effect';
-import { rmSync } from 'node:fs';
+import { rmSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach } from 'vite-plus/test';
 
@@ -206,6 +206,169 @@ layer(NodeFileSystem.layer)('localLayouts', (it) => {
       );
       expect(messages.invalid).toContain('Layout "invalid"');
       expect(found.problems.every((problem) => path.isAbsolute(problem.file))).toBe(true);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('reports a contract whose own code throws or is malformed, and loads the others', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'decks/talk/layouts/checks-throws/contract.ts': contractSource('checks-throws').replace(
+          '  budget: {},',
+          '  budget: {},\n  checks: (frontmatter) => frontmatter.steps.map(() => []),',
+        ),
+        'decks/talk/layouts/checks-throws/layout.tsx': componentSource('checks-throws'),
+        'decks/talk/layouts/bad-variants/contract.ts': contractSource('bad-variants').replace(
+          '  budget: {},',
+          "  budget: {},\n  variants: [{ name: 'wide', budget: {} }],",
+        ),
+        'decks/talk/layouts/bad-variants/layout.tsx': componentSource('bad-variants'),
+        'decks/talk/layouts/bad-title/contract.ts': contractSource('bad-title').replace(
+          '  budget: {},',
+          "  budget: { body: null },\n  title: 'short',\n  variants: 'wide',",
+        ),
+        'decks/talk/layouts/bad-title/layout.tsx': componentSource('bad-title'),
+        'decks/talk/layouts/fine/contract.ts': contractSource('fine'),
+        'decks/talk/layouts/fine/layout.tsx': componentSource('fine'),
+      });
+      const found = yield* localLayouts({ root, deck: deckLocation(root, 'talk'), code: 'load' });
+      expect(problemCodes(found)).toEqual([
+        'layout-contract-invalid:bad-title',
+        'layout-contract-invalid:bad-title',
+        'layout-contract-invalid:bad-title',
+        'layout-contract-invalid:bad-variants',
+        'layout-contract-invalid:checks-throws',
+      ]);
+      expect(found.catalogs.map((entry) => entry.ref.displayPath)).toEqual([
+        'decks/talk/layouts/fine/contract.ts',
+      ]);
+      expect(found.problems.map((problem) => problem.message)).toEqual([
+        'Layout "bad-title": `title` is not an object.',
+        'Layout "bad-title": the "body" budget is not an object of limits.',
+        'Layout "bad-title": `variants` is not a list of variants.',
+        'Layout "bad-variants": variant #1\'s `when` is not an object of conditions.',
+        expect.stringMatching(
+          /^Layout "checks-throws": `checks` failed on the example frontmatter: it threw: .*undefined/,
+        ),
+      ]);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect(
+    'reports a linked layout folder or file instead of skipping it or calling it missing',
+    () =>
+      Effect.gen(function* () {
+        const root = scratchRoot();
+        writeFiles(root, {
+          'shared/kpi/contract.ts': contractSource('kpi'),
+          'shared/kpi/layout.tsx': componentSource('kpi'),
+          'shared/wall.ts': contractSource('wall'),
+          'decks/talk/layouts/wall/layout.tsx': componentSource('wall'),
+        });
+        symlinkSync(path.join(root, 'shared/kpi'), path.join(root, 'decks/talk/layouts/kpi'));
+        symlinkSync(
+          path.join(root, 'shared/wall.ts'),
+          path.join(root, 'decks/talk/layouts/wall/contract.ts'),
+        );
+        const found = yield* localLayouts({ root, deck: deckLocation(root, 'talk'), code: 'load' });
+        expect(found.layouts).toEqual([]);
+        expect(found.problems.map((problem) => problem.message)).toEqual([
+          'decks/talk/layouts/kpi is a symbolic link, and a code layout is read only from real ' +
+            'folders and files.',
+          'decks/talk/layouts/wall/contract.ts is a symbolic link, and a code layout is read only ' +
+            'from real folders and files.',
+        ]);
+        expect(problemCodes(found)).toEqual([
+          'layout-folder-incomplete:kpi',
+          'layout-folder-incomplete:wall',
+        ]);
+        expect(contractRuns()).toBe(0);
+        rmSync(root, { recursive: true, force: true });
+      }),
+  );
+
+  it.effect('reads the registered name from the syntax of layout.tsx, not from its comments', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'decks/talk/layouts/funnel/contract.ts': contractSource('funnel'),
+        'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel').replace(
+          'name: "funnel"',
+          'name: /* the public layout id */ "funnel"',
+        ),
+        'decks/talk/layouts/wall/contract.ts': contractSource('wall'),
+        'decks/talk/layouts/wall/layout.tsx': `// name: 'wall'\n${componentSource('other')}`,
+      });
+      const found = yield* localLayouts({ root, deck: deckLocation(root, 'talk'), code: 'load' });
+      expect(problemCodes(found)).toEqual(['layout-name-mismatch:wall']);
+      expect(found.catalogs.map((entry) => entry.ref.displayPath)).toEqual([
+        'decks/talk/layouts/funnel/contract.ts',
+      ]);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('reports a layout folder deleted whole and written again during a turn as held', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'decks/talk/layouts/funnel/contract.ts': contractSource('funnel', { description: 'Old.' }),
+        'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel'),
+      });
+      const options = { root, deck: deckLocation(root, 'talk'), code: 'load' } as const;
+      expect((yield* localLayouts(options)).catalogs).toHaveLength(1);
+      rmSync(path.join(root, 'decks/talk/layouts/funnel'), { recursive: true, force: true });
+      expect((yield* localLayouts(options)).layouts).toEqual([]);
+      const hold = holdCode([path.join(root, 'decks', 'talk')]);
+      writeFiles(root, {
+        'decks/talk/layouts/funnel/contract.ts': contractSource('funnel', { description: 'New.' }),
+        'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel'),
+      });
+      const during = yield* localLayouts(options);
+      expect(problemCodes(during)).toEqual(['layout-held:funnel']);
+      expect(during.catalogs).toEqual([]);
+      hold.release();
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('reads a literal version range from a deck config with a computed slide list', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'decks/talk/deck.config.ts': [
+          "import { defineDeck } from '@deckster/engine/config';",
+          '',
+          "const slides = ['one'];",
+          '',
+          "export default defineDeck({ title: 'Talk', slides, deckster: '>=99' });",
+          '',
+        ].join('\n'),
+        'decks/talk/layouts/funnel/contract.ts': contractSource('funnel'),
+        'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel'),
+      });
+      const options = { root, deck: deckLocation(root, 'talk'), code: 'load' } as const;
+      const found = yield* localLayouts(options);
+      expect(problemCodes(found)).toEqual(['layout-version:*']);
+      expect(found.problems[0]?.message).toContain('are written for deckster >=99');
+      expect(contractRuns()).toBe(0);
+      writeFiles(root, {
+        'decks/talk/deck.config.ts': [
+          "import { defineDeck } from '@deckster/engine/config';",
+          '',
+          "const RANGE = '>=99';",
+          '',
+          "export default defineDeck({ title: 'Talk', slides: ['one'], deckster: RANGE });",
+          '',
+        ].join('\n'),
+      });
+      expect((yield* localLayouts(options)).problems[0]?.message).toBe(
+        'The `deckster` range in decks/talk/deck.config.ts is not a string literal, so it ' +
+          'cannot be read without running the config, and the code layouts are not loaded.',
+      );
+      expect(contractRuns()).toBe(0);
       rmSync(root, { recursive: true, force: true });
     }),
   );

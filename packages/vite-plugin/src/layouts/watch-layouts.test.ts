@@ -31,4 +31,26 @@ describe('isHotLayoutEdit', () => {
       false,
     );
   });
+
+  it('is false for a component of a layout that is not registered, so its name is checked again', () => {
+    const component = path.join(LAYOUTS, 'kpi-wall', 'layout.tsx');
+    /**
+     * Whether a component belongs to a layout that is not registered.
+     *
+     * @param file - An absolute path.
+     */
+    const isUnregistered = (file: string) => file === component;
+    expect(isHotLayoutEdit(LAYOUTS, 'change', component, isUnregistered)).toBe(false);
+    expect(
+      isHotLayoutEdit(
+        LAYOUTS,
+        'change',
+        path.join(LAYOUTS, 'kpi-wall', 'layout.css'),
+        isUnregistered,
+      ),
+    ).toBe(true);
+    expect(
+      isHotLayoutEdit(LAYOUTS, 'change', path.join(LAYOUTS, 'other', 'layout.tsx'), isUnregistered),
+    ).toBe(true);
+  });
 });

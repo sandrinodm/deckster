@@ -345,6 +345,85 @@ layer(NodeFileSystem.layer)('deckCatalog with a replaced kit layout', (it) => {
       rmSync(root, { recursive: true, force: true });
     }),
   );
+
+  it.effect('leaves out a data layout whose code fallback did not load, with the reason', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/fx-brand/layouts/kpi-wall/contract.ts': "throw new Error('boom');\n",
+        'brands/fx-brand/layouts/kpi-wall/layout.tsx': componentSource('kpi-wall'),
+        ...layoutFiles('decks/talk/layouts', 'fx-cover'),
+        ...layoutFiles('decks/talk/layouts', 'kpi-wall'),
+      });
+      const loaded = yield* scratchBrand(root);
+      const [cover] = loaded.tokens.layouts;
+      const onCode: BrandLayoutTokens = {
+        ...cover!,
+        fallback: 'kpi-wall',
+        regions: cover!.regions.filter((region) => 'slot' in region.bind),
+      };
+      const brand = { ...loaded, tokens: { ...loaded.tokens, layouts: [onCode] } };
+      const deck = deckLocation(root, 'talk');
+      const { index, local } = yield* deckCatalog({ root, brand, deck, code: 'load' });
+      expect(index.has('fx-cover')).toBe(false);
+      expect(index.has('title')).toBe(true);
+      expect(local.problems.map((problem) => `${problem.code}:${problem.layout}`)).toEqual([
+        'layout-load-failed:kpi-wall',
+        'layout-name-clash:fx-cover',
+        'layout-name-clash:kpi-wall',
+        'layout-fallback-unavailable:fx-cover',
+      ]);
+      expect(index.has('kpi-wall')).toBe(false);
+      expect(local.problems[3]?.message).toContain(
+        'falls back to the brand\'s code layout "kpi-wall", which is not loaded: ' +
+          'brands/fx-brand/layouts/kpi-wall/contract.ts: Loading it failed: boom',
+      );
+
+      resetContractRuns();
+      const skipped = yield* deckCatalog({ root, brand, code: 'skip' });
+      expect(skipped.index.has('fx-cover')).toBe(false);
+      expect(skipped.index.has('title')).toBe(true);
+      expect(skipped.local.problems).toEqual([]);
+      expect(skipped.local.warnings.map((problem) => `${problem.code}:${problem.layout}`)).toEqual([
+        'layout-fallback-unavailable:fx-cover',
+      ]);
+      expect(contractRuns()).toBe(0);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('keeps a code layout from replacing a layout of a catalog other than the kit', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      const extra = path.join(root, 'catalogs/extra.ts');
+      writeFiles(root, {
+        ...defaultReplacementFiles('decks/talk/layouts'),
+        'catalogs/extra.ts': [
+          "import catalog from '@deckster/kit/catalog';",
+          '',
+          'export default {',
+          "  source: 'extra-pack',",
+          "  layouts: catalog.layouts.filter((layout) => layout.name === 'default'),",
+          '};',
+          '',
+        ].join('\n'),
+      });
+      const { index, local } = yield* deckCatalog({
+        root,
+        deck: deckLocation(root, 'talk'),
+        code: 'load',
+        specifiers: ['@deckster/kit/catalog', extra],
+      });
+      expect(index.get('default')?.source).toBe('extra-pack');
+      expect(local.replaced).toEqual([]);
+      expect(local.problems.map((problem) => problem.message)).toEqual([
+        'The code layout "default" (decks/talk/layouts/default/contract.ts) has the name of a ' +
+          'layout from extra-pack, which a code layout cannot replace: only kit and engine ' +
+          'layouts can be.',
+      ]);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
 });
 
 layer(NodeFileSystem.layer)('loadLayoutCatalog with code layouts', (it) => {

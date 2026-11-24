@@ -2,10 +2,10 @@ import type { ViteDevServer } from 'vite-plus';
 
 import { holdCode, resetCodeGate } from '@deckster/brand/node';
 import kitCatalog from '@deckster/kit/catalog';
-import { rmSync } from 'node:fs';
+import { existsSync, realpathSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createServer, mergeConfig, normalizePath } from 'vite-plus';
+import { build, createServer, mergeConfig, normalizePath } from 'vite-plus';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 
 import {
@@ -17,10 +17,11 @@ import {
   scratchRoot,
   writeFiles,
 } from '#layouts/layout-workspace.fixture.ts';
-import { DEFAULT_RUNTIME_PLUGINS, withLocalLayouts } from '#plugin.ts';
+import { DEFAULT_RUNTIME_PLUGINS, deckPlugin, withLocalLayouts } from '#plugin.ts';
 import {
   kitRuntimeModuleCode,
   localLayoutsModuleCode,
+  RESOLVED_LOCAL_LAYOUTS_ID,
   VIRTUAL_KIT_RUNTIME_ID,
   VIRTUAL_LOCAL_LAYOUTS_ID,
   VIRTUAL_PLUGINS_ID,
@@ -380,4 +381,193 @@ describe('a deck whose code layout replaces a kit layout, served', () => {
     const source = typeof loaded === 'string' ? loaded : (loaded?.code ?? '');
     expect(source).toContain(`@source "${normalizePath(KIT_SRC)}"`);
   });
+});
+
+describe('a deck whose code layout registers the wrong name, served', () => {
+  let server: ViteDevServer;
+  let root: string;
+
+  beforeAll(async () => {
+    resetCodeGate();
+    root = scratchRoot();
+    writeFiles(root, {
+      'decks/talk/deck.config.ts': [
+        "import { defineDeck } from '@deckster/engine/config';",
+        '',
+        "export default defineDeck({ title: 'Talk', slides: ['on-funnel'] });",
+        '',
+      ].join('\n'),
+      'decks/talk/slides/on-funnel.mdx': slideSource('funnel'),
+      'decks/talk/layouts/funnel/contract.ts': contractSource('funnel'),
+      'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel').replace(
+        'name: "funnel"',
+        'name: "funel"',
+      ),
+    });
+    server = await createServer(
+      mergeConfig(deckViteConfig({ workspaceRoot: root, deck: 'talk' }), {
+        logLevel: 'silent',
+        appType: 'custom',
+        server: { middlewareMode: true, hmr: false, ws: false },
+      }),
+    );
+  }, SERVER_TIMEOUT_MS);
+
+  afterAll(async () => {
+    await server.close();
+    resetCodeGate();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  /**
+   * Transforms the slide as the dev server does and gives the code, or the error's message.
+   */
+  const transformSlide = async (): Promise<string> => {
+    const file = path.join(root, 'decks', 'talk', 'slides', 'on-funnel.mdx');
+    try {
+      const result = await server.environments.client.transformRequest(
+        `/@fs${normalizePath(file)}`,
+      );
+      return result?.code ?? '';
+    } catch (error) {
+      return `ERROR ${error instanceof Error ? error.message : String(error)}`;
+    }
+  };
+
+  it(
+    'recovers the layout once its component registers the right name',
+    async () => {
+      expect(await transformSlide()).toContain('ERROR');
+      writeFiles(root, { 'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel') });
+      const deadline = Date.now() + WATCH_TIMEOUT_MS;
+      let code = await transformSlide();
+      while (code.includes('ERROR') && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+        code = await transformSlide();
+      }
+
+      expect(code).toContain('"layout": "funnel"');
+    },
+    WATCH_TIMEOUT_MS * 2,
+  );
+});
+
+/**
+ * What the deck plugin's hooks use of a plugin context when they are called directly.
+ */
+const HOOK_CONTEXT = {
+  addWatchFile: () => {},
+  warn: () => {},
+  resolve: async () => null,
+};
+
+/**
+ * Calls one of the deck plugin's hooks as Vite would.
+ *
+ * @param hook - The hook.
+ * @param args - Its arguments.
+ */
+async function callHook(hook: unknown, ...args: unknown[]): Promise<unknown> {
+  if (typeof hook !== 'function') {
+    throw new TypeError('Expected a hook function.');
+  }
+
+  return hook.call(HOOK_CONTEXT, ...args);
+}
+
+/**
+ * How many contracts the built deck has, each counted once per catalog load.
+ */
+const CONTRACT_COUNT = 2;
+
+describe('the deck plugin’s layout catalog, built', () => {
+  let root: string;
+
+  /**
+   * A fresh deck plugin for the scratch workspace.
+   */
+  const freshPlugin = () => deckPlugin({ workspaceRoot: root, deck: 'talk' });
+
+  beforeAll(() => {
+    resetCodeGate();
+    // A production build reads slide files by their real path, as a workspace outside a linked
+    // temporary folder has.
+    root = realpathSync(scratchRoot());
+    writeFiles(root, {
+      'decks/talk/deck.config.ts': [
+        "import { defineDeck } from '@deckster/engine/config';",
+        '',
+        "export default defineDeck({ title: 'Talk', slides: ['plain', 'on-funnel'] });",
+        '',
+      ].join('\n'),
+      'decks/talk/slides/plain.mdx': slideSource('default'),
+      'decks/talk/slides/on-funnel.mdx': slideSource('funnel'),
+      'decks/talk/layouts/funnel/contract.ts': contractSource('funnel'),
+      'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel'),
+      // No slide uses it, and its stylesheet is gone.
+      'decks/talk/layouts/unused-wall/contract.ts': contractSource('unused-wall'),
+      'decks/talk/layouts/unused-wall/layout.tsx': [
+        "import './missing.css';",
+        componentSource('unused-wall'),
+      ].join('\n'),
+    });
+  });
+
+  afterAll(() => {
+    resetCodeGate();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it('loads the contracts once for requests that arrive together', async () => {
+    resetContractRuns();
+    const plugin = freshPlugin();
+    await Promise.all([
+      callHook(plugin.load, RESOLVED_LOCAL_LAYOUTS_ID),
+      callHook(plugin.load, RESOLVED_LOCAL_LAYOUTS_ID),
+    ]);
+    expect(contractRuns()).toBe(CONTRACT_COUNT);
+  });
+
+  it('loads the contracts again after a change in build watch mode, but not while serving', async () => {
+    resetContractRuns();
+    const contract = path.join(root, 'decks', 'talk', 'layouts', 'funnel', 'contract.ts');
+    const built = freshPlugin();
+    await callHook(built.configResolved, { isProduction: true, command: 'build' });
+    await callHook(built.load, RESOLVED_LOCAL_LAYOUTS_ID);
+    await callHook(built.watchChange, contract, { event: 'update' });
+    await callHook(built.load, RESOLVED_LOCAL_LAYOUTS_ID);
+    expect(contractRuns()).toBe(CONTRACT_COUNT * 2);
+
+    resetContractRuns();
+    const served = freshPlugin();
+    await callHook(served.configResolved, { isProduction: false, command: 'serve' });
+    await callHook(served.load, RESOLVED_LOCAL_LAYOUTS_ID);
+    await callHook(served.watchChange, contract, { event: 'update' });
+    await callHook(served.load, RESOLVED_LOCAL_LAYOUTS_ID);
+    expect(contractRuns()).toBe(CONTRACT_COUNT);
+  });
+
+  it('registers only the code layouts the slides use in a build, and all of them when served', async () => {
+    const built = freshPlugin();
+    await callHook(built.configResolved, { isProduction: true, command: 'build' });
+    const builtCode = String(await callHook(built.load, RESOLVED_LOCAL_LAYOUTS_ID));
+    expect(builtCode).toContain('lazyLayout("funnel"');
+    expect(builtCode).not.toContain('unused-wall');
+
+    const served = freshPlugin();
+    await callHook(served.configResolved, { isProduction: false, command: 'serve' });
+    const servedCode = String(await callHook(served.load, RESOLVED_LOCAL_LAYOUTS_ID));
+    expect(servedCode).toContain('lazyLayout("unused-wall"');
+  });
+
+  it(
+    'builds a deck whose unused code layout imports a missing file',
+    async () => {
+      const config = deckViteConfig({ workspaceRoot: root, deck: 'talk' });
+      const outDir = path.join(root, 'dist');
+      await build(mergeConfig(config, { logLevel: 'silent', build: { outDir } }));
+      expect(existsSync(path.join(outDir, 'index.html'))).toBe(true);
+    },
+    SERVER_TIMEOUT_MS,
+  );
 });

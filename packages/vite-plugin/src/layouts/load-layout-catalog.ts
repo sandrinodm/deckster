@@ -27,6 +27,18 @@ import { BRAND_CODE_SOURCE_PREFIX, type LocalCatalog } from '#layouts/local-layo
 export const DEFAULT_LAYOUT_CATALOGS: readonly string[] = ['@deckster/kit/catalog'];
 
 /**
+ * The sources of the catalog layouts a code layout may replace with `replaces: true`.
+ */
+const REPLACEABLE_SOURCES = new Set(['@deckster/engine', '@deckster/kit']);
+
+/**
+ * The fix for a deck code layout that takes the name of a layout of its brand.
+ */
+const RENAME_DECK_LAYOUT_FIX =
+  "Rename the deck layout's folder and the `name` in its contract and component. A deck " +
+  'layout cannot replace a brand layout.';
+
+/**
  * One layout a deck can use: its contract and the package that provides it.
  */
 export type CatalogLayout = {
@@ -81,6 +93,15 @@ export type LayoutCatalogOptions = {
    * the deck's last.
    */
   local?: readonly LocalCatalog[] | undefined;
+
+  /**
+   * The brand's code layouts that were found but are not in `local`, by name, each with the
+   * problems that kept it out (none when its code was not loaded on purpose). A data layout that
+   * falls back to one of them is left out and reported in `unavailable`, instead of failing the
+   * catalog as a fallback that is not a layout, and a deck code layout of that name is still a
+   * clash with the brand.
+   */
+  withheld?: ReadonlyMap<string, readonly Problem[]> | undefined;
 };
 
 /**
@@ -98,6 +119,13 @@ export type MergedLayoutCatalog = {
    * for `replaces: true` on a name no kit or engine layout has.
    */
   readonly clashes: readonly LayoutProblem[];
+
+  /**
+   * The brand's data layouts left out because their fallback is one of the brand's code layouts
+   * that is not in the catalog (see {@link LayoutCatalogOptions.withheld}), each a
+   * `layout-fallback-unavailable` problem on the brand's `layouts.ts`.
+   */
+  readonly unavailable: readonly LayoutProblem[];
 
   /**
    * The names of the kit and engine layouts a code layout in `index` replaces.
@@ -120,9 +148,10 @@ export type MergedLayoutCatalog = {
  * The other layouts join in this order: the brand's code layouts, the brand's data layouts
  * (`layouts.ts`, checked against the layouts before them: a clash with a catalog module's layout,
  * an unknown fallback, bindings the fallback lacks; a fallback may be a brand code layout), then
- * the deck's code layouts. A code layout replaces a catalog module's layout of the same name only
- * when its contract says `replaces: true` and `checkReplacement` finds no error; it then keeps the
- * replaced layout's place. No other layout replaces another.
+ * the deck's code layouts. A code layout replaces a kit or engine layout of the same name only when
+ * its contract says `replaces: true` and `checkReplacement` finds no error; it then keeps the
+ * replaced layout's place. A layout of another catalog module cannot be replaced. No other layout
+ * replaces another.
  *
  * @param specifiers - Catalog modules: bare specifiers resolve from this package, absolute paths
  *   are used as they are.
@@ -132,23 +161,25 @@ export type MergedLayoutCatalog = {
  *   load or does not export a catalog, and for every problem with its contracts; naming the brand's
  *   `layouts.ts` for a brand layout that does not fit its fallback; naming a code layout's
  *   `contract.ts` when its name is taken by a kit or engine layout it does not replace (or replaces
- *   with an incompatible contract), by a data layout of the same brand or, for a deck's layout, by
- *   a brand layout, and when it says `replaces: true` on a name no layout has. `deckCatalog`
- *   reports those as values instead.
+ *   with an incompatible contract), by another catalog module's layout, by a data layout of the
+ *   same brand or, for a deck's layout, by a brand layout (one left out of the catalog included),
+ *   and when it says `replaces: true` on a name no layout has; naming the brand's `layouts.ts` for
+ *   a data layout whose fallback is a withheld brand code layout. `deckCatalog` reports those as
+ *   values instead.
  */
 export const loadLayoutCatalog = Effect.fn('loadLayoutCatalog')(function* (
   specifiers: readonly string[] = DEFAULT_LAYOUT_CATALOGS,
   options: LayoutCatalogOptions = {},
 ): Effect.fn.Return<LayoutCatalogIndex, DeckBuildError> {
   const merged = yield* mergeLayoutCatalog(specifiers, options);
-  const [first] = merged.clashes;
+  const [first] = [...merged.clashes, ...merged.unavailable];
   if (first !== undefined) {
     const displayPath = options.local?.find((entry) => entry.ref.file === first.file)?.ref
       .displayPath;
-    return yield* invalidCodeLayouts(
-      { file: first.file, displayPath: displayPath ?? first.file },
-      merged.clashes,
-    );
+    return yield* invalidCodeLayouts({ file: first.file, displayPath: displayPath ?? first.file }, [
+      ...merged.clashes,
+      ...merged.unavailable,
+    ]);
   }
 
   return merged.index;
@@ -183,11 +214,14 @@ export const mergeLayoutCatalog = Effect.fn('mergeLayoutCatalog')(function* (
   const { brand } = options;
   const local = options.local ?? [];
   const modules = new Set(layouts.values());
+  const replaceable = new Set([...modules].filter((layout) => isReplaceable(layout)));
   const dataNames = new Set(brand?.layouts.map((layout) => layout.name));
   const brandCode = local.filter((entry) => entry.source.startsWith(BRAND_CODE_SOURCE_PREFIX));
   const brandJoin = yield* joinCodeLayouts(brandCode, layouts, (layout, entry, taken) => {
-    if (taken !== undefined && modules.has(taken)) {
-      return replacementOf(layout, entry, taken);
+    if (taken !== undefined) {
+      return replaceable.has(taken)
+        ? replacementOf(layout, entry, taken)
+        : joinsUnlessProblem(layout, otherCatalogClash(layout, entry, taken));
     }
 
     return joinsUnlessProblem(
@@ -195,29 +229,74 @@ export const mergeLayoutCatalog = Effect.fn('mergeLayoutCatalog')(function* (
       replacesNothing(layout, entry) ?? dataLayoutClash(layout, entry, dataNames, brand),
     );
   });
+  const withheld = withheldLayouts(options.withheld, brandJoin.problems);
   // A data layout may fall back to a brand code layout, so it is checked against those too.
   const base = [...layouts.values()];
-  for (const layout of yield* brandDataLayouts(brand, options.layoutsFile, base)) {
+  const data = yield* brandDataLayouts(brand, options.layoutsFile, base, withheld);
+  for (const layout of data.layouts) {
     layouts.set(layout.contract.name, layout);
   }
 
   const deckCode = local.filter((entry) => !entry.source.startsWith(BRAND_CODE_SOURCE_PREFIX));
   const deckJoin = yield* joinCodeLayouts(deckCode, layouts, (layout, entry, taken) => {
+    const name = layout.contract.name;
+    const isBrandsName = withheld.has(name) || data.leftOut.has(name);
+    if (isBrandsName && (taken === undefined || modules.has(taken))) {
+      return joinsUnlessProblem(layout, withheldBrandClash(layout, entry));
+    }
+
     if (taken === undefined) {
       return joinsUnlessProblem(layout, replacesNothing(layout, entry));
     }
 
+    if (replaceable.has(taken)) {
+      return replacementOf(layout, entry, taken);
+    }
+
     return modules.has(taken)
-      ? replacementOf(layout, entry, taken)
+      ? joinsUnlessProblem(layout, otherCatalogClash(layout, entry, taken))
       : joinsUnlessProblem(layout, brandLayoutClash(layout, entry, taken));
   });
   return {
     index: layouts,
     clashes: [...brandJoin.problems, ...deckJoin.problems],
+    unavailable: data.unavailable,
     replaced: [...brandJoin.replaced, ...deckJoin.replaced],
     warnings: [...brandJoin.warnings, ...deckJoin.warnings],
   };
 });
+
+/**
+ * Whether a code layout may replace a catalog layout: only the engine's and the kit's, the ones the
+ * generated kit runtime leaves out for a replacement. A later catalog's runtime plugin would still
+ * render its own component over a code layout.
+ *
+ * @param layout - A layout of a catalog module.
+ */
+function isReplaceable(layout: CatalogLayout): boolean {
+  return REPLACEABLE_SOURCES.has(layout.source);
+}
+
+/**
+ * The brand's code layouts that are not in the catalog, with why: the ones the caller found but did
+ * not load, and the ones that loaded but could not take their name.
+ *
+ * @param given - The caller's withheld layouts.
+ * @param rejected - The problems of the brand's code layouts left out of the catalog.
+ */
+function withheldLayouts(
+  given: ReadonlyMap<string, readonly Problem[]> | undefined,
+  rejected: readonly LayoutProblem[],
+): ReadonlyMap<string, readonly Problem[]> {
+  const withheld = new Map(given ?? []);
+  for (const problem of rejected) {
+    if (problem.layout !== undefined) {
+      withheld.set(problem.layout, [...(withheld.get(problem.layout) ?? []), problem]);
+    }
+  }
+
+  return withheld;
+}
 
 /**
  * Whether a code layout joins the catalog under its name, and what to report.
@@ -323,14 +402,36 @@ function joinsUnlessProblem(
 }
 
 /**
+ * What {@link brandDataLayouts} returns.
+ */
+type BrandDataJoin = {
+  /**
+   * The data layouts that join the catalog.
+   */
+  readonly layouts: readonly CatalogLayout[];
+
+  /**
+   * The names of the data layouts left out because their fallback is withheld.
+   */
+  readonly leftOut: ReadonlySet<string>;
+
+  /**
+   * One `layout-fallback-unavailable` problem per layout left out.
+   */
+  readonly unavailable: readonly LayoutProblem[];
+};
+
+/**
  * The brand's data layouts (`layouts.ts`) as catalog layouts, each with its fallback, after
- * checking them against the layouts of the catalog modules.
+ * checking them against the layouts of the catalog modules. A data layout whose fallback is a
+ * withheld brand code layout is left out with a problem instead.
  *
  * @param brand - The deck's brand, when it has one.
  * @param layoutsFile - The absolute path of the brand's `layouts.ts`, when known.
  * @param base - The layouts a data layout may fall back to: the catalog modules' and the brand's
  *   code layouts.
- * @returns The layouts; empty without a brand or without data layouts.
+ * @param withheld - The brand's code layouts that are not in `base`, with why.
+ * @returns The layouts that join, and the ones left out with their problems.
  * @throws DeckBuildError in the error channel, naming the brand's `layouts.ts`, for a layout that
  *   clashes with a base layout or does not fit its fallback.
  */
@@ -338,14 +439,27 @@ const brandDataLayouts = Effect.fn('brandDataLayouts')(function* (
   brand: BrandTokens | undefined,
   layoutsFile: string | undefined,
   base: readonly CatalogLayout[],
-): Effect.fn.Return<CatalogLayout[], DeckBuildError> {
+  withheld: ReadonlyMap<string, readonly Problem[]>,
+): Effect.fn.Return<BrandDataJoin, DeckBuildError> {
   if (brand === undefined || brand.layouts.length === 0) {
-    return [];
+    return { layouts: [], leftOut: new Set(), unavailable: [] };
   }
 
   const ref = brandLayoutsRef(brand, layoutsFile);
   const contracts = base.map((layout) => layout.contract);
-  const { errors } = checkBrandLayouts(brand.layouts, contracts);
+  const baseNames = new Set(contracts.map((contract) => contract.name));
+  /**
+   * Whether a brand layout's fallback is a code layout that did not load and no base layout stands
+   * in for.
+   */
+  const isWithheld = (fallback: string): boolean =>
+    withheld.has(fallback) && !baseNames.has(fallback);
+  const usable = brand.layouts.filter((layout) => !isWithheld(layout.fallback));
+  const unavailable = brand.layouts
+    .filter((layout) => isWithheld(layout.fallback))
+    .map((layout) => unavailableFallback(layout.name, layout.fallback, ref, withheld));
+  const leftOut = new Set(unavailable.flatMap((problem) => problem.layout ?? []));
+  const { errors } = checkBrandLayouts(usable, contracts);
   if (errors.length > 0) {
     return yield* invalidBrandLayouts(
       ref,
@@ -353,14 +467,47 @@ const brandDataLayouts = Effect.fn('brandDataLayouts')(function* (
     );
   }
 
-  const exported = brandLayoutCatalog(brand, contracts) as unknown;
-  const fallbacks = new Map(brand.layouts.map((layout) => [layout.name, layout.fallback]));
-  const layouts = yield* readCatalog(exported, ref, 'brand');
-  return layouts.map((layout) => {
+  const exported = brandLayoutCatalog({ ...brand, layouts: usable }, contracts) as unknown;
+  const fallbacks = new Map(usable.map((layout) => [layout.name, layout.fallback]));
+  const layouts = (yield* readCatalog(exported, ref, 'brand')).map((layout) => {
     const fallback = fallbacks.get(layout.contract.name);
     return fallback === undefined ? layout : { ...layout, fallback };
   });
+  return { layouts, leftOut, unavailable };
 });
+
+/**
+ * The problem for a data layout whose fallback is a brand code layout that is not in the catalog,
+ * with the reasons that layout is not there.
+ *
+ * @param name - The data layout.
+ * @param fallback - The code layout it falls back to.
+ * @param ref - The brand's `layouts.ts`.
+ * @param withheld - The withheld code layouts, with why.
+ */
+function unavailableFallback(
+  name: string,
+  fallback: string,
+  ref: FileRef,
+  withheld: ReadonlyMap<string, readonly Problem[]>,
+): LayoutProblem {
+  const reasons = withheld.get(fallback) ?? [];
+  const lead =
+    `The data layout "${name}" (${ref.displayPath}) falls back to the brand's code layout ` +
+    `"${fallback}", which is not loaded`;
+  return {
+    code: 'layout-fallback-unavailable',
+    file: ref.file,
+    layout: name,
+    message:
+      reasons.length === 0
+        ? `${lead}.`
+        : `${lead}: ${reasons.map((reason) => reason.message).join(' ')}`,
+    fix:
+      reasons[0]?.fix ??
+      `Make the "${fallback}" layout load, or give "${name}" a kit layout as its fallback.`,
+  };
+}
 
 /**
  * One code layout's contract as the catalog its source provides.
@@ -454,6 +601,32 @@ function moduleLayoutClash(
 }
 
 /**
+ * The problem for a code layout named like a layout of a catalog module other than the kit's or the
+ * engine's. Only those can be replaced: another catalog's runtime plugin registers its component
+ * after the code layouts, so it would render instead of the replacement.
+ *
+ * @param layout - The code layout.
+ * @param entry - Its contract file.
+ * @param taken - The catalog module's layout that has the name.
+ */
+function otherCatalogClash(
+  layout: CatalogLayout,
+  entry: LocalCatalog,
+  taken: CatalogLayout,
+): LayoutProblem {
+  const name = layout.contract.name;
+  return {
+    code: 'layout-name-clash',
+    file: entry.ref.file,
+    layout: name,
+    message:
+      `The code layout "${name}" (${entry.ref.displayPath}) has the name of a layout from ` +
+      `${taken.source}, which a code layout cannot replace: only kit and engine layouts can be.`,
+    fix: "Rename the layout's folder and the `name` in its contract and component.",
+  };
+}
+
+/**
  * The problem for a code layout whose contract says `replaces: true` although no kit or engine
  * layout has its name, or `undefined` when it does not say so.
  *
@@ -530,9 +703,28 @@ function brandLayoutClash(
     message:
       `The deck layout "${name}" (${entry.ref.displayPath}) has the name of a layout of the ` +
       `deck's brand (${taken.source}).`,
-    fix:
-      "Rename the deck layout's folder and the `name` in its contract and component. A deck " +
-      'layout cannot replace a brand layout.',
+    fix: RENAME_DECK_LAYOUT_FIX,
+  };
+}
+
+/**
+ * The problem for a deck's code layout named like a layout of the deck's brand that is not in the
+ * catalog (a code layout that did not load, or a data layout left out with it): the name still
+ * belongs to the brand, and the clash would appear once the brand's layout loads.
+ *
+ * @param layout - The deck's code layout.
+ * @param entry - Its contract file.
+ */
+function withheldBrandClash(layout: CatalogLayout, entry: LocalCatalog): LayoutProblem {
+  const name = layout.contract.name;
+  return {
+    code: 'layout-name-clash',
+    file: entry.ref.file,
+    layout: name,
+    message:
+      `The deck layout "${name}" (${entry.ref.displayPath}) has the name of a layout of the ` +
+      "deck's brand, which is left out of the catalog for now.",
+    fix: RENAME_DECK_LAYOUT_FIX,
   };
 }
 

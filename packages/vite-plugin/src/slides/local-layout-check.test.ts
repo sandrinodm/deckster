@@ -143,6 +143,78 @@ describe('checkLocalLayout', () => {
     }),
   );
 
+  it.effect('fails a slide on a version-blocked replacement although the kit has the name', () =>
+    Effect.gen(function* () {
+      const split = {
+        name: 'split',
+        source: 'brand-code:acme',
+        contractFile: '/workspace/brands/acme/layouts/split/contract.ts',
+        componentFile: '/workspace/brands/acme/layouts/split/layout.tsx',
+      } as const;
+      const version = {
+        code: 'layout-version',
+        file: '/workspace/brands/acme/brand.json',
+        message: 'The code layouts of the acme brand are written for deckster >=99.',
+        fix: 'Install it.',
+      } as const;
+      const found: LocalLayouts = { ...NOTHING, layouts: [split], problems: [version] };
+      const error = yield* Effect.flip(
+        checkLocalLayout({ layout: 'split' }, TEST_CATALOG, { local: { found } }, REF),
+      );
+      expect(error.problems.map((problem) => problem.code)).toEqual(['layout-version']);
+      const deckVersion: LocalLayouts = {
+        ...found,
+        problems: [{ ...version, file: '/workspace/decks/talk/deck.config.ts' }],
+      };
+      yield* checkLocalLayout(
+        { layout: 'split' },
+        TEST_CATALOG,
+        { local: { found: deckVersion } },
+        REF,
+      );
+      const loaded: LocalLayouts = {
+        ...found,
+        catalogs: [
+          {
+            source: 'brand-code:acme',
+            ref: { file: split.contractFile, displayPath: 'brands/acme/layouts/split/contract.ts' },
+            exported: {},
+          },
+        ],
+      };
+      yield* checkLocalLayout({ layout: 'split' }, TEST_CATALOG, { local: { found: loaded } }, REF);
+    }),
+  );
+
+  it.effect('fails a slide on a replacement brand add left out instead of using the kit one', () =>
+    Effect.gen(function* () {
+      const local = {
+        found: NOTHING,
+        skipped: { source: 'github.com/acme/brand', names: ['split'] },
+      };
+      const fallback = { workspaceRoot: '/workspace', brand: 'acme' };
+      const error = yield* Effect.flip(
+        checkLocalLayout({ layout: 'split' }, TEST_CATALOG, { local, fallback }, REF),
+      );
+      expect(error.problems.map((problem) => problem.code)).toEqual(['layout-code-skipped']);
+      const copied = {
+        ...local,
+        found: {
+          ...NOTHING,
+          layouts: [
+            {
+              name: 'split',
+              source: 'brand-code:acme',
+              contractFile: '/workspace/brands/acme/layouts/split/contract.ts',
+              componentFile: '/workspace/brands/acme/layouts/split/layout.tsx',
+            } as const,
+          ],
+        },
+      };
+      yield* checkLocalLayout({ layout: 'split' }, TEST_CATALOG, { local: copied, fallback }, REF);
+    }),
+  );
+
   it.effect('fails a slide on a code layout brand add left out, with where to get it', () =>
     Effect.gen(function* () {
       const local = {

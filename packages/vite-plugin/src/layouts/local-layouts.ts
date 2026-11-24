@@ -13,11 +13,12 @@ import { Effect, FileSystem, Option, Predicate, Schema } from 'effect';
 import path from 'node:path';
 
 import type { DeckLocation } from '#decks/deck-paths.ts';
-import type { FileRef } from '#errors.ts';
+import type { FileRef, Problem } from '#errors.ts';
 import type { LayoutProblem } from '#layouts/layout-problem.ts';
 
 import { displayPath } from '#decks/deck-paths.ts';
 import { checkContract } from '#layouts/check-contract.ts';
+import { readDefaultCallProperty } from '#layouts/default-call-property.ts';
 import {
   importContracts,
   SHARED_LAYOUTS_DIR,
@@ -55,6 +56,22 @@ export const BRAND_CODE_SOURCE_PREFIX = 'brand-code:';
  * The start of the `source` of a deck's code layout, followed by the deck folder name.
  */
 export const DECK_SOURCE_PREFIX = 'deck:';
+
+/**
+ * The call a `layout.tsx` default-exports to register its component.
+ */
+const DEFINE_LAYOUT_CALLEE = 'defineLayout';
+
+/**
+ * The two files of a layout folder.
+ */
+const LAYOUT_FILES = new Set([CONTRACT_FILE, COMPONENT_FILE]);
+
+/**
+ * The contracts each `layouts/` folder had on its last discovery, by absolute folder, so the ones
+ * that disappear with their whole folder can be forgotten.
+ */
+const SEEN_CONTRACTS = new Map<string, ReadonlySet<string>>();
 
 /**
  * The CLI's `package.json` in a repository checkout, which holds the version there.
@@ -155,8 +172,10 @@ export type LocalLayouts = {
 
   /**
    * What is worth reporting but fails nothing, each with its `level`: a replacement that drops the
-   * replaced layout's PowerPoint mapping (`layout-replace-pptx`) and every budget or title limit
-   * that differs from it (`layout-replace-budget`). Filled in by `deckCatalog`.
+   * replaced layout's PowerPoint mapping (`layout-replace-pptx`), every budget or title limit that
+   * differs from it (`layout-replace-budget`) and, when the code was skipped, a brand data layout
+   * left out with the code layout it falls back to (`layout-fallback-unavailable`). Filled in by
+   * `deckCatalog`.
    */
   readonly warnings: readonly LayoutProblem[];
 };
@@ -252,12 +271,12 @@ type Discovery = {
  * whose name starts with `_` or `.` (`_shared`, `.eject`) or is not a safe kebab-case name are
  * never layouts, and files at the top of `layouts/` are a data layout's art. Before anything is
  * imported, a deckster version range declared in the brand's `brand.json` (`"deckster"`) or the
- * deck's `deck.config.ts` (`deckster`, read without running the config; a config that is more than
- * a literal declares none) is checked against this deckster, and a mismatch keeps every contract of
- * that brand or deck from loading. Then each folder is checked: both files exist, `layout.tsx`
- * names the layout, the contract's imports are allowed, it loads (never while an agent turn holds
- * it, see `importContracts`), it is named like its folder and it passes the build's contract
- * checks.
+ * deck's `deck.config.ts` (`deckster`, read without running the config; it must be a string
+ * literal, even when other parts of the config are computed) is checked against this deckster, and
+ * a mismatch keeps every contract of that brand or deck from loading. Then each folder is checked:
+ * both files exist, `layout.tsx` names the layout, the contract's imports are allowed, it loads
+ * (never while an agent turn holds it, see `importContracts`), it is named like its folder and it
+ * passes the build's contract checks.
  *
  * It never fails: problems are values, so a caller can still list every other layout.
  *
@@ -367,12 +386,16 @@ const discover = Effect.fn('discoverLayouts')(function* (
     .map((entry) => entry.name)
     .toSorted();
   const names = folders.filter((name) => isSafeName(name));
+  const linked = entries
+    .filter((entry) => entry.type === 'SymbolicLink' && isSafeName(entry.name))
+    .map((entry) => linkedFolder(path.join(owner.layoutsDir, entry.name), entry.name, root));
   const shared = folders.includes(SHARED_LAYOUTS_DIR)
     ? yield* filesUnder(path.join(owner.layoutsDir, SHARED_LAYOUTS_DIR))
     : [];
   const read = yield* Effect.forEach(names, (name) => readLayoutFolder(owner, name, root));
+  forgetRemovedContracts(owner.layoutsDir, read);
   const layouts = read.flatMap((folder) => (folder.layout === undefined ? [] : [folder.layout]));
-  const problems = read.flatMap((folder) => folder.problems);
+  const problems = [...linked, ...read.flatMap((folder) => folder.problems)];
   const files = [...shared, ...read.flatMap((folder) => folder.files)];
   if (names.length === 0) {
     return { layouts, files, problems, loadable: true };
@@ -430,6 +453,15 @@ const readLayoutFolder = Effect.fn('readLayoutFolder')(function* (
     contractFile: path.join(folder, CONTRACT_FILE),
     componentFile: path.join(folder, COMPONENT_FILE),
   };
+  const entries = yield* fs.readDirectoryEntries(folder).pipe(Effect.orElseSucceed(() => []));
+  const links = entries
+    .filter((entry) => entry.type === 'SymbolicLink' && LAYOUT_FILES.has(entry.name))
+    .map((entry) => linkedFolder(path.join(folder, entry.name), name, root));
+  if (links.length > 0) {
+    forgetLoaded(layout.contractFile);
+    return { layout: undefined, files, problems: links };
+  }
+
   const missing = [layout.contractFile, layout.componentFile].filter(
     (file) => !files.includes(file),
   );
@@ -449,6 +481,53 @@ const readLayoutFolder = Effect.fn('readLayoutFolder')(function* (
   const problems = namesLayout(component, name) ? [] : [componentNameMismatch(layout, root)];
   return { layout, files, problems };
 });
+
+/**
+ * The problem for a symbolic link where a code layout's folder or one of its two files belongs.
+ * Discovery and the agent turn guard go by paths as written, so a link is reported instead of being
+ * followed, or skipped as if nothing were there.
+ *
+ * @param file - The absolute path of the link.
+ * @param name - The layout it is, or is in.
+ * @param root - The absolute workspace root.
+ */
+function linkedFolder(file: string, name: string, root: string): LayoutProblem {
+  return {
+    code: 'layout-folder-incomplete',
+    file,
+    layout: name,
+    message:
+      `${displayPath(root, file)} is a symbolic link, and a code layout is read only from real ` +
+      'folders and files.',
+    fix: 'Copy the folder or file in place of the link.',
+  };
+}
+
+/**
+ * Forgets the remembered contracts of one `layouts/` folder whose `contract.ts` was there on the
+ * previous discovery and is gone now, with or without its folder, so a folder deleted whole and
+ * written again starts afresh, even within one agent turn, and old exports are not kept.
+ *
+ * @param layoutsDir - The absolute `layouts/` folder.
+ * @param read - What this discovery found in it.
+ */
+function forgetRemovedContracts(layoutsDir: string, read: readonly LayoutFolder[]): void {
+  const present = new Set(
+    read.flatMap((folder) =>
+      folder.files.filter(
+        (file) =>
+          path.basename(file) === CONTRACT_FILE && path.dirname(path.dirname(file)) === layoutsDir,
+      ),
+    ),
+  );
+  for (const file of SEEN_CONTRACTS.get(layoutsDir) ?? []) {
+    if (!present.has(file)) {
+      forgetLoaded(file);
+    }
+  }
+
+  SEEN_CONTRACTS.set(layoutsDir, present);
+}
 
 /**
  * Every file under a folder, as absolute paths, sorted. Entries whose name starts with a dot, such
@@ -476,15 +555,18 @@ const filesUnder = Effect.fn('filesUnder')(function* (
 });
 
 /**
- * Whether a `layout.tsx` registers a layout under a name: it has `name: '<name>'` somewhere, as a
- * `defineLayout({ name, component })` call does. The browser checks the registration itself when
- * the layout loads.
+ * Whether a `layout.tsx` may register a layout under a name: `false` only when its default export
+ * is, or names a top-level `const` that is, `defineLayout({ name: '<other>', ... })` with another
+ * string literal, read from the syntax tree so comments never count. Anything the source does not
+ * settle (a computed name or default export) is left to the browser, which checks the registration
+ * itself when the layout loads.
  *
  * @param text - The file's content.
  * @param name - The layout name, a safe kebab-case name.
  */
 function namesLayout(text: string, name: string): boolean {
-  return new RegExp(`\\bname\\s*:\\s*(['"\`])${name}\\1`).test(text);
+  const registered = readDefaultCallProperty(text, DEFINE_LAYOUT_CALLEE, 'name');
+  return registered.kind !== 'string' || registered.value === name;
 }
 
 /**
@@ -568,7 +650,7 @@ function contractProblems(layout: LocalLayout, load: ContractLoad, root: string)
     ];
   }
 
-  const invalid = checkContract(load.exported).map((problem): LayoutProblem => ({
+  const invalid = checkedContract(load.exported, shown).map((problem): LayoutProblem => ({
     ...at,
     ...problem,
     code: 'layout-contract-invalid',
@@ -592,6 +674,30 @@ function contractProblems(layout: LocalLayout, load: ContractLoad, root: string)
 }
 
 /**
+ * The build's contract checks on a contract a layout author wrote. Those checks call into the
+ * contract (its schema, its `checks`), so a throw they let through becomes a problem with the
+ * contract instead of failing every other layout.
+ *
+ * @param exported - The default export of `contract.ts`.
+ * @param shown - The contract's display path, for the message.
+ */
+function checkedContract(exported: unknown, shown: string): Problem[] {
+  try {
+    return checkContract(exported);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    return [
+      {
+        message: `Checking the contract in ${shown} threw: ${reason}`,
+        fix:
+          'Write the contract with `defineLayoutContract`, and make its schema and `checks` ' +
+          'never throw.',
+      },
+    ];
+  }
+}
+
+/**
  * The problem with an owner's declared deckster version range, or `undefined` when it declares
  * none, the range includes this deckster, or this deckster's version cannot be read.
  *
@@ -609,6 +715,16 @@ const versionProblem = Effect.fn('layoutVersionProblem')(function* (
   }
 
   const at = { code: 'layout-version', file: owner.versionFile } as const;
+  if (declared.range === undefined && owner.kind === 'deck') {
+    return {
+      ...at,
+      message:
+        `The \`deckster\` range in ${shown} is not a string literal, so it cannot be read ` +
+        'without running the config, and the code layouts are not loaded.',
+      fix: `Write it as a plain string, as ${RANGE_RULE}.`,
+    };
+  }
+
   if (declared.range === undefined) {
     return {
       ...at,
@@ -644,7 +760,9 @@ const versionProblem = Effect.fn('layoutVersionProblem')(function* (
 
 /**
  * The version range an owner declares: `undefined` when it declares none, and a range of
- * `undefined` when its `brand.json` cannot be read as one.
+ * `undefined` when its `brand.json` cannot be read as one or its deck config's `deckster` is not a
+ * string literal. A deck config is read without running it; when other parts of it are computed,
+ * only its `deckster` property is read.
  *
  * @param owner - The brand or the deck.
  */
@@ -669,9 +787,22 @@ const declaredRange = Effect.fn('declaredRange')(function* (
   }
 
   const config = readStaticModule(text, DECK_CONFIG_CALLEE);
-  const range: unknown =
-    config.ok && Predicate.isObject(config.value) ? config.value.deckster : undefined;
-  return typeof range === 'string' ? { range } : undefined;
+  if (config.ok) {
+    const range: unknown = Predicate.isObject(config.value) ? config.value.deckster : undefined;
+    return typeof range === 'string' ? { range } : undefined;
+  }
+
+  // A config with a computed part (a slide list in a constant) can still declare a literal range.
+  const declared = readDefaultCallProperty(text, DECK_CONFIG_CALLEE.name, 'deckster', 'ts');
+  switch (declared.kind) {
+    case 'string':
+      return { range: declared.value };
+    case 'other':
+      return { range: undefined };
+    case 'absent':
+    case 'unreadable':
+      return undefined;
+  }
 });
 
 /**

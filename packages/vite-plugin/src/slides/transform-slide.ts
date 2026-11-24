@@ -18,7 +18,11 @@ import { withBrandLayoutFallback, type BrandFallback } from '#slides/brand-layou
 import { checkSurface, withLayoutSurface, type SlideBrand } from '#slides/check-surface.ts';
 import { compileMdx, type MdxWarning } from '#slides/compile-mdx.ts';
 import { readMdxFrontmatter, validateFrontmatter } from '#slides/frontmatter.ts';
-import { checkLocalLayout, type SlideLocalLayouts } from '#slides/local-layout-check.ts';
+import {
+  checkLocalLayout,
+  checkOwnLayout,
+  type SlideLocalLayouts,
+} from '#slides/local-layout-check.ts';
 import { replaceSpan, type SpanReplacement } from '#slides/replace-span.ts';
 import { checkSlotUsage } from '#slides/slot-usage.ts';
 import { readTsxMeta, type SourceSpan } from '#slides/tsx-meta.ts';
@@ -202,6 +206,7 @@ const compileMdxSlide = Effect.fn('compileMdxSlide')(function* (
   development: boolean,
 ): Effect.fn.Return<CheckedSlide, DeckBuildError> {
   const { data, body } = yield* readMdxFrontmatter(slide.code, slide);
+  yield* checkOwnLayout(data, slide, slide);
   const swapped = yield* withBrandLayoutFallback(data, slide.layouts, slide.fallback, slide);
   yield* checkLocalLayout(swapped, slide.layouts, slide, slide);
   const validated = yield* validateFrontmatter(swapped, slide.layouts, slide);
@@ -253,6 +258,7 @@ const readTsxSlide = Effect.fn('readTsxSlide')(function* (
   slide: SlideSource,
 ): Effect.fn.Return<CheckedSlide, DeckBuildError> {
   const meta = yield* tryDeckBuild(() => readTsxMeta(slide.code, slide));
+  yield* checkOwnLayout(meta.frontmatter, slide, slide);
   const swapped = yield* withBrandLayoutFallback(
     meta.frontmatter,
     slide.layouts,

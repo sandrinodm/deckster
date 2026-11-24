@@ -172,11 +172,17 @@ export function brandModuleSource(
  * brand's `layouts/<name>/` reloads nothing here: Vite's hot update applies it.
  *
  * @param server - The dev server.
- * @param input - The workspace, the deck and its brand.
+ * @param input - The workspace, the deck, its brand, and which components belong to code layouts
+ *   that are not registered (an edit to one reloads, since it may fix the name it registers).
  */
 export function watchBrand(
   server: ViteDevServer,
-  input: { workspaceRoot: string; deck: DeckLocation; brand: ActiveBrand },
+  input: {
+    workspaceRoot: string;
+    deck: DeckLocation;
+    brand: ActiveBrand;
+    isUnregistered: (file: string) => boolean;
+  },
 ): void {
   const brandsDir = path.join(input.workspaceRoot, BRANDS_DIR);
   server.watcher.add(brandsDir);
@@ -193,8 +199,9 @@ export function watchBrand(
     const isConfigChange = file === input.deck.configFile;
     const name = input.brand.name();
     // An edit to a code layout's component or stylesheet is Vite's to apply, without a reload.
+    const layoutsDir = name === undefined ? undefined : path.join(brandsDir, name, LAYOUTS_DIR);
     const isHotEdit =
-      name !== undefined && isHotLayoutEdit(path.join(brandsDir, name, LAYOUTS_DIR), event, file);
+      layoutsDir !== undefined && isHotLayoutEdit(layoutsDir, event, file, input.isUnregistered);
     const isActive = !isHotEdit && isActiveBrandFile(brandsDir, file, name);
     if (isConfigChange || isActive || affectsFallbacks(brandsDir, event, file)) {
       reload();

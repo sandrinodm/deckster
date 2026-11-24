@@ -63,12 +63,20 @@ function deckFiles(
 }
 
 /**
- * A replacement of the kit's `default` that also requires a title, which the kit's does not: its
- * example and limit cases still pass, so only real slides show the difference.
+ * A replacement of the kit's `default` whose cross-field check rejects the `inverse` surface, which
+ * the kit's accepts. The compatibility check samples only the kit's example and limit cases, which
+ * set no surface, so only real slides show the difference.
  */
-const TITLED_DEFAULT = defaultReplacementSource()
-  .replace('  replaces: true,', '  replaces: true,\n  title: { required: true },')
-  .replace('frontmatter: {}', "frontmatter: { title: 'Hello' }");
+const NARROWED_DEFAULT = defaultReplacementSource().replace(
+  '  replaces: true,',
+  [
+    '  replaces: true,',
+    '  checks: (frontmatter) =>',
+    "    frontmatter.surface === 'inverse'",
+    "      ? [{ path: 'surface', message: 'cannot be inverse here.', fix: 'Use another surface.' }]",
+    '      : [],',
+  ].join('\n'),
+);
 
 beforeEach(() => {
   resetCodeGate();
@@ -83,15 +91,15 @@ layer(NodeFileSystem.layer)('checkReplacedSlides', (it) => {
     Effect.gen(function* () {
       const root = scratchRoot();
       writeFiles(root, {
-        'brands/fx-brand/layouts/default/contract.ts': TITLED_DEFAULT,
+        'brands/fx-brand/layouts/default/contract.ts': NARROWED_DEFAULT,
         'brands/fx-brand/layouts/default/layout.tsx': componentSource('default'),
         ...deckFiles('talk', 'fx-brand', {
-          untitled: ['layout: default'],
+          untitled: ['layout: default', 'surface: inverse'],
           titled: ['layout: default', 'title: Hello'],
-          cover: ['layout: title', 'title: Hello'],
-          bare: ['budget: 1m'],
+          cover: ['layout: title', 'title: Hello', 'surface: inverse'],
+          bare: ['surface: inverse'],
         }),
-        ...deckFiles('elsewhere', 'fx-other', { untitled: ['layout: default'] }),
+        ...deckFiles('elsewhere', 'fx-other', { untitled: ['surface: inverse'] }),
       });
       const problems = yield* checkReplacedSlides({ root, brand: yield* scratchBrand(root) });
       expect(
@@ -104,8 +112,34 @@ layer(NodeFileSystem.layer)('checkReplacedSlides', (it) => {
       expect(problems[0]?.message).toBe(
         'decks/talk/slides/untitled.mdx uses the "default" layout, which ' +
           'brands/fx-brand/layouts/default/contract.ts replaces, and does not fit the ' +
-          "replacement: title is required: the default layout sets it as the slide's headline.",
+          'replacement: surface: cannot be inverse here.',
       );
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('checks a slide on another brand’s data layout that falls back to a replacement', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/fx-brand/layouts/default/contract.ts': NARROWED_DEFAULT,
+        'brands/fx-brand/layouts/default/layout.tsx': componentSource('default'),
+        'brands/old-brand/layouts.ts': [
+          "import { defineBrandLayouts } from '@deckster/brand';",
+          '',
+          'export default defineBrandLayouts([',
+          "  { name: 'old-look', description: 'Test.', fallback: 'default', title: { box: [100, 100, 800, 200] }, regions: [] },",
+          ']);',
+          '',
+        ].join('\n'),
+        ...deckFiles('talk', 'fx-brand', { moved: ['layout: old-look', 'surface: inverse'] }),
+      });
+      const problems = yield* checkReplacedSlides({ root, brand: yield* scratchBrand(root) });
+      expect(problems.map((problem) => problem.message)).toEqual([
+        'decks/talk/slides/moved.mdx uses the "default" layout, which ' +
+          'brands/fx-brand/layouts/default/contract.ts replaces, and does not fit the ' +
+          'replacement: surface: cannot be inverse here.',
+      ]);
       rmSync(root, { recursive: true, force: true });
     }),
   );
@@ -114,7 +148,7 @@ layer(NodeFileSystem.layer)('checkReplacedSlides', (it) => {
     Effect.gen(function* () {
       const root = scratchRoot();
       writeFiles(root, {
-        'brands/fx-brand/layouts/default/contract.ts': TITLED_DEFAULT,
+        'brands/fx-brand/layouts/default/contract.ts': NARROWED_DEFAULT,
         'brands/fx-brand/layouts/default/layout.tsx': componentSource('default'),
         ...deckFiles('talk', 'fx-brand', { titled: ['layout: default', 'title: Hello'] }),
       });

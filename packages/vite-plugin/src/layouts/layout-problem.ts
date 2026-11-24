@@ -19,7 +19,9 @@ import type { Problem } from '#errors.ts';
  * - `layout-held`: an agent turn is in flight and the contract was never loaded before it;
  * - `layout-version`: the brand or deck asks for another deckster version;
  * - `layout-code-skipped`: a slide uses a code layout `brand add` left out, or one that only another
- *   brand has.
+ *   brand has;
+ * - `layout-fallback-unavailable`: a data layout of the brand falls back to one of the brand's code
+ *   layouts that did not load, so it is left out too.
  */
 export type LayoutProblemCode =
   | 'layout-folder-incomplete'
@@ -33,7 +35,8 @@ export type LayoutProblemCode =
   | 'layout-load-failed'
   | 'layout-held'
   | 'layout-version'
-  | 'layout-code-skipped';
+  | 'layout-code-skipped'
+  | 'layout-fallback-unavailable';
 
 /**
  * One thing wrong with a code layout, as a value: a caller lists the other layouts all the same,
@@ -47,20 +50,24 @@ export type LayoutProblem = Problem & {
 
   /**
    * The absolute path of the file at fault: the layout's `contract.ts` or `layout.tsx`, its folder
-   * when a file is missing, or the `brand.json` or `deck.config.ts` that declares the version.
+   * when a file is missing, a symbolic link where one of those belongs, the `brand.json` or
+   * `deck.config.ts` that declares the version, or the brand's `layouts.ts` for a data layout
+   * (`layout-fallback-unavailable`).
    */
   readonly file: string;
 
   /**
-   * The layout the problem belongs to, by folder name. Left out for a problem with every code
-   * layout of a brand or deck, such as a version mismatch.
+   * The layout the problem belongs to, by folder name (a data layout's name in `layouts.ts` for
+   * `layout-fallback-unavailable`). Left out for a problem with every code layout of a brand or
+   * deck, such as a version mismatch.
    */
   readonly layout?: string;
 
   /**
    * How much it matters, set only on what is not an error: `warning` for something a deck loses
-   * (`layout-replace-pptx`), `note` for a change worth knowing (`layout-replace-budget`). Those are
-   * listed in `LocalLayouts.warnings`, never in `problems`, and fail no slide.
+   * (`layout-replace-pptx`, or `layout-fallback-unavailable` when the code was skipped), `note` for
+   * a change worth knowing (`layout-replace-budget`). Those are listed in `LocalLayouts.warnings`,
+   * never in `problems`, and fail no slide.
    */
   readonly level?: 'warning' | 'note';
 };

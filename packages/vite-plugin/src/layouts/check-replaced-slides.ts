@@ -11,6 +11,7 @@ import { displayPath, type DeckLocation } from '#decks/deck-paths.ts';
 import { discoverDecks } from '#decks/discover-decks.ts';
 import { loadDeck, type LoadedDeck } from '#decks/load-deck.ts';
 import { deckCatalog, type DeckCatalog } from '#layouts/deck-catalog.ts';
+import { withBrandLayoutFallback, type BrandFallback } from '#slides/brand-layout-fallback.ts';
 import { validateFrontmatter } from '#slides/frontmatter.ts';
 import { readSlideFrontmatter } from '#slides/read-slide-layout.ts';
 
@@ -46,7 +47,8 @@ export type ReplacedSlidesOptions = {
  * check's item that needs real decks: a narrowed field type that the replaced layout's example and
  * limit cases do not exercise shows up here. For each deck on the brand (or the one deck given) it
  * loads the deck's catalog with `deckCatalog`, so the brand's and the deck's replacements both
- * count, and validates the frontmatter of each slide on a replaced layout as the build does.
+ * count, and validates the frontmatter of each slide on a replaced layout as the build does, a
+ * slide on another brand's data layout included when that layout falls back to a replaced one.
  *
  * Decks whose config does not load are skipped: the build reports them. The build itself fails a
  * slide that does not fit its replacement; this check is for `brand check` and `layouts check`,
@@ -83,7 +85,8 @@ export const checkReplacedSlides = Effect.fn('checkReplacedSlides')(function* (
       code: 'load',
       specifiers: options.specifiers,
     });
-    problems.push(...(yield* deckProblems(root, deck, catalog)));
+    const fallback = { workspaceRoot: root, brand: brand.location.name };
+    problems.push(...(yield* deckProblems(root, deck, catalog, fallback)));
   }
 
   return problems;
@@ -95,11 +98,14 @@ export const checkReplacedSlides = Effect.fn('checkReplacedSlides')(function* (
  * @param root - The absolute workspace root.
  * @param deck - The loaded deck.
  * @param catalog - The deck's catalog, with its replacements.
+ * @param fallback - Where another brand's data layout is looked up, so a slide on one is checked
+ *   against the layout it falls back to, as the build does.
  */
 const deckProblems = Effect.fn('replacedSlideProblems')(function* (
   root: string,
   deck: LoadedDeck,
   catalog: DeckCatalog,
+  fallback: BrandFallback,
 ): Effect.fn.Return<LayoutProblem[], never, FileSystem.FileSystem> {
   const replaced = new Set(catalog.local.replaced);
   if (replaced.size === 0) {
@@ -110,13 +116,19 @@ const deckProblems = Effect.fn('replacedSlideProblems')(function* (
   const problems: LayoutProblem[] = [];
   for (const slide of deck.slides) {
     const text = yield* fs.readFileString(slide.file).pipe(Effect.orElseSucceed(() => ''));
-    const data = readSlideFrontmatter(slide.file, text);
+    const ref = { file: slide.file, displayPath: displayPath(root, slide.file) };
+    // A fallback that cannot be resolved fails the slide's build, which reports it.
+    const data = yield* withBrandLayoutFallback(
+      readSlideFrontmatter(slide.file, text),
+      catalog.index,
+      fallback,
+      ref,
+    ).pipe(Effect.orElseSucceed(() => undefined));
     const layout = Predicate.isObject(data) ? (data.layout ?? DEFAULT_LAYOUT) : undefined;
     if (typeof layout !== 'string' || !replaced.has(layout)) {
       continue;
     }
 
-    const ref = { file: slide.file, displayPath: displayPath(root, slide.file) };
     const validated = yield* Effect.result(validateFrontmatter(data, catalog.index, ref));
     if (Result.isFailure(validated)) {
       const contract = contractOf(catalog, layout) ?? ref;

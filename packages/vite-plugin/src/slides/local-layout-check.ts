@@ -18,6 +18,7 @@ import {
   COMPONENT_FILE,
   CONTRACT_FILE,
   LAYOUTS_DIR,
+  type LocalLayout,
   type LocalLayouts,
 } from '#layouts/local-layouts.ts';
 
@@ -54,8 +55,10 @@ export type SlideLocalLayouts = {
  * - Only another brand in the workspace has the layout as code. That is found by listing folders, and
  *   nothing of the other brand is ever imported.
  *
- * A slide that names no layout is checked as one on `default`. A slide on any other layout, known
- * or not, passes; the frontmatter check reports unknown names.
+ * The first three hold even when a kit layout has the name (see {@link checkOwnLayout}): a
+ * replacement that did not load, or that `brand add` left out, never renders as the kit layout it
+ * replaces. A slide that names no layout is checked as one on `default`. A slide on any other
+ * layout, known or not, passes; the frontmatter check reports unknown names.
  *
  * @param data - The parsed frontmatter, after a brand data layout's fallback was applied.
  * @param catalog - Every layout the deck can use.
@@ -69,26 +72,10 @@ export const checkLocalLayout = Effect.fn('checkLocalLayout')(function* (
   context: { local?: SlideLocalLayouts | undefined; fallback?: BrandFallback | undefined },
   ref: FileRef,
 ): Effect.fn.Return<void, DeckBuildError> {
-  const name = Predicate.isObject(data) ? (data.layout ?? DEFAULT_LAYOUT) : undefined;
-  if (typeof name !== 'string' || !KEBAB_CASE_PATTERN.test(name) || !isSafeName(name)) {
-    return;
-  }
-
-  const { local, fallback } = context;
-  const own = local === undefined ? [] : ownProblems(local, name, catalog);
-  if (own.length > 0) {
-    return yield* unusableLayout(ref, own);
-  }
-
-  if (catalog.has(name)) {
-    return;
-  }
-
-  if (local?.skipped?.names.includes(name) === true && fallback !== undefined) {
-    return yield* unusableLayout(ref, [skippedProblem(name, fallback.brand, local.skipped)]);
-  }
-
-  if (fallback === undefined) {
+  yield* checkOwnLayout(data, context, ref);
+  const name = layoutNameOf(data);
+  const { fallback } = context;
+  if (name === undefined || catalog.has(name) || fallback === undefined) {
     return;
   }
 
@@ -102,28 +89,89 @@ export const checkLocalLayout = Effect.fn('checkLocalLayout')(function* (
 });
 
 /**
+ * The part of {@link checkLocalLayout} that is about the deck's and its brand's own code layouts:
+ * fails a slide whose layout has a problem of its own, belongs to a brand or deck whose version
+ * range keeps its layouts from loading, or was left out by `brand add`, whether or not a kit layout
+ * or another brand's data layout has the same name. A build runs it on the layout the slide names
+ * before swapping in another brand's fallback, so a broken layout of its own is never hidden by
+ * that swap.
+ *
+ * @param data - The parsed frontmatter, as written.
+ * @param context - The code layouts, and the deck's brand.
+ * @param ref - The slide file, for the error.
+ * @throws DeckBuildError in the error channel naming the slide, the layout's problem and its fix.
+ */
+export const checkOwnLayout = Effect.fn('checkOwnLayout')(function* (
+  data: unknown,
+  context: { local?: SlideLocalLayouts | undefined; fallback?: BrandFallback | undefined },
+  ref: FileRef,
+): Effect.fn.Return<void, DeckBuildError> {
+  const name = layoutNameOf(data);
+  const { local, fallback } = context;
+  if (name === undefined || local === undefined) {
+    return;
+  }
+
+  const own = ownProblems(local, name);
+  if (own.length > 0) {
+    return yield* unusableLayout(ref, own);
+  }
+
+  const isInstalled = local.found.layouts.some((layout) => layout.name === name);
+  if (local.skipped?.names.includes(name) === true && !isInstalled && fallback !== undefined) {
+    return yield* unusableLayout(ref, [skippedProblem(name, fallback.brand, local.skipped)]);
+  }
+});
+
+/**
+ * The layout a slide names, `default` when it names none, or `undefined` when the name is not a
+ * safe kebab-case name and so cannot be a code layout's folder.
+ *
+ * @param data - The parsed frontmatter.
+ */
+function layoutNameOf(data: unknown): string | undefined {
+  const name = Predicate.isObject(data) ? (data.layout ?? DEFAULT_LAYOUT) : undefined;
+  return typeof name === 'string' && KEBAB_CASE_PATTERN.test(name) && isSafeName(name)
+    ? name
+    : undefined;
+}
+
+/**
  * The problems that keep a slide from using a code layout of its own deck or brand: the problems
- * that name the layout, or, for a layout that was found but is not in the catalog, the problems
- * with every layout of its brand or deck.
+ * that name the layout and, for a layout that was found but did not load (it is not in
+ * `found.catalogs`, whatever other layout of that name the catalog has), the problems with every
+ * layout of its brand or deck, such as a version mismatch.
  *
  * @param local - The code layouts.
  * @param name - The layout the slide names.
- * @param catalog - Every layout the deck can use.
  */
-function ownProblems(
-  local: SlideLocalLayouts,
-  name: string,
-  catalog: LayoutCatalogIndex,
-): Problem[] {
-  const { problems, layouts } = local.found;
+function ownProblems(local: SlideLocalLayouts, name: string): Problem[] {
+  const { problems, layouts, catalogs } = local.found;
+  const loaded = new Set(catalogs.map((entry) => entry.ref.file));
+  const leftOut = layouts.filter(
+    (layout) => layout.name === name && !loaded.has(layout.contractFile),
+  );
   const named = problems.filter((problem) => problem.layout === name);
-  const isLeftOut = layouts.some((layout) => layout.name === name) && !catalog.has(name);
-  const shared = isLeftOut ? problems.filter((problem) => problem.layout === undefined) : [];
+  const shared = problems.filter(
+    (problem) =>
+      problem.layout === undefined &&
+      leftOut.some((layout) => ownerDirOf(layout) === path.dirname(problem.file)),
+  );
   return [...named, ...shared].map(({ message, fix, code }) => ({
     message: `layout: ${message}`,
     fix,
     code,
   }));
+}
+
+/**
+ * The folder of the brand or deck a code layout belongs to: the folder that holds its `layouts/`,
+ * where that owner's `brand.json` or `deck.config.ts` is.
+ *
+ * @param layout - The code layout.
+ */
+function ownerDirOf(layout: LocalLayout): string {
+  return path.dirname(path.dirname(path.dirname(layout.contractFile)));
 }
 
 /**

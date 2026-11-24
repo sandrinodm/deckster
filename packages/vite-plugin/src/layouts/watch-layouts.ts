@@ -17,20 +17,30 @@ const HOT_EXTENSIONS: ReadonlySet<string> = new Set(['.tsx', '.css']);
  * Whether a watcher event is an edit to a component or stylesheet inside a layout folder (or
  * `_shared/`), which Vite's hot update applies by itself. Everything else under `layouts/` (a
  * contract, `limits.ts`, a `.ts` helper, a file or folder added or removed) changes what the build
- * validates slides against, and needs the contracts loaded again.
+ * validates slides against, and needs the contracts loaded again. So does an edit to the component
+ * of a layout that is not registered: nothing imports it, and the edit may fix the name it
+ * registers, which the catalog checks.
  *
  * @param layoutsDir - The absolute `layouts/` folder of a brand or a deck.
  * @param event - The watcher's event name, such as `change` or `add`.
  * @param file - An absolute path the watcher reported.
+ * @param isUnregistered - Whether a file is the component of a layout that is not registered; none
+ *   is when left out.
  */
-export function isHotLayoutEdit(layoutsDir: string, event: string, file: string): boolean {
+export function isHotLayoutEdit(
+  layoutsDir: string,
+  event: string,
+  file: string,
+  isUnregistered: (file: string) => boolean = () => false,
+): boolean {
   const relative = path.relative(layoutsDir, file);
   if (relative.startsWith('..') || path.isAbsolute(relative)) {
     return false;
   }
 
   const isInFolder = relative.split(path.sep).length > 1;
-  return event === 'change' && isInFolder && HOT_EXTENSIONS.has(path.extname(file));
+  const isHotFile = isInFolder && HOT_EXTENSIONS.has(path.extname(file));
+  return event === 'change' && isHotFile && !isUnregistered(file);
 }
 
 /**
@@ -52,12 +62,17 @@ function isUnder(dir: string, file: string): boolean {
  * rest of the brand, by `watchBrand`.
  *
  * @param server - The dev server.
- * @param input - The deck, the contract loads made while a turn held them, and what forgets the
- *   loaded catalog.
+ * @param input - The deck, the contract loads made while a turn held them, which components belong
+ *   to layouts that are not registered, and what forgets the loaded catalog.
  */
 export function watchDeckLayouts(
   server: ViteDevServer,
-  input: { deck: DeckLocation; heldLoads: HeldLoads; onChange: () => void },
+  input: {
+    deck: DeckLocation;
+    heldLoads: HeldLoads;
+    isUnregistered: (file: string) => boolean;
+    onChange: () => void;
+  },
 ): void {
   const layoutsDir = path.join(input.deck.dir, LAYOUTS_DIR);
   /**
@@ -72,7 +87,7 @@ export function watchDeckLayouts(
   server.watcher.add(layoutsDir);
   server.watcher.on('all', (event, file) => {
     const isLayoutsChange = file === layoutsDir || isUnder(layoutsDir, file);
-    if (isLayoutsChange && !isHotLayoutEdit(layoutsDir, event, file)) {
+    if (isLayoutsChange && !isHotLayoutEdit(layoutsDir, event, file, input.isUnregistered)) {
       reload();
     }
   });

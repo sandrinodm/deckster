@@ -1,16 +1,17 @@
 import type { LoadedBrand } from '@deckster/brand/node';
 
 import { Effect, type FileSystem } from 'effect';
+import path from 'node:path';
 
 import type { DeckLocation } from '#decks/deck-paths.ts';
-import type { DeckBuildError } from '#errors.ts';
+import type { DeckBuildError, Problem } from '#errors.ts';
 
 import {
   DEFAULT_LAYOUT_CATALOGS,
   mergeLayoutCatalog,
   type LayoutCatalogIndex,
 } from '#layouts/load-layout-catalog.ts';
-import { localLayouts, type LocalLayouts } from '#layouts/local-layouts.ts';
+import { LAYOUTS_DIR, localLayouts, type LocalLayouts } from '#layouts/local-layouts.ts';
 
 /**
  * Options for {@link deckCatalog}.
@@ -74,15 +75,18 @@ export type DeckCatalog = {
  * name that is taken (by a kit or engine layout it does not say it replaces, by a data layout of
  * the same brand, or by a brand layout when the code layout is the deck's), and a replacement that
  * would break slides written for the kit layout it replaces. A replacement that joins is listed in
- * `local.replaced`, and its warnings and notes in `local.warnings`. Slides on real decks are
- * checked against a replacement by the build, and by `checkReplacedSlides` for every deck of a
- * brand.
+ * `local.replaced`, and its warnings and notes in `local.warnings`. A brand data layout whose
+ * fallback is one of the brand's code layouts that is not in the catalog is left out too: with
+ * `load` it gets a `layout-fallback-unavailable` problem that gives the code layout's reasons, and
+ * with `skip` that problem is a warning in `local.warnings`; the rest of the catalog loads either
+ * way. Slides on real decks are checked against a replacement by the build, and by
+ * `checkReplacedSlides` for every deck of a brand.
  *
  * @param options - The workspace, the brand, the deck and whether to load code.
  * @returns The catalog and the code layouts.
  * @throws DeckBuildError in the error channel for a catalog module that does not load and for brand
- *   data layouts that do not fit their fallbacks, as `loadLayoutCatalog` does. Problems with code
- *   layouts never fail it.
+ *   data layouts that do not fit their fallbacks (other than a withheld brand code layout), as
+ *   `loadLayoutCatalog` does. Problems with code layouts never fail it.
  */
 export const deckCatalog = Effect.fn('deckCatalog')(function* (
   options: DeckCatalogOptions,
@@ -98,14 +102,67 @@ export const deckCatalog = Effect.fn('deckCatalog')(function* (
     brand: brand?.tokens,
     layoutsFile: brand?.layoutsFile,
     local: found.catalogs,
+    withheld: withheldBrandLayouts(found, brand?.location.dir),
   });
   const clashed = new Set(merged.clashes.map((problem) => problem.file));
+  const isLoaded = options.code === 'load';
   const local: LocalLayouts = {
     ...found,
     catalogs: found.catalogs.filter((entry) => !clashed.has(entry.ref.file)),
     replaced: merged.replaced,
-    problems: [...found.problems, ...merged.clashes],
-    warnings: merged.warnings,
+    problems: [...found.problems, ...merged.clashes, ...(isLoaded ? merged.unavailable : [])],
+    // With the code skipped on purpose, a data layout on a brand code layout is left out with a
+    // warning, so a caller still knows the brand has that name.
+    warnings: [
+      ...merged.warnings,
+      ...(isLoaded
+        ? []
+        : merged.unavailable.map((problem) => ({ ...problem, level: 'warning' as const }))),
+    ],
   };
   return { index: merged.index, local };
 });
+
+/**
+ * The brand's code layouts that were found but did not load, by name, each with the problems that
+ * name it or concern every code layout of the brand (a version mismatch). With the code skipped,
+ * that is every brand code layout, with no problems.
+ *
+ * @param found - The code layouts found.
+ * @param brandDir - The absolute brand folder, when there is a brand.
+ */
+function withheldBrandLayouts(
+  found: LocalLayouts,
+  brandDir: string | undefined,
+): ReadonlyMap<string, readonly Problem[]> {
+  if (brandDir === undefined) {
+    return new Map();
+  }
+
+  const layoutsDir = path.join(brandDir, LAYOUTS_DIR);
+  /**
+   * Whether a file is in the brand's `layouts/` folder.
+   */
+  const isBrands = (file: string): boolean => file.startsWith(`${layoutsDir}${path.sep}`);
+  const loaded = new Set(found.catalogs.map((entry) => entry.ref.file));
+  const shared = found.problems.filter(
+    (problem) => problem.layout === undefined && path.dirname(problem.file) === brandDir,
+  );
+  const names = new Set([
+    ...found.layouts
+      .filter((layout) => isBrands(layout.contractFile) && !loaded.has(layout.contractFile))
+      .map((layout) => layout.name),
+    ...found.problems.flatMap((problem) =>
+      problem.layout !== undefined && isBrands(problem.file) ? [problem.layout] : [],
+    ),
+  ]);
+  return new Map(
+    [...names].map((name) => [
+      name,
+      [
+        ...found.problems.filter((problem) => problem.layout === name && isBrands(problem.file)),
+        ...shared,
+      ],
+    ]),
+  );
+}
