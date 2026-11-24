@@ -79,6 +79,48 @@ layer(NodeServices.layer)('lint rules', (it) => {
     }),
   );
 
+  it.effect('canvas-overflow measures an inline SVG drawing by what its <svg> shows', () =>
+    Effect.gen(function* () {
+      const tokens = yield* testBrandTokens('default');
+      const svg = element({
+        index: 0,
+        selector: 'svg',
+        tag: 'svg',
+        overflowX: 'hidden',
+        overflowY: 'hidden',
+        rect: { x: 0, y: 0, width: 1920, height: 860 },
+      });
+      const cropped = element({
+        index: 1,
+        parent: 0,
+        selector: 'svg > rect',
+        tag: 'rect',
+        inSvg: true,
+        rect: { x: 0, y: -110, width: 1920, height: 1080 },
+      });
+      const bleeding = element({
+        index: 2,
+        selector: 'svg.bleed',
+        tag: 'svg',
+        overflowX: 'visible',
+        overflowY: 'visible',
+        rect: { x: 0, y: 0, width: 400, height: 400 },
+      });
+      const outside = element({
+        index: 3,
+        parent: 2,
+        selector: 'svg.bleed > circle',
+        tag: 'circle',
+        inSvg: true,
+        rect: { x: -60, y: 0, width: 200, height: 200 },
+      });
+      const violations = canvasOverflowRule.check(
+        slideRuleInput(tokens, { elements: [svg, cropped, bleeding, outside] }),
+      );
+      expect(violations.map((violation) => violation.selector)).toEqual(['svg.bleed > circle']);
+    }),
+  );
+
   it.effect('container-overflow reports clipped content but not glyphs, decoration or shapes', () =>
     Effect.gen(function* () {
       const tokens = yield* testBrandTokens('default');
