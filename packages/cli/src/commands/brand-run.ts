@@ -12,10 +12,10 @@ import {
   type DiagramTextTokens,
   type SurfaceTokens,
 } from '@deckster/brand';
-import { brandTokensJson, loadBrand } from '@deckster/brand/node';
+import { brandTokensJson, loadBrand, type LoadedBrand } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
-import { localLayouts } from '@deckster/vite-plugin';
-import { Console, Effect } from 'effect';
+import { deckCatalog, localLayouts } from '@deckster/vite-plugin';
+import { Console, Effect, Result } from 'effect';
 
 import { usageError } from '#cli-error.ts';
 import { EXIT_FAILED, EXIT_OK, type Command } from '#command.ts';
@@ -28,6 +28,7 @@ import {
   layoutsDisplayPath,
   type BrandFileProblem,
 } from '#layouts/check-brand-layouts.ts';
+import { describeReplacement } from '#layouts/list-layouts.ts';
 import { count } from '#lint/format-report.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
 import { Workspace } from '#workspace.ts';
@@ -63,7 +64,7 @@ type BrandCheck = {
   errors: readonly BrandFileProblem[];
 
   /**
-   * The problems that do not.
+   * The problems that do not: warnings, and the notes of code layouts (`level: 'note'`).
    */
   warnings: readonly BrandFileProblem[];
 };
@@ -118,19 +119,40 @@ const printBrand = Effect.fn('printBrand')(function* (name: string, json: boolea
   }
 
   const brand = yield* loadBrand(root, name);
-  const { layouts: codeLayouts } = yield* localLayouts({
-    root,
-    brand: brand.location,
-    code: 'skip',
-  });
   yield* Console.log(
     summarize(brand.tokens, {
       file: brand.location.displayPath,
       warnings: brand.warnings,
-      codeLayouts: codeLayouts.map((layout) => layout.name),
+      codeLayouts: yield* codeLayoutNames(root, brand),
     }),
   );
   return EXIT_OK;
+});
+
+/**
+ * The names of the brand's code layouts, each followed by what it replaces when it replaces a kit
+ * layout (`title (replaces the kit's title)`). The replacement is known only once the contracts
+ * have run, as every command that lists layouts runs them; when they cannot be loaded (the brand's
+ * data layouts or a catalog module fail), the names alone are listed and nothing is run.
+ *
+ * @param root - The workspace root.
+ * @param brand - The loaded brand.
+ */
+const codeLayoutNames = Effect.fn('codeLayoutNames')(function* (root: string, brand: LoadedBrand) {
+  const loaded = yield* Effect.result(deckCatalog({ root, brand, code: 'load' }));
+  if (Result.isFailure(loaded)) {
+    const { layouts } = yield* localLayouts({ root, brand: brand.location, code: 'skip' });
+    return layouts.map((layout) => layout.name);
+  }
+
+  const { index, local } = loaded.success;
+  return local.layouts.map((layout) => {
+    const note = describeReplacement({
+      name: layout.name,
+      replaces: index.get(layout.name)?.replaces,
+    });
+    return note === undefined ? layout.name : `${layout.name} (${note})`;
+  });
 });
 
 /**
@@ -153,11 +175,16 @@ const checkBrand = Effect.fn('checkBrand')(function* (name: string, json: boolea
           ...files,
           errors: [
             ...layouts.errors.map((problem) => brandProblemWithFile(problem, files)),
-            ...layouts.local.problems.map((problem) => layoutProblemWithFile(brand, problem)),
+            ...[...layouts.local.problems, ...layouts.slideProblems].map((problem) =>
+              layoutProblemWithFile(brand, problem),
+            ),
           ],
-          warnings: [...brand.warnings, ...layouts.warnings].map((problem) =>
-            brandProblemWithFile(problem, files),
-          ),
+          warnings: [
+            ...[...brand.warnings, ...layouts.warnings].map((problem) =>
+              brandProblemWithFile(problem, files),
+            ),
+            ...layouts.local.warnings.map((problem) => layoutProblemWithFile(brand, problem)),
+          ],
         };
       }),
     ),
@@ -192,24 +219,27 @@ function formatCheck(name: string, check: BrandCheck): string {
     ...(check.layoutsFile === undefined ? [] : [check.layoutsFile]),
     ...[...errors, ...warnings].map((problem) => problem.file),
   ]);
+  const findings = [
+    ...errors.map((problem) => ({ severity: 'error', problem })),
+    ...warnings.map((problem) => ({ severity: problem.level ?? 'warning', problem })),
+  ];
   for (const file of files) {
     lines.push(file);
-    for (const [severity, problems] of [
-      ['error', errors],
-      ['warning', warnings],
-    ] as const) {
-      for (const problem of problems.filter((entry) => entry.file === file)) {
-        const id = problem.code === undefined ? '' : `${problem.code}: `;
-        lines.push(`  ${severity.padEnd('warning'.length)} ${id}${describeProblem(problem)}`);
-        lines.push(`          Fix: ${problem.fix}`);
-      }
+    for (const { severity, problem } of findings.filter((entry) => entry.problem.file === file)) {
+      const id = problem.code === undefined ? '' : `${problem.code}: `;
+      lines.push(`  ${severity.padEnd('warning'.length)} ${id}${describeProblem(problem)}`);
+      lines.push(`          Fix: ${problem.fix}`);
     }
   }
 
+  const notes = warnings.filter((problem) => problem.level === 'note').length;
+  const tally = [
+    count(errors.length, 'error'),
+    count(warnings.length - notes, 'warning'),
+    ...(notes === 0 ? [] : [count(notes, 'note')]),
+  ];
   const verdict = errors.length === 0 ? 'is valid' : 'cannot be used';
-  lines.push(
-    `${name}: ${verdict} (${count(errors.length, 'error')}, ${count(warnings.length, 'warning')}).`,
-  );
+  lines.push(`${name}: ${verdict} (${tally.join(', ')}).`);
   return lines.join('\n');
 }
 

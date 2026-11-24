@@ -13,6 +13,13 @@ export const Problem = Schema.Struct({
    * What to change to fix it, as a sentence.
    */
   fix: Schema.String,
+
+  /**
+   * The id of the problem, set when it has one of its own: a code layout's problem carries its
+   * `LayoutProblemCode`, such as `layout-held`, and `deckster lint` reports it under that rule id
+   * instead of `schema`. Left out for every other problem.
+   */
+  code: Schema.optionalKey(Schema.String),
 });
 
 /**

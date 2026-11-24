@@ -1,7 +1,11 @@
 import { BRAND_CODE_SOURCE_PREFIX, DECK_SOURCE_PREFIX } from '@deckster/vite-plugin';
 import { Predicate } from 'effect';
 
-import { BRAND_SOURCE_PREFIX, type LayoutInfo } from '#layouts/list-layouts.ts';
+import {
+  BRAND_SOURCE_PREFIX,
+  describeReplacement,
+  type LayoutInfo,
+} from '#layouts/list-layouts.ts';
 
 /**
  * The first complete sentence, including its terminal punctuation.
@@ -78,6 +82,12 @@ export type LayoutSummary = {
    * `brand-code:<name>` or `deck:<name>`.
    */
   source: string;
+
+  /**
+   * The source of the layout this one replaces, such as `@deckster/kit`; left out when it replaces
+   * none.
+   */
+  replaces?: string;
 
   /**
    * For a brand layout, the kit layout it falls back to; `null` otherwise.
@@ -163,6 +173,7 @@ export function summarizeLayout(layout: LayoutInfo): LayoutSummary {
   return {
     name: layout.name,
     source: layout.source,
+    ...(layout.replaces === undefined ? {} : { replaces: layout.replaces }),
     fallback: layout.fallback,
     description: firstSentence(layout.description),
     surface: layout.surface,
@@ -281,6 +292,7 @@ function formatGroup(summaries: readonly LayoutSummary[]): string {
       return [
         `${summary.name.padEnd(width)}  ${facts.join('  ')}`,
         `${' '.repeat(width)}  ${summary.description}`,
+        ...replacementLines(summary, width),
         ...(summary.fallback === null
           ? []
           : [`${' '.repeat(width)}  falls back to: ${summary.fallback}`]),
@@ -288,6 +300,18 @@ function formatGroup(summaries: readonly LayoutSummary[]): string {
       ].join('\n');
     })
     .join('\n');
+}
+
+/**
+ * The line that says a layout replaces another one, indented under its name; none for a layout that
+ * replaces nothing.
+ *
+ * @param summary - The layout.
+ * @param width - The width of the name column.
+ */
+function replacementLines(summary: LayoutSummary, width: number): string[] {
+  const note = describeReplacement(summary);
+  return note === undefined ? [] : [`${' '.repeat(width)}  ${note}`];
 }
 
 /**

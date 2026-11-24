@@ -6,7 +6,6 @@ import { loadBrand, type LoadedBrand } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
 import {
   BRAND_CODE_SOURCE_PREFIX,
-  checkReplacedSlides,
   deckBrandName,
   deckCatalog,
   DECK_SOURCE_PREFIX,
@@ -28,6 +27,7 @@ import type { DeckServer } from '#server/deck-server.ts';
 import type { Workspace } from '#workspace.ts';
 
 import { cliError, type CliError, type FileSystemError } from '#cli-error.ts';
+import { checkReplacements } from '#layouts/check-brand-layouts.ts';
 import { writeCheckWorkspace } from '#layouts/check-workspace.ts';
 import { loadLayoutLimits, LIMITS_FILE } from '#layouts/layout-limits.ts';
 import { exampleSlide, limitSlides, type LimitSlide } from '#layouts/limit-deck.ts';
@@ -283,10 +283,7 @@ export const checkLayouts = Effect.fn('checkLayouts')(function* (
   );
   const shared = attachCatalogProblems(root, catalog, target, results);
   // A replacement must also fit the slides the workspace's decks already have on the kit layout.
-  const replacing =
-    catalog.local.replaced.length === 0
-      ? []
-      : yield* checkReplacedSlides({ root, brand: target.brand, deck: target.deck });
+  const replacing = yield* checkReplacements(root, target.brand, catalog.local, target.deck);
   attachProblems(root, replacing, target, results, shared);
 
   const slides = yield* layoutSlides(root, target, readyLayouts(catalog, target, results), results);

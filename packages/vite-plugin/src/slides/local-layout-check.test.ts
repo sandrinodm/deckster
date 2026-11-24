@@ -60,8 +60,35 @@ describe('checkLocalLayout', () => {
           '    Fix: Rename it.',
         ].join('\n'),
       );
+      expect(error.problems.map((problem) => problem.code)).toEqual(['layout-name-clash']);
       yield* checkLocalLayout({ layout: 'default' }, TEST_CATALOG, { local: { found } }, REF);
       yield* checkLocalLayout({}, TEST_CATALOG, { local: { found } }, REF);
+    }),
+  );
+
+  it.effect('keeps the code of every kind of problem on the build error', () =>
+    Effect.gen(function* () {
+      const file = '/workspace/brands/acme/layouts/title/contract.ts';
+      const codes = [
+        'layout-replace-breaks',
+        'layout-held',
+        'layout-load-failed',
+        'layout-contract-invalid',
+      ] as const;
+      const found: LocalLayouts = {
+        ...NOTHING,
+        problems: codes.map((code) => ({
+          code,
+          file,
+          layout: 'split',
+          message: `The ${code} problem.`,
+          fix: 'Fix it.',
+        })),
+      };
+      const error = yield* Effect.flip(
+        checkLocalLayout({ layout: 'split' }, TEST_CATALOG, { local: { found } }, REF),
+      );
+      expect(error.problems.map((problem) => problem.code)).toEqual(codes);
     }),
   );
 
@@ -111,6 +138,7 @@ describe('checkLocalLayout', () => {
         checkLocalLayout({ layout: 'funnel' }, TEST_CATALOG, { local: { found } }, REF),
       );
       expect(error.message).toContain('written for deckster >=99');
+      expect(error.problems.map((problem) => problem.code)).toEqual(['layout-version']);
       yield* checkLocalLayout({ layout: 'split' }, TEST_CATALOG, { local: { found } }, REF);
     }),
   );
@@ -127,6 +155,7 @@ describe('checkLocalLayout', () => {
       );
       expect(error.problems).toEqual([
         {
+          code: 'layout-code-skipped',
           message:
             'layout: "kpi-wall" is a code layout of the acme brand that `brand add` left out, ' +
             'because a fetched brand is added as data and its code is not copied.',
@@ -154,6 +183,7 @@ describe('checkLocalLayout', () => {
       const error = yield* Effect.flip(
         checkLocalLayout({ layout: 'kpi-wall' }, TEST_CATALOG, context, REF),
       );
+      expect(error.problems[0]?.code).toBe('layout-code-skipped');
       expect(error.problems[0]?.message).toBe(
         'layout: There is no "kpi-wall" layout in the mine brand. It is a code layout of the ' +
           'acme brand, and a code layout has no fallback in another brand.',

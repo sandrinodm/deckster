@@ -176,7 +176,8 @@ export function brandName(source: string): string {
 }
 
 /**
- * One finding per problem of a deck build error, with its file and slide.
+ * One finding per problem of a deck build error, with its file and slide. A problem that has an id
+ * of its own, such as a code layout's `layout-held`, is reported under it; the rest are `schema`.
  *
  * @param error - The deck build error.
  * @param place - The deck.
@@ -188,7 +189,7 @@ function findingsFromDeckError(error: DeckBuildError, place: DeckPlace): LintFin
     slide,
     file,
     step: null,
-    rule: SCHEMA_RULE_ID,
+    rule: problem.code ?? SCHEMA_RULE_ID,
     severity: 'error',
     message: problem.message,
     fix: problem.fix,

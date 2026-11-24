@@ -1,8 +1,11 @@
 import { describe, expect, it } from '@effect/vitest';
 
+import type { LayoutInfo } from '#layouts/list-layouts.ts';
+
 import {
   ownLayoutsFirst,
   formatSummaries,
+  summarizeLayout,
   type LayoutSummary,
 } from '#layouts/summarize-layouts.ts';
 
@@ -61,5 +64,35 @@ describe('formatSummaries', () => {
       'acme-two',
       'default',
     ]);
+  });
+
+  it('marks a layout that replaces another under its description, and no other', () => {
+    const cover: LayoutSummary = {
+      ...summary('title', 'brand-code:acme', null),
+      replaces: '@deckster/kit',
+    };
+    const lines = formatSummaries([kit, cover]).split('\n');
+    const at = lines.findIndex((line) => line.startsWith('title '));
+    expect(lines[at + 1]).toBe('       The title layout.');
+    expect(lines[at + 2]).toBe("       replaces the kit's title");
+    expect(formatSummaries([kit, cover]).match(/replaces/gu)).toHaveLength(1);
+  });
+
+  it('carries replaces into the summary of a layout that has it', () => {
+    const info = {
+      name: 'title',
+      source: 'brand-code:acme',
+      replaces: '@deckster/kit',
+      fallback: null,
+      description: 'A cover. More.',
+      surface: null,
+      title: null,
+      slots: {},
+      budget: {},
+      frontmatter: {},
+    } as unknown as LayoutInfo;
+    expect(summarizeLayout(info)).toMatchObject({ replaces: '@deckster/kit' });
+    const { replaces: _kept, ...plain } = info;
+    expect(Object.keys(summarizeLayout(plain))).not.toContain('replaces');
   });
 });

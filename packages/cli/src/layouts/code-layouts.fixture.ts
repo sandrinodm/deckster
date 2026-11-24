@@ -80,3 +80,80 @@ export function contractRan(marker: string): boolean {
   Reflect.deleteProperty(globalThis, marker);
   return ran;
 }
+
+/**
+ * What {@link writeTitleReplacement} writes.
+ */
+export type TitleReplacementOptions = {
+  /**
+   * Accept only `treatment: plain`, as the kit's `title` accepts any treatment name: no example or
+   * limit case of the kit sets one, so only a slide with another treatment shows that the
+   * replacement is narrower.
+   */
+  readonly narrowTreatment?: boolean;
+};
+
+/**
+ * Writes a code layout folder named `title` that replaces the kit's cover. It accepts every field
+ * and slot of the kit's, with a tighter body budget and no PowerPoint mapping when the kit's has
+ * one, so loading it gives a note and a warning.
+ *
+ * @param layoutsDir - The brand's or the deck's `layouts/` folder.
+ * @param options - Whether to narrow a field.
+ */
+export function writeTitleReplacement(
+  layoutsDir: string,
+  options: TitleReplacementOptions = {},
+): void {
+  const dir = path.join(layoutsDir, 'title');
+  fs.mkdirSync(dir, { recursive: true });
+  const treatment =
+    options.narrowTreatment === true
+      ? "Schema.optionalKey(Schema.Literals(['plain']))"
+      : 'TreatmentField';
+  fs.writeFileSync(
+    path.join(dir, 'contract.ts'),
+    [
+      "import { defineLayoutContract } from '@deckster/engine/layout';",
+      "import { AlignField, chromeField, EyebrowField, TreatmentField } from '@deckster/kit/layout-fields';",
+      "import { Effect, Schema } from 'effect';",
+      '',
+      'export default defineLayoutContract({',
+      "  name: 'title',",
+      '  replaces: true,',
+      "  description: 'A brand cover that replaces the kit cover.',",
+      '  schema: Schema.Struct({',
+      '    eyebrow: EyebrowField,',
+      '    byline: Schema.optionalKey(Schema.NonEmptyString.check(Schema.isMaxLength(40))),',
+      '    date: Schema.optionalKey(Schema.NonEmptyString.check(Schema.isMaxLength(24))),',
+      `    treatment: ${treatment},`,
+      "    picture: Schema.Literals(['side', 'full']).pipe(",
+      "      Schema.withDecodingDefaultKey(Effect.succeed<'side' | 'full'>('side')),",
+      '    ),',
+      '    align: AlignField,',
+      '    chrome: chromeField(false),',
+      '  }),',
+      '  title: { required: true, maxChars: 36 },',
+      '  slots: {',
+      "    body: { description: 'The subtitle.', accepts: ['text'] },",
+      "    media: { description: 'A cover photo.', accepts: ['image'] },",
+      '  },',
+      '  budget: { body: { maxWords: 12 } },',
+      '  example: {',
+      "    frontmatter: { title: 'Shade is infrastructure', eyebrow: 'Budget briefing' },",
+      "    body: 'A ten-year canopy plan.\\n',",
+      '  },',
+      '});',
+      '',
+    ].join('\n'),
+  );
+  fs.writeFileSync(
+    path.join(dir, 'layout.tsx'),
+    [
+      "import { defineLayout } from '@deckster/engine';",
+      '',
+      "export default defineLayout({ name: 'title', component: () => null });",
+      '',
+    ].join('\n'),
+  );
+}

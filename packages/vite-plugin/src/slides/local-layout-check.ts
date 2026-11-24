@@ -9,6 +9,7 @@ import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { SkippedCodeLayouts } from '#layouts/brand-source.ts';
+import type { LayoutProblemCode } from '#layouts/layout-problem.ts';
 import type { LayoutCatalogIndex } from '#layouts/load-layout-catalog.ts';
 import type { BrandFallback } from '#slides/brand-layout-fallback.ts';
 
@@ -19,6 +20,12 @@ import {
   LAYOUTS_DIR,
   type LocalLayouts,
 } from '#layouts/local-layouts.ts';
+
+/**
+ * The problem id of a slide on a code layout that this brand does not have as code: one `brand add`
+ * left out, or one only another brand has.
+ */
+const SKIPPED_CODE = 'layout-code-skipped' satisfies LayoutProblemCode;
 
 /**
  * What a slide's layout is checked against besides the catalog: the code layouts of the deck and
@@ -112,9 +119,10 @@ function ownProblems(
   const named = problems.filter((problem) => problem.layout === name);
   const isLeftOut = layouts.some((layout) => layout.name === name) && !catalog.has(name);
   const shared = isLeftOut ? problems.filter((problem) => problem.layout === undefined) : [];
-  return [...named, ...shared].map(({ message, fix }) => ({
+  return [...named, ...shared].map(({ message, fix, code }) => ({
     message: `layout: ${message}`,
     fix,
+    code,
   }));
 }
 
@@ -128,6 +136,7 @@ function ownProblems(
 function skippedProblem(name: string, brand: string, skipped: SkippedCodeLayouts): Problem {
   const folder = `${BRANDS_DIR}/${brand}/${LAYOUTS_DIR}`;
   return {
+    code: SKIPPED_CODE,
     message:
       `layout: "${name}" is a code layout of the ${brand} brand that \`brand add\` left out, ` +
       'because a fetched brand is added as data and its code is not copied.',
@@ -153,6 +162,7 @@ function otherBrandProblem(
   brand: string,
 ): Problem {
   return {
+    code: SKIPPED_CODE,
     message:
       `layout: There is no "${name}" layout in the ${brand} brand. It is a code layout of ` +
       `the ${owners.join(', ')} brand, and a code layout has no fallback in another brand.`,

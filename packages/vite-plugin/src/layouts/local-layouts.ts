@@ -570,8 +570,8 @@ function contractProblems(layout: LocalLayout, load: ContractLoad, root: string)
 
   const invalid = checkContract(load.exported).map((problem): LayoutProblem => ({
     ...at,
-    code: 'layout-contract-invalid',
     ...problem,
+    code: 'layout-contract-invalid',
   }));
   const name: unknown = Predicate.isObject(load.exported) ? load.exported.name : undefined;
   if (typeof name !== 'string' || name === layout.name) {

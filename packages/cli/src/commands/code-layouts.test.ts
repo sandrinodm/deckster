@@ -18,6 +18,7 @@ import {
   codeLayoutsWorkspace,
   contractRan,
   writeThrowingLayout,
+  writeTitleReplacement,
 } from '#layouts/code-layouts.fixture.ts';
 import { lintDeck } from '#lint/run-lint.ts';
 import { Workspace } from '#workspace.ts';
@@ -221,6 +222,141 @@ describe('code layouts in the CLI', () => {
   );
 
   it.effect(
+    'a brand code layout that replaces a kit layout is marked in layouts and brand, and checked',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          writeTitleReplacement(path.join(root, 'brands', CODE_BRAND, 'layouts'));
+          const catalog = yield* runJson<LayoutsJson>(root, [
+            'layouts',
+            CODE_LAYOUTS_DECK,
+            '--json',
+          ]);
+          expect(catalog.warnings).toEqual([]);
+          const byName = new Map(catalog.layouts.map((layout) => [layout.name, layout]));
+          expect(byName.get('title')).toMatchObject({
+            source: `brand-code:${CODE_BRAND}`,
+            replaces: '@deckster/kit',
+          });
+          expect(Object.keys(byName.get('kpi-wall') ?? {})).not.toContain('replaces');
+          expect(Object.keys(byName.get('split') ?? {})).not.toContain('replaces');
+
+          const summary = yield* runJson<{ layouts: LayoutSummary[] }>(root, [
+            'layouts',
+            CODE_LAYOUTS_DECK,
+            '--summary',
+            '--json',
+          ]);
+          expect(summary.layouts.find((layout) => layout.name === 'title')).toMatchObject({
+            replaces: '@deckster/kit',
+          });
+          const text = yield* runCaptured(['layouts', CODE_LAYOUTS_DECK, '--summary'], { root });
+          expect(text.output).toContain("replaces the kit's title");
+
+          const brand = yield* runCaptured(['brand', CODE_BRAND], { root });
+          expect(brand.output).toContain(
+            "Code layouts: 2 (kpi-wall, title (replaces the kit's title))",
+          );
+
+          const check = yield* runCaptured(['brand', 'check', CODE_BRAND], { root });
+          expect(check.code, check.output).toBe(0);
+          expect(check.output).toMatch(/\n {2}warning layout-replace-pptx: .*\n {10}Fix: /u);
+          expect(check.output).toMatch(/\n {2}note {4}layout-replace-budget: /u);
+          expect(check.output).toMatch(/is valid \(0 errors, 1 warning, \d+ notes?\)\.$/u);
+          const json = yield* runJson<{ ok: boolean; warnings: object[] }>(root, [
+            'brand',
+            'check',
+            CODE_BRAND,
+            '--json',
+          ]);
+          expect(json.ok).toBe(true);
+          expect(json.warnings).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                code: 'layout-replace-pptx',
+                layout: 'title',
+                level: 'warning',
+                file: `brands/${CODE_BRAND}/layouts/title/contract.ts`,
+              }),
+              expect.objectContaining({
+                code: 'layout-replace-budget',
+                layout: 'title',
+                level: 'note',
+              }),
+            ]),
+          );
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'deckster brand check fails a replacement that a slide of a deck on the brand does not fit',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          writeTitleReplacement(path.join(root, 'brands', CODE_BRAND, 'layouts'), {
+            narrowTreatment: true,
+          });
+          const deck = path.join(root, 'decks', CODE_LAYOUTS_DECK);
+          fs.writeFileSync(
+            path.join(deck, 'slides', 'duotone-cover.mdx'),
+            '---\nlayout: title\ntitle: A duotone cover\ntreatment: duotone\n---\n',
+          );
+          const config = path.join(deck, 'deck.config.ts');
+          fs.writeFileSync(
+            config,
+            fs
+              .readFileSync(config, 'utf8')
+              .replace("'kit-layout']", "'kit-layout', 'duotone-cover']"),
+          );
+          const check = yield* runCaptured(['brand', 'check', CODE_BRAND], { root });
+          expect(check.code).toBe(1);
+          expect(check.output).toContain(`brands/${CODE_BRAND}/layouts/title/contract.ts\n  error`);
+          expect(check.output).toContain('layout-replace-breaks: ');
+          expect(check.output).toContain('decks/code-layouts/slides/duotone-cover.mdx');
+          expect(check.output).not.toContain('decks/code-layouts/slides/kit-layout.mdx');
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'deckster brand check accepts a data layout that falls back to a brand code layout',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          const layouts = [
+            {
+              name: 'wall-note',
+              label: 'Wall note',
+              description: 'A wall of figures with the heading beside it.',
+              fallback: 'kpi-wall',
+              title: { box: [120, 80, 1680, 160] },
+              regions: [{ bind: { slot: 'body' }, box: [120, 300, 1680, 600] }],
+            },
+          ];
+          const file = path.join(root, 'brands', CODE_BRAND, 'layouts.ts');
+          fs.writeFileSync(file, `export default ${JSON.stringify(layouts)};\n`);
+          const sound = yield* runCaptured(['brand', 'check', CODE_BRAND], { root });
+          expect(sound.code, sound.output).toBe(0);
+
+          fs.writeFileSync(
+            file,
+            `export default ${JSON.stringify([{ ...layouts[0], fallback: 'no-such-layout' }])};\n`,
+          );
+          const broken = yield* runCaptured(['brand', 'check', CODE_BRAND], { root });
+          expect(broken.code).toBe(1);
+          expect(broken.output).toContain('layouts[0].fallback: The fallback "no-such-layout"');
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
     'deckster lint checks code layout slides against their own contracts',
     () =>
       Effect.scoped(
@@ -241,6 +377,83 @@ describe('code layouts in the CLI', () => {
           const failed = report.findings.find((finding) => finding.rule === 'layout-load-failed');
           expect(failed?.message).toContain('The layout "broken" failed');
           expect(report.summary.slides).toBe(WORKING_SLIDES.length + 1);
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    BROWSER_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'deckster brand check reports invalid data layouts next to a replacement and its slides',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          const brandDir = path.join(root, 'brands', CODE_BRAND);
+          writeTitleReplacement(path.join(brandDir, 'layouts'));
+          const layouts = [
+            {
+              name: 'wall-note',
+              label: 'Wall note',
+              description: 'A wall of figures.',
+              fallback: 'no-such-layout',
+              title: { box: [120, 80, 1680, 160] },
+              regions: [{ bind: { slot: 'body' }, box: [120, 300, 1680, 600] }],
+            },
+          ];
+          fs.writeFileSync(
+            path.join(brandDir, 'layouts.ts'),
+            `export default ${JSON.stringify(layouts)};\n`,
+          );
+          const json = yield* runJson<{ ok: boolean; errors: { path: string; code?: string }[] }>(
+            root,
+            ['brand', 'check', CODE_BRAND, '--json'],
+          );
+          expect(json.ok).toBe(false);
+          expect(json.errors.map((error) => error.path)).toEqual(['layouts[0].fallback']);
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'deckster lint reports a slide on an unusable code layout under the layout problem id',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          const brandDir = path.join(root, 'brands', CODE_BRAND);
+          writeThrowingLayout(path.join(brandDir, 'layouts'), 'bad', MARKER);
+          fs.writeFileSync(
+            path.join(brandDir, '.deckster-source.json'),
+            JSON.stringify({ source: 'github.com/acme/brand', codeLayoutsSkipped: ['gone'] }),
+          );
+          const deck = path.join(root, 'decks', CODE_LAYOUTS_DECK);
+          for (const layout of ['bad', 'gone']) {
+            fs.writeFileSync(
+              path.join(deck, 'slides', `uses-${layout}.mdx`),
+              `---\nlayout: ${layout}\ntitle: A slide on ${layout}\n---\n`,
+            );
+          }
+
+          const config = path.join(deck, 'deck.config.ts');
+          fs.writeFileSync(
+            config,
+            fs
+              .readFileSync(config, 'utf8')
+              .replace("'kit-layout']", "'kit-layout', 'uses-bad', 'uses-gone']"),
+          );
+          const report = yield* lintDeck({ deck: CODE_LAYOUTS_DECK, brand: undefined }).pipe(
+            Effect.provide(cliLayer(Workspace.at(root))),
+          );
+          contractRan(MARKER);
+          expect(report.ok).toBe(false);
+          expect(
+            report.findings.map((finding) => [finding.slide, finding.rule, finding.severity]),
+          ).toEqual([
+            ['uses-bad', 'layout-load-failed', 'error'],
+            ['uses-gone', 'layout-code-skipped', 'error'],
+          ]);
+          expect(report.findings[1]?.fix).toContain('github.com/acme/brand');
         }),
       ).pipe(Effect.provide(NodeServices.layer)),
     BROWSER_TEST_TIMEOUT_MS,
