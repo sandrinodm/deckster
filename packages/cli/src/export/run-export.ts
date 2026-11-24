@@ -29,6 +29,7 @@ import {
   type CliError,
   type SlideNotReadyError,
 } from '#cli-error.ts';
+import { assertSlidesRender } from '#export/check-slides-render.ts';
 import { writeFontFiles } from '#export/export-fonts.ts';
 import { exportPdf } from '#export/export-pdf.ts';
 import { capturePptx, playwrightPage, writePptx, type PptxCapture } from '#export/export-pptx.ts';
@@ -192,6 +193,7 @@ const exportFromPage = Effect.fn('exportFromPage')(function* (
     options.steps,
     options.includeHidden,
   );
+  yield* assertSlidesRender(options.deck, opened.page, targets);
   const hiddenSkipped = hiddenLeftOut(opened.page.slides, options.slides, options.includeHidden);
   const base = path.join(outDir, `${options.deck}${options.steps ? '-steps' : ''}`);
   const pdfFile = fileFor(options, 'pdf', base);

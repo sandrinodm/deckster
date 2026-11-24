@@ -509,13 +509,20 @@ describe('code layouts in the CLI', () => {
         Effect.gen(function* () {
           const root = yield* codeLayoutsWorkspace();
           const out = path.join(root, 'exports');
-          const result = yield* runExport({
-            ...defaultExportOptions(CODE_LAYOUTS_DECK),
-            out,
-            formats: new Set(['pdf', 'pptx']),
-          }).pipe(Effect.provide(cliLayer(Workspace.at(root))));
-          expect(result.pdf?.pages).toBe(WORKING_SLIDES.length + 1);
-          expect(result.pptx?.slides).toHaveLength(WORKING_SLIDES.length + 1);
+          const exportDeck = (slides: string | undefined) =>
+            runExport({
+              ...defaultExportOptions(CODE_LAYOUTS_DECK),
+              out,
+              slides,
+              formats: new Set(['pdf', 'pptx']),
+            }).pipe(Effect.provide(cliLayer(Workspace.at(root))));
+          const refused = yield* exportDeck(undefined).pipe(Effect.flip);
+          expect(refused.message).toContain('"broken-layout"');
+          expect(fs.existsSync(path.join(out, `${CODE_LAYOUTS_DECK}.pdf`))).toBe(false);
+          expect(fs.existsSync(path.join(out, `${CODE_LAYOUTS_DECK}.pptx`))).toBe(false);
+          const result = yield* exportDeck(WORKING_SLIDES.join(','));
+          expect(result.pdf?.pages).toBe(WORKING_SLIDES.length);
+          expect(result.pptx?.slides).toHaveLength(WORKING_SLIDES.length);
           expect(result.pptx?.slides[0]).toMatchObject({
             layout: 'kpi-wall',
             placeholders: ['title', 'body'],
