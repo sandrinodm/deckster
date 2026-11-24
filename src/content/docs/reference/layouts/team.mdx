@@ -31,10 +31,10 @@ For one speaker, use [`bio`](/reference/layouts/bio/); for a larger group, a [`t
 
 ## Common mistakes
 
-**An edge on a larger team.** Only a slide of two to four people has room for `edge` and `previously:`. Add a fifth person and the build fails; [`deck lint`](/review/lint/) reports it before it renders any slide:
+**An edge on a larger team.** Only a slide of two to four people has room for `edge` and `previously:`. Add a fifth person and the build fails; [`deckster lint`](/review/lint/) reports it before it renders any slide:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/team.mdx
   error   schema (team): members[0].edge: A team of 5 has no room for `edge`; only a slide of two to 4 people shows it.
           Fix: Remove `edge` from the members, or show the founders or leads on a slide of their own, two to 4 of them.

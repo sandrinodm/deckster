@@ -5,11 +5,11 @@ sidebar:
   order: 3
 ---
 
-`deck diff` shows which slides of a deck changed and how: it renders the deck now and at a base, matches the slides by id and compares them pixel by pixel. After this page you can check what an edit (yours or an agent's) did to every slide, with or without git, and put the result on a pull request.
+`deckster diff` shows which slides of a deck changed and how: it renders the deck now and at a base, matches the slides by id and compares them pixel by pixel. After this page you can check what an edit (yours or an agent's) did to every slide, with or without git, and put the result on a pull request.
 
 ## Compare with the last commit
 
-In a git repository, `deck diff` compares the working tree with `HEAD`:
+In a git repository, `deckster diff` compares the working tree with `HEAD`:
 
 <Steps>
 
@@ -18,7 +18,7 @@ In a git repository, `deck diff` compares the working tree with `HEAD`:
 2. Run the diff:
 
    ```console
-   $ deck diff launch-review
+   $ deckster diff launch-review
    launch-review (default) against HEAD: 1 changed, 2 unchanged
      changed  revenue  (slide 3 -> 2)  3.6%
    Report: /Users/you/talks/.deck/diff/launch-review/index.html
@@ -31,10 +31,10 @@ In a git repository, `deck diff` compares the working tree with `HEAD`:
 
 </Steps>
 
-`--base <ref>` compares with any branch, tag or commit instead: `deck diff launch-review --base main`. A ref git does not know is an error:
+`--base <ref>` compares with any branch, tag or commit instead: `deckster diff launch-review --base main`. A ref git does not know is an error:
 
 ```console
-$ deck diff launch-review --base nope
+$ deckster diff launch-review --base nope
 Git does not know "nope" in this workspace.
 Pass a branch, tag or commit, or a folder of baseline pictures with `--base <dir>`. In CI, fetch the base branch first (`git fetch origin <branch>` or `fetch-depth: 0`).
 ```
@@ -46,23 +46,23 @@ The ref is extracted with `git archive` into a temporary folder that is deleted 
 Save a baseline before you edit, then diff against it:
 
 ```console
-$ deck diff launch-review --save-baseline
+$ deckster diff launch-review --save-baseline
 Saved 3 pictures of "launch-review" to /Users/you/talks/.deck/baseline/launch-review
 ```
 
-Edit, then run `deck diff launch-review`. Outside a git repository the default base is that baseline folder:
+Edit, then run `deckster diff launch-review`. Outside a git repository the default base is that baseline folder:
 
 ```console
-$ deck diff launch-review
+$ deckster diff launch-review
 launch-review (default) against /Users/you/talks/.deck/baseline/launch-review: 1 changed, 2 unchanged
   changed  risks  (slide 2)  4.5%
 Report: /Users/you/talks/.deck/diff/launch-review/index.html
 Summary for a pull request: /Users/you/talks/.deck/diff/launch-review/summary.md
 ```
 
-Inside a git repository the default is `HEAD`, so pass the folder: `--base .deck/baseline/launch-review`. Any folder of pictures made by [`deck shot`](/review/screenshots/) works as a base, because the file names (`03-risks.png`) carry the position and id. `--save-baseline <dir>` writes somewhere else, and saving again replaces the earlier pictures.
+Inside a git repository the default is `HEAD`, so pass the folder: `--base .deck/baseline/launch-review`. Any folder of pictures made by [`deckster shot`](/review/screenshots/) works as a base, because the file names (`03-risks.png`) carry the position and id. `--save-baseline <dir>` writes somewhere else, and saving again replaces the earlier pictures.
 
-The deck must render cleanly on both sides. If a slide throws, `deck diff` stops and says so instead of comparing a picture of an error; run [`deck lint`](/review/lint/) to find it.
+The deck must render cleanly on both sides. If a slide throws, `deckster diff` stops and says so instead of comparing a picture of an error; run [`deckster lint`](/review/lint/) to find it.
 
 ## What the statuses mean
 
@@ -80,10 +80,10 @@ Only the slides that left their order are `moved`: reordering one slide reports 
 
 ## Hidden slides
 
-New in 0.5.0. `deck diff` shoots every slide, hidden ones included, so an edit to a backup slide is reported like any other (see [hidden slides](/write-slides/hidden-slides/)). Hiding or showing a slide is reported too, because the pictures change: the page numbers and totals of the shown slides move, and a hidden slide has no page number of its own. With the `default` brand, a baseline saved while `pricing-backup` was shown and a diff after adding `hidden: true` to it:
+New in 0.5.0. `deckster diff` shoots every slide, hidden ones included, so an edit to a backup slide is reported like any other (see [hidden slides](/write-slides/hidden-slides/)). Hiding or showing a slide is reported too, because the pictures change: the page numbers and totals of the shown slides move, and a hidden slide has no page number of its own. With the `default` brand, a baseline saved while `pricing-backup` was shown and a diff after adding `hidden: true` to it:
 
 ```console
-$ deck diff launch-review
+$ deckster diff launch-review
 launch-review (default) against /Users/you/talks/.deck/baseline/launch-review: 3 changed, 1 unchanged
   changed  revenue  (slide 2)  <0.01%
   changed  risks  (slide 3)  <0.01%
@@ -98,7 +98,7 @@ The title slide stays `unchanged` because the `default` brand draws no page numb
 
 | Option | What it does |
 | --- | --- |
-| `--steps` | Compares every step, not only each slide's finished state. A baseline folder must then hold step pictures (`deck shot <deck> --steps`, or `--save-baseline` with `--steps`). |
+| `--steps` | Compares every step, not only each slide's finished state. A baseline folder must then hold step pictures (`deckster shot <deck> --steps`, or `--save-baseline` with `--steps`). |
 | `--threshold <n>` | The share of visibly changed pixels, from 0 to 1, above which a picture counts as changed. Default 0. |
 | `--brand <name>` | Renders both sides with `brands/<name>`. The default folders get an `@<name>` suffix. |
 | `--out <dir>` | The report folder. Default `.deck/diff/<deck>`. |
@@ -116,7 +116,7 @@ The report folder, `.deck/diff/<deck>/`, holds:
 
 This is what an `index.html` looks like for the hello deck with one changed slide and one moved slide (a staged example for this page, not a real edit):
 
-<UiShot name="diff-report" alt="A deck diff report titled 'Slide changes: hello (default)', compared with .deck/baseline/hello, with counts of 1 changed, 0 added, 0 removed, 1 moved and 2 unchanged; the changed title slide shows its before, after and difference pictures side by side, and the moved steps slide is listed as slide 3 -> 2." />
+<UiShot name="diff-report" alt="A deckster diff report titled 'Slide changes: hello (default)', compared with .deck/baseline/hello, with counts of 1 changed, 0 added, 0 removed, 1 moved and 2 unchanged; the changed title slide shows its before, after and difference pictures side by side, and the moved steps slide is listed as slide 3 -> 2." />
 
 The `summary.md` of the first run on this page:
 
@@ -132,22 +132,22 @@ Compared with `HEAD`: 1 changed, 2 unchanged.
 
 ## Use it on pull requests
 
-`deck diff` is built to run in CI against the pull request's base branch. The deckster repository's own workflow, [`.github/workflows/slides-diff.yml`](https://github.com/sandrinodm/deckster/blob/main/.github/workflows/slides-diff.yml), is the pattern:
+`deckster diff` is built to run in CI against the pull request's base branch. The deckster repository's own workflow, [`.github/workflows/slides-diff.yml`](https://github.com/sandrinodm/deckster/blob/main/.github/workflows/slides-diff.yml), is the pattern:
 
 1. Check out with full history (`fetch-depth: 0`), so the base branch can be archived.
 2. Work out which decks the pull request touches: every deck when a brand or a package changed, otherwise the decks whose own folder changed.
 3. Install the dependencies and Chromium.
-4. Run `deck diff <deck> --base origin/<base branch>` for each of them.
+4. Run `deckster diff <deck> --base origin/<base branch>` for each of them.
 5. Upload `.deck/diff` as an artifact, so reviewers can open each deck's `index.html`.
 6. Post the `summary.md` tables as one comment on the pull request, updated on every push. A comment cannot show the pictures without an image host, so the workflow turns the picture links into paths inside the artifact.
 
 That workflow uses the repository's pnpm set-up, so it is not ready to copy into an npm workspace. In an npm workspace, the job's commands for steps 3 and 4 are these, with `main` as the base branch:
 
 ```sh
-npm install --global @deckster/cli@0.8.0
-npx playwright@1.65.0 install chromium
+npm install --global @deckster/cli@0.9.0
+npx playwright@1.65.1 install chromium
 git fetch origin main
-deck diff launch-review --base origin/main
+deckster diff launch-review --base origin/main
 ```
 
 The repository's workflow needs only a read-only token plus `pull-requests: write` for the comment. Add `--fail-on-change` if a pull request that changes slides should need a second look before merging.

@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-`deck build` turns a deck into a folder of static files that any web host can serve, so you can share the deck as a link. After this page you can build one deck, check the build locally, add the PDF and PowerPoint files, build a site of several decks with a gallery page, and put it online.
+`deckster build` turns a deck into a folder of static files that any web host can serve, so you can share the deck as a link. After this page you can build one deck, check the build locally, add the PDF and PowerPoint files, build a site of several decks with a gallery page, and put it online.
 
 ## Build one deck
 
@@ -14,7 +14,7 @@ sidebar:
 1. Build the deck:
 
    ```console
-   $ deck build launch-review
+   $ deckster build launch-review
    transforming...
    ✓ 854 modules transformed.
    rendering chunks...
@@ -29,7 +29,7 @@ sidebar:
 2. Look at the build before you upload it:
 
    ```console
-   $ deck preview launch-review
+   $ deckster preview launch-review
      ➜  Local:   http://localhost:4173/
    ```
 
@@ -39,26 +39,26 @@ sidebar:
 
 </Steps>
 
-The build lands in `decks/<deck>/dist/`. Every path in it is relative (`./assets/...`), so the folder works at the root of a domain or under any sub-path, such as `https://example.github.io/talks/launch-review/`, without configuration. Without a deck name, `deck build` builds every deck in the workspace (or the deck in `$DECK`, when it is set).
+The build lands in `decks/<deck>/dist/`. Every path in it is relative (`./assets/...`), so the folder works at the root of a domain or under any sub-path, such as `https://example.github.io/talks/launch-review/`, without configuration. Without a deck name, `deckster build` builds every deck in the workspace (or the deck in `$DECK`, when it is set).
 
 ## Add the PDF and PowerPoint files
 
 `--with-exports` also exports the deck to `<deck>.pdf` and `<deck>.pptx` beside its `index.html`:
 
 ```sh
-deck build launch-review --with-exports
+deckster build launch-review --with-exports
 ```
 
-A `<Download file="launch-review.pdf">` button on a slide then has a file to link to; see [Links](/write-slides/links/). The exports are the same as `deck export` writes; see [PDF](/export-and-publish/pdf/). They need Chromium (`npx playwright@1.65.0 install chromium`).
+A `<Download file="launch-review.pdf">` button on a slide then has a file to link to; see [Links](/write-slides/links/). The exports are the same as `deckster export` writes; see [PDF](/export-and-publish/pdf/). They need Chromium (`npx playwright@1.65.1 install chromium`).
 
-New in 0.5.0: the build includes slides with `hidden: true`, and a visitor who opens one by its number or id sees it, but the exports leave them out, as `deck export` does without `--include-hidden`. A deck of four slides with one hidden builds four slides and exports a three-slide PowerPoint file. The gallery of a site counts all four. See [hidden slides](/write-slides/hidden-slides/#hiding-is-not-removing).
+New in 0.5.0: the build includes slides with `hidden: true`, and a visitor who opens one by its number or id sees it, but the exports leave them out, as `deckster export` does without `--include-hidden`. A deck of four slides with one hidden builds four slides and exports a three-slide PowerPoint file. The gallery of a site counts all four. See [hidden slides](/write-slides/hidden-slides/#hiding-is-not-removing).
 
 ## Build a site of several decks
 
 `--out <dir>` builds decks into one site folder with a gallery page:
 
 ```console
-$ deck build --all --out site --with-exports
+$ deckster build --all --out site --with-exports
 Leaving out 1 scratch deck(s) (zz-): zz-broken. Pass --include-scratch to build them too.
 ...
 Built 2 deck(s) into /Users/you/talks/site; open /Users/you/talks/site/index.html
@@ -88,9 +88,9 @@ The Vite output of each deck is cut, and the absolute path is shortened to `/Use
 
 - `index.html` is the gallery: each deck's title, brand, slide count and thumbnail, with links to the deck and, with `--with-exports`, to its PDF and PPTX.
 - Each deck's folder is its `dist/` build plus `thumbnail.png`, its first slide at 960x540. Taking a thumbnail needs Chromium; a thumbnail that cannot be taken is reported and left out, and the build still succeeds.
-- `.deck-site` marks the folder as one `deck build` made.
+- `.deck-site` marks the folder as one `deckster build` made.
 
-This is the gallery of the published decks in the deckster repository, built with `deck build --all --out <dir>` and no exports:
+This is the gallery of the published decks in the deckster repository, built with `deckster build --all --out <dir>` and no exports:
 
 <UiShot name="build-gallery" alt="A page headed Decks with a count of the decks below it, then cards three to a row; each card shows the deck's first slide as a thumbnail, its title, and its folder, brand and slide count, such as 'hello · Default · 4 slides' under the card titled 'Hello, deck'." />
 
@@ -98,32 +98,32 @@ Which decks go in:
 
 | Command | Decks in the site |
 | --- | --- |
-| `deck build --out site` | Every deck, or the deck in `$DECK` when it is set. |
-| `deck build --all --out site` | Every deck, ignoring `$DECK`. |
-| `deck build launch-review --out site` | Only that deck. |
+| `deckster build --out site` | Every deck, or the deck in `$DECK` when it is set. |
+| `deckster build --all --out site` | Every deck, ignoring `$DECK`. |
+| `deckster build launch-review --out site` | Only that deck. |
 
 Decks whose folder name starts with `zz-` are scratch decks (trial runs) and are left out of a site unless you name one or pass `--include-scratch`.
 
-**The site folder is replaced on every build.** `deck build` writes the new site beside it and swaps it in when it is complete, so a failed build leaves the previous site. To protect your sources, it refuses a folder that is the workspace, holds it, or is (or is inside) `decks/`, `brands/` or `packages/`:
+**The site folder is replaced on every build.** `deckster build` writes the new site beside it and swaps it in when it is complete, so a failed build leaves the previous site. To protect your sources, it refuses a folder that is the workspace, holds it, or is (or is inside) `decks/`, `brands/` or `packages/`:
 
 ```console
-$ deck build --out decks
+$ deckster build --out decks
 --out /Users/you/talks/decks is not a safe site folder: it is `decks/` or inside it. The build replaces the folder, so it would delete sources. Use a folder of its own such as `site`.
-Run `deck build --help` for the usage.
+Run `deckster build --help` for the usage.
 ```
 
 It also refuses to replace a folder that has files in it but no `.deck-site` marker, so it never deletes a folder it did not make.
 
-`deck preview` serves one deck's `dist/`, not a site folder. To look at a site, serve the folder, for example with `python3 -m http.server -d site 8080`, and open `http://localhost:8080/`. Press Ctrl+C to stop it.
+`deckster preview` serves one deck's `dist/`, not a site folder. To look at a site, serve the folder, for example with `python3 -m http.server -d site 8080`, and open `http://localhost:8080/`. Press Ctrl+C to stop it.
 
 ## Host it
 
 A built deck or site is plain HTML, JavaScript, CSS, fonts and pictures. Any static host can serve it, including GitHub Pages, Cloudflare Pages, Netlify and Vercel: give the host the output folder (`site/`, or `decks/<deck>/dist/`) as what to publish. You can upload a folder you built locally, or let the host build it with your workspace's own commands:
 
 ```sh
-npm install --global @deckster/cli@0.8.0
-npx playwright@1.65.0 install chromium
-deck build --all --out site
+npm install --global @deckster/cli@0.9.0
+npx playwright@1.65.1 install chromium
+deckster build --all --out site
 ```
 
 The CLI needs Node 26 or later on the build machine. Chromium is needed only for thumbnails and `--with-exports`.
@@ -151,9 +151,9 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 26
-      - run: npm install --global @deckster/cli@0.8.0
-      - run: npx playwright@1.65.0 install chromium --with-deps
-      - run: deck build --all --out site
+      - run: npm install --global @deckster/cli@0.9.0
+      - run: npx playwright@1.65.1 install chromium --with-deps
+      - run: deckster build --all --out site
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: site
@@ -179,7 +179,7 @@ A hosted deck has no login. Anyone with the URL can open it, and a site's galler
 
 ## What a built deck leaves out
 
-A build keeps the presenter tools, such as the presenter window, the sidebar and the overview (see [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/)); only reordering slides in the sidebar is limited to `deck dev`. It leaves out everything that needs the dev server: review comments and comment mode, the agent panel and the tools agents connect to. Nobody who opens a hosted deck can leave comments or change it.
+A build keeps the presenter tools, such as the presenter window, the sidebar and the overview (see [Presenter tools and shortcuts](/present/presenter-tools-and-shortcuts/)); only reordering slides in the sidebar is limited to `deckster dev`. It leaves out everything that needs the dev server: review comments and comment mode, the agent panel and the tools agents connect to. Nobody who opens a hosted deck can leave comments or change it.
 
 ## Embed a slide on another page
 

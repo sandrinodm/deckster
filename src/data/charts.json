@@ -643,7 +643,7 @@
       ],
       "avoid": "One or two bars (use BigNumber or Comparison), or before/after for many items (use Slope).",
       "data": "Rows with a category field and one or more number fields (wide), or category, series and value fields (long).",
-      "nulls": "A missing value draws no bar and no label; the category keeps its place. A chart with no values at all is reported by `deck lint` (chart-empty).",
+      "nulls": "A missing value draws no bar and no label; the category keeps its place. A chart with no values at all is reported by `deckster lint` (chart-empty).",
       "shared": [
         "at",
         "caption",
@@ -1199,7 +1199,7 @@
       "messages": [
         "flow"
       ],
-      "avoid": "Unordered categories (use BarChart), or stages that grow (`deck lint` warns).",
+      "avoid": "Unordered categories (use BarChart), or stages that grow (`deckster lint` warns).",
       "data": "Rows in stage order with a stage name and a count.",
       "nulls": "A stage with no count draws an outlined \"no data\" slot, and the shares into and out of it are \"—\".",
       "shared": [
@@ -1770,7 +1770,7 @@
     "nulls": "Each chart's `nulls` says how it draws a missing value (null, an empty CSV cell, text that is not a number).",
     "format": "How values are written, over the brand's number style (compact, its currency and locale). Percent values are already in percent: 34 is 34%. `digits` fixes the fraction digits; without it currency in full writes cents or none (never one decimal), and a value under 1 keeps a significant digit.",
     "relative": "Write the change from `from` as a percentage of it, or in the unit (`false`). The default is a percentage, except for values in percent (unit \"%\" or format \"percent\"), whose change is written in points: \"+7 pts\". A change across zero is always written in the unit.",
-    "limits": "Each chart's `limits` are the numbers `deck lint` holds it to; `coloredSeries` is the brand's categorical palette size, counted without series a highlight mutes."
+    "limits": "Each chart's `limits` are the numbers `deckster lint` holds it to; `coloredSeries` is the brand's categorical palette size, counted without series a highlight mutes."
   },
   "spec": {
     "attribute": "data-chart-spec",

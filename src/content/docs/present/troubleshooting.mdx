@@ -5,21 +5,21 @@ sidebar:
   order: 3
 ---
 
-Each section below is a symptom or the exact message `deck` prints, what causes it and the fix, for problems just before or during a talk. Build and lint errors are on their own pages.
+Each section below is a symptom or the exact message `deckster` prints, what causes it and the fix, for problems just before or during a talk. Build and lint errors are on their own pages.
 
-## "Electron's binary is not downloaded"
+## "Electron ... is not downloaded"
 
 ```text
-Electron's binary is not downloaded (<cli>/node_modules/electron/dist), so `deck present` cannot open a window.
-Run `node "<cli>/node_modules/electron/install.js"` (about 120 MB), or pass --browser to present in Chrome.
+Electron 45.4.1 is not downloaded, so `deckster present` cannot open a window.
+Run `deckster electron install` once (about 120 MB), or pass --browser to present in Chrome.
 ```
 
-npm installs Electron's package but not its binary. Run the `node "..."` command your terminal printed (it has the full path) once. With no time for a 120 MB download, present with `deck present <deck> --browser`, or `deck dev <deck>` in any browser. See [deck present and displays](/present/deck-present-and-displays/).
+npm installs Electron's package but often not its binary. Run `deckster electron install` once. If it was downloaded for an older CLI, `deckster electron status` says so and `deckster electron update` replaces it. When the download fails, the command says why (no write permission, network or proxy, checksum) and how to fix it. With no time for a 120 MB download, present with `deckster present <deck> --browser`, or `deckster dev <deck>` in any browser. See [deckster present and displays](/present/deck-present-and-displays/).
 
 ## "The electron package is not installed"
 
 ```text
-The electron package is not installed, so `deck present` cannot open a window.
+The electron package is not installed, so `deckster present` cannot open a window.
 Electron is an optional dependency that the install skipped or could not fetch: reinstall @deckster/cli, or pass --browser to present in Chrome.
 ```
 
@@ -37,11 +37,11 @@ A related line, `Warning: the window loaded the page, but no deck is running in 
 
 ## A deck fails to open from the gallery
 
-Read the message in the chooser. To diagnose a deck that fails to load, open it by folder name with `deck present <deck> --browser`. If the failure occurred with `--built`, run `deck build <deck>` to see the build errors. Fix the error, then select the deck again. See [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery).
+Read the message in the chooser. To diagnose a deck that fails to load, open it by folder name with `deckster present <deck> --browser`. If the failure occurred with `--built`, run `deckster build <deck>` to see the build errors. Fix the error, then select the deck again. See [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery).
 
 ## "Could not prepare Deckster.app (...); the window will show as "Electron""
 
-On macOS, `deck present` builds a copy of Electron's app named Deckster in `.deck/shell/app/`. When that fails (the reason is in the brackets), it runs Electron's own app instead: the deck works, but the Dock and the menu bar say Electron. Since v0.6.1 the CLI retries with a recursive copy that preserves framework links if the copy tool rejects the macOS clone option. If you saw that warning on an earlier version, upgrade the CLI and run `deck present` again. For other failures, fix the reported cause, or delete `.deck/shell/app` so the next `deck present` builds it again.
+On macOS, `deckster present` builds a copy of Electron's app named Deckster in `.deck/shell/app/`. When that fails (the reason is in the brackets), it runs Electron's own app instead: the deck works, but the Dock and the menu bar say Electron. Since v0.6.1 the CLI retries with a recursive copy that preserves framework links if the copy tool rejects the macOS clone option. If you saw that warning on an earlier version, upgrade the CLI and run `deckster present` again. For other failures, fix the reported cause, or delete `.deck/shell/app` so the next `deckster present` builds it again.
 
 ## The window stays blank
 
@@ -63,13 +63,13 @@ The keys themselves are in [Keyboard shortcuts](/reference/keyboard-shortcuts/).
 ## "Port 5173 is already in use"
 
 ```console
-$ deck present launch-review --port 5173
+$ deckster present launch-review --port 5173
 Error: Port 5173 is already in use
 ...
 ```
 
-`--port <n>` takes that port or fails; the rest of the output is a stack trace. Stop the other server, or leave `--port` out: without it, `deck present` and `deck dev` take the first free port from 5173.
+`--port <n>` takes that port or fails; the rest of the output is a stack trace. Stop the other server, or leave `--port` out: without it, `deckster present` and `deckster dev` take the first free port from 5173.
 
 ## A link opens in my browser, not in the window
 
-By design. The `deck present` window shows only the deck's own pages. A link to another site opens in your default browser (web and `mailto:` links, at most 3 in 10 seconds across all its windows), and downloads are refused. For a deck that offers a file to download, present with `--browser`.
+By design. The `deckster present` window shows only the deck's own pages. A link to another site opens in your default browser (web and `mailto:` links, at most 3 in 10 seconds across all its windows), and downloads are refused. For a deck that offers a file to download, present with `--browser`.

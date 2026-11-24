@@ -8,7 +8,7 @@ sidebar:
 The `actions` layout sets three to six next actions in aligned columns: what will happen, its owner and its due date, so the audience can scan who does what by when. Use it to close a review with commitments, under a title that states what happens next.
 
 <Aside type="note" title="New in v0.6.0">
-The `actions` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "actions" layout.`
+The `actions` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "actions" layout.`
 </Aside>
 
 ## Example
@@ -38,7 +38,7 @@ Six actions, the most the layout takes, on `surface: accent` with no context lin
 - **A `current` that is past the end of the list.** `current: 5` on three actions is a `schema` error that names the way back:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/plans.mdx
     error   schema (plans): current: 5 names action 5, but there are 3 actions.
             Fix: Write the number of one of the 3 actions (1 to 3), or leave `current` out.

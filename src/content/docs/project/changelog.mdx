@@ -1,9 +1,29 @@
 ---
 title: "Changelog"
-description: "Deckster v0.8.0 and v0.7.0 changes, with guides and links to the code."
+description: "Deckster v0.9.0, v0.8.0 and v0.7.0 changes, with guides and links to the code."
 sidebar:
   order: 6
 ---
+
+## v0.9.0
+
+[Release notes](https://github.com/sandrinodm/deckster/releases/tag/v0.9.0).
+
+### The command is now `deckster`
+
+**Breaking.** The CLI installs a `deckster` command instead of `deck`, and there is no `deck` alias. After upgrading, use `deckster` in scripts, CI workflows and agent instructions: `deck dev` becomes `deckster dev`, and in a clone of the repository `pnpm deck` becomes `pnpm deckster`. The deck files, `deck.config.ts` and the `DECK` and `DECK_ROOT` variables are unchanged. [CLI reference](/reference/cli/) · [PR #35](https://github.com/sandrinodm/deckster/pull/35)
+
+### Download Electron with `deckster electron`
+
+npm, pnpm and yarn often skip Electron's download when they install `@deckster/cli`. `deckster electron install` downloads the version the CLI was built with, `deckster electron update` replaces a binary left by an older CLI, and `deckster electron status` reports what is on disk. A failed download names the cause, such as missing write permission, the network or proxy, or a checksum mismatch. `deckster present` now prints `deckster electron install` when the binary is missing. [Download Electron's binary once](/present/deck-present-and-displays/#download-electrons-binary-once) · [PR #37](https://github.com/sandrinodm/deckster/pull/37)
+
+### Animation timing in published decks
+
+A production build wrote the brand's durations in seconds (`.64s`), and diagrams, code transitions and count-ups read them as milliseconds, so they played almost instantly. They now run at the authored speed. [PR #33](https://github.com/sandrinodm/deckster/pull/33)
+
+### Security updates
+
+Vite+ moves to 1.7.0, which fixes two advisories in earlier versions ([GHSA-5qr3-w62x-jmwx](https://github.com/advisories/GHSA-5qr3-w62x-jmwx), [GHSA-p79r-mf8q-r78h](https://github.com/advisories/GHSA-p79r-mf8q-r78h)). Effect, Playwright (1.65.1), Electron (45.4.1) and the icon sets are updated too. [PR #34](https://github.com/sandrinodm/deckster/pull/34)
 
 ## v0.8.0
 
@@ -15,7 +35,7 @@ Brands can set connector widths and patterns, drawing alignment, node sizes, sub
 
 ### Brand imports and custom layouts
 
-- `deck brand add` cleans SVG artwork while staging a Git import. It warns when it removes unsupported markup and stops the install when an SVG is invalid. [SVG artwork during installation](/brands/use-a-brand/#svg-artwork-during-installation)
+- `deckster brand add` cleans SVG artwork while staging a Git import. It warns when it removes unsupported markup and stops the install when an SVG is invalid. [SVG artwork during installation](/brands/use-a-brand/#svg-artwork-during-installation)
 - The active brand's `layouts.ts` is read as static data. The build reports MDX slide content outside named slots if the brand layout lacks a body region. [Write layouts.ts](/brands/brand-layouts/#write-layoutsts) · [MDX body content](/brands/brand-layouts/#mdx-body-content)
 - The agent's `new_slide` tool uses the live session's brand when it looks up a layout and scaffolds its example. [Scaffold a slide in the session brand](/ai-agents/mcp-tools/#scaffold-a-slide-in-the-session-brand)
 - A PowerPoint export writes two distinct body placeholders for a brand layout mapped to two-content. [Brand layouts in PowerPoint](/brands/brand-layouts/#in-powerpoint)
@@ -34,11 +54,11 @@ You can now switch decks by their opening slides in the browser and desktop pres
 
 ### Credential-safe brand sources
 
-`deck brand add` checks the source before logging it. Invalid addresses are omitted from error messages, and a failed fetch reports the Git step without copying raw Git diagnostics. Use your credential helper or SSH key to fetch a private brand. [Authentication and fetch troubleshooting](/brands/use-a-brand/#authenticate-to-a-private-repository) · [PR #20](https://github.com/sandrinodm/deckster/pull/20)
+`deckster brand add` checks the source before logging it. Invalid addresses are omitted from error messages, and a failed fetch reports the Git step without copying raw Git diagnostics. Use your credential helper or SSH key to fetch a private brand. [Authentication and fetch troubleshooting](/brands/use-a-brand/#authenticate-to-a-private-repository) · [PR #20](https://github.com/sandrinodm/deckster/pull/20)
 
 ### Transaction-safe brand installs
 
-`deck brand add` stages a complete brand before publishing it. Installs of the same brand run one at a time. On retry after an interruption, the installer restores the previous brand if publication was incomplete. If publication finished, it keeps the new brand and cleans up the backup. If recovery is blocked, the error gives the saved copy's location. [Recover an interrupted replacement](/brands/use-a-brand/#recover-an-interrupted-replacement) · [PR #21](https://github.com/sandrinodm/deckster/pull/21)
+`deckster brand add` stages a complete brand before publishing it. Installs of the same brand run one at a time. On retry after an interruption, the installer restores the previous brand if publication was incomplete. If publication finished, it keeps the new brand and cleans up the backup. If recovery is blocked, the error gives the saved copy's location. [Recover an interrupted replacement](/brands/use-a-brand/#recover-an-interrupted-replacement) · [PR #21](https://github.com/sandrinodm/deckster/pull/21)
 
 ### Brand layout validation before install
 
@@ -46,8 +66,8 @@ The importer checks `layouts.ts` against the layout catalog before installing or
 
 ### Browser deck chooser
 
-Run `deck dev` without a deck argument or `DECK` in a workspace with several decks. The command prints a chooser URL where you can pick a deck by its title, folder name or a preview of its first visible slide. This includes workspaces with a `hello` deck. [Choose a deck in your browser](/get-started/workspace-layout/#choose-a-deck-in-your-browser) · [PR #22](https://github.com/sandrinodm/deckster/pull/22)
+Run `deckster dev` without a deck argument or `DECK` in a workspace with several decks. The command prints a chooser URL where you can pick a deck by its title, folder name or a preview of its first visible slide. This includes workspaces with a `hello` deck. [Choose a deck in your browser](/get-started/workspace-layout/#choose-a-deck-in-your-browser) · [PR #22](https://github.com/sandrinodm/deckster/pull/22)
 
 ### Desktop presentation gallery
 
-`deck present` opens the workspace gallery when several decks are available and neither a deck argument nor `DECK` is set. Choose a deck to start the presentation, then return to the gallery to switch talks. The display options still apply to the audience and presenter windows. [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery) · [PR #24](https://github.com/sandrinodm/deckster/pull/24)
+`deckster present` opens the workspace gallery when several decks are available and neither a deck argument nor `DECK` is set. Choose a deck to start the presentation, then return to the gallery to switch talks. The display options still apply to the audience and presenter windows. [Choose a deck in the desktop gallery](/present/deck-present-and-displays/#choose-a-deck-in-the-desktop-gallery) · [PR #24](https://github.com/sandrinodm/deckster/pull/24)

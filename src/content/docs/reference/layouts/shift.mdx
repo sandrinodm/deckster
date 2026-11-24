@@ -28,7 +28,7 @@ When two or three options are measured on several rows, it is not one change: us
 
 ## Common mistakes
 
-- **A long body.** The body is one sentence under the title on why the change matters, at most 14 words. A 19-word sentence fails [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 19 words; its layout allows 14." Move the reasons into each state's `text`, or into the notes.
+- **A long body.** The body is one sentence under the title on why the change matters, at most 14 words. A 19-word sentence fails [`deckster lint`](/review/lint/) with `content-budget`: "The body slot holds 19 words; its layout allows 14." Move the reasons into each state's `text`, or into the notes.
 - **A missing state.** A slide with only `to:` is a `schema` error before it renders: "from is required." Its fix lists what `from:` takes.
 - **The states in the body.** Write the two states in `from:` and `to:`, not as bullets in the body; the body takes text only.
 - **Long state text.** Each state's `text` takes at most 80 characters. When the text still does not fit, the layout sets the old state's text and both figures a step smaller, then the new heading too; shorter text keeps the larger sizes.

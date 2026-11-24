@@ -34,7 +34,7 @@ Pick another layout when the pictures are not the whole slide:
 
 ## Common mistakes
 
-- **Putting the pictures in the body.** The pictures belong in `pictures:`; the body is one sentence. A list in the body fails [`deck lint`](/review/lint/) with `slot-content`: "The body slot holds a list of 2 items; the gallery layout sets it as text."
+- **Putting the pictures in the body.** The pictures belong in `pictures:`; the body is one sentence. A list in the body fails [`deckster lint`](/review/lint/) with `slot-content`: "The body slot holds a list of 2 items; the gallery layout sets it as text."
 - **Long captions with four pictures.** The four-picture variant cuts captions to 40 characters. A 45-character caption is a `schema` error: "pictures[0].caption: The gallery layout sets at most 40 characters here (four pictures), got 45."
 - **A wrong path.** A `src` that names no file is a `media-missing` error that prints the path it looked for. Paths are relative to the slide file with `./` or `../`, or written from the deck folder (`assets/street.jpg`).
 - **A fifth picture.** `pictures:` takes at most four. Split the set over two slides, or pick the four that make the point.
@@ -48,4 +48,4 @@ Pick another layout when the pictures are not the whole slide:
 - [`screen`](/reference/layouts/screen/): one product screen shown whole in a drawn frame, with numbered callouts.
 - [`before-after`](/reference/layouts/before-after/): two pictures at the same size, labelled Before and After.
 
-How image paths resolve and what `deck lint` checks about images is on [media](/write-slides/media/).
+How image paths resolve and what `deckster lint` checks about images is on [media](/write-slides/media/).

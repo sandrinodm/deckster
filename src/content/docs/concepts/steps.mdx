@@ -43,14 +43,14 @@ Motion between slides, such as a fade or a morph, is not a step. [Transitions an
 
 ## What screenshots and exports show
 
-`deck shot` and `deck export` render the deck in [static mode](/concepts/static-mode-and-readiness/) and capture each slide at its last step, with everything shown. So a slide that builds must read on its own when complete: that is what a PNG or a PDF page shows. To capture every stage:
+`deckster shot` and `deckster export` render the deck in [static mode](/concepts/static-mode-and-readiness/) and capture each slide at its last step, with everything shown. So a slide that builds must read on its own when complete: that is what a PNG or a PDF page shows. To capture every stage:
 
-- `deck shot <deck> --steps` writes one PNG per step, named like `02-steps.step0.png`.
-- `deck export <deck> --steps` writes one PDF page or PPTX slide per step.
+- `deckster shot <deck> --steps` writes one PNG per step, named like `02-steps.step0.png`.
+- `deckster export <deck> --steps` writes one PDF page or PPTX slide per step.
 - A PPTX export turns steps into PowerPoint click animations. `--no-animations` turns that off; see [PowerPoint](/export-and-publish/powerpoint/).
 
-`deck lint` measures every step of every slide, so content that overflows only at an intermediate step is still caught.
+`deckster lint` measures every step of every slide, so content that overflows only at an intermediate step is still caught.
 
 ## Steps follow the talk
 
-Add steps when the speaker explains something in parts: one step per part, in the order the notes explain them. Leave a slide whole when nothing on it is explained part by part. The notes of the chart above mark each press with a `[click]` cue: "This year starts the same. [click] In April the decks move to code. [click] By autumn a deck needs two rounds, a drop of more than half." In a deck with four or more chart, diagram and code slides, `deck lint` warns with `few-builds` when fewer than 25% of them build in steps. See [speaker notes](/write-slides/speaker-notes/), and the [deck API reference](/reference/deck-api/) for the hash and `window.__deck`.
+Add steps when the speaker explains something in parts: one step per part, in the order the notes explain them. Leave a slide whole when nothing on it is explained part by part. The notes of the chart above mark each press with a `[click]` cue: "This year starts the same. [click] In April the decks move to code. [click] By autumn a deck needs two rounds, a drop of more than half." In a deck with four or more chart, diagram and code slides, `deckster lint` warns with `few-builds` when fewer than 25% of them build in steps. See [speaker notes](/write-slides/speaker-notes/), and the [deck API reference](/reference/deck-api/) for the hash and `window.__deck`.

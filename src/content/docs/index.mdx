@@ -6,7 +6,7 @@ sidebar:
   label: Home
 ---
 
-deckster is a code-first slide framework: one MDX or TSX file per slide, typed layouts and brands, and a `deck` CLI that serves, lints, screenshots, exports and presents your decks. It is built for slides an AI agent writes and a person reviews, with `deck lint` checking every step of every slide in between.
+deckster is a code-first slide framework: one MDX or TSX file per slide, typed layouts and brands, and a `deckster` CLI that serves, lints, screenshots, exports and presents your decks. It is built for slides an AI agent writes and a person reviews, with `deckster lint` checking every step of every slide in between.
 
 <DeckEmbed deck="showcase" slide="lint-path" step={0} />
 
@@ -23,8 +23,8 @@ With Node.js 26 or later:
 ```sh
 npm install --global @deckster/cli
 mkdir talks && cd talks
-deck new launch-review --title "Launch review" --duration 20m
-deck dev launch-review
+deckster new launch-review --title "Launch review" --duration 20m
+deckster dev launch-review
 ```
 
 The [quickstart](/get-started/quickstart/) walks through each command and what it prints. [Overview](/get-started/overview/) explains what deckster is and what it needs.
@@ -35,10 +35,10 @@ The [quickstart](/get-started/quickstart/) walks through each command and what i
   <LinkCard title="Quickstart" description="Install the CLI, create a deck and open it." href="/get-started/quickstart/" />
   <LinkCard title="Write slides" description="Frontmatter, layouts, steps and notes in MDX." href="/write-slides/mdx-slides/" />
   <LinkCard title="Data and diagrams" description="Pick the chart, number or diagram that makes your point." href="/data-and-diagrams/choosing-a-chart/" />
-  <LinkCard title="Review with lint" description="Run deck lint, read a finding and fix it." href="/review/lint/" />
+  <LinkCard title="Review with lint" description="Run deckster lint, read a finding and fix it." href="/review/lint/" />
   <LinkCard title="Present" description="Give the talk with notes and a pacing timer." href="/present/presenter-tools-and-shortcuts/" />
   <LinkCard title="Export" description="PDF and editable PowerPoint from one command." href="/export-and-publish/pdf/" />
-  <LinkCard title="Work with an AI agent" description="Install the skills that teach Claude Code or Codex the deck CLI." href="/ai-agents/skills/" />
+  <LinkCard title="Work with an AI agent" description="Install the skills that teach Claude Code or Codex the deckster CLI." href="/ai-agents/skills/" />
   <LinkCard title="Examples" description="Full decks to read and copy from." href="/examples/choose-a-deck/" />
 </CardGrid>
 

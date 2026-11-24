@@ -13,7 +13,7 @@ Agents write most of the slide content, and the result should still look designe
 
 1. **A brand is data.** A brand is a typed token file plus its assets. Slides hold no raw colours, fonts or pixel positions. See [brands and surfaces](/concepts/brands-and-surfaces/).
 2. **Slides fill typed layouts.** You pick a layout and fill its slots; the layout owns the type, the grid and the spacing, so a slide cannot go off-brand without the linter saying so. See [layouts and slots](/concepts/layouts-and-slots/).
-3. **Agents see their own work.** `deck shot` renders any slide to a picture and `deck lint` reports overflow, contrast, off-brand values and content over budget, each with its fix. Without that loop an agent cannot tell a good slide from a broken one. See [lint as the contract](/concepts/lint-as-the-contract/).
+3. **Agents see their own work.** `deckster shot` renders any slide to a picture and `deckster lint` reports overflow, contrast, off-brand values and content over budget, each with its fix. Without that loop an agent cannot tell a good slide from a broken one. See [lint as the contract](/concepts/lint-as-the-contract/).
 4. **One React tree.** Diagrams, code, video and live mini apps are components on the slide, driven by one step counter.
 
 ## An engine of its own
@@ -39,9 +39,9 @@ Every slide is laid out on a 1920 by 1080 canvas scaled to the window, and type 
 
 ## Diagrams by grid cell, and no Mermaid
 
-`<Flow>` places nodes by column and row, because agents are reliable with grid cells and unreliable with pixel coordinates. Every diagram is drawn by the kit, with no Mermaid tier: a diagram the kit draws takes the brand's colours and type, reveals by step, and can be checked by `deck lint`. See [flow diagrams](/data-and-diagrams/flow-diagrams/).
+`<Flow>` places nodes by column and row, because agents are reliable with grid cells and unreliable with pixel coordinates. Every diagram is drawn by the kit, with no Mermaid tier: a diagram the kit draws takes the brand's colours and type, reveals by step, and can be checked by `deckster lint`. See [flow diagrams](/data-and-diagrams/flow-diagrams/).
 
-A brand also styles its diagrams, down to named node styles called cards. Five card names exist in every brand, so a slide that marks its key node `card="solid"` renders in any brand, each in its own way. A name a brand lacks falls back to another card instead of failing the build, because a deck may be rendered in another brand, and `deck lint` reports it. See [diagram look and cards](/brands/diagram-look-and-cards/).
+A brand also styles its diagrams, down to named node styles called cards. Five card names exist in every brand, so a slide that marks its key node `card="solid"` renders in any brand, each in its own way. A name a brand lacks falls back to another card instead of failing the build, because a deck may be rendered in another brand, and `deckster lint` reports it. See [diagram look and cards](/brands/diagram-look-and-cards/).
 
 ## Charts that lead with a highlight
 
@@ -57,11 +57,11 @@ A comment made in the dev server is saved as a file in the deck, with the source
 
 ## A native PowerPoint writer
 
-`deck export --pptx` writes the PowerPoint file itself instead of pasting pictures of slides. Text, shapes, tables, pictures, notes and links are native wherever a slide can be expressed that way, and charts and diagrams become native charts, shapes and connectors, so the result stays editable. Because an editable slide never matches the web slide exactly, the export can list what it drew natively and score the file against the web slide. See [PowerPoint](/export-and-publish/powerpoint/).
+`deckster export --pptx` writes the PowerPoint file itself instead of pasting pictures of slides. Text, shapes, tables, pictures, notes and links are native wherever a slide can be expressed that way, and charts and diagrams become native charts, shapes and connectors, so the result stays editable. Because an editable slide never matches the web slide exactly, the export can list what it drew natively and score the file against the web slide. See [PowerPoint](/export-and-publish/powerpoint/).
 
-## Electron for `deck present`
+## Electron for `deckster present`
 
-`deck present` opens an Electron window because Electron renders with Chromium on every platform, the same engine family `deck lint`, `deck shot` and the exports use. A shell on the system webview would render in WebKit on macOS and Linux, and lint would no longer describe what the audience sees. See [`deck present` and displays](/present/deck-present-and-displays/).
+`deckster present` opens an Electron window because Electron renders with Chromium on every platform, the same engine family `deckster lint`, `deckster shot` and the exports use. A shell on the system webview would render in WebKit on macOS and Linux, and lint would no longer describe what the audience sees. See [`deckster present` and displays](/present/deck-present-and-displays/).
 
 ## The agent's own CLI, not a bundled model
 

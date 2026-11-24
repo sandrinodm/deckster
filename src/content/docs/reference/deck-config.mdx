@@ -25,22 +25,22 @@ export default defineDeck({
 });
 ```
 
-`defineDeck` returns its argument unchanged and types it; the build checks the object against the schema below. `deck new <deck>` writes this file for you with `title`, `brand` and `slides`, and `duration` when you pass `--duration`.
+`defineDeck` returns its argument unchanged and types it; the build checks the object against the schema below. `deckster new <deck>` writes this file for you with `title`, `brand` and `slides`, and `duration` when you pass `--duration`.
 
 ## Fields
 
 <SchemaReference of="deck-config" />
 
-Slide ids and the brand name are kebab-case: lowercase letters and digits joined by single hyphens (`request-flow`). A `duration` goes up to 999 minutes. How a brand is picked and overridden is on [use a brand](/brands/use-a-brand/); how the presenter window and `deck lint` use `duration` is on [speaker notes](/write-slides/speaker-notes/).
+Slide ids and the brand name are kebab-case: lowercase letters and digits joined by single hyphens (`request-flow`). A `duration` goes up to 999 minutes. How a brand is picked and overridden is on [use a brand](/brands/use-a-brand/); how the presenter window and `deckster lint` use `duration` is on [speaker notes](/write-slides/speaker-notes/).
 
 Any other key is an error: the object takes these five and nothing else.
 
 ## Errors
 
-`deck lint` and the build name the file, the field, what was wrong and the fix. A duration written in words:
+`deckster lint` and the build name the file, the field, what was wrong and the fix. A duration written in words:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/deck.config.ts
   error   schema: duration: Expected a duration such as "90s", "20m" or "1m30s", got "20 minutes".
           Fix: Write the talk length as minutes and seconds, for example `duration: 20m` or `90s`.
@@ -51,7 +51,7 @@ launch-review: 1 error, 0 warnings.
 A key the schema does not know:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/deck.config.ts
   error   schema: "theme" is not a deck config field.
           Fix: Remove it. Known fields: title, slides, brand, mouseNavigation, duration.

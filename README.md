@@ -9,7 +9,7 @@ slide stills and builds the example decks from `main`, builds the site and publi
 checks; it publishes nothing, so a change here goes live on the next run of `deploy.yml`.
 
 The deploy workflow, the docs scripts it and the sync run (`scripts/docs/`) and the embed mode
-`<DeckEmbed>` loads (`?embed`) are on `main`, and the pages document `@deckster/cli` 0.8.0. 0.4.0 was the
+`<DeckEmbed>` loads (`?embed`) are on `main`, and the pages document `@deckster/cli` 0.9.0. 0.4.0 was the
 first release that carried them.
 
 ## Work on it
@@ -55,9 +55,9 @@ site would serve in the page's `index.mdx`, and `npm run check:coverage` while a
 component, chart or command has no reference entry. CI runs both before the build.
 
 `.github/workflows/pages.yml` runs on every push and pull request to `docs-site`. It checks out
-deckster at `DECKSTER_REF` (`v0.8.0`, the documented release), regenerates `src/data` and fails if it differs from the
+deckster at `DECKSTER_REF` (`v0.9.0`, the documented release), regenerates `src/data` and fails if it differs from the
 committed files, syncs the stills and decks under a virtual display (Xvfb, for the Electron
-windows of `deck present`) with `DECKSTER_SHOTS_STRICT=1`, then runs the same three steps. It does
+windows of `deckster present`) with `DECKSTER_SHOTS_STRICT=1`, then runs the same three steps. It does
 not deploy (see the top of this file).
 
 `AGENT.md` has the conventions for coding agents working on this branch: deckster-specific

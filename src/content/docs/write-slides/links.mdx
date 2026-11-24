@@ -35,10 +35,10 @@ End a talk with somewhere to go: a button, a card for a link worth a sentence, a
 <Download file="launch-review.pdf" variant="outline">Get these slides (PDF)</Download>
 ```
 
-Only `deck build --with-exports` writes those files:
+Only `deckster build --with-exports` writes those files:
 
 ```console
-$ deck build launch-review --with-exports
+$ deckster build launch-review --with-exports
 ...
 $ ls decks/launch-review/dist
 assets
@@ -48,7 +48,7 @@ launch-review.pdf
 launch-review.pptx
 ```
 
-The build prints Vite's output, cut here. Without `--with-exports` there is no file, and `deck dev` and `deck preview` answer the request with the deck's own page, so the button saves an HTML page under the PDF's name. Build with `--with-exports`, then try the button in `deck preview launch-review`. Hosting the folder is on [build and host](/export-and-publish/build-and-host/).
+The build prints Vite's output, cut here. Without `--with-exports` there is no file, and `deckster dev` and `deckster preview` answer the request with the deck's own page, so the button saves an HTML page under the PDF's name. Build with `--with-exports`, then try the button in `deckster preview launch-review`. Hosting the folder is on [build and host](/export-and-publish/build-and-host/).
 
 A `file` with a scheme, a host or a leading `/` is refused. To link to any other file, use `<Button>`.
 

@@ -54,14 +54,14 @@ Here is a split slide with a picture that bleeds off the left edge. The source t
 
 2. Copy the files the slide names. Pictures are in the lookbook's `assets/` folder (this one uses `../assets/scenes/handover.svg`), and their sources and licences are in `assets/CREDITS.txt`. A few chart slides read CSV files from `data/`, and the mini app and live widget slides import code from `lib/` and `apps/`. Keep the same relative paths, or replace the files with your own.
 
-3. Add the slide id to `slides` in your `deck.config.ts`, rewrite the text for your talk, and run `deck lint <deck>`.
+3. Add the slide id to `slides` in your `deck.config.ts`, rewrite the text for your talk, and run `deckster lint <deck>`.
 
 </Steps>
 
-To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). Run `deck lint` with `@deckster/cli` 0.7.0.
+To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). Run `deckster lint` with `@deckster/cli` 0.7.0.
 
 ```console
-$ deck lint lookbook
+$ deckster lint lookbook
 lookbook: no problems in 204 slides (427 steps checked).
 ```
 

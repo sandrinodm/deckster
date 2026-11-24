@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-`<Flow>` draws boxes and arrows: an architecture, a request path, a pipeline. This page shows you how to place the nodes, connect and group them, mark the nodes that matter with a card, make the diagram build one step at a time as you explain it, and stay inside the limits `deck lint` checks. Every prop is on [the diagram reference](/reference/diagrams/); in the terminal, `deck diagrams` prints the components, node kinds, edge options, cards and animation parts with an example each, and `deck diagrams --json` gives an agent the same as data.
+`<Flow>` draws boxes and arrows: an architecture, a request path, a pipeline. This page shows you how to place the nodes, connect and group them, mark the nodes that matter with a card, make the diagram build one step at a time as you explain it, and stay inside the limits `deckster lint` checks. Every prop is on [the diagram reference](/reference/diagrams/); in the terminal, `deckster diagrams` prints the components, node kinds, edge options, cards and animation parts with an example each, and `deckster diagrams --json` gives an agent the same as data.
 
 For alignment, sizing, and styling, see [diagram design controls](/data-and-diagrams/diagram-design/).
 
@@ -32,7 +32,7 @@ Or leave every cell out and the kit lays the nodes out automatically with ELK: `
 Cells are all or nothing. A `<Flow>` that places some nodes and not others fails the build:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/mixed.mdx
   error   schema (mixed): Line 7, column 1: Some nodes have a grid cell and some do not: "api" have none.
           Fix: Give every node `col` and `row`, or remove them all for an automatic layout.
@@ -86,10 +86,10 @@ Put `card` on a `<Node>` for that node, or on the `<Flow>` for all its nodes. A 
 
 States still win over the card: `highlighted`, `error` and `success` recolour the outline, and `muted` nodes and a `<Focus>` still dim. Use one or two cards on a slide besides the default, each for a reason.
 
-Stay on the five standard names for a deck that should render in any brand. A name the brand does not have does not fail the build: the node falls back to the next card in the order, and `deck lint` warns. Here the same slide, copied into a deck in the Kinetic brand with Payments on Kinetic's own `volt` card, is linted in `default`:
+Stay on the five standard names for a deck that should render in any brand. A name the brand does not have does not fail the build: the node falls back to the next card in the order, and `deckster lint` warns. Here the same slide, copied into a deck in the Kinetic brand with Payments on Kinetic's own `volt` card, is linted in `default`:
 
 ```console
-$ deck lint launch-review --brand default
+$ deckster lint launch-review --brand default
 decks/launch-review/slides/money-path.mdx
   warning diagram-card-missing (money-path): The <Flow> "The checkout path, with the payments service marked and the outside providers drawn as outlines" asks for the card "volt" on the node "Payments", which the default brand does not have, so it is drawn with "default".
           Fix: Change the `card` in decks/launch-review/slides/money-path.mdx to one of the standard cards: default, outline, solid, tint, raised, which every brand has.
@@ -97,7 +97,7 @@ decks/launch-review/slides/money-path.mdx
 launch-review: 0 errors, 1 warning in 3 slides (3 steps checked).
 ```
 
-`deck brand <name>` lists a brand's cards, its own included. How a brand defines them is on [diagram look and cards](/brands/diagram-look-and-cards/). Cards need `@deckster/cli` 0.4.0 or later. The guide `deck diagrams` prints:
+`deckster brand <name>` lists a brand's cards, its own included. How a brand defines them is on [diagram look and cards](/brands/diagram-look-and-cards/). Cards need `@deckster/cli` 0.4.0 or later. The guide `deckster diagrams` prints:
 
 <DiagramKinds part="cards" />
 
@@ -138,11 +138,11 @@ When each hop needs its own words, give the journey `<Hop>` children instead of 
 </Journey>
 ```
 
-Static mode, `deck shot` and every export show each step as a still, with packets frozen partway along and a tail that shows their direction. Steps across the whole slide are on [Builds](/write-slides/builds/).
+Static mode, `deckster shot` and every export show each step as a still, with packets frozen partway along and a tail that shows their direction. Steps across the whole slide are on [Builds](/write-slides/builds/).
 
 ## Stay inside the limits
 
-Keep a slide to about 12 nodes, 16 edges, 5 columns and 3 rows. Keep edge labels to a word or two and node titles to about 20 characters: a title wraps to 3 lines at most, and a word too long for its node is broken. `deck lint` checks the drawing on every step with `diagram-overlap` (an error), `diagram-too-dense`, `diagram-label-overlap`, `diagram-unlabeled-edge`, `diagram-edge-overlap`, `diagram-badge-overlap`, `diagram-small-text` and `diagram-long-word`; [Lint rules](/reference/lint-rules/#diagrams) explains each one.
+Keep a slide to about 12 nodes, 16 edges, 5 columns and 3 rows. Keep edge labels to a word or two and node titles to about 20 characters: a title wraps to 3 lines at most, and a word too long for its node is broken. `deckster lint` checks the drawing on every step with `diagram-overlap` (an error), `diagram-too-dense`, `diagram-label-overlap`, `diagram-unlabeled-edge`, `diagram-edge-overlap`, `diagram-badge-overlap`, `diagram-small-text` and `diagram-long-word`; [Lint rules](/reference/lint-rules/#diagrams) explains each one.
 
 ## Write a flow in TSX
 
@@ -154,4 +154,4 @@ In a TSX slide, import the parts from `@deckster/kit/diagrams` and build the nod
 
 ## Why the kit draws the diagrams
 
-Diagrams are drawn by the kit, not by an outside tool such as Mermaid. That is what lets a diagram take the brand's colours and type, build by step, get measured by `deck lint` and come out of a PowerPoint export as native shapes. For other diagram forms, see [Sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/); for a drawing someone made, see [SVG](/data-and-diagrams/svg/).
+Diagrams are drawn by the kit, not by an outside tool such as Mermaid. That is what lets a diagram take the brand's colours and type, build by step, get measured by `deckster lint` and come out of a PowerPoint export as native shapes. For other diagram forms, see [Sequence, timeline, layers, cycle and tree](/data-and-diagrams/sequence-timeline-layers-cycle-tree/); for a drawing someone made, see [SVG](/data-and-diagrams/svg/).

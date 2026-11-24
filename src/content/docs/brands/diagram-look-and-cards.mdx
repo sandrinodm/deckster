@@ -5,12 +5,12 @@ sidebar:
   order: 4
 ---
 
-A brand decides how its diagrams look: the edges and their arrowheads, the outlines of groups, the edge labels, and named **cards**, the node styles a slide picks with `card="..."`. This page shows you what the `diagram` section of `brand.ts` holds, how the five standard cards and your own cards are filled in, and how to give a brand of your own a diagram look that passes `deck brand check`. Picking a card on a slide is on [flow diagrams](/data-and-diagrams/flow-diagrams/#pick-a-card).
+A brand decides how its diagrams look: the edges and their arrowheads, the outlines of groups, the edge labels, and named **cards**, the node styles a slide picks with `card="..."`. This page shows you what the `diagram` section of `brand.ts` holds, how the five standard cards and your own cards are filled in, and how to give a brand of your own a diagram look that passes `deckster brand check`. Picking a card on a slide is on [flow diagrams](/data-and-diagrams/flow-diagrams/#pick-a-card).
 
 For alignment, sizing, and styling, see [diagram design controls](/data-and-diagrams/diagram-design/#set-defaults-in-a-brand).
 
 <Aside type="note" title="New in v0.4.0">
-The diagram look and cards need `@deckster/cli` 0.4.0 or later. `deck brand check` in 0.3.0 rejects `edges`, `groups`, `kinds` and `cards` as unknown fields of `diagram`, and a slide with `card` fails with "`card` is not a prop of `<Node>`".
+The diagram look and cards need `@deckster/cli` 0.4.0 or later. `deckster brand check` in 0.3.0 rejects `edges`, `groups`, `kinds` and `cards` as unknown fields of `diagram`, and a slide with `card` fails with "`card` is not a prop of `<Node>`".
 </Aside>
 
 ## What a brand sets
@@ -46,10 +46,10 @@ The same `<Flow>` in each published brand shows the edges, labels and `default` 
 
 <BrandGrid slide="lint-path" />
 
-`deck brand <name>` prints the look and every card with its colours on the `default` surface. With Kinetic copied into the workspace, as in [use a brand](/brands/use-a-brand/):
+`deckster brand <name>` prints the look and every card with its colours on the `default` surface. With Kinetic copied into the workspace, as in [use a brand](/brands/use-a-brand/):
 
 ```console
-$ deck brand kinetic
+$ deckster brand kinetic
 ...
 Diagrams: edges 2px, sharp corners, triangle arrowheads; groups 2px, radius 0px; chip edge labels in the label step; kinds: external outline
 Cards (colors on the default surface):
@@ -59,7 +59,7 @@ Cards (colors on the default surface):
   tint: fill #3d4bff1f, border #0a0a09 2px, radius 0px, sm shadow, solid icon, title mono 600 upper
   raised: fill #ffffff, border #0a0a09 2px, radius 0px, lg shadow, chip icon, title mono 600 upper
   volt (the brand's own): fill #d4ff3a, border #0a0a09 2px, radius 0px, md shadow, chip icon, title mono 600 upper
-Run `deck brand kinetic --json` for every token.
+Run `deckster brand kinetic --json` for every token.
 ```
 
 The output is cut to the diagram lines. `--json` adds each card's colours on every surface.
@@ -129,7 +129,7 @@ diagram: {
 3. Run the check. A title colour written as a role would follow the surface while the palette fill does not: with `text: 'fg'` on `callout`, the check fails on every dark surface, and each fix names the field to change on that surface only:
 
    ```console
-   $ deck brand check acme
+   $ deckster brand check acme
    brands/acme/brand.ts
      error   diagram.cards.callout.text: On the inverse surface, the "callout" card's text color #f4f5f8 on #fde3a7 has contrast 1.15:1; it needs 4.5:1.
              Fix: Use a text color with more contrast (on this surface only, under color.surfaces.inverse.diagram.cards.callout), such as "#656669", or leave `text` out to derive a readable one.
@@ -140,7 +140,7 @@ diagram: {
    The output is cut after the first of the three errors (`inverse`, `accent` and `gradient`). Leave `text` out, as in step 2, and the title is derived to read on the fill:
 
    ```console
-   $ deck brand check acme
+   $ deckster brand check acme
    brands/acme/brand.ts
    acme: is valid (0 errors, 0 warnings).
    ```
@@ -159,7 +159,7 @@ diagram: {
 5. Read what the brand resolved:
 
    ```console
-   $ deck brand acme
+   $ deckster brand acme
    ...
    Diagrams: edges 2px, sharp corners, open arrowheads; groups no outline, radius 20px; plain edge labels; kinds: database tint, external outline
    Cards (colors on the default surface):
@@ -169,12 +169,12 @@ diagram: {
      tint: fill #2d4ae01f, border #2d4ae0 1px, radius 6px, solid icon, title display 600
      raised: fill #f4f5f8, border #d9dce4 1px, radius 6px, md shadow, chip icon, title display 600
      callout (the brand's own): fill #fde3a7, no border, radius 6px, chip icon, left accent 4px, title display 600
-   Run `deck brand acme --json` for every token.
+   Run `deckster brand acme --json` for every token.
    ```
 
    Every card has the 6 px radius from `default`; `callout` has the chip icon of the standard look, not the solid icon of your `default`.
 
-6. Look at real diagrams in the brand: `deck shot launch-review --brand acme` renders a deck without changing it. A diagram that names `callout` in another brand falls back and `deck lint` warns with `diagram-card-missing`.
+6. Look at real diagrams in the brand: `deckster shot launch-review --brand acme` renders a deck without changing it. A diagram that names `callout` in another brand falls back and `deckster lint` warns with `diagram-card-missing`.
 
 </Steps>
 
@@ -182,6 +182,6 @@ diagram: {
 
 Restyle the five standard cards before you add your own. Decks name those five, and the [card reference slide](/decks/diagrams-demo/#/card-reference) shows what each one is for: `default` for most nodes, `outline` for systems you call but do not run, `solid` for the one node that matters, `tint` for nodes that belong together, `raised` for the node you look at closely. A deck that uses only these names renders in any brand. A card of the brand's own suits a deck that belongs to that brand.
 
-`deck brand check` also refuses a `kinds` entry whose card the brand lacks, a surface that recolours a card the brand lacks, a title family that is not `display`, `body` or `mono`, more than twelve cards, and a name made of another card's name and one of its parts, such as `tint-icon` beside `tint`, whose CSS variables would collide. [Check a brand](/brands/check-a-brand/#diagram-cards) shows these errors. Every field and its default is in the [brand schema](/reference/brand-schema/#diagram).
+`deckster brand check` also refuses a `kinds` entry whose card the brand lacks, a surface that recolours a card the brand lacks, a title family that is not `display`, `body` or `mono`, more than twelve cards, and a name made of another card's name and one of its parts, such as `tint-icon` beside `tint`, whose CSS variables would collide. [Check a brand](/brands/check-a-brand/#diagram-cards) shows these errors. Every field and its default is in the [brand schema](/reference/brand-schema/#diagram).
 
 In a [PowerPoint export](/export-and-publish/powerpoint/) the cards keep their fills, borders, radii, shadows and stripes, and the edges their arrowheads.

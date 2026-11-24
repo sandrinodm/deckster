@@ -9,14 +9,14 @@ Use this page to see which version of deckster these docs describe, upgrade to t
 
 ## The version these pages describe
 
-These pages describe **@deckster/cli 0.8.0**. Check the version installed in your workspace with this command.
+These pages describe **@deckster/cli 0.9.0**. Check the version installed in your workspace with this command.
 
 ```console
-$ deck --version
-0.8.0
+$ deckster --version
+0.9.0
 ```
 
-The guides mark new features with the version that introduced them. See the [changelog](/project/changelog/) for diagram design controls, brand layout fixes and updated authoring skills.
+The guides mark new features with the version that introduced them. See the [changelog](/project/changelog/) for the `deckster` command name and `deckster electron`.
 
 ## Published versions
 
@@ -24,7 +24,7 @@ The guides mark new features with the version that introduced them. See the [cha
 npm view @deckster/cli versions
 ```
 
-The npm `latest` tag points at 0.8.0. Run `npm view @deckster/cli dist-tags.latest` to check it. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
+The npm `latest` tag points at 0.9.0. Run `npm view @deckster/cli dist-tags.latest` to check it. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
 
 ## Upgrade
 
@@ -32,43 +32,45 @@ The CLI needs Node 26 or later.
 
 ```sh
 npm install --global @deckster/cli@latest
-deck --version
+deckster --version
 ```
 
-Then run `deck types` in your workspace again: the `tsconfig.json` it writes points your editor at the framework source inside the installed CLI, so it goes stale when the CLI moves.
+Then run `deckster types` in your workspace again: the `tsconfig.json` it writes points your editor at the framework source inside the installed CLI, so it goes stale when the CLI moves.
 
 ```console
-$ deck types
+$ deckster types
 tsconfig.json
 .deck/env.d.ts
-Mapped 71 @deckster/* entry points. The paths name this install: run `deck types` again after upgrading @deckster/cli.
+Mapped 71 @deckster/* entry points. The paths name this install: run `deckster types` again after upgrading @deckster/cli.
 ```
 
 For a first install, see [quickstart](/get-started/quickstart/).
 
 ## What changed
 
+[0.9.0](https://github.com/sandrinodm/deckster/releases/tag/v0.9.0) renames the command from `deck` to `deckster`, adds [`deckster electron`](/reference/cli/#deckster-electron) to download the presenter's Electron binary, keeps published animations at their authored speed, and updates Vite+ to 1.7.0 for two security fixes. The [changelog](/project/changelog/#v090) says what to change after upgrading.
+
 [0.8.0](https://github.com/sandrinodm/deckster/releases/tag/v0.8.0) adds [diagram design controls](/data-and-diagrams/diagram-design/), SVG sanitization for Git brand imports, and separate PowerPoint placeholders for two-content brand layouts. The [changelog](/project/changelog/#v080) also covers static layout files and slide authoring in the live session brand.
 
-[0.7.0](https://github.com/sandrinodm/deckster/releases/tag/v0.7.0) adds 24 [presentation patterns](/examples/presentation-patterns/) as well as first-slide previews and deck switching to `deck dev` and `deck present`. Brand imports protect credentials, recover interrupted replacements and check layouts before installation. The [changelog](/project/changelog/) links each change to its guide and pull request.
+[0.7.0](https://github.com/sandrinodm/deckster/releases/tag/v0.7.0) adds 24 [presentation patterns](/examples/presentation-patterns/) as well as first-slide previews and deck switching to `deckster dev` and `deckster present`. Brand imports protect credentials, recover interrupted replacements and check layouts before installation. The [changelog](/project/changelog/) links each change to its guide and pull request.
 
 [0.6.1](https://github.com/sandrinodm/deckster/releases/tag/v0.6.1) adds optional labels to [schedule](/reference/layouts/schedule/#custom-labels), [quadrants](/reference/layouts/quadrants/#custom-labels) and [quiz](/reference/layouts/quiz/#custom-labels). The dev server preserves the current slide and agent panel when a slide file is replaced in place. PowerPoint exports apply the image crop once, including in viewers that display the PNG copy of an SVG, and show the correct file-relative slide number in partial exports. On macOS, the presenter can prepare its app bundle when the copy tool lacks clone support. The [brand layouts guide](/brands/brand-layouts/) includes a playable Fieldnote example.
 
 [0.6.0](https://github.com/sandrinodm/deckster/releases/tag/v0.6.0) added three things:
 
-- **Twenty layouts.** `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`, taking the kit from 32 layouts to 52. Each has limits `deck lint` enforces and a PowerPoint mapping, and `deck layouts` lists them. The descriptions of older layouts now send some uses to them, such as before and after photos to `before-after`. See the [layouts reference](/reference/layouts/).
-- **Brand layouts.** A brand can bring slide layouts of its own in `brands/<name>/layouts.ts`, read as data like `brand.ts` and each drawn at fixed boxes over the brand's art. A deck on that brand uses one with `layout: <name>`; a deck on another brand renders the layout's kit fallback, and `deck lint` warns with `brand-layout-fallback`. `deck layouts` lists them first and takes `--brand`, `deck brand check` checks them, `deck export --pptx` writes each as a slide layout of its own, and the `fieldnote` brand brings four. See [brand layouts](/brands/brand-layouts/).
-- **`deck brand add`.** Copies a brand folder from a git repository into `brands/` with your own `git`. It reads `brand.ts` and `layouts.ts` as data without running them, checks the brand before anything is written, copies only brand files, images, fonts, documents and licences, and names the font packages to install. `--force` replaces a brand the workspace already has. See [use a brand](/brands/use-a-brand/#add-a-published-brand).
+- **Twenty layouts.** `recap`, `sources`, `definition`, `features`, `do-dont`, `faq`, `quiz`, `exercise`, `pricing`, `quadrants`, `risks`, `market`, `dashboard`, `conversation`, `before-after`, `voices`, `persona`, `schedule`, `status` and `actions`, taking the kit from 32 layouts to 52. Each has limits `deckster lint` enforces and a PowerPoint mapping, and `deckster layouts` lists them. The descriptions of older layouts now send some uses to them, such as before and after photos to `before-after`. See the [layouts reference](/reference/layouts/).
+- **Brand layouts.** A brand can bring slide layouts of its own in `brands/<name>/layouts.ts`, read as data like `brand.ts` and each drawn at fixed boxes over the brand's art. A deck on that brand uses one with `layout: <name>`; a deck on another brand renders the layout's kit fallback, and `deckster lint` warns with `brand-layout-fallback`. `deckster layouts` lists them first and takes `--brand`, `deckster brand check` checks them, `deckster export --pptx` writes each as a slide layout of its own, and the `fieldnote` brand brings four. See [brand layouts](/brands/brand-layouts/).
+- **`deckster brand add`.** Copies a brand folder from a git repository into `brands/` with your own `git`. It reads `brand.ts` and `layouts.ts` as data without running them, checks the brand before anything is written, copies only brand files, images, fonts, documents and licences, and names the font packages to install. `--force` replaces a brand the workspace already has. See [use a brand](/brands/use-a-brand/#add-a-published-brand).
 
-The 0.6.0 notes also list changes and fixes. In the new layouts, label overrides are one `labels` object, the lit item is `highlight`, and footnotes stay visible while items reveal. `deck lint`'s contrast check measures uppercase labels as they are drawn, and `off-brand` resolves nested surfaces. Sequence diagrams measure their actors at the width they are drawn, so a title that wraps no longer overflows its box; a diagram is measured once more before the deck reports ready; and the brand importer refuses a template layout part name that is not a slide layout. The notes name two gaps: PowerPoint output for the new layouts was checked as XML, with the Open XML SDK validator and in LibreOffice, but not opened in PowerPoint or Keynote, and `deck brand add` was not tried against a private repository or end to end with a `git@` address.
+The 0.6.0 notes also list changes and fixes. In the new layouts, label overrides are one `labels` object, the lit item is `highlight`, and footnotes stay visible while items reveal. `deckster lint`'s contrast check measures uppercase labels as they are drawn, and `off-brand` resolves nested surfaces. Sequence diagrams measure their actors at the width they are drawn, so a title that wraps no longer overflows its box; a diagram is measured once more before the deck reports ready; and the brand importer refuses a template layout part name that is not a slide layout. The notes name two gaps: PowerPoint output for the new layouts was checked as XML, with the Open XML SDK validator and in LibreOffice, but not opened in PowerPoint or Keynote, and `deckster brand add` was not tried against a private repository or end to end with a `git@` address.
 
 [0.5.0](https://github.com/sandrinodm/deckster/releases/tag/v0.5.0) added one thing:
 
-- **Hidden slides.** `hidden: true` in a slide's frontmatter keeps the slide in the deck and the build, and a talk skips it: next, previous, Home and End pass over it, pacing leaves its budget out, and the brand's page numbers count shown slides only. `deck export` leaves hidden slides out unless you pass `--include-hidden`, which writes them as hidden slides in the PowerPoint file, and `deck shot --json` and the agent's outline report `hidden`. Three lint rules (`time-budget`, `few-builds`, `layout-repetition`) count shown slides only, and a deck whose every slide is hidden fails with an error. See [hidden slides](/write-slides/hidden-slides/).
+- **Hidden slides.** `hidden: true` in a slide's frontmatter keeps the slide in the deck and the build, and a talk skips it: next, previous, Home and End pass over it, pacing leaves its budget out, and the brand's page numbers count shown slides only. `deckster export` leaves hidden slides out unless you pass `--include-hidden`, which writes them as hidden slides in the PowerPoint file, and `deckster shot --json` and the agent's outline report `hidden`. Three lint rules (`time-budget`, `few-builds`, `layout-repetition`) count shown slides only, and a deck whose every slide is hidden fails with an error. See [hidden slides](/write-slides/hidden-slides/).
 
 [0.4.0](https://github.com/sandrinodm/deckster/releases/tag/v0.4.0) added two things:
 
-- **Diagram looks and cards.** A brand's `diagram` section sets the edges, group outlines and edge labels, and defines cards, named node styles; a slide picks one with `card="..."`, and `deck lint` warns with `diagram-card-missing` when the brand lacks it. See [diagram look and cards](/brands/diagram-look-and-cards/) and [pick a card](/data-and-diagrams/flow-diagrams/#pick-a-card).
+- **Diagram looks and cards.** A brand's `diagram` section sets the edges, group outlines and edge labels, and defines cards, named node styles; a slide picks one with `card="..."`, and `deckster lint` warns with `diagram-card-missing` when the brand lacks it. See [diagram look and cards](/brands/diagram-look-and-cards/) and [pick a card](/data-and-diagrams/flow-diagrams/#pick-a-card).
 - **Embed mode.** `?embed` shows a built deck in an iframe on another page, with previous and next controls and a link to the whole deck. See [query parameters](/reference/deck-api/#query-parameters).
 
 The five brands in the repository each got their own diagram look in 0.4.0, so a deck that uses a copy of one taken from `v0.4.0` draws its diagrams differently than with a copy from `v0.3.0`. A brand without the new keys renders as before.
@@ -78,7 +80,7 @@ The five brands in the repository each got their own diagram look in 0.4.0, so a
 1. The version in `packages/cli/package.json` is set to the new number, on `main`.
 2. A maintainer publishes a GitHub release with the tag `v<version>` on that commit.
 3. The release starts the [`publish.yml`](https://github.com/sandrinodm/deckster/blob/main/.github/workflows/publish.yml) workflow. It refuses to publish unless the version is a stable `x.y.z`, the tag is `v` plus that version, the commit is on `main`, and that commit had a successful CI run on a push to `main`. A release marked as a pre-release is not published.
-4. The workflow builds and packs the CLI with the framework source in `dist/framework`, installs the exact tarball into an empty folder, and checks that `deck --help`, `deck new smoke` and `deck build smoke` work.
+4. The workflow builds and packs the CLI with the framework source in `dist/framework`, installs the exact tarball into an empty folder, and checks that `deckster --help`, `deckster new smoke` and `deckster build smoke` work.
 5. It publishes that tarball to npm with provenance, through npm trusted publishing: there is no npm token.
 
 To propose a change for the next release, see [contributing](/project/contributing/).

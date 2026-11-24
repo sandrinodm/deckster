@@ -36,7 +36,7 @@ Pick another layout when the code is not the point:
 
 ## Common mistakes
 
-- **Too many lines.** A 13-line fence fails [`deck lint`](/review/lint/) with `content-budget`: "The body slot holds 13 lines; its layout allows 11." Keep the lines you talk about, or split the code over two slides.
+- **Too many lines.** A 13-line fence fails [`deckster lint`](/review/lint/) with `content-budget`: "The body slot holds 13 lines; its layout allows 11." Keep the lines you talk about, or split the code over two slides.
 - **Lines too wide.** Two lines of over 100 columns beside an `<Aside>` gave a `container-overflow` error on the code area and a `text-overlap` error between the code and the notes. Wrap the lines, or drop the `<Aside>` to get 90 columns.
 - **Two blocks in the body.** Two fences fail with `slot-content`: "The body slot holds 2 code blocks; the code layout takes exactly one: code there." For a before and after, put both fences in one `<CodeMove>`.
 - **Long notes.** `<Aside>` takes 40 words and three bullets; a fourth bullet is a `content-budget` error on the aside slot. Put the explanation in `<Notes>`.

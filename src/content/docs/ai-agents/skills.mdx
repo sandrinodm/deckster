@@ -5,19 +5,19 @@ sidebar:
   order: 1
 ---
 
-Two agent skills teach a coding agent (Claude Code, Codex, Cursor and others) to use the `deck` CLI well: one plans and writes presentations, the other drafts a brand from material you already have. Install them in the folder that holds your decks and you can ask your agent for a deck in plain words. This page installs them, shows what to ask and how to review what comes back.
+Two agent skills teach a coding agent (Claude Code, Codex, Cursor and others) to use the `deckster` CLI well: one plans and writes presentations, the other drafts a brand from material you already have. Install them in the folder that holds your decks and you can ask your agent for a deck in plain words. This page installs them, shows what to ask and how to review what comes back.
 
 There are three ways to work with an agent, and they combine:
 
 | How | What the agent can do | Page |
 | --- | --- | --- |
-| Your agent in a terminal, with the skills (start here) | Plans and writes whole decks with the `deck` CLI | this page |
-| The same agent, plus `deck dev --mcp` | Also sees the slide you are on, lints, takes screenshots and adds or reorders slides through tools | [MCP tools](/ai-agents/mcp-tools/) |
-| `deck dev <deck> --agent claude` or `--agent codex` | Chats beside the slide, edits only the deck's content, every turn can be undone | [The agent panel](/ai-agents/agent-panel/) |
+| Your agent in a terminal, with the skills (start here) | Plans and writes whole decks with the `deckster` CLI | this page |
+| The same agent, plus `deckster dev --mcp` | Also sees the slide you are on, lints, takes screenshots and adds or reorders slides through tools | [MCP tools](/ai-agents/mcp-tools/) |
+| `deckster dev <deck> --agent claude` or `--agent codex` | Chats beside the slide, edits only the deck's content, every turn can be undone | [The agent panel](/ai-agents/agent-panel/) |
 
 ## The two skills
 
-- **`create-presentation`** plans a storyline and an outline with one claim per slide. The agent uses `deck layouts <deck> --summary` to pick a layout for each slide's job, including brand layouts where they fit. It then writes the slides and notes and checks the rendered result with `deck lint` and `deck shot`. [Choose a layout](/reference/layouts/#choose-a-layout)
+- **`create-presentation`** plans a storyline and an outline with one claim per slide. The agent uses `deckster layouts <deck> --summary` to pick a layout for each slide's job, including brand layouts where they fit. It then writes the slides and notes and checks the rendered result with `deckster lint` and `deckster shot`. [Choose a layout](/reference/layouts/#choose-a-layout)
 - **`brand-import`** turns a PowerPoint template, PDF, Google Slides link, website, guidelines or screenshots into a draft `brands/<name>/brand.ts`. When a template supplies slide layouts, the agent maps the placeholders to slots and fields, chooses kit fallbacks, and compares the rendered layouts with the source. [Import a brand](/brands/import-a-brand/) · [Brand layouts from a template](/brands/brand-layouts/#from-a-template)
 
 ```console
@@ -27,11 +27,11 @@ $ npx skills add sandrinodm/deckster --list
 │
 │    brand-import
 │
-│      Extract or recreate a brand for the deckster `deck` CLI from PPTX or POTX templates, PDF, Google Slides, a website, guidelines or screenshots. Use when asked to match an existing look, identify its fonts and colours, import a template's slide layouts, or create brand.ts (and layouts.ts) with palettes, surfaces, typography, assets and data styling. Validate the brand and compare framework renders with the source. Excludes writing presentation content and restyling a single slide.
+│      Extract or recreate a brand for the deckster `deckster` CLI from PPTX or POTX templates, PDF, Google Slides, a website, guidelines or screenshots. Use when asked to match an existing look, identify its fonts and colours, import a template's slide layouts, or create brand.ts (and layouts.ts) with palettes, surfaces, typography, assets and data styling. Validate the brand and compare framework renders with the source. Excludes writing presentation content and restyling a single slide.
 │
 │    create-presentation
 │
-│      Plan, build and adapt presentations with the deckster `deck` CLI: audience, narrative, assertion-led outlines, MDX slides, speaker notes and data visuals. Use for decks, talks, pitches, training, executive briefings, turning documents or numbers into slides, changing a deck’s audience or duration, and writing talk tracks. Excludes brand imports, framework development, standalone diagrams, document-only memos, export-only requests and simple typo fixes.
+│      Plan, build and adapt presentations with the deckster `deckster` CLI: audience, narrative, assertion-led outlines, MDX slides, speaker notes and data visuals. Use for decks, talks, pitches, training, executive briefings, turning documents or numbers into slides, changing a deck’s audience or duration, and writing talk tracks. Excludes brand imports, framework development, standalone diagrams, document-only memos, export-only requests and simple typo fixes.
 │
 └  Use --skill <name> to install specific skills
 ```
@@ -40,8 +40,8 @@ The cloning progress at the top is cut. Skill updates come from the Deckster rep
 
 ## What they need
 
-- `deck` on your PATH: `npm install --global @deckster/cli`, with Node 26 or newer ([Quickstart](/get-started/quickstart/)).
-- Chromium for `deck lint` and `deck shot`, downloaded once; when it is missing, the command prints how to get it.
+- `deckster` on your PATH: `npm install --global @deckster/cli`, with Node 26 or newer ([Quickstart](/get-started/quickstart/)).
+- Chromium for `deckster lint` and `deckster shot`, downloaded once; when it is missing, the command prints how to get it.
 - For `brand-import`, [`uv`](https://docs.astral.sh/uv/) to run its Python extractors.
 - A coding agent, installed and signed in: Claude Code, Codex or another agent the installer supports.
 
@@ -49,7 +49,7 @@ The cloning progress at the top is cut. Skill updates come from the Deckster rep
 
 <Steps>
 
-1. Make a workspace and go into it. The agent's `deck new` creates `decks/` here; if you already have one, go to the folder that holds `decks/`.
+1. Make a workspace and go into it. The agent's `deckster new` creates `decks/` here; if you already have one, go to the folder that holds `decks/`.
 
    ```sh
    mkdir talks && cd talks
@@ -115,11 +115,11 @@ Provide the source template and the slide types you reuse.
 
 <Steps>
 
-1. Open the deck in a second terminal while the agent works: `deck dev launch-review`, with the deck name the agent gave. The slides reload as it edits them.
+1. Open the deck in a second terminal while the agent works: `deckster dev launch-review`, with the deck name the agent gave. The slides reload as it edits them.
 2. Read the handoff. It says where the deck is and how to run it, the storyline, the `[NEEDS: ...]` items you must supply (blocking ones first), the deck's weakest points, the lint result and which brand it uses.
 3. Press `c` on anything you want changed and leave a [comment](/review/comments/) on the slide.
-4. Tell the agent "Work through the open review comments on launch-review". It lists them with `deck comments launch-review --json`, edits the file and line each one names, and resolves each with `deck comments resolve` and a note on what changed.
-5. When `deck lint launch-review` is clean, run `deck export launch-review` for a PDF and a PowerPoint file in `.deck/exports/launch-review/` ([PDF](/export-and-publish/pdf/), [PowerPoint](/export-and-publish/powerpoint/)).
+4. Tell the agent "Work through the open review comments on launch-review". It lists them with `deckster comments launch-review --json`, edits the file and line each one names, and resolves each with `deckster comments resolve` and a note on what changed.
+5. When `deckster lint launch-review` is clean, run `deckster export launch-review` for a PDF and a PowerPoint file in `.deck/exports/launch-review/` ([PDF](/export-and-publish/pdf/), [PowerPoint](/export-and-publish/powerpoint/)).
 
 </Steps>
 
@@ -137,4 +137,4 @@ With `create-presentation` the agent:
 
 The [agent panel](/ai-agents/agent-panel/)'s agent does not run skills: for Claude the skill tool is turned off. Its standing rules point it at `create-presentation`'s files instead, which it reads as plain files when it finds them in the workspace under `.claude/skills/`, `.agents/skills/` or `skills/`, or in the agent's global skills folder. Installing the skill in the workspace therefore helps both your terminal agent and the panel.
 
-An agent you run in a terminal can also use the deck tools of a running `deck dev --mcp`: see [MCP tools](/ai-agents/mcp-tools/).
+An agent you run in a terminal can also use the deck tools of a running `deckster dev --mcp`: see [MCP tools](/ai-agents/mcp-tools/).

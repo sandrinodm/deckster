@@ -8,7 +8,7 @@ sidebar:
 The `sources` layout sets three to eight numbered references on one slide, so the audience can find the evidence behind a talk. Each reference has a title and, where you have them, an author, a publisher, a year and a web address. Use it at the close of a research talk or in an appendix.
 
 <Aside type="note" title="New in v0.6.0">
-The `sources` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "sources" layout.`
+The `sources` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "sources" layout.`
 </Aside>
 
 ## Example
@@ -35,13 +35,13 @@ From five references on, the list runs down the left column and then down the ri
 
 ## Common mistakes
 
-- **A long title in two columns.** With five or more references every title is held to 61 characters. `deck lint` names the limit and the variant:
+- **A long title in two columns.** With five or more references every title is held to 61 characters. `deckster lint` names the limit and the variant:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/src-dense.mdx
     error   schema (src-dense): sources[0].title: The sources layout sets at most 61 characters here (two columns), got 74.
-            Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+            Fix: Shorten it to the essentials; `deckster layouts --json` lists the limits of each variant.
 
   launch-review: 1 error, 0 warnings.
   ```

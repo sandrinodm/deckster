@@ -28,15 +28,15 @@ The title takes up to 50 characters, one line, so the rows fit under it. With th
 
 ## Common mistakes
 
-**Two-option text in a three-option slide.** The narrower limits of the three-option variant are checked when the slide is built, so [`deck lint`](/review/lint/) reports them before it renders any slide:
+**Two-option text in a three-option slide.** The narrower limits of the three-option variant are checked when the slide is built, so [`deckster lint`](/review/lint/) reports them before it renders any slide:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/species.mdx
   error   schema (species): rows[0].label: The comparison layout sets at most 18 characters here (three options), got 21.
-          Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+          Fix: Shorten it to the essentials; `deckster layouts --json` lists the limits of each variant.
   error   schema (species): rows[0].values[0]: The comparison layout sets at most 20 characters here (three options), got 24.
-          Fix: Shorten it to the essentials; `deck layouts --json` lists the limits of each variant.
+          Fix: Shorten it to the essentials; `deckster layouts --json` lists the limits of each variant.
 
 launch-review: 2 errors, 0 warnings.
 ```

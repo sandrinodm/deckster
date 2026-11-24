@@ -8,7 +8,7 @@ sidebar:
 The `before-after` layout sets two pictures side by side at the same size, each with a label, under a title that states what changed. Use it for a redesign, a restoration or any visual evidence of a change, where seeing both states does more than a list of differences.
 
 <Aside type="note" title="New in v0.6.0">
-The `before-after` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "before-after" layout.`
+The `before-after` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "before-after" layout.`
 </Aside>
 
 ## Example
@@ -38,7 +38,7 @@ The `before-after` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck 
 - **A picture without a description.** `alt` is required on both sides:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/ba-alt.mdx
     error   schema (ba-alt): before.alt is required.
             Fix: Name the earlier picture with `src` (a file in the deck folder) and `alt` (up to 120 characters). Optionally add `label` (up to 20 characters, default "Before"), `caption` (one line, up to 48 characters), and `focal`. Name the part of the photo to keep when it is cropped, as a CSS position: `focal: top`, `focal: center 30%` (a face in the upper third) or `focal: 40% 20%`.
@@ -48,7 +48,7 @@ The `before-after` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck 
 
 - **A long label or caption.** A label over 20 characters is a `schema` error: `before.label: Expected a picture label of at most 20 characters, got "The old delivery route …" (38 characters).` A caption over 48 fails the same way.
 - **A picture that is not there.** A wrong path is a `media-missing` error: "`before.src: ../assets/van-at-the-bollards.svg` does not exist". The layout draws an empty panel until the file is there.
-- **Comparing pictures that differ in shape.** `fit: cover` crops both to the same frame. Check each with `deck shot` and set `focal` on the side that loses what matters.
+- **Comparing pictures that differ in shape.** `fit: cover` crops both to the same frame. Check each with `deckster shot` and set `focal` on the side that loses what matters.
 
 ## Related layouts
 

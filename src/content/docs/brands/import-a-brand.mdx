@@ -5,7 +5,7 @@ sidebar:
   order: 7
 ---
 
-The `brand-import` skill teaches a coding agent, such as Claude Code or Codex, to recreate an existing look as a deckster brand. You give it a PowerPoint template, a PDF, a Google Slides link, a website, brand guidelines or screenshots. You get back a draft `brands/<name>/brand.ts` that passes `deck brand check`, pictures that compare the brand with the source, and a short list of questions only you can answer. To install the skill, see [skills](/ai-agents/skills/).
+The `brand-import` skill teaches a coding agent, such as Claude Code or Codex, to recreate an existing look as a deckster brand. You give it a PowerPoint template, a PDF, a Google Slides link, a website, brand guidelines or screenshots. You get back a draft `brands/<name>/brand.ts` that passes `deckster brand check`, pictures that compare the brand with the source, and a short list of questions only you can answer. To install the skill, see [skills](/ai-agents/skills/).
 
 ## Ask for it
 
@@ -21,19 +21,19 @@ Give the agent the brand name to use for its folder. If the template has several
 
 ## What it needs
 
-- `deck` on your PATH (`npm install --global @deckster/cli`, Node 26 or later)
+- `deckster` on your PATH (`npm install --global @deckster/cli`, Node 26 or later)
 - [`uv`](https://docs.astral.sh/uv/) for the bundled Python scripts. Python 3.10 or later runs the scripts that have no dependencies.
-- Chromium for `deck lint` and `deck shot`. The website extractor uses Google Chrome if it's installed, otherwise Playwright's Chromium.
+- Chromium for `deckster lint` and `deckster shot`. The website extractor uses Google Chrome if it's installed, otherwise Playwright's Chromium.
 - For a PPTX, something that renders its slides: a PDF you exported from the authoring app, LibreOffice, or Docker with a LibreOffice image
 
 ## What the agent does
 
 1. **Extracts values with scripts.** `extract_pptx.py`, `extract_pdf.py`, `fetch_gslides.py`, `extract_web.py` and `extract_images.py` read exact colours, fonts, sizes, gradients, logos and chart styles into a work folder outside your workspace. `brand_tools.py analyze` then proposes roles, surfaces and a type scale.
 2. **Looks at the pages** and drafts the brand, recording each value's source and confidence. The numbers alone don't say which colour is the accent. When the source has diagrams, the agent also notes how a box is drawn, which boxes are drawn differently and why, and how connectors end, bend and carry their labels. That becomes the brand's [diagram look and cards](/brands/diagram-look-and-cards/): the plain box restyles the `default` card, a highlighted box restyles the closest standard card, and a card of the brand's own is added only for a treatment none of the five carries.
-3. **Writes and checks `brand.ts`.** `emit_brand.py` writes `brands/<name>/brand.ts`, the logos and `import-notes.json`, and prints the `npm install` command for any Fontsource packages. The agent runs `deck brand check <name> --json` and fixes the draft until the check passes.
+3. **Writes and checks `brand.ts`.** `emit_brand.py` writes `brands/<name>/brand.ts`, the logos and `import-notes.json`, and prints the `npm install` command for any Fontsource packages. The agent runs `deckster brand check <name> --json` and fixes the draft until the check passes.
 4. **Renders a specimen deck.** `make_specimen.py` creates `decks/zz-<name>-specimen`: one slide per layout, slides on the `inverse`, `accent` and `gradient` surfaces, and charts, big numbers and a table. The agent lints and shoots it, puts source pages and slides side by side with `compare.py`, and fixes the draft again, usually two or three times. For a source with diagrams it adds a `diagram` slide with nodes on the standard and the brand's own cards, and compares the boxes, connectors, arrowheads and labels with a source diagram.
 
-The `zz-` prefix marks the specimen as scratch, so `deck build --out` leaves it out of the site. The agent deletes it after you've seen the comparison, unless you want to keep it.
+The `zz-` prefix marks the specimen as scratch, so `deckster build --out` leaves it out of the site. The agent deletes it after you've seen the comparison, unless you want to keep it.
 
 ## Which sources work
 
@@ -50,12 +50,12 @@ A PPTX is the best single source. Several sources together are better, such as a
 
 ## What you get back
 
-- `brands/<name>/` with a `brand.ts` that passes `deck brand check`, or an exact list of the errors that remain
+- `brands/<name>/` with a `brand.ts` that passes `deckster brand check`, or an exact list of the errors that remain
 - from a template, a `layouts.ts` with one [brand layout](/brands/brand-layouts/) per slide layout it kept, their art in `layouts/`, and side-by-side pictures of each one and the source layout it came from; the handover names each layout's fallback and the layouts it dropped or merged
 - the contact sheet and side-by-side images of source pages and specimen slides
 - a handover that ends with **Needs a human**, at most ten questions, most important first: font licences and the substitute picked for each family, colours the check forced it to change (source value, new value, ratio) and every waiver, missing logo variants, and values it guessed rather than found
 
-To try the draft on your own decks, pass `--brand <name>`. To install a finished brand folder from Git, use `deck brand add`. [Try a brand](/brands/use-a-brand/#render-a-deck-in-another-brand) · [Install from Git](/brands/use-a-brand/#add-a-brand-from-another-repository)
+To try the draft on your own decks, pass `--brand <name>`. To install a finished brand folder from Git, use `deckster brand add`. [Try a brand](/brands/use-a-brand/#render-a-deck-in-another-brand) · [Install from Git](/brands/use-a-brand/#add-a-brand-from-another-repository)
 
 Before you adopt it, run the checks in [check a brand](/brands/check-a-brand/). From then on `brand.ts` is yours to edit by hand, as in [create a brand](/brands/create-a-brand/).
 

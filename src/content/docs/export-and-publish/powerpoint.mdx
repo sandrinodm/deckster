@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-`deck export --pptx` writes a PowerPoint file that people can edit in PowerPoint, Keynote or Google Slides: real text, tables, charts and speaker notes, not a picture per slide. An editable slide never matches the web slide exactly, so the export also tells you what it drew natively. After this page you can export a deck, choose how much of it stays editable, and handle fonts and media.
+`deckster export --pptx` writes a PowerPoint file that people can edit in PowerPoint, Keynote or Google Slides: real text, tables, charts and speaker notes, not a picture per slide. An editable slide never matches the web slide exactly, so the export also tells you what it drew natively. After this page you can export a deck, choose how much of it stays editable, and handle fonts and media.
 
 ## Export a PowerPoint file
 
@@ -14,7 +14,7 @@ sidebar:
 1. See what the export will do, without writing anything:
 
    ```console
-   $ deck export launch-review --dry-run
+   $ deckster export launch-review --dry-run
    PPTX dry run (hybrid mode): native / picture / simplified / dropped
    01 title [title]: 3 / 0 / 0 / 0
    02 revenue [chart]: 4 / 0 / 1 / 0
@@ -28,7 +28,7 @@ sidebar:
 2. Export:
 
    ```console
-   $ deck export launch-review --pptx
+   $ deckster export launch-review --pptx
    /Users/you/talks/.deck/exports/launch-review/launch-review.pptx (3 slides, hybrid mode, masters: default, gradient, fonts embedded: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Inter Deck Caption, Inter Deck Lead)
    /Users/you/talks/.deck/exports/launch-review/fonts: 5 static TrueType instance(s) in 5 families (Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Inter Deck Caption, Inter Deck Lead), cut from the brand fonts at the exact axes the deck uses and embedded in the PPTX; install them where an app ignores embedded fonts (Keynote, Google Slides, LibreOffice).
    ```
@@ -39,14 +39,14 @@ sidebar:
 
 </Steps>
 
-`--slides 3,5-9` (numbers, ranges or ids) exports a subset, and `--steps` writes one slide per step. Without a format flag, `deck export` writes the PDF as well; see [PDF](/export-and-publish/pdf/).
+`--slides 3,5-9` (numbers, ranges or ids) exports a subset, and `--steps` writes one slide per step. Without a format flag, `deckster export` writes the PDF as well; see [PDF](/export-and-publish/pdf/).
 
 ## Hidden slides
 
 New in 0.5.0. A slide with `hidden: true` (see [hidden slides](/write-slides/hidden-slides/)) is left out of the PowerPoint file, as it is out of the talk, and the export says how many it left out:
 
 ```console
-$ deck export launch-review --pptx
+$ deckster export launch-review --pptx
 /Users/you/talks/.deck/exports/launch-review/launch-review.pptx (3 slides, hybrid mode, masters: default, gradient, fonts embedded: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Inter Deck Caption, Inter Deck Lead)
 ...
 1 hidden slide left out (add --include-hidden to export).
@@ -55,7 +55,7 @@ $ deck export launch-review --pptx
 The `...` stands for the `fonts` line, which is the one shown above. With `--include-hidden` the file has every slide, and each hidden slide is a hidden slide in PowerPoint too: the slide carries `show="0"`, so PowerPoint skips it in a slide show. A backup slide you hid in the deck stays a backup in the file you send:
 
 ```console
-$ deck export launch-review --pptx --include-hidden --out all.pptx
+$ deckster export launch-review --pptx --include-hidden --out all.pptx
 /Users/you/talks/all.pptx (4 slides, hybrid mode, masters: default, gradient, fonts embedded: Bricolage Deck Display, Bricolage Deck Headline, Bricolage Deck Label, Inter Deck Caption, Inter Deck Lead)
 ...
 ```
@@ -79,13 +79,13 @@ A slide-number field in the PowerPoint file follows its position in that file. F
 On the components deck from the repository (copied into the workspace without its `package.json` and `tsconfig.json`, as on [the hello deck](/examples/hello/)), the dry run shows a Lottie animation on the `deploy` slide as a picture in `hybrid` mode and dropped in `native` mode:
 
 ```console
-$ deck export components --dry-run
+$ deckster export components --dry-run
 ...
 05 deploy [code]: 16 / 1 / 2 / 0
 ...
    picture    svg    div.kit-frame > div.kit-safe > div.kit-region > div.kit-code-row > aside.kit-code-aside > span.deck-slot > figure.kit-lottie > div.kit-lottie-frame > svg: SVG uses text, gradients, filters or masks
 ...
-$ deck export components --dry-run --mode native
+$ deckster export components --dry-run --mode native
 ...
 05 deploy [code]: 16 / 0 / 2 / 1
    dropped    svg    div.kit-frame > div.kit-safe > div.kit-region > div.kit-code-row > aside.kit-code-aside > span.deck-slot > figure.kit-lottie > div.kit-lottie-frame > svg: SVG uses text, gradients, filters or masks
@@ -107,7 +107,7 @@ The output is cut to the `deploy` slide.
 - **Speaker notes** in the notes pane, and **links**.
 - **Step reveals as click animations**, in the order of the [steps](/concepts/steps/). `--no-animations` turns that off.
 
-<Diagram name="export-pipeline" alt="deck export opens the deck once in headless Chromium at 2x; for the PPTX it measures each slide, decides per element whether to draw it natively or as a picture, and writes the PowerPoint file; for the PDF it prints vector pages; both land in .deck/exports/<deck>/, and --verify validates the PPTX and renders it back to compare it with the web slide." />
+<Diagram name="export-pipeline" alt="deckster export opens the deck once in headless Chromium at 2x; for the PPTX it measures each slide, decides per element whether to draw it natively or as a picture, and writes the PowerPoint file; for the PDF it prints vector pages; both land in .deck/exports/<deck>/, and --verify validates the PPTX and renders it back to compare it with the web slide." />
 
 ## Fonts
 
@@ -135,6 +135,6 @@ warning: slide 2: aurora.webm stays a poster; PowerPoint embeds MP4 or MOV, not 
 
 ## Check the result
 
-`deck export --verify` exports the PPTX, validates it and renders it back to compare each slide with the web; [verify an export](/export-and-publish/verify-an-export/) shows how to run it and read the report.
+`deckster export --verify` exports the PPTX, validates it and renders it back to compare each slide with the web; [verify an export](/export-and-publish/verify-an-export/) shows how to run it and read the report.
 
-`--json` prints the export result as JSON for scripts. The full option list is in `deck export --help` and on the [CLI reference](/reference/cli/).
+`--json` prints the export result as JSON for scripts. The full option list is in `deckster export --help` and on the [CLI reference](/reference/cli/).

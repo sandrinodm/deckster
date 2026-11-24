@@ -8,7 +8,7 @@ sidebar:
 The `features` layout sets six to twelve capabilities in an open grid, each an icon from the brand's set with a short title and, for up to nine of them, a few words of detail. Use it for a product capability overview or a checklist of what a service includes.
 
 <Aside type="note" title="New in v0.6.0">
-The `features` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deck lint` reports `layout: There is no "features" layout.`
+The `features` layout needs `@deckster/cli` 0.6.0 or later. In 0.5.0, `deckster lint` reports `layout: There is no "features" layout.`
 </Aside>
 
 ## Example
@@ -40,10 +40,10 @@ Nine items with a `detail` each take three columns, the icon beside the text.
 
 ## Common mistakes
 
-- **Details on ten or more items.** `deck lint` rejects the slide:
+- **Details on ten or more items.** `deckster lint` rejects the slide:
 
   ```console
-  $ deck lint launch-review
+  $ deckster lint launch-review
   decks/launch-review/slides/capabilities.mdx
     error   schema (capabilities): features: Details are supported for at most 9 features.
             Fix: Remove details from every item, or split the inventory across slides.

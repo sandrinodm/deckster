@@ -5,13 +5,13 @@ sidebar:
   order: 4
 ---
 
-Review comments let you point at a word, a chart or a region of a slide in `deck dev` and say what should change. Each comment is saved as a file next to the deck, with the file, line and column that rendered what you clicked, so the author or an agent can fix it from the terminal. After this page you can leave comments in the browser, work through them with `deck comments`, and read what their anchor status says.
+Review comments let you point at a word, a chart or a region of a slide in `deckster dev` and say what should change. Each comment is saved as a file next to the deck, with the file, line and column that rendered what you clicked, so the author or an agent can fix it from the terminal. After this page you can leave comments in the browser, work through them with `deckster comments`, and read what their anchor status says.
 
 ## Leave a comment in the browser
 
 <Steps>
 
-1. Start the deck with `deck dev launch-review` and go to the slide.
+1. Start the deck with `deckster dev launch-review` and go to the slide.
 
 2. Press `c`, or click the speech bubble at the end of the tool cluster in the bottom-left corner. A bar at the top says **Commenting**, and hovering an element shows the source line it came from.
 
@@ -31,7 +31,7 @@ Review comments let you point at a word, a chart or a region of a slide in `deck
 
 <UiShot name="comments" alt="The showcase slide 'The claim' in comment mode: a bar at the top reads 'Commenting: Click an element, Alt-click its parent, drag a region, Tab to pick by keyboard' with Whole slide, Comments 1 and Done buttons; a red pin numbered 1 sits at the start of the statement, and a 'Comment saved' notice shows at the bottom." />
 
-When a comment is saved, deckster takes a screenshot of the slide in headless Chromium and stores it beside the comment. If the screenshot fails, the comment is still saved and the terminal running `deck dev` shows a warning.
+When a comment is saved, deckster takes a screenshot of the slide in headless Chromium and stores it beside the comment. If the screenshot fails, the comment is still saved and the terminal running `deckster dev` shows a warning.
 
 ## Where comments appear
 
@@ -52,14 +52,14 @@ Commit the `.feedback/` folder with the deck, so everyone who checks out the dec
 
 ## Work through comments in the terminal
 
-`deck comments` reads and changes the same files without a browser, for you or for an agent. An agent connected to `deck dev` can also use the `comments` tool (see [MCP tools](/ai-agents/mcp-tools/)).
+`deckster comments` reads and changes the same files without a browser, for you or for an agent. An agent connected to `deckster dev` can also use the `comments` tool (see [MCP tools](/ai-agents/mcp-tools/)).
 
 <Steps>
 
 1. List the open comments:
 
    ```console
-   $ deck comments launch-review
+   $ deckster comments launch-review
    launch-review: 2 open, 0 resolved
 
    slide 2 revenue
@@ -70,8 +70,8 @@ Commit the `.feedback/` folder with the deck, so everyone who checks out the dec
      #1 lypb1v7u  open fix  decks/launch-review/slides/risks.mdx:7:1  (anchor ok, step 0)
         Name an owner for each risk
 
-   After a fix: deck comments resolve launch-review <id> --note "what changed"
-   As JSON: deck comments launch-review --json
+   After a fix: deckster comments resolve launch-review <id> --note "what changed"
+   As JSON: deckster comments launch-review --json
    ```
 
    Each comment has an id, its type, the `file:line:column` to edit (just the file for a comment on the whole slide), its anchor status and step, and its text. `--resolved` or `--all` list the others, and `--slide <id>` limits the list to one slide.
@@ -81,11 +81,11 @@ Commit the `.feedback/` folder with the deck, so everyone who checks out the dec
 3. Resolve the comment, saying what changed:
 
    ```console
-   $ deck comments resolve launch-review lypb1v7u --note "Added owners in the notes"
+   $ deckster comments resolve launch-review lypb1v7u --note "Added owners in the notes"
    Resolved lypb1v7u (decks/launch-review/slides/risks.mdx:7:1)
    ```
 
-   The resolution is signed (see below) and shown under the comment in `deck comments launch-review --all`, as `resolved by Ana Ruiz: Added owners in the notes`. Resolving a comment that is already resolved keeps its note.
+   The resolution is signed (see below) and shown under the comment in `deckster comments launch-review --all`, as `resolved by Ana Ruiz: Added owners in the notes`. Resolving a comment that is already resolved keeps its note.
 
 </Steps>
 
@@ -93,24 +93,24 @@ The other subcommands:
 
 | Command | What it does |
 | --- | --- |
-| `deck comments reopen <deck> <id>` | Opens a resolved comment again. |
-| `deck comments add <deck> <slide> --text <text>` | Adds a comment from the terminal. `--line <n>` ties it to a line of the slide file, `--step <n>` to a step (default 0), `--type` is `fix`, `question` or `idea`. |
-| `deck comments prune <deck>` | Removes the comments of slides the deck config no longer lists. With nothing to remove it prints `launch-review: every comment belongs to a slide of the deck.` |
+| `deckster comments reopen <deck> <id>` | Opens a resolved comment again. |
+| `deckster comments add <deck> <slide> --text <text>` | Adds a comment from the terminal. `--line <n>` ties it to a line of the slide file, `--step <n>` to a step (default 0), `--type` is `fix`, `question` or `idea`. |
+| `deckster comments prune <deck>` | Removes the comments of slides the deck config no longer lists. With nothing to remove it prints `launch-review: every comment belongs to a slide of the deck.` |
 
 The two comments above were added like this:
 
 ```console
-$ deck comments add launch-review risks --text "Name an owner for each risk" --line 7 --type fix
+$ deckster comments add launch-review risks --text "Name an owner for each risk" --line 7 --type fix
 Added lypb1v7u at decks/launch-review/slides/risks.mdx:7:1
-$ deck comments add launch-review revenue --text "Is this Q3 or the year to date?" --type question
+$ deckster comments add launch-review revenue --text "Is this Q3 or the year to date?" --type question
 Added 4a82fmiy at decks/launch-review/slides/revenue.mdx
 ```
 
-A comment added from the terminal has no screenshot. Every subcommand takes `--json`; the full shape is in `deck comments --help` and on the [CLI reference](/reference/cli/). As long as a slide has open comments, [`deck lint`](/review/lint/) warns `open-comments` for it.
+A comment added from the terminal has no screenshot. Every subcommand takes `--json`; the full shape is in `deckster comments --help` and on the [CLI reference](/reference/cli/). As long as a slide has open comments, [`deckster lint`](/review/lint/) warns `open-comments` for it.
 
 ## What the anchor status means
 
-Slides change after a comment is left, so `deck comments` looks for the commented line again each time it lists:
+Slides change after a comment is left, so `deckster comments` looks for the commented line again each time it lists:
 
 | Status | Meaning |
 | --- | --- |
@@ -126,6 +126,6 @@ New comments and resolutions are signed with the `DECK_AUTHOR` environment varia
 
 ## Where comments do not exist
 
-Comment mode, pins and the panel exist only while the dev server runs: in `deck dev`, and in `deck present` without `--built`. A built deck (`deck build` or `deck present --built`), `deck shot`, `deck lint` and exports never show them, so a deck you host never shows review notes. (`deck lint` still reads the files, for `open-comments`.)
+Comment mode, pins and the panel exist only while the dev server runs: in `deckster dev`, and in `deckster present` without `--built`. A built deck (`deckster build` or `deckster present --built`), `deckster shot`, `deckster lint` and exports never show them, so a deck you host never shows review notes. (`deckster lint` still reads the files, for `open-comments`.)
 
 Keys for comment mode are listed with the others in [Keyboard shortcuts](/reference/keyboard-shortcuts/).

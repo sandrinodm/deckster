@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-A brand's `color` section holds its palette, the ten roles that layouts paint with, the surfaces that remap those roles, and the data colours for charts. Its `typography` section sets three families and eleven type steps. This page shows how to write each part so the brand passes `deck brand check`. [Brands and surfaces](/concepts/brands-and-surfaces/) explains why the model works this way.
+A brand's `color` section holds its palette, the ten roles that layouts paint with, the surfaces that remap those roles, and the data colours for charts. Its `typography` section sets three families and eleven type steps. This page shows how to write each part so the brand passes `deckster brand check`. [Brands and surfaces](/concepts/brands-and-surfaces/) explains why the model works this way.
 
 <BrandGrid slide="lint-path" />
 
@@ -46,10 +46,10 @@ A surface you leave out is derived from your roles, so a brand that only sets `d
 
 ### Text colours on each surface
 
-Small text needs 4.5:1, but `accent`, `positive` and `negative` only need 3:1, because they mostly carry marks and large text. So each surface also gets an accent, positive and negative text colour held to 4.5:1. Where the role falls short, the CLI derives a lighter or darker shade. `deck brand` prints that shade after the surface's roles:
+Small text needs 4.5:1, but `accent`, `positive` and `negative` only need 3:1, because they mostly carry marks and large text. So each surface also gets an accent, positive and negative text colour held to 4.5:1. Where the role falls short, the CLI derives a lighter or darker shade. `deckster brand` prints that shade after the surface's roles:
 
 ```console
-$ deck brand default
+$ deckster brand default
 ...
   accent (dark): bg #2d4ae0, surface #2439b8, fg #ffffff, heading #ffffff, muted #dde5ff, accent #ffffff, accent-fg #2439b8, border #3f62f5, positive #a5f3fc, negative #ffa98f; small text: negative #ffcbbb
 ...
@@ -92,7 +92,7 @@ A surface with an `image` or `pattern` layer must set its own `bg`: the colour t
 The check measures them on each surface's chart plate, the opaque panel charts draw behind themselves. Neighbouring categorical colours must be at least 10 apart (OKLab distance ×100) with normal vision and 8 apart under protanopia, deuteranopia and tritanopia, and it warns below 15. A sequential palette must change lightness in one direction. A diverging palette must move away from its midpoint in lightness on both sides, and its two ends must stay 12 apart under protanopia and deuteranopia. `context` must reach between 1.4:1 and 4.5:1 on the plate. A surface can replace any palette, and its `plate`, under its own `data` key. A failure names both colours:
 
 ```console
-$ deck brand check acme
+$ deckster brand check acme
 brands/acme/brand.ts
   error   color.data.categorical[1]: #3f62f5 is too close to its neighbour #2d4ae0 under normal (ΔE 6.8, wants 10), protanopia (ΔE 5.8, wants 8), deuteranopia (ΔE 5.8, wants 8), tritanopia (ΔE 6.3, wants 8).
           Fix: Replace one of the two colors with one that differs in lightness as well as hue; no reordering separates every neighbour.

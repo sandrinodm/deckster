@@ -5,12 +5,12 @@ sidebar:
   order: 1
 ---
 
-deckster is a slide framework where every slide is a file: MDX or TSX, filling a typed layout, styled by a brand you never touch from the slide. A `deck` CLI serves, checks, screenshots, exports and presents the result. This page tells you what the parts are, how the work goes, and what your machine needs, so you can decide whether it suits you before the [quickstart](/get-started/quickstart/).
+deckster is a slide framework where every slide is a file: MDX or TSX, filling a typed layout, styled by a brand you never touch from the slide. A `deckster` CLI serves, checks, screenshots, exports and presents the result. This page tells you what the parts are, how the work goes, and what your machine needs, so you can decide whether it suits you before the [quickstart](/get-started/quickstart/).
 
 ## Who it is for
 
 - **People who write slides as files**, in an editor and in git, rather than in a drawing tool.
-- **People who direct an AI agent** such as Claude Code or Codex to write the slides. The layouts tell the agent how much fits, `deck lint` tells it what broke, and `deck shot` gives it a picture to look at. The [agent skills](/ai-agents/skills/) teach it the workflow.
+- **People who direct an AI agent** such as Claude Code or Codex to write the slides. The layouts tell the agent how much fits, `deckster lint` tells it what broke, and `deckster shot` gives it a picture to look at. The [agent skills](/ai-agents/skills/) teach it the workflow.
 - **Teams that review slides like code**: small diffs, one file per slide, comments that point at a file and a line.
 
 ## The parts of a deck
@@ -30,10 +30,10 @@ deckster is a slide framework where every slide is a file: MDX or TSX, filling a
 ## How the work goes
 
 1. Write the slides, or have an agent write them.
-2. Run `deck lint`. It renders every step of every slide in Chromium and reports overflow, text cut short, contrast, off-brand values, content over a layout's budget, missing notes and a talk over its length, each with a fix. See [Lint as the contract](/concepts/lint-as-the-contract/).
-3. Run `deck shot` to get a PNG of any slide, for you or the agent to look at.
-4. Open `deck dev` to click through the deck with hot reload, and press `c` to leave a comment on an element.
-5. When it is ready: `deck present` to give the talk, `deck export` for a PDF and an editable PowerPoint file, or `deck build` for a static site.
+2. Run `deckster lint`. It renders every step of every slide in Chromium and reports overflow, text cut short, contrast, off-brand values, content over a layout's budget, missing notes and a talk over its length, each with a fix. See [Lint as the contract](/concepts/lint-as-the-contract/).
+3. Run `deckster shot` to get a PNG of any slide, for you or the agent to look at.
+4. Open `deckster dev` to click through the deck with hot reload, and press `c` to leave a comment on an element.
+5. When it is ready: `deckster present` to give the talk, `deckster export` for a PDF and an editable PowerPoint file, or `deckster build` for a static site.
 
 The reasons behind these choices are on [Design decisions](/project/design-decisions/).
 
@@ -42,27 +42,27 @@ The reasons behind these choices are on [Design decisions](/project/design-decis
 | For | You need |
 | --- | --- |
 | Every command | Node.js 26 or later |
-| `deck lint`, `deck shot`, `deck diff`, `deck export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.0 install chromium` for 0.8.0 |
-| `deck present` | Electron's binary, downloaded once (about 120 MB). Without it, `deck present` prints the command that downloads it; `--browser` presents in Chrome instead. Checked on macOS with one display only: several displays, Windows and Linux are untested |
-| `deck diff` against a git ref | A git repository; otherwise compare with a folder saved by `deck diff --save-baseline` |
-| `deck export --verify` | Docker, for the LibreOffice and Open XML SDK checks. The `quicklook` and `keynote` renderers work on macOS only |
-| `deck dev --agent claude` or `--agent codex` | That CLI installed and signed in. `deck agent doctor` checks both |
+| `deckster lint`, `deckster shot`, `deckster diff`, `deckster export` | Playwright's Chromium. Without it these commands stop and print the command to install it: `npx playwright@1.65.1 install chromium` for 0.9.0 |
+| `deckster present` | Electron's binary, downloaded once with `deckster electron install` (about 120 MB). Without it, `deckster present` prints that command; `--browser` presents in Chrome instead. Checked on macOS with one display only: several displays, Windows and Linux are untested |
+| `deckster diff` against a git ref | A git repository; otherwise compare with a folder saved by `deckster diff --save-baseline` |
+| `deckster export --verify` | Docker, for the LibreOffice and Open XML SDK checks. The `quicklook` and `keynote` renderers work on macOS only |
+| `deckster dev --agent claude` or `--agent codex` | That CLI installed and signed in. `deckster agent doctor` checks both |
 | GIFs as looping video | `ffmpeg` on your `PATH`. Without it a GIF stays an image |
 
-`deck new`, `deck dev` and `deck build` need nothing beyond Node.js.
+`deckster new`, `deckster dev` and `deckster build` need nothing beyond Node.js.
 
-Without Electron's binary, `deck present` prints this (paths shortened):
+Without Electron's binary, `deckster present` prints this:
 
 ```console
-$ deck present launch-review
-Electron's binary is not downloaded (.../node_modules/electron/dist), so `deck present` cannot open a window.
-Run `node ".../node_modules/electron/install.js"` (about 120 MB), or pass --browser to present in Chrome.
+$ deckster present launch-review
+Electron 45.4.1 is not downloaded, so `deckster present` cannot open a window.
+Run `deckster electron install` once (about 120 MB), or pass --browser to present in Chrome.
 ```
 
 ## What it is not
 
 - **Not a visual editor.** You change a slide by editing its file, or by asking an agent to. The browser shows the deck; it does not edit it.
-- **Not a hosted service.** Everything runs on your machine. `deck build` writes static files you host where you like.
-- **No comments on a built deck.** Comment mode is part of `deck dev`; a built or exported deck has none.
+- **Not a hosted service.** Everything runs on your machine. `deckster build` writes static files you host where you like.
+- **No comments on a built deck.** Comment mode is part of `deckster dev`; a built or exported deck has none.
 
 Next: install the CLI and make a deck in the [quickstart](/get-started/quickstart/).

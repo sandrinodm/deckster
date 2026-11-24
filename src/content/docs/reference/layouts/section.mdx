@@ -19,7 +19,7 @@ Fill `<Media>` with one image and the divider changes shape: the picture fills t
 
 ## When to use it
 
-- **One per part, in order.** The catalog asks for every divider on the same surface and with the same options. Nothing in [`deck lint`](/review/lint/) checks that, so pick the fields once and copy them.
+- **One per part, in order.** The catalog asks for every divider on the same surface and with the same options. Nothing in [`deckster lint`](/review/lint/) checks that, so pick the fields once and copy them.
 - **A short title and at most one sentence.** `title:` is required and takes 40 characters. The summary is plain text of up to 16 words, or 14 when `<Media>` is filled. When you leave it out, its two lines stay empty, so every divider sets its title at the same height.
 - **The look is set by three fields.** `numeral: large` makes the number a landmark. Leave it out and the number sits small on the top line. `align: center` centres the number, title and summary, but has no effect beside a picture. The divider defaults to the `accent` surface and hides the page number, logo and progress bar (`chrome: false`).
 

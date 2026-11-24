@@ -108,12 +108,12 @@ rm decks/showcase/package.json decks/showcase/tsconfig.json
 Then it lints clean, as in the repository:
 
 ```console
-$ deck lint showcase
+$ deckster lint showcase
 showcase: no problems in 45 slides (105 steps checked).
 ```
 
-`deck dev showcase` serves it, mini app included. The PDF button on the `links` slide is a `<Download file="showcase.pdf">`, which links to a file only `deck build showcase --with-exports` writes into `decks/showcase/dist/`.
+`deckster dev showcase` serves it, mini app included. The PDF button on the `links` slide is a `<Download file="showcase.pdf">`, which links to a file only `deckster build showcase --with-exports` writes into `decks/showcase/dist/`.
 
-To copy one slide, take its file from `slides/` and the files it imports from `assets/` or `lib/`, add its id to your `deck.config.ts`, and run `deck lint`.
+To copy one slide, take its file from `slides/` and the files it imports from `assets/` or `lib/`, add its id to your `deck.config.ts`, and run `deckster lint`.
 
 For the smallest deck, see [Hello](/examples/hello/). For every layout and option in one talk, see the [Lookbook](/examples/lookbook/). The showcase slides rendered in every published brand are on [One deck in every brand](/examples/brands/).

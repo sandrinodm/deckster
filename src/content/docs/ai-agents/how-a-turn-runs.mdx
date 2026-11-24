@@ -11,7 +11,7 @@ A turn is one prompt in the [agent panel](/ai-agents/agent-panel/) and everythin
 
 ## The processes
 
-The `deck` CLI owns everything: the dev server, the agent socket at `/__deck/agent` (prompts in, events out), the MCP endpoint at `/__deck/mcp` with the deck tools, and the agent host, which queues prompts and runs one turn at a time. Each turn is one child process, `claude -p` or `codex exec`, of the CLI you installed, with your login; the next turn resumes its session. The child calls the deck tools over MCP. In `deck present` the Electron window only shows the page.
+The `deckster` CLI owns everything: the dev server, the agent socket at `/__deck/agent` (prompts in, events out), the MCP endpoint at `/__deck/mcp` with the deck tools, and the agent host, which queues prompts and runs one turn at a time. Each turn is one child process, `claude -p` or `codex exec`, of the CLI you installed, with your login; the next turn resumes its session. The child calls the deck tools over MCP. In `deckster present` the Electron window only shows the page.
 
 A turn ends when the agent finishes, when you press Stop, after 2 minutes without output, or after 10 minutes in all: the process group gets SIGINT, then SIGTERM two seconds later, then SIGKILL.
 

@@ -9,7 +9,7 @@ A deck is a folder of slide files plus one config file that puts them in order. 
 
 ## A deck is a folder
 
-Each deck lives in its own folder under `decks/` in your workspace. The folder name is the deck's name, the one you pass to commands such as `deck dev launch-review`. Inside it, `deck.config.ts` gives the deck a title and lists its slides, and `slides/` holds one file per slide. This is the `hello` deck from the repository:
+Each deck lives in its own folder under `decks/` in your workspace. The folder name is the deck's name, the one you pass to commands such as `deckster dev launch-review`. Inside it, `deck.config.ts` gives the deck a title and lists its slides, and `slides/` holds one file per slide. This is the `hello` deck from the repository:
 
 <FileTree>
 - decks/
@@ -46,7 +46,7 @@ Here is the first slide of `hello` and the file that makes it:
 
 <SlideExample deck="hello" slide="title" />
 
-Only the files the config lists are slides. Any other MDX file in `slides/` compiles as a partial that slides can import, and any other TSX file is a helper. `deck lint` warns about each unlisted file, in case you meant it to be a slide.
+Only the files the config lists are slides. Any other MDX file in `slides/` compiles as a partial that slides can import, and any other TSX file is a helper. `deckster lint` warns about each unlisted file, in case you meant it to be a slide.
 
 ## Why one file per slide
 
@@ -57,7 +57,7 @@ Only the files the config lists are slides. Any other MDX file in `slides/` comp
 
 ## The canvas
 
-Every slide is laid out on a 1920x1080 canvas, and the canvas is scaled to fit the window. Type sizes, spacing and limits are in canvas pixels. As a result, a slide looks the same in a small browser window, on a projector, in a `deck shot` PNG and in a PDF or PPTX export.
+Every slide is laid out on a 1920x1080 canvas, and the canvas is scaled to fit the window. Type sizes, spacing and limits are in canvas pixels. As a result, a slide looks the same in a small browser window, on a projector, in a `deckster shot` PNG and in a PDF or PPTX export.
 
 ## How a slide is addressed
 
@@ -65,7 +65,7 @@ The URL hash names the slide and the [step](/concepts/steps/): `#/<slide>/<step>
 
 ## What the build checks
 
-Every command that renders a deck, from `deck dev` and `deck build` to `deck shot`, `deck lint` and `deck export`, runs it through the same build.
+Every command that renders a deck, from `deckster dev` and `deckster build` to `deckster shot`, `deckster lint` and `deckster export`, runs it through the same build.
 
 <Diagram name="build-pipeline" alt="Slide files, deck.config.ts and brand.ts feed @deckster/vite-plugin, which builds a page of the engine, the kit and the brand runtime; that page becomes a dev server, a static site in decks/<deck>/dist, or, through headless Chromium in static mode, PNG, PDF and PPTX files." />
 
@@ -79,7 +79,7 @@ Before anything renders, the build checks the deck:
 A check that fails stops the build. The error names the file, each problem and its fix. Here a `split` slide has no picture beside its text:
 
 ```console
-$ deck build launch-review
+$ deckster build launch-review
 transforming...
 ✓ 852 modules transformed.
 ✗ Build failed in 550ms
@@ -88,4 +88,4 @@ The slide does not fit its layout's slots in decks/launch-review/slides/why-now.
     Fix: Add <Media>…</Media> at the top level of the slide: What the text points at: one <img> with alt text (imported from the deck's assets/ or served from its public/ folder), a chart, diagram, table or component. Photos fill the frame and are cropped to it; anything else is centred and may fill it with `height: 100%` (the frame is a size container, so `100cqh` works too).
 ```
 
-These checks cover the source only. Whether the rendered slide fits, reads and stays on brand is for `deck lint`: see [lint as the contract](/concepts/lint-as-the-contract/). The frontmatter keys every slide takes are listed in the [slide frontmatter reference](/reference/slide-frontmatter/).
+These checks cover the source only. Whether the rendered slide fits, reads and stays on brand is for `deckster lint`: see [lint as the contract](/concepts/lint-as-the-contract/). The frontmatter keys every slide takes are listed in the [slide frontmatter reference](/reference/slide-frontmatter/).

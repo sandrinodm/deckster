@@ -19,7 +19,7 @@ The kit has 63 layouts, from `title`, `section` and `statement` to `stats`, `spl
 
 ## The contract
 
-Each layout publishes a contract, which the build and `deck lint` check slides against:
+Each layout publishes a contract, which the build and `deckster lint` check slides against:
 
 - **Frontmatter fields:** the keys the layout takes beyond the ones every slide has, with their types, allowed values and defaults. `stats` takes a `stats` list of two to four items.
 - **Title:** whether the slide needs a `title:` and its maximum length in characters, such as 90 for `content` and 44 for `split`.
@@ -45,7 +45,7 @@ This `content` slide puts its bullets in the body and its sources in `<Footnote>
 Each layout has its own set of slots: `split` has `<Media>`, `<Caption>` and `<Footnote>`, and `content` has `<Aside>` and `<Footnote>`. A missing required slot fails the build, and so does a slot tag the layout doesn't have:
 
 ```console
-$ deck build launch-review
+$ deckster build launch-review
 transforming...
 ✓ 852 modules transformed.
 ✗ Build failed in 549ms
@@ -54,17 +54,17 @@ The slide does not fit its layout's slots in decks/launch-review/slides/why-now.
     Fix: Use a layout that has it (split, image), or move the content into one of this layout's slots.
 ```
 
-The kinds of content a slot accepts are checked on the rendered slide by `deck lint`'s `slot-content` rule. [MDX slides](/write-slides/mdx-slides/) shows how to write frontmatter and slot tags.
+The kinds of content a slot accepts are checked on the rendered slide by `deckster lint`'s `slot-content` rule. [MDX slides](/write-slides/mdx-slides/) shows how to write frontmatter and slot tags.
 
 ## Budgets count content, not space
 
-A budget counts words, bullets and lines of code. The `content` body, for example, holds at most 72 words and 6 bullets. It never counts how much room the content takes. Words and bullets are the same in every brand, so a slide that is within budget in one brand is within budget in all of them. [`deck lint`](/review/lint/) reports a slide over budget with the `content-budget` rule:
+A budget counts words, bullets and lines of code. The `content` body, for example, holds at most 72 words and 6 bullets. It never counts how much room the content takes. Words and bullets are the same in every brand, so a slide that is within budget in one brand is within budget in all of them. [`deckster lint`](/review/lint/) reports a slide over budget with the `content-budget` rule:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/why-now.mdx
   error   content-budget (why-now): The body slot holds 7 bullets; its layout allows 6.
-          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deck layouts`).
+          Fix: Cut it to the essentials, split the slide, move detail into speaker notes, or pick a layout made for more content (`deckster layouts`).
 
 launch-review: 1 error, 0 warnings in 2 slides (2 steps checked).
 ```
@@ -75,10 +75,10 @@ Whether the text fits a brand's type is a separate question, which the overflow 
 
 Start with what the audience needs from the slide. Use the chooser to find a layout for that job, then check its slots and budgets. [Choose a layout](/reference/layouts/#choose-a-layout)
 
-`deck layouts --summary` lists the deck's [brand layouts](/brands/brand-layouts/) first, followed by the kit layouts. Each entry lists its default surface, title limit, slots with what they accept, and budget. An asterisk marks a required slot. A workspace using the default brand starts with these entries.
+`deckster layouts --summary` lists the deck's [brand layouts](/brands/brand-layouts/) first, followed by the kit layouts. Each entry lists its default surface, title limit, slots with what they accept, and budget. An asterisk marks a required slot. A workspace using the default brand starts with these entries.
 
 ```console
-$ deck layouts launch-review --summary
+$ deckster layouts launch-review --summary
 default       surface default   title any
               One column of content under an accent rule, centred on the slide: a heading with a lead paragraph, or a heading with a short list.
               slots: body* heading/text/bullets/image/component 80 words 6 bullets
@@ -94,4 +94,4 @@ statement     surface inverse   title any
 ...
 ```
 
-An agent reads the full catalog with `deck layouts --json`. It holds every field with its default, allowed values and fix, every slot, budget and variant, and a complete example slide for each layout. That way an agent writes to the same limits the build and `deck lint` enforce.
+An agent reads the full catalog with `deckster layouts --json`. It holds every field with its default, allowed values and fix, every slot, budget and variant, and a complete example slide for each layout. That way an agent writes to the same limits the build and `deckster lint` enforce.

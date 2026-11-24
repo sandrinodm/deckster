@@ -42,10 +42,10 @@ Step 0 shows the whole block. Each part of `{3-5|4|7}` is one press: the named l
 | `noDim` | Keep lines outside the highlight at full strength. |
 | `label="TS"`, `noLabel` | Change or hide the language label in the title bar. |
 
-Anything else stops the build. In `deck lint`:
+Anything else stops the build. In `deckster lint`:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/query.mdx
   error   schema (query): Line 6, column 1: "lines" is not a code block option. Use title="file.ts", {2-4|7}, /word/, lineNumbers, diff, noDim, noLabel, label="TS", start=10 or at=2.
           Fix: Close every JSX tag, keep markdown inside a component separated by blank lines, and escape a literal { or < in text as \{ or &lt;.
@@ -107,14 +107,14 @@ A command is kept exactly as written, so URLs and `*` stay text. Show the two li
 
 ## How much code fits
 
-At most 11 lines, and lines of at most 60 columns beside an `<Aside>` or 90 without one. The `code` layout's budget is 11 lines: more is a `content-budget` error. Long lines step the font down to the brand's minimum and then overflow, which `deck lint` reports as well. Cut the code to the lines you talk about, or split the slide.
+At most 11 lines, and lines of at most 60 columns beside an `<Aside>` or 90 without one. The `code` layout's budget is 11 lines: more is a `content-budget` error. Long lines step the font down to the brand's minimum and then overflow, which `deckster lint` reports as well. Cut the code to the lines you talk about, or split the slide.
 
 ## What lint warns about
 
-Three problems in code reach `deck lint` from the build as warnings:
+Three problems in code reach `deckster lint` from the build as warnings:
 
 ```console
-$ deck lint launch-review
+$ deckster lint launch-review
 decks/launch-review/slides/query.mdx
   warning code-unknown-language (query): Line 6: Unknown code language "sqll"; the block is shown as plain text.
           Fix: Use a Shiki language id such as ts, tsx, bash or json.
@@ -132,4 +132,4 @@ launch-review: 0 errors, 3 warnings in 3 slides (6 steps checked).
 
 ## In static mode and exports
 
-Static mode, `deck shot` and exports draw the step they render: that step's highlight and `<CodeMove>` version, and the terminal session typed up to it, as in the strips above. An export of the whole slide shows its last step. How code becomes PowerPoint is on [PowerPoint](/export-and-publish/powerpoint/). For more on steps, see [builds](/write-slides/builds/) and [steps](/concepts/steps/).
+Static mode, `deckster shot` and exports draw the step they render: that step's highlight and `<CodeMove>` version, and the terminal session typed up to it, as in the strips above. An export of the whole slide shows its last step. How code becomes PowerPoint is on [PowerPoint](/export-and-publish/powerpoint/). For more on steps, see [builds](/write-slides/builds/) and [steps](/concepts/steps/).
