@@ -1,8 +1,8 @@
-import type { ElementSnapshot, SlideRule, StepSnapshot } from '#lint/types.ts';
+import type { Box, ElementSnapshot, SlideRule, StepSnapshot } from '#lint/types.ts';
 
 import { OVERFLOW_TOLERANCE_PX } from '#lint/limits.ts';
 import { describeElement } from '#lint/rules/describe.ts';
-import { decorativeElements } from '#lint/rules/elements.ts';
+import { CLIPPING_VALUES, decorativeElements } from '#lint/rules/elements.ts';
 
 /**
  * The fix for every overflow: cut or split the content rather than shrinking the type.
@@ -39,7 +39,9 @@ type Sides = {
 
 /**
  * Content that sticks out past the 1920x1080 canvas, where it is clipped on screen and in exports.
- * Only the outermost element of each overflowing branch is reported; decoration is skipped.
+ * Only the outermost element of each overflowing branch is reported; decoration is skipped. A shape
+ * inside an inline `<svg>` counts only for the part the `<svg>` shows: a drawing cropped by
+ * `preserveAspectRatio="… slice"` is no more past the canvas than a photo cropped by `object-fit`.
  */
 export const canvasOverflowRule: SlideRule = {
   /**
@@ -72,10 +74,12 @@ export const canvasOverflowRule: SlideRule = {
    */
   check: ({ snapshot }) => {
     const decorative = decorativeElements(snapshot);
+    const byIndex = new Map(snapshot.elements.map((element) => [element.index, element]));
     const exceeding = new Set<number>();
     for (const element of snapshot.elements) {
       const isContent = !decorative.has(element.index);
-      if (isContent && hasArea(element) && edgesOutside(element, snapshot).length > 0) {
+      const shown = visibleElement(element, byIndex);
+      if (isContent && hasArea(shown) && edgesOutside(shown, snapshot).length > 0) {
         exceeding.add(element.index);
       }
     }
@@ -85,12 +89,53 @@ export const canvasOverflowRule: SlideRule = {
       .map((element) => ({
         message:
           `${describeElement(element)} extends past the canvas: ` +
-          `${describeOverhang(element, snapshot)}.`,
+          `${describeOverhang(visibleElement(element, byIndex), snapshot)}.`,
         fix: FIX,
         selector: element.selector,
       }));
   },
 };
+
+/**
+ * The element with its box cut to what its inline `<svg>` ancestors show. An `<svg>` clips what it
+ * draws to its own box unless its `overflow` is `visible`; HTML boxes are left to
+ * `container-overflow`.
+ *
+ * @param element - A measured element.
+ * @param byIndex - Every measured element of the step, by index.
+ */
+function visibleElement(
+  element: ElementSnapshot,
+  byIndex: ReadonlyMap<number, ElementSnapshot>,
+): ElementSnapshot {
+  let rect = element.rect;
+  let ancestor = element.parent === null ? undefined : byIndex.get(element.parent);
+  while (ancestor !== undefined) {
+    const clips =
+      CLIPPING_VALUES.has(ancestor.overflowX) || CLIPPING_VALUES.has(ancestor.overflowY);
+    if (ancestor.tag === 'svg' && clips) {
+      rect = intersect(rect, ancestor.rect);
+    }
+
+    ancestor = ancestor.parent === null ? undefined : byIndex.get(ancestor.parent);
+  }
+
+  return rect === element.rect ? element : { ...element, rect };
+}
+
+/**
+ * The overlap of two boxes, empty (zero width or height) when they do not meet.
+ *
+ * @param a - One box.
+ * @param b - The other box.
+ */
+function intersect(a: Box, b: Box): Box {
+  const x = Math.max(a.x, b.x);
+  const y = Math.max(a.y, b.y);
+  const right = Math.min(a.x + a.width, b.x + b.width);
+  const bottom = Math.min(a.y + a.height, b.y + b.height);
+  return { x, y, width: Math.max(0, right - x), height: Math.max(0, bottom - y) };
+}
 
 /**
  * Whether the element has both width and height; empty boxes cannot overflow.
