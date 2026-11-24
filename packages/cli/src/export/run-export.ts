@@ -9,7 +9,7 @@ import {
   type DryRunReport,
   type PptxResult,
 } from '@deckster/export';
-import { findDeck, loadLayoutCatalog } from '@deckster/vite-plugin';
+import { deckCatalog, findDeck } from '@deckster/vite-plugin';
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { Effect } from 'effect';
 import path from 'node:path';
@@ -197,9 +197,11 @@ const exportFromPage = Effect.fn('exportFromPage')(function* (
   const pdfFile = fileFor(options, 'pdf', base);
   const wantsPdf = options.formats.has('pdf') && !options.dryRun;
   const wantsPptx = options.formats.has('pptx') || options.dryRun || options.verify;
-  const catalog = yield* loadLayoutCatalog(undefined, {
-    brand: opened.brand.tokens,
-    layoutsFile: opened.brand.layoutsFile,
+  const { index: catalog } = yield* deckCatalog({
+    root: opened.place.workspaceRoot,
+    brand: opened.brand,
+    deck: opened.deck.location,
+    code: 'load',
   });
   const contracts = [...catalog.values()].map((layout) => layout.contract);
   // The PPTX is measured before the PDF is printed, which sets the slides in the static font

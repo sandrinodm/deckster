@@ -3,7 +3,7 @@ import { Console, Effect } from 'effect';
 import { chooseDeck, defaultDeck } from '#choose-deck.ts';
 import { EXIT_OK, type Command } from '#command.ts';
 import { listLayouts, type LayoutInfo } from '#layouts/list-layouts.ts';
-import { brandFirst, formatSummaries, summarizeLayout } from '#layouts/summarize-layouts.ts';
+import { ownLayoutsFirst, formatSummaries, summarizeLayout } from '#layouts/summarize-layouts.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
 import { DEFAULT_DECK, Workspace } from '#workspace.ts';
 
@@ -25,7 +25,7 @@ export const run: Command['run'] = Effect.fn('deck.layouts')(function* (argv) {
   }
 
   if (values.summary) {
-    const summaries = brandFirst(catalog.layouts.map(summarizeLayout));
+    const summaries = ownLayoutsFirst(catalog.layouts.map(summarizeLayout));
     yield* Console.log(
       values.json
         ? JSON.stringify({ deck, warnings: catalog.warnings, layouts: summaries }, null, 2)

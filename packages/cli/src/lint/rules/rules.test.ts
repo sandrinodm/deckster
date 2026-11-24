@@ -20,6 +20,7 @@ import { containerOverflowRule } from '#lint/rules/container-overflow.ts';
 import { contentBudgetRule } from '#lint/rules/content-budget.ts';
 import { contrastRule } from '#lint/rules/contrast.ts';
 import { fewBuildsRule } from '#lint/rules/few-builds.ts';
+import { layoutLoadFailedRule } from '#lint/rules/layout-load-failed.ts';
 import { layoutRepetitionRule } from '#lint/rules/layout-repetition.ts';
 import { lowResImageRule } from '#lint/rules/low-res-image.ts';
 import { minFontSizeRule } from '#lint/rules/min-font-size.ts';
@@ -432,6 +433,31 @@ layer(NodeServices.layer)('lint rules', (it) => {
           message: 'The page threw while the deck loaded: early',
         }),
       ]);
+    }),
+  );
+
+  it.effect('layout-load-failed names the failed layout, which render-error then leaves out', () =>
+    Effect.gen(function* () {
+      const tokens = yield* testBrandTokens('default');
+      const failed = slideRuleInput(tokens, {
+        renderError: {
+          file: 'slides/s.mdx',
+          message: 'Layout `kpi-wall` failed to load: boom\nFix the layout.',
+          failedLayout: 'kpi-wall',
+        },
+      });
+      expect(layoutLoadFailedRule.check(failed)).toEqual([
+        expect.objectContaining({
+          message: expect.stringContaining('The layout "kpi-wall" failed'),
+          fix: expect.stringContaining('layouts/kpi-wall/layout.tsx'),
+          selector: '[data-slide-error]',
+        }),
+      ]);
+      expect(renderErrorRule.check(failed)).toEqual([]);
+      const thrown = slideRuleInput(tokens, {
+        renderError: { file: 'slides/s.tsx', message: 'boom' },
+      });
+      expect(layoutLoadFailedRule.check(thrown)).toEqual([]);
     }),
   );
 

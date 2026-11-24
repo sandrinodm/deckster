@@ -41,6 +41,7 @@ import { cliError, fileSystemError, type CliError, type FileSystemError } from '
 import {
   brandProblemWithFile,
   checkCatalogLayouts,
+  layoutProblemWithFile,
   layoutsDisplayPath,
   type BrandFileProblem,
 } from '#layouts/check-brand-layouts.ts';
@@ -270,7 +271,7 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
             ? []
             : yield* writePackageFiles(location.dir, brand.name, dependencies);
         const staged = yield* loadBrand(stageRoot, brand.name, { read: 'data', fontPackages });
-        const brandWarnings = yield* checkStagedLayouts(staged);
+        const brandWarnings = yield* checkStagedLayouts(stageRoot, staged);
         return {
           written,
           warnings: [...assetWarnings, ...brandWarnings],
@@ -336,16 +337,19 @@ const readBrand = Effect.fn('readBrand')(function* (
 
 /**
  * Checks the staged brand against the deck catalog and attaches the source file to each warning.
+ * The brand's code is never run: its code layouts are found, not loaded.
  *
+ * @param stageRoot - The staging workspace.
  * @param brand - The staged brand, with its files checked and layouts resolved from data.
  * @throws BrandError in the error channel when its layouts do not fit the catalog.
  */
 const checkStagedLayouts = Effect.fn('checkStagedLayouts')(function* (
+  stageRoot: string,
   brand: LoadedBrand,
-): Effect.fn.Return<BrandFileProblem[], BrandError | DeckBuildError> {
+): Effect.fn.Return<BrandFileProblem[], BrandError | DeckBuildError, FileSystem.FileSystem> {
   const file = brand.location.displayPath;
   const layoutsFile = layoutsDisplayPath(file);
-  const check = yield* checkCatalogLayouts(brand.tokens.layouts);
+  const check = yield* checkCatalogLayouts(stageRoot, brand, 'skip');
   if (check.errors.length > 0) {
     return yield* brandError({
       summary: 'Invalid brand layouts',
@@ -355,9 +359,12 @@ const checkStagedLayouts = Effect.fn('checkStagedLayouts')(function* (
     });
   }
 
-  return [...brand.warnings, ...check.warnings].map((warning) =>
-    brandProblemWithFile(warning, { file, layoutsFile }),
-  );
+  return [
+    ...[...brand.warnings, ...check.warnings].map((warning) =>
+      brandProblemWithFile(warning, { file, layoutsFile }),
+    ),
+    ...check.local.problems.map((problem) => layoutProblemWithFile(brand, problem)),
+  ];
 });
 
 /**

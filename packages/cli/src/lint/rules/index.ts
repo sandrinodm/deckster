@@ -30,6 +30,7 @@ import { diagramTooDenseRule } from '#lint/rules/diagram-too-dense.ts';
 import { diagramUnlabeledEdgeRule } from '#lint/rules/diagram-unlabeled-edge.ts';
 import { exportMissingPosterRule } from '#lint/rules/export-missing-poster.ts';
 import { fewBuildsRule } from '#lint/rules/few-builds.ts';
+import { layoutLoadFailedRule } from '#lint/rules/layout-load-failed.ts';
 import { layoutRepetitionRule } from '#lint/rules/layout-repetition.ts';
 import { lowResImageRule } from '#lint/rules/low-res-image.ts';
 import { minFontSizeRule } from '#lint/rules/min-font-size.ts';
@@ -59,6 +60,7 @@ import { videoCuePostersRule } from '#lint/rules/video-cue-posters.ts';
  */
 export const LINT_RULES: readonly LintRule[] = [
   renderErrorRule,
+  layoutLoadFailedRule,
   canvasOverflowRule,
   containerOverflowRule,
   textTruncatedRule,

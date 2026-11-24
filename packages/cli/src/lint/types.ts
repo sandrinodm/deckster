@@ -417,6 +417,12 @@ export type RenderErrorSnapshot = {
    * What the slide threw.
    */
   message: string;
+
+  /**
+   * The layout whose code failed to load or render, when the engine drew its `layout-load-failed`
+   * problem in place of the slide; left out for any other error.
+   */
+  failedLayout?: string;
 };
 
 /**

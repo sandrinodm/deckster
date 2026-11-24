@@ -125,8 +125,10 @@ export type LayoutInfo = {
   name: string;
 
   /**
-   * The package that supplies the layout, such as `@deckster/kit`, or `brand:<name>` for a layout
-   * the deck's brand brings in its `layouts.ts`.
+   * Where the layout comes from: the package that supplies it, such as `@deckster/kit`;
+   * `brand:<name>` for a data layout the deck's brand brings in its `layouts.ts`;
+   * `brand-code:<name>` for a code layout in the brand's `layouts/<layout>/` folder; or
+   * `deck:<name>` for a code layout in the deck's own `layouts/<layout>/` folder.
    */
   source: string;
 
@@ -241,9 +243,11 @@ export type LayoutCatalogInfo = {
 };
 
 /**
- * Lists the layouts a deck can use with their full contracts: the engine's built-in layout plus
- * every layout in the layout catalogs, loaded in Node without starting a server. A later catalog's
- * layout replaces an earlier one of the same name, as it does at build and run time.
+ * Lists the layouts a deck can use with their full contracts: the engine's built-in layout, every
+ * layout in the layout catalogs, the brand's data and code layouts and the deck's code layouts,
+ * loaded in Node without starting a server. A later catalog's layout replaces an earlier one of the
+ * same name, as it does at build and run time; a code layout with a problem is left out with a
+ * warning.
  *
  * @param workspaceRoot - The workspace that contains the deck.
  * @param deckId - The deck folder name.
@@ -259,14 +263,12 @@ export const listLayouts = Effect.fn('listLayouts')(function* (
   brandOverride?: string,
 ): Effect.fn.Return<LayoutCatalogInfo, DeckBuildError, FileSystem.FileSystem> {
   const deck = yield* loadDeck(workspaceRoot, yield* findDeck(workspaceRoot, deckId));
-  const { catalog, brand, warning } = yield* loadBrandCatalog(
+  const { catalog, brand, warnings } = yield* loadBrandCatalog(
     workspaceRoot,
     deckBrandName(deck.config, brandOverride),
+    deck.location,
   );
-  return {
-    ...describeCatalog(catalog, brand?.tokens),
-    warnings: warning === undefined ? [] : [warning],
-  };
+  return { ...describeCatalog(catalog, brand?.tokens), warnings: [...warnings] };
 });
 
 /**

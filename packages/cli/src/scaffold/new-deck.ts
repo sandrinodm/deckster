@@ -75,8 +75,8 @@ export const createDeck = Effect.fn('createDeck')(function* (
 
   const deckTitle = title ?? titleFromName(id);
   const brand = yield* chooseBrand(workspaceRoot, options.brand);
-  const { catalog, warning } = yield* loadBrandCatalog(workspaceRoot, brand);
-  if (warning !== undefined) {
+  const { catalog, warnings } = yield* loadBrandCatalog(workspaceRoot, brand);
+  for (const warning of warnings) {
     yield* Console.error(`warning: ${warning}`);
   }
 

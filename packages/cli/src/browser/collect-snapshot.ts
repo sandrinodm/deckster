@@ -988,6 +988,10 @@ export function collectElements(): CollectedPage {
   const chrome = collectChrome();
 
   const problem = slide.querySelector(errorSelector);
+  const failedLayout =
+    problem?.getAttribute('data-deck-problem') === 'layout-load-failed'
+      ? problem.getAttribute('data-deck-problem-layout')
+      : null;
   const renderError =
     problem === null
       ? null
@@ -998,6 +1002,7 @@ export function collectElements(): CollectedPage {
             problem.textContent ??
             ''
           ).trim(),
+          ...(failedLayout === null ? {} : { failedLayout }),
         };
   return { canvas, surface, elements, slots, chrome, renderError };
 }

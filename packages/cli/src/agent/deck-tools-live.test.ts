@@ -12,12 +12,22 @@ import type { DeckBrowser as DeckBrowserService } from '#browser/deck-browser.ts
 import { deckToolsLive, sharedDeckServer } from '#agent/deck-tools-live.ts';
 import { DeckBrowser } from '#browser/deck-browser.ts';
 import { fakeDeckLayer, pageSlide, type FakeDeck } from '#browser/fake-deck.fixture.ts';
+import {
+  CODE_BRAND,
+  CODE_LAYOUTS_DECK,
+  codeLayoutsWorkspace,
+} from '#layouts/code-layouts.fixture.ts';
 import { FIXTURE_WORKSPACE } from '#lint/lint.fixtures.ts';
 import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
 import { collectedPage, textElement } from '#lint/snapshot.fixture.ts';
 import { createDeck } from '#scaffold/new-deck.ts';
 import { addSlide } from '#scaffold/new-slide.ts';
 import { Workspace } from '#workspace.ts';
+
+/**
+ * Room for the catalog tool to load the code layouts' contracts on a busy machine.
+ */
+const CODE_LAYOUTS_TIMEOUT_MS = 60_000;
 
 /**
  * A PNG signature followed by nothing: enough for a fake screenshot file.
@@ -313,6 +323,33 @@ describe('live deck tools over the fixture deck', () => {
         ]);
         fs.rmSync(root, { recursive: true, force: true });
       }),
+  );
+
+  it.effect(
+    "lists the brand's and the deck's code layouts in the layouts catalog",
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          const live = yield* tools(root, CODE_LAYOUTS_DECK).api;
+          const catalog = (yield* live.catalog({ kind: 'layouts' })) as {
+            warnings: string[];
+            layouts: { name: string; source: string }[];
+          };
+          expect(catalog.warnings).toEqual([]);
+          expect(catalog.layouts).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ name: 'kpi-wall', source: `brand-code:${CODE_BRAND}` }),
+              expect.objectContaining({ name: 'funnel', source: `deck:${CODE_LAYOUTS_DECK}` }),
+            ]),
+          );
+          expect(yield* live.catalog({ kind: 'layouts', name: 'funnel' })).toMatchObject({
+            name: 'funnel',
+            budget: { body: { maxBullets: 3 } },
+          });
+        }),
+      ),
+    CODE_LAYOUTS_TIMEOUT_MS,
   );
 
   it.effect('returns the catalogs the --json commands print, or one entry', () =>

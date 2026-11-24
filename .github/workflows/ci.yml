@@ -160,14 +160,56 @@ jobs:
         run: |
           "$RUNNER_TEMP/prefix/lib/node_modules/@deckster/cli/node_modules/.bin/playwright" install chromium --with-deps
 
+      # The brand has a code layout and the deck a slide on it, so `layouts`, `new slide`, `lint`,
+      # `build`, `shot` and `export` run its contract through the installed contract loader: the
+      # only CI run of that loader outside the repository.
       - name: Create, check, build, shoot and export a deck
         working-directory: ${{ runner.temp }}
         run: |
           export PATH="$RUNNER_TEMP/prefix/bin:$PATH"
+          framework="$RUNNER_TEMP/prefix/lib/node_modules/@deckster/cli/dist/framework"
           mkdir workspace
           cd workspace
           deckster --help
-          deckster new smoke
+          mkdir -p brands/smoke/layouts/kpi-wall
+          cp -R "$framework/brands/default/logos" brands/smoke/logos
+          sed "s/name: 'default'/name: 'smoke'/" "$framework/brands/default/brand.ts" > brands/smoke/brand.ts
+          cat > brands/smoke/layouts/kpi-wall/contract.ts <<'EOF'
+          import { defineLayoutContract } from '@deckster/engine/layout';
+          import { Schema } from 'effect';
+
+          export default defineLayoutContract({
+            name: 'kpi-wall',
+            description: 'Key figures as a wall of tiles.',
+            schema: Schema.Struct({}),
+            slots: { body: { description: 'The figures.', required: true, accepts: ['bullets'] } },
+            budget: { body: { maxBullets: 2 } },
+            example: { frontmatter: {}, body: '- 42% faster\n- 3 regions\n' },
+          });
+          EOF
+          cat > brands/smoke/layouts/kpi-wall/layout.tsx <<'EOF'
+          import { defineLayout, type LayoutProps } from '@deckster/engine';
+
+          import type contract from './contract.ts';
+
+          function KpiWall({ slots }: LayoutProps<typeof contract>) {
+            return <div className="p-3xl type-body">{slots.body}</div>;
+          }
+
+          export default defineLayout<typeof contract>({ name: 'kpi-wall', component: KpiWall });
+          EOF
+          deckster brand check smoke
+          deckster new smoke --brand smoke
+          deckster new slide smoke wall --layout kpi-wall
+          deckster layouts smoke --json > layouts.json
+          node -e '
+            const { layouts, warnings } = JSON.parse(require("node:fs").readFileSync("layouts.json", "utf8"));
+            const wall = layouts.find((layout) => layout.name === "kpi-wall");
+            if (warnings.length > 0 || wall?.source !== "brand-code:smoke") {
+              console.error("The installed CLI did not load the brand code layout:", warnings, wall);
+              process.exit(1);
+            }
+          '
           deckster lint smoke
           deckster build smoke
           deckster shot smoke

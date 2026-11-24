@@ -14,6 +14,7 @@ import {
 } from '@deckster/brand';
 import { brandTokensJson, loadBrand } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
+import { localLayouts } from '@deckster/vite-plugin';
 import { Console, Effect } from 'effect';
 
 import { usageError } from '#cli-error.ts';
@@ -23,6 +24,7 @@ import { printJson, withJsonErrors } from '#json-output.ts';
 import {
   brandProblemWithFile,
   checkCatalogLayouts,
+  layoutProblemWithFile,
   layoutsDisplayPath,
   type BrandFileProblem,
 } from '#layouts/check-brand-layouts.ts';
@@ -116,7 +118,18 @@ const printBrand = Effect.fn('printBrand')(function* (name: string, json: boolea
   }
 
   const brand = yield* loadBrand(root, name);
-  yield* Console.log(summarize(brand.tokens, brand.location.displayPath, brand.warnings));
+  const { layouts: codeLayouts } = yield* localLayouts({
+    root,
+    brand: brand.location,
+    code: 'skip',
+  });
+  yield* Console.log(
+    summarize(brand.tokens, {
+      file: brand.location.displayPath,
+      warnings: brand.warnings,
+      codeLayouts: codeLayouts.map((layout) => layout.name),
+    }),
+  );
   return EXIT_OK;
 });
 
@@ -130,7 +143,7 @@ const checkBrand = Effect.fn('checkBrand')(function* (name: string, json: boolea
   const { root } = yield* Workspace;
   const result = yield* loadBrand(root, name).pipe(
     Effect.flatMap((brand) =>
-      Effect.map(checkCatalogLayouts(brand.tokens.layouts), (layouts): BrandCheck => {
+      Effect.map(checkCatalogLayouts(root, brand, 'load'), (layouts): BrandCheck => {
         const file = brand.location.displayPath;
         const files = {
           file,
@@ -138,7 +151,10 @@ const checkBrand = Effect.fn('checkBrand')(function* (name: string, json: boolea
         };
         return {
           ...files,
-          errors: layouts.errors.map((problem) => brandProblemWithFile(problem, files)),
+          errors: [
+            ...layouts.errors.map((problem) => brandProblemWithFile(problem, files)),
+            ...layouts.local.problems.map((problem) => layoutProblemWithFile(brand, problem)),
+          ],
           warnings: [...brand.warnings, ...layouts.warnings].map((problem) =>
             brandProblemWithFile(problem, files),
           ),
@@ -171,7 +187,11 @@ const checkBrand = Effect.fn('checkBrand')(function* (name: string, json: boolea
 function formatCheck(name: string, check: BrandCheck): string {
   const { errors, warnings } = check;
   const lines: string[] = [];
-  const files = [check.file, ...(check.layoutsFile === undefined ? [] : [check.layoutsFile])];
+  const files = new Set([
+    check.file,
+    ...(check.layoutsFile === undefined ? [] : [check.layoutsFile]),
+    ...[...errors, ...warnings].map((problem) => problem.file),
+  ]);
   for (const file of files) {
     lines.push(file);
     for (const [severity, problems] of [
@@ -179,7 +199,8 @@ function formatCheck(name: string, check: BrandCheck): string {
       ['warning', warnings],
     ] as const) {
       for (const problem of problems.filter((entry) => entry.file === file)) {
-        lines.push(`  ${severity.padEnd('warning'.length)} ${describeProblem(problem)}`);
+        const id = problem.code === undefined ? '' : `${problem.code}: `;
+        lines.push(`  ${severity.padEnd('warning'.length)} ${id}${describeProblem(problem)}`);
         lines.push(`          Fix: ${problem.fix}`);
       }
     }
@@ -193,13 +214,32 @@ function formatCheck(name: string, check: BrandCheck): string {
 }
 
 /**
+ * What the brand summary shows besides the tokens.
+ */
+type SummaryFacts = {
+  /**
+   * The brand file as authors see it.
+   */
+  file: string;
+
+  /**
+   * The brand's warnings.
+   */
+  warnings: readonly BrandProblem[];
+
+  /**
+   * The names of the brand's code layouts.
+   */
+  codeLayouts: readonly string[];
+};
+
+/**
  * A readable summary of a brand's tokens.
  *
  * @param tokens - The resolved tokens.
- * @param file - The brand file as authors see it.
- * @param warnings - The brand's warnings.
+ * @param facts - The brand file, its warnings and its code layouts.
  */
-function summarize(tokens: BrandTokens, file: string, warnings: readonly BrandProblem[]): string {
+function summarize(tokens: BrandTokens, { file, warnings, codeLayouts }: SummaryFacts): string {
   const { families, scale } = tokens.typography;
   const lines = [
     `${tokens.label} (${file})`,
@@ -213,6 +253,7 @@ function summarize(tokens: BrandTokens, file: string, warnings: readonly BrandPr
       .map(([step, size]) => `${step} ${size}px`)
       .join(', ')}; margins ${tokens.spacing.margin.x}x${tokens.spacing.margin.y}px`,
     layoutsLine(tokens),
+    codeLayoutsLine(codeLayouts),
     'Surfaces:',
     ...Object.values(tokens.surfaces).map(
       (surface) =>
@@ -230,6 +271,19 @@ function summarize(tokens: BrandTokens, file: string, warnings: readonly BrandPr
 
   lines.push(`Run \`${deckCommand()} brand ${tokens.name} --json\` for every token.`);
   return lines.join('\n');
+}
+
+/**
+ * The summary line for the brand's code layouts: how many and their names, or that it has none.
+ *
+ * @param names - The names of the code layouts found in the brand's `layouts/` folder.
+ */
+function codeLayoutsLine(names: readonly string[]): string {
+  if (names.length === 0) {
+    return 'Code layouts: none (a layouts/<name>/ folder with contract.ts and layout.tsx adds one)';
+  }
+
+  return `Code layouts: ${names.length} (${names.join(', ')})`;
 }
 
 /**

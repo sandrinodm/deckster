@@ -12,6 +12,7 @@ import { addBrand, type AddBrandRequest } from '#brand-add/add-brand.ts';
 import { parseBrandSource } from '#brand-add/brand-source.ts';
 import { DECKSTER_SOURCE_FILE } from '#brand-add/deckster-source.ts';
 import { NETWORK_PROTOCOLS } from '#brand-add/fetch-brand.ts';
+import { contractRan, writeThrowingLayout } from '#layouts/code-layouts.fixture.ts';
 
 /**
  * The address the tests name; a `url.<base>.insteadOf` rule sends it to the repository on disk, as
@@ -93,6 +94,11 @@ const TEST_PROTOCOLS = [...NETWORK_PROTOCOLS, 'file'] as const;
  * The environment variables the tests set for git, with the values to restore.
  */
 const GIT_VARIABLES = ['GIT_CONFIG_GLOBAL', 'GIT_CONFIG_NOSYSTEM'] as const;
+
+/**
+ * The global the fetched brand's code layout contract sets if anything ever runs it.
+ */
+const CODE_RAN_MARKER = '__deckBrandAddContractRan';
 
 /**
  * The folders the tests made, removed after them.
@@ -262,6 +268,8 @@ function writeCodeLayouts(dir: string, template: string): void {
     fs.writeFileSync(path.join(dir, file), 'export const x = 1;\n');
   }
 
+  // A contract that would show it ran: `brand add` must never evaluate a fetched brand's code.
+  writeThrowingLayout(path.join(dir, 'layouts'), 'kpi-wall', CODE_RAN_MARKER);
   fs.writeFileSync(
     path.join(dir, DECKSTER_SOURCE_FILE),
     JSON.stringify({ source: 'gh:evil/brand', commit: null, codeLayoutsSkipped: ['evil'] }),
@@ -407,6 +415,7 @@ layer(NodeServices.layer)('addBrand', (it) => {
           reason: 'code',
         });
         expect(fs.existsSync(path.join(root, added.dir, 'layouts'))).toBe(false);
+        expect(contractRan(CODE_RAN_MARKER)).toBe(false);
       }),
   );
 

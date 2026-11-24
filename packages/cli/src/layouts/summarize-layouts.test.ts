@@ -1,6 +1,10 @@
 import { describe, expect, it } from '@effect/vitest';
 
-import { brandFirst, formatSummaries, type LayoutSummary } from '#layouts/summarize-layouts.ts';
+import {
+  ownLayoutsFirst,
+  formatSummaries,
+  type LayoutSummary,
+} from '#layouts/summarize-layouts.ts';
 
 /**
  * A summary with the fields the listing prints.
@@ -34,9 +38,25 @@ describe('formatSummaries', () => {
     expect(formatSummaries([kit])).not.toContain('Other layouts');
   });
 
+  it('lists the deck layouts, then the brand data and code layouts, under their headings', () => {
+    const code = summary('kpi-wall', 'brand-code:acme', null);
+    const deck = summary('funnel', 'deck:q3', null);
+    const output = formatSummaries([kit, brand, code, deck]);
+    expect(output.startsWith('Layouts from the q3 deck (prefer these):\nfunnel ')).toBe(true);
+    const order = ['funnel', 'Layouts from the acme brand', 'acme-cover', 'kpi-wall', 'Other'];
+    const positions = order.map((text) => output.indexOf(text));
+    expect(positions).toEqual(positions.toSorted((a, b) => a - b));
+    expect(ownLayoutsFirst([kit, code, deck, brand]).map((entry) => entry.name)).toEqual([
+      'funnel',
+      'kpi-wall',
+      'acme-cover',
+      'default',
+    ]);
+  });
+
   it('keeps each group in catalog order', () => {
     const second = summary('acme-two', 'brand:acme', 'default');
-    expect(brandFirst([kit, brand, second]).map((entry) => entry.name)).toEqual([
+    expect(ownLayoutsFirst([kit, brand, second]).map((entry) => entry.name)).toEqual([
       'acme-cover',
       'acme-two',
       'default',

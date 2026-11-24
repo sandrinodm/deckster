@@ -6,10 +6,13 @@ import { DEFAULT_DECK } from '#workspace.ts';
  */
 const HELP = `Usage: deckster layouts [deck] [--brand <name>] [--summary] [--json]
 
-Lists the layouts a slide can name in its \`layout:\` frontmatter: the engine's and the kit's, and
-the ones the deck's brand brings in brands/<name>/layouts.ts (source "brand:<name>"). A brand's
-layouts are the template the organisation expects, so prefer them when one fits; slides on a brand
-layout fall back to its kit layout when the deck moves to a brand without it.
+Lists the layouts a slide can name in its \`layout:\` frontmatter: the engine's and the kit's, the
+ones the deck's brand brings in brands/<name>/layouts.ts (source "brand:<name>") and as code in
+brands/<name>/layouts/<layout>/ (source "brand-code:<name>"), and the deck's own code layouts in
+decks/<deck>/layouts/<layout>/ (source "deck:<deck>"). The deck's and the brand's layouts are the
+template the organisation expects, so prefer them when one fits; slides on a brand data layout fall
+back to its kit layout when the deck moves to a brand without it. A code layout with a problem is
+left out, with a warning on stderr (and in "warnings" with --json) that names it and the fix.
 
 Arguments:
   deck          Deck folder name under decks/. Default: $DECK, else "${DEFAULT_DECK}", else the only deck.
@@ -24,12 +27,14 @@ Options:
                 accepts and its budget, and item lists with their counts (stats[2-4]). With
                 --json, { deck, warnings, layouts: [{ name, description, surface, titleMaxChars, slots:
                 { <slot>: { accepts, required, maxWords?, maxBullets?, maxLines? } }, items:
-                [{ field, min, max }] }] }. The brand's layouts come first, under a heading that
-                names the brand, and each also has source ("brand:<name>") and fallback. Without
-                --summary the output is the full catalog.
+                [{ field, min, max }] }] }. The deck's layouts come first, under a heading that
+                names the deck, then the brand's, under a heading that names the brand; each
+                layout also has source and fallback. Without --summary the output is the full
+                catalog.
   --json        Print { deck, slideFrontmatter, warnings, layouts }. slideFrontmatter is the JSON Schema of
-                the fields every slide takes. Each layout has name, source (a package, or
-                "brand:<name>" for a brand layout), fallback (the kit layout a brand layout falls
+                the fields every slide takes. Each layout has name, source (a package such as
+                "@deckster/kit", "brand:<name>" for a brand data layout, "brand-code:<name>" for
+                a brand code layout or "deck:<name>" for a deck code layout), fallback (the kit layout a brand layout falls
                 back to, else null), label (a brand layout's name in its source template, else
                 null), description,
                 frontmatter (JSON Schema of its own fields, with defaults), fields ({ required,

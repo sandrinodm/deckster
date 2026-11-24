@@ -5,7 +5,7 @@ import { openCommentCounts } from '@deckster/comments/node';
 import { budgetSeconds } from '@deckster/engine/frontmatter';
 import {
   findDeck,
-  loadLayoutCatalog,
+  deckCatalog,
   type DeckBuildError,
   type LayoutCatalogIndex,
 } from '@deckster/vite-plugin';
@@ -170,9 +170,11 @@ export const lintDeck = Effect.fn('lintDeck')(function* (
   const rendered = Effect.scoped(
     Effect.gen(function* () {
       const opened = yield* openDeck({ deck: options.deck, brand: options.brand, scale: 1 });
-      const catalog = yield* loadLayoutCatalog(undefined, {
-        brand: opened.brand.tokens,
-        layoutsFile: opened.brand.layoutsFile,
+      const { index: catalog } = yield* deckCatalog({
+        root: workspaceRoot,
+        brand: opened.brand,
+        deck: opened.deck.location,
+        code: 'load',
       });
       const openComments = yield* openCommentCounts(location.dir);
       return yield* lintOpenedDeck(opened, catalog, rules, openComments);

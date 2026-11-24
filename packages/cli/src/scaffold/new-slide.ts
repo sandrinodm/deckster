@@ -12,11 +12,18 @@ import {
   SLIDES_DIR,
   type DeckBuildError,
   type LayoutCatalogIndex,
+  type LayoutProblem,
 } from '@deckster/vite-plugin';
 import { Console, Effect, FileSystem, Result } from 'effect';
 import path from 'node:path';
 
-import { cliError, fileSystemError, type CliError, type FileSystemError } from '#cli-error.ts';
+import {
+  cliError,
+  fileSystemError,
+  firstLine,
+  type CliError,
+  type FileSystemError,
+} from '#cli-error.ts';
 import { exampleMdx } from '#layouts/list-layouts.ts';
 import { loadBrandCatalog } from '#layouts/load-brand-catalog.ts';
 import { assertKebabName } from '#scaffold/names.ts';
@@ -76,11 +83,12 @@ export const addSlide = Effect.fn('addSlide')(function* (
   // the layout asked for is one that the brand's layouts might have supplied.
   const loaded = yield* Effect.result(loadDeck(options.workspaceRoot, deck));
   const config = Result.isSuccess(loaded) ? loaded.success.config : {};
-  const { catalog, warning } = yield* loadBrandCatalog(
+  const { catalog, local, warnings } = yield* loadBrandCatalog(
     options.workspaceRoot,
     deckBrandName(config, options.brand),
+    deck,
   );
-  if (warning !== undefined) {
+  for (const warning of warnings) {
     yield* Console.error(`warning: ${warning}`);
   }
 
@@ -89,7 +97,7 @@ export const addSlide = Effect.fn('addSlide')(function* (
     return yield* loaded.failure;
   }
 
-  const contract = yield* chooseLayout(catalog, wanted, deck.id);
+  const contract = yield* chooseLayout(catalog, wanted, deck.id, local.problems);
   const slideFile = path.join(deck.slidesDir, `${id}.mdx`);
   const taken = yield* existingSlideFiles(deck.slidesDir, id);
   const [existing] = taken;
@@ -173,20 +181,31 @@ const existingSlideFiles = Effect.fn('existingSlideFiles')(function* (
  * @param catalog - The layout catalog.
  * @param name - The layout name.
  * @param deck - The deck folder name, for the fix.
- * @throws CliError in the error channel, listing the layouts, when the catalog has no such layout.
+ * @param problems - The problems of the brand's and the deck's code layouts, which are left out of
+ *   the catalog.
+ * @throws CliError in the error channel when the catalog has no such layout: the code layout's
+ *   problem when a code layout of that name has one, else the list of layouts.
  */
 const chooseLayout = Effect.fn('chooseLayout')(function* (
   catalog: LayoutCatalogIndex,
   name: string,
   deck: string,
+  problems: readonly LayoutProblem[],
 ): Effect.fn.Return<AnyLayoutContract, CliError> {
   const layout = catalog.get(name);
-  if (layout === undefined) {
+  if (layout !== undefined) {
+    return layout.contract;
+  }
+
+  const problem = problems.find((entry) => entry.layout === name);
+  if (problem !== undefined) {
     return yield* cliError(
-      `There is no layout "${name}". Layouts: ${[...catalog.keys()].join(', ')}.\n` +
-        `Run \`${deckCommand()} layouts ${deck}\` to see what each one is for.`,
+      `The layout "${name}" cannot be used: ${firstLine(problem.message)}\n${problem.fix}`,
     );
   }
 
-  return layout.contract;
+  return yield* cliError(
+    `There is no layout "${name}". Layouts: ${[...catalog.keys()].join(', ')}.\n` +
+      `Run \`${deckCommand()} layouts ${deck}\` to see what each one is for.`,
+  );
 });

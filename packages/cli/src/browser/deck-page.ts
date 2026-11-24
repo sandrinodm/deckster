@@ -410,7 +410,15 @@ function buildDeckPage(page: Page, slides: readonly PageSlide[], problems: PageP
             const file = problem.querySelector('.deck-problem-file')?.textContent ?? '';
             const message =
               problem.querySelector('.deck-problem-message')?.textContent ?? problem.textContent;
-            return { file, message: (message ?? '').trim() };
+            const failedLayout =
+              problem.getAttribute('data-deck-problem') === 'layout-load-failed'
+                ? problem.getAttribute('data-deck-problem-layout')
+                : null;
+            return {
+              file,
+              message: (message ?? '').trim(),
+              ...(failedLayout === null ? {} : { failedLayout }),
+            };
           }),
         catch: (cause) => browserError('check the slide for errors', cause),
       }),

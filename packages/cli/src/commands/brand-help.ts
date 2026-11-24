@@ -26,13 +26,18 @@ from a git repository.
                            recoloring the surface writes, with nodeFill (the fill is that
                            surface's diagram node color). Colors are hex, sizes canvas px.
                            It also prints the number and names of the brand's own layouts
-                           (brands/<name>/layouts.ts). With --json, layouts has each
+                           (brands/<name>/layouts.ts) and of its code layouts
+                           (brands/<name>/layouts/<layout>/). With --json, layouts has each
                            layout with its defaults filled in.
   deckster brand check <name>  Loads and validates brands/<name> and prints every error and warning
                            with its field and fix. This includes its layouts: each must name a
                            kit or engine layout as its fallback, bind only slots and fields that
                            layout has, bind every one it requires, and not clash with a kit
-                           layout's name. Exits with 1 when it has errors.
+                           layout's name. It also loads its code layouts' contracts and reports
+                           each problem (a missing file, a name that differs from the folder, a
+                           contract that throws or is invalid, a name already taken) as an error
+                           under the layout's file, with the problem id. Exits with 1 when it
+                           has errors.
   deckster brand add <source>  Copies a brand folder from a git repository into brands/<name>, named
                            by the brand's \`name\`. <source> is gh:owner/repo/<folder>#<ref>
                            (over https), a GitHub link (https://github.com/owner/repo/tree/<ref>/
@@ -50,7 +55,8 @@ from a git repository.
 
 Options:
   --json        For check: { brand, file, ok, errors, warnings }, each problem { path, message,
-                fix }. For add: { ok, brand, dir, source, commit, replaced, files, written,
+                fix, file }, and a code layout's also { code, layout } (its problem id, such as
+                layout-load-failed, and the layout's folder name). For add: { ok, brand, dir, source, commit, replaced, files, written,
                 skipped: [{ path, reason }], fonts: [{ name, version, installed }], warnings,
                 next }. A failure prints { ok: false, error: { type, message } }.
   --force       For add: replace a brand of the same name the workspace already has.
