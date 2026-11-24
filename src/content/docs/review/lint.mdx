@@ -47,12 +47,25 @@ sidebar:
 
 Findings are grouped under the file to edit. Each one is two lines:
 
-- the severity (`error` or `warning`), the rule id, and in brackets the slide id, plus `step N` when only one step has the problem;
+- the severity (`error`, `warning` or `info`), the rule id, and in brackets the slide id, plus `step N` when only one step has the problem;
 - the message, then `Fix:` with what to change. The fix names the file, the prop or the command, so you or your agent can act on it without opening a browser.
 
-The last line counts everything: `<deck>: N errors, N warnings in N slides (N steps checked).`, or `<deck>: no problems in ...` when there is nothing to report. The step count includes every step of every slide: a slide with `<Step at={1}>` to `<Step at={3}>` adds four (steps 0 to 3).
+The last line counts everything: `<deck>: N errors, N warnings in N slides (N steps checked).`, with `, N info` after the warnings when there are info findings, or `<deck>: no problems in ...` when there is nothing to report. The step count includes every step of every slide: a slide with `<Step at={1}>` to `<Step at={3}>` adds four (steps 0 to 3).
 
 **Errors fail the run, warnings do not.** `deckster lint` exits with 1 when there is at least one error, and with 0 when there are only warnings. Bad arguments, an unknown deck or a browser that will not start also exit with 1.
+
+New in 0.10.0, an `info` finding points at something that is allowed but has a better form, and never fails the run. The one rule that reports it is `placed-pixels`, for a [placed element](/write-slides/placed-elements/) positioned in pixels:
+
+```console
+$ deckster lint launch-review
+decks/launch-review/slides/results.mdx
+  info    placed-pixels (results step 0): <Text> (box=96,960,600,48) uses pixel coordinates (`box={[96, 960, 600, 48]}`).
+          Fix: Replace `box` with `place="bottom-left" zone="footer" width={4}` so it follows the brand's margins and grid.
+
+launch-review: 0 errors, 0 warnings, 1 info in 2 slides (2 steps checked).
+```
+
+This run exits with 0, and `--json` reports `"ok": true` with `"info": 1` in its `summary`.
 
 Lint runs in three passes. First the deck config, the brand and every slide file go through the same checks as `deckster build`; a problem there is a `schema` finding (a `brand` finding when it is in the brand), and the rendered checks are skipped because the deck cannot render:
 
@@ -158,7 +171,7 @@ Without `hidden: true` the `statement` slide breaks the run and the deck passes.
 
 ## Every rule
 
-[Lint rules](/reference/lint-rules/) lists all 43 rules `deckster lint --help` prints in 0.7.0, plus `schema`, `brand` and the findings the slide compiler adds, each with its severity and a short fix.
+[Lint rules](/reference/lint-rules/) lists all 50 rules `deckster lint --help` prints in 0.10.0, plus `schema`, `brand` and the findings the slide compiler adds, each with its severity and a short fix.
 
 ## Use it in a script
 
@@ -173,6 +186,7 @@ $ deckster lint launch-review --json
   "summary": {
     "errors": 1,
     "warnings": 2,
+    "info": 0,
     "slides": 3,
     "steps": 3,
     "budgetSeconds": null

@@ -11,29 +11,29 @@ page covers and this page decides how it is written; list any conflict in your r
 
 ## The reader
 
-Someone who installed `@deckster/cli` 0.9.0 from npm (`npm install --global @deckster/cli`, Node
+Someone who installed `@deckster/cli` 0.10.1 from npm (`npm install --global @deckster/cli`, Node
 26 or later) and works in a folder of their own with `decks/` and maybe `brands/`. They have never
 seen the deckster repository, and often they are directing an AI agent (Claude Code, Codex) that
 writes the slides while they review. Write for that person: what to type, what they will see,
 what to tell their agent.
 
-## Ground truth: v0.9.0, run it
+## Ground truth: v0.10.1, run it
 
-- The pages describe the npm release `@deckster/cli@0.9.0`. Its tag is `v0.9.0`.
+- The pages describe the npm release `@deckster/cli@0.10.1`. Its tag is `v0.10.1`.
   Read files at the tag
-  (`git -C ../2026-11-13-presentation show v0.9.0:<path>`), because `main` and the working tree
+  (`git -C ../2026-11-13-presentation show v0.10.1:<path>`), because `main` and the working tree
   move on after a release. Earlier pages were checked against 0.6.0 (commit `5ee4926`), 0.5.0 (commit
   `7dc64ea`), 0.4.0 (commit `50e5d19`) or 0.3.0 (commit `4e0b186`); a statement that names one of
   them says which version was measured.
-- **Run new or changed commands against 0.9.0 and verify their output.** Install it
+- **Run new or changed commands against 0.10.1 and verify their output.** Install it
   once in a scratch folder and run it from a fresh workspace:
 
   ```sh
-  npm install --prefix "$TMPDIR/deck-0.9.0" @deckster/cli@0.9.0
+  npm install --prefix "$TMPDIR/deck-0.10.1" @deckster/cli@0.10.1
   mkdir -p "$TMPDIR/talks" && cd "$TMPDIR/talks"
   export DECK_ROOT="$PWD"                      # the CLI climbs to the nearest folder with decks/
-  export PATH="$TMPDIR/deck-0.9.0/node_modules/.bin:$PATH"
-  deckster --version                               # 0.9.0
+  export PATH="$TMPDIR/deck-0.10.1/node_modules/.bin:$PATH"
+  deckster --version                               # 0.10.1
   ```
 
   Before a release is on npm, pack the CLI as the publish workflow does
@@ -196,7 +196,7 @@ diagram looks and cards (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` i
 `card="..."` on diagram parts, `diagram-card-missing`) are new in 0.4.0. Every other behaviour you
 describe must be in the documented release. Something on `main` that is newer than the release is left out, or,
 where a brief asks for it, mentioned in one or two sentences inside
-`<Aside type="note" title="Not in v0.9.0">`; if `main` or the working tree differs from the
+`<Aside type="note" title="Not in v0.10.1">`; if `main` or the working tree differs from the
 release, describe the release and report the difference.
 
 ## Your report

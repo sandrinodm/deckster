@@ -996,6 +996,348 @@
       "shared": []
     },
     {
+      "name": "Place",
+      "kind": "place",
+      "useWhen": "Position an icon, badge, image, QR code, button, SVG or short Markdown list outside a layout slot (for example a confidential footer mark or a callout beside a chart).",
+      "avoid": "Building a multi-column slide by hand: pick a layout instead. Keep to at most four placed elements per slide and at most 25 words per element.",
+      "props": {
+        "place": {
+          "type": "'top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right'",
+          "required": false,
+          "default": null,
+          "description": "Named anchor position within the zone (mutually exclusive with `cols`/`rows` and `box`)."
+        },
+        "cols": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Inclusive 1-based column range on the brand grid, such as \"9-12\" or \"4\"."
+        },
+        "rows": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Inclusive 1-based row range on the brand grid, such as \"1-2\" or \"5\"."
+        },
+        "box": {
+          "type": "[number, number, number, number]",
+          "required": false,
+          "default": null,
+          "description": "Explicit canvas-pixel box [x, y, width, height]; escape hatch for imported templates."
+        },
+        "zone": {
+          "type": "'safe' | 'canvas' | 'header' | 'footer'",
+          "required": false,
+          "default": "safe",
+          "description": "Slide frame the placement is measured in: safe, canvas, header or footer."
+        },
+        "width": {
+          "type": "number | 'sm' | 'md' | 'lg'",
+          "required": false,
+          "default": null,
+          "description": "Width in grid columns or a named size token (sm=3, md=4, lg=6); content-sized when omitted."
+        },
+        "height": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Fixed height in grid rows; follows content up to the zone height when omitted."
+        },
+        "inset": {
+          "type": "'2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'",
+          "required": false,
+          "default": null,
+          "description": "Brand spacing token pulling a named placement inward from its zone edge."
+        },
+        "name": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Optional name for the element in PowerPoint export and diagnostics."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Step index (1 or more) that reveals this element; animates with the slide entrance when omitted."
+        },
+        "effect": {
+          "type": "'rise' | 'fade' | 'scale' | 'blur' | 'wipe'",
+          "required": false,
+          "default": "rise",
+          "description": "Step reveal effect when `at` is set: rise, fade, scale, blur or wipe."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "Any Markdown block, bullet list or kit component (<Icon>, <Image>, <QR>, <Button>, <Svg>) to place."
+        }
+      },
+      "example": "<Place place=\"bottom-left\" zone=\"footer\">\n  <Icon name=\"lock\" /> Confidential\n</Place>",
+      "shared": []
+    },
+    {
+      "name": "Shape",
+      "kind": "place",
+      "useWhen": "Draw a token-styled geometric callout, badge, stamp or accent box (rect, square, ellipse, circle, pill, diamond or triangle) with optional fitted text or Markdown lists. Omit placement props to render it inline in normal flow.",
+      "avoid": "Large boxes covering more than 35% of the safe area or replacing a slide layout. Prefer `surface` over raw `fill` so text contrast is checked by the brand.",
+      "props": {
+        "place": {
+          "type": "'top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right'",
+          "required": false,
+          "default": null,
+          "description": "Named anchor position within the zone (mutually exclusive with `cols`/`rows` and `box`)."
+        },
+        "cols": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Inclusive 1-based column range on the brand grid, such as \"9-12\" or \"4\"."
+        },
+        "rows": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Inclusive 1-based row range on the brand grid, such as \"1-2\" or \"5\"."
+        },
+        "box": {
+          "type": "[number, number, number, number]",
+          "required": false,
+          "default": null,
+          "description": "Explicit canvas-pixel box [x, y, width, height]; escape hatch for imported templates."
+        },
+        "zone": {
+          "type": "'safe' | 'canvas' | 'header' | 'footer'",
+          "required": false,
+          "default": "safe",
+          "description": "Slide frame the placement is measured in: safe, canvas, header or footer."
+        },
+        "width": {
+          "type": "number | 'sm' | 'md' | 'lg'",
+          "required": false,
+          "default": null,
+          "description": "Width in grid columns or a named size token (sm=3, md=4, lg=6); content-sized when omitted."
+        },
+        "height": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Fixed height in grid rows; follows content up to the zone height when omitted."
+        },
+        "inset": {
+          "type": "'2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'",
+          "required": false,
+          "default": null,
+          "description": "Brand spacing token pulling a named placement inward from its zone edge."
+        },
+        "name": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Optional name for the element in PowerPoint export and diagnostics."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Step index (1 or more) that reveals this element; animates with the slide entrance when omitted."
+        },
+        "effect": {
+          "type": "'rise' | 'fade' | 'scale' | 'blur' | 'wipe'",
+          "required": false,
+          "default": "rise",
+          "description": "Step reveal effect when `at` is set: rise, fade, scale, blur or wipe."
+        },
+        "shape": {
+          "type": "'rect' | 'square' | 'ellipse' | 'circle' | 'pill' | 'diamond' | 'triangle'",
+          "required": false,
+          "default": "rect",
+          "description": "Geometric shape; `square` and `circle` lock a 1:1 aspect ratio."
+        },
+        "surface": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Brand surface (`default`, `inverse`, `accent`, `gradient` or custom) that re-themes fill and text colors with checked contrast."
+        },
+        "fill": {
+          "type": "'none' | 'bg' | 'surface' | 'fg' | 'heading' | 'muted' | 'accent' | 'accent-fg' | 'border' | 'positive' | 'negative'",
+          "required": false,
+          "default": null,
+          "description": "Fill color role on the current surface, or `none` for transparent."
+        },
+        "border": {
+          "type": "'bg' | 'surface' | 'fg' | 'heading' | 'muted' | 'accent' | 'accent-fg' | 'border' | 'positive' | 'negative'",
+          "required": false,
+          "default": null,
+          "description": "Border color role on the current surface."
+        },
+        "stroke": {
+          "type": "'hairline' | 'regular' | 'bold'",
+          "required": false,
+          "default": "regular",
+          "description": "Border width token when `border` is set."
+        },
+        "radius": {
+          "type": "'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full'",
+          "required": false,
+          "default": "none",
+          "description": "Corner radius token; ignored on ellipse, circle, diamond and triangle."
+        },
+        "shadow": {
+          "type": "'none' | 'sm' | 'md' | 'lg'",
+          "required": false,
+          "default": "none",
+          "description": "Drop shadow token from the active surface."
+        },
+        "padding": {
+          "type": "'2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'",
+          "required": false,
+          "default": "md",
+          "description": "Inner spacing token from the brand scale."
+        },
+        "type": {
+          "type": "'display' | 'headline' | 'title' | 'lead' | 'body' | 'small' | 'caption' | 'label' | 'stat' | 'quote' | 'code'",
+          "required": false,
+          "default": "body",
+          "description": "Brand type step for text inside the element."
+        },
+        "align": {
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": null,
+          "description": "Horizontal text alignment: start, center or end."
+        },
+        "anchor": {
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": null,
+          "description": "Vertical text placement inside the box: start, center or end."
+        },
+        "color": {
+          "type": "'bg' | 'surface' | 'fg' | 'heading' | 'muted' | 'accent' | 'accent-fg' | 'border' | 'positive' | 'negative'",
+          "required": false,
+          "default": null,
+          "description": "Brand color role for text inside the element."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "Optional text, Markdown paragraphs or bullet lists inside the shape."
+        }
+      },
+      "example": "<Shape place=\"top-right\" width={4} surface=\"accent\" radius=\"md\">\n  New in 0.9\n</Shape>",
+      "shared": []
+    },
+    {
+      "name": "Text",
+      "kind": "place",
+      "useWhen": "Place unboxed floating text directly on the slide: footer sources, corner labels, stamps or standalone callout figures without fill or border chrome. Omit placement props to render it inline.",
+      "avoid": "Main slide prose or titles; those belong in the layout slots and frontmatter. Keep placed text brief (25 words or fewer).",
+      "props": {
+        "place": {
+          "type": "'top-left' | 'top' | 'top-right' | 'left' | 'center' | 'right' | 'bottom-left' | 'bottom' | 'bottom-right'",
+          "required": false,
+          "default": null,
+          "description": "Named anchor position within the zone (mutually exclusive with `cols`/`rows` and `box`)."
+        },
+        "cols": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Inclusive 1-based column range on the brand grid, such as \"9-12\" or \"4\"."
+        },
+        "rows": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Inclusive 1-based row range on the brand grid, such as \"1-2\" or \"5\"."
+        },
+        "box": {
+          "type": "[number, number, number, number]",
+          "required": false,
+          "default": null,
+          "description": "Explicit canvas-pixel box [x, y, width, height]; escape hatch for imported templates."
+        },
+        "zone": {
+          "type": "'safe' | 'canvas' | 'header' | 'footer'",
+          "required": false,
+          "default": "safe",
+          "description": "Slide frame the placement is measured in: safe, canvas, header or footer."
+        },
+        "width": {
+          "type": "number | 'sm' | 'md' | 'lg'",
+          "required": false,
+          "default": null,
+          "description": "Width in grid columns or a named size token (sm=3, md=4, lg=6); content-sized when omitted."
+        },
+        "height": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Fixed height in grid rows; follows content up to the zone height when omitted."
+        },
+        "inset": {
+          "type": "'2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'",
+          "required": false,
+          "default": null,
+          "description": "Brand spacing token pulling a named placement inward from its zone edge."
+        },
+        "name": {
+          "type": "string",
+          "required": false,
+          "default": null,
+          "description": "Optional name for the element in PowerPoint export and diagnostics."
+        },
+        "at": {
+          "type": "number",
+          "required": false,
+          "default": null,
+          "description": "Step index (1 or more) that reveals this element; animates with the slide entrance when omitted."
+        },
+        "effect": {
+          "type": "'rise' | 'fade' | 'scale' | 'blur' | 'wipe'",
+          "required": false,
+          "default": "rise",
+          "description": "Step reveal effect when `at` is set: rise, fade, scale, blur or wipe."
+        },
+        "type": {
+          "type": "'display' | 'headline' | 'title' | 'lead' | 'body' | 'small' | 'caption' | 'label' | 'stat' | 'quote' | 'code'",
+          "required": false,
+          "default": "body",
+          "description": "Brand type step for text inside the element."
+        },
+        "align": {
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": null,
+          "description": "Horizontal text alignment: start, center or end."
+        },
+        "anchor": {
+          "type": "'start' | 'center' | 'end'",
+          "required": false,
+          "default": null,
+          "description": "Vertical text placement inside the box: start, center or end."
+        },
+        "color": {
+          "type": "'bg' | 'surface' | 'fg' | 'heading' | 'muted' | 'accent' | 'accent-fg' | 'border' | 'positive' | 'negative'",
+          "required": false,
+          "default": null,
+          "description": "Brand color role for text inside the element."
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": false,
+          "default": null,
+          "description": "Text, inline Markdown or short lists to render without box chrome."
+        }
+      },
+      "example": "<Text place=\"bottom-right\" zone=\"footer\" type=\"caption\" color=\"muted\">\n  Source: Q3 customer survey, n = 412\n</Text>",
+      "shared": []
+    },
+    {
       "name": "Notes",
       "kind": "notes",
       "useWhen": "Speaker notes: what the slide proves and what to say. Every slide has them.",

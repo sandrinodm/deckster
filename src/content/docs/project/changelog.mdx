@@ -1,9 +1,33 @@
 ---
 title: "Changelog"
-description: "Deckster v0.9.0, v0.8.0 and v0.7.0 changes, with guides and links to the code."
+description: "Deckster v0.10.1, v0.10.0, v0.9.0, v0.8.0 and v0.7.0 changes, with guides and links to the code."
 sidebar:
   order: 6
 ---
+
+## v0.10.1
+
+[Release notes](https://github.com/sandrinodm/deckster/releases/tag/v0.10.1).
+
+### Cropped SVG drawings no longer fail `canvas-overflow`
+
+The slide `deckster new slide <deck> <id> --layout image-reveal` writes failed `deckster lint` with two `canvas-overflow` errors. Its placeholder drawing uses `preserveAspectRatio="xMidYMid slice"`, which crops it like a photo with `object-fit: cover`, and the rule measured each cropped shape in full. `canvas-overflow` now measures a shape inside an inline `<svg>` by the part the `<svg>` shows, unless the `<svg>` has `overflow: visible`; the `<svg>` itself is still checked. [Lint rules](/reference/lint-rules/) · [PR #42](https://github.com/sandrinodm/deckster/pull/42)
+
+## v0.10.0
+
+[Release notes](https://github.com/sandrinodm/deckster/releases/tag/v0.10.0).
+
+### Placed elements: `<Shape>`, `<Text>` and `<Place>`
+
+Put a callout, badge, stamp, label, icon or short list anywhere on a slide, outside the layout's slots. `<Shape>` draws a box in one of seven geometries (`rect`, `square`, `ellipse`, `circle`, `pill`, `diamond`, `triangle`) with brand colours and fitted text, `<Text>` sets type without a box, and `<Place>` positions any kit component or Markdown block. Position them by a named place inside a zone, a cell of the brand's 12×6 grid or, as a last resort, a pixel box. They don't count against a layout's slot limits, corner chrome makes way for them, and seven `placed-*` lint rules catch one that leaves the canvas, covers text or says too much. A brand can set its grid's rows with `spacing.grid.rows` (default 6). PowerPoint exports a shape as one native shape with its text and a `<Text>` as a native text box. [Placed elements](/write-slides/placed-elements/) · [Lint rules](/reference/lint-rules/) · [PR #40](https://github.com/sandrinodm/deckster/pull/40)
+
+### The `image-reveal` layout
+
+A two-step layout: the slide opens as a full title cover, and on the next step the title, eyebrow and subtitle slide into a bar docked at the bottom (or top) while the image fills the rest of the slide. `dock`, `align`, `barSurface`, `fit` and `focal` set how it looks, and the lookbook has four examples. The kit now has 64 layouts. [image-reveal](/reference/layouts/image-reveal/) · [PR #38](https://github.com/sandrinodm/deckster/pull/38)
+
+### `deckster present` no longer shows a running dev server's deck
+
+`deckster present` could take the same port as a `deckster dev` server that was still running, because one listened on `127.0.0.1` and the other on `localhost` (`::1` on macOS), and the window could then show the dev server's deck. The dev and preview servers now listen on `127.0.0.1` unless you pass `--host`, so `deckster dev` prints `http://127.0.0.1:5173/`. `deckster present` serves the deck on a free port the operating system picks unless you pass `--port`, and warns when a dev server for the workspace is still running. [Present on one screen](/present/deck-present-and-displays/#present-on-one-screen) · [Troubleshooting](/present/troubleshooting/#the-window-shows-an-older-version-of-the-deck) · [PR #39](https://github.com/sandrinodm/deckster/pull/39)
 
 ## v0.9.0
 

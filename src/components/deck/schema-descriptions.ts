@@ -333,7 +333,8 @@ const BRAND: Record<string, Entry> = {
   "spacing.margin.y": "Top and bottom margin in canvas pixels.",
   "spacing.grid": "The layout grid.",
   "spacing.grid.columns": "The number of columns.",
-  "spacing.grid.gutter": "The gap between columns in canvas pixels.",
+  "spacing.grid.rows": "The number of rows that a placed element's `rows` and `height` count, 1 to 12. Default `6`. New in 0.10.0.",
+  "spacing.grid.gutter": "The gap between columns, and between rows for placed elements, in canvas pixels.",
 
   // logo
   logo: "Logo files and where the chrome places the logo.",

@@ -1,0 +1,245 @@
+---
+title: "Placed elements"
+description: "Put a badge, callout, label or short list anywhere on a slide with Shape, Text and Place, outside the layout's slots."
+sidebar:
+  order: 5.7
+---
+
+A layout decides where a slide's content goes. Placed elements are the exception for small things the layout has no slot for: a badge beside a chart, a stamp, a source line in the footer, a short list in a corner. After this page you can put one on a slide with `<Shape>`, `<Text>` or `<Place>`, position it by a named place, a zone or a grid cell, reveal it by step, and read what `deckster lint` says about it.
+
+<Aside type="note" title="New in v0.10.0">
+`<Shape>`, `<Text>` and `<Place>` need `@deckster/cli` 0.10.0 or later. In 0.9.0, `deckster lint` reports a `render-error` for the slide: "Expected component `Shape` to be defined: you likely forgot to import, pass, or provide it."
+</Aside>
+
+## A slot or a placed element
+
+Put the argument of a slide in its layout: the title, the body, the chart, the aside. A placed element sits on its own layer over the layout, measured from the slide's edges, so it never moves the layout's content and the slot budgets never count it. Six bullets in a `content` body and a two-bullet list in a `<Place>` beside them lint clean, where eight bullets in the body would be a `content-budget` error.
+
+That makes them easy to overuse, so lint caps them. A slide may hold at most 4 placed elements, at most 25 words in one element and 40 across the slide, and an element outside `zone="canvas"` should cover no more than 35% of the safe area. When you need more than that, the slide wants a layout such as `split`, `columns` or `cards` instead (see [layouts and slots](/concepts/layouts-and-slots/)).
+
+Three components share the placement props:
+
+- `<Text>` is text with no box around it: a caption, a label, a source line, a big number.
+- `<Shape>` is a box with a geometry, a fill from the brand and optional text inside: a badge, a callout, a stamp.
+- `<Place>` positions anything else: a Markdown paragraph or list, an `<Icon>`, `<Image>`, `<QR>`, `<Button>` or `<Svg>`.
+
+All their colours, borders, radii, shadows, padding and type sizes are brand tokens, so a placed element restyles with the brand like the rest of the slide.
+
+## A slide with placed elements
+
+This lookbook slide has one of each: a `<Shape>` badge on the right, a `<Place>` with a bullet list at the bottom right that comes in on the first step, and a `<Text>` caption at the bottom left. The source tab shows that they are written at the top level of the slide, after the body:
+
+<SlideExample deck="lookbook" slide="placed-anchors" />
+
+Write each placed element at the top level of an MDX slide, never inside a list, a slot tag or another component. Placement is measured against the slide, so a nested one fails the build. This `<Text>` sits inside a list item:
+
+```mdx
+- Every city now books through one API <Text place="top-right">Live</Text>
+```
+
+```console
+$ deckster lint launch-review
+decks/launch-review/slides/results.mdx
+  error   schema (results): Line 6, column 40: <Text> cannot be placed inside another element.
+          Fix: Move <Text> to the top level of the slide; placement is relative to the slide canvas.
+
+launch-review: 1 error, 0 warnings.
+```
+
+An element is placed by one of three placements: `place`, `cols` with `rows`, or `box` (see [position an element](#position-an-element)). In an MDX slide these props and the ones that go with them (`zone`, `width`, `height`, `inset`, `name`, and `shape` on `<Shape>`) must be literals: a string, a number or a list of numbers. The build reads them without running the slide and refuses an expression.
+
+`<Shape>` and `<Text>` without a placement are ordinary blocks: they sit in the slot where you write them, in the flow of the text. With `zone` or `inset` but no placement, the build stops with "uses placement modifiers without a placement prop". `<Place>` always needs a placement.
+
+## Text
+
+`<Text>` sets its content in a brand type step (`type`, default `body`), with `align` (`start`, `center` or `end`) across the box, `anchor` (`start`, `center` or `end`) down it, and `color` from the surface's colour roles. It draws no fill, border, radius, shadow or padding. The showcase's `presenter` slide uses one as a hint in the footer:
+
+```mdx
+<Text place="center" zone="footer" width={5} align="center" type="caption" color="muted">
+  Press p to open presenter view
+</Text>
+```
+
+## Shape
+
+`<Shape>` draws a box in one of seven geometries with `shape`: `rect` (the default), `square`, `ellipse`, `circle`, `pill`, `diamond` or `triangle`. `square` and `circle` keep a 1:1 ratio: a `width` alone sets both sides, and in a grid cell the shape is the largest square that fits, centred.
+
+<SlideShot deck="lookbook" slide="placed-shapes" alt="A slide on a dark surface titled 'Four shape geometries frame a callout on the grid' with four shapes in a row along the bottom: a filled rectangle reading 'Rect · €3.10', an outlined square reading 'Square · 1:1', a light circle reading 'Circle · 90s' and a pill reading 'Pill · Same hour'." />
+
+Colour a shape with `surface`, the brand surface it is drawn on (`default`, `inverse`, `accent`, `gradient` or one of the brand's own). The surface brings its own text colours, which the brand has already checked for contrast. `fill` takes a colour role, or `none`, and keeps the slide's text colours, so the build checks the pair and refuses one that fails 4.5:1:
+
+```console
+$ deckster lint launch-review
+decks/launch-review/slides/results.mdx
+  error   schema (results): Line 8, column 1: <Shape> text role "fg" (#161920) on fill="accent" (#2d4ae0) has contrast 2.65:1; text needs 4.5:1.
+          Fix: Use surface="accent" (or a contrasting color role) so text on fill="accent" meets 4.5:1 contrast.
+
+launch-review: 1 error, 0 warnings.
+```
+
+A shape with neither `surface`, `fill` nor `border` is filled with the `surface` colour role. The rest of its look:
+
+| Prop | Values | Default |
+| --- | --- | --- |
+| `border` | A colour role | No border |
+| `stroke` | `hairline`, `regular`, `bold` | `regular` when `border` is set |
+| `radius` | `none`, `sm`, `md`, `lg`, `xl`, `full` | `none`; only `rect` and `square` use it |
+| `shadow` | `none`, `sm`, `md`, `lg` | No shadow |
+| `padding` | A spacing step, `2xs` to `3xl` | `md` |
+| `type`, `align`, `anchor`, `color` | As on `<Text>` | `type` is `body` |
+
+<SlideShot deck="lookbook" slide="placed-geometries" alt="A slide titled 'Ellipses, diamonds and triangles export as native shapes' with three shapes along the bottom: an outlined ellipse reading 'Ellipse · Loop 14', a filled diamond reading 'Diamond · Batch' and a dark triangle reading 'Triangle · Peak'." />
+
+The text inside a `<Shape>` or `<Text>` can be a line, bold and italic Markdown, or a Markdown list with a blank line before and after it. It fits its box the way the layouts fit theirs (see [text and fitting](/write-slides/text-and-fitting/)): when it is too long it steps down to 88%, 78% and 70% of its size, and when it still does not fit it is clipped and `deckster lint` reports `text-truncated`:
+
+```console
+$ deckster lint launch-review
+decks/launch-review/slides/results.mdx
+  error   container-overflow (results step 0): `div.deck-placed:nth-of-type(2) > div.kit-placed > div.kit-fitted` holds 73px more height than it has (clipped); "Live in six cities, with the last two op..." reaches furthest.
+          Fix: Shorten or remove content inside it, split the slide, or give the container room by simplifying the layout around it. Mark decoration that is meant to bleed out with `aria-hidden="true"` or `data-decorative`.
+  error   text-truncated (results step 0): `div.deck-placed:nth-of-type(2) > div.kit-placed > div.kit-fitted` did not fit its box even after stepping down to the smallest size and is clipped.
+          Fix: Shorten the text, or give it more room: a wider column (another `ratio`, no aside, another layout), fewer categories, or a shorter label. If the cut text is decoration, mark it with `aria-hidden="true"` or `data-decorative`.
+
+launch-review: 2 errors, 0 warnings in 2 slides (2 steps checked).
+```
+
+That slide gave a 19-word `<Shape>` a fixed `height={1}` and `width={3}`. A shape without `height` grows with its text instead, up to the height of its zone.
+
+## Place
+
+`<Place>` adds no styling of its own: its content keeps the brand's body type and list style. Use it for an icon with a label, a QR code, a button, or a list:
+
+```mdx
+<Place place="bottom-left" zone="header">
+  <Icon name="map-pin" role="accent" /> Kestwick launch
+</Place>
+```
+
+## Position an element
+
+Each element takes one of three ways to say where it goes: a named `place`, a grid cell with `cols` and `rows`, or a pixel `box`. Two of them on one element are refused: "Cannot combine `place`, `cols`/`rows`, and `box` on the same element." `zone` says which frame the position is measured in.
+
+### Zones
+
+| Zone | The frame |
+| --- | --- |
+| `safe` (default) | The slide inside the brand's margins, where the layout's content is |
+| `canvas` | The whole 1920x1080 slide, edge to edge |
+| `header` | The top margin band, as wide as the safe area |
+| `footer` | The bottom margin band, as wide as the safe area |
+
+<SlideShot deck="lookbook" slide="placed-zones" alt="A slide on a dark surface with a large statement in the middle. Above it, in the header band, a map pin icon and 'Kestwick launch'; under that, an outlined box reading '182,000 drops in Oct'; a filled box reading '3 Dec 2026' touching the right edge of the slide; and a source line centred in the footer between the logo and the page number." />
+
+The margins come from the brand (`spacing.margin`), so a placed element moves with them when the deck changes brand.
+
+### Named places
+
+`place` is one of nine anchors in the zone: `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom` and `bottom-right`. Without a size the element is as wide and tall as its content, up to the zone. Size it in grid tracks:
+
+- `width`: a number of grid columns (up to the brand's column count), or `sm` (3 columns), `md` (4) or `lg` (6).
+- `height`: a number of grid rows.
+- `inset`: a spacing step (`2xs` to `3xl`) that moves the element in from the zone's edges.
+
+The tracks are always the safe area's columns and rows, also in another zone. `inset` works only with `place`.
+
+### Grid cells
+
+`cols` and `rows` take a 1-based range on the brand's grid, both ends included: `cols="9-12"`, `rows="5-6"`, or one track such as `cols="4"`. The element fills the cell exactly. `cols` needs `rows`, except on a `square` or `circle` shape, which is as tall as it is wide.
+
+<SlideShot deck="lookbook" slide="placed-grid" alt="A slide titled 'Grid cells snap callouts to the brand's 12×6 grid' with two boxes side by side along the bottom left, a filled one reading '680 drops a day at €1.98 each' and an outlined one reading '98.9% on time across 75 daily loops', a three-item list on the right, and a note centred in the footer." />
+
+The grid is the brand's `spacing.grid`: 12 columns in every published brand, with the brand's gutter between columns and between rows. `spacing.grid.rows` (new in 0.10.0) sets the rows, 1 to 12, and is 6 when the brand leaves it out. A range outside the grid fails the build with the range it allows.
+
+### A pixel box
+
+`box={[x, y, width, height]}` places the element in canvas pixels, measured from the top-left corner of the 1920x1080 slide, and its zone is `canvas` unless you set one. It is there for matching an imported template. A box does not follow the brand's margins and grid, so `deckster lint` reports every one at `info` severity with the named place or grid cell nearest to it:
+
+```console
+$ deckster lint launch-review
+decks/launch-review/slides/results.mdx
+  info    placed-pixels (results step 0): <Text> (box=96,960,600,48) uses pixel coordinates (`box={[96, 960, 600, 48]}`).
+          Fix: Replace `box` with `place="bottom-left" zone="footer" width={4}` so it follows the brand's margins and grid.
+
+launch-review: 0 errors, 0 warnings, 1 info in 2 slides (2 steps checked).
+```
+
+An `info` finding does not fail the run: this one exits with 0.
+
+## Reveal it by step
+
+`at` reveals an element on that step, and `effect` picks how it comes in: `rise` (the default), `fade`, `scale`, `blur` or `wipe`, as on `<Step>` (see [builds](/write-slides/builds/)). Without `at`, the element is there from the start and comes in with the slide, after the layout's content.
+
+A `<Step at={2} effect="fade">` at the top level of the slide whose only content is placed elements works too: the build hands its `at` and `effect` to each element inside that does not set its own.
+
+The showcase's `review-rounds` chart adds a `<Shape shape="pill" place="top-right" at={3}>` reading "−57% review rounds" on the step that draws the bracket:
+
+<StepStrip deck="showcase" slide="review-rounds" />
+
+## Corner chrome makes room
+
+The brand's chrome (logo, footer text and page number) sits in the corners of the header and footer bands. In an MDX slide, a placed element that reaches into a corner's band moves that corner's chrome to the corner across the slide at the same height, next to any chrome already there, and hides it when that corner is covered too. `deckster lint` warns so you can choose:
+
+```console
+$ deckster lint launch-review
+decks/launch-review/slides/results.mdx
+  warning placed-chrome (results step 0): <Text> (bottom-right) sits in the bottom-right chrome corner, causing the slide's page number to move or hide.
+          Fix: Move the placed element to an open corner or inside the safe zone, or hide chrome on this slide with `chrome: false`.
+
+launch-review: 0 errors, 1 warning in 2 slides (2 steps checked).
+```
+
+To keep the chrome where it is, put footer and header text in the middle of the band, as the lookbook and showcase do with `place="center" zone="footer" width={5}`.
+
+## What lint checks
+
+`deckster lint` measures every placed element on every step. Seven rules cover them; [lint rules](/reference/lint-rules/#placed-elements) has each one's severity and fix.
+
+| Rule | Severity | Reports |
+| --- | --- | --- |
+| `placed-off-canvas` | error | An element that leaves the canvas or its zone |
+| `placed-covers-text` | error | An element over the text of the layout |
+| `placed-count` | error | More than 4 placed elements on a slide |
+| `placed-chrome` | warning | An element over the chrome, or one that makes it move or hide |
+| `placed-words` | warning | More than 25 words in one element, or 40 on the slide |
+| `placed-size` | warning | An element outside `zone="canvas"` covering more than 35% of the safe area |
+| `placed-pixels` | info | An element placed with `box` |
+
+`placed-covers-text` catches an element on top of the layout's text. Here a six-column `<Shape>` at `place="left"` lies over the first line of the body:
+
+```console
+$ deckster lint launch-review
+decks/launch-review/slides/results.mdx
+  error   placed-covers-text (results step 0): <Shape> "Launch badge" covers slide text "Every city now books through one API, an...".
+          Fix: Move the placed element to another corner or grid cell, shrink it, or give it a fixed `height` so it does not grow into slide text.
+
+launch-review: 1 error, 0 warnings in 2 slides (2 steps checked).
+```
+
+A box without a fixed `height` can run into the same error when its text grows. Findings name the element by its `name` prop when it has one, and otherwise by its position, such as `<Text> (bottom-right)`.
+
+## In PowerPoint and for agents
+
+`deckster export` writes a `<Shape>` as one native PowerPoint shape with its text inside, a `<Text>` as a native text box, and the content of a `<Place>` as it writes the same content anywhere else. The `name` prop names the shape in PowerPoint's selection pane. See [PowerPoint](/export-and-publish/powerpoint/#placed-elements).
+
+With `deckster dev --mcp`, the `current_slide` tool lists the placed elements of the slide on screen, with their kind, name, place, zone and box in canvas pixels, so an agent can tell where each one is (see [MCP tools](/ai-agents/mcp-tools/)).
+
+## Limits
+
+- At most 4 per slide, 25 words each and 40 per slide, as above. The caps are the same for every layout and brand.
+- One slide at a time: there is no way to put a placed element on every slide, such as a "Draft" stamp, from `deck.config.ts`.
+- No lines, arrows or connectors between elements, and no rotation. For custom art, put an `<Svg>` in a `<Place>`.
+- Top level only, and literal props only, in MDX.
+
+## Props
+
+### Place props
+
+<PropsTable of="Place" />
+
+### Shape props
+
+<PropsTable of="Shape" />
+
+### Text props
+
+<PropsTable of="Text" />

@@ -11,9 +11,11 @@ The lookbook is one deck that shows everything the kit can make: every layout an
 
 The published lookbook and its stills use Fieldnote. A slide you copy uses the brand of the deck you put it in.
 
-It tells one story, so it reads as a talk rather than a specimen sheet: "Same hour, no van", the launch-day talk of Wrenhaul, a cargo-bike delivery company. **Wrenhaul, its people, customers and every figure are invented.** The deck has 204 slides in 12 parts and 427 steps. Its slides' budgets add up to 142 minutes 20 seconds, and `deck.config.ts` sets `duration: '147m'`. The whole deck is at [/decks/lookbook/](/decks/lookbook/).
+It tells one story, so it reads as a talk rather than a specimen sheet: "Same hour, no van", the launch-day talk of Wrenhaul, a cargo-bike delivery company. **Wrenhaul, its people, customers and every figure are invented.** The deck has 214 slides in 13 parts and 442 steps. Its slides' budgets add up to 147 minutes 55 seconds, and `deck.config.ts` sets `duration: '152m'`. The whole deck is at [/decks/lookbook/](/decks/lookbook/).
 
 Version 0.7.0 adds 24 examples for product launches, AI demos, strategy reviews and investor pitches. Open each example and its MDX from [presentation patterns](/examples/presentation-patterns/).
+
+Version 0.10.0 adds four [`image-reveal`](/reference/layouts/image-reveal/) slides to "Say one thing" (`image-reveal-footer`, `image-reveal-header`, `image-reveal-accent` and `image-reveal-gradient`) and a new part 12, "Placed elements", with five slides that place `<Shape>`, `<Text>` and `<Place>` outside the layout's slots. [Placed elements](/write-slides/placed-elements/)
 
 ## Find what you need
 
@@ -24,7 +26,7 @@ Version 0.7.0 adds 24 examples for product launches, AI demos, strategy reviews 
 | # | Part | What it shows |
 | --- | --- | --- |
 | 1 | [Open](/decks/lookbook/#/part-open) | Covers with a picture beside or behind the title, a type-only cover, agendas, speaker introductions, dividers and a vision storyboard |
-| 2 | [Say one thing](/decks/lookbook/#/part-say) | Statements, quotes with and without a portrait, a picture across the slide with its text in each position, and one term defined, dictionary style |
+| 2 | [Say one thing](/decks/lookbook/#/part-say) | Statements, quotes with and without a portrait, a picture across the slide with its text in each position, a title that docks into a bar to reveal a picture, and one term defined, dictionary style |
 | 3 | [Explain](/decks/lookbook/#/part-explain) | Text, images, cards, feature and bento grids, workflows, questions and answers, an exercise, a quiz and a pitch by analogy |
 | 4 | [Compare and decide](/decks/lookbook/#/part-compare) | Comparisons, pricing, matrices, tables, risks, a strategy canvas, an expansion map and an investment committee decision |
 | 5 | [Prove it with a number](/decks/lookbook/#/part-numbers) | Stats, before and after, equations, market sizes, a profit pool, progress, a pictogram, a sparkline and a quiz on the cost of a drop |
@@ -34,7 +36,8 @@ Version 0.7.0 adds 24 examples for product launches, AI demos, strategy reviews 
 | 9 | [People and proof](/decks/lookbook/#/part-people) | Founders, a row, a grid and a roster of people, logo walls, case studies with a customer's quote and numbers, testimonials in columns, and user personas |
 | 10 | [Plan ahead and ask](/decks/lookbook/#/part-ahead) | Timelines, schedules, now-next-later boards, status reports, next actions, transit and hill roadmaps, a future-back plan and the ask |
 | 11 | [Motion](/decks/lookbook/#/part-motion) | The same three beats set as statements, with each `<Step>` effect (rise, fade, scale, blur, wipe) and with `focus` |
-| 12 | [Close](/decks/lookbook/#/part-close) | Link cards, a download, a code to scan, takeaways to recap, a list of sources, and the closing slide in its two forms |
+| 12 | [Placed elements](/decks/lookbook/#/part-placed) | Callouts pinned to named places, the four zones from margin to edge, callouts snapped to the brand's 12×6 grid, and the seven `<Shape>` geometries |
+| 13 | [Close](/decks/lookbook/#/part-close) | Link cards, a download, a code to scan, takeaways to recap, a list of sources, and the closing slide in its two forms |
 
 Two slides from the middle of the deck:
 
@@ -50,7 +53,7 @@ Here is a split slide with a picture that bleeds off the left edge. The source t
 
 <Steps>
 
-1. Copy the slide file from the source tab, or from `decks/lookbook/slides/<id>.mdx` in the [v0.7.0 lookbook source](https://github.com/sandrinodm/deckster/tree/v0.7.0/decks/lookbook), into your deck's `slides/` folder.
+1. Copy the slide file from the source tab, or from `decks/lookbook/slides/<id>.mdx` in the [v0.10.1 lookbook source](https://github.com/sandrinodm/deckster/tree/v0.10.1/decks/lookbook), into your deck's `slides/` folder.
 
 2. Copy the files the slide names. Pictures are in the lookbook's `assets/` folder (this one uses `../assets/scenes/handover.svg`), and their sources and licences are in `assets/CREDITS.txt`. A few chart slides read CSV files from `data/`, and the mini app and live widget slides import code from `lib/` and `apps/`. Keep the same relative paths, or replace the files with your own.
 
@@ -58,11 +61,11 @@ Here is a split slide with a picture that bleeds off the left edge. The source t
 
 </Steps>
 
-To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). Run `deckster lint` with `@deckster/cli` 0.7.0.
+To run the whole lookbook in your workspace, copy `decks/lookbook/` from the repository and delete its `package.json` and `tsconfig.json`, as for the [showcase](/examples/showcase/). Run `deckster lint` with `@deckster/cli` 0.10.0.
 
 ```console
 $ deckster lint lookbook
-lookbook: no problems in 204 slides (427 steps checked).
+lookbook: no problems in 214 slides (442 steps checked).
 ```
 
 ## How it stays complete

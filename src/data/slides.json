@@ -162,7 +162,7 @@
           "title": "Review rounds fell from five to two after Halden moved its decks to code",
           "layout": "chart",
           "file": "decks/showcase/slides/review-rounds.mdx",
-          "source": "---\nlayout: chart\ntitle: Review rounds fell from five to two after Halden moved its decks to code\neyebrow: The headline\nbudget: 1m30s\n---\n\n<LineChart\n  data={[\n    { month: 'Jan', '2025': 5.1, '2026': 5.0 },\n    { month: 'Feb', '2025': 4.8, '2026': 5.2 },\n    { month: 'Mar', '2025': 5.3, '2026': 4.9 },\n    { month: 'Apr', '2025': 5.0, '2026': 4.6 },\n    { month: 'May', '2025': 4.9, '2026': 3.4 },\n    { month: 'Jun', '2025': 5.2, '2026': 2.7 },\n    { month: 'Jul', '2025': 5.0, '2026': 2.3 },\n    { month: 'Aug', '2025': 4.7, '2026': 2.1 },\n    { month: 'Sep', '2025': 5.1, '2026': 2.0 },\n    { month: 'Oct', '2025': 5.0, '2026': 2.0 },\n  ]}\n  x=\"month\"\n  y={['2025', { field: '2026', at: 1 }]}\n  highlight=\"2026\"\n  zero\n  annotations={[\n    { type: 'callout', x: 'Apr', label: 'Decks move to code', at: 2 },\n    { type: 'bracket', from: 'Apr', to: 'Sep', better: 'down', at: 3 },\n  ]}\n  caption=\"Average review rounds per deck, by month\"\n/>\n\n<Footnote>Illustrative data: Halden is a fictional studio.</Footnote>\n\n<Notes>\nThis is the slide whose source you read five minutes ago.\n\nThe grey line is last year: five rounds of review per deck, month after month. [click] This year starts the same. [click] In April the decks move to code. [click] By autumn a deck needs two rounds, a drop of more than half.\n\nThe reviews that disappeared were the ones about margins, fonts and overflow.\n\nIf asked: illustrative numbers for a fictional studio.\n\nTransition: fewer rounds means fewer hours.\n</Notes>\n"
+          "source": "---\nlayout: chart\ntitle: Review rounds fell from five to two after Halden moved its decks to code\neyebrow: The headline\nbudget: 1m30s\n---\n\n<LineChart\n  data={[\n    { month: 'Jan', '2025': 5.1, '2026': 5.0 },\n    { month: 'Feb', '2025': 4.8, '2026': 5.2 },\n    { month: 'Mar', '2025': 5.3, '2026': 4.9 },\n    { month: 'Apr', '2025': 5.0, '2026': 4.6 },\n    { month: 'May', '2025': 4.9, '2026': 3.4 },\n    { month: 'Jun', '2025': 5.2, '2026': 2.7 },\n    { month: 'Jul', '2025': 5.0, '2026': 2.3 },\n    { month: 'Aug', '2025': 4.7, '2026': 2.1 },\n    { month: 'Sep', '2025': 5.1, '2026': 2.0 },\n    { month: 'Oct', '2025': 5.0, '2026': 2.0 },\n  ]}\n  x=\"month\"\n  y={['2025', { field: '2026', at: 1 }]}\n  highlight=\"2026\"\n  zero\n  annotations={[\n    { type: 'callout', x: 'Apr', label: 'Decks move to code', at: 2 },\n    { type: 'bracket', from: 'Apr', to: 'Sep', better: 'down', at: 3 },\n  ]}\n  caption=\"Average review rounds per deck, by month\"\n/>\n\n<Footnote>Illustrative data: Halden is a fictional studio.</Footnote>\n\n<Shape\n  shape=\"pill\"\n  place=\"top-right\"\n  width={3}\n  padding=\"sm\"\n  surface=\"accent\"\n  align=\"center\"\n  type=\"small\"\n  at={3}\n  name=\"Review drop callout\">\n  −57% review rounds\n</Shape>\n\n<Notes>\nThis is the slide whose source you read five minutes ago.\n\nThe grey line is last year: five rounds of review per deck, month after month. [click] This year starts the same. [click] In April the decks move to code. [click] By autumn a deck needs two rounds, a drop of more than half.\n\nThe reviews that disappeared were the ones about margins, fonts and overflow.\n\nIf asked: illustrative numbers for a fictional studio.\n\nTransition: fewer rounds means fewer hours.\n</Notes>\n"
         },
         {
           "id": "deck-hours",
@@ -346,7 +346,7 @@
           "title": "The presenter window paces the talk against its duration",
           "layout": "content",
           "file": "decks/showcase/slides/presenter.mdx",
-          "source": "---\nlayout: content\ntitle: The presenter window paces the talk against its duration\neyebrow: On the day\nbudget: 1m\n---\n\nPress `p` in the deck and a second window opens for the speaker.\n\n- The current and the next slide, with these notes\n- A clock that scales every slide's budget to the talk\n- Overview, go-to, laser and blackout, one key each\n- `?` lists every shortcut\n\n<Aside>\n\n### deckster present\n\nOne command opens the audience window on the projector and the presenter window on the laptop.\n\n</Aside>\n\n<Notes>\nI am reading this from the presenter window. It shows this slide, the next one, the notes, and a clock.\n\nThe clock is the useful part: the deck knows how long the talk is and every slide has a budget, so it tells me whether I am ahead or behind, per slide.\n\ndeckster present does the window placement for you: projector gets the slides, laptop gets the notes.\n\nTransition: and after the talk, somebody asks for the file.\n</Notes>\n"
+          "source": "---\nlayout: content\ntitle: The presenter window paces the talk against its duration\neyebrow: On the day\nbudget: 1m\n---\n\nPress `p` in the deck and a second window opens for the speaker.\n\n- The current and the next slide, with these notes\n- A clock that scales every slide's budget to the talk\n- Overview, go-to, laser and blackout, one key each\n- `?` lists every shortcut\n\n<Aside>\n\n### deckster present\n\nOne command opens the audience window on the projector and the presenter window on the laptop.\n\n</Aside>\n\n<Text place=\"center\" zone=\"footer\" width={5} align=\"center\" type=\"caption\" color=\"muted\">\n  Press p to open presenter view\n</Text>\n\n<Notes>\nI am reading this from the presenter window. It shows this slide, the next one, the notes, and a clock.\n\nThe clock is the useful part: the deck knows how long the talk is and every slide has a budget, so it tells me whether I am ahead or behind, per slide.\n\ndeckster present does the window placement for you: projector gets the slides, laptop gets the notes.\n\nTransition: and after the talk, somebody asks for the file.\n</Notes>\n"
         },
         {
           "id": "export-path",
@@ -532,8 +532,16 @@
           "source": "---\nlayout: statement\ntitle: A shop should promise the same hour without owning a van\neyebrow: What we believe\nemphasis: underline\nbudget: 20s\n---\n\nA shop should promise *the same hour* without owning a van.\n\n<Notes>\n`statement` with `emphasis: underline`, on its default inverse surface; use it for the one claim the talk turns on, with the two or three words that carry it marked.\nSay it plainly: the hour is what customers now expect, and a van is what most shops cannot afford or no longer drive into the centre. Everything after this is how we make that true.\n</Notes>\n"
         },
         {
-          "id": "definition-loop",
+          "id": "image-reveal-footer",
           "number": 16,
+          "title": "Every loop starts from one square",
+          "layout": "image-reveal",
+          "file": "decks/lookbook/slides/image-reveal-footer.mdx",
+          "source": "---\nlayout: image-reveal\neyebrow: Kestwick Hub\ntitle: Every loop starts from one square\nfocal: center\nbudget: 25s\n---\n\nTwelve bikes roll out every fifteen minutes from a single yard off the High Street.\n\n<Media>\n\n![Wrenhaul cargo bikes lined up outside the Kestwick hub square in morning light](../assets/scenes/hub-square.svg)\n\n</Media>\n\n<Notes>\n`image-reveal` with defaults (`dock: bottom`, `align: left`, `barSurface: default`, `fit: cover`): opens as a full-slide title beat, then docks the title and subtitle into a full-width footer bar to reveal the hub square.\n</Notes>\n"
+        },
+        {
+          "id": "definition-loop",
+          "number": 17,
           "title": "A loop is the unit Flock plans",
           "layout": "definition",
           "file": "decks/lookbook/slides/definition-loop.mdx",
@@ -541,7 +549,7 @@
         },
         {
           "id": "definition-drop",
-          "number": 17,
+          "number": 18,
           "title": "Every figure from here counts one unit: the drop",
           "layout": "definition",
           "file": "decks/lookbook/slides/definition-drop.mdx",
@@ -549,7 +557,7 @@
         },
         {
           "id": "quote-portrait",
-          "number": 18,
+          "number": 19,
           "title": "Bread that arrives warm is a different product",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-portrait.mdx",
@@ -557,7 +565,7 @@
         },
         {
           "id": "image-bottom",
-          "number": 19,
+          "number": 20,
           "title": "A rider stops at nine doors an hour",
           "layout": "image",
           "file": "decks/lookbook/slides/image-bottom.mdx",
@@ -565,15 +573,23 @@
         },
         {
           "id": "statement-center",
-          "number": 20,
+          "number": 21,
           "title": "Vans are leaving the old towns, deliveries are not",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-center.mdx",
           "source": "---\nlayout: statement\ntitle: Vans are leaving the old towns, deliveries are not\nalign: center\nsurface: accent\nbudget: 20s\n---\n\nVans are leaving the old towns.<br />\nDeliveries are not.\n\n<Notes>\n`statement` with `align: center` on the accent surface; use the centred form for a turn in the story, a short line the room should stop on.\nKestwick closed its Old Town to vans in 2022, Marrowgate in 2024, and four more cities follow by 2028. The shops inside those streets still need to deliver.\n</Notes>\n"
         },
         {
+          "id": "image-reveal-header",
+          "number": 22,
+          "title": "One dispatch board runs the hour",
+          "layout": "image-reveal",
+          "file": "decks/lookbook/slides/image-reveal-header.mdx",
+          "source": "---\nlayout: image-reveal\ntitle: One dispatch board runs the hour\ndock: top\nalign: center\nbarSurface: inverse\nfit: contain\nbudget: 25s\n---\n\nRiders, windows and active parcels stay visible in one uncropped view.\n\n<Media>\n\n![The Wrenhaul dispatch screen showing active loops, parcel windows and rider assignments](../assets/screens/dispatch.svg)\n\n</Media>\n\n<Notes>\n`image-reveal` with `dock: top`, `align: center`, `barSurface: inverse` and `fit: contain`, keeping the full product screen uncropped beneath the header bar.\n</Notes>\n"
+        },
+        {
           "id": "quote-plain",
-          "number": 21,
+          "number": 23,
           "title": "A sample used to wait for the van",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-plain.mdx",
@@ -581,7 +597,7 @@
         },
         {
           "id": "image-left",
-          "number": 22,
+          "number": 24,
           "title": "We deliver until nine at night",
           "layout": "image",
           "file": "decks/lookbook/slides/image-left.mdx",
@@ -589,15 +605,23 @@
         },
         {
           "id": "statement-giant",
-          "number": 23,
+          "number": 25,
           "title": "Same hour, no van",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-giant.mdx",
           "source": "---\nlayout: statement\ntitle: Same hour, no van\nsize: giant\ntransition: none\nbudget: 15s\n---\n\nSame hour. No van.\n\n<Notes>\n`statement` with `size: giant` (five words at most) and `transition: none`, a hard cut; use it once in a talk, for the line people should repeat afterwards.\nFour words, then stop talking. This is the whole company.\n</Notes>\n"
         },
         {
+          "id": "image-reveal-accent",
+          "number": 26,
+          "title": "Doorstep handover takes twelve seconds",
+          "layout": "image-reveal",
+          "file": "decks/lookbook/slides/image-reveal-accent.mdx",
+          "source": "---\nlayout: image-reveal\ntitle: Doorstep handover takes twelve seconds\ndock: bottom\nbarSurface: accent\nfocal: center\nbudget: 25s\n---\n\nThe merchant packs once, and the rider hands the bag straight over at the door.\n\n<Media>\n\n![A Wrenhaul rider handing a bakery parcel to a customer at a front doorstep](../assets/scenes/handover.svg)\n\n</Media>\n\n<Notes>\n`image-reveal` with `barSurface: accent` docking the title and subtitle along the bottom edge over the brand accent band.\n</Notes>\n"
+        },
+        {
           "id": "image-right",
-          "number": 24,
+          "number": 27,
           "title": "Every parcel leaves the hub in its own slot",
           "layout": "image",
           "file": "decks/lookbook/slides/image-right.mdx",
@@ -605,7 +629,7 @@
         },
         {
           "id": "statement-quote",
-          "number": 25,
+          "number": 28,
           "title": "The Old Town got its streets back and its shops kept their customers",
           "layout": "statement",
           "file": "decks/lookbook/slides/statement-quote.mdx",
@@ -613,7 +637,7 @@
         },
         {
           "id": "quote-accent",
-          "number": 26,
+          "number": 29,
           "title": "We stopped turning down same-day orders at noon",
           "layout": "quote",
           "file": "decks/lookbook/slides/quote-accent.mdx",
@@ -621,15 +645,23 @@
         },
         {
           "id": "image-alone",
-          "number": 27,
+          "number": 30,
           "title": "The van stops here, the bike rides on",
           "layout": "image",
           "file": "decks/lookbook/slides/image-alone.mdx",
           "source": "---\nlayout: image\ntitle: The van stops here, the bike rides on\ntext: none\nfocal: center\ntransition: zoom\nbudget: 15s\n---\n\n<Media>\n\n![A delivery van stopped at the bollards and a no-vans sign at the edge of the Old Town, its driver's hand to his forehead, while a Wrenhaul rider rides on](../assets/scenes/van-at-the-bollards.svg)\n\n</Media>\n\n<Notes>\n`image` with `text: none` and `transition: zoom`; use the picture alone when the room should look, not read.\nSay nothing for a moment. The van stops at the bollards; the bike rides on into the Old Town. That is the whole talk in one picture.\n</Notes>\n"
         },
         {
+          "id": "image-reveal-gradient",
+          "number": 31,
+          "title": "Five minutes across the Old Town",
+          "layout": "image-reveal",
+          "file": "decks/lookbook/slides/image-reveal-gradient.mdx",
+          "source": "---\nlayout: image-reveal\ntitle: Five minutes across the Old Town\ndock: top\nbarSurface: gradient\nfocal: center\nbudget: 25s\n---\n\nNarrow lanes that block vans are the shortest straight lines for a cargo bike.\n\n<Media>\n\n![Aerial view of Kestwick Old Town rooftops and narrow lanes at midday](../assets/scenes/old-town-above.svg)\n\n</Media>\n\n<Notes>\n`image-reveal` with `dock: top` and `barSurface: gradient`, carrying the cover's gradient treatment into the docked header bar.\n</Notes>\n"
+        },
+        {
           "id": "part-explain",
-          "number": 28,
+          "number": 32,
           "title": "Explain",
           "layout": "section",
           "file": "decks/lookbook/slides/part-explain.mdx",
@@ -637,7 +669,7 @@
         },
         {
           "id": "default-heading",
-          "number": 29,
+          "number": 33,
           "title": "A drop is one parcel, one door, one promised window",
           "layout": "default",
           "file": "decks/lookbook/slides/default-heading.mdx",
@@ -645,7 +677,7 @@
         },
         {
           "id": "content-text",
-          "number": 30,
+          "number": 34,
           "title": "A hub is a shop front, not a warehouse",
           "layout": "content",
           "file": "decks/lookbook/slides/content-text.mdx",
@@ -653,7 +685,7 @@
         },
         {
           "id": "split-photo-right",
-          "number": 31,
+          "number": 35,
           "title": "Riders know their streets by name",
           "layout": "split",
           "file": "decks/lookbook/slides/split-photo-right.mdx",
@@ -661,7 +693,7 @@
         },
         {
           "id": "cards-three",
-          "number": 32,
+          "number": 36,
           "title": "Open Network does three things for a shop",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-three.mdx",
@@ -669,7 +701,7 @@
         },
         {
           "id": "features-network",
-          "number": 33,
+          "number": 37,
           "title": "One network covers every part of the drop",
           "layout": "features",
           "file": "decks/lookbook/slides/features-network.mdx",
@@ -677,7 +709,7 @@
         },
         {
           "id": "pitch-analogy",
-          "number": 34,
+          "number": 38,
           "title": "Parcel delivery is moving to a hub network",
           "layout": "content",
           "file": "decks/lookbook/slides/pitch-analogy.mdx",
@@ -685,7 +717,7 @@
         },
         {
           "id": "default-list",
-          "number": 35,
+          "number": 39,
           "title": "Flock makes four decisions every 90 seconds",
           "layout": "default",
           "file": "decks/lookbook/slides/default-list.mdx",
@@ -693,7 +725,7 @@
         },
         {
           "id": "split-photo-left-bleed",
-          "number": 36,
+          "number": 40,
           "title": "People are home when the drop arrives",
           "layout": "split",
           "file": "decks/lookbook/slides/split-photo-left-bleed.mdx",
@@ -701,7 +733,7 @@
         },
         {
           "id": "steps-loop",
-          "number": 37,
+          "number": 41,
           "title": "Every loop runs the same five steps",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-loop.mdx",
@@ -709,7 +741,7 @@
         },
         {
           "id": "content-aside",
-          "number": 38,
+          "number": 42,
           "title": "A loop is the unit we plan, staff and cost",
           "layout": "content",
           "file": "decks/lookbook/slides/content-aside.mdx",
@@ -717,7 +749,7 @@
         },
         {
           "id": "cards-four-reveal",
-          "number": 39,
+          "number": 43,
           "title": "Riders are staff, with everything that comes with it",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-four-reveal.mdx",
@@ -725,7 +757,7 @@
         },
         {
           "id": "split-screen",
-          "number": 40,
+          "number": 44,
           "title": "The rider sees one stop at a time",
           "layout": "split",
           "file": "decks/lookbook/slides/split-screen.mdx",
@@ -733,7 +765,7 @@
         },
         {
           "id": "bento-hub",
-          "number": 41,
+          "number": 45,
           "title": "One hub, Old Town, seen from four sides",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-hub.mdx",
@@ -741,7 +773,7 @@
         },
         {
           "id": "steps-current",
-          "number": 42,
+          "number": 46,
           "title": "A new merchant sends a first drop in four steps",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-current.mdx",
@@ -749,7 +781,7 @@
         },
         {
           "id": "split-lottie",
-          "number": 43,
+          "number": 47,
           "title": "Every handover ends with a check",
           "layout": "split",
           "file": "decks/lookbook/slides/split-lottie.mdx",
@@ -757,7 +789,7 @@
         },
         {
           "id": "cards-accent",
-          "number": 44,
+          "number": 48,
           "title": "Three windows cover every kind of shop",
           "layout": "cards",
           "file": "decks/lookbook/slides/cards-accent.mdx",
@@ -765,7 +797,7 @@
         },
         {
           "id": "features-operations",
-          "number": 45,
+          "number": 49,
           "title": "Every drop has the tools to reach the door",
           "layout": "features",
           "file": "decks/lookbook/slides/features-operations.mdx",
@@ -773,7 +805,7 @@
         },
         {
           "id": "bento-reveal",
-          "number": 46,
+          "number": 50,
           "title": "Open Network opens in six cities today",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-reveal.mdx",
@@ -781,7 +813,7 @@
         },
         {
           "id": "steps-three",
-          "number": 47,
+          "number": 51,
           "title": "A new hub takes three steps and five months",
           "layout": "steps",
           "file": "decks/lookbook/slides/steps-three.mdx",
@@ -789,7 +821,7 @@
         },
         {
           "id": "bento-inverse",
-          "number": 48,
+          "number": 52,
           "title": "A rider's day is six loops",
           "layout": "bento",
           "file": "decks/lookbook/slides/bento-inverse.mdx",
@@ -797,7 +829,7 @@
         },
         {
           "id": "do-dont-handover",
-          "number": 49,
+          "number": 53,
           "title": "A handover ends with the recipient",
           "layout": "do-dont",
           "file": "decks/lookbook/slides/do-dont-handover.mdx",
@@ -805,7 +837,7 @@
         },
         {
           "id": "do-dont-routing",
-          "number": 50,
+          "number": 54,
           "title": "Keep the promise when a drop will not fit",
           "layout": "do-dont",
           "file": "decks/lookbook/slides/do-dont-routing.mdx",
@@ -813,7 +845,7 @@
         },
         {
           "id": "exercise-window",
-          "number": 51,
+          "number": 55,
           "title": "Choose the window your customers need",
           "layout": "exercise",
           "file": "decks/lookbook/slides/exercise-window.mdx",
@@ -821,7 +853,7 @@
         },
         {
           "id": "exercise-first-drop",
-          "number": 52,
+          "number": 56,
           "title": "Plan Brightloaf's first Open Network drop",
           "layout": "exercise",
           "file": "decks/lookbook/slides/exercise-first-drop.mdx",
@@ -829,7 +861,7 @@
         },
         {
           "id": "faq-booking",
-          "number": 53,
+          "number": 57,
           "title": "Any shop can book a drop today",
           "layout": "faq",
           "file": "decks/lookbook/slides/faq-booking.mdx",
@@ -837,7 +869,7 @@
         },
         {
           "id": "faq-windows",
-          "number": 54,
+          "number": 58,
           "title": "Every window has a route to the door",
           "layout": "faq",
           "file": "decks/lookbook/slides/faq-windows.mdx",
@@ -845,7 +877,7 @@
         },
         {
           "id": "quiz-same-hour",
-          "number": 55,
+          "number": 59,
           "title": "Do most recipients choose the same-hour window?",
           "layout": "quiz",
           "file": "decks/lookbook/slides/quiz-same-hour.mdx",
@@ -853,7 +885,7 @@
         },
         {
           "id": "quiz-routing",
-          "number": 56,
+          "number": 60,
           "title": "What share of drops go on a bike loop?",
           "layout": "quiz",
           "file": "decks/lookbook/slides/quiz-routing.mdx",
@@ -861,7 +893,7 @@
         },
         {
           "id": "quiz-loop",
-          "number": 57,
+          "number": 61,
           "title": "How many drops can Flock put in one loop?",
           "layout": "quiz",
           "file": "decks/lookbook/slides/quiz-loop.mdx",
@@ -869,7 +901,7 @@
         },
         {
           "id": "part-compare",
-          "number": 58,
+          "number": 62,
           "title": "Compare and decide",
           "layout": "section",
           "file": "decks/lookbook/slides/part-compare.mdx",
@@ -877,7 +909,7 @@
         },
         {
           "id": "comparison-modes",
-          "number": 59,
+          "number": 63,
           "title": "A bike beats a van on every row but one",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-modes.mdx",
@@ -885,7 +917,7 @@
         },
         {
           "id": "shift-window",
-          "number": 60,
+          "number": 64,
           "title": "Shops move from next day to the same hour",
           "layout": "shift",
           "file": "decks/lookbook/slides/shift-window.mdx",
@@ -893,7 +925,7 @@
         },
         {
           "id": "matrix-market",
-          "number": 61,
+          "number": 65,
           "title": "Only Wrenhaul is fast and cheap at once",
           "layout": "matrix",
           "file": "decks/lookbook/slides/matrix-market.mdx",
@@ -901,7 +933,7 @@
         },
         {
           "id": "strategy-canvas",
-          "number": 62,
+          "number": 66,
           "title": "Wrenhaul trades range for a reliable hour",
           "layout": "strategy-canvas",
           "file": "decks/lookbook/slides/strategy-canvas.mdx",
@@ -909,7 +941,7 @@
         },
         {
           "id": "table-hubs",
-          "number": 63,
+          "number": 67,
           "title": "Density sets the cost of a drop",
           "layout": "table",
           "file": "decks/lookbook/slides/table-hubs.mdx",
@@ -917,7 +949,7 @@
         },
         {
           "id": "comparison-before-after",
-          "number": 64,
+          "number": 68,
           "title": "Pantry Lane now delivers at half the cost",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-before-after.mdx",
@@ -925,7 +957,7 @@
         },
         {
           "id": "pricing-break-even",
-          "number": 65,
+          "number": 69,
           "title": "Above 950 drops a month, the hub plan wins",
           "layout": "pricing",
           "file": "decks/lookbook/slides/pricing-break-even.mdx",
@@ -933,7 +965,7 @@
         },
         {
           "id": "shift-cost",
-          "number": 66,
+          "number": 70,
           "title": "A drop costs half of what a van costs",
           "layout": "shift",
           "file": "decks/lookbook/slides/shift-cost.mdx",
@@ -941,7 +973,7 @@
         },
         {
           "id": "matrix-cities",
-          "number": 67,
+          "number": 71,
           "title": "Saltby is the next city to open",
           "layout": "matrix",
           "file": "decks/lookbook/slides/matrix-cities.mdx",
@@ -949,7 +981,7 @@
         },
         {
           "id": "opportunity-map",
-          "number": 68,
+          "number": 72,
           "title": "Open on Saltby’s market side of the river",
           "layout": "opportunity-map",
           "file": "decks/lookbook/slides/opportunity-map.mdx",
@@ -957,7 +989,7 @@
         },
         {
           "id": "quadrants-network",
-          "number": 69,
+          "number": 73,
           "title": "Density is our strength and our constraint",
           "layout": "quadrants",
           "file": "decks/lookbook/slides/quadrants-network.mdx",
@@ -965,7 +997,7 @@
         },
         {
           "id": "quadrants-next-city",
-          "number": 70,
+          "number": 74,
           "title": "Open the next city around a dense hub",
           "layout": "quadrants",
           "file": "decks/lookbook/slides/quadrants-next-city.mdx",
@@ -973,7 +1005,7 @@
         },
         {
           "id": "pricing-plans",
-          "number": 71,
+          "number": 75,
           "title": "Every plan is a price per drop, with no van",
           "layout": "pricing",
           "file": "decks/lookbook/slides/pricing-plans.mdx",
@@ -981,7 +1013,7 @@
         },
         {
           "id": "table-plans",
-          "number": 72,
+          "number": 76,
           "title": "Three ways to pay, and each is a price per drop",
           "layout": "table",
           "file": "decks/lookbook/slides/table-plans.mdx",
@@ -989,7 +1021,7 @@
         },
         {
           "id": "comparison-plans",
-          "number": 73,
+          "number": 77,
           "title": "Most merchants should start on Open Network",
           "layout": "comparison",
           "file": "decks/lookbook/slides/comparison-plans.mdx",
@@ -997,7 +1029,7 @@
         },
         {
           "id": "table-cities",
-          "number": 74,
+          "number": 78,
           "title": "Every city is on time above 96%",
           "layout": "table",
           "file": "decks/lookbook/slides/table-cities.mdx",
@@ -1005,7 +1037,7 @@
         },
         {
           "id": "risks-launch",
-          "number": 75,
+          "number": 79,
           "title": "Missed webhooks are the risk that gates launch",
           "layout": "risks",
           "file": "decks/lookbook/slides/risks-launch.mdx",
@@ -1013,7 +1045,7 @@
         },
         {
           "id": "risks-expansion",
-          "number": 76,
+          "number": 80,
           "title": "Density is the risk behind four new cities",
           "layout": "risks",
           "file": "decks/lookbook/slides/risks-expansion.mdx",
@@ -1021,7 +1053,7 @@
         },
         {
           "id": "investment-committee",
-          "number": 77,
+          "number": 81,
           "title": "Approve an €8M lead for expansion",
           "layout": "content",
           "file": "decks/lookbook/slides/investment-committee.mdx",
@@ -1029,7 +1061,7 @@
         },
         {
           "id": "part-numbers",
-          "number": 78,
+          "number": 82,
           "title": "Prove it with a number",
           "layout": "section",
           "file": "decks/lookbook/slides/part-numbers.mdx",
@@ -1037,7 +1069,7 @@
         },
         {
           "id": "stats-traction",
-          "number": 79,
+          "number": 83,
           "title": "Revenue grew 3.2× in a year, faster than the drops",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-traction.mdx",
@@ -1045,7 +1077,7 @@
         },
         {
           "id": "chart-bignumber",
-          "number": 80,
+          "number": 84,
           "title": "2.4 million drops since the first loaf in 2022",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-bignumber.mdx",
@@ -1053,7 +1085,7 @@
         },
         {
           "id": "equation-arr",
-          "number": 81,
+          "number": 85,
           "title": "Our revenue is drops times €3.10",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-arr.mdx",
@@ -1061,7 +1093,7 @@
         },
         {
           "id": "stats-three",
-          "number": 82,
+          "number": 86,
           "title": "Riders stay because the job is a job",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-three.mdx",
@@ -1069,7 +1101,7 @@
         },
         {
           "id": "chart-comparison",
-          "number": 83,
+          "number": 87,
           "title": "A drop costs us €2.34, a euro less than a year ago",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-comparison.mdx",
@@ -1077,7 +1109,7 @@
         },
         {
           "id": "chart-waterfall",
-          "number": 84,
+          "number": 88,
           "title": "Batching cut €0.58 a drop, more than any other change",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-waterfall.mdx",
@@ -1085,7 +1117,7 @@
         },
         {
           "id": "quiz-cost",
-          "number": 85,
+          "number": 89,
           "title": "What cut the most cost from each drop?",
           "layout": "quiz",
           "file": "decks/lookbook/slides/quiz-cost.mdx",
@@ -1093,7 +1125,7 @@
         },
         {
           "id": "chart-profit-pool",
-          "number": 86,
+          "number": 90,
           "title": "Pharmacies contribute more profit than grocers",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-profit-pool.mdx",
@@ -1101,7 +1133,7 @@
         },
         {
           "id": "equation-market",
-          "number": 87,
+          "number": 91,
           "title": "The market is €3.0B a year in 46 cities",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-market.mdx",
@@ -1109,7 +1141,7 @@
         },
         {
           "id": "market-reachable",
-          "number": 88,
+          "number": 92,
           "title": "Kestwick handles a third of our daily drops",
           "layout": "market",
           "file": "decks/lookbook/slides/market-reachable.mdx",
@@ -1117,7 +1149,7 @@
         },
         {
           "id": "market-first",
-          "number": 89,
+          "number": 93,
           "title": "We target €18.6M inside a €1.0B market",
           "layout": "market",
           "file": "decks/lookbook/slides/market-first.mdx",
@@ -1125,7 +1157,7 @@
         },
         {
           "id": "content-statrow",
-          "number": 90,
+          "number": 94,
           "title": "Every number moved the right way this year",
           "layout": "content",
           "file": "decks/lookbook/slides/content-statrow.mdx",
@@ -1133,7 +1165,7 @@
         },
         {
           "id": "split-pictogram",
-          "number": 91,
+          "number": 95,
           "title": "Given the choice, people pick the hour",
           "layout": "split",
           "file": "decks/lookbook/slides/split-pictogram.mdx",
@@ -1141,7 +1173,7 @@
         },
         {
           "id": "stats-two",
-          "number": 92,
+          "number": 96,
           "title": "Fast and clean are the same promise",
           "layout": "stats",
           "file": "decks/lookbook/slides/stats-two.mdx",
@@ -1149,7 +1181,7 @@
         },
         {
           "id": "chart-progress",
-          "number": 93,
+          "number": 97,
           "title": "€8M of the €14M is committed",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-progress.mdx",
@@ -1157,7 +1189,7 @@
         },
         {
           "id": "content-sparkline",
-          "number": 94,
+          "number": 98,
           "title": "Rider turnover fell every month this year",
           "layout": "content",
           "file": "decks/lookbook/slides/content-sparkline.mdx",
@@ -1165,7 +1197,7 @@
         },
         {
           "id": "equation-loop",
-          "number": 95,
+          "number": 99,
           "title": "Every loop earns €6.84 before overheads",
           "layout": "equation",
           "file": "decks/lookbook/slides/equation-loop.mdx",
@@ -1173,7 +1205,7 @@
         },
         {
           "id": "part-charts",
-          "number": 96,
+          "number": 100,
           "title": "Show the pattern",
           "layout": "section",
           "file": "decks/lookbook/slides/part-charts.mdx",
@@ -1181,7 +1213,7 @@
         },
         {
           "id": "chart-line",
-          "number": 97,
+          "number": 101,
           "title": "Drops tripled in a year, and the Open Network beta bent the curve",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-line.mdx",
@@ -1189,7 +1221,7 @@
         },
         {
           "id": "chart-bar",
-          "number": 98,
+          "number": 102,
           "title": "A rider makes 9.4 stops an hour, nearly twice a merchant's own van",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-bar.mdx",
@@ -1197,7 +1229,7 @@
         },
         {
           "id": "split-donut",
-          "number": 99,
+          "number": 103,
           "title": "Two kinds of shop pay 59%",
           "layout": "split",
           "file": "decks/lookbook/slides/split-donut.mdx",
@@ -1205,7 +1237,7 @@
         },
         {
           "id": "chart-area",
-          "number": 100,
+          "number": 104,
           "title": "Same-hour drops tripled this year, faster than any other window",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-area.mdx",
@@ -1213,7 +1245,7 @@
         },
         {
           "id": "chart-slope",
-          "number": 101,
+          "number": 105,
           "title": "The three newest cities closed the gap by October",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-slope.mdx",
@@ -1221,7 +1253,7 @@
         },
         {
           "id": "chart-funnel",
-          "number": 102,
+          "number": 106,
           "title": "Four in ten sign-ups never connect their shop",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-funnel.mdx",
@@ -1229,7 +1261,7 @@
         },
         {
           "id": "chart-table",
-          "number": 103,
+          "number": 107,
           "title": "Pharmacies grew fastest, four times in a year",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-table.mdx",
@@ -1237,7 +1269,7 @@
         },
         {
           "id": "chart-scatter",
-          "number": 104,
+          "number": 108,
           "title": "The denser the hub, the cheaper the drop",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-scatter.mdx",
@@ -1245,7 +1277,7 @@
         },
         {
           "id": "chart-heatmap",
-          "number": 105,
+          "number": 109,
           "title": "Friday from four to six is the busiest two hours of the week",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-heatmap.mdx",
@@ -1253,7 +1285,7 @@
         },
         {
           "id": "chart-retention-cohorts",
-          "number": 106,
+          "number": 110,
           "title": "Month-three retention rose from 82% to 91%",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-retention-cohorts.mdx",
@@ -1261,7 +1293,7 @@
         },
         {
           "id": "chart-market-movement",
-          "number": 107,
+          "number": 111,
           "title": "Wrenhaul became more reliable as prices fell",
           "layout": "chart",
           "file": "decks/lookbook/slides/chart-market-movement.mdx",
@@ -1269,7 +1301,7 @@
         },
         {
           "id": "dashboard-scale",
-          "number": 108,
+          "number": 112,
           "title": "Drops tripled while delivery costs fell",
           "layout": "dashboard",
           "file": "decks/lookbook/slides/dashboard-scale.mdx",
@@ -1277,7 +1309,7 @@
         },
         {
           "id": "dashboard-network",
-          "number": 109,
+          "number": 113,
           "title": "Riders deliver scale on time",
           "layout": "dashboard",
           "file": "decks/lookbook/slides/dashboard-network.mdx",
@@ -1285,7 +1317,7 @@
         },
         {
           "id": "part-how",
-          "number": 110,
+          "number": 114,
           "title": "Show how it works",
           "layout": "section",
           "file": "decks/lookbook/slides/part-how.mdx",
@@ -1293,7 +1325,7 @@
         },
         {
           "id": "conversation-window",
-          "number": 111,
+          "number": 115,
           "title": "The window is agreed before the rider leaves",
           "layout": "conversation",
           "file": "decks/lookbook/slides/conversation-window.mdx",
@@ -1301,7 +1333,7 @@
         },
         {
           "id": "conversation-handover",
-          "number": 112,
+          "number": 116,
           "title": "A handover ends with proof at the door",
           "layout": "conversation",
           "file": "decks/lookbook/slides/conversation-handover.mdx",
@@ -1309,7 +1341,7 @@
         },
         {
           "id": "service-blueprint",
-          "number": 113,
+          "number": 117,
           "title": "The hub owns the rider handoff",
           "layout": "service-blueprint",
           "file": "decks/lookbook/slides/service-blueprint.mdx",
@@ -1317,7 +1349,7 @@
         },
         {
           "id": "diagram-architecture",
-          "number": 114,
+          "number": 118,
           "title": "Every drop crosses five systems on its way to a rider",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-architecture.mdx",
@@ -1325,7 +1357,7 @@
         },
         {
           "id": "code-sdk",
-          "number": 115,
+          "number": 119,
           "title": "Booking a drop is one call",
           "layout": "code",
           "file": "decks/lookbook/slides/code-sdk.mdx",
@@ -1333,7 +1365,7 @@
         },
         {
           "id": "command-palette",
-          "number": 116,
+          "number": 120,
           "title": "One command opens the waiting drops",
           "layout": "demo",
           "file": "decks/lookbook/slides/command-palette.mdx",
@@ -1341,7 +1373,7 @@
         },
         {
           "id": "diagram-sequence",
-          "number": 117,
+          "number": 121,
           "title": "A drop is booked, batched and handed over in 52 minutes",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-sequence.mdx",
@@ -1349,7 +1381,7 @@
         },
         {
           "id": "code-terminal",
-          "number": 118,
+          "number": 122,
           "title": "You can book a drop from a terminal",
           "layout": "code",
           "file": "decks/lookbook/slides/code-terminal.mdx",
@@ -1357,7 +1389,7 @@
         },
         {
           "id": "ai-grounded-answer",
-          "number": 119,
+          "number": 123,
           "title": "Check the answer against the dispatch rule",
           "layout": "demo",
           "file": "decks/lookbook/slides/ai-grounded-answer.mdx",
@@ -1365,7 +1397,7 @@
         },
         {
           "id": "diagram-events",
-          "number": 120,
+          "number": 124,
           "title": "Every change reaches the merchant within a second, or is retried until it does",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-events.mdx",
@@ -1373,7 +1405,7 @@
         },
         {
           "id": "opportunity-experiments",
-          "number": 121,
+          "number": 125,
           "title": "Test one tap to confirm the handoff",
           "layout": "diagram",
           "file": "decks/lookbook/slides/opportunity-experiments.mdx",
@@ -1381,7 +1413,7 @@
         },
         {
           "id": "code-move",
-          "number": 122,
+          "number": 126,
           "title": "Windows are one new field",
           "layout": "code",
           "file": "decks/lookbook/slides/code-move.mdx",
@@ -1389,7 +1421,7 @@
         },
         {
           "id": "diagram-hops",
-          "number": 123,
+          "number": 127,
           "title": "A drop's trip from shop to door, hop by hop",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-hops.mdx",
@@ -1397,7 +1429,7 @@
         },
         {
           "id": "code-codestep",
-          "number": 124,
+          "number": 128,
           "title": "The SDK is the same call, typed",
           "layout": "code",
           "file": "decks/lookbook/slides/code-codestep.mdx",
@@ -1405,7 +1437,7 @@
         },
         {
           "id": "diagram-layers",
-          "number": 125,
+          "number": 129,
           "title": "Merchants touch one layer; riders another",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-layers.mdx",
@@ -1413,7 +1445,7 @@
         },
         {
           "id": "code-diff",
-          "number": 126,
+          "number": 130,
           "title": "Batching every 90 seconds was a one-line change",
           "layout": "code",
           "file": "decks/lookbook/slides/code-diff.mdx",
@@ -1421,7 +1453,7 @@
         },
         {
           "id": "ai-review-diff",
-          "number": 127,
+          "number": 131,
           "title": "A dispatcher approves the revised message",
           "layout": "demo",
           "file": "decks/lookbook/slides/ai-review-diff.mdx",
@@ -1429,7 +1461,7 @@
         },
         {
           "id": "diagram-cycle",
-          "number": 128,
+          "number": 132,
           "title": "A hub's day is one loop, run 56 times",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-cycle.mdx",
@@ -1437,7 +1469,7 @@
         },
         {
           "id": "code-webhook",
-          "number": 129,
+          "number": 133,
           "title": "A webhook tells you the parcel is home",
           "layout": "code",
           "file": "decks/lookbook/slides/code-webhook.mdx",
@@ -1445,7 +1477,7 @@
         },
         {
           "id": "agent-run-trace",
-          "number": 130,
+          "number": 134,
           "title": "The agent stops before it sends a message",
           "layout": "demo",
           "file": "decks/lookbook/slides/agent-run-trace.mdx",
@@ -1453,7 +1485,7 @@
         },
         {
           "id": "diagram-tree",
-          "number": 131,
+          "number": 135,
           "title": "Flock sends nine drops in ten to a bike",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-tree.mdx",
@@ -1461,7 +1493,7 @@
         },
         {
           "id": "diagram-cards",
-          "number": 132,
+          "number": 136,
           "title": "Three kinds of partner, and one door into Wrenhaul",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-cards.mdx",
@@ -1469,7 +1501,7 @@
         },
         {
           "id": "diagram-timeline",
-          "number": 133,
+          "number": 137,
           "title": "Open Network went from beta to launch in 12 weeks",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-timeline.mdx",
@@ -1477,7 +1509,7 @@
         },
         {
           "id": "diagram-svg",
-          "number": 134,
+          "number": 138,
           "title": "Three loops cover the Old Town from one hub",
           "layout": "diagram",
           "file": "decks/lookbook/slides/diagram-svg.mdx",
@@ -1485,7 +1517,7 @@
         },
         {
           "id": "demo-appframe",
-          "number": 135,
+          "number": 139,
           "title": "Watch Flock build a loop",
           "layout": "demo",
           "file": "decks/lookbook/slides/demo-appframe.mdx",
@@ -1493,7 +1525,7 @@
         },
         {
           "id": "demo-live",
-          "number": 136,
+          "number": 140,
           "title": "Price your own drops",
           "layout": "demo",
           "file": "decks/lookbook/slides/demo-live.tsx",
@@ -1501,7 +1533,7 @@
         },
         {
           "id": "part-product",
-          "number": 137,
+          "number": 141,
           "title": "Show the product",
           "layout": "section",
           "file": "decks/lookbook/slides/part-product.mdx",
@@ -1509,7 +1541,7 @@
         },
         {
           "id": "before-after-street",
-          "number": 138,
+          "number": 142,
           "title": "The bollards stopped vans, not deliveries",
           "layout": "before-after",
           "file": "decks/lookbook/slides/before-after-street.mdx",
@@ -1517,7 +1549,7 @@
         },
         {
           "id": "screen-dispatch",
-          "number": 139,
+          "number": 143,
           "title": "A hub lead runs the whole day from one map",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-dispatch.mdx",
@@ -1525,7 +1557,7 @@
         },
         {
           "id": "browser-spotlight",
-          "number": 140,
+          "number": 144,
           "title": "See the deadline before assigning the loop",
           "layout": "screen-story",
           "file": "decks/lookbook/slides/browser-spotlight.mdx",
@@ -1533,7 +1565,7 @@
         },
         {
           "id": "product-cutaway",
-          "number": 141,
+          "number": 145,
           "title": "One dispatch screen, three jobs",
           "layout": "product-cutaway",
           "file": "decks/lookbook/slides/product-cutaway.mdx",
@@ -1541,7 +1573,7 @@
         },
         {
           "id": "sketch-to-ship",
-          "number": 142,
+          "number": 146,
           "title": "The deadline belongs beside the loop",
           "layout": "sketch-to-ship",
           "file": "decks/lookbook/slides/sketch-to-ship.mdx",
@@ -1549,7 +1581,7 @@
         },
         {
           "id": "version-wipe",
-          "number": 143,
+          "number": 147,
           "title": "A deadline moves into the dispatch queue",
           "layout": "screen-story",
           "file": "decks/lookbook/slides/version-wipe.mdx",
@@ -1557,7 +1589,7 @@
         },
         {
           "id": "split-phones",
-          "number": 144,
+          "number": 148,
           "title": "One loop, seen from saddle and door",
           "layout": "split",
           "file": "decks/lookbook/slides/split-phones.mdx",
@@ -1565,7 +1597,7 @@
         },
         {
           "id": "device-handoff",
-          "number": 145,
+          "number": 149,
           "title": "One assignment sends the next stop to Rider",
           "layout": "screen-story",
           "file": "decks/lookbook/slides/device-handoff.mdx",
@@ -1573,7 +1605,7 @@
         },
         {
           "id": "screen-rider",
-          "number": 146,
+          "number": 150,
           "title": "The rider never has to think about the route",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-rider.mdx",
@@ -1581,7 +1613,7 @@
         },
         {
           "id": "before-after-rider",
-          "number": 147,
+          "number": 151,
           "title": "One loop becomes one clear next stop",
           "layout": "before-after",
           "file": "decks/lookbook/slides/before-after-rider.mdx",
@@ -1589,7 +1621,7 @@
         },
         {
           "id": "morph-dispatch-overview",
-          "number": 148,
+          "number": 152,
           "title": "Dispatch shows every loop at once",
           "layout": "split",
           "file": "decks/lookbook/slides/morph-dispatch-overview.mdx",
@@ -1597,7 +1629,7 @@
         },
         {
           "id": "morph-dispatch-detail",
-          "number": 149,
+          "number": 153,
           "title": "A window turns amber before it is missed",
           "layout": "split",
           "file": "decks/lookbook/slides/morph-dispatch-detail.mdx",
@@ -1605,7 +1637,7 @@
         },
         {
           "id": "screen-insights",
-          "number": 150,
+          "number": 154,
           "title": "Merchants see their cost per drop every week",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-insights.mdx",
@@ -1613,7 +1645,7 @@
         },
         {
           "id": "gallery-screens",
-          "number": 151,
+          "number": 155,
           "title": "Four screens run on one stream of events",
           "layout": "gallery",
           "file": "decks/lookbook/slides/gallery-screens.mdx",
@@ -1621,7 +1653,7 @@
         },
         {
           "id": "screen-console",
-          "number": 152,
+          "number": 156,
           "title": "Developers test a drop before they ship",
           "layout": "screen",
           "file": "decks/lookbook/slides/screen-console.mdx",
@@ -1629,7 +1661,7 @@
         },
         {
           "id": "demo-filmstrip",
-          "number": 153,
+          "number": 157,
           "title": "Three actions take a parcel to the door",
           "layout": "screen-story",
           "file": "decks/lookbook/slides/demo-filmstrip.mdx",
@@ -1637,7 +1669,7 @@
         },
         {
           "id": "demo-choose-path",
-          "number": 154,
+          "number": 158,
           "title": "How should Flock handle this drop?",
           "layout": "choose-path",
           "file": "decks/lookbook/slides/demo-choose-path.mdx",
@@ -1645,7 +1677,7 @@
         },
         {
           "id": "split-video",
-          "number": 155,
+          "number": 159,
           "title": "The launch film opens in light alone",
           "layout": "split",
           "file": "decks/lookbook/slides/split-video.mdx",
@@ -1653,7 +1685,7 @@
         },
         {
           "id": "gallery-places",
-          "number": 156,
+          "number": 160,
           "title": "Booked at 08:42, at the door at 09:21",
           "layout": "gallery",
           "file": "decks/lookbook/slides/gallery-places.mdx",
@@ -1661,7 +1693,7 @@
         },
         {
           "id": "part-people",
-          "number": 157,
+          "number": 161,
           "title": "People and proof",
           "layout": "section",
           "file": "decks/lookbook/slides/part-people.mdx",
@@ -1669,7 +1701,7 @@
         },
         {
           "id": "voices-merchants",
-          "number": 158,
+          "number": 162,
           "title": "The hour changes what shops can promise",
           "layout": "voices",
           "file": "decks/lookbook/slides/voices-merchants.mdx",
@@ -1677,7 +1709,7 @@
         },
         {
           "id": "voices-network",
-          "number": 159,
+          "number": 163,
           "title": "One loop serves three different needs",
           "layout": "voices",
           "file": "decks/lookbook/slides/voices-network.mdx",
@@ -1685,7 +1717,7 @@
         },
         {
           "id": "team-founders",
-          "number": 160,
+          "number": 164,
           "title": "Each founder has run one part of this before",
           "layout": "team",
           "file": "decks/lookbook/slides/team-founders.mdx",
@@ -1693,7 +1725,7 @@
         },
         {
           "id": "persona-hub-lead",
-          "number": 161,
+          "number": 165,
           "title": "Hub leads need time to rescue a late loop",
           "layout": "persona",
           "file": "decks/lookbook/slides/persona-hub-lead.mdx",
@@ -1701,7 +1733,7 @@
         },
         {
           "id": "logos-customers",
-          "number": 162,
+          "number": 166,
           "title": "Five of our merchants, from warm bread to blood samples",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-customers.mdx",
@@ -1709,7 +1741,7 @@
         },
         {
           "id": "proof-pantry-lane",
-          "number": 163,
+          "number": 167,
           "title": "Pantry Lane takes 63% more same-day orders",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-pantry-lane.mdx",
@@ -1717,7 +1749,7 @@
         },
         {
           "id": "team-row",
-          "number": 164,
+          "number": 168,
           "title": "Four people build what riders, hubs and partners use",
           "layout": "team",
           "file": "decks/lookbook/slides/team-row.mdx",
@@ -1725,7 +1757,7 @@
         },
         {
           "id": "logos-color",
-          "number": 165,
+          "number": 169,
           "title": "Eight kinds of shop already send drops",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-color.mdx",
@@ -1733,7 +1765,7 @@
         },
         {
           "id": "proof-st-brenna",
-          "number": 166,
+          "number": 170,
           "title": "Samples reach the lab in 31 minutes, not 74",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-st-brenna.mdx",
@@ -1741,7 +1773,7 @@
         },
         {
           "id": "team-grid",
-          "number": 167,
+          "number": 171,
           "title": "Six leads run the company day to day",
           "layout": "team",
           "file": "decks/lookbook/slides/team-grid.mdx",
@@ -1749,7 +1781,7 @@
         },
         {
           "id": "persona-recipient",
-          "number": 168,
+          "number": 172,
           "title": "Recipients need a window they can plan around",
           "layout": "persona",
           "file": "decks/lookbook/slides/persona-recipient.mdx",
@@ -1757,7 +1789,7 @@
         },
         {
           "id": "logos-wall",
-          "number": 169,
+          "number": 173,
           "title": "Fourteen organisations stand behind the launch",
           "layout": "logos",
           "file": "decks/lookbook/slides/logos-wall.mdx",
@@ -1765,7 +1797,7 @@
         },
         {
           "id": "proof-brightloaf",
-          "number": 170,
+          "number": 174,
           "title": "Brightloaf delivers 93% of its bread warm",
           "layout": "proof",
           "file": "decks/lookbook/slides/proof-brightloaf.mdx",
@@ -1773,7 +1805,7 @@
         },
         {
           "id": "team-roster",
-          "number": 171,
+          "number": 175,
           "title": "Eight people opened the first six cities",
           "layout": "team",
           "file": "decks/lookbook/slides/team-roster.mdx",
@@ -1781,7 +1813,7 @@
         },
         {
           "id": "part-ahead",
-          "number": 172,
+          "number": 176,
           "title": "Plan ahead and ask",
           "layout": "section",
           "file": "decks/lookbook/slides/part-ahead.mdx",
@@ -1789,7 +1821,7 @@
         },
         {
           "id": "future-back",
-          "number": 173,
+          "number": 177,
           "title": "A neighborhood can count on a bike delivery",
           "layout": "future-back",
           "file": "decks/lookbook/slides/future-back.mdx",
@@ -1797,7 +1829,7 @@
         },
         {
           "id": "timeline-history",
-          "number": 174,
+          "number": 178,
           "title": "Four years from one hub to six cities",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-history.mdx",
@@ -1805,7 +1837,7 @@
         },
         {
           "id": "columns-roadmap",
-          "number": 175,
+          "number": 179,
           "title": "We finish the network before we widen it",
           "layout": "columns",
           "file": "decks/lookbook/slides/columns-roadmap.mdx",
@@ -1813,7 +1845,7 @@
         },
         {
           "id": "status-launch",
-          "number": 176,
+          "number": 180,
           "title": "The network launches today; two decisions remain",
           "layout": "status",
           "file": "decks/lookbook/slides/status-launch.mdx",
@@ -1821,7 +1853,7 @@
         },
         {
           "id": "status-next-wave",
-          "number": 177,
+          "number": 181,
           "title": "Sandgate needs power before the February opening",
           "layout": "status",
           "file": "decks/lookbook/slides/status-next-wave.mdx",
@@ -1829,7 +1861,7 @@
         },
         {
           "id": "timeline-roadmap",
-          "number": 178,
+          "number": 182,
           "title": "Eighteen months from today's launch to break-even",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-roadmap.mdx",
@@ -1837,7 +1869,7 @@
         },
         {
           "id": "roadmap-transit",
-          "number": 179,
+          "number": 183,
           "title": "A live returns feed unlocks the next hub",
           "layout": "roadmap-transit",
           "file": "decks/lookbook/slides/roadmap-transit.mdx",
@@ -1845,7 +1877,7 @@
         },
         {
           "id": "schedule-openings",
-          "number": 180,
+          "number": 184,
           "title": "Six hubs open between April and June",
           "layout": "schedule",
           "file": "decks/lookbook/slides/schedule-openings.mdx",
@@ -1853,7 +1885,7 @@
         },
         {
           "id": "schedule-quayside",
-          "number": 181,
+          "number": 185,
           "title": "Quayside covers its costs by September",
           "layout": "schedule",
           "file": "decks/lookbook/slides/schedule-quayside.mdx",
@@ -1861,7 +1893,7 @@
         },
         {
           "id": "ask-series-a",
-          "number": 182,
+          "number": 186,
           "title": "Fund four new cities, then break-even",
           "layout": "ask",
           "file": "decks/lookbook/slides/ask-series-a.mdx",
@@ -1869,7 +1901,7 @@
         },
         {
           "id": "columns-four",
-          "number": 183,
+          "number": 187,
           "title": "Four cities and six hubs open between April and June",
           "layout": "columns",
           "file": "decks/lookbook/slides/columns-four.mdx",
@@ -1877,7 +1909,7 @@
         },
         {
           "id": "timeline-slipped",
-          "number": 184,
+          "number": 188,
           "title": "One opening slipped, and we said so",
           "layout": "timeline",
           "file": "decks/lookbook/slides/timeline-slipped.mdx",
@@ -1885,7 +1917,7 @@
         },
         {
           "id": "roadmap-hill",
-          "number": 185,
+          "number": 189,
           "title": "The team has a plan for returns proof",
           "layout": "roadmap-hill",
           "file": "decks/lookbook/slides/roadmap-hill.mdx",
@@ -1893,7 +1925,7 @@
         },
         {
           "id": "ask-pilot",
-          "number": 186,
+          "number": 190,
           "title": "Approve Saltby's first hub this month",
           "layout": "ask",
           "file": "decks/lookbook/slides/ask-pilot.mdx",
@@ -1901,7 +1933,7 @@
         },
         {
           "id": "actions-launch",
-          "number": 187,
+          "number": 191,
           "title": "Returns training clears the way to close the round",
           "layout": "actions",
           "file": "decks/lookbook/slides/actions-launch.mdx",
@@ -1909,7 +1941,7 @@
         },
         {
           "id": "actions-expansion",
-          "number": 188,
+          "number": 192,
           "title": "Four new cities are ready to launch by June 2027",
           "layout": "actions",
           "file": "decks/lookbook/slides/actions-expansion.mdx",
@@ -1917,7 +1949,7 @@
         },
         {
           "id": "part-motion",
-          "number": 189,
+          "number": 193,
           "title": "Motion",
           "layout": "section",
           "file": "decks/lookbook/slides/part-motion.mdx",
@@ -1925,7 +1957,7 @@
         },
         {
           "id": "motion-rise",
-          "number": 190,
+          "number": 194,
           "title": "Rise: each entry of the log rises into place",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-rise.mdx",
@@ -1933,7 +1965,7 @@
         },
         {
           "id": "motion-fade",
-          "number": 191,
+          "number": 195,
           "title": "Fade: each message appears where it stands",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-fade.mdx",
@@ -1941,7 +1973,7 @@
         },
         {
           "id": "motion-scale",
-          "number": 192,
+          "number": 196,
           "title": "Scale: each beat grows a step closer",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-scale.mdx",
@@ -1949,7 +1981,7 @@
         },
         {
           "id": "motion-blur",
-          "number": 193,
+          "number": 197,
           "title": "Blur: the arrival time comes into focus",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-blur.mdx",
@@ -1957,7 +1989,7 @@
         },
         {
           "id": "motion-wipe",
-          "number": 194,
+          "number": 198,
           "title": "Wipe: each leg is drawn from shop to door",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-wipe.mdx",
@@ -1965,23 +1997,71 @@
         },
         {
           "id": "motion-focus",
-          "number": 195,
+          "number": 199,
           "title": "Focus: only the latest status is lit",
           "layout": "statement",
           "file": "decks/lookbook/slides/motion-focus.mdx",
           "source": "---\nlayout: statement\ntitle: 'Focus: only the latest status is lit'\neyebrow: 'Focus: only the latest status is lit'\nsurface: default\nbudget: 45s\n---\n\n<Step at={1} focus>\n\nBooked.\n\n</Step>\n\n<Step at={2} focus>\n\nOn the way with Aoife.\n\n</Step>\n\n<Step at={3} focus>\n\nAt your door.\n\n</Step>\n\n<Notes>\n`statement` with three lines, each its own paragraph in `<Step focus>` with the default rise; use focus when a list tracks a state and only the newest item is true now.\nThe statuses on the Track page. [click] Booked, at 08:42. [click] On the way with Aoife; booked is history now, so it recedes. [click] At your door, 09:21. Only the current status is at full strength, the way Track shows it.\n</Notes>\n"
         },
         {
+          "id": "part-placed",
+          "number": 200,
+          "title": "Placed elements",
+          "layout": "section",
+          "file": "decks/lookbook/slides/part-placed.mdx",
+          "source": "---\nlayout: section\ntitle: Placed elements\nnumber: 12\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nBadges, stamps, grid callouts and footer labels outside the layout's slots.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nLayouts carry the argument, and placed elements add a stamp, a callout or a footer note without breaking the brand's tokens or grid.\n</Notes>\n"
+        },
+        {
+          "id": "placed-anchors",
+          "number": 201,
+          "title": "Named places pin callouts without pixel math",
+          "layout": "content",
+          "file": "decks/lookbook/slides/placed-anchors.mdx",
+          "source": "---\nlayout: content\ntitle: Named places pin callouts without pixel math\nbudget: 45s\n---\n\nOpen Network opens today across all six cities, with every shop booking through one API.\n\n<Shape place=\"right\" width={4} surface=\"accent\" radius=\"md\" shadow=\"sm\" name=\"Launch badge\">\n  **Open Network** · live today across six cities\n</Shape>\n\n<Place place=\"bottom-right\" width={4} at={1}>\n\n- €3.10 blended drop\n- 97.8% on time\n\n</Place>\n\n<Text place=\"bottom-left\" type=\"caption\" color=\"muted\">\n  Kestwick launch talk, 3 December 2026\n</Text>\n\n<Notes>\n`content` with named `place` positions inside the default `safe` zone: a `<Shape>` badge on the right, a `<Place>` holding a Markdown bullet list at `bottom-right` revealed with `at={1}`, and a `<Text>` caption at `bottom-left`.\nOpen Network goes live across all six cities today. [click] Every drop blends to €3.10 with 97.8% arriving inside the promised window.\n</Notes>\n"
+        },
+        {
+          "id": "placed-zones",
+          "number": 202,
+          "title": "Four zones frame a slide from margin to edge",
+          "layout": "statement",
+          "file": "decks/lookbook/slides/placed-zones.mdx",
+          "source": "---\nlayout: statement\ntitle: Four zones frame a slide from margin to edge\nsurface: inverse\nbudget: 45s\n---\n\nSame-hour drops across six cities, from 14 hubs.\n\n<Place place=\"bottom-left\" zone=\"header\">\n  <Icon name=\"map-pin\" role=\"accent\" /> Kestwick launch\n</Place>\n\n<Shape\n  place=\"top-left\"\n  width={3}\n  fill=\"surface\"\n  border=\"accent\"\n  stroke=\"regular\"\n  radius=\"md\"\n  inset=\"xs\"\n  type=\"small\"\n  name=\"Monthly volume\">\n  182,000 drops in Oct\n</Shape>\n\n<Shape\n  place=\"right\"\n  zone=\"canvas\"\n  width={2}\n  height={2}\n  surface=\"accent\"\n  align=\"center\"\n  anchor=\"center\"\n  name=\"Launch date\">\n  3 Dec 2026\n</Shape>\n\n<Text place=\"center\" zone=\"footer\" width={5} align=\"center\" type=\"caption\" color=\"muted\">\n  Wrenhaul operating report, October 2026\n</Text>\n\n<Notes>\n`statement` on `inverse` showing all four zones: `<Place>` with an `<Icon>` in `header`, a `<Shape>` with `inset` in `safe`, a full-bleed `<Shape>` against the right edge of `canvas`, and a `<Text>` source line centred in `footer` clear of corner chrome.\nEvery zone follows the brand's margins: header and footer sit in the margin bands, safe sits inside them, and canvas runs edge to edge.\n</Notes>\n"
+        },
+        {
+          "id": "placed-grid",
+          "number": 203,
+          "title": "Grid cells snap callouts to the brand's 12×6 grid",
+          "layout": "content",
+          "file": "decks/lookbook/slides/placed-grid.mdx",
+          "source": "---\nlayout: content\ntitle: Grid cells snap callouts to the brand's 12×6 grid\nbudget: 45s\n---\n\nOld Town hub, Kestwick, October 2026.\n\n<Shape\n  cols=\"1-4\"\n  rows=\"5-6\"\n  surface=\"accent\"\n  radius=\"lg\"\n  shadow=\"md\"\n  anchor=\"center\"\n  name=\"Daily drops\">\n  **680 drops a day** at €1.98 each\n</Shape>\n\n<Shape\n  cols=\"5-8\"\n  rows=\"5-6\"\n  fill=\"surface\"\n  border=\"accent\"\n  stroke=\"bold\"\n  radius=\"md\"\n  anchor=\"center\"\n  name=\"On-time rate\">\n  **98.9% on time** across 75 daily loops\n</Shape>\n\n<Place cols=\"9-12\" rows=\"4-6\">\n\n- 40 m² shop front\n- 22 staff riders\n- 5-month payback\n\n</Place>\n\n<Text place=\"center\" zone=\"footer\" width={5} align=\"center\" type=\"caption\" color=\"muted\">\n  Cells follow each brand's columns, rows and gutters.\n</Text>\n\n<Notes>\n`content` with `cols` and `rows` placement on the 12×6 brand grid: two `<Shape>` callouts (`surface=\"accent\"` with `shadow=\"md\"` and `fill=\"surface\"` with `border=\"accent\"` and `stroke=\"bold\"`), a `<Place>` holding a bullet list, and a `<Text>` note in the footer band.\nOur first hub in Kestwick Old Town shows what a dense unit delivers: 680 drops a day at €1.98 each and 98.9% on time, all from a 40 m² shop front.\n</Notes>\n"
+        },
+        {
+          "id": "placed-shapes",
+          "number": 204,
+          "title": "Four shape geometries frame a callout on the grid",
+          "layout": "content",
+          "file": "decks/lookbook/slides/placed-shapes.mdx",
+          "source": "---\nlayout: content\ntitle: Four shape geometries frame a callout on the grid\nsurface: inverse\nbudget: 45s\n---\n\nRectangles, squares, circles and pills draw their radii, borders and shadows from the brand.\n\n<Shape\n  shape=\"rect\"\n  cols=\"1-3\"\n  rows=\"5-6\"\n  surface=\"accent\"\n  radius=\"lg\"\n  shadow=\"md\"\n  align=\"center\"\n  anchor=\"center\"\n  name=\"Rect shape\">\n  **Rect** · €3.10\n</Shape>\n\n<Shape\n  shape=\"square\"\n  cols=\"4-6\"\n  rows=\"5-6\"\n  fill=\"surface\"\n  border=\"accent\"\n  stroke=\"regular\"\n  radius=\"md\"\n  align=\"center\"\n  anchor=\"center\"\n  name=\"Square shape\">\n  **Square** · 1:1\n</Shape>\n\n<Shape\n  shape=\"circle\"\n  cols=\"7-9\"\n  rows=\"5-6\"\n  surface=\"default\"\n  shadow=\"lg\"\n  align=\"center\"\n  anchor=\"center\"\n  name=\"Circle shape\">\n  **Circle** · 90s\n</Shape>\n\n<Shape\n  shape=\"pill\"\n  cols=\"10-12\"\n  rows=\"5-6\"\n  fill=\"surface\"\n  border=\"border\"\n  stroke=\"hairline\"\n  align=\"center\"\n  anchor=\"center\"\n  name=\"Pill shape\">\n  **Pill** · Same hour\n</Shape>\n\n<Notes>\n`content` on `inverse` with four `<Shape>` geometries placed in grid cells: `rect` with `surface=\"accent\"`, `radius=\"lg\"` and `shadow=\"md\"`, 1:1 locked `square` with `border=\"accent\"` and `stroke=\"regular\"`, 1:1 locked `circle` with `shadow=\"lg\"`, and `pill` with `stroke=\"hairline\"`.\nEvery shape pulls its colour, stroke, radius and shadow from the active brand, so switching brands restyles every callout together.\n</Notes>\n"
+        },
+        {
+          "id": "placed-geometries",
+          "number": 205,
+          "title": "Ellipses, diamonds and triangles export as native shapes",
+          "layout": "content",
+          "file": "decks/lookbook/slides/placed-geometries.mdx",
+          "source": "---\nlayout: content\ntitle: Ellipses, diamonds and triangles export as native shapes\nbudget: 45s\n---\n\nEvery contour maps to a native PowerPoint geometry with editable text inside.\n\n<Shape\n  shape=\"ellipse\"\n  cols=\"1-4\"\n  rows=\"5-6\"\n  fill=\"surface\"\n  border=\"accent\"\n  stroke=\"bold\"\n  align=\"center\"\n  anchor=\"center\"\n  name=\"Ellipse shape\">\n  **Ellipse** · Loop 14\n</Shape>\n\n<Shape\n  shape=\"diamond\"\n  cols=\"5-8\"\n  rows=\"5-6\"\n  surface=\"accent\"\n  align=\"center\"\n  anchor=\"center\"\n  type=\"small\"\n  name=\"Diamond shape\">\n  **Diamond** · Batch\n</Shape>\n\n<Shape\n  shape=\"triangle\"\n  cols=\"9-12\"\n  rows=\"5-6\"\n  surface=\"inverse\"\n  align=\"center\"\n  anchor=\"center\"\n  type=\"small\"\n  name=\"Triangle shape\">\n  **Triangle** · Peak\n</Shape>\n\n<Notes>\n`content` on `default` with the remaining three `<Shape>` geometries in grid cells: `ellipse` with `stroke=\"bold\"`, `diamond` on `surface=\"accent\"` and `triangle` on `surface=\"inverse\"`.\nEach shape exports as a single native PowerPoint shape with its text inside, so anyone editing the slide later moves the shape and its label as one object.\n</Notes>\n"
+        },
+        {
           "id": "part-close",
-          "number": 196,
+          "number": 206,
           "title": "Close",
           "layout": "section",
           "file": "decks/lookbook/slides/part-close.mdx",
-          "source": "---\nlayout: section\ntitle: Close\nnumber: 12\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nWhere to start, and how to reach us.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nThe last part: links, a code to scan and how to reach us.\n</Notes>\n"
+          "source": "---\nlayout: section\ntitle: Close\nnumber: 13\nnumeral: large\ntransition: cover\nbudget: 10s\n---\n\nWhere to start, and how to reach us.\n\n<Notes>\n`section` with `numeral: large` and `transition: cover`, the same on every divider so they read as one set; use one to open each part.\nThe last part: links, a code to scan and how to reach us.\n</Notes>\n"
         },
         {
           "id": "recap-network",
-          "number": 197,
+          "number": 207,
           "title": "A denser network makes every drop work harder",
           "layout": "recap",
           "file": "decks/lookbook/slides/recap-network.mdx",
@@ -1989,7 +2069,7 @@
         },
         {
           "id": "recap-launch",
-          "number": 198,
+          "number": 208,
           "title": "The next chapter starts with the hubs we have",
           "layout": "recap",
           "file": "decks/lookbook/slides/recap-launch.mdx",
@@ -1997,7 +2077,7 @@
         },
         {
           "id": "sources-evidence",
-          "number": 199,
+          "number": 209,
           "title": "Three records underpin the launch figures",
           "layout": "sources",
           "file": "decks/lookbook/slides/sources-evidence.mdx",
@@ -2005,7 +2085,7 @@
         },
         {
           "id": "sources-records",
-          "number": 200,
+          "number": 210,
           "title": "Every launch claim has a record behind it",
           "layout": "sources",
           "file": "decks/lookbook/slides/sources-records.mdx",
@@ -2013,7 +2093,7 @@
         },
         {
           "id": "content-links",
-          "number": 201,
+          "number": 211,
           "title": "Everything you need to ship a drop today",
           "layout": "content",
           "file": "decks/lookbook/slides/content-links.mdx",
@@ -2021,7 +2101,7 @@
         },
         {
           "id": "split-qr",
-          "number": 202,
+          "number": 212,
           "title": "Book a test drop from your phone, now",
           "layout": "split",
           "file": "decks/lookbook/slides/split-qr.mdx",
@@ -2029,7 +2109,7 @@
         },
         {
           "id": "closing-ask",
-          "number": 203,
+          "number": 213,
           "title": "Send us your first drop this week",
           "layout": "closing",
           "file": "decks/lookbook/slides/closing-ask.mdx",
@@ -2037,7 +2117,7 @@
         },
         {
           "id": "closing-questions",
-          "number": 204,
+          "number": 214,
           "title": "What should we deliver next?",
           "layout": "closing",
           "file": "decks/lookbook/slides/closing-questions.mdx",

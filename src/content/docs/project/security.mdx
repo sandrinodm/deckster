@@ -21,11 +21,11 @@ Fixes go to the latest published release of `@deckster/cli` and to the `main` br
 
 `deckster dev`, and `deckster present` without `--built`, run a Vite dev server for one deck.
 
-- **Network.** Without `--host` it listens on `localhost` only, so other machines cannot reach it. `--host` listens on every network interface, to present from a phone or another laptop: anyone on those networks can then load the deck. With `--mcp` (or `--agent`, which implies it) the server listens on `127.0.0.1`.
+- **Network.** Without `--host` it listens on `127.0.0.1` only, so other machines cannot reach it. `--host` listens on every network interface, to present from a phone or another laptop: anyone on those networks can then load the deck. Before 0.10.0 the server listened on `localhost` unless `--mcp` (or `--agent`, which implies it) was given.
 - **Page endpoints.** The comments endpoint (`/__deck/comments`), the slide reorder endpoint (`/__deck/reorder`) and the agent panel's socket need the dev session cookie, an `HttpOnly`, `SameSite=Strict` cookie the server sets when your browser opens the deck page from this machine. They refuse requests without it, from another origin, or not from this machine, and the server answers no cross-origin request:
 
   ```console
-  $ curl -s -w ' %{http_code}\n' http://localhost:5173/__deck/comments
+  $ curl -s -w ' %{http_code}\n' http://127.0.0.1:5173/__deck/comments
   {"error":"Missing or wrong dev session cookie. Reload the deck page from its own URL."} 403
   ```
 

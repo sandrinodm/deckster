@@ -7,7 +7,7 @@ sidebar:
     label: "Layouts"
 ---
 
-Pick a layout for what the slide needs to say or show. Set its name in frontmatter, for example `layout: stats`. A slide with no `layout` uses `default`. Each of the 63 kit layouts has its own page with a rendered example, the source, and the fields, slots and budgets. See [Layouts and slots](/concepts/layouts-and-slots/) for how the contract works and [MDX slides](/write-slides/mdx-slides/) for how to fill it.
+Pick a layout for what the slide needs to say or show. Set its name in frontmatter, for example `layout: stats`. A slide with no `layout` uses `default`. Each of the 64 kit layouts has its own page with a rendered example, the source, and the fields, slots and budgets. See [Layouts and slots](/concepts/layouts-and-slots/) for how the contract works and [MDX slides](/write-slides/mdx-slides/) for how to fill it.
 
 ## Choose a layout
 
@@ -16,7 +16,7 @@ If your brand brings a template, run `deckster layouts <deck> --summary` to see 
 | What the audience needs | Which layout to try |
 | --- | --- |
 | Where they are in the talk | Use [`title`](/reference/layouts/title/) for the cover, [`section`](/reference/layouts/section/) for a part divider, or [`agenda`](/reference/layouts/agenda/) to preview the order. |
-| One idea to take in | Use [`statement`](/reference/layouts/statement/) for a single sentence on its own, [`content`](/reference/layouts/content/) for a headline with a short explanation, or [`split`](/reference/layouts/split/) when a visual needs to sit beside that explanation. |
+| One idea to take in | Use [`statement`](/reference/layouts/statement/) for a single sentence on its own, [`content`](/reference/layouts/content/) for a headline with a short explanation, [`split`](/reference/layouts/split/) when a visual needs to sit beside that explanation, or [`image-reveal`](/reference/layouts/image-reveal/) to name a picture before you show it. |
 | A set of related ideas | Use [`cards`](/reference/layouts/cards/) for two to four ideas with equal weight, [`bento`](/reference/layouts/bento/) when one facet needs the most space, or [`columns`](/reference/layouts/columns/) for short lists under separate headings. |
 | Evidence for a takeaway | Use [`stats`](/reference/layouts/stats/) when two to four headline numbers carry the point, [`chart`](/reference/layouts/chart/) when a single figure shows the pattern, or [`dashboard`](/reference/layouts/dashboard/) when the point depends on several figures. [Choosing a chart](/data-and-diagrams/choosing-a-chart/) |
 | A comparison or change | Use [`comparison`](/reference/layouts/comparison/) to assess two or three options against the same criteria, [`shift`](/reference/layouts/shift/) to argue for a move from one state to another, or [`before-after`](/reference/layouts/before-after/) to show the change in two pictures. |
@@ -36,6 +36,8 @@ Twenty layouts need `@deckster/cli` 0.6.0 or later: `recap`, `sources`, `definit
 
 Version 0.7.0 adds the 11 layouts in the first three groups under [Layouts by purpose](#layouts-by-purpose). See them alongside the new chart and demo components. [Presentation patterns](/examples/presentation-patterns/)
 
+Version 0.10.0 adds [`image-reveal`](/reference/layouts/image-reveal/), a title beat that docks into a header or footer bar to reveal a picture. In 0.9.0, `deckster lint` reports `There is no "image-reveal" layout.`
+
 The grid shows the kit layouts in Fieldnote, in the order that `deckster layouts` prints them. Your deck applies its own brand when it renders the same slide source.
 
 <LayoutIndex />
@@ -50,7 +52,7 @@ The groups follow the parts of the [lookbook](/examples/lookbook/) deck, which s
 | Vision and product design | [`vision-storyboard`](/reference/layouts/vision-storyboard/), [`sketch-to-ship`](/reference/layouts/sketch-to-ship/), [`future-back`](/reference/layouts/future-back/) | Open, Show the product, Plan ahead and ask |
 | Roadmaps and strategy | [`roadmap-transit`](/reference/layouts/roadmap-transit/), [`roadmap-hill`](/reference/layouts/roadmap-hill/), [`opportunity-map`](/reference/layouts/opportunity-map/), [`strategy-canvas`](/reference/layouts/strategy-canvas/) | Compare and decide, Plan ahead and ask |
 | Openers and closers | [`title`](/reference/layouts/title/), [`section`](/reference/layouts/section/), [`agenda`](/reference/layouts/agenda/), [`bio`](/reference/layouts/bio/), [`recap`](/reference/layouts/recap/), [`sources`](/reference/layouts/sources/), [`closing`](/reference/layouts/closing/) | Open, Close |
-| Statements | [`statement`](/reference/layouts/statement/), [`quote`](/reference/layouts/quote/), [`image`](/reference/layouts/image/), [`definition`](/reference/layouts/definition/) | Say one thing |
+| Statements | [`statement`](/reference/layouts/statement/), [`quote`](/reference/layouts/quote/), [`image`](/reference/layouts/image/), [`image-reveal`](/reference/layouts/image-reveal/), [`definition`](/reference/layouts/definition/) | Say one thing |
 | Content | [`default`](/reference/layouts/default/), [`content`](/reference/layouts/content/), [`split`](/reference/layouts/split/), [`cards`](/reference/layouts/cards/), [`features`](/reference/layouts/features/), [`steps`](/reference/layouts/steps/), [`bento`](/reference/layouts/bento/), [`do-dont`](/reference/layouts/do-dont/), [`faq`](/reference/layouts/faq/) | Explain |
 | Training and workshops | [`quiz`](/reference/layouts/quiz/), [`exercise`](/reference/layouts/exercise/) | Explain (`quiz-cost` is in Prove it with a number) |
 | Comparison | [`comparison`](/reference/layouts/comparison/), [`pricing`](/reference/layouts/pricing/), [`shift`](/reference/layouts/shift/), [`matrix`](/reference/layouts/matrix/), [`quadrants`](/reference/layouts/quadrants/), [`table`](/reference/layouts/table/), [`risks`](/reference/layouts/risks/) | Compare and decide |
