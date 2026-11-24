@@ -178,6 +178,10 @@ Art is made of ordinary background layers (`image`, `placed`, `pattern` and `gra
 `color.surfaces.<name>.background`), with its files in the brand folder: fieldnote keeps its six
 drawings in `brands/fieldnote/layouts/`. `loadBrand` checks the art files as it does a surface's.
 
+A brand can also ship layouts as code, in a folder per layout inside the same `layouts/` folder
+(`layouts/<name>/contract.ts` and `layout.tsx`). `loadBrand` does not read them; `@deckster/vite-plugin`
+loads them (see its README), and files at the top of `layouts/` stay a data layout's art.
+
 ### Checks
 
 `resolveBrand` decodes and checks `layouts.ts` after `brand.ts`, and `deckster brand check` reports

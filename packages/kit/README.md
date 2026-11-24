@@ -116,14 +116,47 @@ binds. Warnings are for a media region on a slot that takes no pictures and a te
 slot that takes only pictures. The brand package checks everything that needs only the brand
 (boxes in the canvas, names that exist).
 
+## Replacing a kit layout
+
+A code layout in a brand or a deck may take the name of a kit layout and set `replaces: true` in
+its contract. The kit supports that in four places:
+
+- **`src/layouts/all-layouts.ts`** lists every kit layout definition in catalog order, and
+  **`kitLayoutModule(name)`** (`@deckster/kit/catalog`) says where each one lives:
+  `layouts/<name>-layout.tsx` exporting `<camelName>Layout` (`do-dont` is `doDontLayout`). The deck
+  plugin uses both to generate `virtual:deck/kit-runtime` with every kit layout but the replaced
+  ones, so a replaced layout's component and stylesheet are never loaded. `catalog.test.ts` holds
+  the three lists (the catalog, `all-layouts.ts` and the modules) to each other.
+- **`kitPlugin(layouts)`** (`@deckster/kit/plugin`, `src/kit-plugin.ts`) is the runtime plugin as a
+  function of the layouts to register. The generated module calls it, then imports the layouts
+  and `src/kit-styles.ts` (the stylesheets that belong to no single layout) in the order
+  `runtime.ts` always had, so the cascade does not change. `runtime.ts` is the same thing with
+  every layout, `kitPlugin(allLayouts)`.
+- **`checkReplacement(original, replacement)`** (`src/layouts/replace-check.ts`) returns
+  `{ errors, warnings, notes }`, each a `{ message, fix }`. Errors mean slides written for the
+  kit layout would stop building: a field the replacement drops, narrows or leaves optional where
+  the original requires it; a slot it drops, makes optional or narrows; the original's example or
+  one of its `LIMIT_CASES` that the replacement rejects; a required title made optional. A dropped
+  PowerPoint mapping is a warning. Every changed budget or title limit is a note: tighter limits
+  are allowed, and lint then flags the slides over them. The build uses it for every layout that
+  says `replaces: true`; `checkReplacedSlides` in `@deckster/vite-plugin` checks real slides.
+- **Stylesheets do not depend on a layout that may not load.** The centred display alignment
+  (`display-align.css`: the centred eyebrow between two rules and the cleared backdrop) applies to a
+  frame that sets `data-display-align` together with `data-align`, and the kit's `title`, `section`,
+  `statement` and `image-reveal` set it, not their `data-layout` name, so a replacement gets those
+  rules only by asking. The stat card styles are in `stat-cards.css`, shared by the stats layout
+  and the `stat-row` chart, and `<Image>` has its own frame and caption styles in
+  `media/media.css`, so each still draws when the layout that used to supply them is replaced.
+
 ## Exports
 
 | Import                              | Runs in | What it is                                                                                                                                                                                           | Used by                                  |
 | ----------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | `@deckster/kit`                     | browser | Components for TSX slides: `Step`, `Morph`, `Code`, `CodeMove`, `CodeStep`, `Terminal`, `Cmd`, `Out`, `Image`, `Video`, `Lottie`, `Icon`, `Button`, `Download`, `LinkCard`, `QR`, `AppFrame`, `Live` | slides                                   |
 | `@deckster/kit/diagrams`            | browser | Diagram components and parts for TSX slides (`Flow`, `Node`, `Edge`, `Packet`, ...)                                                                                                                  | slides                                   |
-| `@deckster/kit/runtime`             | browser | The runtime plugin: registers every layout, every MDX component and the page chrome                                                                                                                  | `@deckster/vite-plugin`                  |
-| `@deckster/kit/catalog`             | Node    | The layout contracts, loaded by the build and `deckster layouts`, and `brandLayoutContract`, `checkBrandLayouts` and `brandLayoutCatalog` for a brand's own                                          | `@deckster/vite-plugin`, `@deckster/cli` |
+| `@deckster/kit/runtime`             | browser | The runtime plugin with every kit layout: `kitPlugin(allLayouts)` and the kit's stylesheets. The deck plugin loads a generated copy instead (see Replacing a kit layout)                             | `@deckster/vite-plugin` (names it)       |
+| `@deckster/kit/plugin`              | browser | `kitPlugin(layouts)`: the runtime plugin for the kit layouts it is given, with every MDX component and the page chrome, ending with the brand's own layouts                                          | `virtual:deck/kit-runtime`               |
+| `@deckster/kit/catalog`             | Node    | The layout contracts, loaded by the build and `deckster layouts`; `brandLayoutContract`, `checkBrandLayouts` and `brandLayoutCatalog` for a brand's own; `checkReplacement` and `kitLayoutModule`    | `@deckster/vite-plugin`, `@deckster/cli` |
 | `@deckster/kit/mdx`                 | Node    | The MDX extension: Shiki highlighting, media and icon resolution, prop checks, diagram checks and layout, typographic punctuation                                                                    | `@deckster/vite-plugin`                  |
 | `@deckster/kit/vite`                | Node    | `kitVitePlugins()` (icons through `unplugin-icons`, CSV imports for charts) and `KIT_SCAN_ENTRY`                                                                                                     | `@deckster/vite-plugin`                  |
 | `@deckster/kit/chart-catalog`       | Node    | What `deckster charts` prints and the numbers the `chart-*` lint rules use (`CHART_LIMITS`)                                                                                                          | `@deckster/cli`                          |
@@ -133,6 +166,7 @@ slot that takes only pictures. The brand package checks everything that needs on
 | `@deckster/kit/diagram-description` | both    | The versioned JSON every diagram writes to `data-diagram-description`                                                                                                                                | `@deckster/export`                       |
 | `@deckster/kit/layout-parts`        | browser | The parts a layout draws with: `Frame`, `Region`, `SlideHeader`, `FittedText`, `useFitLevel`, `TreatedMedia`, `useEnter`, `Step` and the rest of the list below                                      | the kit's layouts, code layouts          |
 | `@deckster/kit/layout-fields`       | Node    | The frontmatter fields and hints a layout contract is built from: `EyebrowField`, `chromeField`, `textField`, `treatmentProps`, `DataField` and the rest of the list below                           | the kit's layouts, code layouts          |
+| `@deckster/kit/eject-closure`       | Node    | Which files each kit layout needs when copied into a brand: `ejectClosures`, `catalogLayoutNames`, `findUnsafeCopies`, `PUBLIC_ENTRIES` (see Parts and fields for layouts)                           | `@deckster/cli`                          |
 | `@deckster/kit/limit-cases`         | Node    | Each layout filled to its limits, for the budget stress test                                                                                                                                         | `@deckster/cli` tests                    |
 | `@deckster/kit/icon-sets`           | Node    | `iconSetNames(set)`: the names an installed Iconify set has                                                                                                                                          | `deckster icons`                         |
 
@@ -197,7 +231,7 @@ out of the layout's imports.
 | Folder                                | Contents                                                                                                                                                                                                       |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/foundation`                      | What every layout builds on: `Frame`, `Region`, `SlideHeader`, `Footnote`, `Portrait`, `TreatedMedia`, `FrontmatterPicture`, `MonoMark`, `useFitLevel`, `useDensity`, the `kit-prose` and `kit-type-*` classes |
-| `src/layouts`                         | One contract, one component and one stylesheet per layout, plus `limit-cases.ts`                                                                                                                               |
+| `src/layouts`                         | One contract, one component and one stylesheet per layout, plus `all-layouts.ts`, `replace-check.ts`, `eject-closure.ts` and `limit-cases.ts`                                                                  |
 | `src/charts`                          | Chart and figure components, each a pure planner drawn by `SceneSvg` inside `ChartFrame`                                                                                                                       |
 | `src/diagrams`                        | Diagram components, loaded lazily through `lazy-diagrams.tsx`, and their remark plugins                                                                                                                        |
 | `src/code`                            | `Code`, `CodeMove`, `CodeStep`, `Terminal`, Shiki themes with `--brand-code-*` colors                                                                                                                          |
@@ -214,8 +248,14 @@ the design decisions behind them.
 
 - A layout is three files: `<name>-layout.contract.ts` (`defineLayoutContract`, listed in
   `catalog.ts`), `<name>-layout.tsx` (`defineLayout`, registered in `runtime.ts`) and
-  `<name>-layout.css`. `catalog.test.ts` fails when the two lists differ. Contracts are loaded in
-  Node: no JSX, no browser code, and the component imports its contract only as a type.
+  `<name>-layout.css`. `catalog.test.ts` fails when the two lists differ, and the component must
+  also be listed in `all-layouts.ts` (and be the export `kitLayoutModule` names), which is what
+  `runtime.ts` and the generated `virtual:deck/kit-runtime` register. Contracts are loaded in Node:
+  no JSX, no browser code, and the component imports its contract only as a type.
+- A layout's stylesheet must not rely on another layout's stylesheet being loaded: a code layout may
+  replace that layout, and its CSS is then never imported. Put what two layouts share in a
+  stylesheet of its own (`stat-cards.css`, `display-align.css`) and key it on a data attribute the
+  layout sets, not on a layout's name.
 - Budgets count content (`maxWords`, `maxBullets`, and `maxLines` only for code), never the room
   it takes. Whether text fits a brand is for the overflow rules.
 - When you change a limit or a layout, add or update its worst case in

@@ -1,9 +1,10 @@
 # Plan: custom code layouts in brands and decks
 
-Status: phase 0 done, 2026-11-24; phases 1–4 not started. Reviewed by a second model the same day;
-its findings are folded in and listed in §8. The open decisions are settled in §9. The phase 0 spike
-(§10) changed the contract loader (§3.4), the kit runtime design (§3.2), the call sites (§1.3,
-§3.5) and the public parts (§3.8); the text below is updated to match.
+Status: phases 0 to 4 are implemented on `feat/custom-layouts` (2026-11-24); phase 5 is not.
+Reviewed by a second model the same day; its findings are folded in and listed in §8. The open
+decisions are settled in §9. §10 has the phase 0 spike results, which changed the contract loader
+(§3.4), the kit runtime design (§3.2), the call sites (§1.3, §3.5) and the public parts (§3.8), and
+the notes per phase (10.8, 10.9); the text below is updated to match.
 
 The goal: a brand or a deck can ship its own slide layouts as React code, with no limits beyond what
 React and CSS can do, and every deckster tool treats them like kit layouts: frontmatter and slot
