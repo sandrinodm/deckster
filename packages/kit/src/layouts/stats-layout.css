@@ -28,9 +28,12 @@
     --kit-stat-span: 3;
   }
 
+  /*
+   * No colour of its own: the context is prose and takes the prose colour. A `color` here used to
+   * lose to `.kit-prose` by stylesheet order, so setting one would depend on that order.
+   */
   .kit-stats-context {
     max-width: calc(8 * var(--kit-column) + 7 * var(--kit-gutter));
-    color: var(--brand-color-muted);
   }
 
   /*
