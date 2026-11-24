@@ -20,6 +20,7 @@ import { parseCommandArgs, readBrandName, readPort } from '#parse-command-args.t
 import { BrowserOpener } from '#present/browser-fallback.ts';
 import { DEFAULT_START_TIMEOUT, DeckShell, type StartedShell } from '#present/deck-shell.ts';
 import { describeDisplays, planWindows, type PlanFlags } from '#present/window-plan.ts';
+import { findRunningDevServers, runningDevServerWarning } from '#server/dev-registry.ts';
 import { awaitShutdown, bindQuitKey } from '#server/shutdown.ts';
 import { Workspace } from '#workspace.ts';
 
@@ -34,9 +35,10 @@ const AGENT_CODE_BYTES = 24;
 const FALLBACK_BACKGROUND_COLOR = '#000000';
 
 /**
- * The port `vite preview` serves on when none is given, which the static build's URL falls back to.
+ * The port that asks the operating system for a free one: nobody types a presentation's URL, so a
+ * random port never meets a dev server or another Vite app.
  */
-const PREVIEW_DEFAULT_PORT = 4173;
+const ANY_FREE_PORT = 0;
 
 /**
  * Digits only: the value of `--presenter` when it is followed by a display index.
@@ -308,6 +310,10 @@ const runPresent = Effect.fn('deck.present')(function* (
   }
 
   const { deck } = yield* chooseInteractiveDeck(workspaceRoot, positionals[0], 'present');
+  for (const running of yield* findRunningDevServers(workspaceRoot)) {
+    yield* Console.log(runningDevServerWarning(running));
+  }
+
   if (agent !== undefined) {
     // A bad --agent value is a usage error, reported before Electron starts.
     const { resolveAgentSetup } = yield* Effect.tryPromise({
@@ -569,7 +575,7 @@ type ServeOptions = {
   brand: string | undefined;
 
   /**
-   * The port, or `undefined` for the first free one.
+   * The port, or `undefined` for one the operating system picks.
    */
   port: number | undefined;
 
@@ -607,7 +613,8 @@ const serveDeck = Effect.fn('serveDeck')(function* (
   CommandError,
   CommandServices | Scope.Scope
 > {
-  const { modules, workspaceRoot, location, port } = options;
+  const { modules, workspaceRoot, location } = options;
+  const port = options.port ?? ANY_FREE_PORT;
   const logLevel = options.verbose ? 'info' : 'warn';
   const { serving } = modules;
   if (serving.kind === 'dev') {
@@ -642,9 +649,9 @@ const serveDeck = Effect.fn('serveDeck')(function* (
     logLevel,
     ...(options.chooser === undefined ? {} : { chooser: options.chooser }),
   });
-  return {
-    url: server.resolvedUrls?.local[0] ?? `http://localhost:${port ?? PREVIEW_DEFAULT_PORT}/`,
-  };
+  const address = server.httpServer.address();
+  const listening = typeof address === 'object' && address !== null ? address.port : port;
+  return { url: server.resolvedUrls?.local[0] ?? `http://127.0.0.1:${listening}/` };
 });
 
 /**
