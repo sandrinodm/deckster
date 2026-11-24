@@ -7,13 +7,19 @@ import { useId, useState, type CSSProperties, type ReactNode } from 'react';
 
 import type { LogoEntry, logosLayoutContract } from '#layouts/logos-layout.contract.ts';
 
-import { frontmatterAsset } from '#foundation/frontmatter-assets.ts';
-import { TreatedMedia } from '#foundation/media-treatment.tsx';
 import { useSlideFile } from '#foundation/slide-file.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  frontmatterAsset,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  TreatedMedia,
+  useEnter,
+} from '#layout-parts.ts';
 import { outcomeFor, type LogoState } from '#layouts/logo-state.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
 import '#layouts/logos-layout.css';
 
 /**

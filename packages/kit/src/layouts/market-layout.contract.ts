@@ -10,7 +10,7 @@ import {
   REVEAL_HINT,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 import { splitStat } from '#layouts/stat-value.ts';
 
 /**

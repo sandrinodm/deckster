@@ -7,10 +7,15 @@ import type {
   productCutawayLayoutContract,
 } from '#layouts/product-cutaway-layout.contract.ts';
 
-import { frontmatterAsset } from '#foundation/frontmatter-assets.ts';
 import { useSlideFile } from '#foundation/slide-file.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import {
+  Footnote,
+  Frame,
+  frontmatterAsset,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+} from '#layout-parts.ts';
 import '#layouts/product-cutaway-layout.css';
 
 /**

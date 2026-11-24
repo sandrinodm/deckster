@@ -3,12 +3,19 @@ import { useRef, type CSSProperties, type ReactNode } from 'react';
 
 import type { doDontLayoutContract } from '#layouts/do-dont-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
 import { KitMark } from '#foundation/marks.tsx';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter, type EnterProps } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitLevel,
+  type EnterProps,
+} from '#layout-parts.ts';
 import '#layouts/do-dont-layout.css';
 
 /**

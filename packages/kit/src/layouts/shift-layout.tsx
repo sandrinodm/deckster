@@ -3,12 +3,16 @@ import { useRef, type ReactNode } from 'react';
 
 import type { ShiftStateEntry, shiftLayoutContract } from '#layouts/shift-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Footnote, Frame, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { StatValue } from '#foundation/stat-figure.tsx';
-import { useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  Footnote,
+  Frame,
+  SlideHeader,
+  smartPunctuation,
+  StatValue,
+  Step,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/shift-layout.css';
 
 /**

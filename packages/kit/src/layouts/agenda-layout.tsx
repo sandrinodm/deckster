@@ -4,9 +4,14 @@ import { defineLayout, useStatic, type LayoutProps } from '@deckster/engine';
 
 import type { agendaLayoutContract } from '#layouts/agenda-layout.contract.ts';
 
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps } from '#motion/enter.ts';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+} from '#layout-parts.ts';
 import '#layouts/agenda-layout.css';
 
 /**

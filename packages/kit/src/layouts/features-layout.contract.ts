@@ -10,7 +10,7 @@ import {
   IconNameField,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest capabilities in a features grid; fewer belong in cards.

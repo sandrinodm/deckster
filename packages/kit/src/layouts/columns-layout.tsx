@@ -4,11 +4,16 @@ import { useRef, type CSSProperties, type ReactNode } from 'react';
 
 import type { ColumnEntry, columnsLayoutContract } from '#layouts/columns-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/columns-layout.css';
 
 /**

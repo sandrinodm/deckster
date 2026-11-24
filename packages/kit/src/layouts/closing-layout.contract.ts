@@ -8,7 +8,7 @@ import {
   contactsHint,
   EYEBROW_HINT,
   EyebrowField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 import { displayUrl } from '#links/link-target.ts';
 
 /**

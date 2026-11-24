@@ -4,8 +4,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { demoLayoutContract } from '#layouts/demo-layout.contract.ts';
 
-import { Footnote, Frame, SlideHeader } from '#foundation/slide-parts.tsx';
-import { useEnter } from '#motion/enter.ts';
+import { Footnote, Frame, SlideHeader, useEnter } from '#layout-parts.ts';
 
 /**
  * The `demo` layout: the shared header on one line, then the demo region filling everything down to

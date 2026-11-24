@@ -1,8 +1,9 @@
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Effect, Schema } from 'effect';
 
-import { AlignField, alignHint } from '#layouts/display-fields.ts';
 import {
+  AlignField,
+  alignHint,
   CHROME_HINT,
   chromeField,
   EYEBROW_HINT,
@@ -11,7 +12,7 @@ import {
   FocalField,
   TREATMENT_HINT,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The edge the title and subtitle bar docks to on the reveal step: `bottom` (a full-width footer

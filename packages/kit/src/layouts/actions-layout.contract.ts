@@ -11,7 +11,7 @@ import {
   REVEAL_HINT,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest commitments that make an action list.

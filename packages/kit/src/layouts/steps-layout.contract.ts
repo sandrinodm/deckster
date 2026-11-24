@@ -4,14 +4,14 @@ import { Schema } from 'effect';
 import {
   CHROME_HINT,
   chromeField,
+  CONTEXT_MAX_WORDS,
   currentProblems,
   EYEBROW_HINT,
   EyebrowField,
   REVEAL_HINT,
   RevealField,
   textField,
-  CONTEXT_MAX_WORDS,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest steps a process shows.

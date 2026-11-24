@@ -131,11 +131,66 @@ slot that takes only pictures. The brand package checks everything that needs on
 | `@deckster/kit/component-catalog`   | Node    | What `deckster components` prints                                                                                                                                                                    | `@deckster/cli`                          |
 | `@deckster/kit/chart-spec`          | both    | `ChartSpec`, the versioned JSON every chart writes to `data-chart-spec`                                                                                                                              | `@deckster/export`                       |
 | `@deckster/kit/diagram-description` | both    | The versioned JSON every diagram writes to `data-diagram-description`                                                                                                                                | `@deckster/export`                       |
+| `@deckster/kit/layout-parts`        | browser | The parts a layout draws with: `Frame`, `Region`, `SlideHeader`, `FittedText`, `useFitLevel`, `TreatedMedia`, `useEnter`, `Step` and the rest of the list below                                      | the kit's layouts, code layouts          |
+| `@deckster/kit/layout-fields`       | Node    | The frontmatter fields and hints a layout contract is built from: `EyebrowField`, `chromeField`, `textField`, `treatmentProps`, `DataField` and the rest of the list below                           | the kit's layouts, code layouts          |
 | `@deckster/kit/limit-cases`         | Node    | Each layout filled to its limits, for the budget stress test                                                                                                                                         | `@deckster/cli` tests                    |
 | `@deckster/kit/icon-sets`           | Node    | `iconSetNames(set)`: the names an installed Iconify set has                                                                                                                                          | `deckster icons`                         |
 
 Inside the package, imports use `#` paths (`#foundation/slide-parts.tsx`), as everywhere in the
-workspace.
+workspace. Layouts import the building blocks from `#layout-parts.ts` and `#layout-fields.ts`.
+
+## Parts and fields for layouts
+
+Two modules hold what a layout is built from. The kit's own 64 layouts import everything below
+from them (inside the package as `#layout-parts.ts` and `#layout-fields.ts`), so the API is
+exercised by every layout and cannot rot, and a code layout in a brand or a deck imports the same
+names from `@deckster/kit/layout-parts` and `@deckster/kit/layout-fields`.
+
+**`@deckster/kit/layout-parts`** runs in the browser and loads the stylesheets of its parts:
+
+- `Frame`, `Region`, `Eyebrow`, `SlideHeader`, `Footnote`, `FittedText`: the slide's frame with the
+  brand's margins, safe area and backdrop, and the standard header and footnote;
+- `useFitGroupWidth`, `useRenderOnFontLoad`, type `FitRung`, `useFitLevel`: the type and density
+  steps for content that may not fit;
+- `TreatedMedia`, `BrandLogo`, `smartPunctuation`: the brand's image treatments and logo, and
+  typographic quotes and dashes;
+- `StatValue`, `StatDelta`: stat figures that count up;
+- `useEnter`, `enterProps`, `MAX_ENTER_ORDER`, type `EnterProps`, `Step`: entrance order and steps;
+- `frontmatterAsset`, `frontmatterIcon`, type `IconComponent`, `TableLayoutContext`, type
+  `TableLayoutSettings`, `useStillMotion`: the parts that share state with the rest of the kit. The
+  registry that MDX slides fill with their pictures and icons, the table settings context and the
+  reveal state each exist once, so a layout must use these exports and never a copy of them.
+
+**`@deckster/kit/layout-fields`** runs in plain Node, because contracts are loaded by the build and
+the CLI: it imports no React, no stylesheet and no `.tsx` file (a test holds it to that). It holds
+`EyebrowField`, `EYEBROW_HINT`, `chromeField`, `CHROME_HINT`, `TreatmentField`, `TREATMENT_HINT`,
+`treatmentProps`, `textField`, `CONTEXT_MAX_WORDS`, `IconNameField`, `FocalField`, `FOCAL_HINT`,
+`RevealField`, `REVEAL_HINT`, `ContactItem`, type `ContactEntry`, `contactsHint`, `currentProblems`,
+`AlignField`, `alignHint`, `DataField` and `DATA_HINT`.
+
+**What is promised.** Both lists are covered by an API test (`src/layout-api.test.ts`), which holds
+the exported names, their signatures and what each schema accepts in the committed
+`src/layout-*.snapshot.txt` files. A change to one of them fails the test until the snapshot is
+updated on purpose (`pnpm exec vp test run src/layout-api.test.ts -u`), so it shows up in review.
+Adding a name is a minor change, and removing or renaming one, or changing a signature or what a
+field accepts, is a breaking one. Anything not in the lists (`Portrait`, `Marks`, `Badge`, the
+helpers under `src/foundation`) is private and may change at any time.
+
+**What "fully custom" means.** A layout built on `layout-parts` changes when the kit changes `Frame`
+or `FittedText`, within the semver promise above. An author who wants nothing to move under them
+can skip the parts and write plain React and CSS: every tool still works as long as the layout's
+DOM follows the rules the build, the lint and the export read.
+
+**Ejecting a kit layout** copies its files and the private helpers it needs, and points every import
+of a public name at these modules. `src/layouts/eject-closure.ts` computes that for the CLI: for each
+layout in the catalog, the files it owns, the imports that become package imports, the modules to
+copy and the stylesheets. It reads source text only, so it runs in Node. `eject-closure.test.ts`
+holds the rule that makes ejecting every layout possible: no layout's closure copies a module that
+keeps state shared with the kit (the contexts and the frontmatter registry above), nor any module
+that creates a React context or keeps module-level `Map`, `Set` or `let` state that other kit code
+also imports, unless the module is listed as safe in `SAFE_STATE_MODULES` with the reason. If that
+test fails after a change, export the module's public part from `layout-parts.ts`, or keep the state
+out of the layout's imports.
 
 ## Source layout
 

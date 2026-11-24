@@ -2,33 +2,19 @@ import { deckCommand } from '@deckster/engine/command';
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
-import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField } from '#layouts/layout-fields.ts';
+import {
+  CHROME_HINT,
+  chromeField,
+  DATA_HINT,
+  DataField,
+  EYEBROW_HINT,
+  EyebrowField,
+} from '#layout-fields.ts';
 
 /**
  * The longest chart title, in characters: two lines at the smallest fit step in both brands.
  */
 export const CHART_TITLE_MAX_CHARS = 90;
-
-/**
- * One value of a data row in frontmatter: text, a number, a flag or nothing.
- */
-const DataCell = Schema.Union([Schema.String, Schema.Number, Schema.Boolean, Schema.Null]);
-
-/**
- * Named datasets a chart slide carries in its frontmatter, each a list of rows that a chart on the
- * slide names with `data="name"`.
- */
-export const DataField = Schema.optionalKey(
-  Schema.Record(Schema.String, Schema.Array(Schema.Record(Schema.String, DataCell))),
-);
-
-/**
- * How to fill the `data:` field.
- */
-export const DATA_HINT =
-  'List datasets by name, each a list of rows, and name one from a chart with ' +
-  '`data="name"`: `data: { regions: [{ region: EMEA, revenue: 4.2 }] }`. Inline rows ' +
-  '(data={[...]}) and imported JSON or CSV files work too.';
 
 /**
  * The contract of the `chart` layout: a takeaway title over one chart, number or table.

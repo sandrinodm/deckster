@@ -5,13 +5,19 @@ import { Fragment, useRef, type CSSProperties, type ReactNode } from 'react';
 import type { featuresLayoutContract } from '#layouts/features-layout.contract.ts';
 
 import { hyphenPoints, wordPieces } from '#diagrams/word-breaks.ts';
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { frontmatterIcon } from '#foundation/frontmatter-assets.ts';
 import { MEASURE_TOLERANCE_PX } from '#foundation/layout-geometry.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  frontmatterIcon,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/features-layout.css';
 
 /**

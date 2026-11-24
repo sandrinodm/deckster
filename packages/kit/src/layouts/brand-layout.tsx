@@ -5,9 +5,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { layoutLayers } from '@deckster/brand';
 import { useBrand } from '@deckster/brand/runtime';
 
-import { TreatedMedia } from '#foundation/media-treatment.tsx';
-import { FittedText, Frame, Region } from '#foundation/slide-parts.tsx';
-import { useEnter } from '#motion/enter.ts';
+import { FittedText, Frame, Region, TreatedMedia, useEnter } from '#layout-parts.ts';
 import '#layouts/brand-layout.css';
 
 /**

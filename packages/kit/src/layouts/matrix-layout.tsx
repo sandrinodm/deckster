@@ -14,10 +14,17 @@ import type {
   MatrixQuadrant,
 } from '#layouts/matrix-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { useRenderOnFontLoad } from '#foundation/fit-text.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useFitLevel,
+  useRenderOnFontLoad,
+} from '#layout-parts.ts';
 import {
   placeFixed,
   placeLabels,
@@ -27,8 +34,6 @@ import {
   type PlotBox,
 } from '#layouts/matrix-labels.ts';
 import { MATRIX_QUADRANTS, quadrantOf } from '#layouts/matrix-layout.contract.ts';
-import { enterProps } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
 import '#layouts/matrix-layout.css';
 
 /**

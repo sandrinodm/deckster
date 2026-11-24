@@ -4,8 +4,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { codeLayoutContract } from '#layouts/code-layout.contract.ts';
 
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { useEnter } from '#motion/enter.ts';
+import { Footnote, Frame, Region, SlideHeader, useEnter } from '#layout-parts.ts';
 
 /**
  * The most lines the code layout's title takes before it steps down in size: one, so the code keeps

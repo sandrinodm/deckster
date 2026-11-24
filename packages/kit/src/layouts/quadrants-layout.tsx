@@ -4,14 +4,22 @@ import { useRef, type ReactNode } from 'react';
 
 import type { QuadrantEntry, quadrantsLayoutContract } from '#layouts/quadrants-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { useFitGroupWidth } from '#foundation/fit-text.ts';
-import { frontmatterIcon, type IconComponent } from '#foundation/frontmatter-assets.ts';
 import { MEASURE_TOLERANCE_PX } from '#foundation/layout-geometry.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter, type EnterProps } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  frontmatterIcon,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitGroupWidth,
+  useFitLevel,
+  type EnterProps,
+  type IconComponent,
+} from '#layout-parts.ts';
 import '#layouts/quadrants-layout.css';
 
 /**

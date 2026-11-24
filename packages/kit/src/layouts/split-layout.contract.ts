@@ -8,7 +8,7 @@ import {
   EyebrowField,
   TREATMENT_HINT,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * How the twelve columns are shared between text and media, written text:media.

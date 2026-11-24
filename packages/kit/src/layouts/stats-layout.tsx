@@ -3,11 +3,17 @@ import { useRef, type ReactNode } from 'react';
 
 import type { statsLayoutContract } from '#layouts/stats-layout.contract.ts';
 
-import { useFitGroupWidth } from '#foundation/fit-text.ts';
-import { Footnote, Frame, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { StatDelta, StatValue } from '#foundation/stat-figure.tsx';
-import { enterProps, useEnter } from '#motion/enter.ts';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  SlideHeader,
+  smartPunctuation,
+  StatDelta,
+  StatValue,
+  useEnter,
+  useFitGroupWidth,
+} from '#layout-parts.ts';
 import '#layouts/stats-layout.css';
 
 /**

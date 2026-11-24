@@ -8,13 +8,19 @@ import type {
 } from '#layouts/status-layout.contract.ts';
 
 import { Pill } from '#foundation/badges.tsx';
-import { useFitLevel } from '#foundation/fit-level.ts';
 import { MEASURE_TOLERANCE_PX } from '#foundation/layout-geometry.ts';
 import { KitMark } from '#foundation/marks.tsx';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/status-layout.css';
 
 /**

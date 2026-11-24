@@ -4,7 +4,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { strategyCanvasLayoutContract } from '#layouts/strategy-canvas-layout.contract.ts';
 
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import { smartPunctuation } from '#layout-parts.ts';
 import { patternPosition, PatternSlide, usePatternStage } from '#layouts/pattern-slide.tsx';
 import '#layouts/strategy-canvas-layout.css';
 

@@ -10,7 +10,7 @@ import {
   EyebrowField,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The longest amount, in characters: `$2.4M`, `€1,200,000`, `12 FTE`, `March 3`.

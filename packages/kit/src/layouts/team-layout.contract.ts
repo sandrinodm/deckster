@@ -8,14 +8,14 @@ import { Schema } from 'effect';
 import {
   CHROME_HINT,
   chromeField,
+  CONTEXT_MAX_WORDS,
   EYEBROW_HINT,
   EyebrowField,
   FocalField,
   textField,
   TREATMENT_HINT,
   TreatmentField,
-  CONTEXT_MAX_WORDS,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest people a team slide shows: two founders; one person is a `bio` slide.

@@ -4,12 +4,16 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { CoverPicture, titleLayoutContract } from '#layouts/title-layout.contract.ts';
 
-import { BrandLogo } from '#foundation/brand-logo.tsx';
-import { TreatedMedia } from '#foundation/media-treatment.tsx';
-import { Eyebrow, FittedText, Frame } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { treatmentProps } from '#layouts/layout-fields.ts';
-import { useEnter } from '#motion/enter.ts';
+import { treatmentProps } from '#layout-fields.ts';
+import {
+  BrandLogo,
+  Eyebrow,
+  FittedText,
+  Frame,
+  smartPunctuation,
+  TreatedMedia,
+  useEnter,
+} from '#layout-parts.ts';
 import '#layouts/display-align.css';
 import '#layouts/image-layout.css';
 import '#layouts/title-layout.css';

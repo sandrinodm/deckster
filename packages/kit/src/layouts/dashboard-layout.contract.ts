@@ -1,16 +1,17 @@
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
-import { DATA_HINT, DataField } from '#layouts/chart-layout.contract.ts';
 import {
   CHROME_HINT,
   chromeField,
+  DATA_HINT,
+  DataField,
   EYEBROW_HINT,
   EyebrowField,
   REVEAL_HINT,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest panels: a single chart belongs in the chart layout.

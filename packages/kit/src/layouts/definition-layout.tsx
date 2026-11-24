@@ -3,10 +3,15 @@ import { isValidElement, useRef, type CSSProperties, type ReactNode } from 'reac
 
 import type { definitionLayoutContract } from '#layouts/definition-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { useEnter } from '#motion/enter.ts';
+import {
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/definition-layout.css';
 
 /**

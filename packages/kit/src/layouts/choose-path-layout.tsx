@@ -14,9 +14,14 @@ import type {
   choosePathLayoutContract,
 } from '#layouts/choose-path-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import {
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/choose-path-layout.css';
 
 /**

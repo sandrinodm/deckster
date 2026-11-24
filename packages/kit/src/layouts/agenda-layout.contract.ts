@@ -8,7 +8,7 @@ import {
   EYEBROW_HINT,
   EyebrowField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest items an agenda lists.

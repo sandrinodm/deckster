@@ -3,12 +3,18 @@ import { useRef, type ReactNode } from 'react';
 
 import type { TeamMember, teamLayoutContract } from '#layouts/team-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
 import { MonoMark } from '#foundation/mono-mark.tsx';
 import { Portrait } from '#foundation/portrait.tsx';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/team-layout.css';
 
 /**

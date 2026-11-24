@@ -4,11 +4,17 @@ import { useId, useRef, type ReactNode } from 'react';
 
 import type { conversationLayoutContract } from '#layouts/conversation-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/conversation-layout.css';
 
 /**

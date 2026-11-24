@@ -5,9 +5,15 @@ import { defineLayout, useStatic, type LayoutProps } from '@deckster/engine';
 import type { galleryLayoutContract } from '#layouts/gallery-layout.contract.ts';
 
 import { FrontmatterPicture } from '#foundation/frontmatter-picture.tsx';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  useEnter,
+} from '#layout-parts.ts';
 import '#layouts/gallery-layout.css';
 
 /**

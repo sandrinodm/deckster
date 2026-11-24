@@ -5,7 +5,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 import type { PatternImageData } from '#layouts/pattern-slide.contract.ts';
 import type { sketchToShipLayoutContract } from '#layouts/sketch-to-ship-layout.contract.ts';
 
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import { smartPunctuation } from '#layout-parts.ts';
 import {
   PatternImage,
   patternPosition,

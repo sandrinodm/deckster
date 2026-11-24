@@ -3,13 +3,16 @@ import { useRef, type CSSProperties, type ReactNode } from 'react';
 
 import type { AskFund, AskMilestone, askLayoutContract } from '#layouts/ask-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { useFitGroupWidth } from '#foundation/fit-text.ts';
-import { Frame, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { StatValue } from '#foundation/stat-figure.tsx';
-import { useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  Frame,
+  SlideHeader,
+  smartPunctuation,
+  StatValue,
+  Step,
+  useEnter,
+  useFitGroupWidth,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/ask-layout.css';
 
 /**

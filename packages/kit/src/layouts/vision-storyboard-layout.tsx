@@ -4,7 +4,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { visionStoryboardLayoutContract } from '#layouts/vision-storyboard-layout.contract.ts';
 
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import { smartPunctuation } from '#layout-parts.ts';
 import { PatternImage, PatternSlide, usePatternStage } from '#layouts/pattern-slide.tsx';
 import '#layouts/vision-storyboard-layout.css';
 

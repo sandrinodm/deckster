@@ -1,19 +1,25 @@
 import { defineLayout, type LayoutProps } from '@deckster/engine';
 import { useRef, type ReactNode } from 'react';
 
-import type { FitRung } from '#foundation/fit-text.ts';
 import type { ProofMetric, proofLayoutContract } from '#layouts/proof-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { useFitGroupWidth } from '#foundation/fit-text.ts';
 import { MonoMark } from '#foundation/mono-mark.tsx';
 import { Portrait } from '#foundation/portrait.tsx';
 import { stripQuoteMarks } from '#foundation/quote-marks.ts';
-import { FittedText, Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { StatValue } from '#foundation/stat-figure.tsx';
-import { useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  FittedText,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  StatValue,
+  Step,
+  useEnter,
+  useFitGroupWidth,
+  useFitLevel,
+  type FitRung,
+} from '#layout-parts.ts';
 import '#layouts/proof-layout.css';
 
 /**

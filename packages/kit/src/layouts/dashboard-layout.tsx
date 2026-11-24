@@ -12,12 +12,17 @@ import {
 
 import type { dashboardLayoutContract } from '#layouts/dashboard-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { useFitGroupWidth } from '#foundation/fit-text.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useFitGroupWidth,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/dashboard-layout.css';
 
 /**

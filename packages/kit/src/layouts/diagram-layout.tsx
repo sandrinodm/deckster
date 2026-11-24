@@ -4,8 +4,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { diagramLayoutContract } from '#layouts/diagram-layout.contract.ts';
 
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { useEnter } from '#motion/enter.ts';
+import { Footnote, Frame, Region, SlideHeader, useEnter } from '#layout-parts.ts';
 import '#layouts/diagram-layout.css';
 
 /**

@@ -9,10 +9,10 @@ import {
   EyebrowField,
   FOCAL_HINT,
   FocalField,
+  textField,
   TREATMENT_HINT,
   TreatmentField,
-  textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest pictures a gallery shows; one picture is an image or split slide.

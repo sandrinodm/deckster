@@ -2,7 +2,7 @@ import { deckCommand } from '@deckster/engine/command';
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
-import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField } from '#layouts/layout-fields.ts';
+import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField } from '#layout-fields.ts';
 
 /**
  * The longest demo title, in characters: one line at the smallest fit step in both brands, so the

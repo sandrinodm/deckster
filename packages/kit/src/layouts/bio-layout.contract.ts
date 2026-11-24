@@ -13,7 +13,7 @@ import {
   textField,
   TREATMENT_HINT,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The longest name, in characters: one line at the headline step in six columns, two at most.

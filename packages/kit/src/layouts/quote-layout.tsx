@@ -2,14 +2,19 @@ import type { ReactNode } from 'react';
 
 import { defineLayout, type LayoutProps } from '@deckster/engine';
 
-import type { FitRung } from '#foundation/fit-text.ts';
 import type { quoteLayoutContract } from '#layouts/quote-layout.contract.ts';
 
 import { Portrait } from '#foundation/portrait.tsx';
 import { stripQuoteMarks } from '#foundation/quote-marks.ts';
-import { Eyebrow, FittedText, Frame, Region } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { useEnter } from '#motion/enter.ts';
+import {
+  Eyebrow,
+  FittedText,
+  Frame,
+  Region,
+  smartPunctuation,
+  useEnter,
+  type FitRung,
+} from '#layout-parts.ts';
 import '#layouts/quote-layout.css';
 
 /**

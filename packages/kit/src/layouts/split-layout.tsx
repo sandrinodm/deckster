@@ -6,11 +6,9 @@ import { useRef } from 'react';
 import type { splitLayoutContract } from '#layouts/split-layout.contract.ts';
 
 import { useDensity, type TextStep } from '#foundation/density.ts';
-import { TreatedMedia } from '#foundation/media-treatment.tsx';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { treatmentProps } from '#layouts/layout-fields.ts';
+import { treatmentProps } from '#layout-fields.ts';
+import { Footnote, Frame, Region, SlideHeader, TreatedMedia, useEnter } from '#layout-parts.ts';
 import { LAYOUT_LIMITS } from '#layouts/layout-limits.ts';
-import { useEnter } from '#motion/enter.ts';
 import '#layouts/split-layout.css';
 
 /**

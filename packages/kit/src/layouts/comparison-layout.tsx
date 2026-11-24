@@ -9,10 +9,16 @@ import type {
   ComparisonRowEntry,
 } from '#layouts/comparison-layout.contract.ts';
 
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, type EnterProps } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  type EnterProps,
+} from '#layout-parts.ts';
 import '#layouts/comparison-layout.css';
 
 /**

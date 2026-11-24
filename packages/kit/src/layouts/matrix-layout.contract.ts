@@ -10,7 +10,7 @@ import {
   EyebrowField,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest items a matrix places: fewer is a sentence, not a map.

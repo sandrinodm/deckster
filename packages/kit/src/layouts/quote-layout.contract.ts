@@ -11,7 +11,7 @@ import {
   textField,
   TREATMENT_HINT,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The longest name of the person quoted, in characters.
