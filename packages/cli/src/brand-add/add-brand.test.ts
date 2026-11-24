@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 import { addBrand, type AddBrandRequest } from '#brand-add/add-brand.ts';
 import { parseBrandSource } from '#brand-add/brand-source.ts';
+import { DECKSTER_SOURCE_FILE } from '#brand-add/deckster-source.ts';
 import { NETWORK_PROTOCOLS } from '#brand-add/fetch-brand.ts';
 
 /**
@@ -219,6 +220,7 @@ function writeLayoutVariants(repo: string, brandDir: string): void {
   }
 
   fs.writeFileSync(path.join(repo, 'brands', 'invalid-artwork', ARTWORK_FILE), 'Plain text\n');
+  writeCodeLayouts(path.join(repo, 'brands', 'code-layouts'), path.join(repo, 'brands', BRAND));
 
   const missingAsset = path.join(repo, 'brands', 'missing-asset');
   fs.cpSync(path.join(repo, 'brands', 'valid-layout'), missingAsset, { recursive: true });
@@ -231,6 +233,49 @@ function writeLayoutVariants(repo: string, brandDir: string): void {
     "{ kind: 'files', files: [{ path: 'fonts/mono.woff2', weight: [100, 900] }] }",
   );
   fs.writeFileSync(path.join(missingFont, 'brand.ts'), withLocalFont);
+}
+
+/**
+ * Builds a brand with code layouts: two layouts, a shared folder, and the folders that are not
+ * layouts (hidden, an unsafe name, no entry file, too deep). It also carries a
+ * `.deckster-source.json` of its own, which must never be trusted.
+ *
+ * @param dir - The brand folder to create.
+ * @param template - A brand folder to copy its data from.
+ */
+function writeCodeLayouts(dir: string, template: string): void {
+  fs.cpSync(template, dir, { recursive: true, filter: (from) => !from.includes('node_modules') });
+  const files = [
+    'layouts/kpi-wall/contract.ts',
+    'layouts/kpi-wall/layout.tsx',
+    'layouts/kpi-wall/layout.css',
+    'layouts/title/layout.tsx',
+    'layouts/_shared/contract.ts',
+    'layouts/.hidden/contract.ts',
+    'layouts/Bad_Name/contract.ts',
+    'layouts/notes/helper.ts',
+    'layouts/deep/inner/layout.tsx',
+    'layouts/top-level.ts',
+  ];
+  for (const file of files) {
+    fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+    fs.writeFileSync(path.join(dir, file), 'export const x = 1;\n');
+  }
+
+  fs.writeFileSync(
+    path.join(dir, DECKSTER_SOURCE_FILE),
+    JSON.stringify({ source: 'gh:evil/brand', commit: null, codeLayoutsSkipped: ['evil'] }),
+  );
+}
+
+/**
+ * Reads the `.deckster-source.json` of an added brand.
+ *
+ * @param root - The workspace root.
+ */
+function readSourceFile(root: string): { text: string; value: unknown } {
+  const text = fs.readFileSync(path.join(root, 'brands', BRAND, DECKSTER_SOURCE_FILE), 'utf8');
+  return { text, value: JSON.parse(text) };
 }
 
 /**
@@ -323,6 +368,58 @@ layer(NodeServices.layer)('addBrand', (it) => {
       expect(manifest).toMatchObject({
         name: `@deckster/brand-${BRAND}`,
         dependencies: { '@deckster/brand': 'workspace:*' },
+      });
+    }),
+  );
+
+  it.effect(
+    'records the source and commit in .deckster-source.json when no layout was left out',
+    () =>
+      Effect.gen(function* () {
+        const root = workspace();
+        const added = yield* addBrand(root, request(`//brands/${BRAND}#v1`));
+        const { text, value } = readSourceFile(root);
+        expect(added.codeLayoutsSkipped).toEqual([]);
+        expect(value).toEqual({
+          source: `${ADDRESS}//brands/${BRAND}#v1`,
+          commit: added.commit,
+          codeLayoutsSkipped: [],
+        });
+        expect(text).toBe(`${JSON.stringify(value, null, 2)}\n`);
+        expect(added.written).toEqual(['package.json', 'tsconfig.json']);
+      }),
+  );
+
+  it.effect(
+    'records the code layouts it left out, sorted, and ignores the folders that are not',
+    () =>
+      Effect.gen(function* () {
+        const root = workspace();
+        const added = yield* addBrand(root, request('//brands/code-layouts'));
+        expect(added.codeLayoutsSkipped).toEqual(['kpi-wall', 'title']);
+        expect(readSourceFile(root).value).toEqual({
+          source: `${ADDRESS}//brands/code-layouts`,
+          commit: added.commit,
+          codeLayoutsSkipped: ['kpi-wall', 'title'],
+        });
+        expect(added.skipped).toContainEqual({
+          path: 'layouts/kpi-wall/layout.tsx',
+          reason: 'code',
+        });
+        expect(fs.existsSync(path.join(root, added.dir, 'layouts'))).toBe(false);
+      }),
+  );
+
+  it.effect('replaces the file when the brand is added again', () =>
+    Effect.gen(function* () {
+      const root = workspace();
+      yield* addBrand(root, request('//brands/code-layouts'));
+      const plain = yield* addBrand(root, request('//brands/valid-layout#v2', { force: true }));
+      expect(plain.replaced).toBe(true);
+      expect(readSourceFile(root).value).toEqual({
+        source: `${ADDRESS}//brands/valid-layout#v2`,
+        commit: plain.commit,
+        codeLayoutsSkipped: [],
       });
     }),
   );

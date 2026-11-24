@@ -28,6 +28,7 @@ import path from 'node:path';
 import type { BrandSource } from '#brand-add/brand-source.ts';
 
 import { planBrandFiles, type SkippedFile } from '#brand-add/brand-files.ts';
+import { codeLayoutNames, writeDecksterSource } from '#brand-add/deckster-source.ts';
 import { fetchBrand, type FetchedBrand, type GitProtocol } from '#brand-add/fetch-brand.ts';
 import {
   catalogPackages,
@@ -151,6 +152,13 @@ export type AddedBrand = {
   skipped: readonly SkippedFile[];
 
   /**
+   * The names of the source's code layouts that were left out, sorted. Slides that use one fail
+   * until its folder is copied from the brand's own repository. Also recorded in the brand's
+   * `.deckster-source.json`.
+   */
+  codeLayoutsSkipped: readonly string[];
+
+  /**
    * The Fontsource packages the brand uses.
    */
   fonts: readonly AddedFont[];
@@ -185,7 +193,8 @@ type ReadBrand = {
  * Fetches a brand folder from a git repository and adds it to the workspace as `brands/<name>`,
  * named by the brand's own `name`. `brand.ts` is read as data and never run, and the brand is
  * validated in a staging folder before it is installed; only its data, images, fonts and documents
- * are copied (see `planBrandFiles`). SVG artwork is sanitized before it is written. In the
+ * are copied (see `planBrandFiles`). SVG artwork is sanitized before it is written, and a
+ * `.deckster-source.json` records the source, the commit and the code layouts left out. In the
  * repository checkout the brand also gets a `package.json` and `tsconfig.json`. Fontsource packages
  * are not installed; the result names the command that installs them.
  *
@@ -227,6 +236,7 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
   const checkout = yield* makeFolder(path.join(temporary, 'checkout'));
   const fetched = yield* fetchBrand(source, checkout, request.protocols);
   const plan = yield* planBrandFiles(fetched.files, source.display);
+  const codeLayoutsSkipped = codeLayoutNames(plan.skipped);
   const brand = yield* readBrand(fetched);
   const remoteFonts = yield* remoteFontPackages(
     fontsourcePackages(brand.tokens),
@@ -250,6 +260,11 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
       Effect.gen(function* () {
         const location = brandLocation(stageRoot, brand.name);
         const assetWarnings = yield* copyFiles(fetched.dir, location, plan.copy);
+        yield* writeDecksterSource(location.dir, {
+          source: source.display,
+          commit: fetched.commit,
+          codeLayoutsSkipped,
+        });
         const written =
           dependencies === undefined
             ? []
@@ -274,6 +289,7 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
     files: plan.copy,
     written: prepared.written,
     skipped: plan.skipped,
+    codeLayoutsSkipped,
     fonts,
     warnings: prepared.warnings,
     next: nextSteps(brand.name, fonts, dependencies),

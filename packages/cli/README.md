@@ -102,6 +102,8 @@ Run `deckster --help` for all commands, or `deckster <command> --help` for full 
   A Git brand install also checks each SVG before replacing the installed brand. If an install
   succeeds with an artwork warning, render a specimen slide and compare the imported artwork with its source. If an SVG prevents installation, fix the source artwork and retry.
 
+- **Brand add**: `deckster brand add <source>` copies only data and assets: code files, including a brand's code layouts (`layouts/<name>/` folders with a `contract.ts` or `layout.tsx`), are left out and listed under "Left out". It always writes `brands/<name>/.deckster-source.json` with `{ "source", "commit", "codeLayoutsSkipped" }`: where the brand came from (without credentials), the commit fetched (`null` when unknown), and the sorted names of the code layouts left out. Adding the brand again replaces the file, and a `.deckster-source.json` inside the fetched brand is ignored. With `--json` the result has the same names under `codeLayoutsSkipped`. Slides that use a skipped layout fail until its folder is copied from the brand's own repository.
+
 - **Exit codes**: `0` on success, `1` on command/lint/diff failure, `129` on `SIGHUP`.
 
 ## Optional dependencies
