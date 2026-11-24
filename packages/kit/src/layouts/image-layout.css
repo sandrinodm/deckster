@@ -20,9 +20,13 @@
     z-index: 1;
   }
 
-  /* Text over the photo takes light colors of its own, not the surface's. */
+  /*
+   * Text over the photo takes light colors of its own, not the surface's. The caption and the photo
+   * frame share their class names with the kit's `<Image>`, so their rules are keyed on the layout
+   * (with `:where`, which adds no specificity): what `<Image>` needs is in `media/media.css`.
+   */
   .kit-image-text,
-  .kit-image-caption {
+  :where(.kit-frame[data-layout='image']) .kit-image-caption {
     --brand-color-fg: var(--kit-photo-text);
     --brand-color-heading: var(--kit-photo-text);
     --brand-color-muted: var(--kit-photo-text);
@@ -41,13 +45,16 @@
     overflow: hidden;
   }
 
-  .kit-image-frame {
+  :where(.kit-frame[data-layout='image']) .kit-image-frame {
     display: flex;
     width: 100%;
     height: 100%;
   }
 
-  .kit-image-frame > .deck-slot > :is(img, video, svg, figure) {
+  :where(.kit-frame[data-layout='image'])
+    .kit-image-frame
+    > .deck-slot
+    > :is(img, video, svg, figure) {
     display: block;
     flex: 1;
     width: 100%;
@@ -59,7 +66,7 @@
 
   /* A kit <Image> or <Video> (a Markdown image becomes an <Image>) is cropped around the slide's
      focal point too, unless it names its own. */
-  .kit-image-frame > .deck-slot > figure :is(img, video) {
+  :where(.kit-frame[data-layout='image']) .kit-image-frame > .deck-slot > figure :is(img, video) {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -188,33 +195,32 @@
     margin-top: var(--brand-space-md);
   }
 
-  .kit-image-caption {
+  :where(.kit-frame[data-layout='image']) .kit-image-caption {
     max-width: calc(3 * var(--kit-column) + 2 * var(--kit-gutter));
-    text-wrap: balance;
   }
 
-  .kit-image-band > .kit-image-caption {
+  :where(.kit-frame[data-layout='image']) .kit-image-band > .kit-image-caption {
     flex: none;
     margin-left: auto;
     text-align: right;
   }
 
-  .kit-image-caption:not(.kit-image-band > *) {
+  :where(.kit-frame[data-layout='image']) .kit-image-caption:not(.kit-image-band > *) {
     position: absolute;
     bottom: 0;
   }
 
-  .kit-image-caption[data-at='bottom-right'] {
+  :where(.kit-frame[data-layout='image']) .kit-image-caption[data-at='bottom-right'] {
     right: 0;
     text-align: right;
   }
 
-  .kit-image-caption[data-at='bottom-left'] {
+  :where(.kit-frame[data-layout='image']) .kit-image-caption[data-at='bottom-left'] {
     left: 0;
     text-align: left;
   }
 
-  .kit-image-caption p {
+  :where(.kit-frame[data-layout='image']) .kit-image-caption p {
     margin: 0;
   }
 }

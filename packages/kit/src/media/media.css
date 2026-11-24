@@ -5,6 +5,44 @@
 @layer theme, base, components, utilities;
 
 @layer components {
+  /*
+   * What the frame and the caption of an `<Image>` once took from the image layout's stylesheet,
+   * whose rules for its own `.kit-image-frame` and `.kit-image-caption` matched these too: the
+   * caption stands over the bottom of the photo, three columns wide, in the color it inherits (the
+   * photo-text color is only set inside the image layout). They come first and add no specificity
+   * (`:where`), as when that stylesheet loaded before this one, so the rules below still win.
+   */
+  :where(.kit-image) > .kit-image-caption {
+    --brand-color-fg: var(--kit-photo-text);
+    --brand-color-heading: var(--kit-photo-text);
+    --brand-color-muted: var(--kit-photo-text);
+    --brand-color-accent: var(--kit-photo-text);
+    --brand-color-accent-text: var(--kit-photo-text);
+
+    position: relative;
+    isolation: isolate;
+    color: var(--kit-photo-text);
+  }
+
+  :where(.kit-image) > .kit-image-frame {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
+
+  :where(.kit-image) > .kit-image-caption {
+    max-width: calc(3 * var(--kit-column) + 2 * var(--kit-gutter));
+  }
+
+  :where(.kit-image) > .kit-image-caption:not(.kit-image-band > *) {
+    position: absolute;
+    bottom: 0;
+  }
+
+  :where(.kit-image) > .kit-image-caption p {
+    margin: 0;
+  }
+
   .kit-image,
   .kit-video,
   .kit-lottie {
