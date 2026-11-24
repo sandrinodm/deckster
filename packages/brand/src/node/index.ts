@@ -44,6 +44,7 @@ export {
   type LoadedBrand,
 } from '#node/load-brand.ts';
 export {
+  forgetLoaded,
   gatedLoad,
   holdCode,
   isCodeHeld,

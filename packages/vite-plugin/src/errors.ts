@@ -169,6 +169,22 @@ export function invalidBrandLayouts(ref: FileRef, problems: readonly Problem[]):
 }
 
 /**
+ * Code layouts handed to a layout catalog whose names are taken: by a kit or engine layout, by a
+ * layout of the brand, or by a brand layout when the code layout is a deck's.
+ */
+export function invalidCodeLayouts(ref: FileRef, problems: readonly Problem[]): DeckBuildError {
+  return deckBuildError({ ...ref, summary: 'Invalid code layouts', problems });
+}
+
+/**
+ * A slide on a code layout that has a problem of its own: its folder is incomplete, its contract
+ * did not load or is invalid, its name is taken, or the brand was added without it.
+ */
+export function unusableLayout(ref: FileRef, problems: readonly Problem[]): DeckBuildError {
+  return deckBuildError({ ...ref, summary: "The slide's layout cannot be used", problems });
+}
+
+/**
  * An MDX extension that cannot be loaded, or whose default export is not an extension.
  */
 export function invalidMdxExtension(ref: FileRef, problems: readonly Problem[]): DeckBuildError {

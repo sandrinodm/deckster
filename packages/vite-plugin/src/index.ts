@@ -15,13 +15,39 @@ export {
   type LayoutCatalogOptions,
 } from '#layouts/load-layout-catalog.ts';
 export {
+  BRAND_SOURCE_FILE,
+  readSkippedCodeLayouts,
+  type SkippedCodeLayouts,
+} from '#layouts/brand-source.ts';
+export { deckCatalog, type DeckCatalog, type DeckCatalogOptions } from '#layouts/deck-catalog.ts';
+export {
+  importContracts,
+  type ContractLoad,
+  type ContractProblem,
+  type ImportContractsOptions,
+} from '#layouts/import-contracts.ts';
+export type { LayoutProblem, LayoutProblemCode } from '#layouts/layout-problem.ts';
+export {
+  BRAND_CODE_SOURCE_PREFIX,
+  BRAND_MANIFEST_FILE,
+  COMPONENT_FILE,
+  CONTRACT_FILE,
+  DECK_SOURCE_PREFIX,
+  LAYOUTS_DIR,
+  localLayouts,
+  type LocalCatalog,
+  type LocalLayout,
+  type LocalLayouts,
+  type LocalLayoutsOptions,
+} from '#layouts/local-layouts.ts';
+export {
   DEFAULT_RUNTIME_PLUGINS,
   DEV_RUNTIME_PLUGINS,
   deckPlugin,
   type DeckPluginApi,
   type DeckPluginOptions,
 } from '#plugin.ts';
-export { VIRTUAL_DECK_ID, VIRTUAL_PLUGINS_ID } from '#virtual-modules.ts';
+export { VIRTUAL_DECK_ID, VIRTUAL_LOCAL_LAYOUTS_ID, VIRTUAL_PLUGINS_ID } from '#virtual-modules.ts';
 export { deckViteConfig } from '#vite-config.ts';
 export { APPS_DIR, APP_ENTRY_FILE, discoverApps, type AppLocation } from '#apps/discover-apps.ts';
 export type { MdxWarning } from '#slides/compile-mdx.ts';

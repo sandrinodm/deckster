@@ -16,6 +16,17 @@ export const VIRTUAL_DECK_ID = 'virtual:deck';
 export const VIRTUAL_PLUGINS_ID = 'virtual:deck/plugins';
 
 /**
+ * The code layouts of the deck and its brand; its default export is a `DeckPlugin` whose layouts
+ * each load their component on first use.
+ */
+export const VIRTUAL_LOCAL_LAYOUTS_ID = 'virtual:deck/local-layouts';
+
+/**
+ * The start of every virtual module id the deck plugin serves.
+ */
+const VIRTUAL_PREFIX = 'virtual:';
+
+/**
  * The resolved id of {@link VIRTUAL_DECK_ID}; the `\0` keeps other plugins away from it.
  */
 export const RESOLVED_DECK_ID = `\0${VIRTUAL_DECK_ID}`;
@@ -24,6 +35,21 @@ export const RESOLVED_DECK_ID = `\0${VIRTUAL_DECK_ID}`;
  * The resolved id of {@link VIRTUAL_PLUGINS_ID}.
  */
 export const RESOLVED_PLUGINS_ID = `\0${VIRTUAL_PLUGINS_ID}`;
+
+/**
+ * The resolved id of {@link VIRTUAL_LOCAL_LAYOUTS_ID}.
+ */
+export const RESOLVED_LOCAL_LAYOUTS_ID = `\0${VIRTUAL_LOCAL_LAYOUTS_ID}`;
+
+/**
+ * Whether a runtime plugin specifier is one of the deck plugin's own virtual modules, which it
+ * resolves itself and which has no folder on disk.
+ *
+ * @param specifier - A runtime plugin specifier or resolved id.
+ */
+export function isVirtualPlugin(specifier: string): boolean {
+  return specifier.startsWith(VIRTUAL_PREFIX);
+}
 
 /**
  * Generates `virtual:deck`: one namespace import per slide, in manifest order, and the manifest
@@ -79,4 +105,44 @@ export function pluginsModuleCode(files: readonly string[]): string {
   );
   const names = files.map((_, index) => `plugin${index}`);
   return [...imports, '', `export default [${names.join(', ')}];`, ''].join('\n');
+}
+
+/**
+ * A code layout the generated runtime plugin registers.
+ */
+export type LocalLayoutModule = {
+  /**
+   * The layout name.
+   */
+  readonly name: string;
+
+  /**
+   * The absolute path of its `layout.tsx`.
+   */
+  readonly componentFile: string;
+};
+
+/**
+ * Generates `virtual:deck/local-layouts`: a runtime plugin that registers each code layout with the
+ * engine's `lazyLayout`, so a `layout.tsx` is imported when a slide first needs it and one that
+ * fails to load breaks only the slides on that layout. A deck without code layouts gets a plugin
+ * with no layouts.
+ *
+ * @param layouts - The layouts, in catalog order.
+ * @returns JavaScript source.
+ */
+export function localLayoutsModuleCode(layouts: readonly LocalLayoutModule[]): string {
+  const names = layouts.length === 0 ? 'definePlugin' : 'definePlugin, lazyLayout';
+  const entries = layouts.map((layout) => {
+    const file = JSON.stringify(normalizePath(layout.componentFile));
+    return `  lazyLayout(${JSON.stringify(layout.name)}, () => import(${file})),`;
+  });
+  return [
+    `import { ${names} } from '@deckster/engine';`,
+    '',
+    "export default definePlugin({ name: 'local-layouts', layouts: [",
+    ...entries,
+    '] });',
+    '',
+  ].join('\n');
 }
