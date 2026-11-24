@@ -52,6 +52,11 @@ const NO_LOCAL_LAYOUTS: LocalLayouts = {
    * The brand's problem is the warning instead.
    */
   problems: [],
+
+  /**
+   * Nothing was checked, so nothing to warn about.
+   */
+  warnings: [],
 };
 
 /**
