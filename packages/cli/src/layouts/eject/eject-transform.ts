@@ -6,7 +6,9 @@ import {
   findUnsafeCopies,
   KIT_SRC_DIR,
   type LayoutClosure,
+  type PublicImport,
 } from '@deckster/kit/eject-closure';
+import { isContractPackage } from '@deckster/vite-plugin';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -22,6 +24,7 @@ import {
   renameClasses,
   scopeStylesheet,
   selectorClasses,
+  type ClassOwner,
 } from '#layouts/eject/scope-css.ts';
 
 /**
@@ -70,22 +73,6 @@ export const DATA_LAYOUT_RENDERER = 'brand';
  * what a workspace on an installed CLI can resolve.
  */
 const WORKSPACE_PACKAGES = /^(?:react|effect|@deckster\/[a-z-]+)(?:\/|$)/u;
-
-/**
- * The packages a contract may import with a value import, as the contract loader allows them.
- */
-const CONTRACT_PACKAGES: ReadonlySet<string> = new Set([
-  'effect',
-  '@deckster/engine/layout',
-  '@deckster/engine/command',
-  '@deckster/kit/layout-fields',
-  '@deckster/brand',
-]);
-
-/**
- * The start of an `effect` entry point, which a contract may import too.
- */
-const EFFECT_ENTRY_PREFIX = 'effect/';
 
 /**
  * Matches the kit's source files that hold code or styles.
@@ -137,6 +124,12 @@ const CONTRACT_DEFINITION = /^export const (\w+) = defineLayoutContract\(/mu;
  * Matches the statement that defines a kit layout's component, capturing its name.
  */
 const LAYOUT_DEFINITION = /^export const (\w+) = defineLayout[<(]/mu;
+
+/**
+ * Matches a Windows line break, which the transform reads as a plain one so a kit checked out with
+ * CRLF line endings ejects the same files.
+ */
+const CRLF = /\r\n/gu;
 
 /**
  * What the transform needs to know about the kit's source as a whole, read once for any number of
@@ -243,6 +236,17 @@ type Job = {
   readonly localStyles: Set<string>;
 
   /**
+   * Who the copy is for, which picks the prefix of renamed helper classes.
+   */
+  readonly owner: ClassOwner;
+
+  /**
+   * Whether the kit layout has no stylesheet of its own, so the eject adds an empty `layout.css`
+   * and imports it from `layout.tsx`.
+   */
+  readonly addsStylesheet: boolean;
+
+  /**
    * The problems found so far.
    */
   readonly problems: string[];
@@ -289,29 +293,33 @@ export function readEjectSource(srcDir: string = KIT_SRC_DIR): EjectSource {
  *
  * - `<name>-layout.tsx`, `.contract.ts` and `.css` become `layout.tsx`, `contract.ts` and
  *   `layout.css`; the contract gains `replaces: true`, and both modules gain the default export a
- *   code layout has, beside the names the kit exports.
+ *   code layout has, beside the names the kit exports. A layout without a stylesheet of its own
+ *   gets an empty `layout.css`, imported by `layout.tsx`.
  * - An import of names that `@deckster/kit/layout-parts`, `@deckster/kit/layout-fields`,
  *   `@deckster/kit` or `@deckster/kit/diagrams` export points at that entry. Other kit modules are
  *   copied to `_shared/` and imported relatively; imports of packages stay.
  * - A copied helper's stylesheet is copied with it, and the classes it owns are renamed from `kit-…`
- *   to `local-…` in every ejected file, so the kit's copy and this one never style each other's
- *   markup.
+ *   to `own-…` in a brand's copy and `dck-…` in a deck's, in every ejected file, so the kit's copy,
+ *   the brand's and the deck's never style each other's markup.
  * - A stylesheet of another kit layout that the layout imports is copied into its folder and scoped
  *   to the layout (see `scopeStylesheet`).
  * - `limits.ts` holds the given limit cases.
+ * - Kit source with CRLF line endings is read as LF, so the output is the same on any checkout.
  *
  * @param source - The kit's source, from {@link readEjectSource}.
  * @param name - A layout of the catalog.
  * @param limits - The layout's limit cases, written to `limits.ts`.
- * @returns The files, and every reason they would not work. An unknown name gives one problem and
- *   no files.
+ * @param owner - Whether the copy goes to a brand or a deck; a brand's when not given.
+ * @returns The files, and every reason they would not work. An unknown name, including one that is
+ *   only a property every object has (`constructor`), gives one problem and no files.
  */
 export function transformLayout(
   source: EjectSource,
   name: string,
   limits: readonly LimitCase[],
+  owner: ClassOwner = 'brand',
 ): EjectedLayout {
-  const closure = source.closures[name];
+  const closure = closureOf(source, name);
   if (closure === undefined) {
     return {
       name,
@@ -330,6 +338,8 @@ export function transformLayout(
       helperStyles.flatMap((file) => [...(source.helperClasses.get(file) ?? [])]),
     ),
     localStyles: new Set(),
+    owner,
+    addsStylesheet: !closure.own.some((file) => file.endsWith('.css')),
     problems: [
       ...source.problems,
       ...unsafeCopies(source, name),
@@ -348,7 +358,12 @@ export function transformLayout(
     }
 
     const scoped = scopeStylesheet(readSource(source.srcDir, file), name);
-    files[local] = renameClasses(scoped, job.layoutClasses);
+    job.problems.push(...scoped.problems.map((problem) => `${file}: ${problem}`));
+    files[local] = renameClasses(scoped.css, job.layoutClasses, owner);
+  }
+
+  if (job.addsStylesheet) {
+    files[STYLESHEET_FILE] = emptyStylesheet(name);
   }
 
   files[LIMITS_FILE] = limitsSource(limits);
@@ -412,13 +427,13 @@ function transformFile(job: Job, file: string): string {
       job.problems.push(`${file} imports another stylesheet, which eject does not follow.`);
     }
 
-    return renameClasses(text, classes);
+    return renameClasses(text, classes, job.owner);
   }
 
   const placement: Placement = isOwn
     ? { folder: 'layout', file: placeOwn(job.name, file) }
     : { folder: 'shared', file: path.posix.basename(file) };
-  const rewritten = renameClasses(rewriteImports(job, file, placement, text), classes);
+  const rewritten = renameClasses(rewriteImports(job, file, placement, text), classes, job.owner);
   for (const match of rewritten.matchAll(LEFTOVER_INTERNAL)) {
     job.problems.push(
       `${file} imports ${match[1] ?? ''} in a way eject cannot rewrite (an import below the ` +
@@ -444,9 +459,12 @@ function rewriteImports(job: Job, file: string, placement: Placement, text: stri
     block === undefined
       ? text
       : text.slice(0, block.start) +
-        printImports(
-          block.statements.flatMap((statement) => rewriteImport(job, file, placement, statement)),
-        ) +
+        printImports([
+          ...block.statements.flatMap((statement) =>
+            rewriteImport(job, file, placement, statement),
+          ),
+          ...addedImports(job, placement),
+        ]) +
         text.slice(block.end);
   return withImports.replace(REEXPORT, (whole, lead: string, names: string, specifier: string) => {
     const module = resolveModule(file, specifier);
@@ -464,8 +482,53 @@ function rewriteImports(job: Job, file: string, placement: Placement, text: stri
       return whole;
     }
 
-    return `${lead}'${target}'`;
+    return `${lead}'${withQuery(target, specifier)}'`;
   });
+}
+
+/**
+ * The imports the eject adds to a file: the empty `layout.css` of a layout that had no stylesheet,
+ * in its component.
+ */
+function addedImports(job: Job, placement: Placement): ImportStatement[] {
+  if (!job.addsStylesheet || placement.file !== COMPONENT_FILE || placement.folder !== 'layout') {
+    return [];
+  }
+
+  return [
+    {
+      typeOnly: false,
+      defaultName: undefined,
+      namespace: undefined,
+      named: [],
+      specifier: `./${STYLESHEET_FILE}`,
+      sideEffect: true,
+    },
+  ];
+}
+
+/**
+ * The stylesheet an ejected layout gets when the kit layout has none of its own, so the file the
+ * author is told to edit exists and is imported by `layout.tsx`.
+ */
+function emptyStylesheet(name: string): string {
+  return [
+    '/*',
+    ` * The ${name} layout's own styles. The kit's ${name} layout has no stylesheet of its own, so`,
+    ' * this one starts empty. Key its rules on the layout, as in',
+    ` * \`.kit-frame[data-layout='${name}'] .x { … }\`, so they style no other layout.`,
+    ' */',
+    '',
+  ].join('\n');
+}
+
+/**
+ * A rewritten specifier with the query of the original one (`?inline`, `?url`), so Vite still loads
+ * the copy the way the kit loaded the original. A public entry is returned as it is.
+ */
+function withQuery(target: string, original: string): string {
+  const query = original.indexOf('?');
+  return query === -1 || !target.startsWith('.') ? target : `${target}${original.slice(query)}`;
 }
 
 /**
@@ -495,8 +558,10 @@ function rewriteImport(
    *
    * @param symbol - The name as the module exports it.
    */
-  const target = (symbol: string): string =>
-    targetOf(job, file, placement, module, symbol) ?? statement.specifier;
+  const target = (symbol: string): string => {
+    const placed = targetOf(job, file, placement, module, symbol);
+    return placed === undefined ? statement.specifier : withQuery(placed, statement.specifier);
+  };
   if (statement.sideEffect) {
     return [{ ...statement, specifier: target('') }];
   }
@@ -647,7 +712,8 @@ function contractProblems(source: EjectSource, closure: LayoutClosure): string[]
   }
 
   for (const entry of closure.publicImports) {
-    if (visited.has(entry.file) && !isContractPackage(entry.target)) {
+    const isRuntime = visited.has(entry.file) && importsAtRuntime(source, entry);
+    if (isRuntime && !isContractPackage(entry.target)) {
       problems.push(
         `The contract reaches ${entry.file}, which imports ${entry.symbols.join(', ')} from ` +
           `${entry.target}: not a package a contract may import.`,
@@ -659,21 +725,62 @@ function contractProblems(source: EjectSource, closure: LayoutClosure): string[]
 }
 
 /**
- * Tells whether a contract may import a package.
+ * Tells whether a file's import of a public entry has a runtime effect: the closure keeps every
+ * import, but the contract loader ignores `import type` and names written `type name`, so only an
+ * import that brings a value counts.
  */
-function isContractPackage(specifier: string): boolean {
-  return CONTRACT_PACKAGES.has(specifier) || specifier.startsWith(EFFECT_ENTRY_PREFIX);
+function importsAtRuntime(source: EjectSource, entry: PublicImport): boolean {
+  const text = readSource(source.srcDir, entry.file);
+  const symbols = new Set<string>();
+  for (const statement of importsOf(text)) {
+    if (statement.typeOnly || resolveModule(entry.file, statement.specifier) !== entry.module) {
+      continue;
+    }
+
+    for (const symbol of runtimeSymbols(statement)) {
+      symbols.add(symbol);
+    }
+  }
+
+  const reexported = [...text.matchAll(REEXPORT)].some(
+    (match) => resolveModule(entry.file, match[3] ?? '') === entry.module,
+  );
+  return reexported || entry.symbols.some((symbol) => symbols.has(symbol));
+}
+
+/**
+ * The names a value import brings at runtime, as the closure names them: `default`, `*`, each name
+ * not written `type name`, and `''` for an import with no names.
+ */
+function runtimeSymbols(statement: ImportStatement): string[] {
+  if (statement.sideEffect) {
+    return [''];
+  }
+
+  return [
+    ...(statement.defaultName === undefined ? [] : ['default']),
+    ...(statement.namespace === undefined ? [] : ['*']),
+    ...statement.named.filter((named) => !named.typeOnly).map((named) => named.name),
+  ];
 }
 
 /**
  * The copied modules of a layout that keep state a copy would not share with the kit.
  */
 function unsafeCopies(source: EjectSource, name: string): string[] {
-  const closure = source.closures[name];
+  const closure = closureOf(source, name);
   const unsafe = closure === undefined ? {} : findUnsafeCopies(source.srcDir, { [name]: closure });
   return (unsafe[name] ?? []).map(
     (copy) => `The kit's ${copy.module} ${copy.reason}, so a copy of it would not work.`,
   );
+}
+
+/**
+ * What a layout's files reach, or nothing for a name that is not a layout of the catalog, even one
+ * every object has as a property.
+ */
+function closureOf(source: EjectSource, name: string): LayoutClosure | undefined {
+  return Object.hasOwn(source.closures, name) ? source.closures[name] : undefined;
 }
 
 /**
@@ -756,8 +863,8 @@ function resolveModule(from: string, specifier: string): string | undefined {
 }
 
 /**
- * Reads a kit source file as text.
+ * Reads a kit source file as text, with LF line breaks.
  */
 function readSource(srcDir: string, file: string): string {
-  return fs.readFileSync(path.join(srcDir, file), 'utf8');
+  return fs.readFileSync(path.join(srcDir, file), 'utf8').replace(CRLF, '\n');
 }

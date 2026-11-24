@@ -1,12 +1,18 @@
+import { deckCommand } from '@deckster/engine/command';
 import { KIT_SRC_DIR } from '@deckster/kit/eject-closure';
 import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it } from '@effect/vitest';
-import { Effect } from 'effect';
+import { Effect, FileSystem, PlatformError } from 'effect';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 import { runCaptured } from '#cli.fixture.ts';
+import {
+  contractRan,
+  writeDataLayouts,
+  writeThrowingLayout,
+} from '#layouts/code-layouts.fixture.ts';
 import { diffLayout } from '#layouts/eject/diff-layout.ts';
 import { ejectLayouts } from '#layouts/eject/eject-layouts.ts';
 import { EJECT_BRAND, ejectWorkspace } from '#layouts/eject/eject-workspace.fixture.ts';
@@ -230,6 +236,29 @@ describe('ejectLayouts', () => {
   );
 
   it.effect(
+    'refuses a kit name a data layout of the brand has, even when the catalog leaves it out',
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          const marker = '__ejectFallbackContractRan';
+          const brandDir = path.join(root, 'brands', EJECT_BRAND);
+          writeThrowingLayout(layoutsDir(root), 'kpi-wall', marker);
+          writeDataLayouts(brandDir, ['quote'], 'kpi-wall');
+          const refusal = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false }),
+          );
+          expect(refusal).toContain(`"quote" is a data layout of the ${EJECT_BRAND} brand`);
+          expect(fs.existsSync(path.join(layoutsDir(root), 'quote'))).toBe(false);
+
+          const result = yield* ejectLayouts(root, OWNER, { names: ['bio'], keepShared: false });
+          expect(result.layouts.map((layout) => layout.name)).toEqual(['bio']);
+          expect(contractRan(marker)).toBe(false);
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
     "ejects into a deck, and not what the deck's brand already replaces",
     () =>
       inWorkspace((root) =>
@@ -279,6 +308,175 @@ describe('ejectLayouts', () => {
   );
 });
 
+describe('ejectLayouts on a workspace that is not as eject left it', () => {
+  it.effect(
+    'refuses a folder of the same name in another letter case and leaves it alone',
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          const mine = path.join(layoutsDir(root), 'Title');
+          fs.mkdirSync(mine, { recursive: true });
+          fs.writeFileSync(path.join(mine, 'layout.tsx'), '// mine\n');
+          const refusal = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['title'], keepShared: false }),
+          );
+          expect(refusal).toContain(`brands/${EJECT_BRAND}/layouts/Title/ already exists`);
+          expect(fs.readFileSync(path.join(mine, 'layout.tsx'), 'utf8')).toBe('// mine\n');
+          const all = yield* ejectLayouts(root, OWNER, { names: 'all', keepShared: false });
+          expect(all.skipped).toEqual(['title']);
+          expect(fs.readFileSync(path.join(mine, 'layout.tsx'), 'utf8')).toBe('// mine\n');
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'does not overwrite a shared helper it cannot read',
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          if (process.getuid?.() === 0) {
+            return;
+          }
+
+          yield* ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false });
+          const portrait = path.join(layoutsDir(root), '_shared/portrait.css');
+          fs.writeFileSync(portrait, '/* mine */\n');
+          fs.chmodSync(portrait, 0o200);
+          const refusal = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['persona'], keepShared: false }),
+          );
+          fs.chmodSync(portrait, 0o644);
+          expect(refusal).toContain(`Could not read ${portrait}`);
+          expect(fs.readFileSync(portrait, 'utf8')).toBe('/* mine */\n');
+          expect(fs.existsSync(path.join(layoutsDir(root), 'persona'))).toBe(false);
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'writes nothing through a linked layouts folder or a dangling linked helper',
+    () =>
+      inWorkspace((root) => {
+        const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'deck-eject-outside-'));
+        return Effect.gen(function* () {
+          fs.symlinkSync(outside, layoutsDir(root));
+          const linked = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false }),
+          );
+          expect(linked).toContain(`brands/${EJECT_BRAND}/layouts is a link`);
+          expect(fs.readdirSync(outside)).toEqual([]);
+
+          fs.unlinkSync(layoutsDir(root));
+          fs.mkdirSync(path.join(layoutsDir(root), '_shared'), { recursive: true });
+          const target = path.join(outside, 'portrait.tsx');
+          fs.symlinkSync(target, path.join(layoutsDir(root), '_shared/portrait.tsx'));
+          const dangling = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false }),
+          );
+          expect(dangling).toContain('_shared/portrait.tsx is a link');
+          expect(fs.existsSync(target)).toBe(false);
+          expect(fs.existsSync(path.join(layoutsDir(root), 'quote'))).toBe(false);
+        }).pipe(
+          Effect.ensuring(Effect.sync(() => fs.rmSync(outside, { recursive: true, force: true }))),
+        );
+      }),
+    TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'writes nothing when layouts/_shared is a file, and ejects once it is gone',
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          const shared = path.join(layoutsDir(root), '_shared');
+          fs.mkdirSync(layoutsDir(root), { recursive: true });
+          fs.writeFileSync(shared, 'not a folder\n');
+          const refusal = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false }),
+          );
+          expect(refusal).toContain('is a file where a folder belongs');
+          expect(fs.readdirSync(layoutsDir(root))).toEqual(['_shared']);
+
+          fs.rmSync(shared);
+          const result = yield* ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false });
+          expect(result.layouts.map((layout) => layout.name)).toEqual(['quote']);
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'removes what it wrote when a write fails midway, so the eject can be run again',
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          const fileSystem = yield* FileSystem.FileSystem;
+          const contract = path.join(layoutsDir(root), 'quote', 'contract.ts');
+          const failing = FileSystem.FileSystem.of({
+            ...fileSystem,
+            writeFileString: (file, data, options) =>
+              file === contract
+                ? Effect.fail(
+                    PlatformError.systemError({
+                      _tag: 'PermissionDenied',
+                      module: 'FileSystem',
+                      method: 'writeFileString',
+                      pathOrDescriptor: file,
+                    }),
+                  )
+                : fileSystem.writeFileString(file, data, options),
+          });
+          const refusal = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false }).pipe(
+              Effect.provideService(FileSystem.FileSystem, failing),
+            ),
+          );
+          expect(refusal).toContain(`Could not create ${contract}`);
+          expect(filesUnder(layoutsDir(root))).toEqual([]);
+
+          const result = yield* ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false });
+          expect(result.sharedWritten).toHaveLength(5);
+          expect(fs.existsSync(contract)).toBe(true);
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    "refuses a brand eject that would clash with a layout of one of the brand's decks",
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          const deckLayout = path.join(root, 'decks', DECK, 'layouts', 'title');
+          fs.mkdirSync(deckLayout, { recursive: true });
+          const otherBrand = yield* ejectLayouts(root, OWNER, {
+            names: ['title'],
+            keepShared: false,
+          });
+          expect(otherBrand.layouts.map((layout) => layout.name)).toEqual(['title']);
+
+          fs.rmSync(path.join(layoutsDir(root), 'title'), { recursive: true });
+          const config = path.join(root, 'decks', DECK, 'deck.config.ts');
+          fs.writeFileSync(
+            config,
+            fs.readFileSync(config, 'utf8').replace("brand: 'default'", `brand: '${EJECT_BRAND}'`),
+          );
+          const refusal = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['title'], keepShared: false }),
+          );
+          expect(refusal).toContain(
+            `decks/${DECK}/layouts/title/ is a layout of the ${DECK} deck, which is on the ` +
+              `${EJECT_BRAND} brand`,
+          );
+          expect(fs.existsSync(path.join(layoutsDir(root), 'title'))).toBe(false);
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
+});
+
 describe('diffLayout', () => {
   it.effect(
     'finds no change against the kit it was ejected from',
@@ -309,7 +507,7 @@ describe('diffLayout', () => {
           const srcDir = changedKit('layouts/title-layout.tsx', (text) =>
             text
               .replace('const TITLE_MAX_LINES = 3;', 'const TITLE_MAX_LINES = 4;')
-              .replace("import '#layouts/image-layout.css';\n", '')
+              .replace("import '#layouts/image-scrim.css';\n", '')
               .replace(
                 "import '#layouts/title-layout.css';",
                 "import { initialsOf } from '#foundation/initials.ts';\nimport '#layouts/title-layout.css';",
@@ -325,7 +523,7 @@ describe('diffLayout', () => {
             '_shared/initials.ts': 'added',
             'contract.ts': 'unchanged',
             'display-align.css': 'unchanged',
-            'image-layout.css': 'removed',
+            'image-scrim.css': 'removed',
             'layout.css': 'unchanged',
             'layout.tsx': 'changed',
             'limits.ts': 'unchanged',
@@ -335,7 +533,7 @@ describe('diffLayout', () => {
           expect(patch).toContain('+++ kit/layout.tsx');
           expect(patch).toContain('-const TITLE_MAX_LINES = 3;\n+const TITLE_MAX_LINES = 4;');
           expect(patch).toContain("+import { initialsOf } from '../_shared/initials.ts';");
-          expect(patch).toContain("-import './image-layout.css';");
+          expect(patch).toContain("-import './image-scrim.css';");
           const added = diff.files.find((file) => file.path === '_shared/initials.ts')?.diff ?? '';
           expect(added.startsWith('--- /dev/null\n+++ kit/_shared/initials.ts\n@@ -0,0 +1,')).toBe(
             true,
@@ -420,7 +618,7 @@ describe('deckster layouts eject and diff', () => {
                 'contract.ts',
                 'layout.css',
                 'display-align.css',
-                'image-layout.css',
+                'image-scrim.css',
                 'limits.ts',
               ].map((file) => `brands/${EJECT_BRAND}/layouts/title/${file}`),
             },
@@ -510,7 +708,9 @@ describe('deckster layouts eject and diff', () => {
           );
           expect(yield* run(['eject', 'title'])).toContain('pass --brand <brand> or --deck <deck>');
           expect(yield* run(['diff', '--brand', EJECT_BRAND])).toContain('Name one ejected layout');
-          expect(yield* run([DECK, '--all'])).toContain('--all is for `deckster layouts eject`');
+          expect(yield* run([DECK, '--all'])).toContain(
+            `--all is for \`${deckCommand()} layouts eject\``,
+          );
         }),
       ),
     TEST_TIMEOUT_MS,

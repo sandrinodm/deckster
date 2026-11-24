@@ -4,7 +4,7 @@ import { BRAND_CODE_SOURCE_PREFIX, deckCatalog } from '@deckster/vite-plugin';
 import { NodeServices } from '@effect/platform-node';
 import { afterAll, beforeAll, describe, expect, it } from '@effect/vitest';
 import { Effect } from 'effect';
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -58,6 +58,11 @@ const MIXED_LAYOUTS = [
   'table',
   'code',
 ];
+
+/**
+ * The layouts of the kit's catalog, which `--all` ejects into the empty brand.
+ */
+const KIT_LAYOUT_COUNT = 64;
 
 /**
  * The slide of the exemplars deck the stylesheet test reads: the cover, on the `title` layout.
@@ -127,6 +132,16 @@ const baseline = new Map<string, Baseline>();
  */
 function layoutsDir(): string {
   return path.join(root, 'brands', EJECT_BRAND, 'layouts');
+}
+
+/**
+ * The layout folders in the brand's `layouts/`, without the shared helpers' folder.
+ */
+function layoutFolders(): string[] {
+  return fs
+    .readdirSync(layoutsDir(), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name !== '_shared')
+    .map((entry) => entry.name);
 }
 
 /**
@@ -264,14 +279,25 @@ afterAll(() => {
 });
 
 describe('ejecting every kit layout into one brand', () => {
+  /**
+   * What `deckster layouts eject --all` printed, run once before every test of this block so each
+   * test can also run alone.
+   */
+  let ejectAll: { code: number; report: { layouts: { name: string }[]; warnings: string[] } };
+
+  beforeAll(async () => {
+    const run = await deckster(['layouts', 'eject', '--all', '--brand', EJECT_BRAND, '--json']);
+    ejectAll = { code: run.code, report: JSON.parse(run.output) as typeof ejectAll.report };
+  }, BROWSER_TEST_TIMEOUT_MS);
+
   it(
     'gives 64 code layouts that load, replace their kit layouts and keep their limit cases',
     async () => {
-      const run = await deckster(['layouts', 'eject', '--all', '--brand', EJECT_BRAND, '--json']);
-      const report = JSON.parse(run.output) as { layouts: { name: string }[]; warnings: string[] };
-      expect(run.code).toBe(0);
-      expect(report.layouts).toHaveLength(64);
+      const { code, report } = ejectAll;
+      expect(code).toBe(0);
+      expect(report.layouts).toHaveLength(KIT_LAYOUT_COUNT);
       expect(report.warnings).toHaveLength(1);
+      expect(layoutFolders()).toHaveLength(KIT_LAYOUT_COUNT);
 
       const check = Effect.gen(function* () {
         const brand = yield* loadBrand(root, EJECT_BRAND);
@@ -296,7 +322,7 @@ describe('ejecting every kit layout into one brand', () => {
         report.layouts.map((layout) => layout.name).toSorted(),
       );
       expect(new Set(sources)).toEqual(new Set([`${BRAND_CODE_SOURCE_PREFIX}${EJECT_BRAND}`]));
-      expect(limits).toHaveLength(64);
+      expect(limits).toHaveLength(KIT_LAYOUT_COUNT);
       expect(limits.filter((load) => load.kind === 'problem')).toEqual([]);
       for (const load of limits) {
         const cases = load.kind === 'cases' ? load.cases : [];
@@ -332,14 +358,11 @@ describe('ejecting every kit layout into one brand', () => {
         }),
       );
       const tsc = path.join(FRAMEWORK_ROOT, 'packages/cli/node_modules/.bin/tsc');
-      let output = '';
-      try {
-        execFileSync(tsc, ['-p', tsconfig], { cwd: root, encoding: 'utf8', stdio: 'pipe' });
-      } catch (error) {
-        output = String((error as { stdout?: unknown }).stdout ?? error);
-      }
-
-      expect(output).toBe('');
+      expect(layoutFolders()).toHaveLength(KIT_LAYOUT_COUNT);
+      const run = spawnSync(tsc, ['-p', tsconfig], { cwd: root, encoding: 'utf8' });
+      expect(run.error).toBeUndefined();
+      expect(run.status, `${run.stdout}${run.stderr}`).toBe(0);
+      expect(run.stdout).toBe('');
     },
     BROWSER_TEST_TIMEOUT_MS,
   );
@@ -347,6 +370,7 @@ describe('ejecting every kit layout into one brand', () => {
   it(
     'builds the exemplars deck',
     async () => {
+      expect(layoutFolders()).toHaveLength(KIT_LAYOUT_COUNT);
       const run = await deckster(['build', EXEMPLARS]);
       expect(run.code).toBe(0);
       const dist = path.join(root, 'decks', EXEMPLARS, 'dist');
@@ -358,6 +382,7 @@ describe('ejecting every kit layout into one brand', () => {
   it(
     'lints both decks with no finding the kit layouts did not have',
     async () => {
+      expect(layoutFolders()).toHaveLength(KIT_LAYOUT_COUNT);
       for (const deck of DECKS) {
         const before = baseline.get(deck)?.findings ?? [];
         const added = (await lintFindings(deck)).filter((finding) => !before.includes(finding));
@@ -370,6 +395,7 @@ describe('ejecting every kit layout into one brand', () => {
   it(
     'renders every slide of both decks pixel for pixel as the kit layouts do',
     async () => {
+      expect(layoutFolders()).toHaveLength(KIT_LAYOUT_COUNT);
       for (const deck of DECKS) {
         expect(changedShots(deck, await shoot(deck, 'all')), deck).toEqual([]);
       }
@@ -382,12 +408,23 @@ describe('ejecting every kit layout into one brand', () => {
 });
 
 describe('ejecting some layouts while the kit keeps the others', () => {
+  /**
+   * The exit code of the eject, run once before every test of this block so each test can also run
+   * alone.
+   */
+  let ejectCode = -1;
+
+  beforeAll(async () => {
+    fs.rmSync(layoutsDir(), { recursive: true, force: true });
+    const run = await deckster(['layouts', 'eject', ...MIXED_LAYOUTS, '--brand', EJECT_BRAND]);
+    ejectCode = run.code;
+  }, BROWSER_TEST_TIMEOUT_MS);
+
   it(
     'renders every slide pixel for pixel as before, with the kit and the copies side by side',
     async () => {
-      fs.rmSync(layoutsDir(), { recursive: true, force: true });
-      const run = await deckster(['layouts', 'eject', ...MIXED_LAYOUTS, '--brand', EJECT_BRAND]);
-      expect(run.code).toBe(0);
+      expect(ejectCode).toBe(0);
+      expect(layoutFolders().toSorted()).toEqual(MIXED_LAYOUTS.toSorted());
       expect(changedShots(EVERY_LAYOUT, await shoot(EVERY_LAYOUT, 'mixed'))).toEqual([]);
       expect(changedShots(EXEMPLARS, await shoot(EXEMPLARS, 'mixed'))).toEqual([]);
       expect((await shootProbe('mixed'))?.equals(probeBefore ?? Buffer.alloc(0))).toBe(true);
@@ -400,6 +437,8 @@ describe('ejecting some layouts while the kit keeps the others', () => {
     async () => {
       const read = (): Promise<{ display: string; paddingBottom: string } | null> =>
         Effect.runPromise(coverMainStyle.pipe(Effect.provide(cliLayer(Workspace.at(root)))));
+      expect(ejectCode).toBe(0);
+      expect(layoutFolders()).toContain('title');
       const before = await read();
       expect(before?.display).toBe('flex');
       expect(before?.paddingBottom).not.toBe('0px');

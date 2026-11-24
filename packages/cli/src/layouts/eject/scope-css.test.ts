@@ -17,7 +17,7 @@ describe('renameClasses', () => {
       'const id = `kit-mark-mono-${n}`;',
       '<span className={`kit-mark ${extra}`} /><i className="kit-portrait kit-type-label" />',
     ].join('\n');
-    expect(renameClasses(text, classes)).toBe(
+    expect(renameClasses(text, classes, 'brand')).toBe(
       [
         '/* The mark (`.own-mark`). */',
         '.own-mark { --kit-mark-aspect: 1; }',
@@ -26,6 +26,13 @@ describe('renameClasses', () => {
         '<span className={`own-mark ${extra}`} /><i className="own-portrait kit-type-label" />',
       ].join('\n'),
     );
+  });
+
+  it("gives a brand's copy and a deck's copy different prefixes", () => {
+    const classes = new Set(['kit-portrait']);
+    const text = '.kit-portrait { color: red; }';
+    expect(renameClasses(text, classes, 'brand')).toBe('.own-portrait { color: red; }');
+    expect(renameClasses(text, classes, 'deck')).toBe('.dck-portrait { color: red; }');
   });
 
   it('lists the classes a stylesheet selects and the class words of any text', () => {
@@ -71,8 +78,9 @@ describe('scopeStylesheet', () => {
       '}',
       '',
     ].join('\n');
-    expect(scopeStylesheet(css, 'title')).toBe(
-      [
+    expect(scopeStylesheet(css, 'title')).toEqual({
+      problems: [],
+      css: [
         '@layer theme, base, components, utilities;',
         '',
         '@layer components {',
@@ -103,7 +111,7 @@ describe('scopeStylesheet', () => {
         '}',
         '',
       ].join('\n'),
-    );
+    });
   });
 
   it('drops rules keyed on another layout with their comment and keeps its own', () => {
@@ -125,8 +133,9 @@ describe('scopeStylesheet', () => {
       '}',
       '',
     ].join('\n');
-    expect(scopeStylesheet(css, 'title')).toBe(
-      [
+    expect(scopeStylesheet(css, 'title')).toEqual({
+      problems: [],
+      css: [
         '@layer components {',
         "  :where(.kit-frame[data-layout='title']) .kit-image-caption {",
         '    color: white;',
@@ -138,7 +147,7 @@ describe('scopeStylesheet', () => {
         '}',
         '',
       ].join('\n'),
-    );
+    });
   });
 
   it('wraps a selector that grows past the line width as the formatter does', () => {
@@ -150,8 +159,9 @@ describe('scopeStylesheet', () => {
       '}',
       '',
     ].join('\n');
-    expect(scopeStylesheet(css, 'title')).toBe(
-      [
+    expect(scopeStylesheet(css, 'title')).toEqual({
+      problems: [],
+      css: [
         '@layer components {',
         "  :where(.kit-frame[data-layout='title'])",
         '    .kit-image-frame',
@@ -162,6 +172,52 @@ describe('scopeStylesheet', () => {
         '}',
         '',
       ].join('\n'),
-    );
+    });
+  });
+
+  it('keeps a selector that names this layout among others, narrowed to this layout', () => {
+    const css = [
+      ".kit-frame:is([data-layout='image'], [data-layout='title']) .kit-caption {",
+      '  color: white;',
+      '}',
+      ":is([data-layout='image'], [data-layout='quote']) .kit-caption {",
+      '  color: red;',
+      '}',
+      '',
+    ].join('\n');
+    expect(scopeStylesheet(css, 'title')).toEqual({
+      problems: [],
+      css: [
+        ".kit-frame:is([data-layout='image'], [data-layout='title']):where([data-layout='title'])",
+        '  .kit-caption {',
+        '  color: white;',
+        '}',
+        '',
+      ].join('\n'),
+    });
+  });
+
+  it('reports a root selector and an at-rule it cannot scope, and copies them as they are', () => {
+    const css = [
+      ':root {',
+      '  --x: 1;',
+      '}',
+      '@scope (.kit-card) {',
+      '  p {',
+      '    margin: 0;',
+      '  }',
+      '}',
+      '@font-face {',
+      '  font-family: X;',
+      '}',
+      '',
+    ].join('\n');
+    const scoped = scopeStylesheet(css, 'title');
+    expect(scoped.css).toBe(css);
+    expect(scoped.problems).toEqual([
+      "The selector :root starts at the document's root, so it is copied unscoped and may style " +
+        'other layouts than title.',
+      'Its @scope block is copied unscoped, so its rules may style other layouts than title.',
+    ]);
   });
 });

@@ -64,4 +64,35 @@ describe('unifiedDiff', () => {
       ['--- /dev/null', '+++ b/file', '@@ -0,0 +1,2 @@', '+one', '+two', ''].join('\n'),
     );
   });
+
+  it('marks a last line without a newline, so a final-newline change has a hunk', () => {
+    expect(unifiedDiff('a\nb\n', 'a\nb', LABELS)).toBe(
+      [
+        '--- a/file',
+        '+++ b/file',
+        '@@ -1,2 +1,2 @@',
+        ' a',
+        '-b',
+        '+b',
+        '\\ No newline at end of file',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('prints parts too large to compare as one removal and one addition', () => {
+    const before = Array.from({ length: 3000 }, (_, index) => `old ${index}`);
+    const after = Array.from({ length: 2000 }, (_, index) => `new ${index}`);
+    before.splice(1500, 0, 'shared');
+    after.splice(1000, 0, 'shared');
+    const diff = unifiedDiff(`${before.join('\n')}\n`, `${after.join('\n')}\n`, LABELS);
+    const lines = diff.split('\n');
+    expect(lines[2]).toBe('@@ -1,3001 +1,2001 @@');
+    expect(lines[3]).toBe('-old 0');
+    expect(lines[3003]).toBe('-old 2999');
+    expect(lines[3004]).toBe('+new 0');
+    expect(lines).toContain('-shared');
+    expect(lines).toContain('+shared');
+    expect(lines).not.toContain(' shared');
+  });
 });

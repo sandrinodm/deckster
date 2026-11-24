@@ -10,8 +10,8 @@ const TITLE_MAX_CHARS = 60;
 /**
  * The layout's contract: the fields a slide sets, the slot it fills, how much fits, an example and
  * the PowerPoint mapping. Contracts run in Node: import only `effect`, `@deckster/engine/layout`,
- * `@deckster/kit/layout-fields`, `@deckster/brand` and `.ts` files in this folder or in
- * `layouts/_shared/`.
+ * `@deckster/engine/command`, `@deckster/kit/layout-fields`, `@deckster/brand` and `.ts` files in
+ * this folder or in `layouts/_shared/`.
  */
 export default defineLayoutContract({
   name: 'sample-layout',

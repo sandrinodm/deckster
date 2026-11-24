@@ -1,17 +1,13 @@
 import type { BrandError } from '@deckster/brand';
+import type { LoadedBrand } from '@deckster/brand/node';
 
 import { isSafeName, SAFE_NAME_RULE } from '@deckster/brand';
-import { loadBrand, type LoadedBrand } from '@deckster/brand/node';
 import { deckCommand } from '@deckster/engine/command';
 import {
   BRAND_CODE_SOURCE_PREFIX,
   COMPONENT_FILE,
   CONTRACT_FILE,
-  deckBrandName,
   deckCatalog,
-  findDeck,
-  LAYOUTS_DIR,
-  loadDeck,
   type DeckBuildError,
   type DeckLocation,
 } from '@deckster/vite-plugin';
@@ -21,9 +17,16 @@ import path from 'node:path';
 import type { LayoutsOwner } from '#layouts/layouts-owner.ts';
 
 import { cliError, type CliError, type FileSystemError } from '#cli-error.ts';
+import {
+  checkDeckLayoutsFree,
+  checkWriteTargets,
+  displayPath,
+  existingEntries,
+  findOwnerFolder,
+} from '#layouts/eject/eject-owner.ts';
 import { LIMITS_FILE } from '#layouts/layout-limits.ts';
 import { BRAND_SOURCE_PREFIX } from '#layouts/list-layouts.ts';
-import { writeFiles } from '#scaffold/write-files.ts';
+import { createNewDirectory, writeNewFiles } from '#scaffold/write-files.ts';
 
 /**
  * The stylesheet a new layout's component imports.
@@ -115,17 +118,20 @@ export function layoutFiles(name: string): Readonly<Record<string, string>> {
  * Writes a new code layout into a brand's or a deck's `layouts/<name>/`. The name must be a safe
  * kebab-case name that no folder there has yet and that no layout the brand or the deck can use
  * already has: an engine or kit layout, a data layout of the brand, or, for a deck, a code layout
- * of its brand. The brand or deck must be the workspace's own, not the framework's built-in
- * `default` brand. Nothing is written when a check fails.
+ * of its brand; for a brand, no deck of the brand may have a layout folder of that name either. The
+ * brand or deck must be the workspace's own, not the framework's built-in `default` brand, and no
+ * link may lie on the way to the folder. Nothing is written when a check fails; the folder and its
+ * files are created new, and a write that fails midway removes the folder again.
  *
  * @param root - The absolute workspace root.
  * @param owner - The brand or deck to add it to.
  * @param name - The layout name.
  * @returns The folder and the files written.
- * @throws CliError in the error channel for a bad or taken name, an existing folder or a brand
- *   outside the workspace; BrandError when the brand does not load; DeckBuildError when the deck
- *   does not exist, its config does not load or the brand's data layouts do not fit;
- *   FileSystemError when a file cannot be written.
+ * @throws CliError in the error channel for a bad or taken name, an existing folder (in any letter
+ *   case), a deck layout of the brand with the name, a link on the way or a brand outside the
+ *   workspace; BrandError when the brand does not load; DeckBuildError when the deck does not
+ *   exist, its config does not load or the brand's data layouts do not fit; FileSystemError when a
+ *   file cannot be written.
  */
 export const createLayout = Effect.fn('createLayout')(function* (
   root: string,
@@ -143,14 +149,13 @@ export const createLayout = Effect.fn('createLayout')(function* (
     );
   }
 
-  const { brand, deck } = yield* loadOwner(root, owner);
-  const ownerDir = deck?.dir ?? brand.location.dir;
-  yield* assertInsideWorkspace(root, ownerDir, owner);
-  const dir = path.join(ownerDir, LAYOUTS_DIR, name);
-  const fs = yield* FileSystem.FileSystem;
-  if (yield* fs.exists(dir).pipe(Effect.orElseSucceed(() => false))) {
+  const folder = yield* findOwnerFolder(root, owner);
+  const { brand, deck } = folder;
+  const dir = path.join(folder.layoutsDir, name);
+  const existing = (yield* existingEntries(folder.layoutsDir, [name])).get(name);
+  if (existing !== undefined) {
     return yield* cliError(
-      `${display(root, dir)}/ already exists.\n` +
+      `${displayPath(root, path.join(folder.layoutsDir, existing))}/ already exists.\n` +
         `Pick another name, or edit the files in it and run \`${deckCommand()} layouts check ${name} ` +
         `--${owner.kind} ${owner.name}\`.`,
     );
@@ -169,70 +174,38 @@ export const createLayout = Effect.fn('createLayout')(function* (
     );
   }
 
+  yield* checkDeckLayoutsFree(root, folder, [name]);
+  yield* checkWriteTargets(root, folder, [dir]);
   const files = Object.fromEntries(
     Object.entries(layoutFiles(name)).map(([file, content]) => [path.join(dir, file), content]),
   );
-  const written = yield* writeFiles(files);
-  return { name, dir, files: written };
+  return { name, dir, files: yield* writeLayoutFolder(dir, files) };
 });
 
 /**
- * Loads the brand, and the deck when the owner is one.
+ * Creates the layout's folder exclusively and writes its files into it, each created new; when a
+ * write fails, the folder is removed again so the name stays free.
  *
- * @param root - The absolute workspace root.
- * @param owner - The brand or deck.
+ * @param dir - The new layout's folder.
+ * @param files - The content of each file, by absolute path.
+ * @returns The absolute paths written.
  */
-const loadOwner = Effect.fn('loadOwner')(function* (
-  root: string,
-  owner: LayoutsOwner,
-): Effect.fn.Return<
-  { brand: LoadedBrand; deck: DeckLocation | undefined },
-  BrandError | DeckBuildError,
-  FileSystem.FileSystem
-> {
-  if (owner.kind === 'brand') {
-    return { brand: yield* loadBrand(root, owner.name), deck: undefined };
-  }
-
-  const deck = yield* findDeck(root, owner.name);
-  const loaded = yield* loadDeck(root, deck);
-  return { brand: yield* loadBrand(root, deckBrandName(loaded.config)), deck };
-});
-
-/**
- * Fails unless the brand's or deck's folder is inside the workspace once links are followed: the
- * built-in `default` brand lives in the framework, and a linked brand belongs to another folder.
- *
- * @param root - The absolute workspace root.
- * @param dir - The brand's or deck's folder.
- * @param owner - The brand or deck, for the message.
- * @throws CliError in the error channel when it is not.
- */
-const assertInsideWorkspace = Effect.fn('assertInsideWorkspace')(function* (
-  root: string,
+const writeLayoutFolder = Effect.fn('writeLayoutFolder')(function* (
   dir: string,
-  owner: LayoutsOwner,
-): Effect.fn.Return<void, CliError, FileSystem.FileSystem> {
+  files: Readonly<Record<string, string>>,
+): Effect.fn.Return<string[], FileSystemError, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
-  const realRoot = yield* fs.realPath(root).pipe(Effect.orElseSucceed(() => root));
-  const realDir = yield* fs.realPath(dir).pipe(Effect.orElseSucceed(() => dir));
-  const relative = path.relative(realRoot, realDir);
-  if (relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-    return;
-  }
-
-  return yield* cliError(
-    `The ${owner.kind} ${owner.name} is not a folder of this workspace (it is ${realDir}), so ` +
-      'its layouts are not yours to add to.\n' +
-      (owner.kind === 'brand'
-        ? 'Add the layout to a brand of your own under brands/, or to a deck with `--deck`.'
-        : 'Add the layout to a deck under decks/ in this workspace.'),
+  yield* createNewDirectory(dir);
+  return yield* writeNewFiles(files).pipe(
+    Effect.onError(() => fs.remove(dir, { recursive: true, force: true }).pipe(Effect.ignore)),
   );
 });
 
 /**
  * What already has the name among the layouts the brand, and the deck, can use; `undefined` when
- * the name is free. No code is run: the brand's and the deck's code layouts are only listed.
+ * the name is free. No code is run: the brand's and the deck's code layouts are only listed. Every
+ * data layout of the brand counts, also one the catalog leaves out because its fallback is a code
+ * layout that is not loaded.
  *
  * @param root - The absolute workspace root.
  * @param brand - The brand.
@@ -247,7 +220,10 @@ const takenName = Effect.fn('takenName')(function* (
 ): Effect.fn.Return<TakenName | undefined, DeckBuildError, FileSystem.FileSystem> {
   const { index, local } = yield* deckCatalog({ root, brand, deck, code: 'skip' });
   const known = index.get(name);
-  if (known !== undefined && known.source.startsWith(BRAND_SOURCE_PREFIX)) {
+  const isBrandDataLayout =
+    known?.source.startsWith(BRAND_SOURCE_PREFIX) === true ||
+    brand.tokens.layouts.some((layout) => layout.name === name);
+  if (isBrandDataLayout) {
     return {
       what: `a layout of the ${brand.tokens.name} brand (its layouts.ts)`,
       replaceable: false,
@@ -263,7 +239,7 @@ const takenName = Effect.fn('takenName')(function* (
   return code === undefined
     ? undefined
     : {
-        what: `a code layout of the ${brand.tokens.name} brand (${display(root, code.contractFile)})`,
+        what: `a code layout of the ${brand.tokens.name} brand (${displayPath(root, code.contractFile)})`,
         replaceable: false,
       };
 });
@@ -287,8 +263,8 @@ function contractSource(name: string): string {
     '/**',
     " * The layout's contract: the fields a slide sets, the slot it fills, how much fits, an example and",
     ' * the PowerPoint mapping. Contracts run in Node: import only `effect`, `@deckster/engine/layout`,',
-    ' * `@deckster/kit/layout-fields`, `@deckster/brand` and `.ts` files in this folder or in',
-    ' * `layouts/_shared/`.',
+    ' * `@deckster/engine/command`, `@deckster/kit/layout-fields`, `@deckster/brand` and `.ts` files in',
+    ' * this folder or in `layouts/_shared/`.',
     ' */',
     'export default defineLayoutContract({',
     `  name: '${name}',`,
@@ -435,14 +411,4 @@ function limitsSource(): string {
     "export default [{ name: 'full-body', frontmatter: {}, filled: [] }] satisfies readonly LimitCase[];",
     '',
   ].join('\n');
-}
-
-/**
- * A path as authors see it: relative to the workspace, with forward slashes.
- *
- * @param root - The absolute workspace root.
- * @param file - The absolute path.
- */
-function display(root: string, file: string): string {
-  return path.relative(root, file).split(path.sep).join('/');
 }

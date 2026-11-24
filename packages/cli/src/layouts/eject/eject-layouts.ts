@@ -2,15 +2,27 @@ import type { BrandError } from '@deckster/brand';
 
 import { isSafeName, SAFE_NAME_RULE } from '@deckster/brand';
 import { deckCommand } from '@deckster/engine/command';
-import { LIMIT_CASES } from '@deckster/kit/limit-cases';
-import { BRAND_CODE_SOURCE_PREFIX, deckCatalog, type DeckBuildError } from '@deckster/vite-plugin';
+import { LIMIT_CASES, type LimitCase } from '@deckster/kit/limit-cases';
+import {
+  BRAND_CODE_SOURCE_PREFIX,
+  CONTRACT_FILE,
+  deckCatalog,
+  type DeckBuildError,
+} from '@deckster/vite-plugin';
 import { Effect, FileSystem } from 'effect';
 import path from 'node:path';
 
 import type { LayoutsOwner } from '#layouts/layouts-owner.ts';
 
-import { cliError, type CliError, type FileSystemError } from '#cli-error.ts';
-import { displayPath, findOwnerFolder, type OwnerFolder } from '#layouts/eject/eject-owner.ts';
+import { cliError, fileSystemError, type CliError, type FileSystemError } from '#cli-error.ts';
+import {
+  checkDeckLayoutsFree,
+  checkWriteTargets,
+  displayPath,
+  existingEntries,
+  findOwnerFolder,
+  type OwnerFolder,
+} from '#layouts/eject/eject-owner.ts';
 import {
   DATA_LAYOUT_RENDERER,
   readEjectSource,
@@ -22,8 +34,15 @@ import {
 import { PROVENANCE_DIR, provenanceFiles } from '#layouts/eject/provenance.ts';
 import { BRAND_SOURCE_PREFIX } from '#layouts/list-layouts.ts';
 import { nearestName } from '#lint/rules/nearest-name.ts';
-import { writeFiles } from '#scaffold/write-files.ts';
+import { createNewDirectory, writeNewFiles } from '#scaffold/write-files.ts';
 import { cliVersion } from '#version.ts';
+
+/**
+ * The fix for a shared helper that exists but cannot be read.
+ */
+const UNREADABLE_HELPER_FIX =
+  "Eject does not overwrite a helper it cannot compare with the kit's. Make the file readable, " +
+  'then run the command again. Nothing was written.';
 
 /**
  * What `deckster layouts eject` is asked to do.
@@ -102,18 +121,22 @@ export type EjectResult = {
  * Copies kit layouts into a brand's or a deck's `layouts/` as code layouts that replace them.
  *
  * Nothing is written unless everything can be: each name is a layout of the kit's catalog that the
- * owner has no folder for, the transform places every import, and every helper already in
- * `layouts/_shared/` is the same as the one this eject would write (or `keepShared` says to keep
- * the owner's). Each layout's folder gets its files and a `.eject/` folder recording what was
- * written; helpers are written to `layouts/_shared/` once and shared by every ejected layout.
+ * owner has no folder for (in any letter case) and, for a brand, that none of the brand's decks has
+ * a layout folder of, the transform places every import, no path to write runs through a link, and
+ * every helper already in `layouts/_shared/` is the same as the one this eject would write (or
+ * `keepShared` says to keep the owner's). Each layout's folder gets its files and a `.eject/`
+ * folder recording what was written; helpers are written to `layouts/_shared/` once and shared by
+ * every ejected layout. Every file is created new, and a write that fails midway removes what this
+ * run created.
  *
  * @param root - The absolute workspace root.
  * @param owner - The brand or deck to eject into.
  * @param request - The layouts and options.
  * @returns What was written.
  * @throws CliError in the error channel for a name that is not safe, not a kit layout, taken, or
- *   not ejectable, and for a changed shared helper; BrandError | DeckBuildError when the brand or
- *   deck does not load; FileSystemError when a file cannot be written.
+ *   not ejectable, for a link on the way to a file, and for a changed shared helper; BrandError |
+ *   DeckBuildError when the brand or deck does not load; FileSystemError when a helper cannot be
+ *   read or a file cannot be written.
  */
 export const ejectLayouts = Effect.fn('ejectLayouts')(function* (
   root: string,
@@ -129,12 +152,12 @@ export const ejectLayouts = Effect.fn('ejectLayouts')(function* (
   const folder = yield* findOwnerFolder(root, owner);
   const source = yield* Effect.sync(() => readEjectSource(request.srcDir));
   yield* Effect.forEach(requested, (name) => checkKitLayout(source, name));
-  const existing = yield* existingFolders(folder.layoutsDir, source.names);
+  const existing = yield* existingEntries(folder.layoutsDir, source.names);
   const names =
     request.names === 'all' ? source.names.filter((name) => !existing.has(name)) : requested;
   const taken = names.find((name) => existing.has(name));
   if (taken !== undefined) {
-    const shown = displayPath(root, path.join(folder.layoutsDir, taken));
+    const shown = displayPath(root, path.join(folder.layoutsDir, existing.get(taken) ?? taken));
     return yield* cliError(
       `${shown}/ already exists, and eject does not overwrite a layout.\n` +
         `To see what the kit changed since it was ejected, run \`${deckCommand()} layouts diff ` +
@@ -144,29 +167,32 @@ export const ejectLayouts = Effect.fn('ejectLayouts')(function* (
   }
 
   yield* checkNamesFree(root, folder, names);
+  yield* checkDeckLayoutsFree(root, folder, names);
   const ejected = yield* Effect.sync(() =>
-    names.map((name) => transformLayout(source, name, LIMIT_CASES[name] ?? [])),
+    names.map((name) => transformLayout(source, name, limitCasesOf(name), owner.kind)),
   );
   yield* checkPlaced(ejected);
-  const shared = yield* planShared(root, folder, ejected, request.keepShared);
+  const helpers = sharedHelpers(folder, ejected);
+  const layoutDirs = names.map((name) => path.join(folder.layoutsDir, name));
+  yield* checkWriteTargets(root, folder, [...layoutDirs, ...Object.keys(helpers)]);
+  const shared = yield* planShared(root, folder, helpers, request.keepShared);
   const deckster = yield* cliVersion();
-  const layouts: EjectedFolder[] = [];
-  for (const layout of ejected) {
-    const dir = path.join(folder.layoutsDir, layout.name);
-    const files = yield* writeFiles(absolute(dir, layout.files));
-    yield* writeFiles(absolute(path.join(dir, PROVENANCE_DIR), provenanceFiles(layout, deckster)));
-    layouts.push({ name: layout.name, dir, files });
-  }
-
-  const sharedWritten = yield* writeFiles(shared.write);
+  const written = yield* writeEjected(folder, ejected, shared.write, deckster);
   return {
-    layouts,
-    sharedWritten,
+    ...written,
     sharedReused: shared.reused,
     sharedKept: shared.kept,
     skipped: request.names === 'all' ? source.names.filter((name) => existing.has(name)) : [],
   };
 });
+
+/**
+ * The kit's limit cases of a layout, read as the layout's own entry only: a name such as
+ * `constructor` gets none rather than something from the object's prototype.
+ */
+function limitCasesOf(name: string): readonly LimitCase[] {
+  return Object.hasOwn(LIMIT_CASES, name) ? (LIMIT_CASES[name] ?? []) : [];
+}
 
 /**
  * Fails for a name that cannot be a layout folder.
@@ -215,20 +241,9 @@ function checkKitLayout(source: EjectSource, name: string): Effect.Effect<void, 
 }
 
 /**
- * The names among the given ones that the owner's `layouts/` already has a folder or file for.
- */
-const existingFolders = Effect.fn('existingFolders')(function* (
-  layoutsDir: string,
-  names: readonly string[],
-): Effect.fn.Return<Set<string>, never, FileSystem.FileSystem> {
-  const fs = yield* FileSystem.FileSystem;
-  const entries = yield* fs.readDirectory(layoutsDir).pipe(Effect.orElseSucceed(() => []));
-  return new Set(entries.filter((entry) => names.includes(entry)));
-});
-
-/**
- * Fails when a name already means something else for the owner: a data layout of the brand, or, for
- * a deck, a code layout of its brand.
+ * Fails when a name already means something else for the owner: a data layout of the brand (also
+ * one the catalog leaves out because its fallback is a code layout that is not loaded), or, for a
+ * deck, a code layout of its brand.
  */
 const checkNamesFree = Effect.fn('checkNamesFree')(function* (
   root: string,
@@ -239,7 +254,10 @@ const checkNamesFree = Effect.fn('checkNamesFree')(function* (
   const { index, local } = yield* deckCatalog({ root, brand, deck, code: 'skip' });
   const brandCode = `${BRAND_CODE_SOURCE_PREFIX}${brand.tokens.name}`;
   for (const name of names) {
-    if (index.get(name)?.source.startsWith(BRAND_SOURCE_PREFIX) === true) {
+    const isBrandDataLayout =
+      index.get(name)?.source.startsWith(BRAND_SOURCE_PREFIX) === true ||
+      brand.tokens.layouts.some((layout) => layout.name === name);
+    if (isBrandDataLayout) {
       return yield* cliError(
         `"${name}" is a data layout of the ${brand.tokens.name} brand (its layouts.ts), so a ` +
           'code layout of that name would clash with it.\n' +
@@ -284,30 +302,42 @@ function checkPlaced(ejected: readonly EjectedLayout[]): Effect.Effect<void, Cli
 }
 
 /**
+ * The shared helpers the layouts need, by absolute path in the owner's `layouts/_shared/`.
+ */
+function sharedHelpers(
+  folder: OwnerFolder,
+  ejected: readonly EjectedLayout[],
+): Record<string, string> {
+  const helpers: Record<string, string> = {};
+  for (const layout of ejected) {
+    for (const [file, text] of Object.entries(layout.shared)) {
+      helpers[path.join(folder.layoutsDir, SHARED_DIR, file)] = text;
+    }
+  }
+
+  return helpers;
+}
+
+/**
  * Sorts the shared helpers the layouts need into those to write, those already there unchanged and
- * those that differ; fails for the last unless they are to be kept.
+ * those that differ; fails for the last unless they are to be kept. Only a missing helper counts as
+ * absent: one that cannot be read stops the eject rather than being overwritten.
  */
 const planShared = Effect.fn('planShared')(function* (
   root: string,
   folder: OwnerFolder,
-  ejected: readonly EjectedLayout[],
+  helpers: Readonly<Record<string, string>>,
   keepShared: boolean,
 ): Effect.fn.Return<
   { write: Record<string, string>; reused: string[]; kept: string[] },
-  CliError,
+  CliError | FileSystemError,
   FileSystem.FileSystem
 > {
-  const fs = yield* FileSystem.FileSystem;
-  const wanted = Object.assign({}, ...ejected.map((layout) => layout.shared)) as Record<
-    string,
-    string
-  >;
   const write: Record<string, string> = {};
   const reused: string[] = [];
   const kept: string[] = [];
-  for (const [file, text] of Object.entries(wanted)) {
-    const target = path.join(folder.layoutsDir, SHARED_DIR, file);
-    const current = yield* fs.readFileString(target).pipe(Effect.orElseSucceed(() => undefined));
+  for (const [target, text] of Object.entries(helpers)) {
+    const current = yield* readHelper(target);
     if (current === undefined) {
       write[target] = text;
     } else if (current === text) {
@@ -332,6 +362,86 @@ const planShared = Effect.fn('planShared')(function* (
       `${owner.name}\` on a layout that uses it shows the kit's version). Nothing was written.`,
   );
 });
+
+/**
+ * A shared helper's text; `undefined` when there is no file at its path.
+ */
+const readHelper = Effect.fn('readHelper')(function* (
+  target: string,
+): Effect.fn.Return<string | undefined, FileSystemError, FileSystem.FileSystem> {
+  const fs = yield* FileSystem.FileSystem;
+  return yield* fs
+    .readFileString(target)
+    .pipe(
+      Effect.catch((error) =>
+        error.reason._tag === 'NotFound'
+          ? Effect.succeed(undefined)
+          : Effect.fail(fileSystemError('read', target, error, UNREADABLE_HELPER_FIX)),
+      ),
+    );
+});
+
+/**
+ * Writes the shared helpers, then each layout: its folder, created exclusively, its `.eject/`
+ * record and its files with `contract.ts` last, since the contract is what makes a folder a
+ * replacement. Every file is new, so nothing is written through a link or over a file another
+ * command wrote meanwhile. When any write fails, the folders and helpers this run created are
+ * removed again, so a retry starts from where the eject began.
+ */
+const writeEjected = Effect.fn('writeEjected')(function* (
+  folder: OwnerFolder,
+  ejected: readonly EjectedLayout[],
+  helpers: Readonly<Record<string, string>>,
+  deckster: string,
+): Effect.fn.Return<
+  Pick<EjectResult, 'layouts' | 'sharedWritten'>,
+  FileSystemError,
+  FileSystem.FileSystem
+> {
+  const fs = yield* FileSystem.FileSystem;
+  const created: string[] = [];
+  const write = Effect.gen(function* () {
+    for (const [file, text] of Object.entries(helpers)) {
+      yield* writeNewFiles({ [file]: text });
+      created.push(file);
+    }
+
+    const layouts: EjectedFolder[] = [];
+    for (const layout of ejected) {
+      const dir = path.join(folder.layoutsDir, layout.name);
+      yield* createNewDirectory(dir);
+      created.push(dir);
+      const record = provenanceFiles(layout, deckster);
+      yield* writeNewFiles(absolute(path.join(dir, PROVENANCE_DIR), record));
+      const files = absolute(dir, layout.files);
+      yield* writeNewFiles(contractLast(files));
+      layouts.push({ name: layout.name, dir, files: Object.keys(files) });
+    }
+
+    return { layouts, sharedWritten: Object.keys(helpers) };
+  });
+  const undo = Effect.suspend(() =>
+    Effect.forEach(created.toReversed(), (file) =>
+      fs.remove(file, { recursive: true, force: true }).pipe(Effect.ignore),
+    ),
+  );
+  return yield* write.pipe(Effect.onError(() => undo));
+});
+
+/**
+ * The same files with the contract moved to the end, the order they are written in.
+ */
+function contractLast(files: Readonly<Record<string, string>>): Record<string, string> {
+  const entries = Object.entries(files);
+  /**
+   * Whether a file is the layout's contract.
+   */
+  const isContract = ([file]: [string, string]): boolean => path.basename(file) === CONTRACT_FILE;
+  return Object.fromEntries([
+    ...entries.filter((entry) => !isContract(entry)),
+    ...entries.filter(isContract),
+  ]);
+}
 
 /**
  * Keys a folder's files by absolute path; a path with `/` names a file in a subfolder.

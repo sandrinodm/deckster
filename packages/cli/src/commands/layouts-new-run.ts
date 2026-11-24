@@ -1,12 +1,13 @@
 import { deckCommand } from '@deckster/engine/command';
 import { Console, Effect } from 'effect';
-import path from 'node:path';
+import { parse as parseYaml } from 'yaml';
 
 import type { LayoutsOwner } from '#layouts/layouts-owner.ts';
 
 import { usageError } from '#cli-error.ts';
 import { EXIT_OK, type Command } from '#command.ts';
 import { printJson, withJsonErrors } from '#json-output.ts';
+import { displayPath } from '#layouts/eject/eject-owner.ts';
 import { readLayoutsOwner } from '#layouts/layouts-owner.ts';
 import { createLayout } from '#layouts/new-layout.ts';
 import { parseCommandArgs } from '#parse-command-args.ts';
@@ -40,7 +41,7 @@ const runNew = Effect.fn('deck.layouts.new')(function* (argv: readonly string[])
 
   const owner = yield* readLayoutsOwner('new', values);
   const created = yield* createLayout(root, owner, name);
-  const files = created.files.map((file) => display(root, file));
+  const files = created.files.map((file) => displayPath(root, file));
   const next = nextStep(owner, name);
   if (values.json) {
     yield* printJson({
@@ -48,7 +49,7 @@ const runNew = Effect.fn('deck.layouts.new')(function* (argv: readonly string[])
       layout: name,
       brand: owner.kind === 'brand' ? owner.name : null,
       deck: owner.kind === 'deck' ? owner.name : null,
-      dir: display(root, created.dir),
+      dir: displayPath(root, created.dir),
       files,
       next,
     });
@@ -72,19 +73,21 @@ const runNew = Effect.fn('deck.layouts.new')(function* (argv: readonly string[])
 function nextStep(owner: LayoutsOwner, name: string): string {
   const deck = owner.kind === 'deck' ? owner.name : '<deck>';
   return (
-    `put \`layout: ${name}\` in a slide's frontmatter (\`${deckCommand()} new slide ${deck} ` +
-    `<id> --layout ${name}\` writes one from the example). Shape layout.tsx, layout.css and ` +
+    `put \`layout: ${yamlName(name)}\` in a slide's frontmatter ` +
+    `(\`${deckCommand()} new slide ${deck} <id> --layout ${name}\` writes one from the example). ` +
+    'Shape layout.tsx, layout.css and ' +
     'contract.ts, add a case to limits.ts for each variant, then run `' +
     `${deckCommand()} layouts check ${name} --${owner.kind} ${owner.name}\`.`
   );
 }
 
 /**
- * A path as authors see it: relative to the workspace, with forward slashes.
+ * The layout name as a YAML value that reads back as that name: quoted when YAML would read it as
+ * something else, such as `2028` (a number) or `true`.
  *
- * @param root - The absolute workspace root.
- * @param file - The absolute path.
+ * @param name - The layout name.
  */
-function display(root: string, file: string): string {
-  return path.relative(root, file).split(path.sep).join('/');
+function yamlName(name: string): string {
+  const parsed: unknown = parseYaml(name);
+  return parsed === name ? name : JSON.stringify(name);
 }

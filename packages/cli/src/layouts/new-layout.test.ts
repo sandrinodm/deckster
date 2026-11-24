@@ -11,6 +11,7 @@ import {
   CODE_BRAND,
   CODE_LAYOUTS_DECK,
   codeLayoutsWorkspace,
+  writeDataLayouts,
 } from '#layouts/code-layouts.fixture.ts';
 import { layoutFiles } from '#layouts/new-layout.ts';
 
@@ -140,6 +141,9 @@ describe('deckster layouts new', () => {
           expect(yield* refusal(['brief', '--brand', 'default'])).toContain(
             'The brand default is not a folder of this workspace',
           );
+          expect(yield* refusal(['brief'])).toContain(
+            `\`${deckCommand()} layouts new\` works on one brand's layouts or one deck's`,
+          );
           expect(yield* refusal(['brief'])).toContain('Neither was given');
           expect(yield* refusal(['brief', '--brand', CODE_BRAND, '--deck', 'x'])).toContain(
             'Both were given',
@@ -151,6 +155,97 @@ describe('deckster layouts new', () => {
           expect(fs.existsSync(path.join(root, 'brands', CODE_BRAND, 'layouts', 'Brief'))).toBe(
             false,
           );
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'treats a data layout the catalog leaves out as taken, and still writes other layouts',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          const brandDir = path.join(root, 'brands', CODE_BRAND);
+          writeDataLayouts(brandDir, ['acme-split'], 'kpi-wall');
+          const refusal = yield* Effect.flip(
+            runCaptured(['layouts', 'new', 'acme-split', '--brand', CODE_BRAND], { root }),
+          );
+          expect(refusal.message).toContain(
+            `"acme-split" is already a layout of the ${CODE_BRAND} brand (its layouts.ts)`,
+          );
+          expect(fs.existsSync(path.join(brandDir, 'layouts', 'acme-split'))).toBe(false);
+
+          const written = yield* runCaptured(['layouts', 'new', 'brief', '--brand', CODE_BRAND], {
+            root,
+          });
+          expect(written.code).toBe(0);
+          expect(fs.existsSync(path.join(brandDir, 'layouts', 'brief', 'contract.ts'))).toBe(true);
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'refuses a name a deck of the brand has, one in another letter case, and a link on the way',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          const layoutsDir = path.join(root, 'brands', CODE_BRAND, 'layouts');
+          /**
+           * The message `deckster layouts new` fails with.
+           */
+          const refusal = (argv: readonly string[]) =>
+            Effect.flip(runCaptured(['layouts', 'new', ...argv], { root })).pipe(
+              Effect.map((error) => error.message),
+            );
+          expect(yield* refusal(['funnel', '--brand', CODE_BRAND])).toContain(
+            `decks/${CODE_LAYOUTS_DECK}/layouts/funnel/ is a layout of the ${CODE_LAYOUTS_DECK} ` +
+              `deck, which is on the ${CODE_BRAND} brand`,
+          );
+          expect(fs.existsSync(path.join(layoutsDir, 'funnel'))).toBe(false);
+
+          fs.mkdirSync(path.join(layoutsDir, 'Brief'));
+          expect(yield* refusal(['brief', '--brand', CODE_BRAND])).toContain(
+            `brands/${CODE_BRAND}/layouts/Brief/ already exists.`,
+          );
+
+          const outside = fs.mkdtempSync(path.join(root, '..', 'deck-new-outside-'));
+          yield* Effect.addFinalizer(() =>
+            Effect.sync(() => fs.rmSync(outside, { recursive: true, force: true })),
+          );
+          const target = path.join(outside, 'stages');
+          fs.symlinkSync(target, path.join(layoutsDir, 'stages'));
+          expect(yield* refusal(['stages', '--brand', CODE_BRAND])).toContain(
+            `brands/${CODE_BRAND}/layouts/stages/ already exists.`,
+          );
+          expect(fs.existsSync(target)).toBe(false);
+
+          const moved = path.join(outside, 'layouts');
+          fs.renameSync(layoutsDir, moved);
+          fs.symlinkSync(moved, layoutsDir);
+          expect(yield* refusal(['roadmap-wall', '--brand', CODE_BRAND])).toContain(
+            `brands/${CODE_BRAND}/layouts is a link`,
+          );
+          expect(fs.existsSync(path.join(moved, 'roadmap-wall'))).toBe(false);
+          expect(fs.existsSync(target)).toBe(false);
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    COMMAND_TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'quotes a name YAML would read as a number in the next step',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* codeLayoutsWorkspace();
+          const text = yield* runCaptured(['layouts', 'new', '2028', '--brand', CODE_BRAND], {
+            root,
+          });
+          expect(text.code).toBe(0);
+          expect(text.output).toContain('put `layout: "2028"` in a slide\'s frontmatter');
         }),
       ).pipe(Effect.provide(NodeServices.layer)),
     COMMAND_TEST_TIMEOUT_MS,

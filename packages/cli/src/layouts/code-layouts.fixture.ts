@@ -71,6 +71,37 @@ export function writeThrowingLayout(layoutsDir: string, name: string, marker: st
 }
 
 /**
+ * Writes the brand's `layouts.ts` with one data layout for each name, all falling back to the same
+ * layout.
+ *
+ * @param brandDir - The brand folder.
+ * @param names - The names of the data layouts.
+ * @param fallback - The layout each one falls back to.
+ */
+export function writeDataLayouts(
+  brandDir: string,
+  names: readonly string[],
+  fallback: string,
+): void {
+  const layouts = names.map((name) => ({
+    name,
+    label: name,
+    description: 'Text next to a picture.',
+    fallback,
+    title: { box: [120, 80, 1680, 160] },
+    regions: [{ bind: { slot: 'body' }, kind: 'text', box: [120, 300, 1680, 600] }],
+  }));
+  fs.writeFileSync(
+    path.join(brandDir, 'layouts.ts'),
+    [
+      "import { defineBrandLayouts } from '@deckster/brand';",
+      `export default defineBrandLayouts(${JSON.stringify(layouts)});`,
+      '',
+    ].join('\n'),
+  );
+}
+
+/**
  * Whether a contract written by {@link writeThrowingLayout} ran, and forgets that it did.
  *
  * @param marker - The global the contract sets.

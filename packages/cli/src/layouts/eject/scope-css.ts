@@ -10,12 +10,30 @@
 const KIT_CLASS_PREFIX = 'kit-';
 
 /**
- * The start a copied helper's classes get instead, so the kit's own copy of the helper's
- * stylesheet, which stays loaded for the kit layouts that still use the helper, does not style the
- * copy, and an edit to the copy does not reach those layouts. It is as long as the kit's prefix on
- * purpose: a rename then moves no line break, so the copied files stay formatted.
+ * Who a copy of the kit's helpers is ejected into: a brand's `layouts/_shared/` or a deck's.
  */
-export const LOCAL_CLASS_PREFIX = 'own-';
+export type ClassOwner = 'brand' | 'deck';
+
+/**
+ * The start a copied helper's classes get instead of `kit-`, by who owns the copy, so the kit's own
+ * copy of the helper's stylesheet, which stays loaded for the kit layouts that still use the
+ * helper, does not style the copy, and an edit to the copy does not reach those layouts. A brand's
+ * copy and a deck's copy get different starts because a deck's slides load both: a deck that ejects
+ * the same helper as its brand must not restyle the brand's layouts. Both are as long as `kit-` on
+ * purpose: a rename then moves no line break, so the copied files stay formatted. Neither starts
+ * like the engine's `deck-…` classes.
+ */
+export const OWN_CLASS_PREFIX: Readonly<Record<ClassOwner, string>> = {
+  /**
+   * The start of a class in a brand's copy.
+   */
+  brand: 'own-',
+
+  /**
+   * The start of a class in a deck's copy.
+   */
+  deck: 'dck-',
+};
 
 /**
  * Matches a kit class name wherever it is written as a whole word: not part of a longer name, a
@@ -39,9 +57,14 @@ const CSS_COMMENT = /\/\*[\s\S]*?\*\//gu;
 const FRAME_CLASS = /\.kit-frame(?![\w-])/u;
 
 /**
- * Matches a `[data-layout='…']` attribute selector, capturing the layout name.
+ * Matches every `[data-layout='…']` attribute selector, capturing the layout name.
  */
-const LAYOUT_ATTRIBUTE = /\[data-layout=(['"])([^'"]+)\1\]/u;
+const LAYOUT_ATTRIBUTE = /\[data-layout=(['"])([^'"]+)\1\]/gu;
+
+/**
+ * Matches a selector that starts at the document's root, which no rule under a frame can match.
+ */
+const ROOT_SELECTOR = /^(?::root|html)(?![\w-])/u;
 
 /**
  * The at-rules whose blocks hold style rules, which are scoped in turn.
@@ -51,6 +74,19 @@ const GROUPING_AT_RULES: ReadonlySet<string> = new Set([
   '@media',
   '@supports',
   '@container',
+]);
+
+/**
+ * The at-rules whose blocks hold no style rules to scope, which are copied as they are.
+ */
+const VERBATIM_AT_RULES: ReadonlySet<string> = new Set([
+  '@keyframes',
+  '@font-face',
+  '@property',
+  '@counter-style',
+  '@page',
+  '@font-palette-values',
+  '@font-feature-values',
 ]);
 
 /**
@@ -140,6 +176,22 @@ type CssItem = {
 };
 
 /**
+ * A stylesheet scoped to one layout.
+ */
+export type ScopedStylesheet = {
+  /**
+   * The scoped stylesheet's text.
+   */
+  readonly css: string;
+
+  /**
+   * The rules the scoping could not keep to the layout, such as a `:root` rule or an `@scope`
+   * block; empty when every rule is scoped.
+   */
+  readonly problems: readonly string[];
+};
+
+/**
  * Every kit class name in a text, as whole words: `kit-mark` in `className="kit-mark"` and
  * `.kit-mark`, but not in `kit-mark-mono` or `--kit-mark-aspect`.
  *
@@ -162,12 +214,14 @@ export function selectorClasses(css: string): string[] {
 }
 
 /**
- * The name a copied helper's class gets: `kit-portrait` becomes `own-portrait`.
+ * The name a copied helper's class gets: `kit-portrait` becomes `own-portrait` in a brand's copy
+ * and `dck-portrait` in a deck's.
  *
  * @param name - A kit class name.
+ * @param owner - Who owns the copy.
  */
-export function localClassName(name: string): string {
-  return `${LOCAL_CLASS_PREFIX}${name.slice(KIT_CLASS_PREFIX.length)}`;
+export function ownClassName(name: string, owner: ClassOwner): string {
+  return `${OWN_CLASS_PREFIX[owner]}${name.slice(KIT_CLASS_PREFIX.length)}`;
 }
 
 /**
@@ -176,15 +230,20 @@ export function localClassName(name: string): string {
  *
  * @param text - The source text.
  * @param classes - The kit class names to rename.
- * @returns The text with each of them given the local prefix.
+ * @param owner - Who owns the copy, which picks the new prefix (see {@link OWN_CLASS_PREFIX}).
+ * @returns The text with each of them given the owner's prefix.
  */
-export function renameClasses(text: string, classes: ReadonlySet<string>): string {
+export function renameClasses(
+  text: string,
+  classes: ReadonlySet<string>,
+  owner: ClassOwner,
+): string {
   if (classes.size === 0) {
     return text;
   }
 
   return text.replace(KIT_CLASS_TOKEN, (token) =>
-    classes.has(token) ? localClassName(token) : token,
+    classes.has(token) ? ownClassName(token, owner) : token,
   );
 }
 
@@ -192,48 +251,73 @@ export function renameClasses(text: string, classes: ReadonlySet<string>): strin
  * Scopes a stylesheet to one layout, without changing which rule wins inside that layout: a
  * selector that names the frame gets `:where([data-layout='<name>'])` on it, any other selector is
  * put under `:where(.kit-frame[data-layout='<name>'])`, and `:where` adds no specificity. A
- * selector already keyed on this layout is left alone; one keyed on another layout can never match
- * here and is removed, and a rule left with no selector is removed with the comment above it. Rules
- * inside `@layer`, `@media`, `@supports` and `@container` are scoped too; other at-rules
- * (`@keyframes`, `@font-face`) and rules nested in a rule are copied as they are.
+ * selector keyed only on this layout is left alone; one keyed only on other layouts can never match
+ * here and is removed, and a rule left with no selector is removed with the comment above it. A
+ * selector keyed on this layout and others is kept, with `:where([data-layout='<name>'])` added to
+ * the compound selector that names the first of them. Rules inside `@layer`, `@media`, `@supports`
+ * and `@container` are scoped too; `@keyframes`, `@font-face` and the other at-rules without style
+ * rules, and rules nested in a rule, are copied as they are. A selector that starts at `:root` or
+ * `html`, and an at-rule such as `@scope` that may hold style rules eject cannot scope, are copied
+ * as they are and reported as problems.
  *
  * @param css - The stylesheet's text.
  * @param layout - The layout to scope it to.
- * @returns The scoped stylesheet.
+ * @returns The scoped stylesheet and what it could not scope.
  */
-export function scopeStylesheet(css: string, layout: string): string {
-  return scopeBlock(css, layout)
+export function scopeStylesheet(css: string, layout: string): ScopedStylesheet {
+  const problems: string[] = [];
+  const scoped = scopeBlock(css, layout, problems)
     .replace(EXTRA_BLANK_LINES, '\n\n')
     .replace(BLANK_AFTER_BRACE, '{\n')
     .replace(BLANK_BEFORE_BRACE, '\n$1');
+  return { css: scoped, problems: [...new Set(problems)] };
 }
 
 /**
  * Scopes the rules of one block's content, or of the whole stylesheet.
  */
-function scopeBlock(content: string, layout: string): string {
+function scopeBlock(content: string, layout: string, problems: string[]): string {
   const { items, trailing } = splitItems(content);
-  const kept = items.map((item) => scopeItem(item, layout)).filter((text) => text !== undefined);
+  const kept = items
+    .map((item) => scopeItem(item, layout, problems))
+    .filter((text) => text !== undefined);
   return `${kept.join('')}${trailing}`;
 }
 
 /**
  * Scopes one item, or drops it by returning nothing.
  */
-function scopeItem(item: CssItem, layout: string): string | undefined {
+function scopeItem(item: CssItem, layout: string, problems: string[]): string | undefined {
   if (item.body === undefined) {
     return `${item.leading}${item.prelude}`;
   }
 
   const atRule = AT_RULE_NAME.exec(item.prelude)?.[0];
   if (atRule !== undefined) {
-    const body = GROUPING_AT_RULES.has(atRule) ? scopeBlock(item.body, layout) : item.body;
-    return `${item.leading}${item.prelude}{${body}}`;
+    return `${item.leading}${item.prelude}{${scopeAtRuleBody(atRule, item.body, layout, problems)}}`;
   }
 
   const indent = TRAILING_INDENT.exec(item.leading)?.[0] ?? '';
-  const prelude = scopeSelectors(item.prelude, layout, indent);
+  const prelude = scopeSelectors(item.prelude, layout, indent, problems);
   return prelude === undefined ? undefined : `${item.leading}${prelude}{${item.body}}`;
+}
+
+/**
+ * The body of an at-rule: scoped for a grouping rule, as it is otherwise, with a problem for an
+ * at-rule that may hold style rules eject does not scope.
+ */
+function scopeAtRuleBody(atRule: string, body: string, layout: string, problems: string[]): string {
+  if (GROUPING_AT_RULES.has(atRule)) {
+    return scopeBlock(body, layout, problems);
+  }
+
+  if (!VERBATIM_AT_RULES.has(atRule)) {
+    problems.push(
+      `Its ${atRule} block is copied unscoped, so its rules may style other layouts than ${layout}.`,
+    );
+  }
+
+  return body;
 }
 
 /**
@@ -241,9 +325,14 @@ function scopeItem(item: CssItem, layout: string): string | undefined {
  *
  * @returns The new list with the space before the `{`, or nothing when no selector is left.
  */
-function scopeSelectors(prelude: string, layout: string, indent: string): string | undefined {
+function scopeSelectors(
+  prelude: string,
+  layout: string,
+  indent: string,
+  problems: string[],
+): string | undefined {
   const selectors = splitTopLevel(prelude.trimEnd(), ',')
-    .map((selector) => scopeSelector(selector.trim(), layout))
+    .map((selector) => scopeSelector(selector.trim(), layout, problems))
     .filter((selector) => selector !== undefined)
     .map((selector) => wrapSelector(selector, indent));
   if (selectors.length === 0) {
@@ -254,12 +343,20 @@ function scopeSelectors(prelude: string, layout: string, indent: string): string
 }
 
 /**
- * Scopes one selector, or returns nothing for one that is keyed on another layout.
+ * Scopes one selector, or returns nothing for one that is keyed only on other layouts.
  */
-function scopeSelector(selector: string, layout: string): string | undefined {
-  const keyed = LAYOUT_ATTRIBUTE.exec(selector)?.[2];
-  if (keyed !== undefined) {
-    return keyed === layout ? selector : undefined;
+function scopeSelector(selector: string, layout: string, problems: string[]): string | undefined {
+  if (ROOT_SELECTOR.test(selector)) {
+    problems.push(
+      `The selector ${selector} starts at the document's root, so it is copied unscoped and may ` +
+        `style other layouts than ${layout}.`,
+    );
+    return selector;
+  }
+
+  const keyed = new Set([...selector.matchAll(LAYOUT_ATTRIBUTE)].map((match) => match[2]));
+  if (keyed.size > 0) {
+    return scopeKeyedSelector(selector, keyed, layout);
   }
 
   if (FRAME_CLASS.test(selector)) {
@@ -267,6 +364,32 @@ function scopeSelector(selector: string, layout: string): string | undefined {
   }
 
   return `:where(.kit-frame[data-layout='${layout}']) ${selector}`;
+}
+
+/**
+ * Scopes a selector that names one or more layouts: kept as it is when it names only this one,
+ * dropped when it does not name it, and narrowed to it when it names others too.
+ */
+function scopeKeyedSelector(
+  selector: string,
+  keyed: ReadonlySet<string | undefined>,
+  layout: string,
+): string | undefined {
+  if (!keyed.has(layout)) {
+    return undefined;
+  }
+
+  if (keyed.size === 1) {
+    return selector;
+  }
+
+  const compounds = splitTopLevel(selector.replace(WHITE_SPACE_RUN, ' '), ' ');
+  const at = compounds.findIndex((compound) => compound.match(LAYOUT_ATTRIBUTE) !== null);
+  return compounds
+    .map((compound, index) =>
+      index === at ? `${compound}:where([data-layout='${layout}'])` : compound,
+    )
+    .join(' ');
 }
 
 /**

@@ -9,6 +9,23 @@
 const CONTEXT_LINES = 3;
 
 /**
+ * The most cells the common-subsequence table may have: 16 MB of 4-byte lengths. Two texts whose
+ * differing parts need more are diffed as one block of removed lines and one of added lines, which
+ * is still a valid patch.
+ */
+const MAX_TABLE_CELLS = 4_000_000;
+
+/**
+ * The line `diff -u` prints after a line that has no newline at the end of the file.
+ */
+const NO_FINAL_NEWLINE = '\\ No newline at end of file';
+
+/**
+ * Matches the position after each newline, where a text splits into lines that keep it.
+ */
+const AFTER_NEWLINE = /(?<=\n)/u;
+
+/**
  * One line of the comparison.
  */
 type DiffLine = {
@@ -18,7 +35,7 @@ type DiffLine = {
   readonly kind: 'same' | 'removed' | 'added';
 
   /**
-   * The line's text.
+   * The line's text with its newline, or without one for a last line that has none.
    */
   readonly text: string;
 };
@@ -45,7 +62,9 @@ export type DiffLabels = {
  * @param after - The new text.
  * @param labels - The names of the two sides.
  * @returns The unified diff with three lines of context and a trailing newline, or an empty string
- *   when the texts are the same. A missing final newline is not marked.
+ *   when the texts are the same. A last line without a newline is followed by `\ No newline at end
+ *   of file`, as `diff -u` prints it, so a change to the final newline alone still has a hunk.
+ *   Differing parts too large to compare line by line are printed as one removal and one addition.
  */
 export function unifiedDiff(before: string, after: string, labels: DiffLabels): string {
   if (before === after) {
@@ -58,11 +77,11 @@ export function unifiedDiff(before: string, after: string, labels: DiffLabels): 
 }
 
 /**
- * Splits a text into lines, without an empty last line for a final newline.
+ * Splits a text into lines that keep their newline, so a last line without one differs from the
+ * same line with one.
  */
 function splitLines(text: string): string[] {
-  const lines = text.split('\n');
-  return lines.at(-1) === '' ? lines.slice(0, -1) : lines;
+  return text === '' ? [] : text.split(AFTER_NEWLINE);
 }
 
 /**
@@ -104,6 +123,13 @@ function compareLines(before: readonly string[], after: readonly string[]): Diff
  */
 function compareMiddle(before: readonly string[], after: readonly string[]): DiffLine[] {
   const width = after.length + 1;
+  if ((before.length + 1) * width > MAX_TABLE_CELLS) {
+    return [
+      ...before.map((text): DiffLine => ({ kind: 'removed', text })),
+      ...after.map((text): DiffLine => ({ kind: 'added', text })),
+    ];
+  }
+
   const lengths = new Uint32Array((before.length + 1) * width);
   for (let i = before.length - 1; i >= 0; i -= 1) {
     for (let j = after.length - 1; j >= 0; j -= 1) {
@@ -188,6 +214,15 @@ function printHunk(lines: readonly DiffLine[], hunk: { from: number; to: number 
   const marks = { same: ' ', removed: '-', added: '+' } as const;
   return [
     `@@ -${oldStart},${oldCount} +${newStart},${newCount} @@`,
-    ...shown.map((line) => `${marks[line.kind]}${line.text}`),
+    ...shown.map((line) => printLine(marks[line.kind], line.text)),
   ].join('\n');
+}
+
+/**
+ * Prints one line of a hunk after its mark, with the missing-newline note when it has no newline.
+ */
+function printLine(mark: string, text: string): string {
+  return text.endsWith('\n')
+    ? `${mark}${text.slice(0, -1)}`
+    : `${mark}${text}\n${NO_FINAL_NEWLINE}`;
 }

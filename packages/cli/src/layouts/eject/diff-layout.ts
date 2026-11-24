@@ -12,7 +12,12 @@ import type { LayoutsOwner } from '#layouts/layouts-owner.ts';
 import { cliError, type CliError } from '#cli-error.ts';
 import { displayPath, findOwnerFolder } from '#layouts/eject/eject-owner.ts';
 import { readEjectSource, transformLayout } from '#layouts/eject/eject-transform.ts';
-import { PROVENANCE_DIR, provenancePaths, readProvenance } from '#layouts/eject/provenance.ts';
+import {
+  PROVENANCE_DIR,
+  PROVENANCE_FILE,
+  provenancePaths,
+  readProvenance,
+} from '#layouts/eject/provenance.ts';
 import { unifiedDiff } from '#layouts/eject/unified-diff.ts';
 import { cliVersion } from '#version.ts';
 
@@ -104,8 +109,9 @@ export type DiffOptions = {
  * @param name - The layout.
  * @param options - Where the kit's source is.
  * @returns The kit's changes, file by file.
- * @throws CliError in the error channel when the name is not safe or the layout has no provenance
- *   record; BrandError | DeckBuildError when the brand or deck does not load.
+ * @throws CliError in the error channel when the name is not safe, the layout has no provenance
+ *   record, the record reaches outside `.eject/` or names another layout than its folder;
+ *   BrandError | DeckBuildError when the brand or deck does not load.
  */
 export const diffLayout = Effect.fn('diffLayout')(function* (
   root: string,
@@ -124,13 +130,23 @@ export const diffLayout = Effect.fn('diffLayout')(function* (
   const dir = path.join(folder.layoutsDir, name);
   const shown = displayPath(root, dir);
   const stored = yield* readProvenance(dir, shown);
+  if (stored.record.layout !== name) {
+    return yield* cliError(
+      `${shown}/${PROVENANCE_DIR}/${PROVENANCE_FILE} records the layout "${stored.record.layout}", ` +
+        `not "${name}", so it is not this layout's starting point.\n` +
+        `Eject ${name} again into another folder and copy its ${PROVENANCE_DIR}/ folder here.`,
+    );
+  }
+
   const today = yield* Effect.sync(() => {
     const source = readEjectSource(options.srcDir);
-    return transformLayout(source, stored.record.layout, LIMIT_CASES[stored.record.layout] ?? []);
+    return transformLayout(source, name, ownValue(LIMIT_CASES, name) ?? [], owner.kind);
   });
   const now = provenancePaths(today);
   const paths = [...new Set([...Object.keys(stored.record.files), ...Object.keys(now)])].sort();
-  const files = paths.map((file) => fileChange(file, shown, stored.files[file], now[file]));
+  const files = paths.map((file) =>
+    fileChange(file, shown, ownValue(stored.files, file), ownValue(now, file)),
+  );
   return {
     layout: name,
     dir: shown,
@@ -142,6 +158,13 @@ export const diffLayout = Effect.fn('diffLayout')(function* (
     provenanceEdited: stored.changed,
   };
 });
+
+/**
+ * A record's own value for a key, never one every object inherits (`constructor`).
+ */
+function ownValue<A>(record: Readonly<Record<string, A>>, key: string): A | undefined {
+  return Object.hasOwn(record, key) ? record[key] : undefined;
+}
 
 /**
  * Compares one file as it was ejected with the kit's file today.

@@ -1,3 +1,4 @@
+import { deckCommand } from '@deckster/engine/command';
 import { Effect } from 'effect';
 
 import { checkDeckName } from '#choose-deck.ts';
@@ -20,10 +21,10 @@ export type LayoutsOwner = {
 };
 
 /**
- * Reads `--brand <brand>` or `--deck <deck>`, exactly one of them, as `deckster layouts new` and
- * `deckster layouts check` take them.
+ * Reads `--brand <brand>` or `--deck <deck>`, exactly one of them, as `deckster layouts new`,
+ * `check`, `eject` and `diff` take them.
  *
- * @param subcommand - `new` or `check`, for the message.
+ * @param subcommand - `new`, `check`, `eject` or `diff`, for the message.
  * @param values - The parsed options.
  * @returns The brand or the deck.
  * @throws CliError in the error channel when neither or both are given, or the name is not a
@@ -45,7 +46,7 @@ export const readLayoutsOwner = Effect.fn('readLayoutsOwner')(function* (
 
   const which = brand === undefined ? 'Neither was given' : 'Both were given';
   return yield* usageError(
-    `\`deckster layouts ${subcommand}\` works on one brand's layouts or one deck's: pass ` +
+    `\`${deckCommand()} layouts ${subcommand}\` works on one brand's layouts or one deck's: pass ` +
       `--brand <brand> or --deck <deck>. ${which}.`,
     'layouts',
   );

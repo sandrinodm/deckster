@@ -1,5 +1,6 @@
 import { KIT_SRC_DIR } from '@deckster/kit/eject-closure';
 import { LIMIT_CASES } from '@deckster/kit/limit-cases';
+import { isContractPackage } from '@deckster/vite-plugin';
 import { afterAll, describe, expect, it } from '@effect/vitest';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -10,12 +11,6 @@ import {
   transformLayout,
   type EjectedLayout,
 } from '#layouts/eject/eject-transform.ts';
-
-/**
- * The packages a contract and the `.ts` files it reaches may import.
- */
-const CONTRACT_IMPORTS =
-  /^(?:effect(?:\/.*)?|@deckster\/engine\/(?:layout|command)|@deckster\/kit\/layout-fields|@deckster\/brand)$/u;
 
 /**
  * Matches the specifier of every import and re-export of a module.
@@ -178,7 +173,7 @@ describe('transformLayout', () => {
   it('lets every contract reach only what a contract may import', () => {
     const reached = [...ejected].flatMap(([name, result]) => contractReach(name, result));
     expect(reached.filter((entry) => !entry.file.endsWith('.ts'))).toEqual([]);
-    expect(reached.filter((entry) => !CONTRACT_IMPORTS.test(entry.specifier))).toEqual([]);
+    expect(reached.filter((entry) => !isContractPackage(entry.specifier))).toEqual([]);
     expect(reached.length).toBeGreaterThan(64);
   });
 
@@ -188,7 +183,7 @@ describe('transformLayout', () => {
     expect(Object.keys(files).toSorted()).toEqual([
       'contract.ts',
       'display-align.css',
-      'image-layout.css',
+      'image-scrim.css',
       'layout.css',
       'layout.tsx',
       'limits.ts',
@@ -200,7 +195,7 @@ describe('transformLayout', () => {
       "import type { CoverPicture, titleLayoutContract } from './contract.ts';",
     );
     expect(component).toContain(
-      "import './display-align.css';\nimport './image-layout.css';\nimport './layout.css';",
+      "import './display-align.css';\nimport './image-scrim.css';\nimport './layout.css';",
     );
     expect(component).toContain('const TITLE_MAX_LINES = 3;');
     expect(files['layout.css']).toBe(
@@ -213,7 +208,7 @@ describe('transformLayout', () => {
     expect(files['display-align.css']).toContain(
       ".kit-frame:where([data-layout='title'])[data-display-align][data-align='center'] .kit-eyebrow {",
     );
-    const image = files['image-layout.css'] ?? '';
+    const image = files['image-scrim.css'] ?? '';
     expect(image).toContain(":where(.kit-frame[data-layout='title']) .kit-image-scrim {");
     expect(image).not.toContain("[data-layout='image']");
     for (const line of image.split('\n').filter((text) => /^ {2}\.kit-/u.test(text))) {
@@ -303,5 +298,66 @@ describe('transformLayout', () => {
     expect(problems).toEqual([
       'layouts/title-layout.tsx imports the package uqr, which a workspace cannot resolve.',
     ]);
+  });
+
+  it("renames a deck's helper classes with another prefix than a brand's", () => {
+    const bio = transformLayout(source, 'bio', [], 'deck');
+    expect(bio.problems).toEqual([]);
+    expect(bio.shared['contact-list.css']).toContain('.dck-contacts {');
+    expect(bio.shared['contact-list.css']).not.toMatch(/(?<![\w-])\.own-/u);
+    expect(bio.files['layout.tsx']).toContain('className="dck-contacts-stacked"');
+    expect(layout('bio').shared['contact-list.css']).toContain('.own-contacts {');
+  });
+
+  it('reports a name every object has as a property as unknown instead of crashing', () => {
+    expect(transformLayout(source, 'constructor', []).problems).toEqual([
+      '"constructor" is not a layout of the kit\'s catalog.',
+    ]);
+  });
+
+  it('ejects the same files from a kit checked out with CRLF line endings', () => {
+    const srcDir = changedKit('layouts/title-layout.tsx', (text) => text);
+    for (const file of fs.readdirSync(srcDir, { recursive: true, encoding: 'utf8' })) {
+      const target = path.join(srcDir, file);
+      if (/\.(?:ts|tsx|css)$/u.test(file) && fs.statSync(target).isFile()) {
+        fs.writeFileSync(target, fs.readFileSync(target, 'utf8').replaceAll('\n', '\r\n'));
+      }
+    }
+
+    const crlfSource = readEjectSource(srcDir);
+    expect(crlfSource.problems).toEqual([]);
+    for (const name of ['title', 'bio', 'quiz', 'stats']) {
+      const result = transformLayout(crlfSource, name, LIMIT_CASES[name] ?? []);
+      expect(result.problems, name).toEqual([]);
+      expect(result.files, name).toEqual(layout(name).files);
+      expect(result.shared, name).toEqual(layout(name).shared);
+    }
+  });
+
+  it('keeps the query of an import it points at a copied file', () => {
+    const srcDir = changedKit('layouts/title-layout.tsx', (text) =>
+      text.replace(
+        "import '#layouts/title-layout.css';",
+        "import titleStyles from '#layouts/title-layout.css?inline';",
+      ),
+    );
+    const result = transformLayout(readEjectSource(srcDir), 'title', []);
+    expect(result.problems).toEqual([]);
+    expect(result.files['layout.tsx']).toContain("import titleStyles from './layout.css?inline';");
+  });
+
+  it('accepts a type-only import in a contract of a package a contract may not import', () => {
+    const srcDir = changedKit(
+      'layouts/title-layout.contract.ts',
+      (text) => `import type { Frame } from '#layout-parts.ts';\n${text}`,
+    );
+    const { problems } = transformLayout(readEjectSource(srcDir), 'title', []);
+    expect(problems).toEqual([]);
+  });
+
+  it('gives a layout without a stylesheet of its own an empty layout.css its component imports', () => {
+    const demo = layout('demo');
+    expect(demo.files['layout.css']).toContain("The demo layout's own styles.");
+    expect(demo.files['layout.tsx']).toMatch(/^import '\.\/layout\.css';$/mu);
   });
 });
