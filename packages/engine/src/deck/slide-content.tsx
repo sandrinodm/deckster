@@ -254,9 +254,9 @@ function tsxSlots(entry: SlideEntry, body: ReactNode): LayoutSlots {
 }
 
 /**
- * Wraps each filled slot in `<span class="deck-slot" data-slot="<name>">`, which has `display:
- * contents`, so `deckster lint` can find and measure it. The content sits in a {@link SlotGuard},
- * which tells an error it throws from one the layout throws.
+ * Wraps each filled slot in a {@link SlotGuard}, which draws `<span class="deck-slot"
+ * data-slot="<name>">` (`display: contents`) so `deckster lint` can find and measure it, and tells
+ * an error the content throws from one the layout throws.
  *
  * @param slots - The filled slots.
  */
@@ -264,11 +264,7 @@ function wrapSlots(slots: LayoutSlots): LayoutSlots {
   const wrapped: Record<string, ReactNode> = {};
   for (const [name, content] of Object.entries(slots)) {
     if (content !== undefined) {
-      wrapped[name] = (
-        <span className="deck-slot" data-slot={name}>
-          <SlotGuard>{content}</SlotGuard>
-        </span>
-      );
+      wrapped[name] = <SlotGuard data-slot={name}>{content}</SlotGuard>;
     }
   }
 

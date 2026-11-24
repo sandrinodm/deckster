@@ -9,6 +9,8 @@ import { BUDGET_PATTERN } from '#contract/slide-defaults.ts';
  * it the deck uses `brands/default`. `mouseNavigation: false` turns off moving the deck with left
  * and right clicks, which is on by default. `duration` is the length of the talk (`20m`, `1m30s`),
  * which the presenter view paces against and `deckster lint` checks the slide budgets against.
+ * `deckster` is the range of deckster versions the deck's own code layouts (`layouts/<name>/`) were
+ * written for, such as `>=0.10 <0.12`; the build refuses to load them on another version.
  */
 export const DeckConfig = Schema.Struct({
   title: Schema.NonEmptyString,
@@ -22,6 +24,7 @@ export const DeckConfig = Schema.Struct({
       }),
     ),
   ),
+  deckster: Schema.optionalKey(Schema.NonEmptyString),
 });
 
 /**
@@ -65,6 +68,13 @@ export const DECK_CONFIG_HINTS = {
    * Fix for a duration that is not minutes and seconds.
    */
   duration: 'Write the talk length as minutes and seconds, for example `duration: 20m` or `90s`.',
+
+  /**
+   * Fix for a deckster version range that is not a string.
+   */
+  deckster:
+    "Write the deckster versions the deck's code layouts work with, for example " +
+    '`deckster: ">=0.10 <0.12"`, or leave it out.',
 } satisfies Record<keyof DeckConfigInput, string>;
 
 /**

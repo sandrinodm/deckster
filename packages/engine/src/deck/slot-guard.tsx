@@ -19,6 +19,12 @@ export function isSlotContentError(error: unknown): boolean {
  */
 type SlotGuardProps = {
   /**
+   * The slot's name. It is a prop under this name because layouts that read a slot's direct
+   * children (the kit's `dashboard`) recognise the engine's wrapper by it.
+   */
+  'data-slot': string;
+
+  /**
    * The slot's content.
    */
   children?: ReactNode;
@@ -35,9 +41,13 @@ type SlotGuardState = {
 };
 
 /**
- * Marks what a slot's content throws while rendering and throws it again, so a boundary around the
- * layout can leave it to the slide's own error boundary: a broken slide component is not the
- * layout's failure.
+ * A filled slot's wrapper: `<span class="deck-slot" data-slot="<name>">`, which has `display:
+ * contents`, so `deckster lint` can find and measure it. It also marks what the slot's content
+ * throws while rendering and throws it again, so a boundary around the layout can leave it to the
+ * slide's own error boundary: a broken slide component is not the layout's failure.
+ *
+ * The element a layout receives keeps the shape it always had (`data-slot` and `children` props
+ * directly on it), so a layout may still read or replace the slot's children.
  */
 export class SlotGuard extends Component<SlotGuardProps, SlotGuardState> {
   /**
@@ -58,7 +68,7 @@ export class SlotGuard extends Component<SlotGuardProps, SlotGuardState> {
   }
 
   /**
-   * The content, or the error it threw, thrown again to the next boundary up.
+   * The wrapped content, or the error it threw, thrown again to the next boundary up.
    */
   override render(): ReactNode {
     const { error } = this.state;
@@ -66,6 +76,10 @@ export class SlotGuard extends Component<SlotGuardProps, SlotGuardState> {
       throw error;
     }
 
-    return this.props.children;
+    return (
+      <span className="deck-slot" data-slot={this.props['data-slot']}>
+        {this.props.children}
+      </span>
+    );
   }
 }
