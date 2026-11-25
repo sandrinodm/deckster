@@ -34,6 +34,7 @@ import { writeFontFiles } from '#export/export-fonts.ts';
 import { exportPdf } from '#export/export-pdf.ts';
 import { capturePptx, playwrightPage, writePptx, type PptxCapture } from '#export/export-pptx.ts';
 import { exportTargets, hiddenLeftOut, selectSlides } from '#export/export-targets.ts';
+import { stageShots } from '#export/stage-shots.ts';
 import { verifyExport } from '#export/verify-export.ts';
 import { takeShots, type ShotError, type ShotFile, type ShotResult } from '#shot/take-shots.ts';
 import { Workspace } from '#workspace.ts';
@@ -379,13 +380,34 @@ const useSystemFonts = Effect.fn('useSystemFonts')(function* (opened: OpenedDeck
 /**
  * Writes PNGs with `deckster shot`: every slide that is not hidden (all with `--include-hidden`),
  * or each selected one. Fails the way a PDF or PPTX export does when a slide shows an error or the
- * page threw while the deck loaded; the PNGs are written by then, as `deckster shot` writes them.
+ * page threw while the deck loaded. The PNGs are taken into a staging folder and moved into the PNG
+ * folder only when every slide rendered, so a failed export leaves the folder as it was.
  *
  * @param options - What to export.
  * @param outDir - The PNG folder.
- * @throws CliError in the error channel when any slide renders an error.
+ * @throws CliError in the error channel when any slide renders an error; nothing is written then.
  */
 const exportPng = Effect.fn('exportPng')(function* (
+  options: ExportOptions,
+  outDir: string,
+): Effect.fn.Return<
+  { files: ShotFile[]; hiddenLeftOut: number },
+  ShotError,
+  Workspace | FileSystem.FileSystem | DeckServer | DeckBrowser | Scope.Scope
+> {
+  return yield* stageShots(outDir, options.slides === undefined, (staging) =>
+    shootPng(options, staging),
+  );
+});
+
+/**
+ * Takes the PNGs into a folder and checks that every slide rendered.
+ *
+ * @param options - What to export.
+ * @param outDir - The folder to write to.
+ * @throws CliError in the error channel when any slide renders an error.
+ */
+const shootPng = Effect.fn('shootPng')(function* (
   options: ExportOptions,
   outDir: string,
 ): Effect.fn.Return<

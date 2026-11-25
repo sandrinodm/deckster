@@ -99,7 +99,8 @@ Options:
   --deck <deck>
                 For new, check, eject and diff, the deck whose layouts/ to use.
   --all         For eject: every layout of the kit's catalog that the brand has no folder for yet,
-                into one brand. From then on kit fixes reach those layouts only through
+                into one brand. A layout is left out, not an error, when a deck of the brand has a
+                layout folder of its name; skippedForDecks lists those. From then on kit fixes reach those layouts only through
                 @deckster/kit/layout-parts and layout-fields; the command warns about it.
   --keep-shared
                 For eject: keep helpers in layouts/_shared/ that differ from the ones it would

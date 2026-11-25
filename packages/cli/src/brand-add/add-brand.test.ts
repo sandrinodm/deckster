@@ -1,4 +1,4 @@
-import { FRAMEWORK_ROOT } from '@deckster/brand/node';
+import { DECKSTER_SOURCE_FILE, FRAMEWORK_ROOT } from '@deckster/brand/node';
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { afterAll, beforeAll, describe, expect, it, layer } from '@effect/vitest';
 import { Effect } from 'effect';
@@ -11,7 +11,6 @@ import { vi } from 'vite-plus/test';
 
 import { addBrand, type AddBrandRequest } from '#brand-add/add-brand.ts';
 import { parseBrandSource } from '#brand-add/brand-source.ts';
-import { DECKSTER_SOURCE_FILE } from '#brand-add/deckster-source.ts';
 import { NETWORK_PROTOCOLS } from '#brand-add/fetch-brand.ts';
 import { checkCatalogLayouts } from '#layouts/check-brand-layouts.ts';
 import { contractRan, writeThrowingLayout } from '#layouts/code-layouts.fixture.ts';

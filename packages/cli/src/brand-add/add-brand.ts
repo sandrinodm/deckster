@@ -14,6 +14,7 @@ import {
   BRAND_FILE,
   BRANDS_DIR,
   brandLocation,
+  DECKSTER_SOURCE_FILE,
   loadBrand,
   readStaticModule,
   type BrandLocation,
@@ -28,11 +29,7 @@ import path from 'node:path';
 import type { BrandSource } from '#brand-add/brand-source.ts';
 
 import { planBrandFiles, type SkippedFile } from '#brand-add/brand-files.ts';
-import {
-  codeLayoutNames,
-  DECKSTER_SOURCE_FILE,
-  writeDecksterSource,
-} from '#brand-add/deckster-source.ts';
+import { codeLayoutNames, writeDecksterSource } from '#brand-add/deckster-source.ts';
 import { fetchBrand, type FetchedBrand, type GitProtocol } from '#brand-add/fetch-brand.ts';
 import {
   catalogPackages,

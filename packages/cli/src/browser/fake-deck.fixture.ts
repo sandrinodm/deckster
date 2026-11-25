@@ -1,4 +1,6 @@
 import { Effect, Layer } from 'effect';
+import { existsSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 
 import type { CollectedPage } from '#browser/collect-snapshot.ts';
 import type { DeckPage, PageSlide } from '#browser/deck-page.ts';
@@ -79,7 +81,8 @@ export function pageSlide(
  * the server compiles every module, and the browser opens the fake deck.
  *
  * @param deck - The fake deck.
- * @param screenshots - Receives the path of every screenshot taken.
+ * @param screenshots - Receives the path of every screenshot taken. A file with a placeholder is
+ *   written there when its folder exists.
  */
 export function fakeDeckLayer(
   deck: FakeDeck,
@@ -151,6 +154,9 @@ function fakePage(deck: FakeDeck, screenshots: string[]): DeckPage {
     screenshot: (file) =>
       Effect.sync(() => {
         screenshots.push(file);
+        if (existsSync(path.dirname(file))) {
+          writeFileSync(file, 'png');
+        }
       }),
     takeErrors: () => Effect.sync(() => pending.splice(0)),
   };

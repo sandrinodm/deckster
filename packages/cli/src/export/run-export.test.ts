@@ -2,7 +2,14 @@ import { NodeServices } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
 import { Effect, Layer } from 'effect';
 import { strFromU8, unzipSync } from 'fflate';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { PDFDict, PDFDocument, PDFName } from 'pdf-lib';
@@ -367,6 +374,24 @@ layer(Layer.mergeAll(fakeDeckLayer(BROKEN_DECK), NodeServices.layer, Workspace.l
           runExport(options('hello', { formats: new Set(['png']), slides: '2' })),
         );
         expect(chosen.message).toContain('slide 2 "steps": boom');
+      }),
+    );
+
+    it.effect('leaves no new PNG behind and keeps the files that were there', () =>
+      Effect.gen(function* () {
+        const pngOptions = options('hello', { formats: new Set(['png']) });
+        const pngDir = path.join(pngOptions.out ?? '', 'png');
+        mkdirSync(pngDir);
+        const earlier = path.join(pngDir, '01-title.png');
+        writeFileSync(earlier, 'earlier run');
+        yield* Effect.flip(runExport(pngOptions));
+        expect(readdirSync(pngDir)).toEqual(['01-title.png']);
+        expect(readFileSync(earlier, 'utf8')).toBe('earlier run');
+        expect(readdirSync(pngOptions.out ?? '')).toEqual(['png']);
+        const chosen = options('hello', { formats: new Set(['png']), slides: '1-2' });
+        yield* Effect.flip(runExport(chosen));
+        expect(existsSync(path.join(chosen.out ?? '', 'png'))).toBe(false);
+        expect(readdirSync(chosen.out ?? '')).toEqual([]);
       }),
     );
   },

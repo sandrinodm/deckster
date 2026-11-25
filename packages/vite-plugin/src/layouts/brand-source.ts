@@ -1,4 +1,4 @@
-import { BRANDS_DIR } from '@deckster/brand/node';
+import { BRANDS_DIR, DECKSTER_SOURCE_FILE, DecksterSource } from '@deckster/brand/node';
 import { Effect, FileSystem, Option, Schema } from 'effect';
 import path from 'node:path';
 
@@ -11,15 +11,16 @@ import { LAYOUTS_DIR } from '#layouts/local-layouts.ts';
  * The file `deckster brand add` writes into a brand folder: where the brand came from and which of
  * its code layouts were left out.
  */
-export const BRAND_SOURCE_FILE = '.deckster-source.json';
+export const BRAND_SOURCE_FILE = DECKSTER_SOURCE_FILE;
 
 /**
- * The parts of {@link BRAND_SOURCE_FILE} the build reads. Other keys are ignored.
+ * The parts of {@link BRAND_SOURCE_FILE} the build reads, taken from the schema `brand add` writes
+ * it with. The other keys, such as the commit, may be missing or ignored.
  */
 const BrandSourceJson = Schema.fromJsonString(
   Schema.Struct({
-    source: Schema.String,
-    codeLayoutsSkipped: Schema.Array(Schema.String),
+    source: DecksterSource.fields.source,
+    codeLayoutsSkipped: DecksterSource.fields.codeLayoutsSkipped,
   }),
 );
 

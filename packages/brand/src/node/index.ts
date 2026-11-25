@@ -1,5 +1,6 @@
 export { BACKGROUND_EXTENSIONS, FONT_EXTENSIONS } from '#node/asset-files.ts';
 export { brandTokensJson } from '#node/brand-json.ts';
+export { DECKSTER_SOURCE_FILE, DecksterSource } from '#node/deckster-source.ts';
 export {
   BRAND_FILE,
   BRANDS_DIR,

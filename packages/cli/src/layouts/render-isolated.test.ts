@@ -113,4 +113,30 @@ describe('renderIsolated', () => {
       expect(all.findings).toHaveLength(2);
     }),
   );
+
+  it.effect('reports a render that returns no report as a failure instead of throwing', () =>
+    Effect.gen(function* () {
+      const slides = [slideOf('a-1'), slideOf('b-1')];
+      const outcome = yield* renderIsolated(slides, () => Effect.succeed(undefined));
+      expect(outcome.rendered.size).toBe(0);
+      expect(outcome.findings).toEqual([]);
+      expect(outcome.failure).toContain('returned no report');
+    }),
+  );
+
+  it.effect('stops with the cause when a pass fails, keeping what earlier passes found', () =>
+    Effect.gen(function* () {
+      const calls: string[][] = [];
+      const first = fakeRender(['b-1'], calls);
+      const slides = [slideOf('a-1'), slideOf('b-1')];
+      const outcome = yield* renderIsolated(slides, (attempt) =>
+        attempt.length === slides.length
+          ? first(attempt)
+          : Effect.succeed({ failed: 'The deck did not start within 30s.' }),
+      );
+      expect(outcome.rendered.size).toBe(0);
+      expect(outcome.findings).toEqual([findingOn('b-1', 'error')]);
+      expect(outcome.failure).toBe('The deck did not start within 30s.');
+    }),
+  );
 });

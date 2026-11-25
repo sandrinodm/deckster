@@ -1,3 +1,4 @@
+import { DECKSTER_SOURCE_FILE } from '@deckster/brand/node';
 import { readSkippedCodeLayouts } from '@deckster/vite-plugin';
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { describe, expect, it, layer } from '@effect/vitest';
@@ -10,7 +11,6 @@ import type { SkippedFile } from '#brand-add/brand-files.ts';
 
 import {
   codeLayoutNames,
-  DECKSTER_SOURCE_FILE,
   encodeDecksterSource,
   withoutCredentials,
   writeDecksterSource,

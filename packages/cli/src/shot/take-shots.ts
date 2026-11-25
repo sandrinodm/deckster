@@ -355,7 +355,7 @@ const makeOutDir = Effect.fn('makeOutDir')(function* (
  * @param outDir - The output folder.
  * @throws FileSystemError in the error channel when a stale file cannot be removed.
  */
-const removeStaleShots = Effect.fn('removeStaleShots')(function* (
+export const removeStaleShots = Effect.fn('removeStaleShots')(function* (
   outDir: string,
 ): Effect.fn.Return<void, FileSystemError, FileSystemService.FileSystem> {
   const fs = yield* FileSystem.FileSystem;

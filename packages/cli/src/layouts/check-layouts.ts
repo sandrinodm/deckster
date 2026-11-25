@@ -37,9 +37,10 @@ import {
   uniqueSlideIds,
   type LimitSlide,
 } from '#layouts/limit-deck.ts';
-import { renderIsolated, type RenderOutcome } from '#layouts/render-isolated.ts';
+import { renderIsolated, type RenderFailed, type RenderOutcome } from '#layouts/render-isolated.ts';
 import { LINT_RULES } from '#lint/rules/index.ts';
 import { lintDeck, type LintError, type LintReport } from '#lint/run-lint.ts';
+import { describeError } from '#report-error.ts';
 
 /**
  * The id of the generated deck when the layouts are a brand's.
@@ -50,6 +51,12 @@ const BRAND_CHECK_DECK = 'layouts-check';
  * The problem id of a layout whose slides were not rendered and that has no other error.
  */
 const NOT_RENDERED = 'layout-not-rendered';
+
+/**
+ * The problem id of a layout whose slides were not rendered because the browser, the server or the
+ * page failed or timed out.
+ */
+const RENDER_FAILED = 'layout-render-failed';
 
 /**
  * Rules about a deck as a talk, not about one slide's layout: they would only report the generated
@@ -301,10 +308,10 @@ export const checkLayouts = Effect.fn('checkLayouts')(function* (
   const slides = yield* layoutSlides(root, target, readyLayouts(catalog, target, results), results);
   const outcome: RenderOutcome =
     slides.length > 0 && !hasError(shared)
-      ? yield* renderIsolated(slides, (deck) => renderSlides(root, target, deck))
+      ? yield* renderIsolated(slides, (deck) => renderOrFail(root, target, deck))
       : { findings: [], rendered: new Set() };
   attachFindings(root, target, outcome.findings, slides, results, shared);
-  markUnrendered(root, target, slides, outcome.rendered, results, shared);
+  markUnrendered(root, target, slides, outcome, results, shared);
 
   const layouts = [...results.values()].map((result) => ({
     ...result,
@@ -571,14 +578,54 @@ const renderSlides = Effect.fn('renderSlides')(function* (
 });
 
 /**
- * Takes the cases that were not rendered off their layouts. A layout with slides that were not
- * rendered and no error of its own would pass without being checked, so it fails with an error
- * unless a problem of the owner (which stopped the rendering) already fails the check.
+ * Renders the slides like {@link renderSlides}, but a browser, server or page that fails or times
+ * out, or a defect while rendering, is the rendering's failure instead of the check's: the check
+ * then reports which layouts were not rendered and how to try again, in the text and the JSON
+ * output. A failure to write the temporary workspace, or a deck that does not exist, still fails
+ * the check.
  *
  * @param root - The absolute workspace root.
  * @param target - The owner and the brand.
  * @param slides - The generated slides.
- * @param rendered - The ids of the slides that were rendered.
+ * @returns The lint report, or why the slides could not be rendered.
+ */
+function renderOrFail(
+  root: string,
+  target: Target,
+  slides: readonly LimitSlide[],
+): Effect.Effect<
+  LintReport | RenderFailed,
+  DeckBuildError | FileSystemError,
+  FileSystem.FileSystem | DeckServer | DeckBrowser | Workspace | Scope.Scope
+> {
+  /**
+   * The render failure for a cause, as the value the check reports.
+   */
+  const failed = (cause: { readonly message: string }): Effect.Effect<RenderFailed> =>
+    Effect.succeed({ failed: cause.message });
+  return renderSlides(root, target, slides).pipe(
+    Effect.catchTags({
+      BrowserError: failed,
+      CliError: failed,
+      SlideNotReadyError: failed,
+      ViteError: (error) => failed({ message: describeError(error).message }),
+    }),
+    Effect.catchDefect((defect) => failed({ message: describeError(defect).message })),
+  );
+}
+
+/**
+ * Takes the cases that were not rendered off their layouts. A layout with slides that were not
+ * rendered and no error of its own would pass without being checked, so it fails with an error
+ * unless a problem of the owner (which stopped the rendering) already fails the check. When the
+ * rendering itself failed, every such layout fails with the cause and how to run it again, even one
+ * with other errors, because the failure is not about the deck's files.
+ *
+ * @param root - The absolute workspace root.
+ * @param target - The owner and the brand.
+ * @param slides - The generated slides.
+ * @param outcome - What rendering gave: the ids of the slides that were rendered, and why it
+ *   stopped when it failed.
  * @param results - The checked layouts.
  * @param shared - The problems of no one layout.
  */
@@ -586,10 +633,11 @@ function markUnrendered(
   root: string,
   target: Target,
   slides: readonly LimitSlide[],
-  rendered: ReadonlySet<string>,
+  outcome: RenderOutcome,
   results: ReadonlyMap<string, LayoutCheckResult>,
   shared: readonly LayoutCheckProblem[],
 ): void {
+  const { rendered, failure } = outcome;
   for (const result of results.values()) {
     const missed = slides.filter(
       (slide) => slide.layout === result.name && !rendered.has(slide.id),
@@ -600,18 +648,26 @@ function markUnrendered(
 
     const missedCases = new Set(missed.map((slide) => slide.case));
     result.cases = result.cases.filter((name) => !missedCases.has(name));
-    if (hasError(shared) || hasError(result.problems)) {
-      continue;
-    }
-
     const owner =
       target.deck === undefined
         ? `--brand ${target.brand.tokens.name}`
         : `--deck ${target.deck.id}`;
+    const file = display(root, path.join(target.layoutsDir, result.name));
+    if (failure !== undefined) {
+      result.problems.push(
+        renderFailedProblem(file, result.name, owner, [...missedCases], failure),
+      );
+      continue;
+    }
+
+    if (hasError(shared) || hasError(result.problems)) {
+      continue;
+    }
+
     result.problems.push({
       severity: 'error',
       code: NOT_RENDERED,
-      file: display(root, path.join(target.layoutsDir, result.name)),
+      file,
       message:
         `The slides of ${[...missedCases].join(', ')} were not rendered, because the generated ` +
         'deck did not build or open, so nothing was checked.',
@@ -620,6 +676,37 @@ function markUnrendered(
         `${result.name} ${owner}\` again to check this layout alone.`,
     });
   }
+}
+
+/**
+ * The error for a layout whose slides were not rendered because the rendering failed, such as a
+ * deck that did not start in time on a busy machine.
+ *
+ * @param file - The layout's folder, relative to the workspace.
+ * @param layout - The layout name.
+ * @param owner - The `--brand` or `--deck` option that names the owner.
+ * @param cases - The cases that were not rendered.
+ * @param failure - What the rendering failed with.
+ */
+function renderFailedProblem(
+  file: string,
+  layout: string,
+  owner: string,
+  cases: readonly string[],
+  failure: string,
+): LayoutCheckProblem {
+  return {
+    severity: 'error',
+    code: RENDER_FAILED,
+    file,
+    message:
+      `The layout ${layout} was not checked: rendering the slides of ${cases.join(', ')} failed ` +
+      `or timed out, so nothing about this layout was found wrong or right. What failed: ` +
+      failure.trim(),
+    fix:
+      'This is often a timeout on a busy machine. Run the check again when it is quieter, ' +
+      `with \`${deckCommand()} layouts check ${layout} ${owner}\` to check this layout alone.`,
+  };
 }
 
 /**
