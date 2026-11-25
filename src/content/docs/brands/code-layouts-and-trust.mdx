@@ -38,10 +38,12 @@ While a turn runs, the code layouts of the deck and of its brand are held:
 - A `contract.ts` or `limits.ts` there is not read or evaluated again until the turn is over, so an agent cannot change what the build runs by editing one.
 - The agent sees the last version loaded before the turn.
 - A contract that was never loaded before the turn starts fails with `layout-held`.
-- A turn that begins while a contract is loading stops it from loading any more modules. Code of it that is already running after an `await` cannot be stopped.
+- A turn that begins while a contract is loading stops it from loading any more modules, and deckster drops whatever that load produced. Code of it that is already running after an `await` finishes, but its value is not used; the contract loads again once the turn ends.
 
 Write layouts in your editor, or with a coding agent that works in your workspace, outside the chat panel. [Skills](/ai-agents/skills/) covers the agents that do.
 
 ## What each import check guards
 
 The build reads a contract and the relative files it imports as text before it runs anything, and rejects an import outside the [allowed list](/brands/code-layouts/#what-each-file-may-import). The check keeps a contract to the framework's entry points and the layout's own folder. It is a gate on imports, not a sandbox: a contract is code that runs in Node with your permissions, so treat a layout from elsewhere as you would any script. A layout you copied in is code like a slide or a mini app, and the [security page](/project/security/) says how to treat those. The line deckster draws is who may put code in the folder, not what that code may do once it is there.
+
+Before a contract runs in the build, deckster first runs it in a separate Node process under Node's permission model, with a deadline. That process stops a contract that hangs or loops, and one that writes files, opens network connections, starts processes, changes the environment or imports something outside the allowed list, and reports it. It catches mistakes early; it is not a sandbox either. A contract that passes runs again in the build with your full permissions, and code that behaves differently there is not caught.
