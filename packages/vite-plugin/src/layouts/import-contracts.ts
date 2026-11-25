@@ -7,6 +7,7 @@ import {
   type StaticCallee,
 } from '@deckster/brand/node';
 import { Effect, FileSystem, Predicate, type Scope } from 'effect';
+import { realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { builtinModules } from 'node:module';
 import os from 'node:os';
@@ -482,7 +483,8 @@ type ReadyContract = {
  * @param heldRoots - Absolute roots held during the scan.
  */
 function heldDuringScan(contract: ReadyContract, heldRoots: ReadonlySet<string>): boolean {
-  for (const root of heldRoots) {
+  const roots = [...heldRoots].flatMap((root) => [root, realPathOr(root)]);
+  for (const root of roots) {
     for (const file of [contract.file, ...contract.checked]) {
       const relative = path.relative(root, file);
       if (
@@ -496,6 +498,20 @@ function heldDuringScan(contract: ReadyContract, heldRoots: ReadonlySet<string>)
   }
 
   return false;
+}
+
+/**
+ * The real path of a folder, so a hold given through a symlink matches the scanned real paths.
+ *
+ * @param root - An absolute folder.
+ * @returns Its real path, or the folder as given when it cannot be resolved.
+ */
+function realPathOr(root: string): string {
+  try {
+    return realpathSync.native(root);
+  } catch {
+    return root;
+  }
 }
 
 /**

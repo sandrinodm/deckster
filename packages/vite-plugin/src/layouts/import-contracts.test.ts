@@ -1032,47 +1032,62 @@ describe('contract source and publication', () => {
     }
   });
 
-  it('discards scanned source if a hold begins and ends during the scan', async () => {
-    const root = scratchRoot();
-    const helper = 'brands/acme/layouts/_shared/helper.ts';
-    const before = 'Before the turn.';
-    try {
-      writeFiles(root, {
-        [helper]: helperSource(before),
-        'brands/acme/layouts/one/contract.ts': contractWithHelper('one'),
-      });
-      const readDuringHold = Effect.gen(function* () {
-        const fs = yield* FileSystem.FileSystem;
-        const heldFile = realpathSync(path.join(root, helper));
-        const heldRead: FileSystem.FileSystem = {
-          ...fs,
-          readFileString: (file, encoding) => {
-            if (file !== heldFile) {
-              return fs.readFileString(file, encoding);
-            }
+  it.each([
+    ['its own path', false],
+    ['a symlink to it', true],
+  ])(
+    'discards scanned source if a hold of %s begins and ends during the scan',
+    async (_, alias) => {
+      const root = scratchRoot();
+      const heldRoot = alias ? `${root}-alias` : root;
+      const helper = 'brands/acme/layouts/_shared/helper.ts';
+      const before = 'Before the turn.';
+      try {
+        if (alias) {
+          symlinkSync(root, heldRoot, 'dir');
+        }
 
-            return Effect.sync(() => {
-              const hold = holdCode([path.join(root, 'brands', 'acme')]);
-              hold.release();
-              return helperSource('During the turn.');
-            });
-          },
-        };
-        return yield* importContracts([contractFile(root, 'one')], { root }).pipe(
-          Effect.provideService(FileSystem.FileSystem, heldRead),
+        writeFiles(root, {
+          [helper]: helperSource(before),
+          'brands/acme/layouts/one/contract.ts': contractWithHelper('one'),
+        });
+        const readDuringHold = Effect.gen(function* () {
+          const fs = yield* FileSystem.FileSystem;
+          const heldFile = realpathSync(path.join(root, helper));
+          const heldRead: FileSystem.FileSystem = {
+            ...fs,
+            readFileString: (file, encoding) => {
+              if (file !== heldFile) {
+                return fs.readFileString(file, encoding);
+              }
+
+              return Effect.sync(() => {
+                const hold = holdCode([path.join(heldRoot, 'brands', 'acme')]);
+                hold.release();
+                return helperSource('During the turn.');
+              });
+            },
+          };
+          return yield* importContracts([contractFile(root, 'one')], { root }).pipe(
+            Effect.provideService(FileSystem.FileSystem, heldRead),
+          );
+        });
+        const [interrupted] = await Effect.runPromise(
+          readDuringHold.pipe(Effect.provide(NodeFileSystem.layer)),
         );
-      });
-      const [interrupted] = await Effect.runPromise(
-        readDuringHold.pipe(Effect.provide(NodeFileSystem.layer)),
-      );
-      expect(interrupted?.kind).toBe('held');
-      expect(contractRuns()).toBe(0);
-      const [loaded] = await loadOne(root);
-      expect(descriptionOf(loaded)).toBe(before);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
+        expect(interrupted?.kind).toBe('held');
+        expect(contractRuns()).toBe(0);
+        const [loaded] = await loadOne(root);
+        expect(descriptionOf(loaded)).toBe(before);
+      } finally {
+        if (alias) {
+          rmSync(heldRoot, { force: true });
+        }
+
+        rmSync(root, { recursive: true, force: true });
+      }
+    },
+  );
 
   it.each(['.js', '.mjs', '.json'])('rejects a .ts import symlink to %s', async (extension) => {
     const root = scratchRoot();
@@ -1219,6 +1234,17 @@ describe('contract check process regressions', () => {
       ['exceptions', "process.addListener('uncaughtException', () => {});", 'addListener'],
       ['rejections', "process.prependListener('unhandledRejection', () => {});", 'prependListener'],
       ['removes', "process.removeAllListeners('message');", 'removeAllListeners'],
+      [
+        'inherited',
+        "Object.getPrototypeOf(Object.getPrototypeOf(process)).on.call(process, 'exit', () => {});",
+        'on',
+      ],
+      [
+        'unbound',
+        'Reflect.apply(Object.getPrototypeOf(Object.getPrototypeOf(process)).prependListener, ' +
+          "process, ['uncaughtException', () => {}]);",
+        'prependListener',
+      ],
     ] as const;
     try {
       writeFiles(root, {

@@ -16,6 +16,7 @@
  * else, so that it starts fast and needs no addon.
  */
 import { AsyncLocalStorage, createHook } from 'node:async_hooks';
+import { EventEmitter } from 'node:events';
 import { registerHooks } from 'node:module';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import {
@@ -452,6 +453,27 @@ function setProcessStateTraps(): string | undefined {
       })
     ) {
       return `process.${key} could not be replaced`;
+    }
+  }
+
+  const emitter: object = EventEmitter.prototype;
+  for (const key of PROCESS_LISTENER_METHODS) {
+    const original: unknown = Reflect.get(emitter, key);
+    if (
+      typeof original !== 'function' ||
+      !Reflect.defineProperty(emitter, key, {
+        configurable: false,
+        writable: false,
+        value: function (this: unknown, ...args: unknown[]) {
+          if (this === process && trapsArmed() && mutatesProcess(key, args)) {
+            throw trapped(`process.${key}`);
+          }
+
+          return Reflect.apply(original, this, args);
+        },
+      })
+    ) {
+      return `EventEmitter.prototype.${key} could not be replaced`;
     }
   }
 
