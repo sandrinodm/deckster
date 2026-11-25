@@ -116,6 +116,7 @@ Generated files go to `.deck/` at the workspace root, one folder per deck inside
 | `.deck/diff/<deck>/` | `deckster diff` | The report, `index.html`, and its pictures |
 | `.deck/agent/<deck>/` | `deckster dev --mcp` or `--agent` | `server.json` with the port and the per-run bearer token (mode 0600) while the server runs, and the working copies of agent turns; see [How a turn runs](/ai-agents/how-a-turn-runs/) |
 | `.deck/chooser/previews/` | Deck chooser | Cached previews of the decks' opening slides |
+| `.deck/dev-servers/` | `deckster dev` | New in 0.10.0. `<pid>.json` with the process id, URL and deck of each running dev server, removed when it stops, so `deckster present` can [warn about one that is still running](/present/deck-present-and-displays/#present-on-one-screen) |
 | `.deck/shell/` | `deckster present` | The window positions (`windows.json`) and browser profile of the presenter app, and on macOS a branded copy of the Electron app (`app/`) |
 | `.deck/env.d.ts` | `deckster types` | Type declarations for your editor |
 
