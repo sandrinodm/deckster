@@ -176,6 +176,7 @@ function MatrixLayout({ frontmatter, slots }: LayoutProps<typeof matrixLayoutCon
   const placement = useMatrixPlacement(plot, subject, items.length);
   const { level } = useFitLevel(column, column, NOTE_LEVELS.length, JSON.stringify(frontmatter), {
     overflow: true,
+    restartOnFontLoad: true,
   });
   const noteType = NOTE_LEVELS[level] ?? 'small';
   const lastStep = subject === -1 ? FIELD_STEP : SUBJECT_STEP;

@@ -86,6 +86,7 @@ function AskLayout({ frontmatter, slots }: LayoutProps<typeof askLayoutContract>
     JSON.stringify([milestones, funds]),
     {
       overflow: true,
+      restartOnFontLoad: true,
     },
   );
   const size = PLAN_LEVELS[level] ?? { text: 'small', context: 'small' };
@@ -245,6 +246,7 @@ function Funds({ funds }: FundsProps): ReactNode {
   const list = useRef<HTMLUListElement>(null);
   const { level } = useFitLevel(list, list, FUNDS_LEVELS.length, JSON.stringify(funds), {
     overflow: true,
+    restartOnFontLoad: true,
   });
   const placement = FUNDS_LEVELS[level] ?? 'equal';
   // Equal columns are as narrow as a fifth of the plan, so their labels take the caption size.

@@ -126,7 +126,7 @@ function ScreenLayout({ frontmatter, slots }: LayoutProps<typeof screenLayoutCon
     asideContent,
     ASIDE_LEVELS.length,
     JSON.stringify([frame, callouts, span]),
-    { overflow: true },
+    { overflow: true, restartOnFontLoad: true },
   );
   const textType = `kit-type-${ASIDE_LEVELS[level] ?? 'small'}`;
   const style: ScreenStyle = { '--kit-screen-ratio': ratio ?? FALLBACK_RATIO[frame] };

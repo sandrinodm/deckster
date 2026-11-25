@@ -80,7 +80,7 @@ function TableLayout({ frontmatter, slots }: LayoutProps<typeof tableLayoutContr
     content,
     sizes.length,
     JSON.stringify(frontmatter),
-    { fill: (at) => (grows && at === 0 ? SPARSE_FILL : 1) },
+    { fill: (at) => (grows && at === 0 ? SPARSE_FILL : 1), restartOnFontLoad: true },
   );
   const size = sizes[level] ?? { step: tableStep, fit: 1 };
   const settings: TableLayoutSettings = useMemo(

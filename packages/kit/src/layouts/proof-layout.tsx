@@ -91,6 +91,7 @@ function ProofLayout({ frontmatter, slots }: LayoutProps<typeof proofLayoutContr
   const stack = useRef<HTMLDivElement>(null);
   const { level } = useFitLevel(panelBox, stack, PROOF_LEVELS.length, JSON.stringify(metrics), {
     overflow: true,
+    restartOnFontLoad: true,
   });
   useFitGroupWidth(stack, LEAD_VALUE);
   useFitGroupWidth(stack, OTHER_VALUES);

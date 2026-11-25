@@ -56,6 +56,7 @@ function ShiftLayout({ frontmatter, slots }: LayoutProps<typeof shiftLayoutContr
   const grid = useRef<HTMLDivElement>(null);
   const { level } = useFitLevel(grid, grid, SHIFT_LEVELS.length, JSON.stringify([from, to]), {
     overflow: true,
+    restartOnFontLoad: true,
   });
   const size = SHIFT_LEVELS[level] ?? { compact: true, toHeading: 'title' };
   const panel = (

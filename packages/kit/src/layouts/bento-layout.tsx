@@ -72,6 +72,7 @@ function BentoLayout({ frontmatter, slots }: LayoutProps<typeof bentoLayoutContr
   const levels = tiles.length <= BODY_TEXT_MOST_TILES ? BENTO_LEVELS : BENTO_LEVELS.slice(1);
   const { level } = useFitLevel(region, grid, levels.length, JSON.stringify(tiles), {
     overflow: true,
+    restartOnFontLoad: true,
   });
   const size = levels[level] ?? { text: 'small', compact: true };
   const { brand } = useBrand();

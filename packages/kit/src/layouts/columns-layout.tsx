@@ -83,6 +83,7 @@ function ColumnsLayout({
   const levels = columns.length <= BODY_TEXT_MOST_COLUMNS ? COLUMN_LEVELS : COLUMN_LEVELS.slice(1);
   const { level } = useFitLevel(region, board, levels.length, JSON.stringify(columns), {
     overflow: true,
+    restartOnFontLoad: true,
   });
   const size = levels[level] ?? { text: 'caption', compact: true };
   const style: BoardStyle = {

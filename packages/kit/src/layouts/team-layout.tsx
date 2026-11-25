@@ -83,7 +83,7 @@ function TeamLayout({ frontmatter, slots }: LayoutProps<typeof teamLayoutContrac
     list,
     founders ? FOUNDER_LEVELS : 1,
     JSON.stringify(members),
-    { overflow: true },
+    { overflow: true, restartOnFontLoad: true },
   );
   const roleType = arrangement === 'row' ? 'kit-type-body' : 'kit-type-small';
   // Three founders have a third of the slide each for their edge, so it takes the body size at the
