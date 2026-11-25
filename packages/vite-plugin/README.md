@@ -173,7 +173,9 @@ A slide that uses one of those, or one only another brand has as code, fails wit
 
 A brand or a deck can declare the deckster versions its code layouts are written for: a brand in
 `brand.json` (`{ "deckster": ">=0.10 <0.12" }`), a deck as `deckster` in `deck.config.ts` (read
-without running the config; a config that is more than a literal declares none). A range is
+from the syntax tree without running the config, also when other parts of it are computed or it
+passes a top-level `const` to `defineDeck`; a range that is not a string literal, or a `deckster` key
+in a config that cannot be read that way, is `layout-version` and loads none of the deck's layouts). A range is
 comparators joined by spaces with `>=`, `>`, `<=`, `<` or `=` (`src/layouts/version-range.ts`; no
 carets, tildes or `||`). When this deckster is outside the range, none of that brand's or deck's
 contracts is loaded and `layout-version` is reported. This deckster's version is the one recorded
@@ -182,21 +184,21 @@ in the framework folder when installed, else `packages/cli/package.json`.
 Problems carry a `code` (`LayoutProblemCode`, `src/layouts/layout-problem.ts`), and `deckster lint`
 reports them under that id:
 
-| Code                          | Meaning                                                                                                                                |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `layout-folder-incomplete`    | A `layouts/<name>/` folder without `contract.ts` or `layout.tsx`.                                                                      |
-| `layout-name-mismatch`        | The folder name differs from the contract's or the component's name.                                                                   |
-| `layout-name-clash`           | The name is already a kit, engine or brand layout, and the contract does not say `replaces: true`.                                     |
-| `layout-replace-breaks`       | A replacement would break slides written for the replaced layout (a field, slot or title it drops or narrows).                         |
-| `layout-replace-pptx`         | Warning: the replaced layout has a PowerPoint mapping and the replacement has none.                                                    |
-| `layout-replace-budget`       | Note: a budget or title limit differs from the replaced layout's.                                                                      |
-| `layout-contract-imports`     | `contract.ts` imports something a contract may not.                                                                                    |
-| `layout-contract-invalid`     | The contract loaded but fails the build's contract checks, or says `replaces: true` on a name no kit or engine layout has.             |
-| `layout-load-failed`          | `contract.ts` is missing, threw while loading or has no default export.                                                                |
-| `layout-held`                 | An agent turn is in flight and the contract was never loaded before it.                                                                |
-| `layout-version`              | The brand or deck asks for another deckster version.                                                                                   |
-| `layout-code-skipped`         | A slide uses a code layout `brand add` left out, or one that only another brand has.                                                   |
-| `layout-fallback-unavailable` | A data layout of the brand falls back to a brand code layout that did not load, so it is left out too (a warning with `code: 'skip'`). |
+| Code                          | Meaning                                                                                                                                                     |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `layout-folder-incomplete`    | A `layouts/<name>/` folder without `contract.ts` or `layout.tsx`, or a symbolic link where a layout folder, one of its files or `layouts/_shared/` belongs. |
+| `layout-name-mismatch`        | The folder name differs from the contract's or the component's name.                                                                                        |
+| `layout-name-clash`           | The name is already a kit, engine or brand layout, and the contract does not say `replaces: true`.                                                          |
+| `layout-replace-breaks`       | A replacement would break slides written for the replaced layout (a field, slot or title it drops or narrows).                                              |
+| `layout-replace-pptx`         | Warning: the replaced layout has a PowerPoint mapping and the replacement has none.                                                                         |
+| `layout-replace-budget`       | Note: a budget or title limit differs from the replaced layout's.                                                                                           |
+| `layout-contract-imports`     | `contract.ts` imports something a contract may not.                                                                                                         |
+| `layout-contract-invalid`     | The contract loaded but fails the build's contract checks, or says `replaces: true` on a name no kit or engine layout has.                                  |
+| `layout-load-failed`          | `contract.ts` is missing, threw while loading, has no default export or was still loading at the batch's deadline.                                          |
+| `layout-held`                 | An agent turn is in flight and the contract was never loaded before it, or the turn began while it was first loading.                                       |
+| `layout-version`              | The brand or deck asks for another deckster version.                                                                                                        |
+| `layout-code-skipped`         | A slide uses a code layout `brand add` left out, or one that only another brand has.                                                                        |
+| `layout-fallback-unavailable` | A data layout of the brand falls back to a brand code layout that did not load, so it is left out too (a warning with `code: 'skip'`).                      |
 
 The warning and the note are never in `problems`: they are in `local.warnings` and fail no slide.
 

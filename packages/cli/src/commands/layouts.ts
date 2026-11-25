@@ -35,7 +35,8 @@ Subcommands:
                 folder there has it, and it is not an engine or kit layout (to replace one, write
                 the folder yourself with \`replaces: true\` in its contract), a data layout of the
                 brand, or (for a deck) a code layout of the deck's brand. The brand must be a folder
-                of this workspace. It prints the files and the next step.
+                of this workspace, and nothing on the way below the brand's or deck's folder may be
+                a symbolic link. It prints the files and the next step.
   check [name]  Checks the code layouts of the brand (--brand) or the deck (--deck), or only the
                 one named: each folder has contract.ts and layout.tsx, both name the layout, the
                 contract imports only what a contract may, loads and passes the contract checks,
@@ -70,16 +71,21 @@ Subcommands:
                 Each folder also gets .eject/: the files as written and eject.json ({ layout,
                 deckster, files: { <path>: <sha256> } }), which \`diff\` reads; leave it as it is.
                 Refuses a name that is not a kit layout (\`brand\`, the renderer of data layouts,
-                is not one), a layout whose folder exists, and a helper in layouts/_shared/ that
-                differs from the one it would write, unless --keep-shared. Nothing is written when
-                it refuses.
+                is not one), a layout whose folder exists, a brand that is not a folder of this
+                workspace, --all with --deck, a deck layout the deck's brand already replaces, a
+                brand layout whose name a deck of the brand has a layout folder of (--all leaves
+                those out), a path to write that runs through a symbolic link, and a helper in
+                layouts/_shared/ that differs from the one it would write, unless --keep-shared.
+                Nothing is written when it refuses, and a run that fails part way removes what it
+                wrote.
   diff <name>   Shows what the kit changed in an ejected layout since it was ejected: it ejects the
                 current kit layout in memory and prints a unified diff from the files in .eject/ to
                 that, on standard output, helpers in _shared/ included. Your own edits play no part;
                 apply the changes you want by hand. It says so on standard error when the kit's
                 layout no longer ejects cleanly (a private import with no place in a copy) or when
-                .eject/ was changed. Exit code: 0 unless the command fails, or --fail-on-change
-                finds a change.
+                .eject/ was changed. It fails for a layout without .eject/eject.json and for a
+                symbolic link on the way to .eject/. Exit code: 0 unless the command fails, or
+                --fail-on-change finds a change.
 
 Options:
   --brand <name>
@@ -113,9 +119,12 @@ Options:
                 problems }, each problem { severity, code, file, message, fix } and, for a rendered
                 slide's, case, slide, step and selector; severity is error, warning or note (only
                 errors fail); code is a layout problem id (such as layout-name-mismatch,
-                layout-replace-breaks, layout-limits-invalid, layout-fallback-unavailable or
-                layout-not-rendered) or a lint rule id (such as content-budget). problems at the top level belong to no one layout. A failure
-                prints { ok: false, error: { type, message } }.
+                layout-replace-breaks, layout-limits-invalid, layout-fallback-unavailable,
+                layout-not-rendered when the generated deck did not build, or layout-render-failed
+                when the browser, the server or the page failed or timed out, which is often a busy
+                machine: run it again) or a lint rule id (such as content-budget). A layout's cases
+                lists only what was rendered. problems at the top level belong to no one layout. A
+                failure prints { ok: false, error: { type, message } }.
                 For eject: { ok, brand, deck, layouts: [{ name, dir, files }], shared: { written,
                 reused, kept }, skipped, skippedForDecks, warnings, next }; skipped lists the layouts
                 --all left alone because their folder exists, and skippedForDecks [{ name, deck }]

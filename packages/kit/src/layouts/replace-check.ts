@@ -85,9 +85,9 @@ type SampleFrontmatter = {
  * accepts is accepted, and no field it leaves optional or lacks becomes required; every slot it has
  * stays, required where it was, accepting at least what it accepted, and no slot becomes required
  * that was not; its example and every limit case of the kit's stress test (`LIMIT_CASES`) decode
- * against the replacement and pass its `checks` (a throwing `checks` is an error, not a crash); and
- * the title is required exactly when the original requires it. A dropped PowerPoint mapping is a
- * warning, and every changed budget, variant or title limit a note.
+ * against the replacement and pass its `checks` (a schema or `checks` that throws is an error, not
+ * a crash); and the title is required exactly when the original requires it. A dropped PowerPoint
+ * mapping is a warning, and every changed budget, variant or title limit a note.
  *
  * A limit case the original itself does not accept alone (the stress test adds fields to some) is
  * skipped. Real slides are checked by the build and by `checkReplacedSlides` in the deck plugin.

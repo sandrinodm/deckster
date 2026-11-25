@@ -136,7 +136,8 @@ its contract. The kit supports that in four places:
   `{ errors, warnings, notes }`, each a `{ message, fix }`. Errors mean slides written for the
   kit layout would stop building: a field the replacement drops, narrows or leaves optional where
   the original requires it; a slot it drops, makes optional or narrows; the original's example or
-  one of its `LIMIT_CASES` that the replacement rejects; a required title made optional. A dropped
+  one of its `LIMIT_CASES` that the replacement rejects, or on which its schema or `checks` throws;
+  a title required where the original's is optional, or the other way round. A dropped
   PowerPoint mapping is a warning. Every changed budget or title limit is a note: tighter limits
   are allowed, and lint then flags the slides over them. The build uses it for every layout that
   says `replaces: true`; `checkReplacedSlides` in `@deckster/vite-plugin` checks real slides.
@@ -145,8 +146,10 @@ its contract. The kit supports that in four places:
   frame that sets `data-display-align` together with `data-align`, and the kit's `title`, `section`,
   `statement` and `image-reveal` set it, not their `data-layout` name, so a replacement gets those
   rules only by asking. The stat card styles are in `stat-cards.css`, shared by the stats layout
-  and the `stat-row` chart, and `<Image>` has its own frame and caption styles in
-  `media/media.css`, so each still draws when the layout that used to supply them is replaced.
+  and the `stat-row` chart, the photo scrim (`.kit-image-scrim`) is in `image-scrim.css`, shared
+  by the `image` layout and the `title` layout's full-bleed cover, and `<Image>` has its own frame
+  and caption styles in `media/media.css`, so each still draws when the layout that used to supply
+  them is replaced.
 
 ## Exports
 
@@ -167,7 +170,7 @@ its contract. The kit supports that in four places:
 | `@deckster/kit/layout-parts`        | browser | The parts a layout draws with: `Frame`, `Region`, `SlideHeader`, `FittedText`, `useFitLevel`, `TreatedMedia`, `useEnter`, `Step` and the rest of the list below                                      | the kit's layouts, code layouts          |
 | `@deckster/kit/layout-fields`       | Node    | The frontmatter fields and hints a layout contract is built from: `EyebrowField`, `chromeField`, `textField`, `treatmentProps`, `DataField` and the rest of the list below                           | the kit's layouts, code layouts          |
 | `@deckster/kit/eject-closure`       | Node    | Which files each kit layout needs when copied into a brand: `ejectClosures`, `catalogLayoutNames`, `findUnsafeCopies`, `PUBLIC_ENTRIES` (see Parts and fields for layouts)                           | `@deckster/cli`                          |
-| `@deckster/kit/limit-cases`         | Node    | Each layout filled to its limits, for the budget stress test                                                                                                                                         | `@deckster/cli` tests                    |
+| `@deckster/kit/limit-cases`         | Node    | Each layout filled to its limits (`LIMIT_CASES`), and the `LimitCase` type a code layout's `limits.ts` is written against                                                                            | `@deckster/cli`, code layouts            |
 | `@deckster/kit/icon-sets`           | Node    | `iconSetNames(set)`: the names an installed Iconify set has                                                                                                                                          | `deckster icons`                         |
 
 Inside the package, imports use `#` paths (`#foundation/slide-parts.tsx`), as everywhere in the

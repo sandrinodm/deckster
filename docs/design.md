@@ -253,8 +253,8 @@ and `deckster shot` find it the same way. [The authoring
 reference](../skills/create-presentation/references/code-layouts.md) has the rules and a worked
 example.
 
-This reverses two decisions of the brand layouts plan: that a brand cannot ship components, and
-that a brand layout never replaces a kit layout. Both held while a brand carried only data. Data
+This reverses two earlier decisions: that a brand cannot ship components, and that a brand layout
+never replaces a kit layout. Both held while a brand carried only data. Data
 layouts stay as they were, and stay the right answer for a template's fixed regions; code layouts
 are for what regions cannot do.
 
@@ -301,7 +301,11 @@ are for what regions cannot do.
   the deck under its own name with `replaces: true`, so the copy renders as the kit layout did and
   is compatible by construction. Parts the kit publishes are imported from the public entry points;
   private helpers are copied once into `layouts/_shared/`, with the classes of their stylesheets
-  renamed so an edit cannot reach the kit's own layouts that still use them. The copy is a
+  renamed so an edit cannot reach the kit's own layouts that still use them. A stylesheet shared
+  with other kit layouts is copied into the layout's folder and scoped to it, and the classes only
+  the kit's layouts use (the photo scrim) are renamed the same way. Classes kit components draw
+  keep their names, so the kit's `display-align.css` and `stat-cards.css` still reach an ejected
+  `title` or `stats` while another kit layout or chart loads them. The copy is a
   fork, and `.eject/` keeps what it started from, so `deckster layouts diff` can show what the kit
   changed since. It prints that and applies nothing: merging stays a decision.
 - **A range says which deckster the layouts were written for.** A brand's `brand.json` or a deck's
@@ -311,7 +315,12 @@ are for what regions cannot do.
   which layouts it left out so a slide that uses one says why it fails. Running code from someone
   else's repository on your machine is a decision, not a side effect of fetching a brand.
 - **The agent cannot write layouts.** The agent's turn changes slides and assets only, and the
-  contracts are held while a turn runs: read as they were, never evaluated mid-turn.
+  contracts are held while a turn runs: read as they were, never evaluated mid-turn. A turn that
+  begins while a contract loads keeps it from loading more modules.
+- **A contract cannot hang the catalog.** The contracts of one load run together against one
+  deadline (10 seconds); one still running then fails alone, and the others load. The import check
+  and the deadline catch mistakes; a contract is still code that runs in Node, and code already
+  running after an `await` cannot be stopped.
 
 The one difference from data layouts is portability. A data layout names a kit fallback, so a deck
 rendered in another brand still builds. A code layout has no fallback: another brand that lacks it

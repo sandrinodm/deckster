@@ -16,8 +16,10 @@ import type { Problem } from '#errors.ts';
  * - `layout-replace-budget`: a note: a budget or title limit differs from the replaced layout's;
  * - `layout-contract-imports`: `contract.ts` imports something a contract may not;
  * - `layout-contract-invalid`: the contract loaded but fails the build's contract checks;
- * - `layout-load-failed`: `contract.ts` threw while loading, or has no default export;
- * - `layout-held`: an agent turn is in flight and the contract was never loaded before it;
+ * - `layout-load-failed`: `contract.ts` threw while loading, has no default export, or was still
+ *   loading when the batch's deadline passed;
+ * - `layout-held`: an agent turn is in flight and the contract was never loaded before it, or the
+ *   turn began while it was first loading;
  * - `layout-version`: the brand or deck asks for another deckster version;
  * - `layout-code-skipped`: a slide uses a code layout `brand add` left out, or one that only another
  *   brand has;

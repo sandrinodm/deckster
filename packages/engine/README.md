@@ -74,7 +74,11 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
   tell from an ordinary render error.
 - A filled slot is wrapped in `<span class="deck-slot" data-slot="<name>">` (`display: contents`).
   The wrapper also marks an error the slot's content throws, so a layout's failure and a broken
-  slide component are told apart: only the layout's failure shows as a layout problem.
+  slide component are told apart: only the layout's failure shows as a layout problem. A layout
+  receives the guard element in `slots`, not the `<span>`; it may replace the content with
+  `cloneElement(slot, {}, children)`, which keeps the guard. Content a layout takes out of the
+  element and renders on its own is not guarded, so what that content throws is reported as the
+  layout's failure.
 - `start-errors.ts` shows a panel naming the file when the page breaks before the deck mounts, for
   example a slide that imports a name its module does not export.
 

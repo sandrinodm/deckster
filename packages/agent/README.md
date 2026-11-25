@@ -52,8 +52,8 @@ The slide list in `deck.config.ts` changes only through three MCP tools, `new_sl
 list review comments and resolve one. There is no flag that widens the scope.
 
 A turn cannot change anything else: not `deck.config.ts` by hand, `package.json`, `tsconfig.json`,
-any stylesheet, `.ts` helper modules, `apps/`, `lib/`, `.feedback/`, fonts, brands, packages or
-anything outside the deck. How that holds:
+any stylesheet, `.ts` helper modules, code layouts (`layouts/`), `apps/`, `lib/`, `.feedback/`,
+fonts, brands, packages or anything outside the deck. How that holds:
 
 - The provider never writes in the deck. Each turn gets a fresh working copy under
   `.deck/agent/<deck>/work/` holding clones of the content files only, and the provider's limits
@@ -67,7 +67,8 @@ anything outside the deck. How that holds:
   to the panel.
 - After the turn every other file of the deck and of its brand is compared with a record taken
   before it, and anything that changed is put back (a copy goes to `.deck/agent/<deck>/reverted/`).
-  Until then the dev server does not import the deck's config or brand.
+  Until then the dev server does not import the deck's config or brand, nor the contracts of their
+  code layouts (`@deckster/vite-plugin` keeps the values from before the turn).
 - A hand edit you make to a content file during a turn wins over the agent's change to it.
 
 What a turn can still do, by design or as an accepted limit (both are spelled out in

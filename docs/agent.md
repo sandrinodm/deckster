@@ -97,11 +97,12 @@ Only the deck's content:
   jpg, jpeg, gif, webp, avif, svg, webm, mp4, mov, m4v, mp3, m4a, wav, ogg, opus, json, csv).
 
 Nothing else: not `deck.config.ts`, `package.json` or `tsconfig.json`, no stylesheet (a stylesheet
-can make the build tool load JavaScript), no `.ts` helper module, mini apps (`apps/`), `lib/`,
-review comments (`.feedback/`), fonts, brands, packages or anything outside the deck. To add,
-reorder or remove slides the agent calls the `new_slide`, `reorder_slides` and `remove_slide` deck
-tools, which change the slide list in `deck.config.ts` themselves (only quoted ids, from the config
-as it was when the turn began). Review comments change through the `comments` deck tool.
+can make the build tool load JavaScript), no `.ts` helper module, code layouts (`layouts/`), mini
+apps (`apps/`), `lib/`, review comments (`.feedback/`), fonts, brands, packages or anything outside
+the deck. To add, reorder or remove slides the agent calls the `new_slide`, `reorder_slides` and
+`remove_slide` deck tools, which change the slide list in `deck.config.ts` themselves (only quoted
+ids, from the config as it was when the turn began). Review comments change through the `comments`
+deck tool.
 
 **The agent never writes in the deck.** Each turn gets a working copy: a new folder
 `.deck/agent/<deck>/work/<turn>-<random>/` holding a copy of the deck's content files (and only
@@ -130,7 +131,10 @@ is. The editor is the only writer of the deck:
    and of the brand the deck renders with (from the deck config or `--brand`, never from the page)
    and notes on disk that a turn is in flight; after it, it compares them all by content and puts
    back any that changed. While a turn runs, and until that check is done, the dev server does not
-   load the deck's config or brand again. If the dev server or the CLI is killed during a turn,
+   load the deck's config or brand again, nor the `contract.ts` or `limits.ts` of a code layout in
+   the deck or the brand: each keeps the value it had before the turn, and one never loaded before
+   is `layout-held`. A turn that begins while a contract is loading stops it from loading more
+   modules; code of it already running after an `await` cannot be stopped. If the dev server or the CLI is killed during a turn,
    the next `deckster dev`, `present`, `build`, `lint`, `shot`, `export` or `brand check` first puts
    the deck back exactly as it was before the turn (the working copy is discarded, never synced).
    No stylesheet anywhere may load JavaScript through Tailwind (`@plugin`, `@config`): every

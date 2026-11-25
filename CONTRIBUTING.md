@@ -71,6 +71,7 @@ Note that export verification tests in `@deckster/export` require Docker (for Li
 - **Formatting & linting**: Managed by [Vite+](https://viteplus.dev/) (`vite.config.ts`). Do not bypass lint rules; run `pnpm check`.
 - **JSDoc**: Public and internal declarations in `packages/*/src/` require multiline JSDoc comments enforced by `jsdoc-lint`.
 - **Public CLI surface**: Commands, flags, `--json` output shapes, and exit codes in `@deckster/cli` are part of the public contract for humans, CI, and AI agents. Document any changes in `packages/cli/README.md`.
+- **Kit layouts**: `@deckster/kit/layout-parts` and `@deckster/kit/layout-fields` are public API for code layouts in brands and decks, held by the snapshots of `packages/kit/src/layout-api.test.ts`; a kit layout must stay ejectable (`eject-closure.test.ts`, and the CLI test that ejects every layout) and its stylesheet must not rely on another layout's. See [packages/kit/README.md](packages/kit/README.md#parts-and-fields-for-layouts).
 - **Deck/brand names**: Any name used in paths must go through `isSafeName`; never join raw user input into a filesystem path.
 - **Keep the working tree clean**: CI verifies that `pnpm check`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build`, and `pnpm deckster lint` leave no untracked or modified files behind.
 

@@ -34,6 +34,12 @@ export const HELP = `Usage: deckster export <deck> [--pdf] [--png] [--pptx] [opt
 
 Exports a deck rendered in static mode. Without a format flag it writes the PDF and the PPTX.
 
+A slide that shows an error in place of its content (a layout that fails to load or throws, a
+component that throws), or a page that throws while the deck loads, fails the export with exit 1,
+naming each such slide. Every slide is checked before the PDF, the PPTX or the --dry-run list is
+made, so none of them is written then. PNGs are taken into a staging folder and moved into
+<out>/png only when every slide rendered, so a failed run leaves that folder as it was.
+
 Formats:
   --pdf             One page per slide at its last step: Chromium's vector PDF, the 1920x1080
                     canvas on 1440x810 pt pages (20x11.25 in), fonts embedded, external and
