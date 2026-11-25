@@ -153,11 +153,13 @@ describe('the dashboard with guarded slot content', () => {
       ]),
     );
     expect(problem()).toBeUndefined();
-    const slot = document.querySelector('.deck-slot[data-slot="body"]');
-    expect(slot?.querySelector('.kit-dashboard-grid')).not.toBeNull();
-    expect(
-      [...document.querySelectorAll('.kit-dashboard-plot')].map((plot) => plot.innerHTML),
-    ).toEqual(['<b class="test-figure">182</b>', '<b class="test-figure">64</b>']);
+    const grid = document.querySelector('.deck-slot[data-slot="body"] .kit-dashboard-grid');
+    expect(grid).not.toBeNull();
+    const plots = grid?.querySelectorAll('.kit-dashboard-plot') ?? [];
+    expect([...plots].map((plot) => plot.innerHTML)).toEqual([
+      '<b class="test-figure">182</b>',
+      '<b class="test-figure">64</b>',
+    ]);
   });
 
   it('reads each component’s own props for its fit key', async () => {

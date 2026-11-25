@@ -26,6 +26,11 @@ const guardedTypes = new WeakMap<object, FunctionComponent<object>>();
 const guardTypes = new WeakSet<object>();
 
 /**
+ * The guarded items of one-shot iterators, which React may encounter again on a render retry.
+ */
+const guardedIterators = new WeakMap<Iterable<ReactNode>, ReactNode[]>();
+
+/**
  * Whether an error was thrown by a slide's slot content rather than by its layout.
  *
  * @param error - A caught error.
@@ -64,62 +69,20 @@ type SlotGuardProps = {
 };
 
 /**
- * State of {@link SlotGuard}.
- */
-type SlotGuardState = {
-  /**
-   * What the slot content threw while rendering, or `undefined` while it renders normally.
-   */
-  error: Error | undefined;
-};
-
-/**
  * A filled slot's wrapper. It renders `<span class="deck-slot" data-slot="<name>">`, which has
- * `display: contents`, so `deckster lint` can find and measure it. It also marks what the slot's
- * content throws while rendering and throws it again, so a boundary around the layout can leave it
- * to the slide's own error boundary: a broken slide component is not the layout's failure.
+ * `display: contents`, so `deckster lint` can find and measure it. A layout may read its
+ * `data-slot` and `children` props and use `cloneElement` to keep the wrapper around new children.
+ * The span takes its class from the engine and its slot name from `data-slot`.
  *
- * The element a layout receives in `slots` is a `SlotGuard` element, not the `<span>`: its type is
- * this class, and its only props are `data-slot` (the slot's name) and `children` (the content). It
- * has no `className`, and other props given to it (through `cloneElement`, say) are not passed to
- * the `<span>`. A layout may read the content from `props.children` and replace it with
- * `cloneElement(slot, {}, newChildren)`, which keeps the guard.
- *
- * The content is guarded on its own as well (see {@link guardSlotContent}), so a layout that takes
- * it out of this element and renders it elsewhere still has what it throws reported as the slide's
- * error.
+ * The slide's content carries its own error boundaries (see {@link guardSlotContent}). When a
+ * layout adds children to the wrapper, errors from those children belong to the layout.
  */
-export class SlotGuard extends Component<SlotGuardProps, SlotGuardState> {
-  /**
-   * No error until the content throws.
-   */
-  override state: SlotGuardState = { error: undefined };
-
-  /**
-   * Records and marks what the content threw; a thrown non-Error value is wrapped in an Error with
-   * its text.
-   *
-   * @param error - Whatever the content threw.
-   */
-  static getDerivedStateFromError(error: unknown): SlotGuardState {
-    return { error: markContentError(error) };
-  }
-
-  /**
-   * The wrapped content, or the error it threw, thrown again to the next boundary up.
-   */
-  override render(): ReactNode {
-    const { error } = this.state;
-    if (error !== undefined) {
-      throw error;
-    }
-
-    return (
-      <span className="deck-slot" data-slot={this.props['data-slot']}>
-        {this.props.children}
-      </span>
-    );
-  }
+export function SlotGuard({ 'data-slot': name, children }: SlotGuardProps): ReactNode {
+  return (
+    <span className="deck-slot" data-slot={name}>
+      {children}
+    </span>
+  );
 }
 
 /**
@@ -127,27 +90,37 @@ export class SlotGuard extends Component<SlotGuardProps, SlotGuardState> {
  */
 type ContentBoundaryProps = {
   /**
-   * One content element, rendered as it is.
+   * One piece of slide content, rendered as it is.
    */
   children?: ReactNode;
 };
 
 /**
- * Marks what one content element throws while rendering and throws it again, wherever the layout
- * renders that element. It draws nothing of its own.
+ * State of {@link ContentBoundary}.
  */
-class ContentBoundary extends Component<ContentBoundaryProps, SlotGuardState> {
+type ContentBoundaryState = {
+  /**
+   * What the slide content threw while rendering, or `undefined` while it renders normally.
+   */
+  error: Error | undefined;
+};
+
+/**
+ * Marks what slide content throws while rendering and throws it again, wherever the layout renders
+ * that content. It draws nothing of its own.
+ */
+class ContentBoundary extends Component<ContentBoundaryProps, ContentBoundaryState> {
   /**
    * No error until the content throws.
    */
-  override state: SlotGuardState = { error: undefined };
+  override state: ContentBoundaryState = { error: undefined };
 
   /**
    * Records and marks what the content threw.
    *
    * @param error - Whatever the content threw.
    */
-  static getDerivedStateFromError(error: unknown): SlotGuardState {
+  static getDerivedStateFromError(error: unknown): ContentBoundaryState {
     return { error: markContentError(error) };
   }
 
@@ -171,14 +144,12 @@ class ContentBoundary extends Component<ContentBoundaryProps, SlotGuardState> {
  * inside the slot's element or taken out of it, and an error the slide's content throws is never
  * the layout's.
  *
- * Only the element's type changes. Its `props` (and `props.children`) and `key` are the original's,
- * so a layout that reads them, counts the children or rebuilds an element with `cloneElement` keeps
- * working. Text, HTML elements and fragments keep their type: they cannot throw on their own, so
- * the component elements inside them are guarded instead, and a component's own children are left
- * as they are, for components that read them. The stand-in draws no DOM, so the page is unchanged.
+ * Component props, children and keys stay available to the layout. Arrays and iterables keep their
+ * order and nesting. Text stays as text, HTML elements and fragments keep their type, and thenables
+ * and portals render inside their own boundary. The boundaries draw no DOM.
  *
  * @param node - A filled slot's content.
- * @returns The same content, guarded; the very same node when it holds no component element.
+ * @returns The content with error boundaries where React can render slide-owned code.
  */
 export function guardSlotContent(node: ReactNode): ReactNode {
   if (Array.isArray(node)) {
@@ -188,7 +159,16 @@ export function guardSlotContent(node: ReactNode): ReactNode {
   }
 
   if (!isValidElement<{ children?: ReactNode }>(node)) {
-    return node;
+    if (typeof node !== 'object' || node === null) {
+      return node;
+    }
+
+    if (Symbol.iterator in node && typeof node[Symbol.iterator] === 'function') {
+      return guardIterable(node);
+    }
+
+    const key = 'key' in node && typeof node.key === 'string' ? node.key : undefined;
+    return <ContentBoundary key={key}>{node}</ContentBoundary>;
   }
 
   const { type } = node;
@@ -200,12 +180,36 @@ export function guardSlotContent(node: ReactNode): ReactNode {
     return node;
   }
 
-  if (guardTypes.has(type) || type === SlotGuard) {
+  if (guardTypes.has(type) || type === ContentBoundary || type === SlotGuard) {
     return node;
   }
 
   const props = node.key === null ? node.props : { ...node.props, key: node.key };
   return createElement(guardedType(type), props);
+}
+
+/**
+ * Guards the items when read and lets a one-shot generator supply the same children on a retry.
+ *
+ * @param nodes - The original child iterable.
+ */
+function guardIterable(nodes: Iterable<ReactNode>): Iterable<ReactNode> {
+  return {
+    [Symbol.iterator]: () => {
+      const known = guardedIterators.get(nodes);
+      if (known !== undefined) {
+        return known[Symbol.iterator]();
+      }
+
+      const iterator = nodes[Symbol.iterator]();
+      const guarded = Array.from({ [Symbol.iterator]: () => iterator }, guardSlotContent);
+      if (Object.is(iterator, nodes)) {
+        guardedIterators.set(nodes, guarded);
+      }
+
+      return guarded[Symbol.iterator]();
+    },
+  };
 }
 
 /**
@@ -221,10 +225,14 @@ function guardChildren(node: ReactElement<{ children?: ReactNode }>): ReactNode 
     return node;
   }
 
-  // Children passed one by one, as the compiled MDX passes them, so React does not ask for keys.
-  return Array.isArray(guarded)
-    ? cloneElement(node, {}, ...(guarded as ReactNode[]))
-    : cloneElement(node, {}, guarded);
+  if (Array.isArray(guarded) && guarded.length > 1) {
+    // Multiple static MDX children can stay positional without gaining key warnings.
+    const items: readonly ReactNode[] = guarded;
+    return cloneElement(node, {}, ...items);
+  }
+
+  // React turns one positional child into a scalar, so pass a singleton array whole.
+  return cloneElement(node, {}, guarded);
 }
 
 /**

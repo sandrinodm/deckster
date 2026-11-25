@@ -1,5 +1,14 @@
 // @vitest-environment happy-dom
-import { act, Children, cloneElement, isValidElement, memo, type ReactNode } from 'react';
+import {
+  act,
+  Children,
+  cloneElement,
+  Fragment,
+  isValidElement,
+  lazy,
+  memo,
+  type ReactNode,
+} from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import type { BleedSide, LayoutDefinition, LayoutProps } from '#layouts/layout.ts';
@@ -412,15 +421,18 @@ describe('slot content under a lazy layout', () => {
   };
 
   /**
-   * Renders a deck whose only slide puts `<Boom />` in the body of a lazy layout with this
-   * component.
+   * Renders a deck whose only slide puts broken content in the body of a lazy layout.
    *
    * @param component - The layout's component.
+   * @param render - The slide's broken content.
    */
-  async function renderBroken(component: (props: LayoutProps) => ReactNode): Promise<void> {
+  async function renderBroken(
+    component: (props: LayoutProps) => ReactNode,
+    render: () => ReactNode = () => <Boom />,
+  ): Promise<void> {
     const layout = defineLayout({ name: 'kpi-wall', component });
     mounted = renderDeck(
-      manifestOf(mdxSlide('wall', () => <Boom />, { frontmatter: { layout: 'kpi-wall' } })),
+      manifestOf(mdxSlide('wall', render, { frontmatter: { layout: 'kpi-wall' } })),
       {
         isStatic: true,
         plugins: [
@@ -464,6 +476,40 @@ describe('slot content under a lazy layout', () => {
     expect(rest).toEqual([]);
     expect(problem?.problem).toBeNull();
     expect(problem?.text).toContain('slide component broke');
+  });
+
+  it('reports a component supplied by the layout inside a cloned slot as a layout problem', async () => {
+    /**
+     * Fails while rendering the layout's own panel inside the original slot wrapper.
+     */
+    const Panel = (): ReactNode => {
+      throw new Error('layout panel broke');
+    };
+    renderWith(
+      lazyLayout('kpi-wall', async () => ({
+        default: defineLayout({
+          name: 'kpi-wall',
+          component: ({ slots }) => {
+            const body = slots.body;
+            return isValidElement<{ children?: ReactNode }>(body)
+              ? cloneElement(
+                  body,
+                  {},
+                  <section>
+                    {body.props.children}
+                    <Panel />
+                  </section>,
+                )
+              : null;
+          },
+        }),
+      })),
+    );
+    await wait(0);
+    const [problem, ...rest] = problems();
+    expect(rest).toEqual([]);
+    expect(problem).toMatchObject({ slide: 'wall', problem: 'layout-load-failed' });
+    expect(problem?.text).toContain('Layout `kpi-wall` failed to render: layout panel broke');
   });
 
   it('keeps a content error the slide’s when the layout renders the children outside the slot', async () => {
@@ -527,6 +573,59 @@ describe('slot content under a lazy layout', () => {
       ],
     });
     await wait(0);
+    const [problem, ...rest] = problems();
+    expect(rest).toEqual([]);
+    expect(problem?.problem).toBeNull();
+    expect(problem?.text).toContain('slide component broke');
+  });
+
+  it.each([
+    ['a Set in a host element', () => <div>{new Set([<Boom key="broken" />])}</div>],
+    [
+      'an iterable in a fragment',
+      () => {
+        /**
+         * Yields a broken component inside the slide's fragment.
+         */
+        function* figures(): Generator<ReactNode> {
+          yield <Boom key="broken" />;
+        }
+
+        return <Fragment>{figures()}</Fragment>;
+      },
+    ],
+    [
+      'a rejected promise in a host element',
+      () => {
+        const content = Promise.reject(new Error('slide component broke'));
+        // The layout's own load can suspend before React reads the rejected promise.
+        void content.catch(() => {});
+        return <div>{content}</div>;
+      },
+    ],
+    [
+      'a lazy component that fails to load',
+      () => {
+        /**
+         * Rejects when React loads the slide's lazy component.
+         */
+        const Broken = lazy(async () => {
+          throw new Error('slide component broke');
+        });
+        return <Broken />;
+      },
+    ],
+  ])('attributes a content error from %s to the slide outside the slot', async (_label, render) => {
+    const content = render();
+    await renderBroken(
+      ({ slots }) => {
+        const body = slots.body;
+        return isValidElement<{ children?: ReactNode }>(body) ? (
+          <main>{body.props.children}</main>
+        ) : null;
+      },
+      () => content,
+    );
     const [problem, ...rest] = problems();
     expect(rest).toEqual([]);
     expect(problem?.problem).toBeNull();
@@ -608,7 +707,7 @@ describe('slot content under a lazy layout', () => {
      * A content component with a prop a layout may read.
      */
     const Figure = ({ label }: { label: string }): ReactNode => <b>{label}</b>;
-    let items: ReactNode[] = [];
+    let children: ReactNode;
     const deck = manifestOf(
       mdxSlide(
         'wall',
@@ -621,11 +720,12 @@ describe('slot content under a lazy layout', () => {
         { frontmatter: { layout: 'kpi-wall' } },
       ),
     );
+    /**
+     * Captures the children exactly as the engine hands them to the layout.
+     */
     const Spy = ({ slots }: LayoutProps): ReactNode => {
       const body = slots.body;
-      items = isValidElement<{ children?: ReactNode }>(body)
-        ? Children.toArray(body.props.children)
-        : [];
+      children = isValidElement<{ children?: ReactNode }>(body) ? body.props.children : undefined;
       return <div data-testid="wall">{slots.body}</div>;
     };
     mounted = renderDeck(deck, {
@@ -642,10 +742,10 @@ describe('slot content under a lazy layout', () => {
       ],
     });
     await wait(0);
-    const [first, second] = items;
-    expect(isValidElement(first) && first.props).toEqual({ label: 'First' });
-    expect(isValidElement(second) && second.type).toBe('p');
-    expect(items.map((item) => (isValidElement(item) ? item.key : undefined))).toHaveLength(2);
+    expect(children).toEqual([
+      expect.objectContaining({ key: '.$a', props: { label: 'First' } }),
+      expect.objectContaining({ key: '.$b', type: 'p' }),
+    ]);
     expect(document.querySelector('[data-testid="wall"]')?.innerHTML).toBe(
       '<span class="deck-slot" data-slot="body"><b>First</b><p>Text <b>Inline</b></p></span>',
     );

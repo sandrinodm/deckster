@@ -87,4 +87,38 @@ describe('guardSlotContent', () => {
     const once = guardSlotContent(<Card label="Once" />);
     expect(guardSlotContent(once)).toBe(once);
   });
+
+  it('keeps a host element’s one-item children array and its key', () => {
+    const original = <div>{[<Badge key="badge" text="Only" />]}</div>;
+    const guarded = guardSlotContent(original);
+    const children = isValidElement<{ children?: ReactNode }>(guarded) && guarded.props.children;
+    expect(Array.isArray(children)).toBe(true);
+    const [child]: readonly ReactNode[] = Array.isArray(children) ? children : [];
+    expect(isValidElement<{ text: string }>(child) && [child.key, child.props.text]).toEqual([
+      'badge',
+      'Only',
+    ]);
+    expect(renderToStaticMarkup(guarded)).toBe('<div><em>Only</em></div>');
+  });
+
+  it('guards a one-shot generator’s elements and keeps them available on a second render', () => {
+    /**
+     * Yields two keyed component elements to a fragment.
+     */
+    function* badges(): Generator<ReactNode> {
+      yield <Badge key="a" text="A" />;
+      yield <Badge key="b" text="B" />;
+    }
+
+    const original = <Fragment>{badges()}</Fragment>;
+    const guarded = guardSlotContent(original);
+    const props = isValidElement<{ children: Iterable<ReactNode> }>(guarded) && guarded.props;
+    expect(Array.isArray(props && props.children)).toBe(false);
+    expect(props && Array.from(props.children)).toMatchObject([
+      { key: 'a', type: expect.any(Function) },
+      { key: 'b', type: expect.any(Function) },
+    ]);
+    expect(renderToStaticMarkup(guardSlotContent(original))).toBe('<em>A</em><em>B</em>');
+    expect(renderToStaticMarkup(guarded)).toBe('<em>A</em><em>B</em>');
+  });
 });
