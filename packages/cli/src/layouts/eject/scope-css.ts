@@ -1,7 +1,7 @@
 /**
  * The two changes `deckster layouts eject` makes to a kit stylesheet it copies, both on the text:
- * renaming the classes a copied helper owns, and scoping a stylesheet a layout shares with other
- * kit layouts to the ejected layout.
+ * renaming the classes a copied helper or a shared stylesheet owns, and scoping a stylesheet a
+ * layout shares with other kit layouts to the ejected layout.
  */
 
 /**
@@ -15,13 +15,13 @@ const KIT_CLASS_PREFIX = 'kit-';
 export type ClassOwner = 'brand' | 'deck';
 
 /**
- * The start a copied helper's classes get instead of `kit-`, by who owns the copy, so the kit's own
- * copy of the helper's stylesheet, which stays loaded for the kit layouts that still use the
- * helper, does not style the copy, and an edit to the copy does not reach those layouts. A brand's
- * copy and a deck's copy get different starts because a deck's slides load both: a deck that ejects
- * the same helper as its brand must not restyle the brand's layouts. Both are as long as `kit-` on
- * purpose: a rename then moves no line break, so the copied files stay formatted. Neither starts
- * like the engine's `deck-…` classes.
+ * The start a copied helper's classes, and the classes a copied shared stylesheet owns, get instead
+ * of `kit-`, by who owns the copy, so the kit's own copy of the stylesheet, which stays loaded for
+ * the kit layouts that still use it, does not style the copy, and an edit to the copy does not
+ * reach those layouts. A brand's copy and a deck's copy get different starts because a deck's
+ * slides load both: a deck that ejects the same helper as its brand must not restyle the brand's
+ * layouts. Both are as long as `kit-` on purpose: a rename then moves no line break, so the copied
+ * files stay formatted. Neither starts like the engine's `deck-…` classes.
  */
 export const OWN_CLASS_PREFIX: Readonly<Record<ClassOwner, string>> = {
   /**

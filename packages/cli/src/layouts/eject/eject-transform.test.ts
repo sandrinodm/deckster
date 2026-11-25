@@ -209,15 +209,43 @@ describe('transformLayout', () => {
       ".kit-frame:where([data-layout='title'])[data-display-align][data-align='center'] .kit-eyebrow {",
     );
     const image = files['image-scrim.css'] ?? '';
-    expect(image).toContain(":where(.kit-frame[data-layout='title']) .kit-image-scrim {");
+    expect(image).toContain(":where(.kit-frame[data-layout='title']) .own-image-scrim {");
     expect(image).not.toContain("[data-layout='image']");
-    for (const line of image.split('\n').filter((text) => /^ {2}\.kit-/u.test(text))) {
+    for (const line of image.split('\n').filter((text) => /^ {2}\.(?:kit|own)-/u.test(text))) {
       expect(line).toContain(":where([data-layout='title'])");
     }
 
     expect(layout('stats').files['stat-cards.css']).toContain(
       ":where(.kit-frame[data-layout='stats']) .kit-stat-value {",
     );
+  });
+
+  it('renames the classes a shared stylesheet owns, so the kit copy and the ejected one never meet', () => {
+    expect([...(source.sharedStyleClasses.get('layouts/image-scrim.css') ?? [])]).toEqual([
+      'kit-image-scrim',
+    ]);
+    for (const owner of ['brand', 'deck'] as const) {
+      const prefix = owner === 'brand' ? 'own' : 'dck';
+      for (const name of ['image', 'title']) {
+        const result = transformLayout(source, name, [], owner);
+        expect(result.problems).toEqual([]);
+        for (const [file, text] of Object.entries({ ...result.files, ...result.shared })) {
+          expect(text, `${name}/${file}`).not.toMatch(/(?<![\w-])kit-image-scrim(?![\w-])/u);
+        }
+
+        expect(result.files['layout.tsx']).toContain(`className="${prefix}-image-scrim"`);
+        expect(result.files['image-scrim.css']).toContain(
+          `:where(.kit-frame[data-layout='${name}']) .${prefix}-image-scrim {`,
+        );
+      }
+    }
+  });
+
+  it('keeps the classes of a shared stylesheet that kit components outside the layouts render', () => {
+    expect(source.sharedStyleClasses.get('layouts/display-align.css')).toEqual(new Set());
+    expect(source.sharedStyleClasses.get('layouts/stat-cards.css')).toEqual(new Set());
+    expect(layout('title').files['display-align.css']).toContain('.kit-eyebrow');
+    expect(layout('stats').files['stat-cards.css']).toContain('.kit-stat-unit');
   });
 
   it('renames the classes of a copied helper everywhere the layout uses them', () => {

@@ -158,6 +158,15 @@ export type EjectSource = {
   readonly helperClasses: ReadonlyMap<string, ReadonlySet<string>>;
 
   /**
+   * For each stylesheet that a layout's own files import and that is neither the layout's own nor a
+   * copied helper's (a path under `src`, such as `layouts/image-scrim.css`), the classes it owns:
+   * the ones no kit file mentions but that stylesheet and the catalog layouts' own files. A
+   * layout's copy renames them in its files and in its copy of the stylesheet, so the kit's copy,
+   * which other kit layouts keep loading, never styles the ejected layout's markup.
+   */
+  readonly sharedStyleClasses: ReadonlyMap<string, ReadonlySet<string>>;
+
+  /**
    * Problems that keep any layout from being ejected, such as two helpers with one file name.
    */
   readonly problems: readonly string[];
@@ -225,13 +234,14 @@ type Job = {
   readonly closure: LayoutClosure;
 
   /**
-   * The helper classes renamed in this layout's own files: those of the helpers it copies.
+   * The kit classes renamed in this layout's own files and in its copies of shared stylesheets:
+   * those of the helpers it copies and those its shared stylesheets own.
    */
   readonly layoutClasses: ReadonlySet<string>;
 
   /**
    * The stylesheets of other kit layouts that the layout's own files import, which are copied into
-   * its folder and scoped to it.
+   * its folder, scoped to it and stripped of the kit names of the classes they own.
    */
   readonly localStyles: Set<string>;
 
@@ -253,8 +263,9 @@ type Job = {
 };
 
 /**
- * Reads what the transform needs from the kit's source: the catalog, every layout's closure, and
- * the classes each copied helper's stylesheet owns.
+ * Reads what the transform needs from the kit's source: the catalog, every layout's closure, the
+ * classes each copied helper's stylesheet owns, and the classes each stylesheet that layouts share
+ * owns.
  *
  * @param srcDir - The kit's `src` folder; the one of the running CLI unless a test passes a copy.
  * @returns The source description. Its `problems` list what would break every eject.
@@ -272,11 +283,29 @@ export function readEjectSource(srcDir: string = KIT_SRC_DIR): EjectSource {
     }
   }
 
-  const outside = outsideClassTokens(srcDir, new Set([...copied, ...helperStyles]));
+  const mentions = classMentions(srcDir);
+  const outside = outsideClassTokens(mentions, new Set([...copied, ...helperStyles]));
   const helperClasses = new Map<string, ReadonlySet<string>>();
   for (const file of helperStyles) {
     const owned = selectorClasses(readSource(srcDir, file)).filter((name) => !outside.has(name));
     helperClasses.set(file, new Set(owned));
+  }
+
+  const layoutOwnFiles = new Set(Object.values(closures).flatMap((closure) => closure.own));
+  const sharedStyleClasses = new Map<string, ReadonlySet<string>>();
+  for (const closure of Object.values(closures)) {
+    for (const file of sharedStylesOf(closure, helperClasses)) {
+      if (sharedStyleClasses.has(file)) {
+        continue;
+      }
+
+      const owned = selectorClasses(readSource(srcDir, file)).filter((name) =>
+        [...(mentions.get(name) ?? [])].every(
+          (mention) => mention === file || layoutOwnFiles.has(mention),
+        ),
+      );
+      sharedStyleClasses.set(file, new Set(owned));
+    }
   }
 
   return {
@@ -284,6 +313,7 @@ export function readEjectSource(srcDir: string = KIT_SRC_DIR): EjectSource {
     names: catalogLayoutNames(srcDir),
     closures,
     helperClasses,
+    sharedStyleClasses,
     problems: sharedNameClashes([...copied, ...helperStyles]),
   };
 }
@@ -301,8 +331,12 @@ export function readEjectSource(srcDir: string = KIT_SRC_DIR): EjectSource {
  * - A copied helper's stylesheet is copied with it, and the classes it owns are renamed from `kit-…`
  *   to `own-…` in a brand's copy and `dck-…` in a deck's, in every ejected file, so the kit's copy,
  *   the brand's and the deck's never style each other's markup.
- * - A stylesheet of another kit layout that the layout imports is copied into its folder and scoped
- *   to the layout (see `scopeStylesheet`).
+ * - A stylesheet the layout shares with other kit layouts (one it imports that is neither its own nor
+ *   a copied helper's, such as `image-scrim.css`) is copied into its folder and scoped to the
+ *   layout (see `scopeStylesheet`), and the classes it owns are renamed like a helper's, in the
+ *   copy and in the layout's files. The kit's copy stays loaded for the kit layouts that still use
+ *   it, and the rename keeps its rules off the ejected layout's markup and the copy's rules off
+ *   theirs.
  * - `limits.ts` holds the given limit cases.
  * - Kit source with CRLF line endings is read as LF, so the output is the same on any checkout.
  *
@@ -334,9 +368,12 @@ export function transformLayout(
     source,
     name,
     closure,
-    layoutClasses: new Set(
-      helperStyles.flatMap((file) => [...(source.helperClasses.get(file) ?? [])]),
-    ),
+    layoutClasses: new Set([
+      ...helperStyles.flatMap((file) => [...(source.helperClasses.get(file) ?? [])]),
+      ...sharedStylesOf(closure, source.helperClasses).flatMap((file) => [
+        ...(source.sharedStyleClasses.get(file) ?? []),
+      ]),
+    ]),
     localStyles: new Set(),
     owner,
     addsStylesheet: !closure.own.some((file) => file.endsWith('.css')),
@@ -792,18 +829,45 @@ function allHelperClasses(source: EjectSource): ReadonlySet<string> {
 }
 
 /**
- * The kit classes used by kit code that is neither a layout nor one of the given files: classes a
- * copy must keep, because the kit's components and base styles use them.
+ * The stylesheets a layout shares with other kit layouts: those its closure reaches that are
+ * neither its own nor a copied helper's.
  */
-function outsideClassTokens(srcDir: string, excluded: ReadonlySet<string>): Set<string> {
-  const tokens = new Set<string>();
+function sharedStylesOf(
+  closure: LayoutClosure,
+  helperClasses: ReadonlyMap<string, ReadonlySet<string>>,
+): string[] {
+  return closure.css.filter((file) => !closure.own.includes(file) && !helperClasses.has(file));
+}
+
+/**
+ * For each kit class named as a whole word in the kit's source, the non-test files that name it.
+ */
+function classMentions(srcDir: string): Map<string, Set<string>> {
+  const mentions = new Map<string, Set<string>>();
   const files = fs
     .readdirSync(srcDir, { recursive: true, encoding: 'utf8' })
     .map((file) => file.split(path.sep).join('/'))
-    .filter((file) => SOURCE_FILE.test(file) && !TEST_OR_FIXTURE_FILE.test(file))
-    .filter((file) => !file.startsWith('layouts/') && !excluded.has(file));
+    .filter((file) => SOURCE_FILE.test(file) && !TEST_OR_FIXTURE_FILE.test(file));
   for (const file of files) {
     for (const token of kitClassTokens(readSource(srcDir, file))) {
+      mentions.set(token, (mentions.get(token) ?? new Set()).add(file));
+    }
+  }
+
+  return mentions;
+}
+
+/**
+ * The kit classes used by kit code that is neither a layout nor one of the given files: classes a
+ * copy must keep, because the kit's components and base styles use them.
+ */
+function outsideClassTokens(
+  mentions: ReadonlyMap<string, ReadonlySet<string>>,
+  excluded: ReadonlySet<string>,
+): Set<string> {
+  const tokens = new Set<string>();
+  for (const [token, files] of mentions) {
+    if ([...files].some((file) => !file.startsWith('layouts/') && !excluded.has(file))) {
       tokens.add(token);
     }
   }
