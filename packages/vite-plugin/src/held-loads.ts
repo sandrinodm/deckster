@@ -18,8 +18,8 @@ export type HeldLoads = {
   readonly note: (files: readonly string[]) => void;
 
   /**
-   * Whether a file noted while held lies under a folder whose hold has ended, so whatever was
-   * loaded from it must load again. Forgets the files under that folder, so each hold asks once.
+   * Whether a noted path is the released folder or lies inside it, so what was loaded must load
+   * again. Forgets those paths so each hold asks once.
    *
    * @param root - The absolute folder whose hold ended.
    */
@@ -42,8 +42,9 @@ export function trackHeldLoads(): HeldLoads {
       }
     },
     released: (root) => {
-      const prefix = `${path.resolve(root)}${path.sep}`;
-      const under = [...held].filter((file) => file.startsWith(prefix));
+      const dir = path.resolve(root);
+      const prefix = `${dir}${path.sep}`;
+      const under = [...held].filter((file) => file === dir || file.startsWith(prefix));
       for (const file of under) {
         held.delete(file);
       }

@@ -41,6 +41,15 @@ describe('trackHeldLoads', () => {
     expect(loads.released(DECK)).toBe(false);
   });
 
+  it('needs a reload when the noted folder itself is released', () => {
+    const loads = trackHeldLoads();
+    const hold = holdCode([DECK]);
+    loads.note([DECK]);
+    hold.release();
+    expect(loads.released(DECK)).toBe(true);
+    expect(loads.released(DECK)).toBe(false);
+  });
+
   it('answers only for the folder whose hold ended', () => {
     const loads = trackHeldLoads();
     const hold = holdCode([DECK, BRAND]);

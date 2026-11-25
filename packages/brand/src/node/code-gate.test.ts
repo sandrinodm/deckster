@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import {
   gatedLoad,
@@ -161,5 +161,32 @@ describe('the code gate', () => {
     holdCode([ROOT]).release();
     hold.release();
     expect(held).toEqual([[ROOT]]);
+  });
+
+  it('reports a throwing hold listener and leaves the hold releasable', () => {
+    const error = new Error('Listener failed.');
+    using warning = vi.spyOn(process, 'emitWarning').mockImplementation(() => {});
+    const held = vi.fn();
+    const released = vi.fn();
+    onCodeHeld(() => {
+      throw error;
+    });
+    onCodeHeld(held);
+    onCodeReleased(released);
+
+    const hold = holdCode([ROOT]);
+    expect(warning).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'A code hold listener threw.',
+        code: 'DECKSTER_CODE_HOLD_LISTENER',
+        cause: error,
+      }),
+    );
+    expect(held).toHaveBeenCalledWith([ROOT]);
+    expect(isCodeHeld(CONFIG)).toBe(true);
+
+    hold.release();
+    expect(released).toHaveBeenCalledWith(ROOT);
+    expect(isCodeHeld(CONFIG)).toBe(false);
   });
 });

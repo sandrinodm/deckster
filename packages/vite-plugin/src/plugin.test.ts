@@ -2,12 +2,14 @@ import type { ViteDevServer } from 'vite-plus';
 
 import { holdCode, resetCodeGate } from '@deckster/brand/node';
 import kitCatalog from '@deckster/kit/catalog';
+import assert from 'node:assert/strict';
 import { existsSync, realpathSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build, createServer, mergeConfig, normalizePath } from 'vite-plus';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 
+import { watchCheckProcesses } from '#layouts/contract-check.ts';
 import {
   componentSource,
   contractRuns,
@@ -209,6 +211,7 @@ describe('a deck with code layouts, served', () => {
         server: { middlewareMode: true, hmr: false, ws: false },
       }),
     );
+    assert.equal(contractRuns(), 1, 'The contract loads before the first request.');
     // The first slide transform compiles MDX and loads the kit for the first time, which can take
     // seconds on a busy CI machine; the tests below then time the work they are about.
     await transformSlide('plain');
@@ -218,10 +221,6 @@ describe('a deck with code layouts, served', () => {
     await server.close();
     resetCodeGate();
     rmSync(root, { recursive: true, force: true });
-  });
-
-  it('loads the contracts when the server starts, before any request', () => {
-    expect(contractRuns()).toBe(1);
   });
 
   it('adds the layout components of the deck and its brand to the dependency scan', () => {
@@ -326,6 +325,49 @@ describe('a deck with code layouts, served', () => {
     WATCH_TIMEOUT_MS * 2,
   );
 });
+
+it.each(['.', 'layouts', 'layouts/funnel'])(
+  'reloads the catalog after a hold on %s begins and ends during the eager contract check',
+  async (heldFolder) => {
+    const root = scratchRoot();
+    let server: ViteDevServer | undefined;
+    let interrupted = false;
+    const stop = watchCheckProcesses(() => {
+      stop();
+      // The checker installs its hold listener just after starting the child.
+      queueMicrotask(() => {
+        const hold = holdCode([path.join(root, 'decks', 'talk', heldFolder)]);
+        hold.release();
+        interrupted = true;
+      });
+    });
+    try {
+      writeFiles(root, {
+        'decks/talk/deck.config.ts':
+          "import { defineDeck } from '@deckster/engine/config';\n" +
+          "export default defineDeck({ title: 'Talk', slides: ['plain'] });\n",
+        'decks/talk/slides/plain.mdx': slideSource('funnel'),
+        'decks/talk/layouts/funnel/contract.ts': contractSource('funnel'),
+        'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel'),
+      });
+      server = await createServer(
+        mergeConfig(deckViteConfig({ workspaceRoot: root, deck: 'talk' }), {
+          logLevel: 'silent',
+          appType: 'custom',
+          server: { middlewareMode: true, hmr: false, ws: false },
+        }),
+      );
+      expect(interrupted).toBe(true);
+      const result = await server.environments.client.transformRequest(VIRTUAL_LOCAL_LAYOUTS_ID);
+      expect(result?.code).toContain('lazyLayout("funnel"');
+    } finally {
+      stop();
+      await server?.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  },
+  SERVER_TIMEOUT_MS,
+);
 
 describe('a deck whose code layout replaces a kit layout, served', () => {
   let server: ViteDevServer;

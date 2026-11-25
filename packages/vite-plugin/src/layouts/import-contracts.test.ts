@@ -1,11 +1,11 @@
 import { holdCode, resetCodeGate } from '@deckster/brand/node';
 import { NodeFileSystem } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
-import { Effect, Schema } from 'effect';
+import { Effect, FileSystem, Schema } from 'effect';
 import { fork } from 'node:child_process';
 import { existsSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, it } from 'vite-plus/test';
+import { afterEach, beforeEach, describe, it, vi } from 'vite-plus/test';
 
 import { checkContract } from '#layouts/check-contract.ts';
 import { checkProcessArguments, watchCheckProcesses } from '#layouts/contract-check.ts';
@@ -921,4 +921,351 @@ layer(NodeFileSystem.layer)('importContracts during an agent turn', (it) => {
       rmSync(root, { recursive: true, force: true });
     }),
   );
+});
+
+describe('contract source and publication', () => {
+  /**
+   * Loads the named layout's contract in the scratch workspace.
+   *
+   * @param root - The scratch workspace.
+   */
+  const loadOne = (root: string): Promise<readonly ContractLoad[]> =>
+    Effect.runPromise(
+      importContracts([contractFile(root, 'one')], { root }).pipe(
+        Effect.provide(NodeFileSystem.layer),
+      ),
+    );
+
+  it('keeps VITE_ variables out of the check process and server imports', async () => {
+    const root = scratchRoot();
+    vi.stubEnv('VITE_DECKSTER_CONTRACT_MARKER', 'Only in the host environment.');
+    try {
+      writeFiles(root, {
+        'brands/acme/layouts/one/contract.ts': contractSource('one', {
+          imports: [
+            'if (import.meta.env.VITE_DECKSTER_CONTRACT_MARKER !== undefined) {',
+            "  throw new Error('VITE_ variable leaked into the contract');",
+            '}',
+          ],
+        }),
+      });
+      const [load] = await loadOne(root);
+      expect(load).toMatchObject({ kind: 'loaded' });
+    } finally {
+      vi.unstubAllEnvs();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it.each([
+    ['with no further imports', []],
+    ['before a later dynamic import', ["await import('./after.ts');"]],
+  ])('drops a contract that resumes after a short hold %s', async (_case, imports) => {
+    const root = scratchRoot();
+    /**
+     * Resumes the in-process evaluation when the test has released the hold.
+     */
+    let resume = () => {};
+    const pause = new Promise<void>((resolve) => {
+      resume = resolve;
+    });
+    const pauseKey = 'decksterPauseContractPublication';
+    const startedKey = 'decksterContractPublicationStarted';
+    const helperKey = 'decksterPostHoldHelperRan';
+    Reflect.set(globalThis, pauseKey, () => {
+      Reflect.set(globalThis, startedKey, true);
+      return pause;
+    });
+    try {
+      writeFiles(root, {
+        'brands/acme/layouts/one/after.ts': `Reflect.set(globalThis, '${helperKey}', true);\n`,
+        'brands/acme/layouts/one/contract.ts': contractSource('one', {
+          imports: [`await Reflect.get(globalThis, '${pauseKey}')?.();`, ...imports],
+        }),
+      });
+      const pending = loadOne(root);
+      await Effect.runPromise(waitForGlobal(startedKey));
+      expect(Reflect.get(globalThis, startedKey)).toBe(true);
+      const hold = holdCode([path.join(root, 'brands', 'acme')]);
+      hold.release();
+      resume();
+
+      const [load] = await pending;
+      expect(load?.kind).toBe('held');
+      expect(Reflect.get(globalThis, helperKey)).toBeUndefined();
+
+      const nextHold = holdCode([path.join(root, 'brands', 'acme')]);
+      try {
+        const [held] = await loadOne(root);
+        expect(held?.kind).toBe('held');
+      } finally {
+        nextHold.release();
+      }
+    } finally {
+      resume();
+      Reflect.deleteProperty(globalThis, pauseKey);
+      Reflect.deleteProperty(globalThis, startedKey);
+      Reflect.deleteProperty(globalThis, helperKey);
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('evaluates the same helper text that was scanned even if the file changes', async () => {
+    const root = scratchRoot();
+    const helper = 'brands/acme/layouts/_shared/helper.ts';
+    const stop = watchCheckProcesses(() => {
+      stop();
+      writeFiles(root, { [helper]: helperSource('Changed after the scan.') });
+    });
+    try {
+      writeFiles(root, {
+        [helper]: helperSource('Scanned text.'),
+        'brands/acme/layouts/one/contract.ts': contractWithHelper('one'),
+      });
+      const [first] = await loadOne(root);
+      expect(descriptionOf(first)).toBe('Scanned text.');
+      const [second] = await loadOne(root);
+      expect(descriptionOf(second)).toBe('Changed after the scan.');
+    } finally {
+      stop();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('discards scanned source if a hold begins and ends during the scan', async () => {
+    const root = scratchRoot();
+    const helper = 'brands/acme/layouts/_shared/helper.ts';
+    const before = 'Before the turn.';
+    try {
+      writeFiles(root, {
+        [helper]: helperSource(before),
+        'brands/acme/layouts/one/contract.ts': contractWithHelper('one'),
+      });
+      const readDuringHold = Effect.gen(function* () {
+        const fs = yield* FileSystem.FileSystem;
+        const heldFile = realpathSync(path.join(root, helper));
+        const heldRead: FileSystem.FileSystem = {
+          ...fs,
+          readFileString: (file, encoding) => {
+            if (file !== heldFile) {
+              return fs.readFileString(file, encoding);
+            }
+
+            return Effect.sync(() => {
+              const hold = holdCode([path.join(root, 'brands', 'acme')]);
+              hold.release();
+              return helperSource('During the turn.');
+            });
+          },
+        };
+        return yield* importContracts([contractFile(root, 'one')], { root }).pipe(
+          Effect.provideService(FileSystem.FileSystem, heldRead),
+        );
+      });
+      const [interrupted] = await Effect.runPromise(
+        readDuringHold.pipe(Effect.provide(NodeFileSystem.layer)),
+      );
+      expect(interrupted?.kind).toBe('held');
+      expect(contractRuns()).toBe(0);
+      const [loaded] = await loadOne(root);
+      expect(descriptionOf(loaded)).toBe(before);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it.each(['.js', '.mjs', '.json'])('rejects a .ts import symlink to %s', async (extension) => {
+    const root = scratchRoot();
+    const dir = 'brands/acme/layouts/one';
+    try {
+      writeFiles(root, {
+        [`${dir}/contract.ts`]: contractSource('one', { imports: ["import './alias.ts';"] }),
+        [`${dir}/helper${extension}`]: '{}\n',
+      });
+      symlinkSync(`helper${extension}`, path.join(root, dir, 'alias.ts'));
+      const [load] = await loadOne(root);
+      expect(problemOf(load)).toMatchObject({
+        code: 'layout-contract-imports',
+        message: expect.stringContaining(
+          'imports "./alias.ts", which does not resolve to a .ts file',
+        ),
+      });
+      expect(contractRuns()).toBe(0);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('contract check process regressions', () => {
+  /**
+   * Runs the full static check and both evaluation stages against a scratch workspace.
+   *
+   * @param root - The scratch workspace.
+   * @param names - The names of its contract fixtures, in result order.
+   */
+  const loadContracts = (
+    root: string,
+    names: readonly string[],
+  ): Promise<readonly ContractLoad[]> =>
+    Effect.runPromise(
+      importContracts(
+        names.map((name) => contractFile(root, name)),
+        { root },
+      ).pipe(Effect.provide(NodeFileSystem.layer)),
+    );
+
+  it.each([
+    ['an unhandled rejection', "void Promise.reject(new Error('detached failure'));"],
+    ['an uncaught exception', "setTimeout(() => { throw new Error('detached failure'); }, 80);"],
+  ])('discards the whole round after %s', async (event, statement) => {
+    const root = scratchRoot();
+    try {
+      writeFiles(root, {
+        'brands/acme/layouts/fine/contract.ts': contractSource('fine'),
+        'brands/acme/layouts/crashes/contract.ts': contractSource('crashes', {
+          // Suppress the crash in the test runner so a regression is an ordinary assertion failure.
+          imports: [`if (process.pid !== ${process.pid}) { ${statement} }`],
+        }),
+      });
+      const [fine, crashes] = await loadContracts(root, ['fine', 'crashes']);
+      expect(problemOf(crashes)?.message).toBe(
+        `Loading it failed: The contract check process stopped after ${event}: detached failure`,
+      );
+      expect(problemOf(fine)?.message).toContain(
+        `The contract check process stopped after ${event}: detached failure (from ${contractFile(root, 'crashes')})`,
+      );
+      expect(contractRuns()).toBe(0);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('lets a contract pass when it clears its timer', async () => {
+    const root = scratchRoot();
+    try {
+      writeFiles(root, {
+        'brands/acme/layouts/one/contract.ts': contractSource('one', {
+          imports: [
+            'const pending = setTimeout(() => {}, 60_000);',
+            'clearTimeout(pending);',
+            'await new Promise((resolve) => setTimeout(resolve, 10));',
+          ],
+        }),
+      });
+      const [load] = await loadContracts(root, ['one']);
+      expect(load?.kind).toBe('loaded');
+      expect(contractRuns()).toBe(1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('refuses every importer of a cached shared helper that catches a trap', async () => {
+    const root = scratchRoot();
+    try {
+      writeFiles(root, {
+        'brands/acme/layouts/_shared/helper.ts':
+          "try { fetch('http://127.0.0.1:9'); } catch {}\n" + helperSource('Shared.'),
+        'brands/acme/layouts/_shared/bridge.ts': "export * from './helper.ts';\n",
+        'brands/acme/layouts/one/contract.ts': contractWithHelper('one'),
+        'brands/acme/layouts/two/pause.ts':
+          'await new Promise((resolve) => setTimeout(resolve, 80));\n',
+        'brands/acme/layouts/two/contract.ts': contractSource('two', {
+          imports: ["import './pause.ts';", "import { DESCRIPTION } from '../_shared/bridge.ts';"],
+          descriptionExpression: 'DESCRIPTION',
+        }),
+        'brands/acme/layouts/fine/contract.ts': contractSource('fine'),
+      });
+      const [one, two, fine] = await loadContracts(root, ['one', 'two', 'fine']);
+      for (const load of [one, two]) {
+        expect(problemOf(load)?.message).toBe(
+          'Loading it was refused: It used `fetch`, which a contract may not use.',
+        );
+      }
+
+      expect(fine?.kind).toBe('loaded');
+      expect(contractRuns()).toBe(1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('refuses process state changes even when they are caught, and allows reads', async () => {
+    const root = scratchRoot();
+    /**
+     * The process state mutations and the member that must refuse each one.
+     */
+    const attempts = [
+      ['writes', "process.env.DECKSTER_MARKER = 'mutated';", 'env'],
+      ['deletes', 'delete process.env.NODE_ENV;', 'env'],
+      [
+        'defines',
+        "Object.defineProperty(process.env, 'NODE_ENV', " +
+          "{ value: 'test', writable: true, enumerable: true, configurable: true });",
+        'env',
+      ],
+      ['chdirs', 'process.chdir(process.cwd());', 'chdir'],
+      ['masks', 'process.umask(process.umask());', 'umask'],
+      ['titles', "process.title = 'changed';", 'title'],
+      ['uids', 'process.setuid?.(process.getuid());', 'setuid'],
+      ['gids', 'process.setgid?.(process.getgid());', 'setgid'],
+      ['euids', 'process.seteuid?.(process.geteuid());', 'seteuid'],
+      ['egids', 'process.setegid?.(process.getegid());', 'setegid'],
+      ['groups', 'process.setgroups?.(process.getgroups());', 'setgroups'],
+      ['initgroups', 'process.initgroups?.(process.getuid(), process.getgid());', 'initgroups'],
+      ['signals', "process.on('SIGTERM', () => {});", 'on'],
+      ['exits', "process.once('exit', () => {});", 'once'],
+      ['exceptions', "process.addListener('uncaughtException', () => {});", 'addListener'],
+      ['rejections', "process.prependListener('unhandledRejection', () => {});", 'prependListener'],
+      ['removes', "process.removeAllListeners('message');", 'removeAllListeners'],
+    ] as const;
+    try {
+      writeFiles(root, {
+        ...Object.fromEntries(
+          attempts.map(([name, statement]) => [
+            `brands/acme/layouts/${name}/contract.ts`,
+            contractSource(name, {
+              imports: [`if (process.pid !== ${process.pid}) { try { ${statement} } catch {} }`],
+            }),
+          ]),
+        ),
+        'brands/acme/layouts/fine/contract.ts': contractSource('fine', {
+          imports: [
+            "if (typeof process.env.NODE_ENV !== 'string' || typeof process.umask() !== 'number' " +
+              "|| typeof process.title !== 'string') throw new Error('Cannot read process state.');",
+          ],
+        }),
+      });
+      const loads = await loadContracts(root, [...attempts.map(([name]) => name), 'fine']);
+      expect(loads.map((load) => problemOf(load)?.message ?? load.kind)).toEqual([
+        ...attempts.map(
+          ([, , member]) =>
+            `Loading it was refused: It used \`process.${member}\`, which a contract may not use.`,
+        ),
+        'loaded',
+      ]);
+      expect(contractRuns()).toBe(1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('refuses an unlisted framework entry point reached through the dynamic runner', async () => {
+    const root = scratchRoot();
+    try {
+      writeFiles(root, {
+        'brands/acme/layouts/one/contract.ts': contractSource('one', {
+          imports: [
+            "try { await eval('__vite_' + 'ssr_dynamic_import__')('@deckster/brand/node'); } catch {}",
+          ],
+        }),
+      });
+      const [load] = await loadContracts(root, ['one']);
+      expect(problemOf(load)?.message).toMatch(/Loading it was refused: .*@deckster\/brand.*node/);
+      expect(contractRuns()).toBe(0);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });

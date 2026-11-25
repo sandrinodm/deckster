@@ -1,6 +1,6 @@
 import type { Plugin, Rollup, UserConfig, ViteDevServer } from 'vite';
 
-import { BRANDS_DIR, onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
+import { BRANDS_DIR, onCodeHeld, onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
 import { devSessionOf, issueDevSession } from '@deckster/comments/dev-session';
 import kitCatalog from '@deckster/kit/catalog';
 import { Effect } from 'effect';
@@ -294,24 +294,25 @@ export function deckPlugin(
    * Loads the layout catalogs, the active brand's layouts and the code layouts of the brand and the
    * deck. They are reused until the brand is read again (a switch, or an edit to its files,
    * including `layouts.ts` and its contracts) or the deck's `layouts/` change, and loaded afresh
-   * then; a failed load is retried on the next call. The `layouts/` folders are noted at the start
-   * and the end, for when an agent turn holds them: the contracts are then the ones loaded before
-   * the turn, and load for real once it ends.
+   * then; a failed load is retried on the next call. Holds on the `layouts/` folders are noted
+   * throughout each load. Even a hold that ends before the load finishes invalidates the catalog.
    */
   const deckLayouts = async (): Promise<DeckLayouts> => {
     // Both are awaited before the cache is checked, so the check and the new entry happen without
     // a yield in between and requests that arrive together share one load.
     const [loaded, deck] = await Promise.all([brand.load(), findActiveDeck()]);
     if (catalog?.brand !== loaded) {
-      /**
-       * Notes the layout folders, when an agent turn holds them now.
-       */
-      const noteHeld = () =>
-        contractLoads.note([
-          path.join(deck.dir, LAYOUTS_DIR),
-          path.join(loaded.location.dir, LAYOUTS_DIR),
-        ]);
-      noteHeld();
+      const layoutDirs = [
+        path.join(deck.dir, LAYOUTS_DIR),
+        path.join(loaded.location.dir, LAYOUTS_DIR),
+      ];
+      const stopListening = onCodeHeld((roots) => {
+        const heldWithinLayouts = roots.filter((root) =>
+          layoutDirs.some((dir) => root.startsWith(`${dir}${path.sep}`)),
+        );
+        contractLoads.note([...layoutDirs, ...heldWithinLayouts]);
+      });
+      contractLoads.note(layoutDirs);
       const layouts = run(
         Effect.gen(function* () {
           const found = yield* deckCatalog({
@@ -324,7 +325,7 @@ export function deckPlugin(
           const skipped = yield* readSkippedCodeLayouts(loaded.location.dir);
           return { ...found, skipped };
         }),
-      ).finally(noteHeld);
+      ).finally(stopListening);
       const entry = { brand: loaded, layouts };
       catalog = entry;
       layouts.then(

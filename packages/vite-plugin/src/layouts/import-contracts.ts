@@ -2,10 +2,11 @@ import {
   forgetLoaded,
   gatedLoad,
   isCodeHeld,
+  onCodeHeld,
   rememberLoaded,
   type StaticCallee,
 } from '@deckster/brand/node';
-import { Effect, FileSystem, Predicate } from 'effect';
+import { Effect, FileSystem, Predicate, type Scope } from 'effect';
 import { readFile } from 'node:fs/promises';
 import { builtinModules } from 'node:module';
 import os from 'node:os';
@@ -24,32 +25,18 @@ import type { LayoutProblemCode } from '#layouts/layout-problem.ts';
 import { displayPath } from '#decks/deck-paths.ts';
 import { checkContracts, type CheckVerdict } from '#layouts/contract-check.ts';
 import {
+  isContractPackage,
   NODE_LOADED_PACKAGES,
   PackageEvaluator,
   type ModuleGate,
 } from '#layouts/contract-evaluator.ts';
 
+export { CONTRACT_PACKAGES, isContractPackage } from '#layouts/contract-evaluator.ts';
+
 /**
  * The folder beside the layout folders whose `.ts` files any contract may import.
  */
 export const SHARED_LAYOUTS_DIR = '_shared';
-
-/**
- * The packages a contract may import, besides the entry points of `effect` (see
- * {@link isContractPackage}). `@deckster/brand` is for its types and data helpers.
- */
-export const CONTRACT_PACKAGES: ReadonlySet<string> = new Set([
-  'effect',
-  '@deckster/engine/layout',
-  '@deckster/engine/command',
-  '@deckster/kit/layout-fields',
-  '@deckster/brand',
-]);
-
-/**
- * The start of an `effect` entry point, such as `effect/Schema`.
- */
-const EFFECT_ENTRY_PREFIX = 'effect/';
 
 /**
  * A relative import specifier.
@@ -253,6 +240,11 @@ export type EvaluateContractsOptions = {
   readonly allowed?: ReadonlyMap<string, readonly string[]>;
 
   /**
+   * The exact source text the import check scanned, by absolute file with symlinks resolved.
+   */
+  readonly sources?: ReadonlyMap<string, string>;
+
+  /**
    * How long the batch may take to evaluate, in milliseconds; {@link CONTRACT_TIMEOUT_MS} when left
    * out.
    */
@@ -311,8 +303,8 @@ export type ContractEvaluation = {
  *
  * The check process contains what a contract does while it is checked. The second run is not
  * contained: it has this process's rights, and code of it that is still running after an `await`
- * when a turn begins or the deadline passes cannot be stopped (it can no longer load any module).
- * It only runs code that already loaded cleanly under the permission model, so what escapes is a
+ * when a turn begins or the deadline passes can finish, with further workspace modules blocked. It
+ * only runs code that already loaded cleanly under the permission model, so what escapes is a
  * contract written to act differently in this process (one that tells the two apart, or waits until
  * after its check to act), and the functions it carries (its `checks`, its schema's refinements,
  * defaults and transformations), which run here whenever a slide is validated.
@@ -327,8 +319,18 @@ export type ContractEvaluation = {
 export const importContracts = Effect.fn('importContracts')(function* (
   files: readonly string[],
   options: ImportContractsOptions,
-): Effect.fn.Return<readonly ContractLoad[], never, FileSystem.FileSystem> {
-  const checked = yield* Effect.forEach(files, (file) => checkBeforeLoad(file, options.root));
+): Effect.fn.Return<readonly ContractLoad[], never, FileSystem.FileSystem | Scope.Scope> {
+  const sources = new Map<string, string>();
+  const heldRoots = new Set<string>();
+  // The snapshot could include bytes read during a turn that ended before scanning did.
+  const stopListening = onCodeHeld((roots) => roots.forEach((root) => heldRoots.add(root)));
+  yield* Effect.addFinalizer(() => Effect.sync(stopListening));
+  const scanned = yield* Effect.forEach(files, (file) =>
+    checkBeforeLoad(file, options.root, sources),
+  );
+  const checked = scanned.map((entry) =>
+    entry.kind === 'ready' && heldDuringScan(entry, heldRoots) ? heldLoad(entry.file) : entry,
+  );
   const ready = checked.flatMap((entry) => (entry.kind === 'ready' ? [entry.file] : []));
   if (ready.length === 0) {
     return checked.filter((entry) => entry.kind !== 'ready');
@@ -348,6 +350,7 @@ export const importContracts = Effect.fn('importContracts')(function* (
   const evaluation = yield* Effect.promise(() =>
     evaluateContracts(ready, options.root, {
       allowed,
+      sources,
       timeoutMs: options.timeoutMs ?? CONTRACT_TIMEOUT_MS,
     }),
   );
@@ -355,13 +358,13 @@ export const importContracts = Effect.fn('importContracts')(function* (
   return checked.map((entry) =>
     entry.kind === 'ready' ? (evaluated.get(entry.file) ?? failed(entry.file, notRun())) : entry,
   );
-});
+}, Effect.scoped);
 
 /**
  * Evaluates contract files at the same time, first in the check process and then, for those that
- * passed, in this one, in one Vite environment that it closes afterwards. A file an agent turn
- * holds, now or by the time its evaluation ends, is answered from the gate and not remembered. This
- * is the loader of {@link importContracts} without the import check; call that instead.
+ * passed, in this one, in one Vite environment that it closes afterwards. If an agent turn holds a
+ * contract or one of its imports during the batch, its new export is discarded. This is the loader
+ * of {@link importContracts} without the import check; call that instead.
  *
  * @param files - Absolute `contract.ts` paths.
  * @param root - The absolute workspace root.
@@ -373,12 +376,26 @@ export async function evaluateContracts(
   root: string,
   options: EvaluateContractsOptions = {},
 ): Promise<ContractEvaluation> {
+  const gate = batchGate(files, options.allowed);
   claimNodeEnv();
   try {
-    return await runInEnvironment(files, root, options);
+    const { loads, inlined } = await runInEnvironment(files, root, options, gate);
+    const published = loads.map((load) => {
+      if (gate.isHeld(load.file)) {
+        return heldLoad(load.file);
+      }
+
+      if (load.kind === 'loaded') {
+        rememberLoaded(load.file, load.exported);
+      }
+
+      return load;
+    });
+    return { loads: published, inlined };
   } catch (error) {
     return { loads: files.map((file) => failed(file, loadFailure(error))), inlined: [] };
   } finally {
+    gate.stopListening();
     releaseNodeEnv();
   }
 }
@@ -459,14 +476,39 @@ type ReadyContract = {
 };
 
 /**
+ * Whether a hold began while any source in the contract's graph could have been read.
+ *
+ * @param contract - The contract and the files scanned for it.
+ * @param heldRoots - Absolute roots held during the scan.
+ */
+function heldDuringScan(contract: ReadyContract, heldRoots: ReadonlySet<string>): boolean {
+  for (const root of heldRoots) {
+    for (const file of [contract.file, ...contract.checked]) {
+      const relative = path.relative(root, file);
+      if (
+        relative !== '..' &&
+        !relative.startsWith(`..${path.sep}`) &&
+        !path.isAbsolute(relative)
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
  * Applies the turn gate and the import check to one contract file.
  *
  * @param file - The absolute `contract.ts` path.
  * @param root - The absolute workspace root.
+ * @param sources - The text already read and scanned during this batch.
  */
 const checkBeforeLoad = Effect.fn('checkBeforeLoad')(function* (
   file: string,
   root: string,
+  sources: Map<string, string>,
 ): Effect.fn.Return<ContractLoad | ReadyContract, never, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
   const exists = yield* fs.exists(file).pipe(Effect.orElseSucceed(() => false));
@@ -484,7 +526,7 @@ const checkBeforeLoad = Effect.fn('checkBeforeLoad')(function* (
     return heldLoad(file);
   }
 
-  const { problems, checked } = yield* importProblems(file, root);
+  const { problems, checked } = yield* importProblems(file, root, sources);
   // A turn may have begun while the files were read; they are not trusted then.
   if (isCodeHeld(file)) {
     return heldLoad(file);
@@ -605,10 +647,12 @@ type ImportCheck = {
  *
  * @param contractFile - The absolute `contract.ts` path.
  * @param root - The absolute workspace root, for the paths in the sentences.
+ * @param sources - The text already read and scanned during this batch.
  */
 const importProblems = Effect.fn('importProblems')(function* (
   contractFile: string,
   root: string,
+  sources: Map<string, string>,
 ): Effect.fn.Return<ImportCheck, never, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
   /**
@@ -642,13 +686,16 @@ const importProblems = Effect.fn('importProblems')(function* (
   for (const file of queue) {
     const shown =
       file === realContract ? displayPath(root, contractFile) : displayPath(realRoot, file);
-    const text = yield* fs.readFileString(file).pipe(Effect.orElseSucceed(() => undefined));
+    const text =
+      sources.get(file) ??
+      (yield* fs.readFileString(file).pipe(Effect.orElseSucceed(() => undefined)));
     if (text === undefined) {
       problems.push(`${shown} cannot be read.`);
       continue;
     }
 
     const source = scanSource(file, text);
+    sources.set(file, text);
     problems.push(...source.problems.map((problem) => `${shown} ${problem}.`));
     for (const specifier of source.specifiers) {
       const checked = yield* checkSpecifier(file, specifier, allowed);
@@ -764,23 +811,15 @@ const resolveRelativeImport = Effect.fn('resolveRelativeImport')(function* (
     return { problem: 'does not exist' };
   }
 
+  if (!real.endsWith(CONTRACT_EXTENSION)) {
+    return { problem: `does not resolve to a ${CONTRACT_EXTENSION} file` };
+  }
+
   const isInside = allowed.dirs.some((dir) => real.startsWith(`${dir}${path.sep}`));
   return isInside
     ? { real }
     : { problem: `is outside the layout's own folder and layouts/${SHARED_LAYOUTS_DIR}/` };
 });
-
-/**
- * Whether a contract may import a package: one of {@link CONTRACT_PACKAGES} or an `effect` entry
- * point such as `effect/Schema`. A specifier with a query or a hash is still refused by the import
- * check.
- *
- * @param specifier - A specifier that is not relative; a relative one gives `false`.
- * @returns Whether the import check lets a contract import it.
- */
-export function isContractPackage(specifier: string): boolean {
-  return CONTRACT_PACKAGES.has(specifier) || specifier.startsWith(EFFECT_ENTRY_PREFIX);
-}
 
 /**
  * What the import check reads from one file's source.
@@ -860,7 +899,7 @@ function importedSpecifiers(
  */
 type BatchGate = ModuleGate & {
   /**
-   * Whether an agent turn holds a contract of the batch, or a file it imports.
+   * Whether an agent turn has held a contract of the batch or a file it imports.
    *
    * @param contract - The contract's path, as given.
    */
@@ -870,6 +909,11 @@ type BatchGate = ModuleGate & {
    * Ends the batch: nothing loads or runs in its environment from now on.
    */
   readonly close: () => void;
+
+  /**
+   * Stops tracking holds after the batch's outcomes have been published.
+   */
+  readonly stopListening: () => void;
 };
 
 /**
@@ -890,21 +934,30 @@ function batchGate(
       contracts,
     ]),
   );
+  const held = new Set<string>();
+  /**
+   * Remembers holds even if they end before a pending import returns.
+   */
+  const noteHolds = (): void => {
+    const heldContracts = files.filter((file) => isCodeHeld(file));
+    if (allowed === undefined && heldContracts.length > 0) {
+      files.forEach((file) => held.add(file));
+      return;
+    }
+
+    heldContracts.forEach((file) => held.add(file));
+    for (const [file, contracts] of allowed ?? []) {
+      if (isCodeHeld(file)) {
+        contracts.forEach((contract) => held.add(contract));
+      }
+    }
+  };
+  const stopListening = onCodeHeld(noteHolds);
+  noteHolds();
+
   let closed = false;
   return {
-    isHeld: (contract) => {
-      if (isCodeHeld(contract)) {
-        return true;
-      }
-
-      if (allowed === undefined) {
-        return files.some((file) => isCodeHeld(file));
-      }
-
-      return [...allowed].some(
-        ([file, contracts]) => contracts.includes(contract) && isCodeHeld(file),
-      );
-    },
+    isHeld: (contract) => held.has(contract),
     refusal: (file) => {
       if (closed) {
         return 'the load of its contracts is over';
@@ -914,33 +967,39 @@ function batchGate(
         allowed === undefined || file === undefined
           ? files
           : (owners.get(normalizePath(file)) ?? []);
-      const held =
+      const invalidated =
         (file !== undefined && isCodeHeld(file)) ||
-        contracts.some((contract) => isCodeHeld(contract));
-      return held ? 'an agent turn holds the contract that imports it' : undefined;
+        contracts.some((contract) => held.has(contract));
+      return invalidated ? 'an agent turn held the contract that imports it' : undefined;
     },
     close: () => {
       closed = true;
     },
+    stopListening,
   };
 }
 
 /**
  * A Vite plugin that refuses to load any file outside `allowed`, so a file only a transform or the
  * runner's own import function names (not the import check) never runs, and any file the batch's
- * gate refuses: once a turn holds a contract or the batch is over. It reads each file once and
- * gives the same text on every later load of the batch, so the server's own run evaluates exactly
- * what the check process evaluated.
+ * gate refuses: once a turn holds a contract or the batch is over. It uses the scanned text, or
+ * reads each file once when the caller did not scan it, so both evaluations use the same source.
  *
  * @param allowed - The absolute files that may run, with symlinks resolved; every file when left
  *   out.
  * @param gate - The batch's gate.
+ * @param sources - The exact text scanned by the import check, if available.
  */
-function loadGuard(allowed: ReadonlySet<string> | undefined, gate: BatchGate): Plugin {
+function loadGuard(
+  allowed: ReadonlyMap<string, readonly string[]> | undefined,
+  gate: BatchGate,
+  sources: ReadonlyMap<string, string> | undefined,
+): Plugin {
   // Vite's ids use forward slashes on every platform.
-  const files =
-    allowed === undefined ? undefined : new Set([...allowed].map((file) => normalizePath(file)));
-  const texts = new Map<string, Promise<string>>();
+  const files = allowed === undefined ? undefined : new Set([...allowed.keys()].map(normalizePath));
+  const texts = new Map<string, string | Promise<string>>(
+    [...(sources ?? [])].map(([file, text]) => [normalizePath(file), text]),
+  );
   return {
     name: 'deckster:contract-load-guard',
     enforce: 'pre',
@@ -975,20 +1034,21 @@ function loadGuard(allowed: ReadonlySet<string> | undefined, gate: BatchGate): P
  * @param files - Absolute `contract.ts` paths.
  * @param root - The absolute workspace root.
  * @param options - The files that may run, and how long the batch may take.
+ * @param gate - The batch's gate.
  */
 async function runInEnvironment(
   files: readonly string[],
   root: string,
   options: EvaluateContractsOptions,
+  gate: BatchGate,
 ): Promise<ContractEvaluation> {
-  const gate = batchGate(files, options.allowed);
-  const allowed = options.allowed === undefined ? undefined : new Set(options.allowed.keys());
   const config = await resolveConfig(
     {
       root,
       configFile: false,
-      plugins: [loadGuard(allowed, gate)],
+      plugins: [loadGuard(options.allowed, gate, options.sources)],
       envDir: false,
+      envPrefix: [],
       cacheDir: CACHE_DIR,
       logLevel: 'silent',
       environments: {
@@ -1091,7 +1151,7 @@ async function evaluateContract(
   inProcess: InProcessRun,
 ): Promise<ContractLoad> {
   const { run, deadline, timeoutMs, gate } = inProcess;
-  if (isCodeHeld(file) || verdict?.kind === 'held') {
+  if (gate.isHeld(file) || verdict?.kind === 'held') {
     return heldLoad(file);
   }
 
@@ -1100,13 +1160,12 @@ async function evaluateContract(
   }
 
   if (verdict.kind !== 'passed') {
-    // An error the check process saw may come from the gate, refusing a file a turn now holds.
-    return gate.isHeld(file) ? heldLoad(file) : failed(file, verdictProblem(verdict, timeoutMs));
+    return failed(file, verdictProblem(verdict, timeoutMs));
   }
 
   try {
     const module = await Promise.race([run(file), deadline]);
-    if (isCodeHeld(file)) {
+    if (gate.isHeld(file)) {
       return heldLoad(file);
     }
 
@@ -1119,10 +1178,9 @@ async function evaluateContract(
       return failed(file, noDefaultExport());
     }
 
-    rememberLoaded(file, exported);
     return { file, kind: 'loaded', exported };
   } catch (error) {
-    return isCodeHeld(file) ? heldLoad(file) : failed(file, loadFailure(error));
+    return gate.isHeld(file) ? heldLoad(file) : failed(file, loadFailure(error));
   }
 }
 

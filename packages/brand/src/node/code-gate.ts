@@ -130,7 +130,12 @@ export function holdCode(roots: readonly string[]): CodeHold {
   const hold: ActiveHold = { roots: roots.map((root) => path.resolve(root)), accepted: new Map() };
   STATE.holds.add(hold);
   for (const listener of STATE.heldListeners) {
-    listener(hold.roots);
+    try {
+      listener(hold.roots);
+    } catch (error) {
+      const warning = new Error('A code hold listener threw.', { cause: error });
+      process.emitWarning(Object.assign(warning, { code: 'DECKSTER_CODE_HOLD_LISTENER' }));
+    }
   }
 
   let released = false;
