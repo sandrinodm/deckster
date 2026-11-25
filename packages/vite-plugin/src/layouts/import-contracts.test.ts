@@ -406,7 +406,7 @@ layer(NodeFileSystem.layer)('importContracts against ways around the import chec
   it.effect('gives the whole batch one deadline, so hung contracts do not add up', () =>
     Effect.gen(function* () {
       const root = scratchRoot();
-      const hung = ['one', 'two', 'three'];
+      const hung = ['one', 'two', 'three', 'four'];
       writeFiles(root, {
         ...Object.fromEntries(
           hung.map((name) => [
@@ -416,7 +416,9 @@ layer(NodeFileSystem.layer)('importContracts against ways around the import chec
         ),
         'brands/acme/layouts/fine/contract.ts': contractSource('fine'),
       });
-      const timeoutMs = 600;
+      // Long enough that the check process's startup on a slow CI runner stays well inside the
+      // margin between one deadline and the four that serial deadlines would add up to.
+      const timeoutMs = 1500;
       const started = Date.now();
       const loads = yield* importContracts(
         [...hung, 'fine'].map((name) => contractFile(root, name)),
@@ -427,14 +429,15 @@ layer(NodeFileSystem.layer)('importContracts against ways around the import chec
         'layout-load-failed',
         'layout-load-failed',
         'layout-load-failed',
+        'layout-load-failed',
         'loaded',
       ]);
       for (const load of loads.slice(0, hung.length)) {
         expect(problemOf(load)?.message).toContain('did not finish loading');
       }
 
-      // Three hung contracts cost one deadline, not three; the check process's startup comes on top.
-      expect(elapsed).toBeLessThan(timeoutMs * hung.length);
+      // Four hung contracts cost one deadline, not four; the check process's startup comes on top.
+      expect(elapsed).toBeLessThan(timeoutMs * 2.5);
       rmSync(root, { recursive: true, force: true });
     }),
   );
