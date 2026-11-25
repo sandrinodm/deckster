@@ -91,6 +91,7 @@ jobs:
             packages/*/.e2e
             .e2e
           if-no-files-found: ignore
+          include-hidden-files: true
           retention-days: 7
 
   # The oldest Node that package.json's `engines` accepts. The CLI and the root scripts run as
