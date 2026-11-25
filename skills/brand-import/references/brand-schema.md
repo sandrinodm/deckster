@@ -49,7 +49,7 @@ brands/<name>/
                       named by the emitter (`fonts/acme-sans-700-italic.woff2`)
 ```
 
-Keep both files as static data literals. The emitter checks its own output and writes source summary and review items to `import-notes.json`. The draft holds the detailed provenance. Remote `brand.ts` and `layouts.ts` are read as data during installation. In a regular local load, Deckster can import `brand.ts` as code. On builds with the static brand-layout loader, every `layouts.ts` is parsed as data, including in the active brand. Use an array literal in `defineBrandLayouts([...])`. Keep helper calls, computed values and imported values out of that literal. During an agent turn, the code gate may serve the last trusted layout values or omit a newly held layout file. Run the final check in the normal workspace context so it reads the intended file.
+Keep both files as static data literals. The emitter checks its own output and writes source summary and review items to `import-notes.json`. The draft holds the detailed provenance. Remote `brand.ts` and `layouts.ts` are read as data during installation. In a regular local load, Deckster can import `brand.ts` as code. Since v0.8.0, every `layouts.ts` is parsed as data, including in the active brand. Use an array literal in `defineBrandLayouts([...])`. Keep helper calls, computed values and imported values out of that literal. During an agent turn, the code gate may serve the last trusted layout values or omit a newly held layout file. Run the final check in the normal workspace context so it reads the intended file.
 
 A local import creates a brand folder without a package manifest. Fontsource packages the brand names resolve from the workspace folder's `node_modules`, so a package the CLI does not carry itself (it ships Inter, JetBrains Mono and Bricolage Grotesque) needs `npm install <package>` in the workspace folder, which creates the workspace's `package.json` if there is none. The emitter prints the exact command. Until it has run, commands on the brand fail on the missing font package.
 
@@ -57,7 +57,7 @@ A local import creates a brand folder without a package manifest. Fontsource pac
 
 For an existing Deckster brand in Git, install the brand folder directly in the target workspace. Use the source location and ref the user intends. For example, `deckster brand add 'gh:acme/brand-kit/brands/acme#v2' --json` names a folder and pins a ref. The CLI also accepts a GitHub tree URL or a git HTTPS or SSH address with the folder after `//`. Use Git credential helpers or normal SSH authentication.
 
-The installer reads brand and layout literals as data, stages the supported files and checks the brand. Since v0.7.0 it also checks layout names and fallback contracts before publishing the staged brand. A failed check preserves any installed brand, including on a `--force` replacement. On builds with standalone SVG sanitization, it sanitises SVG files during staging. Invalid UTF-8 or malformed SVG aborts the install. When unsupported markup is removed, inspect the file warning and compare the installed artwork with its source. If appearance changes, ask for simplified SVG or a raster export of the authorised art.
+The installer reads brand and layout literals as data, stages the supported files and checks the brand. Since v0.7.0 it also checks layout names and fallback contracts before publishing the staged brand. A failed check preserves any installed brand, including on a `--force` replacement. Since v0.8.0 it sanitises SVG files during staging. Invalid UTF-8 or malformed SVG aborts the install. When unsupported markup is removed, inspect the file warning and compare the installed artwork with its source. If appearance changes, ask for simplified SVG or a raster export of the authorised art.
 
 Read the result's `warnings`, `skipped` and `next` fields. The installer copies brand and layout data and allowed images, fonts and documents. Review the skipped list for symlinks, other code and package files. A code layout (a `layouts/<name>/` folder with a `contract.ts` or `layout.tsx`) is left out whole, each of its files listed with the reason `code layout`, and `codeLayoutsSkipped` names those layouts; the installer also writes them to `brands/<name>/.deckster-source.json` with the source and commit. A data layout in `layouts.ts` that falls back to a skipped code layout is installed with a warning. Slides that use a skipped layout fail with `layout-code-skipped` until its folder is copied in from the brand's own repository; that is code that will run on the user's machine, so leave the decision to them. It reports the Fontsource commands separately. Missing Fontsource packages can be installed after the import. Repair an already installed package if its metadata or font files fail validation. Finish with `deckster brand check <name> --json`, then render a specimen. For a catalog failure, use `error.file` and `error.problems` when available to correct the source layout, then install that corrected ref.
 
@@ -101,7 +101,7 @@ All sizes are canvas pixels on 1920x1080. A colour is a literal (`#1f2937` or `o
 
 **`shape`**: `radius { sm, md, lg, xl }`, `stroke { hairline, regular, bold }`, `shadow { sm, md, lg }`. A shadow is `'none'` or a list of layers `{ x?, y, blur, spread?, color, inset? }`, for example `[{ y: 8, blur: 24, spread: -8, color: 'ink.950/14' }]`. CSS shadow strings are not accepted; the emitter converts one from the draft. There is no pill radius: use a large `xl`.
 
-**`spacing`**: `scale { 2xs, xs, sm, md, lg, xl, 2xl, 3xl }`, `margin { x, y }` (the slide's safe area), `grid { columns, gutter }`.
+**`spacing`**: `scale { 2xs, xs, sm, md, lg, xl, 2xl, 3xl }`, `margin { x, y }` (the slide's safe area), `grid { columns, gutter, rows }`. `rows` (v0.10.0 and newer, default 6) sets the rows that placed elements snap to with `cols`/`rows` on slides; the emitter does not write it, so add it by hand only when the source has a clear row structure.
 
 **`logo`**: `variants: { <name>: { file: 'logos/x.svg', aspect } }` (aspect is width over height), `default`, `clearSpace` (a multiple of the logo height), `placement { corner, height }`. Which variant shows on which surface is set on the surface (`logo: 'reversed'`).
 
@@ -132,7 +132,7 @@ All sizes are canvas pixels on 1920x1080. A colour is a literal (`#1f2937` or `o
 
 ## Diagram design controls
 
-The expanded controls require a Deckster build that contains the diagram design changes. v0.7.0 supports the base look and cards described above. On a compatible build, add these literal fields to the top-level `diagram` or the specified card after the final emit. The bundled Python scripts emit the base look and enforce its older subset. See [how to record and apply the newer values](synthesis.md#applying-expanded-diagram-controls).
+The expanded controls require v0.8.0 or newer. Earlier releases support only the base look and cards described above. On v0.8.0 or newer, add these literal fields to the top-level `diagram` or the specified card after the final emit. The bundled Python scripts emit the base look and enforce its older subset. See [how to record and apply the newer values](synthesis.md#applying-expanded-diagram-controls).
 
 | Field | Accepted values and behavior |
 |---|---|
@@ -160,7 +160,7 @@ The schema rejects values that could leave their place in the compiled CSS or na
 | Easing | `[x1, y1, x2, y2]` with x from 0 to 1 and y from -5 to 5. Durations 0 to 3000 ms. |
 | `axes` values | -1000 to 1000. |
 | `lineHeight`, `tracking`, `weight` | 0.7 to 2.5; -0.1 to 0.5; 1 to 1000. |
-| `grid.columns`, `logo.clearSpace`, logo `aspect`, `icons.strokeWidth` | 1 to 24 (whole); 0 to 10; above 0 up to 50; 0.5 to 4. |
+| `grid.columns`, `grid.rows`, `logo.clearSpace`, logo `aspect`, `icons.strokeWidth` | 1 to 24 (whole); 1 to 12 (whole); 0 to 10; above 0 up to 50; 0.5 to 4. |
 | `oklch()` | Lightness and alpha at most 1 (or 100%), chroma at most 1, hue at most 360. Hex is `#rgb`, `#rgba`, `#rrggbb` or `#rrggbbaa`. Nothing else is a colour: no `rgb()`, no names, no `var()`. |
 | Family names (`family`, each `fallback` entry, `substitute.family`) | Letters, digits, spaces and `- _ . ' & +`, starting with a letter, digit or hyphen, at most 100 characters. No quotes, commas, slashes, semicolons or braces. |
 | `features`, and the keys of `axes` | Four-character OpenType tags: `tnum`, `ss01`, `wght`, `opsz`. Not `"ss01" 1`. |

@@ -1,6 +1,6 @@
 {
   "skill_name": "create-presentation",
-  "notes": "Cases and expectations inherited from earlier runs of the repository-bound skill, so some use the deckster repository (pnpm deck, decks/showcase, brands/nocturne). Historical statuses describe earlier runs. Run evaluations in isolated temporary copies; keep outputs outside the working tree. Fixture paths are relative to this skill directory.",
+  "notes": "Cases and expectations inherited from earlier runs of the repository-bound skill, so some use the deckster repository (pnpm deckster, decks/showcase, brands/nocturne). Historical statuses describe earlier runs. Run evaluations in isolated temporary copies; keep outputs outside the working tree. Fixture paths are relative to this skill directory.",
   "evals": [
     {
       "id": 1,
@@ -239,12 +239,45 @@
         "No invented numbers, customers or quotes: every figure is from the prompt or derived with its arithmetic shown",
         "The reply asks at most three questions, none about information already given"
       ]
+    },
+    {
+      "id": 13,
+      "name": "slide-chart-placed-badge",
+      "prompt": "Adding one slide to my monthly product review deck (default brand, presented live). Weekly active teams by month: Jan 120, Feb 135, Mar 150, Apr 210, May 260, Jun 300. We launched the Slack integration on 2 April. June isn't closed yet, so put a small \"Preliminary\" badge in a top corner of the slide, and the source line \"Product analytics, weekly active teams\" at the bottom. Speaker notes too.",
+      "expected_output": "One chart slide whose title states the post-launch growth, with the April change highlighted or annotated, a short \"Preliminary\" badge placed with a named place or grid cells, the source at the foot of the slide, and notes.",
+      "files": [],
+      "expectations": [
+        "The slide is a `chart` slide (or another layout whose catalog entry accepts the chart) showing the six months as a line or bar chart, with April onward highlighted or annotated",
+        "The title is a full sentence stating the takeaway with a figure from the data (for example 150 to 300 teams, or doubling since the launch), and any derived figure is arithmetically correct",
+        "The \"Preliminary\" badge is a top-level `<Shape>` or `<Text>` positioned with `place` or `cols`/`rows`, not with a pixel `box`, not nested inside a slot or another component, and not a reason to switch to a different layout",
+        "The badge text is a few words, and the slide has at most four placed elements",
+        "The source appears at the bottom of the slide, as the layout's footnote or a `<Text>` in `zone=\"footer\"`, and is not written as a claim",
+        "`deckster lint <deck>` reports no errors and no `placed-*` warnings for the slide",
+        "The slide's screenshot was viewed, and the badge neither covers the chart's marks or labels nor collides with corner chrome",
+        "Speaker notes are present and add to the slide rather than repeating it"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "outline-title-then-photo",
+      "prompt": "I'm opening our all-hands next Friday (about 200 people in the room, default brand, 10 minutes) with the news that our new Harbourside depot is open. I have one good wide photo of the depot. For the first slide I want the title on its own first, and then the photo appearing when I click. After that: deliveries per day from the depot went from 0 to 340 in its first three weeks, and two teams (dispatch and fleet) moved in. Give me the outline only; don't build anything yet.",
+      "expected_output": "An outline, no slide files, whose opening slide uses the `image-reveal` layout (title beat, then the photo revealed on one click) and whose later slides carry the depot figures and the two teams with assertion titles.",
+      "files": [],
+      "expectations": [
+        "No slide files are created; the reply shows the outline and stops for review",
+        "The opening slide uses the `image-reveal` layout with the depot photo as its `<Media>`, not a `title` slide with a `<Step>`, an `image` slide plus a separate cover, or a hand-built animation",
+        "The opening's Build column records one click from the title beat to the docked title and the photo",
+        "Every layout named in the outline exists in `deckster layouts --summary`, and each title fits that layout's title length",
+        "Content-slide titles are full-sentence assertions, and the 0-to-340 deliveries figure appears on a slide",
+        "No numbers, team names or claims beyond the prompt are invented"
+      ]
     }
   ],
   "changelog": [
     "After iteration 1: eval 2 question limit changed from two to three. Both configurations failed 'at most two'; the with-skill run's four questions were all substantive review questions, so two was an arbitrary bar. Three matches the skill's revised guidance. Iteration-1 gradings keep the original wording.",
     "After iteration 1: eval 7 assertion arithmetic corrected ($17.3M total growth and 55%, not $16.5M and 58%). The iteration-1 grader had already graded against the recomputed figures.",
     "Added case 11 (render-conference-talk-builds) and a build expectation to cases 8 to 10, after a deck written with the skill showed nearly every evidence slide all at once. The expectation checks that builds follow the notes, carry [click] cues and leave whole slides whole, and that `deckster lint` reports no few-builds warning.",
-    "Added case 12 (outline-pitch-layouts) when the kit gained the `screen`, `matrix`, `equation`, `ask`, `proof` and `columns` layouts and the team's `edge` line. It checks that an outline picks the layout each pitch job has rather than its near miss (a screenshot in `split`, a `<Scatter>` of invented positions, a quote and a stats slide for one customer)."
+    "Added case 12 (outline-pitch-layouts) when the kit gained the `screen`, `matrix`, `equation`, `ask`, `proof` and `columns` layouts and the team's `edge` line. It checks that an outline picks the layout each pitch job has rather than its near miss (a screenshot in `split`, a `<Scatter>` of invented positions, a quote and a stats slide for one customer).",
+    "Added case 13 (slide-chart-placed-badge) and case 14 (outline-title-then-photo) when v0.10.0 added placed elements (`<Shape>`, `<Text>`, `<Place>`) and the `image-reveal` layout. Case 13 checks that a badge and a source line are placed by name or grid on a chart slide and lint clean of `placed-*` findings; case 14 checks that a title-then-photo opening picks `image-reveal` rather than a hand-built build."
   ]
 }
