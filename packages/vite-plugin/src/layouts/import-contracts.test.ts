@@ -1245,6 +1245,18 @@ describe('contract check process regressions', () => {
           "process, ['uncaughtException', () => {}]);",
         'prependListener',
       ],
+      [
+        'derived',
+        'Object.getPrototypeOf(Object.getPrototypeOf(process)).on.call(Object.create(process), ' +
+          "'exit', () => {});",
+        'on',
+      ],
+      [
+        'borrowed',
+        'Object.getPrototypeOf(Object.getPrototypeOf(process)).once.call(' +
+          "{ get _events() { return process._events; } }, 'exit', () => {});",
+        'once',
+      ],
     ] as const;
     try {
       writeFiles(root, {

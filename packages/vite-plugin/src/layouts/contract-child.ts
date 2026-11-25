@@ -465,7 +465,7 @@ function setProcessStateTraps(): string | undefined {
         configurable: false,
         writable: false,
         value: function (this: unknown, ...args: unknown[]) {
-          if (this === process && trapsArmed() && mutatesProcess(key, args)) {
+          if (sharesProcessEvents(this) && trapsArmed() && mutatesProcess(key, args)) {
             throw trapped(`process.${key}`);
           }
 
@@ -496,6 +496,29 @@ function mutatesProcess(key: string, args: readonly unknown[]): boolean {
     (key === 'removeAllListeners' && args.length === 0) ||
     (typeof event === 'string' && (event.startsWith('SIG') || PROCESS_EVENTS.has(event)))
   );
+}
+
+/**
+ * Whether an emitter method would change the listeners of `process`: it is called on `process`, or
+ * on an object that reaches the same listener store (one made with `process` as its prototype, or
+ * one whose `_events` returns that store).
+ *
+ * @param receiver - The `this` of the emitter method.
+ */
+function sharesProcessEvents(receiver: unknown): boolean {
+  if (receiver === process) {
+    return true;
+  }
+
+  if (receiver === null || (typeof receiver !== 'object' && typeof receiver !== 'function')) {
+    return false;
+  }
+
+  try {
+    return Reflect.get(receiver, '_events') === Reflect.get(process, '_events');
+  } catch {
+    return true;
+  }
 }
 
 /**
