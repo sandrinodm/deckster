@@ -1,12 +1,16 @@
 /*
  * A stat as a card: a rule on top, then the figure, its label and its delta, as the stats layout
- * and the stat-row chart draw it. The stats layout sets how many columns a card spans
- * (`--kit-stat-span`) in `stats-layout.css`.
+ * and the stat-row chart draw them. A layout or chart opts in by setting `data-kit-stat-cards` on
+ * the element that holds its cards, not by its name or its classes, which other kit components
+ * render too; so a layout ejected from the kit, which renames the attribute, is styled by its own
+ * copy of these rules alone. The `:where()` adds no specificity. The stats layout sets how many
+ * columns a card spans (`--kit-stat-span`) in `stats-layout.css`; the figure and the delta are
+ * drawn by `foundation/stat-figure.css`.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
-  .kit-stat {
+  :where([data-kit-stat-cards]) .kit-stat {
     grid-column: span var(--kit-stat-span);
     grid-row: span 3;
     display: grid;
@@ -17,71 +21,19 @@
     border-top: var(--brand-stroke-regular) solid var(--brand-color-muted);
   }
 
-  .kit-stat[data-highlight='true'] {
+  :where([data-kit-stat-cards]) .kit-stat[data-highlight='true'] {
     border-top: var(--brand-stroke-bold) solid var(--brand-color-accent);
   }
 
-  .kit-stat-value {
-    display: block;
-    align-self: end;
-    width: 100%;
-    overflow: visible;
-    white-space: nowrap;
-    color: var(--brand-color-heading);
-    padding-bottom: 0.06em;
-  }
-
-  .kit-stat[data-highlight='true'] .kit-stat-value {
+  :where([data-kit-stat-cards]) .kit-stat[data-highlight='true'] .kit-stat-value {
     color: var(--brand-color-accent);
   }
 
-  .kit-stat-unit {
-    font-size: 0.5em;
-    letter-spacing: 0;
-    vertical-align: 0.06em;
-  }
-
-  .kit-stat-unit[data-side='before'] {
-    margin-inline-end: 0.08em;
-  }
-
-  .kit-stat-unit[data-side='after'] {
-    margin-inline-start: 0.06em;
-  }
-
-  .kit-stat-unit[data-side='after'][data-spaced='true'] {
-    margin-inline-start: 0.24em;
-  }
-
-  .kit-stat-label {
+  :where([data-kit-stat-cards]) .kit-stat-label {
     min-height: 2lh;
     margin-top: var(--brand-space-sm);
     max-width: 18em;
     color: var(--brand-color-fg);
     text-wrap: balance;
-  }
-
-  .kit-stat-delta {
-    display: flex;
-    align-items: center;
-    gap: 0.4em;
-    min-height: 1lh;
-    margin-top: var(--brand-space-xs);
-    color: var(--brand-color-muted);
-    white-space: nowrap;
-  }
-
-  .kit-stat-delta[data-tone='positive'] {
-    color: var(--brand-color-positive-text);
-  }
-
-  .kit-stat-delta[data-tone='negative'] {
-    color: var(--brand-color-negative-text);
-  }
-
-  .kit-stat-arrow {
-    flex: none;
-    width: 0.62em;
-    height: 0.62em;
   }
 }

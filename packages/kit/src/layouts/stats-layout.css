@@ -3,7 +3,7 @@
  * footnote, so it sits at the same height on every stats slide of a brand. Each stat spans three
  * shared rows (figure, label, delta) through a subgrid, so labels of different lengths never push
  * the deltas out of line. The stats themselves are drawn by `stat-cards.css`, which the stat-row
- * chart shares.
+ * chart shares and the row opts into with `data-kit-stat-cards`.
  */
 @layer theme, base, components, utilities;
 

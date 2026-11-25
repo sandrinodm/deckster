@@ -2,17 +2,18 @@
  * What the display layouts (title, section, statement, image-reveal) share when `align: center`
  * centres them: the eyebrow is centred too, between two rules, the second a mirror of the one
  * before it; and the middle of the slide is cleared of the surface's background art. A layout opts
- * in by setting `data-display-align` on its frame (with `data-align`), not by its name, so a code
- * layout that replaces one of them gets these rules only if it asks for them.
+ * in by setting `data-kit-display-align` on its frame (with `data-align`), not by its name, so a
+ * code layout that replaces one of them gets these rules only if it asks for them, and a layout
+ * ejected from the kit, which renames the attribute, is styled by its own copy of them alone.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
-  .kit-frame[data-display-align][data-align='center'] .kit-eyebrow {
+  .kit-frame[data-kit-display-align][data-align='center'] .kit-eyebrow {
     justify-content: center;
   }
 
-  .kit-frame[data-display-align][data-align='center'] .kit-eyebrow:not(:empty)::after {
+  .kit-frame[data-kit-display-align][data-align='center'] .kit-eyebrow:not(:empty)::after {
     content: '';
     flex: none;
     width: 1.4em;
@@ -31,7 +32,7 @@
    * or the slide's own `background:`) is kept readable by its tint, so a hole would show the color
    * under it.
    */
-  .kit-frame[data-display-align][data-align='center']
+  .kit-frame[data-kit-display-align][data-align='center']
     > .kit-backdrop:not(:has([data-backdrop-layer]:not([data-backdrop-kind='placed']))) {
     mask-image: radial-gradient(closest-side, transparent 60%, #000);
   }

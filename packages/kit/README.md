@@ -143,13 +143,15 @@ its contract. The kit supports that in four places:
   says `replaces: true`; `checkReplacedSlides` in `@deckster/vite-plugin` checks real slides.
 - **Stylesheets do not depend on a layout that may not load.** The centred display alignment
   (`display-align.css`: the centred eyebrow between two rules and the cleared backdrop) applies to a
-  frame that sets `data-display-align` together with `data-align`, and the kit's `title`, `section`,
-  `statement` and `image-reveal` set it, not their `data-layout` name, so a replacement gets those
-  rules only by asking. The stat card styles are in `stat-cards.css`, shared by the stats layout
-  and the `stat-row` chart, the photo scrim (`.kit-image-scrim`) is in `image-scrim.css`, shared
-  by the `image` layout and the `title` layout's full-bleed cover, and `<Image>` has its own frame
-  and caption styles in `media/media.css`, so each still draws when the layout that used to supply
-  them is replaced.
+  frame that sets `data-kit-display-align` together with `data-align`, and the kit's `title`,
+  `section`, `statement` and `image-reveal` set it, not their `data-layout` name, so a replacement
+  gets those rules only by asking. The stat card styles are in `stat-cards.css`, shared by the stats
+  layout and the `stat-row` chart, which set `data-kit-stat-cards` on their row of cards; a stat's
+  figure and delta are styled by `StatValue` and `StatDelta` themselves
+  (`foundation/stat-figure.css`), wherever they stand. The photo scrim (`.kit-image-scrim`) is in
+  `image-scrim.css`, shared by the `image` layout and the `title` layout's full-bleed cover, and
+  `<Image>` has its own frame and caption styles in `media/media.css`, so each still draws when the
+  layout that used to supply them is replaced.
 
 ## Exports
 
@@ -257,8 +259,11 @@ the design decisions behind them.
   no JSX, no browser code, and the component imports its contract only as a type.
 - A layout's stylesheet must not rely on another layout's stylesheet being loaded: a code layout may
   replace that layout, and its CSS is then never imported. Put what two layouts share in a
-  stylesheet of its own (`stat-cards.css`, `display-align.css`) and key it on a data attribute the
-  layout sets, not on a layout's name.
+  stylesheet of its own (`stat-cards.css`, `display-align.css`) and key every rule on a
+  `data-kit-<stylesheet>` attribute the layout sets (with `:where()` when it must add no
+  specificity), not on a layout's name or on classes alone. `deckster layouts eject` renames that
+  attribute in an ejected copy, so the kit's rules never reach it, and reports a rule keyed on
+  neither the attribute nor a class only the layouts use.
 - Budgets count content (`maxWords`, `maxBullets`, and `maxLines` only for code), never the room
   it takes. Whether text fits a brand is for the overflow rules.
 - When you change a limit or a layout, add or update its worst case in

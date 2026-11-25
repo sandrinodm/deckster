@@ -57,7 +57,7 @@ function TitleLayout({ frontmatter, slots }: LayoutProps<typeof titleLayoutContr
       variant={{
         'data-media': String(hasMedia),
         'data-picture': hasMedia ? frontmatter.picture : undefined,
-        'data-display-align': '',
+        'data-kit-display-align': '',
         'data-align': hasMedia ? 'left' : frontmatter.align,
       }}
       backdrop={!isFull}

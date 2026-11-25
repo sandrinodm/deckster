@@ -2,9 +2,13 @@ import { describe, expect, it } from '@effect/vitest';
 
 import {
   kitClassTokens,
+  ownAttributeName,
+  renameAttributes,
   renameClasses,
   scopeStylesheet,
+  selectorAttributes,
   selectorClasses,
+  unownedSelectors,
 } from '#layouts/eject/scope-css.ts';
 
 describe('renameClasses', () => {
@@ -243,6 +247,79 @@ describe('scopeStylesheet', () => {
         ".kit-frame:not([data-layout='image']) .kit-caption names a data-layout",
       ),
       expect.stringContaining('names a data-layout inside :not()'),
+    ]);
+  });
+});
+
+describe('renameAttributes', () => {
+  it('renames whole kit opt-in attributes only, in selectors, markup and comments', () => {
+    const attributes = new Set(['data-kit-stat-cards']);
+    const text = [
+      '/* Opt in with `data-kit-stat-cards`. */',
+      ':where([data-kit-stat-cards]) .kit-stat, [data-kit-stat-cards-wide] .x { color: red; }',
+      '<div data-kit-stat-cards="" data-kit-display-align="" /> { \'data-kit-stat-cards\': \'\' }',
+      '[data-stat-cards], [data-kit-stat] { --data-kit-stat-cards: 1; }',
+    ].join('\n');
+    expect(renameAttributes(text, attributes, 'brand')).toBe(
+      [
+        '/* Opt in with `data-own-stat-cards`. */',
+        ':where([data-own-stat-cards]) .kit-stat, [data-kit-stat-cards-wide] .x { color: red; }',
+        '<div data-own-stat-cards="" data-kit-display-align="" /> { \'data-own-stat-cards\': \'\' }',
+        '[data-stat-cards], [data-kit-stat] { --data-kit-stat-cards: 1; }',
+      ].join('\n'),
+    );
+  });
+
+  it("gives a brand's copy and a deck's copy names as long as the kit's", () => {
+    expect(ownAttributeName('data-kit-display-align', 'brand')).toBe('data-own-display-align');
+    expect(ownAttributeName('data-kit-display-align', 'deck')).toBe('data-dck-display-align');
+    expect(renameAttributes('[data-kit-x]', new Set(), 'deck')).toBe('[data-kit-x]');
+  });
+
+  it('lists the kit opt-in attributes a stylesheet selects, comments left out', () => {
+    const css = [
+      '/* [data-kit-commented] */',
+      ".kit-frame[data-kit-display-align][data-align='center'] .kit-eyebrow {}",
+      ':where([ data-kit-stat-cards ]) .kit-stat, [data-kit-stat-cards="x"] .y {}',
+      '[data-layout] [data-kitchen] {}',
+    ].join('\n');
+    expect(selectorAttributes(css)).toEqual(['data-kit-display-align', 'data-kit-stat-cards']);
+  });
+});
+
+describe('unownedSelectors', () => {
+  it('lists the selectors keyed on neither a renamed class nor a renamed attribute', () => {
+    const css = [
+      '@layer components {',
+      '  /* A comment, then a rule keyed on the attribute. */',
+      '  :where([data-kit-stat-cards]) .kit-stat,',
+      '  .kit-stat-label {',
+      '    color: red;',
+      '  }',
+      '',
+      '  @media (width < 800px) {',
+      '    .kit-scrim > .kit-eyebrow,',
+      '    .kit-scrim + .kit-eyebrow {',
+      '      color: blue;',
+      '    }',
+      '  }',
+      '',
+      '  @keyframes kit-fade {',
+      '    from {',
+      '      opacity: 0;',
+      '    }',
+      '  }',
+      '}',
+      '',
+    ].join('\n');
+    expect(unownedSelectors(css, new Set(['kit-scrim']), new Set(['data-kit-stat-cards']))).toEqual(
+      ['.kit-stat-label'],
+    );
+    expect(unownedSelectors(css, new Set(), new Set())).toEqual([
+      ':where([data-kit-stat-cards]) .kit-stat',
+      '.kit-stat-label',
+      '.kit-scrim > .kit-eyebrow',
+      '.kit-scrim + .kit-eyebrow',
     ]);
   });
 });

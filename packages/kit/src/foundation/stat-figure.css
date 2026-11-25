@@ -1,0 +1,61 @@
+/*
+ * A stat's figure and its delta, as `StatValue` and `StatDelta` draw them wherever they stand: the
+ * figure on one line in the heading colour, a unit before or after it at half its size, and the
+ * delta in the tone of the change with its arrow. A layout or chart that sets a figure differently
+ * keys its own rule on its frame or its figure's class.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-stat-value {
+    display: block;
+    align-self: end;
+    width: 100%;
+    overflow: visible;
+    white-space: nowrap;
+    color: var(--brand-color-heading);
+    padding-bottom: 0.06em;
+  }
+
+  .kit-stat-unit {
+    font-size: 0.5em;
+    letter-spacing: 0;
+    vertical-align: 0.06em;
+  }
+
+  .kit-stat-unit[data-side='before'] {
+    margin-inline-end: 0.08em;
+  }
+
+  .kit-stat-unit[data-side='after'] {
+    margin-inline-start: 0.06em;
+  }
+
+  .kit-stat-unit[data-side='after'][data-spaced='true'] {
+    margin-inline-start: 0.24em;
+  }
+
+  .kit-stat-delta {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    min-height: 1lh;
+    margin-top: var(--brand-space-xs);
+    color: var(--brand-color-muted);
+    white-space: nowrap;
+  }
+
+  .kit-stat-delta[data-tone='positive'] {
+    color: var(--brand-color-positive-text);
+  }
+
+  .kit-stat-delta[data-tone='negative'] {
+    color: var(--brand-color-negative-text);
+  }
+
+  .kit-stat-arrow {
+    flex: none;
+    width: 0.62em;
+    height: 0.62em;
+  }
+}

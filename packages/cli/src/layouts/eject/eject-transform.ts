@@ -21,9 +21,12 @@ import {
 import { limitsSource } from '#layouts/eject/limits-source.ts';
 import {
   kitClassTokens,
+  renameAttributes,
   renameClasses,
   scopeStylesheet,
+  selectorAttributes,
   selectorClasses,
+  unownedSelectors,
   type ClassOwner,
 } from '#layouts/eject/scope-css.ts';
 
@@ -167,6 +170,15 @@ export type EjectSource = {
   readonly sharedStyleClasses: ReadonlyMap<string, ReadonlySet<string>>;
 
   /**
+   * For each stylesheet layouts share (the files of {@link sharedStyleClasses}), the `data-kit-…`
+   * attributes its rules select: the attribute a kit layout or component sets to opt into its
+   * rules, such as `data-kit-stat-cards`. A layout's copy renames them in its files and in its copy
+   * of the stylesheet, so the kit's copy never styles the ejected layout's markup, even through
+   * classes kit components outside the layouts render too.
+   */
+  readonly sharedStyleAttributes: ReadonlyMap<string, ReadonlySet<string>>;
+
+  /**
    * Problems that keep any layout from being ejected, such as two helpers with one file name.
    */
   readonly problems: readonly string[];
@@ -240,6 +252,12 @@ type Job = {
   readonly layoutClasses: ReadonlySet<string>;
 
   /**
+   * The `data-kit-…` attributes renamed in this layout's own files and in its copies of shared
+   * stylesheets: those its shared stylesheets select.
+   */
+  readonly layoutAttributes: ReadonlySet<string>;
+
+  /**
    * The stylesheets of other kit layouts that the layout's own files import, which are copied into
    * its folder, scoped to it and stripped of the kit names of the classes they own.
    */
@@ -293,18 +311,21 @@ export function readEjectSource(srcDir: string = KIT_SRC_DIR): EjectSource {
 
   const layoutOwnFiles = new Set(Object.values(closures).flatMap((closure) => closure.own));
   const sharedStyleClasses = new Map<string, ReadonlySet<string>>();
+  const sharedStyleAttributes = new Map<string, ReadonlySet<string>>();
   for (const closure of Object.values(closures)) {
     for (const file of sharedStylesOf(closure, helperClasses)) {
       if (sharedStyleClasses.has(file)) {
         continue;
       }
 
-      const owned = selectorClasses(readSource(srcDir, file)).filter((name) =>
+      const text = readSource(srcDir, file);
+      const owned = selectorClasses(text).filter((name) =>
         [...(mentions.get(name) ?? [])].every(
           (mention) => mention === file || layoutOwnFiles.has(mention),
         ),
       );
       sharedStyleClasses.set(file, new Set(owned));
+      sharedStyleAttributes.set(file, new Set(selectorAttributes(text)));
     }
   }
 
@@ -314,6 +335,7 @@ export function readEjectSource(srcDir: string = KIT_SRC_DIR): EjectSource {
     closures,
     helperClasses,
     sharedStyleClasses,
+    sharedStyleAttributes,
     problems: sharedNameClashes([...copied, ...helperStyles]),
   };
 }
@@ -334,9 +356,13 @@ export function readEjectSource(srcDir: string = KIT_SRC_DIR): EjectSource {
  * - A stylesheet the layout shares with other kit layouts (one it imports that is neither its own nor
  *   a copied helper's, such as `image-scrim.css`) is copied into its folder and scoped to the
  *   layout (see `scopeStylesheet`), and the classes it owns are renamed like a helper's, in the
- *   copy and in the layout's files. The kit's copy stays loaded for the kit layouts that still use
- *   it, and the rename keeps its rules off the ejected layout's markup and the copy's rules off
- *   theirs.
+ *   copy and in the layout's files. So are the `data-kit-…` attributes its rules select, which kit
+ *   layouts and components set to opt into a stylesheet whose classes kit components outside the
+ *   layouts render too (`display-align.css`, `stat-cards.css`): `data-kit-stat-cards` becomes
+ *   `data-own-stat-cards` or `data-dck-stat-cards`. The kit's copy stays loaded for the kit layouts
+ *   and components that still use it, and the renames keep its rules off the ejected layout's
+ *   markup and the copy's rules off theirs. A rule of the kit's copy keyed on neither an owned
+ *   class nor an opt-in attribute would still reach the ejected layout, and is reported.
  * - `limits.ts` holds the given limit cases.
  * - Kit source with CRLF line endings is read as LF, so the output is the same on any checkout.
  *
@@ -364,16 +390,18 @@ export function transformLayout(
   }
 
   const helperStyles = closure.css.filter((file) => source.helperClasses.has(file));
+  const sharedStyles = sharedStylesOf(closure, source.helperClasses);
   const job: Job = {
     source,
     name,
     closure,
     layoutClasses: new Set([
       ...helperStyles.flatMap((file) => [...(source.helperClasses.get(file) ?? [])]),
-      ...sharedStylesOf(closure, source.helperClasses).flatMap((file) => [
-        ...(source.sharedStyleClasses.get(file) ?? []),
-      ]),
+      ...sharedStyles.flatMap((file) => [...(source.sharedStyleClasses.get(file) ?? [])]),
     ]),
+    layoutAttributes: new Set(
+      sharedStyles.flatMap((file) => [...(source.sharedStyleAttributes.get(file) ?? [])]),
+    ),
     localStyles: new Set(),
     owner,
     addsStylesheet: !closure.own.some((file) => file.endsWith('.css')),
@@ -394,7 +422,17 @@ export function transformLayout(
       job.problems.push(`Two files of the layout would be named ${local}.`);
     }
 
-    const scoped = scopeStylesheet(readSource(source.srcDir, file), name);
+    const text = readSource(source.srcDir, file);
+    const reached = unownedSelectors(text, job.layoutClasses, job.layoutAttributes);
+    job.problems.push(
+      ...reached.map(
+        (selector) =>
+          `${file}: the kit's copy of its rule for ${selector} would still style the ejected ` +
+          'layout. Key the rule on a class the stylesheet owns or on a data-kit-… attribute the ' +
+          'layouts that use it set.',
+      ),
+    );
+    const scoped = scopeStylesheet(renameAttributes(text, job.layoutAttributes, owner), name);
     job.problems.push(...scoped.problems.map((problem) => `${file}: ${problem}`));
     files[local] = renameClasses(scoped.css, job.layoutClasses, owner);
   }
@@ -458,7 +496,8 @@ function placementOf(job: Job, file: string, importer: Placement): Placement | u
 function transformFile(job: Job, file: string): string {
   const isOwn = job.closure.own.includes(file);
   const classes = isOwn ? job.layoutClasses : allHelperClasses(job.source);
-  const text = readSource(job.source.srcDir, file);
+  const attributes = isOwn ? job.layoutAttributes : new Set<string>();
+  const text = renameAttributes(readSource(job.source.srcDir, file), attributes, job.owner);
   if (file.endsWith('.css')) {
     if (CSS_IMPORT.test(text)) {
       job.problems.push(`${file} imports another stylesheet, which eject does not follow.`);

@@ -232,7 +232,9 @@ function drawStatRow(props: StatRowProps, input: DrawInput): ChartDrawing {
   const { theme } = input;
   const stats = props.stats.map((stat) => resolveStat(stat, props, theme));
   const plot = (
-    <FitGroup className="kit-stat-row" variant={{ 'data-count': stats.length }}>
+    <FitGroup
+      className="kit-stat-row"
+      variant={{ 'data-count': stats.length, 'data-kit-stat-cards': '' }}>
       {stats.map((stat, index) => (
         <div key={index} className="kit-stat" data-highlight={stat.highlight}>
           <StatValue value={stat.text} />

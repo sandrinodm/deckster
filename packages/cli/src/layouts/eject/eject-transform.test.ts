@@ -206,7 +206,8 @@ describe('transformLayout', () => {
   it('scopes the stylesheets the title shares with other kit layouts to the title', () => {
     const { files } = layout('title');
     expect(files['display-align.css']).toContain(
-      ".kit-frame:where([data-layout='title'])[data-display-align][data-align='center'] .kit-eyebrow {",
+      ".kit-frame:where([data-layout='title'])[data-own-display-align][data-align='center']\n" +
+        '    .kit-eyebrow {',
     );
     const image = files['image-scrim.css'] ?? '';
     expect(image).toContain(":where(.kit-frame[data-layout='title']) .own-image-scrim {");
@@ -216,7 +217,7 @@ describe('transformLayout', () => {
     }
 
     expect(layout('stats').files['stat-cards.css']).toContain(
-      ":where(.kit-frame[data-layout='stats']) .kit-stat-value {",
+      ":where(.kit-frame[data-layout='stats']) :where([data-own-stat-cards]) .kit-stat {",
     );
   });
 
@@ -245,7 +246,67 @@ describe('transformLayout', () => {
     expect(source.sharedStyleClasses.get('layouts/display-align.css')).toEqual(new Set());
     expect(source.sharedStyleClasses.get('layouts/stat-cards.css')).toEqual(new Set());
     expect(layout('title').files['display-align.css']).toContain('.kit-eyebrow');
-    expect(layout('stats').files['stat-cards.css']).toContain('.kit-stat-unit');
+    expect(layout('stats').files['stat-cards.css']).toContain('.kit-stat-label');
+  });
+
+  it('renames the attributes kit layouts opt into a shared stylesheet with, in the copy and the markup', () => {
+    expect(source.sharedStyleAttributes.get('layouts/display-align.css')).toEqual(
+      new Set(['data-kit-display-align']),
+    );
+    expect(source.sharedStyleAttributes.get('layouts/stat-cards.css')).toEqual(
+      new Set(['data-kit-stat-cards']),
+    );
+    expect(source.sharedStyleAttributes.get('layouts/image-scrim.css')).toEqual(new Set());
+    const cases = [
+      ['title', 'display-align.css', "'data-$-display-align': ''", '[data-$-display-align]'],
+      ['section', 'display-align.css', "'data-$-display-align': ''", '[data-$-display-align]'],
+      ['statement', 'display-align.css', "'data-$-display-align': ''", '[data-$-display-align]'],
+      ['image-reveal', 'display-align.css', "'data-$-display-align': ''", '[data-$-display-align]'],
+      [
+        'stats',
+        'stat-cards.css',
+        'data-$-stat-cards=""',
+        ':where([data-$-stat-cards]) .kit-stat {',
+      ],
+    ] as const;
+    for (const owner of ['brand', 'deck'] as const) {
+      const prefix = owner === 'brand' ? 'own' : 'dck';
+      for (const [name, copy, markup, rule] of cases) {
+        const result = transformLayout(source, name, [], owner);
+        expect(result.problems).toEqual([]);
+        for (const [file, text] of Object.entries({ ...result.files, ...result.shared })) {
+          expect(text, `${name}/${file}`).not.toMatch(
+            /(?<![\w-])data-kit-(?:display-align|stat-cards)/u,
+          );
+        }
+
+        expect(result.files['layout.tsx']).toContain(markup.replace('$', prefix));
+        expect(result.files[copy]).toContain(rule.replace('$', prefix));
+      }
+    }
+  });
+
+  it('keeps the kit opt-in attributes in layouts that do not share the stylesheet', () => {
+    expect(layout('stats').files['layout.tsx']).not.toContain('display-align');
+    expect(layout('title').files['layout.tsx']).not.toContain('stat-cards');
+    expect(layout('ask').files['layout.css']).toBe(
+      fs.readFileSync(path.join(KIT_SRC_DIR, 'layouts/ask-layout.css'), 'utf8'),
+    );
+  });
+
+  it('says so when a rule of a shared stylesheet is keyed on nothing the copy renames', () => {
+    const srcDir = changedKit(
+      'layouts/stat-cards.css',
+      (text) => `${text}\n@layer components {\n  .kit-stat-label {\n    color: red;\n  }\n}\n`,
+    );
+    const changed = readEjectSource(srcDir);
+    const result = transformLayout(changed, 'stats', []);
+    expect(result.problems).toEqual([
+      "layouts/stat-cards.css: the kit's copy of its rule for .kit-stat-label would still style " +
+        'the ejected layout. Key the rule on a class the stylesheet owns or on a data-kit-… ' +
+        'attribute the layouts that use it set.',
+    ]);
+    expect(transformLayout(changed, 'title', []).problems).toEqual([]);
   });
 
   it('renames the classes of a copied helper everywhere the layout uses them', () => {

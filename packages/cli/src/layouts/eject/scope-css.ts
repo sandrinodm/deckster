@@ -1,7 +1,8 @@
 /**
- * The two changes `deckster layouts eject` makes to a kit stylesheet it copies, both on the text:
- * renaming the classes a copied helper or a shared stylesheet owns, and scoping a stylesheet a
- * layout shares with other kit layouts to the ejected layout.
+ * The changes `deckster layouts eject` makes to a kit stylesheet it copies, all on the text:
+ * renaming the classes a copied helper or a shared stylesheet owns and the `data-kit-…` attributes
+ * a shared stylesheet is opted into with, and scoping a stylesheet a layout shares with other kit
+ * layouts to the ejected layout.
  */
 
 /**
@@ -45,6 +46,23 @@ const KIT_CLASS_TOKEN = /(?<![\w-])kit-[a-z0-9]+(?:-[a-z0-9]+)*(?![\w-])/gu;
  * Matches a kit class in a selector, capturing the name.
  */
 const CLASS_SELECTOR = /\.(kit-[a-z0-9]+(?:-[a-z0-9]+)*)(?![\w-])/gu;
+
+/**
+ * The start of every attribute a shared kit stylesheet is opted into with, such as
+ * `data-kit-display-align`.
+ */
+const KIT_ATTRIBUTE_PREFIX = 'data-kit-';
+
+/**
+ * Matches a kit opt-in attribute wherever it is written as a whole word: `[data-kit-stat-cards]` in
+ * a selector, `'data-kit-stat-cards': ''` in a component.
+ */
+const KIT_ATTRIBUTE_TOKEN = /(?<![\w-])data-kit-[a-z0-9]+(?:-[a-z0-9]+)*(?![\w-])/gu;
+
+/**
+ * Matches a kit opt-in attribute in a selector, capturing the name.
+ */
+const ATTRIBUTE_SELECTOR = /\[\s*(data-kit-[a-z0-9]+(?:-[a-z0-9]+)*)(?![\w-])/gu;
 
 /**
  * Matches a CSS comment.
@@ -216,6 +234,109 @@ export function kitClassTokens(text: string): string[] {
 export function selectorClasses(css: string): string[] {
   const code = css.replace(CSS_COMMENT, '');
   return [...new Set([...code.matchAll(CLASS_SELECTOR)].map((match) => match[1] ?? ''))];
+}
+
+/**
+ * The kit opt-in attributes (`data-kit-…`) a stylesheet's rules select, comments left out.
+ *
+ * @param css - The stylesheet's text, or one selector.
+ * @returns The distinct attribute names, in the order first found.
+ */
+export function selectorAttributes(css: string): string[] {
+  const code = css.replace(CSS_COMMENT, '');
+  return [...new Set([...code.matchAll(ATTRIBUTE_SELECTOR)].map((match) => match[1] ?? ''))];
+}
+
+/**
+ * The name a kit opt-in attribute gets in a copy: `data-kit-stat-cards` becomes
+ * `data-own-stat-cards` in a brand's copy and `data-dck-stat-cards` in a deck's, as long as the
+ * kit's name, so a rename moves no line break.
+ *
+ * @param name - A `data-kit-…` attribute name.
+ * @param owner - Who owns the copy.
+ */
+export function ownAttributeName(name: string, owner: ClassOwner): string {
+  return `data-${OWN_CLASS_PREFIX[owner]}${name.slice(KIT_ATTRIBUTE_PREFIX.length)}`;
+}
+
+/**
+ * Renames kit opt-in attributes wherever they are written as whole words, in a stylesheet or a
+ * component. The kit's copy of a shared stylesheet keys its rules on the kit's name, so markup that
+ * carries the owner's name instead is styled by the owner's copy alone.
+ *
+ * @param text - The source text.
+ * @param attributes - The `data-kit-…` names to rename.
+ * @param owner - Who owns the copy.
+ * @returns The text with each of them given the owner's prefix.
+ */
+export function renameAttributes(
+  text: string,
+  attributes: ReadonlySet<string>,
+  owner: ClassOwner,
+): string {
+  if (attributes.size === 0) {
+    return text;
+  }
+
+  return text.replace(KIT_ATTRIBUTE_TOKEN, (token) =>
+    attributes.has(token) ? ownAttributeName(token, owner) : token,
+  );
+}
+
+/**
+ * The selectors of a stylesheet's rules that name none of the given classes and attributes, inside
+ * `@layer`, `@media`, `@supports` and `@container` too. Eject renames a shared stylesheet's owned
+ * classes and opt-in attributes in an ejected layout's markup, so a rule keyed on one of them never
+ * reaches that markup from the kit's copy; a rule keyed on neither would.
+ *
+ * @param css - The stylesheet's text.
+ * @param classes - The kit classes the copy renames.
+ * @param attributes - The `data-kit-…` attributes the copy renames.
+ * @returns Each such selector on one line, in the order found.
+ */
+export function unownedSelectors(
+  css: string,
+  classes: ReadonlySet<string>,
+  attributes: ReadonlySet<string>,
+): string[] {
+  const found: string[] = [];
+  collectUnowned(css, classes, attributes, found);
+  return found;
+}
+
+/**
+ * Adds the selectors of one block's rules that name none of the given classes and attributes.
+ */
+function collectUnowned(
+  content: string,
+  classes: ReadonlySet<string>,
+  attributes: ReadonlySet<string>,
+  found: string[],
+): void {
+  for (const item of splitItems(content).items) {
+    if (item.body === undefined) {
+      continue;
+    }
+
+    const atRule = AT_RULE_NAME.exec(item.prelude)?.[0];
+    if (atRule !== undefined) {
+      if (GROUPING_AT_RULES.has(atRule)) {
+        collectUnowned(item.body, classes, attributes, found);
+      }
+
+      continue;
+    }
+
+    for (const part of splitTopLevel(item.prelude.replace(CSS_COMMENT, '').trim(), ',')) {
+      const selector = part.trim().replace(WHITE_SPACE_RUN, ' ');
+      const owned =
+        selectorClasses(selector).some((name) => classes.has(name)) ||
+        selectorAttributes(selector).some((name) => attributes.has(name));
+      if (!owned) {
+        found.push(selector);
+      }
+    }
+  }
 }
 
 /**

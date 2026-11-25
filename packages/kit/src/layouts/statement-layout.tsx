@@ -118,7 +118,7 @@ function SetStatement({
       layout="statement"
       variant={{
         'data-quote': String(isQuote),
-        'data-display-align': '',
+        'data-kit-display-align': '',
         'data-align': frontmatter.align,
         'data-emphasis': frontmatter.emphasis,
       }}>
@@ -208,7 +208,7 @@ function GiantStatement({
       variant={{
         'data-size': 'giant',
         'data-quote': 'false',
-        'data-display-align': '',
+        'data-kit-display-align': '',
         'data-align': align,
         'data-emphasis': emphasis,
       }}>

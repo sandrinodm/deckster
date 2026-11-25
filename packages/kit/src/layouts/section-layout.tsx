@@ -56,7 +56,7 @@ function SectionLayout({
     <Frame
       layout="section"
       variant={{
-        'data-display-align': '',
+        'data-kit-display-align': '',
         'data-align': align,
         'data-numeral': isLarge ? 'large' : 'small',
         'data-media': String(hasMedia),

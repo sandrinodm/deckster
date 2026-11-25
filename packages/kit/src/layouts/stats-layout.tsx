@@ -50,7 +50,7 @@ function StatsLayout({ frontmatter, slots }: LayoutProps<typeof statsLayoutContr
           {slots.body}
         </div>
       )}
-      <div ref={rowRef} className="kit-stats kit-grid">
+      <div ref={rowRef} className="kit-stats kit-grid" data-kit-stat-cards="">
         {stats.map((stat, index) => (
           <div
             key={index}
