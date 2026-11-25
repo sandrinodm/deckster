@@ -134,41 +134,28 @@ checks that it is named like its folder and passes the build's contract checks.
    `@deckster/kit/layout-fields` and `@deckster/brand`, and `.ts` files in its own folder or in
    `layouts/_shared/`. Relative imports are followed; `import type` and `export type` are not.
 3. The check process (`src/layouts/contract-check.ts`, `contract-child.ts`). One Node process per
-   batch evaluates the contracts first, under Node's permission model: it may read only the
-   framework and its dependencies (`--allow-fs-read`), and may not write files, start processes or
-   workers, load addons, use WASI, the inspector or the network. It gets only `NODE_ENV`, `TZ` and
-   `SystemRoot` from the environment, and reads no workspace file: its module runner fetches every
-   module from this process's Vite environment, through the same load guard. A contract that
-   reaches for Node at all (`process.getBuiltinModule`, `process.binding`, `process.dlopen`, a
-   native `import()` built with `eval`, `fetch`, `process.exit`, `process.kill`, `process.send` and
-   the like) fails with `layout-load-failed` ("Loading it was refused"), even when it catches the
-   error. The process is killed outright (`SIGKILL`) when it is done, at the deadline and as soon
-   as an agent turn holds one of its contracts (the others are checked again in a new process).
-   Only what each contract came to crosses back: loaded, no default export, or an error message.
-   The process starts in about 0.2 s; its startup does not count against the deadline.
+   batch fetches modules through the server's Vite environment. Node's permission model and the
+   checker's traps catch accidental file writes, network access, child process creation,
+   environment mutation, and imports outside the contract allowlist. A refusal fails the
+   contract even if it catches the error. The deadline stops hangs and endless loops. A crash
+   before the process reports completion invalidates the whole round and reports the cause,
+   including the responsible contract when known. A turn that holds a contract kills the
+   checker. Unfinished contracts from that round that are still eligible are checked again.
 4. The loader. The contracts that passed are evaluated again in this process, because callers need
    their schemas as live Effect values: a schema's refinements, defaults and transformations are
    functions, which cannot cross a process boundary. Both runs share one Vite environment, closed
    afterwards, which reads each file once per batch, so this process runs the text the check
-   process ran, and an edited contract or helper is read afresh on the next call. Vite runs only
-   the workspace's files; `effect` and `@deckster/*` are imported by Node from this package, so a
-   contract's schema is built with the same `effect` as the caller's. Each run evaluates the
+   process ran, and an edited contract or helper is read afresh on the next call. Vite runs the
+   workspace's files. Node imports the allowed packages from this package, so a contract's
+   schema is built with the same `effect` as the caller's. Each run evaluates the
    contracts at the same time against one deadline for the batch (`CONTRACT_TIMEOUT_MS`, 10 s);
    each one still running then fails with `layout-load-failed`, and the others still load.
 
-The check process contains what a contract does while it is checked: a contract that hangs,
-spins or tries to write is stopped there and never runs in this process. Contracts of one batch
-share the check process, so one that never stops running makes the others of its batch time out
-with it. The second run is not contained. It has this process's rights, and code of it still
-running after an `await` when a turn begins or the deadline passes cannot be stopped, only kept from
-loading more modules. Since it only runs contracts that loaded cleanly in the check process, what
-gets through is a contract written to act differently there (one that tells the two processes
-apart, or schedules work for after its check), and the functions it carries (its `checks`, and its schema's refinements, defaults and transformations), which run in this process whenever a slide is validated. Treat a layout from elsewhere as code you run.
-
-Two more limits. In a repository checkout the framework folder the check process may read is the
-whole checkout; in an installed CLI it is the published framework and its dependencies. And the
-check process is killed when its server exits normally or disconnects, but a server killed with
-`SIGKILL` while a contract spins in it leaves that process running until it is killed by hand.
+Contracts are trusted local code written by the deck or brand author. Agents cannot write layout
+files during a turn, and `deckster brand add` never copies code layouts. The check provides no
+sandbox protection. The server evaluates each passing contract again with full rights, so a
+contract that behaves differently there can still use those rights. Its `checks` and schema
+functions also run with those rights whenever a slide is validated.
 
 None of these steps fails the call: `localLayouts` and `importContracts` return problems as values,
 so every other layout still lists and only the slides that name a layout with a problem fail, with

@@ -320,19 +320,16 @@ are for what regions cannot do.
   contracts are held while a turn runs: read as they were, never evaluated mid-turn. A turn that
   begins while a contract loads kills its check process, or keeps one already past its check from
   loading more modules.
-- **A contract cannot hang the catalog.** The contracts of one load run first in a separate process
-  under Node's permission model (reads of the framework only; no writes, processes, workers, addons
-  or network), killed at one deadline for all of them (10 seconds) or when an agent turn holds one.
-  A contract still running then fails, and the others load, unless it blocks the process outright,
-  which times out the others of its load with it. A contract that reaches for Node there fails even
-  when it catches the error.
+- **Contracts are trusted local code.** The deck or brand author writes them. A separate Node
+  process checks them first, with a 10-second deadline for hangs and endless loops. It catches
+  accidental file writes, network access, child process creation, environment mutation, and
+  imports outside the contract allowlist.
 - **Schemas are live values, so the contract runs twice.** Effect schemas carry functions
   (refinements, defaults, transformations), which no process boundary carries, and the build,
   lint, export and the kit read them as values; a contract's `checks` is a function too. So a
-  contract that passed the check is evaluated again in the command's process, from the same text,
-  with its rights, and those functions run there whenever a slide is checked. Code of it still running
-  after an `await` there cannot be stopped. The check stops mistakes, hangs and naive misuse, not a
-  contract written to act differently once past it; a layout from elsewhere is still code you run.
+  contract that passed the check is evaluated again in the server with full rights, and those
+  functions run there whenever a slide is checked. The check provides no sandbox protection.
+  A contract that behaves differently in the server can use its full rights.
 
 The one difference from data layouts is portability. A data layout names a kit fallback, so a deck
 rendered in another brand still builds. A code layout has no fallback: another brand that lacks it

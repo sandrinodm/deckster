@@ -3,11 +3,37 @@
  * process runs contract code, which can reach `process` like any code in it, so the server treats
  * every message from it as untrusted data and reads it only through {@link readCheckMessage}.
  */
+import { Schema } from 'effect';
 
 /**
  * The longest text the server keeps from a message of the check process, in characters.
  */
 const MAX_TEXT_LENGTH = 2000;
+
+/**
+ * A fatal error that ended the round, with its contract when it could be identified.
+ */
+const CrashMessage = Schema.Struct({
+  /**
+   * The child cannot finish this round.
+   */
+  type: Schema.Literal('crashed'),
+
+  /**
+   * The absolute contract path, or null when no contract owned the failing code.
+   */
+  file: Schema.NullOr(Schema.String),
+
+  /**
+   * The kind and cause of the fatal error.
+   */
+  message: Schema.String,
+});
+
+/**
+ * Decodes fatal errors before they can invalidate the round.
+ */
+const decodeCrashMessage = Schema.decodeUnknownOption(CrashMessage);
 
 /**
  * Why a contract failed in the check process: it threw (`error`), or it used something a contract
@@ -52,6 +78,7 @@ export type ServerMessage =
  * A message from the check process to the server.
  */
 export type CheckMessage =
+  | typeof CrashMessage.Type
   | {
       /**
        * The process has started, with the permissions it must have, and waits for `run`.
@@ -163,6 +190,13 @@ export function readCheckMessage(value: unknown): CheckMessage | undefined {
 
     case 'unsafe': {
       return typeof message === 'string' ? { type, message: bounded(message) } : undefined;
+    }
+
+    case 'crashed': {
+      const decoded = decodeCrashMessage(value);
+      return decoded._tag === 'Some'
+        ? { ...decoded.value, message: bounded(decoded.value.message) }
+        : undefined;
     }
 
     case 'invoke': {

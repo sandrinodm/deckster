@@ -26,6 +26,11 @@ const CHILD_ENTRY = fileURLToPath(new URL('contract-child.ts', import.meta.url))
 const STARTUP_TIMEOUT_MS = 30_000;
 
 /**
+ * The longest delay Node's timers accept, in milliseconds. Larger delays fire almost immediately.
+ */
+const MAX_TIMEOUT_MS = 2 ** 31 - 1;
+
+/**
  * The environment variables the check process gets; nothing else of the server's environment
  * reaches contract code there.
  */
@@ -268,6 +273,45 @@ function checkRound(
       });
     };
 
+    /**
+     * Discards provisional outcomes from a process that failed before completing the round.
+     *
+     * @param message - What stopped the process.
+     * @param file - The contract that caused the crash, if known.
+     */
+    const abort = (message: string, file?: string): void => {
+      if (settled) {
+        return;
+      }
+
+      verdicts.clear();
+      if (file !== undefined && batch.has(file)) {
+        verdicts.set(file, { kind: 'failed', reason: 'error', message });
+      }
+
+      finish({
+        kind: 'unchecked',
+        message: file === undefined ? message : `${message} (from ${file}).`,
+      });
+    };
+
+    /**
+     * Sends a message, invalidating the round on a failed IPC write.
+     *
+     * @param message - The request or reply for the child.
+     */
+    const send = (message: ServerMessage): void => {
+      try {
+        child.send(message, (error) => {
+          if (error !== null) {
+            abort(`The process that checks contracts lost IPC: ${error.message}`);
+          }
+        });
+      } catch (error) {
+        abort(`The process that checks contracts lost IPC: ${String(error)}`);
+      }
+    };
+
     const stopListening = onCodeHeld(() => {
       const held = files.filter((file) => options.isHeld(file));
       if (held.length === 0) {
@@ -281,21 +325,27 @@ function checkRound(
       finish(undefined);
     });
     timer = setTimeout(() => {
-      finish({ kind: 'unchecked', message: 'The process that checks contracts did not start.' });
+      abort('The process that checks contracts did not start.');
     }, STARTUP_TIMEOUT_MS);
     child.on('error', (error) => {
-      finish({
-        kind: 'unchecked',
-        message: `The process that checks contracts failed: ${error.message}`,
-      });
+      abort(`The process that checks contracts failed: ${error.message}`);
     });
-    child.on('exit', (code, signal) => {
-      finish({
-        kind: 'unchecked',
-        message:
-          'The process that checks contracts ended before it was done ' +
+    /**
+     * A failed spawn can close its handles without emitting exit.
+     *
+     * @param code - The process exit code.
+     * @param signal - The signal that ended the process.
+     */
+    const ended = (code: number | null, signal: NodeJS.Signals | null): void => {
+      abort(
+        'The process that checks contracts ended before it was done ' +
           `(${signal ?? `exit code ${String(code)}`}).`,
-      });
+      );
+    };
+    child.on('exit', ended);
+    child.on('close', ended);
+    child.on('disconnect', () => {
+      abort('The IPC channel to the process that checks contracts closed before it was done.');
     });
     child.on('message', (raw: unknown) => {
       const message = readCheckMessage(raw);
@@ -314,30 +364,32 @@ function checkRound(
     function handle(message: CheckMessage): void {
       switch (message.type) {
         case 'ready': {
-          clock.deadline ??= Date.now() + options.timeoutMs;
+          clock.deadline ??= Date.now() + Math.min(options.timeoutMs, MAX_TIMEOUT_MS);
           clearTimeout(timer);
           timer = setTimeout(
             () => {
               finish({ kind: 'timed-out' });
             },
-            Math.max(0, clock.deadline - Date.now()),
+            Math.min(MAX_TIMEOUT_MS, Math.max(0, clock.deadline - Date.now())),
           );
-          send(child, { type: 'run', files });
+          send({ type: 'run', files });
           return;
         }
 
         case 'unsafe': {
-          finish({
-            kind: 'unchecked',
-            message: `The process that checks contracts is not restricted: ${message.message}`,
-          });
+          abort(`The process that checks contracts is not restricted: ${message.message}`);
+          return;
+        }
+
+        case 'crashed': {
+          abort(message.message, message.file ?? undefined);
           return;
         }
 
         case 'invoke': {
           void invoke(options.environment, message.name, message.args).then((answer) => {
             if (!settled) {
-              send(child, { type: 'invoked', id: message.id, answer });
+              send({ type: 'invoked', id: message.id, answer });
             }
           });
           return;
@@ -443,18 +495,6 @@ function fetchFunctionOptions(value: unknown): FetchFunctionOptions | undefined 
 }
 
 /**
- * Sends a message to the check process, unless it is gone.
- *
- * @param child - The process.
- * @param message - The message.
- */
-function send(child: ChildProcess, message: ServerMessage): void {
-  if (child.connected) {
-    child.send(message);
-  }
-}
-
-/**
  * Forks the check process under Node's permission model: it may read only the framework and its
  * dependencies (and the CLI's loader hooks when installed), and may not write files, start
  * processes or workers, load addons, use WASI, the inspector or the network. Its output is dropped;
@@ -480,9 +520,15 @@ function startChild(): ChildProcess {
     }
   }
 
-  child.once('exit', () => {
+  /**
+   * Forgets the child even when a failed spawn emits no exit event.
+   */
+  const forget = (): void => {
     LIVE.delete(child);
-  });
+  };
+  child.once('exit', forget);
+  child.once('close', forget);
+  child.once('error', forget);
   if (!EXIT_HANDLER.installed) {
     EXIT_HANDLER.installed = true;
     process.once('exit', () => {
@@ -501,14 +547,21 @@ function startChild(): ChildProcess {
  * @param child - The process.
  */
 function killChild(child: ChildProcess): Promise<void> {
-  if (child.exitCode !== null || child.signalCode !== null) {
+  if (child.pid === undefined || child.exitCode !== null || child.signalCode !== null) {
     return Promise.resolve();
   }
 
   return new Promise((resolve) => {
-    child.once('exit', () => {
+    /**
+     * Resolves on process exit, or on close if the process failed to spawn.
+     */
+    const exited = (): void => {
+      child.off('exit', exited);
+      child.off('close', exited);
       resolve();
-    });
+    };
+    child.once('exit', exited);
+    child.once('close', exited);
     child.kill('SIGKILL');
   });
 }

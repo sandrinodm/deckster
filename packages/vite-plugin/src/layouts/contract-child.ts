@@ -15,9 +15,16 @@
  * It may import only `node:` modules, the module runner and the files beside it that import nothing
  * else, so that it starts fast and needs no addon.
  */
-import { AsyncLocalStorage } from 'node:async_hooks';
+import { AsyncLocalStorage, createHook } from 'node:async_hooks';
 import { registerHooks } from 'node:module';
-import { ModuleRunner, type ModuleRunnerTransport } from 'vite/module-runner';
+import { setImmediate as nextTurn } from 'node:timers/promises';
+import {
+  EvaluatedModules,
+  ModuleRunner,
+  type EvaluatedModuleNode,
+  type ModuleRunnerContext,
+  type ModuleRunnerTransport,
+} from 'vite/module-runner';
 
 import type { CheckFailure, CheckMessage, ServerMessage } from '#layouts/contract-protocol.ts';
 
@@ -56,10 +63,50 @@ const PROCESS_TRAPS = [
   'send',
   '_send',
   'disconnect',
+  'error',
   '_disconnect',
   'report',
   'loadEnvFile',
   'setSourceMapsEnabled',
+  'chdir',
+  'setuid',
+  'setgid',
+  'seteuid',
+  'setegid',
+  'setgroups',
+  'initgroups',
+  'setUncaughtExceptionCaptureCallback',
+];
+
+/**
+ * Process events that affect lifecycle, crash handling or the channel to the server.
+ */
+const PROCESS_EVENTS = new Set([
+  'beforeExit',
+  'exit',
+  'uncaughtException',
+  'uncaughtExceptionMonitor',
+  'unhandledRejection',
+  'rejectionHandled',
+  'disconnect',
+  'message',
+  'internalMessage',
+  'newListener',
+  'removeListener',
+]);
+
+/**
+ * Process APIs that add or remove event listeners, including APIs that wrap another method here.
+ */
+const PROCESS_LISTENER_METHODS = [
+  'on',
+  'once',
+  'addListener',
+  'prependListener',
+  'prependOnceListener',
+  'off',
+  'removeListener',
+  'removeAllListeners',
 ];
 
 /**
@@ -78,6 +125,17 @@ const RUNNER_URL = import.meta.resolve('vite/module-runner');
  * `await`s, timers and promise callbacks.
  */
 const owner = new AsyncLocalStorage<string>();
+
+/**
+ * The module running within the contract, carried across asynchronous callbacks.
+ */
+const moduleOwner = new AsyncLocalStorage<string>();
+
+/**
+ * Vite's graph of modules requested during the batch. A shared module can be evaluated only once
+ * even though more than one contract imports it.
+ */
+const modules = new EvaluatedModules();
 
 /**
  * Sends a message to the server; captured before any contract runs, which then finds no
@@ -114,6 +172,16 @@ const STATE = {
    * The first thing each contract used that it may not, by file.
    */
   denied: new Map<string, string>(),
+
+  /**
+   * Refusals by module id, including those in a shared module before all importers reached it.
+   */
+  deniedModules: new Map<string, string>(),
+
+  /**
+   * Vite's resolved module id for each main contract file.
+   */
+  roots: new Map<string, string>(),
 
   /**
    * The calls of the module runner waiting for the server, by id.
@@ -155,16 +223,20 @@ function asProcess(call: () => void): void {
 /**
  * Captures `process.send`, which a forked process has.
  */
-function captureSend(): (message: CheckMessage) => void {
+function captureSend(): (message: CheckMessage, callback?: (error: Error | null) => void) => void {
   const original = process.send?.bind(process);
   if (original === undefined) {
     process.stderr.write('The contract check process must be started by the server.\n');
     process.exit(1);
   }
 
-  return (message) => {
+  return (message, callback) => {
     asProcess(() => {
-      original(message);
+      if (callback === undefined) {
+        original(message);
+      } else {
+        original(message, callback);
+      }
     });
   };
 }
@@ -178,17 +250,93 @@ function captureSend(): (message: CheckMessage) => void {
  */
 function deny(what: string): void {
   const file = owner.getStore();
-  const charged = file === undefined ? [...STATE.files] : [file];
-  for (const each of charged) {
-    if (STATE.denied.has(each)) {
-      continue;
-    }
+  const id = moduleOwner.getStore();
+  if (id !== undefined && !STATE.deniedModules.has(id)) {
+    STATE.deniedModules.set(id, what);
+  }
 
-    STATE.denied.set(each, what);
-    if (STATE.reported.has(each)) {
-      report(each, 'denied', what);
+  for (const contract of STATE.files) {
+    if (file === undefined || contract === file) {
+      denyContract(contract, what);
+    } else {
+      applyModuleDenials(contract);
     }
   }
+}
+
+/**
+ * Applies refusals from modules this contract has imported, including cached modules.
+ *
+ * @param file - The contract's absolute path.
+ */
+function applyModuleDenials(file: string): void {
+  for (const [id, what] of STATE.deniedModules) {
+    if (importsModule(file, id)) {
+      denyContract(file, what);
+      return;
+    }
+  }
+}
+
+/**
+ * Whether the contract reaches the module through Vite's dependency graph.
+ *
+ * @param file - The contract's absolute path.
+ * @param id - The module's resolved id.
+ */
+function importsModule(file: string, id: string): boolean {
+  const root = STATE.roots.get(file);
+  if (root === undefined) {
+    return false;
+  }
+
+  const pending = new Set([id]);
+  for (const current of pending) {
+    if (current === root) {
+      return true;
+    }
+
+    for (const importer of modules.getModuleById(current)?.importers ?? []) {
+      pending.add(importer);
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Records a contract's first refusal and supersedes an earlier provisional load.
+ *
+ * @param file - The contract.
+ * @param what - Why it was refused.
+ */
+function denyContract(file: string, what: string): void {
+  if (STATE.denied.has(file)) {
+    return;
+  }
+
+  STATE.denied.set(file, what);
+  if (STATE.reported.has(file)) {
+    report(file, 'denied', what);
+  }
+}
+
+/**
+ * Reports a crash before exiting so the server can invalidate even the provisional loads.
+ *
+ * @param event - The fatal process event.
+ * @param error - The thrown error or rejection reason.
+ */
+function crash(event: string, error: unknown): void {
+  const detail = error instanceof Error ? error.message : String(error);
+  send(
+    {
+      type: 'crashed',
+      file: owner.getStore() ?? null,
+      message: `The contract check process stopped after ${event}: ${detail}`,
+    },
+    () => exit(1),
+  );
 }
 
 /**
@@ -231,7 +379,7 @@ function setTraps(): string | undefined {
     const ok = Reflect.defineProperty(target, key, {
       configurable: false,
       get: () => {
-        if (!STATE.armed || STATE.internal) {
+        if (!trapsArmed()) {
           return original;
         }
 
@@ -243,7 +391,89 @@ function setTraps(): string | undefined {
     }
   }
 
+  return setProcessStateTraps();
+}
+
+/**
+ * The traps allow the checker's own synchronous process calls.
+ */
+function trapsArmed(): boolean {
+  return STATE.armed && !STATE.internal;
+}
+
+/**
+ * Installs read-preserving traps for process state and lifecycle listeners.
+ */
+function setProcessStateTraps(): string | undefined {
+  const env = new Proxy(process.env, {
+    set: () => {
+      throw trapped('process.env');
+    },
+    deleteProperty: () => {
+      throw trapped('process.env');
+    },
+    defineProperty: () => {
+      throw trapped('process.env');
+    },
+  });
+  const title = process.title;
+  for (const [key, read] of [
+    ['env', () => env],
+    ['title', () => title],
+  ] as const) {
+    if (
+      !Reflect.defineProperty(process, key, {
+        configurable: false,
+        enumerable: true,
+        get: read,
+        set: () => {
+          throw trapped(`process.${key}`);
+        },
+      })
+    ) {
+      return `process.${key} could not be replaced`;
+    }
+  }
+
+  for (const key of ['umask', ...PROCESS_LISTENER_METHODS]) {
+    const original: unknown = Reflect.get(process, key);
+    if (
+      typeof original !== 'function' ||
+      !Reflect.defineProperty(process, key, {
+        configurable: false,
+        writable: false,
+        value: (...args: unknown[]) => {
+          if (trapsArmed() && mutatesProcess(key, args)) {
+            throw trapped(`process.${key}`);
+          }
+
+          return Reflect.apply(original, process, args);
+        },
+      })
+    ) {
+      return `process.${key} could not be replaced`;
+    }
+  }
+
   return undefined;
+}
+
+/**
+ * Whether a wrapped process method would change the umask or lifecycle listeners.
+ *
+ * @param key - The process method.
+ * @param args - Its arguments.
+ */
+function mutatesProcess(key: string, args: readonly unknown[]): boolean {
+  if (key === 'umask') {
+    return args.length > 0;
+  }
+
+  const [event] = args;
+  return (
+    (key === 'removeAllListeners' && args.length === 0) ||
+    (typeof event === 'string' && (event.startsWith('SIG') || PROCESS_EVENTS.has(event)))
+  );
 }
 
 /**
@@ -312,6 +542,122 @@ const transport: ModuleRunnerTransport = {
 };
 
 /**
+ * Adds module attribution to refusals in the child, including those thrown by the evaluator.
+ */
+class CheckEvaluator extends PackageEvaluator {
+  /**
+   * Records the root module, then carries the current module across its asynchronous work.
+   *
+   * @param context - What the transformed code is called with.
+   * @param code - The transformed code.
+   * @param module - The module being evaluated.
+   */
+  override runInlinedModule(
+    context: ModuleRunnerContext,
+    code: string,
+    module: Readonly<EvaluatedModuleNode>,
+  ): Promise<void> {
+    const file = owner.getStore();
+    if (file !== undefined && moduleOwner.getStore() === undefined) {
+      STATE.roots.set(file, module.id);
+    }
+
+    return moduleOwner.run(module.id, () => super.runInlinedModule(context, code, module));
+  }
+
+  /**
+   * Charges an import refusal to the active module, even if the module catches the error.
+   *
+   * @param file - The refused specifier.
+   */
+  protected override refuseImport(file: string): Error {
+    const error = super.refuseImport(file);
+    deny(error.message);
+    return error;
+  }
+}
+
+/**
+ * Timer resources started by a contract. A detached callback must settle before its contract can
+ * pass, so a timer which throws after the module returns cannot reach the server.
+ */
+const timers = new Map<number, { file: string; id: string | undefined }>();
+
+/**
+ * Contracts waiting for their timers to settle.
+ */
+const timerWaiters = new Set<() => void>();
+
+/**
+ * Tracks timers registered while the module runner is evaluating contracts.
+ */
+const timerHook = createHook({
+  /**
+   * Remembers timers and immediates owned by a contract or a helper.
+   *
+   * @param asyncId - The resource id.
+   * @param type - The type of async resource.
+   */
+  init: (asyncId, type) => {
+    const file = owner.getStore();
+    if (file !== undefined && (type === 'Timeout' || type === 'Immediate')) {
+      timers.set(asyncId, { file, id: moduleOwner.getStore() });
+    }
+  },
+
+  /**
+   * Keeps the loop moving long enough to deliver a timer's destroy hook when IPC is otherwise idle.
+   *
+   * @param asyncId - The resource that just ran its callback.
+   */
+  after: (asyncId) => {
+    if (timers.has(asyncId)) {
+      owner.exit(() => {
+        void nextTurn();
+      });
+    }
+  },
+
+  /**
+   * Wakes contracts after a callback completes or its timer is cleared.
+   *
+   * @param asyncId - The resource id.
+   */
+  destroy: (asyncId) => {
+    if (timers.delete(asyncId)) {
+      for (const wake of timerWaiters) {
+        wake();
+      }
+    }
+  },
+});
+
+/**
+ * Waits for detached timer callbacks of a contract and its evaluated dependencies.
+ *
+ * @param file - The contract.
+ */
+function waitForTimers(file: string): Promise<void> {
+  return new Promise((resolve) => {
+    /**
+     * Finishes when the contract and its dependencies have no active timers.
+     */
+    const wake = (): void => {
+      for (const timer of timers.values()) {
+        if (timer.file === file || (timer.id !== undefined && importsModule(file, timer.id))) {
+          return;
+        }
+      }
+
+      timerWaiters.delete(wake);
+      resolve();
+    };
+    timerWaiters.add(wake);
+    wake();
+  });
+}
+
+/**
  * Evaluates one contract and reports it.
  *
  * @param runner - The module runner of the batch.
@@ -320,6 +666,14 @@ const transport: ModuleRunnerTransport = {
 async function check(runner: ModuleRunner, file: string): Promise<void> {
   try {
     const module: unknown = await owner.run(file, () => runner.import(file));
+    // Node delivers unhandled rejections after it drains the promise microtask queue.
+    await nextTurn();
+    applyModuleDenials(file);
+    if (!STATE.denied.has(file)) {
+      await waitForTimers(file);
+      applyModuleDenials(file);
+    }
+
     const denied = STATE.denied.get(file);
     if (denied !== undefined) {
       report(file, 'denied', denied);
@@ -331,6 +685,7 @@ async function check(runner: ModuleRunner, file: string): Promise<void> {
     STATE.reported.add(file);
     send({ type: exported === undefined ? 'no-default' : 'loaded', file });
   } catch (error) {
+    applyModuleDenials(file);
     const denied = STATE.denied.get(file) ?? deniedMessage(error);
     if (denied === undefined) {
       report(file, 'error', error instanceof Error ? error.message : String(error));
@@ -368,11 +723,16 @@ async function run(files: readonly string[]): Promise<void> {
   }
 
   const runner = new ModuleRunner(
-    { transport, hmr: false, sourcemapInterceptor: false },
-    new PackageEvaluator(),
+    { transport, hmr: false, sourcemapInterceptor: false, evaluatedModules: modules },
+    new CheckEvaluator(),
   );
   STATE.armed = true;
+  timerHook.enable();
   await Promise.all(files.map((file) => check(runner, file)));
+  for (const file of files) {
+    applyModuleDenials(file);
+  }
+
   send({ type: 'done' });
 }
 
@@ -398,6 +758,8 @@ function onMessage(message: ServerMessage): void {
  */
 async function start(): Promise<void> {
   process.on('message', onMessage);
+  process.on('unhandledRejection', (error) => crash('an unhandled rejection', error));
+  process.on('uncaughtException', (error) => crash('an uncaught exception', error));
   // The server is gone: nothing may outlive it.
   process.on('disconnect', () => exit(0));
   const extra = extraPermissions();
@@ -410,8 +772,14 @@ async function start(): Promise<void> {
     await import(/* @vite-ignore */ import.meta.resolve(name));
   }
 
-  refuseNativeImports();
-  const unsafe = setTraps();
+  let unsafe: string | undefined;
+  try {
+    refuseNativeImports();
+    unsafe = setTraps();
+  } catch (error) {
+    unsafe = `The traps could not be installed: ${String(error)}`;
+  }
+
   send(unsafe === undefined ? { type: 'ready' } : { type: 'unsafe', message: unsafe });
 }
 

@@ -8,17 +8,45 @@ import {
 } from 'vite/module-runner';
 
 /**
- * The packages Node loads for a contract instead of Vite, so a contract shares the `effect` and
- * framework instances of the process that loads it. Wider than the packages a contract may import
- * on purpose: the import check decides what a contract may import, this only decides who evaluates
- * it.
+ * The packages a contract may import, besides the entry points of `effect`.
  */
-export const NODE_LOADED_PACKAGES: readonly RegExp[] = [/^effect(\/|$)/, /^@deckster\//];
+export const CONTRACT_PACKAGES: ReadonlySet<string> = new Set([
+  'effect',
+  '@deckster/engine/layout',
+  '@deckster/engine/command',
+  '@deckster/kit/layout-fields',
+  '@deckster/brand',
+]);
+
+/**
+ * The pattern for an `effect` entry point, such as `effect/Schema`.
+ */
+const EFFECT_ENTRY = /^effect\/[^?#]+$/;
+
+/**
+ * The packages Vite hands to Node so contracts share the process's framework and Effect instances.
+ */
+export const NODE_LOADED_PACKAGES = [...CONTRACT_PACKAGES, EFFECT_ENTRY] as const;
+
+/**
+ * Whether both the static check and the evaluator let a contract import a package.
+ *
+ * @param specifier - A bare package specifier or entry point.
+ * @returns Whether it is on the contract package list.
+ */
+export function isContractPackage(specifier: string): boolean {
+  return CONTRACT_PACKAGES.has(specifier) || EFFECT_ENTRY.test(specifier);
+}
 
 /**
  * The prefix of a Node built-in specifier.
  */
 const NODE_PREFIX = 'node:';
+
+/**
+ * Dynamic import paths that Vite resolves as workspace files and checks through the load guard.
+ */
+const WORKSPACE_IMPORT = /^(?:\.\.?\/|\/|[a-z]:[/\\])/i;
 
 /**
  * The Node built-ins that can be named without {@link NODE_PREFIX}.
@@ -120,8 +148,13 @@ export class PackageEvaluator extends ESModulesEvaluator {
           assertMayRun(gate, file);
           return value;
         },
-        [ssrDynamicImportKey]: async (...args: Parameters<typeof dynamic>) => {
-          const value = await dynamic(...args);
+        [ssrDynamicImportKey]: async (specifier, options) => {
+          const id = String(specifier);
+          if (!WORKSPACE_IMPORT.test(id) && !isContractPackage(id)) {
+            throw this.refuseImport(id);
+          }
+
+          const value = await dynamic(id, options);
           assertMayRun(gate, file);
           return value;
         },
@@ -136,18 +169,22 @@ export class PackageEvaluator extends ESModulesEvaluator {
    * @param file - The specifier as the contract wrote it, or a file URL.
    */
   override runExternalModule(file: string): Promise<unknown> {
-    if (isNodeBuiltin(file)) {
-      return Promise.reject(new Error(`A contract may not load "${file}", a Node built-in.`));
-    }
-
-    if (!NODE_LOADED_PACKAGES.some((pattern) => pattern.test(file))) {
-      return Promise.reject(
-        new Error(
-          `A contract may not load "${file}", which is not a package a contract may import.`,
-        ),
-      );
+    if (!isContractPackage(file)) {
+      return Promise.reject(this.refuseImport(file));
     }
 
     return import(/* @vite-ignore */ import.meta.resolve(file));
+  }
+
+  /**
+   * Makes the error for a refused import. The check process also records the refusal here.
+   *
+   * @param file - The specifier Vite was asked to import.
+   */
+  protected refuseImport(file: string): Error {
+    const reason = isNodeBuiltin(file)
+      ? 'a Node built-in'
+      : 'which is not a package a contract may import';
+    return new Error(`A contract may not load "${file}", ${reason}.`);
   }
 }
