@@ -29,13 +29,13 @@ import {
   type CliError,
   type SlideNotReadyError,
 } from '#cli-error.ts';
-import { assertSlidesRender } from '#export/check-slides-render.ts';
+import { assertShotsRender, assertSlidesRender } from '#export/check-slides-render.ts';
 import { writeFontFiles } from '#export/export-fonts.ts';
 import { exportPdf } from '#export/export-pdf.ts';
 import { capturePptx, playwrightPage, writePptx, type PptxCapture } from '#export/export-pptx.ts';
 import { exportTargets, hiddenLeftOut, selectSlides } from '#export/export-targets.ts';
 import { verifyExport } from '#export/verify-export.ts';
-import { takeShots, type ShotError, type ShotFile } from '#shot/take-shots.ts';
+import { takeShots, type ShotError, type ShotFile, type ShotResult } from '#shot/take-shots.ts';
 import { Workspace } from '#workspace.ts';
 
 /**
@@ -378,10 +378,12 @@ const useSystemFonts = Effect.fn('useSystemFonts')(function* (opened: OpenedDeck
 
 /**
  * Writes PNGs with `deckster shot`: every slide that is not hidden (all with `--include-hidden`),
- * or each selected one.
+ * or each selected one. Fails the way a PDF or PPTX export does when a slide shows an error or the
+ * page threw while the deck loaded; the PNGs are written by then, as `deckster shot` writes them.
  *
  * @param options - What to export.
  * @param outDir - The PNG folder.
+ * @throws CliError in the error channel when any slide renders an error.
  */
 const exportPng = Effect.fn('exportPng')(function* (
   options: ExportOptions,
@@ -401,10 +403,11 @@ const exportPng = Effect.fn('exportPng')(function* (
       scale: options.scale,
       skipHidden: !options.includeHidden,
     });
+    yield* assertShotsRender(options.deck, [result]);
     return { files: result.files, hiddenLeftOut: result.hiddenSkipped };
   }
 
-  const files: ShotFile[] = [];
+  const results: ShotResult[] = [];
   const all = yield* Effect.scoped(
     Effect.gen(function* () {
       const opened = yield* openDeck({ deck: options.deck, brand: options.brand, scale: 1 });
@@ -420,10 +423,11 @@ const exportPng = Effect.fn('exportPng')(function* (
       outDir,
       scale: options.scale,
     });
-    files.push(...result.files);
+    results.push(result);
   }
 
-  return { files, hiddenLeftOut: 0 };
+  yield* assertShotsRender(options.deck, results);
+  return { files: results.flatMap((result) => result.files), hiddenLeftOut: 0 };
 });
 
 /**

@@ -149,4 +149,29 @@ describe('diffLayout', () => {
       ),
     TEST_TIMEOUT_MS,
   );
+
+  it.effect(
+    'refuses a layout folder that is a link and a layouts folder that is a link',
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          const ejected = transformLayout(readEjectSource(), 'bio', LIMIT_CASES['bio'] ?? []);
+          const brandDir = path.join(root, 'brands', EJECT_BRAND);
+          const moved = path.join(root, 'moved-bio');
+          writeProvenance(moved, provenanceFiles(ejected, '0'));
+          fs.mkdirSync(path.join(brandDir, 'layouts'), { recursive: true });
+          fs.symlinkSync(moved, path.join(brandDir, 'layouts/bio'));
+          const layoutLinked = yield* failureMessage(diffLayout(root, BRAND, 'bio'));
+          expect(layoutLinked).toContain(`brands/${EJECT_BRAND}/layouts/bio is a link`);
+          expect(layoutLinked).toContain('does not read layouts through a link');
+          fs.rmSync(path.join(brandDir, 'layouts'), { recursive: true });
+          const moreLayouts = path.join(root, 'moved-layouts');
+          writeProvenance(path.join(moreLayouts, 'bio'), provenanceFiles(ejected, '0'));
+          fs.symlinkSync(moreLayouts, path.join(brandDir, 'layouts'));
+          const layoutsLinked = yield* failureMessage(diffLayout(root, BRAND, 'bio'));
+          expect(layoutsLinked).toContain(`brands/${EJECT_BRAND}/layouts is a link`);
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
 });

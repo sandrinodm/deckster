@@ -444,9 +444,9 @@ function slideMdx(
 
 /**
  * The body at its budget: a paragraph, or a lead sentence and the most bullets. In a list, every
- * bullet gets a word at least, and the lead takes what is left of the budget, up to
- * {@link LEAD_WORDS}; with no word budget the lead is {@link LEAD_WORDS} and each bullet
- * {@link UNBOUNDED_BULLET_WORDS}.
+ * bullet gets a word at least, with fewer bullets than the budget allows when it has fewer words
+ * than that, and the lead takes what is left of the budget, up to {@link LEAD_WORDS}; with no word
+ * budget the lead is {@link LEAD_WORDS} and each bullet {@link UNBOUNDED_BULLET_WORDS}.
  *
  * @param contract - The layout's contract.
  * @param budget - The body's budget for the case.
@@ -474,8 +474,8 @@ function bodyMdx(
     return [...head, sentence(left)].join('\n\n');
   }
 
-  const bullets = budget.maxBullets ?? 1;
   const bounded = budget.maxWords !== undefined;
+  const bullets = bounded ? Math.min(budget.maxBullets ?? 1, left) : (budget.maxBullets ?? 1);
   const lead = bounded ? Math.min(LEAD_WORDS, Math.max(0, left - bullets)) : LEAD_WORDS;
   const each = bounded ? Math.max(1, Math.floor((left - lead) / bullets)) : UNBOUNDED_BULLET_WORDS;
   const items = Array.from({ length: bullets }, (_, index) => `- ${words(each, index * each)}`);

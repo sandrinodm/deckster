@@ -434,11 +434,51 @@ describe('ejectLayouts on a workspace that is not as eject left it', () => {
             ),
           );
           expect(refusal).toContain(`Could not create ${contract}`);
-          expect(filesUnder(layoutsDir(root))).toEqual([]);
+          expect(fs.existsSync(layoutsDir(root))).toBe(false);
 
           const result = yield* ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false });
           expect(result.sharedWritten).toHaveLength(5);
           expect(fs.existsSync(contract)).toBe(true);
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'ejects a layout once when its name is given twice',
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          const result = yield* ejectLayouts(root, OWNER, {
+            names: ['quote', 'quote'],
+            keepShared: false,
+          });
+          expect(result.layouts.map((layout) => layout.name)).toEqual(['quote']);
+        }),
+      ),
+    TEST_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'leaves out the names a deck of the brand has a folder of with all, and names the deck',
+    () =>
+      inWorkspace((root) =>
+        Effect.gen(function* () {
+          fs.mkdirSync(path.join(root, 'decks', DECK, 'layouts', 'title'), { recursive: true });
+          const config = path.join(root, 'decks', DECK, 'deck.config.ts');
+          fs.writeFileSync(
+            config,
+            fs.readFileSync(config, 'utf8').replace("brand: 'default'", `brand: '${EJECT_BRAND}'`),
+          );
+          const result = yield* ejectLayouts(root, OWNER, { names: 'all', keepShared: false });
+          expect(result.skippedForDecks).toEqual([{ name: 'title', deck: DECK }]);
+          expect(result.skipped).toEqual([]);
+          expect(result.layouts).toHaveLength(63);
+          expect(fs.existsSync(path.join(layoutsDir(root), 'title'))).toBe(false);
+          const refusal = yield* failureMessage(
+            ejectLayouts(root, OWNER, { names: ['title'], keepShared: false }),
+          );
+          expect(refusal).toContain(`decks/${DECK}/layouts/title/ is a layout of the ${DECK} deck`);
         }),
       ),
     TEST_TIMEOUT_MS,

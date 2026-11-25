@@ -146,16 +146,22 @@ export function isWorkspaceFolder(place: FolderPlace): boolean {
  * the files in them) is checked here, so a write cannot leave the workspace through a link there.
  * Paths that do not exist yet pass.
  *
+ * With `use` set to `read`, the paths are about to be read rather than written (as `layouts diff`
+ * reads `.eject/`): only a link is refused, and a file where a folder belongs is left for the
+ * reader to report as missing.
+ *
  * @param root - The absolute workspace root, for the message.
  * @param folder - The owner's folder.
  * @param targets - Absolute paths below the owner's folder.
- * @throws CliError in the error channel for a link or a misplaced file; FileSystemError when a path
- *   cannot be looked at.
+ * @param use - Whether the paths are written or read.
+ * @throws CliError in the error channel for a link or, when writing, a misplaced file;
+ *   FileSystemError when a path cannot be looked at.
  */
 export const checkWriteTargets = Effect.fn('checkWriteTargets')(function* (
   root: string,
   folder: OwnerFolder,
   targets: readonly string[],
+  use: 'write' | 'read' = 'write',
 ): Effect.fn.Return<void, CliError | FileSystemError, FileSystem.FileSystem> {
   for (const target of targets) {
     const steps = path.relative(folder.dir, target).split(path.sep);
@@ -168,13 +174,13 @@ export const checkWriteTargets = Effect.fn('checkWriteTargets')(function* (
 
       if (type === 'SymbolicLink') {
         return yield* cliError(
-          `${displayPath(root, at)} is a link, and deckster does not write layouts through a ` +
+          `${displayPath(root, at)} is a link, and deckster does not ${use} layouts through a ` +
             'link: it could point outside the workspace.\n' +
             'Replace the link with a real folder or file, then run the command again.',
         );
       }
 
-      if (index < steps.length - 1 && type !== 'Directory') {
+      if (use === 'write' && index < steps.length - 1 && type !== 'Directory') {
         return yield* cliError(
           `${displayPath(root, at)} is a file where a folder belongs, so nothing can be written ` +
             'under it.\nMove the file away, then run the command again.',
@@ -210,11 +216,70 @@ export const existingEntries = Effect.fn('existingEntries')(function* (
 });
 
 /**
- * Fails when a new layout of a brand would take a name one of the brand's decks already gives a
- * layout folder: the deck's layout would then clash with the brand's, and every slide on it would
+ * A layout folder of a deck that a layout of the deck's brand would clash with.
+ */
+export type DeckClash = {
+  /**
+   * The name asked for.
+   */
+  readonly name: string;
+
+  /**
+   * The deck's folder entry for it, which may differ from the name in letter case.
+   */
+  readonly entry: string;
+
+  /**
+   * The deck.
+   */
+  readonly deck: DeckLocation;
+};
+
+/**
+ * The layout folders of a brand's decks that a new layout of the brand with one of the names would
+ * clash with: the deck's layout would then clash with the brand's, and every slide on it would
  * fail. Only decks with a folder of one of the names have their config loaded; a deck whose config
- * does not load is not one of the brand's as far as this check can tell, and is passed over.
- * Nothing is checked for a deck owner.
+ * does not load is not one of the brand's as far as this check can tell, and is passed over. A deck
+ * owner has none.
+ *
+ * @param root - The absolute workspace root.
+ * @param folder - The owner's folder.
+ * @param names - The names of the layouts about to be written.
+ * @returns Each clash, deck by deck and in the order of the names.
+ */
+export const findDeckClashes = Effect.fn('findDeckClashes')(function* (
+  root: string,
+  folder: OwnerFolder,
+  names: readonly string[],
+): Effect.fn.Return<readonly DeckClash[], never, FileSystem.FileSystem> {
+  if (folder.deck !== undefined) {
+    return [];
+  }
+
+  const brandName = folder.owner.name;
+  const clashes: DeckClash[] = [];
+  for (const deck of yield* discoverDecks(root)) {
+    const taken = yield* existingEntries(path.join(deck.dir, LAYOUTS_DIR), names);
+    if (taken.size === 0) {
+      continue;
+    }
+
+    const loaded = yield* loadDeck(root, deck).pipe(Effect.option);
+    if (Option.isNone(loaded) || deckBrandName(loaded.value.config) !== brandName) {
+      continue;
+    }
+
+    for (const [name, entry] of taken) {
+      clashes.push({ name, entry, deck });
+    }
+  }
+
+  return clashes;
+});
+
+/**
+ * Fails when a new layout of a brand would take a name one of the brand's decks already gives a
+ * layout folder, as {@link findDeckClashes} finds. Nothing is checked for a deck owner.
  *
  * @param root - The absolute workspace root.
  * @param folder - The owner's folder.
@@ -226,32 +291,20 @@ export const checkDeckLayoutsFree = Effect.fn('checkDeckLayoutsFree')(function* 
   folder: OwnerFolder,
   names: readonly string[],
 ): Effect.fn.Return<void, CliError, FileSystem.FileSystem> {
-  if (folder.deck !== undefined) {
+  const [first] = yield* findDeckClashes(root, folder, names);
+  if (first === undefined) {
     return;
   }
 
+  const { name, entry, deck } = first;
   const brandName = folder.owner.name;
-  for (const deck of yield* discoverDecks(root)) {
-    const taken = yield* existingEntries(path.join(deck.dir, LAYOUTS_DIR), names);
-    const [first] = taken;
-    if (first === undefined) {
-      continue;
-    }
-
-    const loaded = yield* loadDeck(root, deck).pipe(Effect.option);
-    if (Option.isNone(loaded) || deckBrandName(loaded.value.config) !== brandName) {
-      continue;
-    }
-
-    const [name, entry] = first;
-    return yield* cliError(
-      `${displayPath(root, path.join(deck.dir, LAYOUTS_DIR, entry))}/ is a layout of the ` +
-        `${deck.id} deck, which is on the ${brandName} brand, so a ${brandName} layout named ` +
-        `"${name}" would clash with it and the deck's slides on it would fail.\n` +
-        "Rename or remove the deck's layout first, or give the brand's layout another name. " +
-        `\`${deckCommand()} layouts ${deck.id}\` lists the deck's layouts.`,
-    );
-  }
+  return yield* cliError(
+    `${displayPath(root, path.join(deck.dir, LAYOUTS_DIR, entry))}/ is a layout of the ` +
+      `${deck.id} deck, which is on the ${brandName} brand, so a ${brandName} layout named ` +
+      `"${name}" would clash with it and the deck's slides on it would fail.\n` +
+      "Rename or remove the deck's layout first, or give the brand's layout another name. " +
+      `\`${deckCommand()} layouts ${deck.id}\` lists the deck's layouts.`,
+  );
 });
 
 /**

@@ -62,6 +62,11 @@ const FRAME_CLASS = /\.kit-frame(?![\w-])/u;
 const LAYOUT_ATTRIBUTE = /\[data-layout=(['"])([^'"]+)\1\]/gu;
 
 /**
+ * Matches the start of a `:not()` pseudo-class, right after its opening parenthesis.
+ */
+const NOT_OPEN = /:not\(/gu;
+
+/**
  * Matches a selector that starts at the document's root, which no rule under a frame can match.
  */
 const ROOT_SELECTOR = /^(?::root|html)(?![\w-])/u;
@@ -354,6 +359,14 @@ function scopeSelector(selector: string, layout: string, problems: string[]): st
     return selector;
   }
 
+  if (layoutAttributeInNot(selector)) {
+    problems.push(
+      `The selector ${selector} names a data-layout inside :not(), which eject does not scope, so ` +
+        `it is copied as it is and may style other layouts than ${layout}.`,
+    );
+    return selector;
+  }
+
   const keyed = new Set([...selector.matchAll(LAYOUT_ATTRIBUTE)].map((match) => match[2]));
   if (keyed.size > 0) {
     return scopeKeyedSelector(selector, keyed, layout);
@@ -364,6 +377,37 @@ function scopeSelector(selector: string, layout: string, problems: string[]): st
   }
 
   return `:where(.kit-frame[data-layout='${layout}']) ${selector}`;
+}
+
+/**
+ * Tells whether a selector has a `[data-layout=…]` attribute inside a `:not(…)`, however deep. The
+ * attribute there excludes layouts instead of naming them, which the keyed scoping would read the
+ * wrong way round.
+ */
+function layoutAttributeInNot(selector: string): boolean {
+  return [...selector.matchAll(NOT_OPEN)].some((match) => {
+    const start = match.index + match[0].length;
+    let depth = 1;
+    let position = start;
+    while (position < selector.length && depth > 0) {
+      const next = skipQuoted(selector, position);
+      if (next !== position) {
+        position = next;
+        continue;
+      }
+
+      const char = selector[position];
+      if (char === '(') {
+        depth += 1;
+      } else if (char === ')') {
+        depth -= 1;
+      }
+
+      position += 1;
+    }
+
+    return [...selector.slice(start, position).matchAll(LAYOUT_ATTRIBUTE)].length > 0;
+  });
 }
 
 /**

@@ -220,4 +220,29 @@ describe('scopeStylesheet', () => {
       'Its @scope block is copied unscoped, so its rules may style other layouts than title.',
     ]);
   });
+
+  it('reports a data-layout inside :not() and does not guess whether to keep it', () => {
+    const css = [
+      ".kit-frame:not([data-layout='image']) .kit-caption {",
+      '  color: red;',
+      '}',
+      '',
+      ".kit-frame:not(:is([data-layout='title'], .x)) .kit-caption {",
+      '  color: blue;',
+      '}',
+      '',
+      ".kit-frame[data-layout='title']:not(.kit-wide) .kit-caption {",
+      '  color: green;',
+      '}',
+      '',
+    ].join('\n');
+    const scoped = scopeStylesheet(css, 'title');
+    expect(scoped.css).toBe(css);
+    expect(scoped.problems).toEqual([
+      expect.stringContaining(
+        ".kit-frame:not([data-layout='image']) .kit-caption names a data-layout",
+      ),
+      expect.stringContaining('names a data-layout inside :not()'),
+    ]);
+  });
 });

@@ -20,6 +20,7 @@ import {
   checkWriteTargets,
   displayPath,
   existingEntries,
+  findDeckClashes,
   findOwnerFolder,
   type OwnerFolder,
 } from '#layouts/eject/eject-owner.ts';
@@ -115,6 +116,27 @@ export type EjectResult = {
    * With `all`, the layouts left out because the owner already has a folder of that name.
    */
   readonly skipped: readonly string[];
+
+  /**
+   * With `all`, the layouts left out because a deck of the brand has a layout folder of that name,
+   * which a brand layout would clash with, each with the deck.
+   */
+  readonly skippedForDecks: readonly SkippedForDeck[];
+};
+
+/**
+ * A layout `all` left out because a deck of the brand has a folder of its name.
+ */
+export type SkippedForDeck = {
+  /**
+   * The layout's name.
+   */
+  readonly name: string;
+
+  /**
+   * The deck's id.
+   */
+  readonly deck: string;
 };
 
 /**
@@ -122,12 +144,13 @@ export type EjectResult = {
  *
  * Nothing is written unless everything can be: each name is a layout of the kit's catalog that the
  * owner has no folder for (in any letter case) and, for a brand, that none of the brand's decks has
- * a layout folder of, the transform places every import, no path to write runs through a link, and
- * every helper already in `layouts/_shared/` is the same as the one this eject would write (or
+ * a layout folder of (with `all`, a name a deck has is left out and listed instead), a name asked
+ * for twice counts once, the transform places every import, no path to write runs through a link,
+ * and every helper already in `layouts/_shared/` is the same as the one this eject would write (or
  * `keepShared` says to keep the owner's). Each layout's folder gets its files and a `.eject/`
  * folder recording what was written; helpers are written to `layouts/_shared/` once and shared by
  * every ejected layout. Every file is created new, and a write that fails midway removes what this
- * run created.
+ * run created, the `layouts/` folder included when this run made it.
  *
  * @param root - The absolute workspace root.
  * @param owner - The brand or deck to eject into.
@@ -147,14 +170,17 @@ export const ejectLayouts = Effect.fn('ejectLayouts')(function* (
   BrandError | CliError | DeckBuildError | FileSystemError,
   FileSystem.FileSystem
 > {
-  const requested = request.names === 'all' ? [] : request.names;
+  const requested = request.names === 'all' ? [] : [...new Set(request.names)];
   yield* Effect.forEach(requested, checkSafeName);
   const folder = yield* findOwnerFolder(root, owner);
   const source = yield* Effect.sync(() => readEjectSource(request.srcDir));
   yield* Effect.forEach(requested, (name) => checkKitLayout(source, name));
   const existing = yield* existingEntries(folder.layoutsDir, source.names);
-  const names =
+  const unowned =
     request.names === 'all' ? source.names.filter((name) => !existing.has(name)) : requested;
+  const clashes = request.names === 'all' ? yield* findDeckClashes(root, folder, unowned) : [];
+  const clashing = new Set(clashes.map((clash) => clash.name));
+  const names = unowned.filter((name) => !clashing.has(name));
   const taken = names.find((name) => existing.has(name));
   if (taken !== undefined) {
     const shown = displayPath(root, path.join(folder.layoutsDir, existing.get(taken) ?? taken));
@@ -167,7 +193,10 @@ export const ejectLayouts = Effect.fn('ejectLayouts')(function* (
   }
 
   yield* checkNamesFree(root, folder, names);
-  yield* checkDeckLayoutsFree(root, folder, names);
+  if (request.names !== 'all') {
+    yield* checkDeckLayoutsFree(root, folder, names);
+  }
+
   const ejected = yield* Effect.sync(() =>
     names.map((name) => transformLayout(source, name, limitCasesOf(name), owner.kind)),
   );
@@ -183,6 +212,7 @@ export const ejectLayouts = Effect.fn('ejectLayouts')(function* (
     sharedReused: shared.reused,
     sharedKept: shared.kept,
     skipped: request.names === 'all' ? source.names.filter((name) => existing.has(name)) : [],
+    skippedForDecks: clashes.map((clash) => ({ name: clash.name, deck: clash.deck.id })),
   };
 });
 
@@ -400,6 +430,7 @@ const writeEjected = Effect.fn('writeEjected')(function* (
 > {
   const fs = yield* FileSystem.FileSystem;
   const created: string[] = [];
+  const parents = yield* missingParents(folder);
   const write = Effect.gen(function* () {
     for (const [file, text] of Object.entries(helpers)) {
       yield* writeNewFiles({ [file]: text });
@@ -423,9 +454,40 @@ const writeEjected = Effect.fn('writeEjected')(function* (
   const undo = Effect.suspend(() =>
     Effect.forEach(created.toReversed(), (file) =>
       fs.remove(file, { recursive: true, force: true }).pipe(Effect.ignore),
-    ),
+    ).pipe(Effect.andThen(Effect.forEach(parents, removeIfEmpty))),
   );
   return yield* write.pipe(Effect.onError(() => undo));
+});
+
+/**
+ * The folders a write needs that do not exist yet, innermost first: `layouts/_shared/` and
+ * `layouts/`. A failed run removes them again when it left them empty.
+ */
+const missingParents = Effect.fn('missingParents')(function* (
+  folder: OwnerFolder,
+): Effect.fn.Return<string[], never, FileSystem.FileSystem> {
+  const fs = yield* FileSystem.FileSystem;
+  const missing: string[] = [];
+  for (const dir of [folder.layoutsDir, path.join(folder.layoutsDir, SHARED_DIR)]) {
+    const exists = yield* fs.exists(dir).pipe(Effect.orElseSucceed(() => true));
+    if (!exists) {
+      missing.push(dir);
+    }
+  }
+
+  return missing.toReversed();
+});
+
+/**
+ * Removes a folder this run made when nothing is in it; a folder with files in it, such as one
+ * another command wrote into meanwhile, is left alone.
+ */
+const removeIfEmpty = Effect.fn('removeIfEmpty')(function* (dir: string) {
+  const fs = yield* FileSystem.FileSystem;
+  const entries = yield* fs.readDirectory(dir).pipe(Effect.orElseSucceed(() => ['kept']));
+  if (entries.length === 0) {
+    yield* fs.remove(dir, { recursive: true }).pipe(Effect.ignore);
+  }
 });
 
 /**

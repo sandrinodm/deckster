@@ -85,6 +85,7 @@ const runEject = Effect.fn('deck.layouts.eject')(function* (argv: readonly strin
         kept: shown(result.sharedKept),
       },
       skipped: result.skipped,
+      skippedForDecks: result.skippedForDecks,
       warnings,
       next,
     });
@@ -108,6 +109,13 @@ const runEject = Effect.fn('deck.layouts.eject')(function* (argv: readonly strin
 
   if (result.skipped.length > 0) {
     yield* Console.log(`Left alone, already in layouts/: ${result.skipped.join(', ')}`);
+  }
+
+  if (result.skippedForDecks.length > 0) {
+    const clashes = result.skippedForDecks.map((skip) => `${skip.name} (deck ${skip.deck})`);
+    yield* Console.log(
+      `Left out, a deck of this brand has a layout folder of the name: ${clashes.join(', ')}`,
+    );
   }
 
   for (const warning of warnings) {

@@ -116,8 +116,9 @@ Options:
                 layout-not-rendered) or a lint rule id (such as content-budget). problems at the top level belong to no one layout. A failure
                 prints { ok: false, error: { type, message } }.
                 For eject: { ok, brand, deck, layouts: [{ name, dir, files }], shared: { written,
-                reused, kept }, skipped, warnings, next }; skipped lists the layouts --all left
-                alone because their folder exists.
+                reused, kept }, skipped, skippedForDecks, warnings, next }; skipped lists the layouts
+                --all left alone because their folder exists, and skippedForDecks [{ name, deck }]
+                those it left out because a deck of the brand has a layout folder of the name.
                 For diff: { ok, brand, deck, layout, dir, ejectedWith, current, changed, files:
                 [{ path, status, diff }], problems, provenanceEdited }; status is unchanged,
                 changed, added or removed, path is a file of the layout or _shared/<file>, and

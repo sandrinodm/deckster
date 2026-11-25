@@ -6,7 +6,7 @@ import type { ExportTarget } from '#export/export-targets.ts';
 
 import { DeckBrowser } from '#browser/deck-browser.ts';
 import { fakeDeckLayer, pageSlide } from '#browser/fake-deck.fixture.ts';
-import { assertSlidesRender } from '#export/check-slides-render.ts';
+import { assertShotsRender, assertSlidesRender } from '#export/check-slides-render.ts';
 import { collectedPage } from '#lint/snapshot.fixture.ts';
 
 /**
@@ -76,6 +76,41 @@ describe('assertSlidesRender', () => {
         slides: [{ page: pageSlide(0, 'title'), steps: [collectedPage()] }],
       });
       expect(message).toBeNull();
+    }),
+  );
+});
+
+describe('assertShotsRender', () => {
+  const file = (number: number, error: string | null) => ({
+    path: `/out/${number}.png`,
+    slide: `s${number}`,
+    number,
+    step: null,
+    hidden: false,
+    width: 1920,
+    height: 1080,
+    error,
+  });
+
+  it.effect('fails naming each broken slide once and the load errors', () =>
+    Effect.gen(function* () {
+      const error = yield* Effect.flip(
+        assertShotsRender('hello', [
+          { files: [file(1, null), file(2, 'boom\nstack'), file(2, 'again')], pageErrors: [] },
+          { files: [], pageErrors: ['early'] },
+        ]),
+      );
+      expect(error.message).toContain('2 problem(s)');
+      expect(error.message).toContain('slide 2 "s2": boom');
+      expect(error.message).not.toContain('again');
+      expect(error.message).not.toContain('stack');
+      expect(error.message).toContain('early');
+    }),
+  );
+
+  it.effect('passes when every file rendered and the page did not throw', () =>
+    Effect.gen(function* () {
+      yield* assertShotsRender('hello', [{ files: [file(1, null)], pageErrors: [] }]);
     }),
   );
 });

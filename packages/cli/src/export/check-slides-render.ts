@@ -3,6 +3,7 @@ import { Effect } from 'effect';
 
 import type { DeckPage } from '#browser/deck-page.ts';
 import type { ExportTarget } from '#export/export-targets.ts';
+import type { ShotResult } from '#shot/take-shots.ts';
 
 import {
   cliError,
@@ -60,11 +61,50 @@ export const assertSlidesRender = Effect.fn('assertSlidesRender')(function* (
       (target) =>
         `  slide ${target.slide.index + 1} "${target.slide.id}": ${failed.get(target.slide.index)}`,
     );
+  return yield* renderFailure(deck, slides, loadErrors);
+});
+
+/**
+ * Fails when PNGs were written of slides that show an error or of a page that threw while the deck
+ * loaded, with the same error as `assertSlidesRender`. `deckster shot` flags the same files.
+ *
+ * @param deck - The deck folder name, for the error.
+ * @param results - What each screenshot run wrote and found.
+ * @throws CliError in the error channel, naming each failed slide with its error, when any file
+ *   carries an error or the page threw while the deck loaded.
+ */
+export const assertShotsRender = Effect.fn('assertShotsRender')(function* (
+  deck: string,
+  results: readonly Pick<ShotResult, 'files' | 'pageErrors'>[],
+): Effect.fn.Return<void, CliError> {
+  const failed = new Map<number, string>();
+  for (const file of results.flatMap((result) => result.files)) {
+    if (file.error !== null && !failed.has(file.number)) {
+      failed.set(file.number, `  slide ${file.number} "${file.slide}": ${firstLine(file.error)}`);
+    }
+  }
+
+  const loadErrors = results.flatMap((result) => result.pageErrors);
+  if (failed.size === 0 && loadErrors.length === 0) {
+    return;
+  }
+
+  return yield* renderFailure(deck, [...failed.values()], loadErrors);
+});
+
+/**
+ * The error for a deck with slides that render an error or a page that threw while it loaded.
+ *
+ * @param deck - The deck folder name.
+ * @param slides - One line per failed slide.
+ * @param loadErrors - What the page threw while the deck loaded.
+ */
+const renderFailure = (deck: string, slides: readonly string[], loadErrors: readonly string[]) => {
   const loading = loadErrors.map(
     (error) =>
       `  the page threw while the deck loaded or its slides were listed: ${firstLine(error)}`,
   );
-  return yield* cliError(
+  return cliError(
     `Deck "${deck}" was not exported: ${slides.length + loading.length} problem(s) render an error instead of the slide.\n` +
       [...slides, ...loading].join('\n') +
       '\nRun `' +
@@ -73,4 +113,4 @@ export const assertSlidesRender = Effect.fn('assertSlidesRender')(function* (
       deck +
       '` for every problem with its fix.',
   );
-});
+};

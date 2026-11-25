@@ -76,6 +76,16 @@ describe('limitSlides', () => {
     expect(list.match(/^- \S/gmu)).toHaveLength(3);
   });
 
+  it('keeps a list within the word budget when it allows more bullets than words', () => {
+    const contract = contractOf({
+      slots: { body: { description: 'Body.', accepts: ['text', 'bullets'] } },
+      budget: { body: { maxWords: 3, maxBullets: 8 } },
+    });
+    const list = limitSlides([{ contract, cases: [FULL_BODY] }])[1]?.mdx ?? '';
+    expect(bodyWords(list).length).toBeLessThanOrEqual(3);
+    expect(list.match(/^- \S/gmu)).toHaveLength(3);
+  });
+
   it('fills the bullets of a body whose budget sets no word limit', () => {
     const contract = contractOf({
       slots: { body: { description: 'Body.', accepts: ['bullets'] } },

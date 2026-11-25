@@ -1,5 +1,6 @@
+import { NodeServices } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
-import { Effect } from 'effect';
+import { Effect, Layer } from 'effect';
 import { strFromU8, unzipSync } from 'fflate';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import os from 'node:os';
@@ -9,10 +10,12 @@ import { describe, it } from 'vite-plus/test';
 
 import type { ExportOptions } from '#export/export-options.ts';
 
+import { fakeDeckLayer, pageSlide, type FakeDeck } from '#browser/fake-deck.fixture.ts';
 import { cliLayer } from '#cli.ts';
 import { defaultExportOptions } from '#export/export-options.ts';
 import { reportedWarnings, runExport } from '#export/run-export.ts';
 import { DEMO_WORKSPACE, FIXTURE_WORKSPACE } from '#lint/lint.fixtures.ts';
+import { collectedPage } from '#lint/snapshot.fixture.ts';
 import { Workspace } from '#workspace.ts';
 
 /**
@@ -336,6 +339,38 @@ layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deckster export on the diagrams-d
     EXPORT_TIMEOUT_MS,
   );
 });
+
+/**
+ * A two-slide fake deck whose second slide shows a render error.
+ */
+const BROKEN_DECK: FakeDeck = {
+  slides: [
+    { page: pageSlide(0, 'title'), steps: [collectedPage()] },
+    {
+      page: pageSlide(1, 'steps'),
+      steps: [collectedPage({ renderError: { file: 'slides/steps.mdx', message: 'boom\nstack' } })],
+    },
+  ],
+};
+
+layer(Layer.mergeAll(fakeDeckLayer(BROKEN_DECK), NodeServices.layer, Workspace.layer))(
+  'deckster export --png with a slide that renders an error',
+  (it) => {
+    it.effect('fails naming the slide, for the whole deck and for chosen slides', () =>
+      Effect.gen(function* () {
+        const whole = yield* Effect.flip(
+          runExport(options('hello', { formats: new Set(['png']) })),
+        );
+        expect(whole.message).toContain('slide 2 "steps": boom');
+        expect(whole.message).not.toContain('slide 1');
+        const chosen = yield* Effect.flip(
+          runExport(options('hello', { formats: new Set(['png']), slides: '2' })),
+        );
+        expect(chosen.message).toContain('slide 2 "steps": boom');
+      }),
+    );
+  },
+);
 
 describe('reportedWarnings', () => {
   const capture = {

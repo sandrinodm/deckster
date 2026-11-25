@@ -9,8 +9,8 @@ import path from 'node:path';
 
 import type { LayoutsOwner } from '#layouts/layouts-owner.ts';
 
-import { cliError, type CliError } from '#cli-error.ts';
-import { displayPath, findOwnerFolder } from '#layouts/eject/eject-owner.ts';
+import { cliError, type CliError, type FileSystemError } from '#cli-error.ts';
+import { checkWriteTargets, displayPath, findOwnerFolder } from '#layouts/eject/eject-owner.ts';
 import { readEjectSource, transformLayout } from '#layouts/eject/eject-transform.ts';
 import {
   PROVENANCE_DIR,
@@ -109,16 +109,21 @@ export type DiffOptions = {
  * @param name - The layout.
  * @param options - Where the kit's source is.
  * @returns The kit's changes, file by file.
- * @throws CliError in the error channel when the name is not safe, the layout has no provenance
- *   record, the record reaches outside `.eject/` or names another layout than its folder;
- *   BrandError | DeckBuildError when the brand or deck does not load.
+ * @throws CliError in the error channel when the name is not safe, a link leads from the owner's
+ *   folder to `.eject/`, the layout has no provenance record, the record reaches outside `.eject/`
+ *   or names another layout than its folder; BrandError | DeckBuildError when the brand or deck
+ *   does not load; FileSystemError when a folder on the way cannot be looked at.
  */
 export const diffLayout = Effect.fn('diffLayout')(function* (
   root: string,
   owner: LayoutsOwner,
   name: string,
   options: DiffOptions = {},
-): Effect.fn.Return<LayoutDiff, BrandError | CliError | DeckBuildError, FileSystem.FileSystem> {
+): Effect.fn.Return<
+  LayoutDiff,
+  BrandError | CliError | DeckBuildError | FileSystemError,
+  FileSystem.FileSystem
+> {
   if (!isSafeName(name)) {
     return yield* cliError(
       `"${name}" is not a layout name: a layout is named by its folder, in ${SAFE_NAME_RULE}.\n` +
@@ -129,6 +134,7 @@ export const diffLayout = Effect.fn('diffLayout')(function* (
   const folder = yield* findOwnerFolder(root, owner);
   const dir = path.join(folder.layoutsDir, name);
   const shown = displayPath(root, dir);
+  yield* checkWriteTargets(root, folder, [path.join(dir, PROVENANCE_DIR)], 'read');
   const stored = yield* readProvenance(dir, shown);
   if (stored.record.layout !== name) {
     return yield* cliError(
