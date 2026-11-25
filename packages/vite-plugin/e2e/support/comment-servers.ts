@@ -1,6 +1,7 @@
 import type { PreviewServer, ViteDevServer } from 'vite-plus';
 
 import { afterAll, beforeAll } from 'e2e';
+import { existsSync } from 'node:fs';
 import { rm, rmdir } from 'node:fs/promises';
 import path from 'node:path';
 import { build, createServer, mergeConfig, preview } from 'vite-plus';
@@ -70,8 +71,10 @@ export async function removeEmptyFeedback(deckDir: string): Promise<void> {
  */
 export function useCommentServers(): void {
   const servers: (ViteDevServer | PreviewServer)[] = [];
+  let helloHadFeedback = true;
   beforeAll(async () => {
     await removeFeedback(COMMENTS_DECK_DIR);
+    helloHadFeedback = existsSync(path.join(HELLO_DECK_DIR, '.feedback'));
     const config = fixtureConfig('comments');
     const dev = await createServer(
       mergeConfig(config, { server: { port: 5361, strictPort: true } }),
@@ -90,6 +93,8 @@ export function useCommentServers(): void {
   afterAll(async () => {
     await Promise.all(servers.splice(0).map((server) => server.close()));
     await removeFeedback(COMMENTS_DECK_DIR);
-    await removeEmptyFeedback(HELLO_DECK_DIR);
+    // A hello deck that had no feedback before the suite gets none after it, even when a screenshot
+    // or a write the suite started lands after the comment that owned it was deleted.
+    await (helloHadFeedback ? removeEmptyFeedback(HELLO_DECK_DIR) : removeFeedback(HELLO_DECK_DIR));
   });
 }

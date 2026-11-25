@@ -77,7 +77,7 @@ jobs:
       # Every file a check, test or build writes belongs in .gitignore or is cleaned up afterwards.
       - name: Verify the checks leave the checkout clean
         run: |
-          git status --short
+          git status --short --untracked-files=all
           git diff --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
