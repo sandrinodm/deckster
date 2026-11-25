@@ -17,7 +17,7 @@ import { useDeckRuntime } from '#deck/deck-runtime.ts';
 import { isComponent } from '#deck/is-component.ts';
 import { PlacedLayerHost } from '#deck/placed-layer.tsx';
 import { SlideProblem } from '#deck/slide-problem.tsx';
-import { SlotGuard } from '#deck/slot-guard.tsx';
+import { guardSlotContent, SlotGuard } from '#deck/slot-guard.tsx';
 import { Notes } from '#notes/notes.tsx';
 
 /**
@@ -255,8 +255,9 @@ function tsxSlots(entry: SlideEntry, body: ReactNode): LayoutSlots {
 
 /**
  * Wraps each filled slot in a {@link SlotGuard}, which draws `<span class="deck-slot"
- * data-slot="<name>">` (`display: contents`) so `deckster lint` can find and measure it, and tells
- * an error the content throws from one the layout throws.
+ * data-slot="<name>">` (`display: contents`) so `deckster lint` can find and measure it, and guards
+ * each component element in the content on its own ({@link guardSlotContent}), so an error the
+ * content throws is told from one the layout throws wherever the layout renders the content.
  *
  * @param slots - The filled slots.
  */
@@ -264,7 +265,7 @@ function wrapSlots(slots: LayoutSlots): LayoutSlots {
   const wrapped: Record<string, ReactNode> = {};
   for (const [name, content] of Object.entries(slots)) {
     if (content !== undefined) {
-      wrapped[name] = <SlotGuard data-slot={name}>{content}</SlotGuard>;
+      wrapped[name] = <SlotGuard data-slot={name}>{guardSlotContent(content)}</SlotGuard>;
     }
   }
 

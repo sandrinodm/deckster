@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, cloneElement, isValidElement, memo, type ReactNode } from 'react';
+import { act, Children, cloneElement, isValidElement, memo, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 import type { BleedSide, LayoutDefinition, LayoutProps } from '#layouts/layout.ts';
@@ -466,15 +466,190 @@ describe('slot content under a lazy layout', () => {
     expect(problem?.text).toContain('slide component broke');
   });
 
-  it('counts a content error as the layout’s when the layout renders the children unguarded', async () => {
+  it('keeps a content error the slide’s when the layout renders the children outside the slot', async () => {
     await renderBroken(({ slots }) => {
       const body = slots.body;
       return isValidElement<{ children?: ReactNode }>(body) ? (
         <div>{body.props.children}</div>
       ) : null;
     });
-    expect(problems()[0]?.text).toContain(
-      'Layout `kpi-wall` failed to render: slide component broke',
+    const [problem, ...rest] = problems();
+    expect(rest).toEqual([]);
+    expect(problem?.problem).toBeNull();
+    expect(problem?.text).toContain('slide component broke');
+    expect(problem?.text).not.toContain('Layout `kpi-wall`');
+  });
+
+  it('keeps a content error the slide’s when the layout maps each child into its own element', async () => {
+    await renderBroken(({ slots }) => {
+      const body = slots.body;
+      const items = isValidElement<{ children?: ReactNode }>(body)
+        ? Children.map(body.props.children, (item) => <article>{item}</article>)
+        : null;
+      return <div>{items}</div>;
+    });
+    const [problem, ...rest] = problems();
+    expect(rest).toEqual([]);
+    expect(problem?.problem).toBeNull();
+    expect(problem?.text).toContain('slide component broke');
+  });
+
+  it('keeps an error of a component inside an HTML element the slide’s outside the slot', async () => {
+    const deck = manifestOf(
+      mdxSlide(
+        'wall',
+        () => (
+          <div>
+            <p>Lead</p>
+            <Boom />
+          </div>
+        ),
+        { frontmatter: { layout: 'kpi-wall' } },
+      ),
     );
+    const Unwrap = ({ slots }: LayoutProps): ReactNode => {
+      const body = slots.body;
+      return isValidElement<{ children?: ReactNode }>(body) ? (
+        <main>{body.props.children}</main>
+      ) : null;
+    };
+    mounted = renderDeck(deck, {
+      isStatic: true,
+      plugins: [
+        definePlugin({
+          name: 'local-layouts',
+          layouts: [
+            lazyLayout('kpi-wall', async () => ({
+              default: defineLayout({ name: 'kpi-wall', component: Unwrap }),
+            })),
+          ],
+        }),
+      ],
+    });
+    await wait(0);
+    const [problem, ...rest] = problems();
+    expect(rest).toEqual([]);
+    expect(problem?.problem).toBeNull();
+    expect(problem?.text).toContain('slide component broke');
+  });
+
+  it('keeps a thrown non-Error value from content outside the slot the slide’s', async () => {
+    const Odd = (): ReactNode => {
+      // oxlint-disable-next-line no-throw-literal
+      throw 'not an error object';
+    };
+    const deck = manifestOf(
+      mdxSlide('wall', () => <Odd />, { frontmatter: { layout: 'kpi-wall' } }),
+    );
+    const Unwrap = ({ slots }: LayoutProps): ReactNode => {
+      const body = slots.body;
+      return isValidElement<{ children?: ReactNode }>(body) ? (
+        <div>{body.props.children}</div>
+      ) : null;
+    };
+    mounted = renderDeck(deck, {
+      isStatic: true,
+      plugins: [
+        definePlugin({
+          name: 'local-layouts',
+          layouts: [
+            lazyLayout('kpi-wall', async () => ({
+              default: defineLayout({ name: 'kpi-wall', component: Unwrap }),
+            })),
+          ],
+        }),
+      ],
+    });
+    await wait(0);
+    const [problem] = problems();
+    expect(problem?.problem).toBeNull();
+    expect(problem?.text).toContain('not an error object');
+    expect(problem?.text).not.toContain('Layout `kpi-wall`');
+  });
+
+  it('still reports a layout’s own component that throws beside the content as the layout’s', async () => {
+    const Badge = (): ReactNode => {
+      throw new Error('badge is not defined');
+    };
+    const deck = manifestOf(
+      mdxSlide('wall', () => <p>Fine</p>, { frontmatter: { layout: 'kpi-wall' } }),
+    );
+    const Unwrap = ({ slots }: LayoutProps): ReactNode => {
+      const body = slots.body;
+      return isValidElement<{ children?: ReactNode }>(body) ? (
+        <div>
+          {body.props.children}
+          <Badge />
+        </div>
+      ) : null;
+    };
+    mounted = renderDeck(deck, {
+      isStatic: true,
+      plugins: [
+        definePlugin({
+          name: 'local-layouts',
+          layouts: [
+            lazyLayout('kpi-wall', async () => ({
+              default: defineLayout({ name: 'kpi-wall', component: Unwrap }),
+            })),
+          ],
+        }),
+      ],
+    });
+    await wait(0);
+    const [problem, ...rest] = problems();
+    expect(rest).toEqual([]);
+    expect(problem?.problem).toBe('layout-load-failed');
+    expect(problem?.text).toContain('Layout `kpi-wall` failed to render: badge is not defined');
+  });
+
+  it('hands the layout the content’s own props, keys and children, and draws the same DOM', async () => {
+    /**
+     * A content component with a prop a layout may read.
+     */
+    const Figure = ({ label }: { label: string }): ReactNode => <b>{label}</b>;
+    let items: ReactNode[] = [];
+    const deck = manifestOf(
+      mdxSlide(
+        'wall',
+        () => [
+          <Figure key="a" label="First" />,
+          <p key="b">
+            Text <Figure label="Inline" />
+          </p>,
+        ],
+        { frontmatter: { layout: 'kpi-wall' } },
+      ),
+    );
+    const Spy = ({ slots }: LayoutProps): ReactNode => {
+      const body = slots.body;
+      items = isValidElement<{ children?: ReactNode }>(body)
+        ? Children.toArray(body.props.children)
+        : [];
+      return <div data-testid="wall">{slots.body}</div>;
+    };
+    mounted = renderDeck(deck, {
+      isStatic: true,
+      plugins: [
+        definePlugin({
+          name: 'local-layouts',
+          layouts: [
+            lazyLayout('kpi-wall', async () => ({
+              default: defineLayout({ name: 'kpi-wall', component: Spy }),
+            })),
+          ],
+        }),
+      ],
+    });
+    await wait(0);
+    const [first, second] = items;
+    expect(isValidElement(first) && first.props).toEqual({ label: 'First' });
+    expect(isValidElement(second) && second.type).toBe('p');
+    expect(items.map((item) => (isValidElement(item) ? item.key : undefined))).toHaveLength(2);
+    expect(document.querySelector('[data-testid="wall"]')?.innerHTML).toBe(
+      '<span class="deck-slot" data-slot="body"><b>First</b><p>Text <b>Inline</b></p></span>',
+    );
+    // No key or other React warnings from the guarded elements.
+    expect(console.error).not.toHaveBeenCalled();
   });
 });

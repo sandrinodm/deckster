@@ -76,9 +76,14 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
   The wrapper also marks an error the slot's content throws, so a layout's failure and a broken
   slide component are told apart: only the layout's failure shows as a layout problem. A layout
   receives the guard element in `slots`, not the `<span>`; it may replace the content with
-  `cloneElement(slot, {}, children)`, which keeps the guard. Content a layout takes out of the
-  element and renders on its own is not guarded, so what that content throws is reported as the
-  layout's failure.
+  `cloneElement(slot, {}, children)`, which keeps the guard. Each component element in the content
+  is guarded on its own too, so content a layout takes out of the element and renders elsewhere
+  still reports what it throws as the slide's error. Such an element keeps its props, children and
+  key, but its `type` is the engine's stand-in, so read a content element's props rather than
+  comparing its type; HTML elements and fragments keep theirs. Only the elements in a slot's
+  content are guarded, down to the first component in each branch: what a layout digs out of a
+  component's own children and renders on its own counts as the layout's, and so does a failure of
+  plain markup taken out of the slot (a value React cannot render, inside a paragraph).
 - `start-errors.ts` shows a panel naming the file when the page breaks before the deck mounts, for
   example a slide that imports a name its module does not export.
 
