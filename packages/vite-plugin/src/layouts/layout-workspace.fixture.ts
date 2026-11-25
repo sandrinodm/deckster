@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -126,6 +126,17 @@ export function componentSource(name: string, text = ''): string {
     `export default defineLayout<typeof contract>({ name: ${JSON.stringify(name)}, component: Component });`,
     '',
   ].join('\n');
+}
+
+/**
+ * Removes a workspace a dev server used. Vite's dependency optimizer can still be writing a
+ * `deps_temp_*` folder under the workspace's `node_modules/.vite` when `server.close()` resolves,
+ * so a removal that runs into those writes (`ENOTEMPTY`) is retried until they are done.
+ *
+ * @param root - The workspace root.
+ */
+export function removeServedRoot(root: string): void {
+  rmSync(root, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
 }
 
 /**

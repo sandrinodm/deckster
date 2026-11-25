@@ -3,7 +3,7 @@ import type { ViteDevServer } from 'vite-plus';
 import { holdCode, resetCodeGate } from '@deckster/brand/node';
 import kitCatalog from '@deckster/kit/catalog';
 import assert from 'node:assert/strict';
-import { existsSync, realpathSync, rmSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build, createServer, mergeConfig, normalizePath } from 'vite-plus';
@@ -15,6 +15,7 @@ import {
   contractRuns,
   contractSource,
   defaultReplacementSource,
+  removeServedRoot,
   resetContractRuns,
   scratchRoot,
   writeFiles,
@@ -220,7 +221,7 @@ describe('a deck with code layouts, served', () => {
   afterAll(async () => {
     await server.close();
     resetCodeGate();
-    rmSync(root, { recursive: true, force: true });
+    removeServedRoot(root);
   });
 
   it('adds the layout components of the deck and its brand to the dependency scan', () => {
@@ -363,7 +364,7 @@ it.each(['.', 'layouts', 'layouts/funnel'])(
     } finally {
       stop();
       await server?.close();
-      rmSync(root, { recursive: true, force: true });
+      removeServedRoot(root);
     }
   },
   SERVER_TIMEOUT_MS,
@@ -407,7 +408,7 @@ describe('a deck whose code layout replaces a kit layout, served', () => {
   afterAll(async () => {
     await server.close();
     resetCodeGate();
-    rmSync(root, { recursive: true, force: true });
+    removeServedRoot(root);
   });
 
   it('leaves the replaced layout out of the generated kit runtime', async () => {
@@ -465,7 +466,7 @@ describe('a deck whose code layout registers the wrong name, served', () => {
   afterAll(async () => {
     await server.close();
     resetCodeGate();
-    rmSync(root, { recursive: true, force: true });
+    removeServedRoot(root);
   });
 
   /**
@@ -564,7 +565,7 @@ describe('the deck plugin’s layout catalog, built', () => {
 
   afterAll(() => {
     resetCodeGate();
-    rmSync(root, { recursive: true, force: true });
+    removeServedRoot(root);
   });
 
   it('loads the contracts once for requests that arrive together', async () => {
