@@ -13,7 +13,7 @@ import { addBrand, type AddBrandRequest } from '#brand-add/add-brand.ts';
 import { parseBrandSource } from '#brand-add/brand-source.ts';
 import { NETWORK_PROTOCOLS } from '#brand-add/fetch-brand.ts';
 import { checkCatalogLayouts } from '#layouts/check-brand-layouts.ts';
-import { contractRan, writeThrowingLayout } from '#layouts/code-layouts.fixture.ts';
+import { contractRan, writeMarkedLayout } from '#layouts/code-layouts.fixture.ts';
 
 vi.mock('#layouts/check-brand-layouts.ts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('#layouts/check-brand-layouts.ts')>();
@@ -281,7 +281,7 @@ function writeCodeLayouts(dir: string, template: string): void {
   }
 
   // A contract that would show it ran: `brand add` must never evaluate a fetched brand's code.
-  writeThrowingLayout(path.join(dir, 'layouts'), 'kpi-wall', CODE_RAN_MARKER);
+  writeMarkedLayout(path.join(dir, 'layouts'), 'kpi-wall', CODE_RAN_MARKER);
   fs.writeFileSync(
     path.join(dir, DECKSTER_SOURCE_FILE),
     JSON.stringify({ source: 'gh:evil/brand', commit: null, codeLayoutsSkipped: ['evil'] }),
@@ -318,7 +318,7 @@ function writeCodeFallbacks(repo: string, brandTs: string): void {
         '',
       ].join('\n'),
     );
-    writeThrowingLayout(path.join(dir, 'layouts'), 'kpi-wall', CODE_RAN_MARKER);
+    writeMarkedLayout(path.join(dir, 'layouts'), 'kpi-wall', CODE_RAN_MARKER);
   }
 }
 

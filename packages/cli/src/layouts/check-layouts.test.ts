@@ -1,12 +1,22 @@
+import { playwrightInstallCommand } from '@deckster/brand/node';
+import { invalidMdx } from '@deckster/vite-plugin/errors';
 import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it } from '@effect/vitest';
 import { Effect, Layer } from 'effect';
+import path from 'node:path';
+import { chromium } from 'playwright';
+import { vi } from 'vite-plus/test';
 
 import { DeckBrowser } from '#browser/deck-browser.ts';
-import { cliError } from '#cli-error.ts';
+import { cliError, ViteError } from '#cli-error.ts';
 import { checkLayouts } from '#layouts/check-layouts.ts';
-import { CODE_BRAND, codeLayoutsWorkspace } from '#layouts/code-layouts.fixture.ts';
-import { DeckServer } from '#server/deck-server.ts';
+import {
+  CODE_BRAND,
+  codeLayoutsWorkspace,
+  contractRan,
+  writeMarkedLayout,
+} from '#layouts/code-layouts.fixture.ts';
+import { DeckServer, type RunningDeckServer } from '#server/deck-server.ts';
 import { Workspace } from '#workspace.ts';
 
 /**
@@ -20,20 +30,33 @@ const CHECK_TIMEOUT_MS = 120_000;
 const LAYOUT = 'kpi-wall';
 
 /**
- * Layers whose server starts and whose browser fails to open the generated deck in the way given.
- *
- * @param opening - What opening the deck does instead of giving a page.
+ * A second valid layout in tests that exercise a batch.
  */
-function browserThat(opening: () => ReturnType<DeckBrowser['Service']['open']>) {
-  const server = Layer.succeed(
+const OTHER_LAYOUT = 'other-layout';
+
+/**
+ * A scoped workspace with two layouts available to the render pass.
+ */
+const batchWorkspace = Effect.fn('batchWorkspace')(function* () {
+  const root = yield* codeLayoutsWorkspace();
+  const marker = '__deckCheckLayoutsBatchRan';
+  writeMarkedLayout(path.join(root, 'brands', CODE_BRAND, 'layouts'), OTHER_LAYOUT, marker);
+  yield* Effect.addFinalizer(() => Effect.sync(() => contractRan(marker)));
+  return root;
+});
+
+/**
+ * A server that starts successfully and passes generated slides through the supplied compiler.
+ *
+ * @param compile - How the server compiles each generated slide.
+ */
+function serverWith(compile: RunningDeckServer['compile'] = () => Effect.succeed([])) {
+  return Layer.succeed(
     DeckServer,
     DeckServer.of({
-      start: () =>
-        Effect.succeed({ url: 'http://fake.invalid/', compile: () => Effect.succeed([]) }),
+      start: () => Effect.succeed({ url: 'http://fake.invalid/', compile }),
     }),
   );
-  const browser = Layer.succeed(DeckBrowser, DeckBrowser.of({ open: opening }));
-  return Layer.mergeAll(server, browser);
 }
 
 /**
@@ -49,7 +72,15 @@ const checkWhere = (opening: () => ReturnType<DeckBrowser['Service']['open']>) =
         root,
         owner: { kind: 'brand', name: CODE_BRAND },
         layout: LAYOUT,
-      }).pipe(Effect.provide(Layer.mergeAll(browserThat(opening), Workspace.at(root))));
+      }).pipe(
+        Effect.provide(
+          Layer.mergeAll(
+            serverWith(),
+            Layer.succeed(DeckBrowser, DeckBrowser.of({ open: opening })),
+            Workspace.at(root),
+          ),
+        ),
+      );
     }),
   ).pipe(Effect.provide(NodeServices.layer));
 
@@ -87,7 +118,78 @@ describe('checkLayouts when the rendering fails', () => {
         const [problem] = report.layouts[0]?.problems ?? [];
         expect(problem?.code).toBe('layout-render-failed');
         expect(problem?.message).toContain("reading 'flatMap'");
+        expect(problem?.fix).toContain('Fix the TypeError at the reported location.');
       }),
+    CHECK_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'keeps compile findings on layouts set aside before the page failed',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const root = yield* batchWorkspace();
+          const server = serverWith((file) => {
+            if (path.basename(file).startsWith(`${OTHER_LAYOUT}-`)) {
+              const cause = invalidMdx(
+                { file, displayPath: path.basename(file) },
+                { message: 'The example did not compile.', fix: 'Fix the example.' },
+              );
+              return Effect.fail(new ViteError({ cause }));
+            }
+
+            return Effect.succeed([]);
+          });
+          const browser = Layer.succeed(
+            DeckBrowser,
+            DeckBrowser.of({
+              open: () => Effect.fail(cliError('The deck did not start: the page failed.')),
+            }),
+          );
+          const report = yield* checkLayouts({
+            root,
+            owner: { kind: 'brand', name: CODE_BRAND },
+          }).pipe(Effect.provide(Layer.mergeAll(server, browser, Workspace.at(root))));
+          expect(report.layouts).toMatchObject([
+            { name: LAYOUT, cases: [], problems: [{ code: 'layout-render-failed' }] },
+            {
+              name: OTHER_LAYOUT,
+              cases: [],
+              problems: [{ message: 'The example did not compile.' }],
+            },
+          ]);
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
+    CHECK_TIMEOUT_MS,
+  );
+
+  it.effect(
+    'fails the whole check with one Chromium launch error and the install command',
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          const launch = vi
+            .spyOn(chromium, 'launch')
+            .mockRejectedValue(new Error('Executable missing'));
+          yield* Effect.addFinalizer(() => Effect.sync(() => launch.mockRestore()));
+          const root = yield* batchWorkspace();
+          const result = yield* checkLayouts({
+            root,
+            owner: { kind: 'brand', name: CODE_BRAND },
+          }).pipe(
+            Effect.provide(Layer.mergeAll(serverWith(), DeckBrowser.layer, Workspace.at(root))),
+            Effect.result,
+          );
+          expect(result).toMatchObject({
+            _tag: 'Failure',
+            failure: {
+              _tag: 'CliError',
+              message: `Could not start Chromium: Executable missing\nInstall the browser with \`${playwrightInstallCommand()}\`.`,
+            },
+          });
+          expect(launch).toHaveBeenCalledTimes(1);
+        }),
+      ).pipe(Effect.provide(NodeServices.layer)),
     CHECK_TIMEOUT_MS,
   );
 });

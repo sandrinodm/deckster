@@ -79,6 +79,7 @@ jobs:
         run: |
           git status --short --untracked-files=all
           git diff --exit-code
+          git diff --cached --exit-code
           test -z "$(git ls-files --others --exclude-standard)"
 
       - name: Upload browser test reports

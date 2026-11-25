@@ -322,4 +322,28 @@ describe('unownedSelectors', () => {
       '.kit-scrim + .kit-eyebrow',
     ]);
   });
+
+  it('requires an owned class or attribute outside negation on every branch', () => {
+    const unowned = [
+      '.foreign:not(.kit-owned)',
+      ':NOT(:is(.kit-owned, [data-kit-owned]))',
+      String.raw`:n\6ft(.kit-owned)`,
+      ':is(.kit-owned, .foreign)',
+      ':where(.kit-owned, :is([data-kit-owned], .foreign))',
+      ':has(> .kit-owned, + .foreign)',
+      ':nth-child(odd of .kit-owned, .foreign)',
+      '[title=".kit-owned"]',
+    ];
+    const owned = [
+      '.kit-owned:is(.foreign, .other):not([data-kit-owned])',
+      ':is(.kit-owned, :where([data-kit-owned], .kit-owned))',
+      ':has(> .kit-owned, + [data-kit-owned])',
+      ':nth-last-child(2n + 1 of .kit-owned, [data-kit-owned])',
+      ':where([data-kit-owned /* positive */], .kit-owned)',
+    ];
+    const css = `${[...unowned, ...owned].join(',\n')} { color: red; }`;
+    expect(unownedSelectors(css, new Set(['kit-owned']), new Set(['data-kit-owned']))).toEqual(
+      unowned,
+    );
+  });
 });

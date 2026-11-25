@@ -8,11 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { runCaptured } from '#cli.fixture.ts';
-import {
-  contractRan,
-  writeDataLayouts,
-  writeThrowingLayout,
-} from '#layouts/code-layouts.fixture.ts';
+import { contractRan, writeDataLayouts, writeMarkedLayout } from '#layouts/code-layouts.fixture.ts';
 import { diffLayout } from '#layouts/eject/diff-layout.ts';
 import { ejectLayouts } from '#layouts/eject/eject-layouts.ts';
 import { EJECT_BRAND, ejectWorkspace } from '#layouts/eject/eject-workspace.fixture.ts';
@@ -242,7 +238,7 @@ describe('ejectLayouts', () => {
         Effect.gen(function* () {
           const marker = '__ejectFallbackContractRan';
           const brandDir = path.join(root, 'brands', EJECT_BRAND);
-          writeThrowingLayout(layoutsDir(root), 'kpi-wall', marker);
+          writeMarkedLayout(layoutsDir(root), 'kpi-wall', marker);
           writeDataLayouts(brandDir, ['quote'], 'kpi-wall');
           const refusal = yield* failureMessage(
             ejectLayouts(root, OWNER, { names: ['quote'], keepShared: false }),

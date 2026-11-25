@@ -19,10 +19,31 @@ export type RenderOutcome = {
   readonly rendered: ReadonlySet<string>;
 
   /**
-   * Why the rendering stopped when the browser, the server or the page failed, or returned no
-   * report, instead of reporting; the slides not rendered by then are not in `rendered`.
+   * The failure and the ids in the pass that encountered it.
    */
-  readonly failure?: string | undefined;
+  readonly failure?:
+    | (RenderFailure & {
+        /**
+         * The slide ids still in the deck when rendering failed.
+         */
+        readonly attempted: ReadonlySet<string>;
+      })
+    | undefined;
+};
+
+/**
+ * What stopped a render pass and the action to take before retrying.
+ */
+type RenderFailure = {
+  /**
+   * Why the pass stopped.
+   */
+  readonly message: string;
+
+  /**
+   * How to address the cause.
+   */
+  readonly fix: string;
 };
 
 /**
@@ -31,15 +52,25 @@ export type RenderOutcome = {
  */
 export type RenderFailed = {
   /**
-   * What went wrong, in a sentence.
+   * What went wrong and how to address it.
    */
-  readonly failed: string;
+  readonly failed: RenderFailure;
 };
 
 /**
- * The message when a render returns nothing at all.
+ * The failure when a render returns nothing at all.
  */
-const NO_REPORT = 'rendering the generated deck returned no report';
+const NO_REPORT: RenderFailure = {
+  /**
+   * Why the pass stopped.
+   */
+  message: 'Rendering the generated deck returned no report.',
+
+  /**
+   * Where to look for more detail.
+   */
+  fix: 'Check the server and browser logs for the render failure.',
+};
 
 /**
  * Renders the generated slides, and when the deck does not build because some slides fail to
@@ -68,17 +99,21 @@ export const renderIsolated = Effect.fn('renderIsolated')(function* <E, R>(
   const setAside: LintFinding[] = [];
   let attempt = slides;
   while (attempt.length > 0) {
+    const ids = new Set(attempt.map((slide) => slide.id));
     const report = yield* render(attempt);
     if (report === undefined || 'failed' in report) {
-      return { findings: setAside, rendered: notRendered, failure: report?.failed ?? NO_REPORT };
+      return {
+        findings: setAside,
+        rendered: notRendered,
+        failure: { ...(report?.failed ?? NO_REPORT), attempted: ids },
+      };
     }
 
     const findings = [...setAside, ...report.findings];
     if (report.summary.slides > 0) {
-      return { findings, rendered: new Set(attempt.map((slide) => slide.id)) };
+      return { findings, rendered: ids };
     }
 
-    const ids = new Set(attempt.map((slide) => slide.id));
     const failed = new Set(
       report.findings.flatMap((finding) =>
         finding.severity === 'error' && finding.slide !== null && ids.has(finding.slide)

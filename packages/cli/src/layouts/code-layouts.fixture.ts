@@ -52,22 +52,50 @@ export const codeLayoutsWorkspace = Effect.fn('codeLayoutsWorkspace')(
  * @param marker - The global the contract sets when it runs.
  */
 export function writeThrowingLayout(layoutsDir: string, name: string, marker: string): void {
+  writeLayoutFixture(layoutsDir, name, [
+    `Reflect.set(globalThis, ${JSON.stringify(marker)}, true);`,
+    `throw new Error(${JSON.stringify(`the ${name} contract does not load`)});`,
+  ]);
+}
+
+/**
+ * Writes a valid code layout that marks the process evaluating its contract. The marker can detect
+ * an in-process load after the contract passes its check in a separate process.
+ *
+ * @param layoutsDir - The brand's or deck's `layouts/` folder.
+ * @param name - The layout name.
+ * @param marker - The global the contract sets when it runs.
+ */
+export function writeMarkedLayout(layoutsDir: string, name: string, marker: string): void {
+  writeLayoutFixture(layoutsDir, name, [
+    "import { defineLayoutContract } from '@deckster/engine/layout';",
+    "import { Schema } from 'effect';",
+    '',
+    `Reflect.set(globalThis, ${JSON.stringify(marker)}, true);`,
+    'export default defineLayoutContract({',
+    `  name: ${JSON.stringify(name)},`,
+    "  description: 'A layout with a contract evaluation marker.',",
+    '  schema: Schema.Struct({}),',
+    "  slots: { body: { description: 'The text.', accepts: ['text'] } },",
+    '  budget: { body: { maxWords: 20 } },',
+    "  example: { frontmatter: {}, body: 'A short example.\\n' },",
+    '});',
+  ]);
+}
+
+/**
+ * Writes a fixture's contract and an inert layout component.
+ */
+function writeLayoutFixture(layoutsDir: string, name: string, contract: readonly string[]): void {
   const dir = path.join(layoutsDir, name);
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(
-    path.join(dir, 'contract.ts'),
-    [
-      `Reflect.set(globalThis, ${JSON.stringify(marker)}, true);`,
-      `throw new Error('the ${name} contract does not load');`,
-      '',
-    ].join('\n'),
-  );
+  fs.writeFileSync(path.join(dir, 'contract.ts'), [...contract, ''].join('\n'));
   fs.writeFileSync(
     path.join(dir, 'layout.tsx'),
     [
       "import { defineLayout } from '@deckster/engine';",
       '',
-      `export default defineLayout({ name: '${name}', component: () => null });`,
+      `export default defineLayout({ name: ${JSON.stringify(name)}, component: () => null });`,
       '',
     ].join('\n'),
   );
@@ -105,7 +133,7 @@ export function writeDataLayouts(
 }
 
 /**
- * Whether a contract written by {@link writeThrowingLayout} ran, and forgets that it did.
+ * Reads and clears the marker written by a fixture contract in this process.
  *
  * @param marker - The global the contract sets.
  */

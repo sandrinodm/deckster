@@ -45,7 +45,7 @@ const KIT_CLASS_TOKEN = /(?<![\w-])kit-[a-z0-9]+(?:-[a-z0-9]+)*(?![\w-])/gu;
 /**
  * Matches a kit class in a selector, capturing the name.
  */
-const CLASS_SELECTOR = /\.(kit-[a-z0-9]+(?:-[a-z0-9]+)*)(?![\w-])/gu;
+const CLASS_SELECTOR = /\.(kit-[a-z0-9]+(?:-[a-z0-9]+)*)(?![\w\\\P{ASCII}-])/gu;
 
 /**
  * The start of every attribute a shared kit stylesheet is opted into with, such as
@@ -62,7 +62,39 @@ const KIT_ATTRIBUTE_TOKEN = /(?<![\w-])data-kit-[a-z0-9]+(?:-[a-z0-9]+)*(?![\w-]
 /**
  * Matches a kit opt-in attribute in a selector, capturing the name.
  */
-const ATTRIBUTE_SELECTOR = /\[\s*(data-kit-[a-z0-9]+(?:-[a-z0-9]+)*)(?![\w-])/gu;
+const ATTRIBUTE_SELECTOR = /\[\s*(data-kit-[a-z0-9]+(?:-[a-z0-9]+)*)(?=\s*(?:[~|^$*]?=|\]))/gu;
+
+/**
+ * A kit class matched at the scanner's current position.
+ */
+const CLASS_AT_POSITION = new RegExp(CLASS_SELECTOR.source, 'uy');
+
+/**
+ * A kit attribute matched at the scanner's current position.
+ */
+const ATTRIBUTE_AT_POSITION = new RegExp(ATTRIBUTE_SELECTOR.source, 'uy');
+
+/**
+ * A functional pseudo-class or pseudo-element at the scanner's current position.
+ */
+const SELECTOR_FUNCTION = /:{1,2}([a-z-]+)\(/iuy;
+
+/**
+ * Functions whose argument is a positive selector list. Negation does not constrain ownership.
+ */
+const POSITIVE_SELECTOR_FUNCTIONS = new Set([
+  'is',
+  'where',
+  'has',
+  'host',
+  'host-context',
+  'slotted',
+]);
+
+/**
+ * The An+B modifier before an `of` selector list in `:nth-child` or `:nth-last-child`.
+ */
+const NTH_WITH_SELECTORS = /^\s*(?:even|odd|[+-]?\d*n(?:\s*[+-]\s*\d+)?|[+-]?\d+)\s+of\s+/iu;
 
 /**
  * Matches a CSS comment.
@@ -284,10 +316,9 @@ export function renameAttributes(
 }
 
 /**
- * The selectors of a stylesheet's rules that name none of the given classes and attributes, inside
- * `@layer`, `@media`, `@supports` and `@container` too. Eject renames a shared stylesheet's owned
- * classes and opt-in attributes in an ejected layout's markup, so a rule keyed on one of them never
- * reaches that markup from the kit's copy; a rule keyed on neither would.
+ * The selectors of a stylesheet's rules that can match without a positive reference to a given
+ * class or attribute, including rules inside grouping at-rules. Each alternative in a selector list
+ * must require an owned name for the kit's rule to stay off the renamed markup.
  *
  * @param css - The stylesheet's text.
  * @param classes - The kit classes the copy renames.
@@ -305,7 +336,7 @@ export function unownedSelectors(
 }
 
 /**
- * Adds the selectors of one block's rules that name none of the given classes and attributes.
+ * Adds selectors of one block's rules that can match without an owned class or attribute.
  */
 function collectUnowned(
   content: string,
@@ -327,16 +358,93 @@ function collectUnowned(
       continue;
     }
 
-    for (const part of splitTopLevel(item.prelude.replace(CSS_COMMENT, '').trim(), ',')) {
-      const selector = part.trim().replace(WHITE_SPACE_RUN, ' ');
-      const owned =
-        selectorClasses(selector).some((name) => classes.has(name)) ||
-        selectorAttributes(selector).some((name) => attributes.has(name));
-      if (!owned) {
-        found.push(selector);
+    for (const part of splitTopLevel(item.prelude, ',')) {
+      const selector = part.replace(CSS_COMMENT, '').trim();
+      if (!requiresOwnedSelector(selector, classes, attributes)) {
+        found.push(selector.replace(WHITE_SPACE_RUN, ' '));
       }
     }
   }
+}
+
+/**
+ * Tests one selector branch. A required token or a function with every alternative owned is enough,
+ * since the other parts of the branch must match alongside it.
+ */
+function requiresOwnedSelector(
+  selector: string,
+  classes: ReadonlySet<string>,
+  attributes: ReadonlySet<string>,
+): boolean {
+  let position = 0;
+  while (position < selector.length) {
+    const next = skipQuoted(selector, position);
+    if (next !== position) {
+      position = next;
+      continue;
+    }
+
+    const char = selector[position];
+    if (char === '[') {
+      ATTRIBUTE_AT_POSITION.lastIndex = position;
+      const name = ATTRIBUTE_AT_POSITION.exec(selector)?.[1];
+      if (name !== undefined && attributes.has(name)) {
+        return true;
+      }
+
+      position = matchingCloser(selector, position, '[', ']') + 1;
+      continue;
+    }
+
+    if (char === '.') {
+      CLASS_AT_POSITION.lastIndex = position;
+      const name = CLASS_AT_POSITION.exec(selector)?.[1];
+      if (name !== undefined && classes.has(name)) {
+        return true;
+      }
+    }
+
+    if (char === ':') {
+      SELECTOR_FUNCTION.lastIndex = position;
+      const name = SELECTOR_FUNCTION.exec(selector)?.[1]?.toLowerCase();
+      if (name !== undefined) {
+        const open = SELECTOR_FUNCTION.lastIndex - 1;
+        const close = matchingCloser(selector, open, '(', ')');
+        const args = selectorArguments(name, selector.slice(open + 1, close));
+        if (
+          args !== undefined &&
+          splitTopLevel(args, ',').every((branch) =>
+            requiresOwnedSelector(branch, classes, attributes),
+          )
+        ) {
+          return true;
+        }
+
+        position = close + 1;
+        continue;
+      }
+    }
+
+    position = char === '(' ? matchingCloser(selector, position, '(', ')') + 1 : position + 1;
+  }
+
+  return false;
+}
+
+/**
+ * Returns the positive selector list of a function when it has one.
+ */
+function selectorArguments(name: string, args: string): string | undefined {
+  if (POSITIVE_SELECTOR_FUNCTIONS.has(name)) {
+    return args;
+  }
+
+  if (name === 'nth-child' || name === 'nth-last-child') {
+    const prefix = NTH_WITH_SELECTORS.exec(args)?.[0];
+    return prefix === undefined ? undefined : args.slice(prefix.length);
+  }
+
+  return undefined;
 }
 
 /**
@@ -633,7 +741,7 @@ function splitItems(content: string): { items: CssItem[]; trailing: string } {
       continue;
     }
 
-    const close = matchingBrace(content, stop);
+    const close = matchingCloser(content, stop, '{', '}');
     items.push({
       leading,
       prelude: content.slice(start, stop),
@@ -680,10 +788,9 @@ function findStop(text: string, from: number): number | undefined {
 }
 
 /**
- * The position of the `}` that closes the `{` at a position, or the end of the text when it is
- * never closed.
+ * The position of the delimiter that closes the group at `open`, or the end of the text.
  */
-function matchingBrace(text: string, open: number): number {
+function matchingCloser(text: string, open: number, opener: string, closer: string): number {
   let depth = 0;
   let position = open;
   while (position < text.length) {
@@ -693,9 +800,9 @@ function matchingBrace(text: string, open: number): number {
       continue;
     }
 
-    if (text[position] === '{') {
+    if (text[position] === opener) {
       depth += 1;
-    } else if (text[position] === '}') {
+    } else if (text[position] === closer) {
       depth -= 1;
       if (depth === 0) {
         return position;
@@ -709,12 +816,15 @@ function matchingBrace(text: string, open: number): number {
 }
 
 /**
- * The position after the comment or string that starts at a position, or the position itself when
- * neither starts there.
+ * The position after a comment, string or escape that starts here, or the position itself.
  */
 function skipQuoted(text: string, position: number): number {
   if (text.startsWith('/*', position)) {
     return endOfComment(text, position);
+  }
+
+  if (text[position] === '\\') {
+    return position + 2;
   }
 
   const quote = text[position];

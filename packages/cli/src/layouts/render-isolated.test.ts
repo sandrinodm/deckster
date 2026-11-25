@@ -47,14 +47,15 @@ function fakeRender(broken: readonly string[], calls: string[][], deckProblem = 
   return (slides: readonly LimitSlide[]): Effect.Effect<LintReport> => {
     calls.push(slides.map((slide) => slide.id));
     const failing = slides.filter((slide) => broken.includes(slide.id));
-    const findings =
-      failing.length > 0 || deckProblem
-        ? [
-            ...failing.map((slide) => findingOn(slide.id, 'error')),
-            ...(deckProblem ? [findingOn(null, 'error')] : []),
-          ]
-        : slides.map((slide) => findingOn(slide.id, 'warning'));
-    const rendered = failing.length > 0 || deckProblem ? 0 : slides.length;
+    const stopped = failing.length > 0 || deckProblem;
+    const findings = stopped
+      ? failing.map((slide) => findingOn(slide.id, 'error'))
+      : slides.map((slide) => findingOn(slide.id, 'warning'));
+    if (deckProblem) {
+      findings.push(findingOn(null, 'error'));
+    }
+
+    const rendered = stopped ? 0 : slides.length;
     return Effect.succeed({
       deck: 'd',
       brand: null,
@@ -120,7 +121,10 @@ describe('renderIsolated', () => {
       const outcome = yield* renderIsolated(slides, () => Effect.succeed(undefined));
       expect(outcome.rendered.size).toBe(0);
       expect(outcome.findings).toEqual([]);
-      expect(outcome.failure).toContain('returned no report');
+      expect(outcome.failure).toMatchObject({
+        message: expect.stringContaining('returned no report'),
+        attempted: new Set(['a-1', 'b-1']),
+      });
     }),
   );
 
@@ -132,11 +136,20 @@ describe('renderIsolated', () => {
       const outcome = yield* renderIsolated(slides, (attempt) =>
         attempt.length === slides.length
           ? first(attempt)
-          : Effect.succeed({ failed: 'The deck did not start within 30s.' }),
+          : Effect.succeed({
+              failed: {
+                message: 'The deck did not start within 30s.',
+                fix: 'Check the page logs.',
+              },
+            }),
       );
       expect(outcome.rendered.size).toBe(0);
       expect(outcome.findings).toEqual([findingOn('b-1', 'error')]);
-      expect(outcome.failure).toBe('The deck did not start within 30s.');
+      expect(outcome.failure).toEqual({
+        message: 'The deck did not start within 30s.',
+        fix: 'Check the page logs.',
+        attempted: new Set(['a-1']),
+      });
     }),
   );
 });

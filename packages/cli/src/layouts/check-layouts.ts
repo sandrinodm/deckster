@@ -59,6 +59,16 @@ const NOT_RENDERED = 'layout-not-rendered';
 const RENDER_FAILED = 'layout-render-failed';
 
 /**
+ * The start of the error from a page that breaks before the deck mounts.
+ */
+const DECK_START_FAILURE = 'The deck did not start:';
+
+/**
+ * The start of the error from waiting for the deck to mount past its deadline.
+ */
+const DECK_START_TIMEOUT = 'The deck did not start within ';
+
+/**
  * Rules about a deck as a talk, not about one slide's layout: they would only report the generated
  * deck's shape (one layout repeated, no builds, no notes, no timing).
  */
@@ -578,11 +588,8 @@ const renderSlides = Effect.fn('renderSlides')(function* (
 });
 
 /**
- * Renders the slides like {@link renderSlides}, but a browser, server or page that fails or times
- * out, or a defect while rendering, is the rendering's failure instead of the check's: the check
- * then reports which layouts were not rendered and how to try again, in the text and the JSON
- * output. A failure to write the temporary workspace, or a deck that does not exist, still fails
- * the check.
+ * Reports failures while serving or rendering the deck against the layouts in the pass. Browser
+ * setup failures, workspace write failures and missing decks fail the whole check.
  *
  * @param root - The absolute workspace root.
  * @param target - The owner and the brand.
@@ -595,22 +602,36 @@ function renderOrFail(
   slides: readonly LimitSlide[],
 ): Effect.Effect<
   LintReport | RenderFailed,
-  DeckBuildError | FileSystemError,
+  CliError | DeckBuildError | FileSystemError,
   FileSystem.FileSystem | DeckServer | DeckBrowser | Workspace | Scope.Scope
 > {
   /**
    * The render failure for a cause, as the value the check reports.
    */
-  const failed = (cause: { readonly message: string }): Effect.Effect<RenderFailed> =>
-    Effect.succeed({ failed: cause.message });
+  const failed = (message: string, fix: string): Effect.Effect<RenderFailed> =>
+    Effect.succeed({ failed: { message, fix } });
   return renderSlides(root, target, slides).pipe(
     Effect.catchTags({
-      BrowserError: failed,
-      CliError: failed,
-      SlideNotReadyError: failed,
-      ViteError: (error) => failed({ message: describeError(error).message }),
+      BrowserError: (error) => failed(error.message, 'Address the Chromium page error above.'),
+      CliError: (error) => {
+        if (error.message.startsWith(DECK_START_TIMEOUT)) {
+          return failed(error.message, 'Check the page logs if the deck keeps timing out.');
+        }
+
+        if (error.message.startsWith(DECK_START_FAILURE)) {
+          return failed(error.message, 'Fix the page startup error described above.');
+        }
+
+        return Effect.fail(error);
+      },
+      SlideNotReadyError: (error) => failed(error.message, 'Release the slide holds listed above.'),
+      ViteError: (error) =>
+        failed(describeError(error).message, 'Fix the Vite server error above.'),
     }),
-    Effect.catchDefect((defect) => failed({ message: describeError(defect).message })),
+    Effect.catchDefect((defect) => {
+      const cause = describeError(defect);
+      return failed(cause.message, `Fix the ${cause.type} at the reported location.`);
+    }),
   );
 }
 
@@ -618,8 +639,8 @@ function renderOrFail(
  * Takes the cases that were not rendered off their layouts. A layout with slides that were not
  * rendered and no error of its own would pass without being checked, so it fails with an error
  * unless a problem of the owner (which stopped the rendering) already fails the check. When the
- * rendering itself failed, every such layout fails with the cause and how to run it again, even one
- * with other errors, because the failure is not about the deck's files.
+ * render pass failed, its layouts get the cause and instructions to retry. Cases set aside on an
+ * earlier pass keep their existing findings.
  *
  * @param root - The absolute workspace root.
  * @param target - The owner and the brand.
@@ -653,9 +674,12 @@ function markUnrendered(
         ? `--brand ${target.brand.tokens.name}`
         : `--deck ${target.deck.id}`;
     const file = display(root, path.join(target.layoutsDir, result.name));
-    if (failure !== undefined) {
+    const failedCases = new Set(
+      missed.filter((slide) => failure?.attempted.has(slide.id)).map((slide) => slide.case),
+    );
+    if (failure !== undefined && failedCases.size > 0) {
       result.problems.push(
-        renderFailedProblem(file, result.name, owner, [...missedCases], failure),
+        renderFailedProblem(file, result.name, owner, [...failedCases], failure),
       );
       continue;
     }
@@ -679,8 +703,7 @@ function markUnrendered(
 }
 
 /**
- * The error for a layout whose slides were not rendered because the rendering failed, such as a
- * deck that did not start in time on a busy machine.
+ * The error for a layout with cases in a failed render pass.
  *
  * @param file - The layout's folder, relative to the workspace.
  * @param layout - The layout name.
@@ -693,19 +716,16 @@ function renderFailedProblem(
   layout: string,
   owner: string,
   cases: readonly string[],
-  failure: string,
+  failure: RenderFailed['failed'],
 ): LayoutCheckProblem {
   return {
     severity: 'error',
     code: RENDER_FAILED,
     file,
-    message:
-      `The layout ${layout} was not checked: rendering the slides of ${cases.join(', ')} failed ` +
-      `or timed out, so nothing about this layout was found wrong or right. What failed: ` +
-      failure.trim(),
+    message: `The layout ${layout} was not checked for ${cases.join(', ')}. ${failure.message.trim()}`,
     fix:
-      'This is often a timeout on a busy machine. Run the check again when it is quieter, ' +
-      `with \`${deckCommand()} layouts check ${layout} ${owner}\` to check this layout alone.`,
+      `${failure.fix} Run \`${deckCommand()} layouts check ${layout} ${owner}\` ` +
+      'to check this layout alone.',
   };
 }
 
