@@ -1,5 +1,6 @@
 import { Effect, Layer } from 'effect';
-import { existsSync, writeFileSync } from 'node:fs';
+import { realpathSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import type { CollectedPage } from '#browser/collect-snapshot.ts';
@@ -48,6 +49,12 @@ export type FakeDeck = {
    * The 1-based numbers of the slides `ready()` gives up on.
    */
   held?: readonly number[];
+
+  /**
+   * A test-owned directory within the system temp folder for writing placeholder PNGs. Without it
+   * screenshots only record their paths.
+   */
+  screenshotRoot?: string;
 };
 
 /**
@@ -81,13 +88,18 @@ export function pageSlide(
  * the server compiles every module, and the browser opens the fake deck.
  *
  * @param deck - The fake deck.
- * @param screenshots - Receives the path of every screenshot taken. A file with a placeholder is
- *   written there when its folder exists.
+ * @param screenshots - Receives the path of every screenshot taken.
  */
 export function fakeDeckLayer(
   deck: FakeDeck,
   screenshots: string[] = [],
 ): Layer.Layer<DeckServer | DeckBrowser> {
+  const screenshotRoot =
+    deck.screenshotRoot === undefined ? undefined : realpathSync(deck.screenshotRoot);
+  if (screenshotRoot !== undefined && !isBelow(realpathSync(os.tmpdir()), screenshotRoot)) {
+    throw new Error('The fake deck screenshot root must be a test-owned temp directory.');
+  }
+
   const server = Layer.succeed(
     DeckServer,
     DeckServer.of({
@@ -97,7 +109,7 @@ export function fakeDeckLayer(
   );
   const browser = Layer.succeed(
     DeckBrowser,
-    DeckBrowser.of({ open: () => Effect.sync(() => fakePage(deck, screenshots)) }),
+    DeckBrowser.of({ open: () => Effect.sync(() => fakePage(deck, screenshots, screenshotRoot)) }),
   );
   return Layer.mergeAll(server, browser);
 }
@@ -107,8 +119,13 @@ export function fakeDeckLayer(
  *
  * @param deck - The fake deck.
  * @param screenshots - Receives the path of every screenshot taken.
+ * @param screenshotRoot - The resolved temporary root for writing placeholders, when enabled.
  */
-function fakePage(deck: FakeDeck, screenshots: string[]): DeckPage {
+function fakePage(
+  deck: FakeDeck,
+  screenshots: string[],
+  screenshotRoot: string | undefined,
+): DeckPage {
   const position = { slide: 0, step: 0 };
   const pending = [...(deck.loadErrors ?? [])];
   const slides = deck.slides.map((slide) => slide.page);
@@ -125,6 +142,10 @@ function fakePage(deck: FakeDeck, screenshots: string[]): DeckPage {
     const steps = current()?.steps ?? [];
     return steps[Math.min(position.step, steps.length - 1)];
   };
+
+  /**
+   * Updates the fake browser position and queues errors thrown at this step.
+   */
   const show: DeckPage['show'] = (index, step) =>
     Effect.gen(function* () {
       const held = deck.held ?? [];
@@ -154,10 +175,30 @@ function fakePage(deck: FakeDeck, screenshots: string[]): DeckPage {
     screenshot: (file) =>
       Effect.sync(() => {
         screenshots.push(file);
-        if (existsSync(path.dirname(file))) {
-          writeFileSync(file, 'png');
+        if (screenshotRoot === undefined) {
+          return;
         }
+
+        const directory = realpathSync(path.dirname(file));
+        if (directory !== screenshotRoot && !isBelow(screenshotRoot, directory)) {
+          throw new Error(`The fake screenshot path is outside its temp directory: ${file}`);
+        }
+
+        writeFileSync(path.join(directory, path.basename(file)), 'png', { flag: 'wx' });
       }),
     takeErrors: () => Effect.sync(() => pending.splice(0)),
   };
+}
+
+/**
+ * Checks that a resolved path belongs to a descendant of the resolved directory.
+ */
+function isBelow(directory: string, file: string): boolean {
+  const relative = path.relative(directory, file);
+  return (
+    relative !== '' &&
+    relative !== '..' &&
+    !relative.startsWith(`..${path.sep}`) &&
+    !path.isAbsolute(relative)
+  );
 }

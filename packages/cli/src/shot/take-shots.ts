@@ -36,6 +36,11 @@ export type ShotOptions = {
   slide: string | undefined;
 
   /**
+   * Selects resolved slides from the open deck for a partial export. Omit when using `slide`.
+   */
+  select?: (slides: readonly PageSlide[]) => Effect.Effect<readonly PageSlide[], CliError>;
+
+  /**
    * A brand folder that replaces the deck config's `brand`; `undefined` keeps the deck's own.
    */
   brand: string | undefined;
@@ -182,10 +187,14 @@ export const takeShots = Effect.fn('takeShots')(function* (
   });
   const pageErrors = yield* page.takeErrors();
   const listed = yield* manifestSlides(page.slides, deck.slides, options.deck);
-  const chosen = yield* chooseSlides(listed, options.slide, options.deck);
-  const skip = options.slide === undefined && options.skipHidden === true;
+  const chosen =
+    options.select === undefined
+      ? yield* chooseSlides(listed, options.slide, options.deck)
+      : yield* options.select(listed);
+  const wholeDeck = options.slide === undefined && options.select === undefined;
+  const skip = wholeDeck && options.skipHidden === true;
   const targets = skip ? chosen.filter((slide) => !slide.hidden) : chosen;
-  if (options.slide === undefined) {
+  if (wholeDeck) {
     yield* removeStaleShots(options.outDir);
   }
 
@@ -355,7 +364,7 @@ const makeOutDir = Effect.fn('makeOutDir')(function* (
  * @param outDir - The output folder.
  * @throws FileSystemError in the error channel when a stale file cannot be removed.
  */
-export const removeStaleShots = Effect.fn('removeStaleShots')(function* (
+const removeStaleShots = Effect.fn('removeStaleShots')(function* (
   outDir: string,
 ): Effect.fn.Return<void, FileSystemError, FileSystemService.FileSystem> {
   const fs = yield* FileSystem.FileSystem;

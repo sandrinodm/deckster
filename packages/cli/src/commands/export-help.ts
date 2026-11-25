@@ -37,8 +37,9 @@ Exports a deck rendered in static mode. Without a format flag it writes the PDF 
 A slide that shows an error in place of its content (a layout that fails to load or throws, a
 component that throws), or a page that throws while the deck loads, fails the export with exit 1,
 naming each such slide. Every slide is checked before the PDF, the PPTX or the --dry-run list is
-made, so none of them is written then. PNGs are taken into a staging folder and moved into
-<out>/png only when every slide rendered, so a failed run leaves that folder as it was.
+made, so none of them is written then. PNGs are staged until every slide renders. Replaced PNGs
+keep their permissions, and a publish failure rolls back changes to earlier PNGs. A full export
+removes stale screenshots after the new files are in place.
 
 Formats:
   --pdf             One page per slide at its last step: Chromium's vector PDF, the 1920x1080
@@ -56,9 +57,9 @@ Formats:
 
 Options:
   --steps           One page or slide per step instead of one per slide.
-  --slides <list>   Slides to export, such as 3,5-9 or cover,heat-map. Default: every slide that is
-                    not hidden. A hidden slide you name here is exported: as an
-                    ordinary page in the PDF and a PNG, still marked hidden in the PPTX.
+  --slides <list>   Slides to export, such as 3,5-9 or cover,heat-map. All-digit entries are slide
+                    positions. The default is every visible slide. Hidden slides included here
+                    are exported as ordinary PDF pages and PNGs and stay hidden in the PPTX.
   --include-hidden  Export hidden slides too (\`hidden: true\` in the frontmatter): as ordinary PDF
                     pages and PNGs, and as hidden slides in the PPTX (PowerPoint skips them in a
                     slide show). Without it they are left out and the summary says how many.

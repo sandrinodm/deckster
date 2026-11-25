@@ -36,7 +36,7 @@ import { capturePptx, playwrightPage, writePptx, type PptxCapture } from '#expor
 import { exportTargets, hiddenLeftOut, selectSlides } from '#export/export-targets.ts';
 import { stageShots } from '#export/stage-shots.ts';
 import { verifyExport } from '#export/verify-export.ts';
-import { takeShots, type ShotError, type ShotFile, type ShotResult } from '#shot/take-shots.ts';
+import { takeShots, type ShotError, type ShotFile } from '#shot/take-shots.ts';
 import { Workspace } from '#workspace.ts';
 
 /**
@@ -380,8 +380,8 @@ const useSystemFonts = Effect.fn('useSystemFonts')(function* (opened: OpenedDeck
 /**
  * Writes PNGs with `deckster shot`: every slide that is not hidden (all with `--include-hidden`),
  * or each selected one. Fails the way a PDF or PPTX export does when a slide shows an error or the
- * page threw while the deck loaded. The PNGs are taken into a staging folder and moved into the PNG
- * folder only when every slide rendered, so a failed export leaves the folder as it was.
+ * page threw while the deck loaded. The PNGs are taken into a staging folder and published only
+ * when every slide rendered. A publish failure rolls back the changes to the earlier PNGs.
  *
  * @param options - What to export.
  * @param outDir - The PNG folder.
@@ -415,41 +415,21 @@ const shootPng = Effect.fn('shootPng')(function* (
   ShotError,
   Workspace | FileSystem.FileSystem | DeckServer | DeckBrowser | Scope.Scope
 > {
-  if (options.slides === undefined) {
-    const result = yield* takeShots({
-      deck: options.deck,
-      slide: undefined,
-      brand: options.brand,
-      steps: options.steps,
-      outDir,
-      scale: options.scale,
-      skipHidden: !options.includeHidden,
-    });
-    yield* assertShotsRender(options.deck, [result]);
-    return { files: result.files, hiddenLeftOut: result.hiddenSkipped };
-  }
-
-  const results: ShotResult[] = [];
-  const all = yield* Effect.scoped(
-    Effect.gen(function* () {
-      const opened = yield* openDeck({ deck: options.deck, brand: options.brand, scale: 1 });
-      return yield* selectSlides(opened.page.slides, options.slides, options.includeHidden);
-    }),
-  );
-  for (const slide of all) {
-    const result = yield* takeShots({
-      deck: options.deck,
-      slide: slide.id,
-      brand: options.brand,
-      steps: options.steps,
-      outDir,
-      scale: options.scale,
-    });
-    results.push(result);
-  }
-
-  yield* assertShotsRender(options.deck, results);
-  return { files: results.flatMap((result) => result.files), hiddenLeftOut: 0 };
+  const selection = options.slides;
+  const result = yield* takeShots({
+    deck: options.deck,
+    slide: undefined,
+    brand: options.brand,
+    steps: options.steps,
+    outDir,
+    scale: options.scale,
+    skipHidden: !options.includeHidden,
+    ...(selection === undefined
+      ? {}
+      : { select: (slides) => selectSlides(slides, selection, options.includeHidden) }),
+  });
+  yield* assertShotsRender(options.deck, [result]);
+  return { files: result.files, hiddenLeftOut: result.hiddenSkipped };
 });
 
 /**
