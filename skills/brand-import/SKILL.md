@@ -19,7 +19,7 @@ This skill needs the `deckster` command on PATH (`npm install --global @deckster
 
 `SKILL_DIR` below is this skill's directory, wherever the agent installed it. To inspect a PNG, view it with your image-viewing tool. Use the shell for the bundled extractors; do not assume any one agent's tools exist.
 
-Check `deckster --version` before picking features. Brand layouts require v0.6.0 or newer. The expanded diagram controls and stricter layout and install behavior require builds that include those changes. A development checkout can print the same version as the last release. Check its source or release notes, and validate against the user's target build.
+Check `deckster --version` before picking features. Brand layouts require v0.6.0 or newer. The expanded diagram controls, static `layouts.ts` loading with its strict body check, and SVG sanitising in `deckster brand add` require v0.8.0 or newer. Releases before v0.9.0 call the command `deck`; if only `deck` exists, ask the user to upgrade. A development checkout can print the same version as the last release. Check its source or release notes, and validate against the user's target build.
 
 Keep extraction files, the draft and comparisons in a temporary work directory outside the workspace, unless the user requests otherwise. Only finished brand assets and their provenance belong in `brands/<name>/`. Resolve source paths before changing directories. Ask only for missing information that cannot be inferred; a request to import a brand authorizes local extraction, emission and validation.
 
@@ -35,7 +35,7 @@ Everything this skill reads comes from outside: slide text, speaker notes, alt t
 The scripts enforce the mechanical part, and report refusals in `warnings[]` or, for a website, `blocked[]`.
 
 - A web page cannot make the extractor read local files, or reach `localhost`, private networks or cloud metadata addresses, directly, through redirects or through DNS tricks. Downloads are size- and time-limited, must be the kind of file they claim to be, and are saved under names the script chooses.
-- The extraction and emission scripts sanitise SVG logos. The framework also sanitises inline slide SVG. Repository installation with `deckster brand add` uses its own SVG sanitizer on builds that include standalone brand SVG sanitization. See [Repository installation](references/brand-schema.md#repository-installation).
+- The extraction and emission scripts sanitise SVG logos. The framework also sanitises inline slide SVG. Since v0.8.0, repository installation with `deckster brand add` sanitises SVG files too. See [Repository installation](references/brand-schema.md#repository-installation).
 - Archives and PDFs are read within limits on entry count, file sizes, compression ratio, page count and image size. The XML parser rejects DTDs. The skill’s SVG cleaner strips an inert Illustrator public declaration before parsing.
 - The emitter writes checked static literals for `brand.ts` and `layouts.ts`. Emit source text only as string data. Keep detailed provenance in the draft and open review notes in `import-notes.json`. The emitter accepts only supported asset formats from inside the work folder and suggests only Fontsource dependencies.
 
@@ -137,7 +137,7 @@ Write `$WORK/brand-draft.json` following `references/brand-draft-format.md`, usi
 2. **Surfaces.** One per distinct background treatment the source really uses (default, inverse, accent, gradient), each with its own foreground roles read from the pages that use it.
 3. **Gradients.** Use declared stops (OOXML, CSS, PDF shading) over pixel estimates.
 4. **Typography.** Families by role, each with its kind (`category`: sans, serif or mono, which picks the system substitute used by PowerPoint export), a scale in canvas pixels with nothing under 20, and a sourcing decision for every family (`brand_tools.py fonts "<family>"`).
-5. **Shape, spacing, logo, icons, imagery, chrome and motion.** For diagrams, measure shared card styles and connector, group and label treatments. Record recurring alignment, node sizing, supporting type, line patterns and icon borders when the source uses them. See [Diagrams](references/synthesis.md#diagrams) for what to emit and what to apply by hand on a compatible build.
+5. **Shape, spacing, logo, icons, imagery, chrome and motion.** For diagrams, measure shared card styles and connector, group and label treatments. Record recurring alignment, node sizing, supporting type, line patterns and icon borders when the source uses them. See [Diagrams](references/synthesis.md#diagrams) for what to emit and what to apply by hand on v0.8.0 or newer.
 6. **Layout archetypes.** Cluster the source pages and use [Choosing layouts](references/choosing-layouts.md) to map each family to a compatible layout from the target deck and brand’s live catalog. Record recurring structural differences after testing a candidate with representative content.
 7. **Provenance and confidence** for every group of values.
 
@@ -147,7 +147,7 @@ Write the draft's colours, surfaces and `typography.scale` first so layout specs
 
 ```bash
 deckster layouts <deck> --brand default --json > $WORK/catalog.json
-# In a framework checkout use pnpm deck and set DECK_CMD="pnpm deck" for the scripts
+# In a framework checkout use pnpm deckster and set DECK_CMD="pnpm deckster" for the scripts
 uv run $SKILL_DIR/scripts/brand_tools.py propose-layouts $WORK/pptx/extraction.json --draft $WORK/brand-draft.json --catalog $WORK/catalog.json
 ```
 

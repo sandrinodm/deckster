@@ -1,6 +1,6 @@
 {
   "skill_name": "brand-import",
-  "notes": "Cases and expectations inherited from earlier runs of the repository-bound skill, so some use the deckster repository (pnpm deck, decks/showcase, brands/nocturne). Historical statuses describe earlier runs. Run evaluations in isolated temporary copies; keep outputs outside the working tree. Fixture paths are relative to this skill directory.",
+  "notes": "Cases and expectations inherited from earlier runs of the repository-bound skill, so some use the deckster repository (pnpm deckster, decks/showcase, brands/nocturne). Historical statuses describe earlier runs. Run evaluations in isolated temporary copies; keep outputs outside the working tree. Fixture paths are relative to this skill directory.",
   "evals": [
     {
       "id": 1,
