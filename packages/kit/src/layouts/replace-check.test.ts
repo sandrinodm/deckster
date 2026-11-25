@@ -1,6 +1,6 @@
 import type { AnyLayoutContract } from '@deckster/engine/layout';
 
-import { Schema } from 'effect';
+import { Schema, SchemaTransformation } from 'effect';
 import { describe, expect, it } from 'vite-plus/test';
 
 import catalog from '#catalog.ts';
@@ -204,6 +204,41 @@ describe('checkReplacement', () => {
       expect(errorsOf(throwing)).toEqual([
         "The original title layout accepts its example and 4 more, and the replacement's checks " +
           'threw on it: boom.',
+      ]);
+    });
+
+    it('reports a schema that throws on a sample as an error instead of throwing', () => {
+      const throwingByline = Schema.String.pipe(
+        Schema.decodeTo(
+          Schema.String,
+          SchemaTransformation.transform({
+            /**
+             * Throws for a long byline, as a buggy transformation would.
+             *
+             * @param byline - The byline.
+             */
+            decode: (byline: string): string => {
+              if (byline.length > 30) {
+                throw new RangeError('byline too long');
+              }
+
+              return byline;
+            },
+            /**
+             * Returns the byline as it is.
+             *
+             * @param byline - The byline.
+             */
+            encode: (byline: string): string => byline,
+          }),
+        ),
+      );
+      const throwing = replacement({
+        schema: titleFields({ byline: Schema.optionalKey(throwingByline) }),
+      });
+      expect(errorsOf(throwing)).toEqual([
+        "The original title layout accepts its example and 4 more, and the replacement's " +
+          'schema threw on it: byline too long.',
       ]);
     });
 

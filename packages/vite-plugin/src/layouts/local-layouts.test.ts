@@ -289,6 +289,40 @@ layer(NodeFileSystem.layer)('localLayouts', (it) => {
       }),
   );
 
+  it.effect('reports a linked _shared folder and refuses the helpers under it', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'elsewhere/helper.ts': 'export const DESCRIPTION = "Shared.";\n',
+        'decks/talk/layouts/kpi/contract.ts': contractSource('kpi', {
+          imports: ["import { DESCRIPTION } from '../_shared/helper.ts';"],
+          descriptionExpression: 'DESCRIPTION',
+        }),
+        'decks/talk/layouts/kpi/layout.tsx': componentSource('kpi'),
+        'decks/talk/layouts/wall/contract.ts': contractSource('wall'),
+        'decks/talk/layouts/wall/layout.tsx': componentSource('wall'),
+      });
+      symlinkSync(path.join(root, 'elsewhere'), path.join(root, 'decks/talk/layouts/_shared'));
+      const found = yield* localLayouts({ root, deck: deckLocation(root, 'talk'), code: 'load' });
+      expect(found.catalogs.map((entry) => entry.ref.displayPath)).toEqual([
+        'decks/talk/layouts/wall/contract.ts',
+      ]);
+      expect(problemCodes(found)).toEqual([
+        'layout-folder-incomplete:*',
+        'layout-contract-imports:kpi',
+      ]);
+      expect(found.problems.map((problem) => problem.message)).toEqual([
+        'decks/talk/layouts/_shared is a symbolic link, and contracts import helpers only from a ' +
+          'real folder.',
+        expect.stringContaining(
+          'imports "../_shared/helper.ts", which is under layouts/_shared/, which is a symbolic ' +
+            'link, and a contract imports helpers only from a real folder.',
+        ),
+      ]);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
   it.effect('reads the registered name from the syntax of layout.tsx, not from its comments', () =>
     Effect.gen(function* () {
       const root = scratchRoot();
@@ -369,6 +403,54 @@ layer(NodeFileSystem.layer)('localLayouts', (it) => {
           'cannot be read without running the config, and the code layouts are not loaded.',
       );
       expect(contractRuns()).toBe(0);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('reads the range of a config in a const, and reports one it cannot read', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      /**
+       * Writes the deck config.
+       *
+       * @param lines - Its lines after the import.
+       */
+      const writeConfig = (...lines: string[]): void =>
+        writeFiles(root, {
+          'decks/talk/deck.config.ts': [
+            "import { defineDeck } from '@deckster/engine/config';",
+            "import { base, withDefaults } from './base.ts';",
+            '',
+            ...lines,
+            '',
+          ].join('\n'),
+        });
+      writeFiles(root, {
+        'decks/talk/layouts/funnel/contract.ts': contractSource('funnel'),
+        'decks/talk/layouts/funnel/layout.tsx': componentSource('funnel'),
+      });
+      const options = { root, deck: deckLocation(root, 'talk'), code: 'load' } as const;
+      writeConfig(
+        "const config = { title: 'Talk', slides: base, deckster: '>=99' };",
+        'export default defineDeck(config);',
+      );
+      const inConst = yield* localLayouts(options);
+      expect(problemCodes(inConst)).toEqual(['layout-version:*']);
+      expect(inConst.problems[0]?.message).toContain('are written for deckster >=99');
+
+      writeConfig("export default defineDeck(withDefaults({ deckster: '>=99' }));");
+      const computed = yield* localLayouts(options);
+      expect(computed.problems.map((problem) => problem.message)).toEqual([
+        'decks/talk/deck.config.ts declares a `deckster` range that cannot be read without ' +
+          'running the config, so the code layouts are not loaded.',
+      ]);
+      expect(computed.catalogs).toEqual([]);
+
+      writeConfig("export default defineDeck(withDefaults({ title: 'Talk' }));");
+      const none = yield* localLayouts(options);
+      expect(none.problems).toEqual([]);
+      expect(none.catalogs).toHaveLength(1);
+      expect(contractRuns()).toBe(1);
       rmSync(root, { recursive: true, force: true });
     }),
   );

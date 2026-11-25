@@ -1,13 +1,27 @@
+import * as kitCatalog from '@deckster/kit/catalog';
 import { NodeFileSystem } from '@effect/platform-node';
 import { describe, expect, it, layer } from '@effect/vitest';
 import { Effect, FileSystem, Schema } from 'effect';
 import path from 'node:path';
+import { vi } from 'vite-plus/test';
 
 import { loadDeckBrand } from '#brand/load-deck-brand.ts';
 import { FIXTURE_WORKSPACE } from '#layouts/brand-workspace.fixture.ts';
 import { checkContract } from '#layouts/check-contract.ts';
-import { loadLayoutCatalog } from '#layouts/load-layout-catalog.ts';
+import { loadLayoutCatalog, mergeLayoutCatalog } from '#layouts/load-layout-catalog.ts';
 import { splitContract } from '#layouts/test-catalog.fixture.ts';
+
+vi.mock(import('@deckster/kit/catalog'), async (importOriginal) => {
+  const original = await importOriginal();
+  return { ...original, checkReplacement: vi.fn(original.checkReplacement) };
+});
+
+/**
+ * Stands in for `checkReplacement` on a replacement whose schema throws a defect.
+ */
+function throwingCheck(): never {
+  throw new TypeError('schema blew up');
+}
 
 layer(NodeFileSystem.layer)('loadLayoutCatalog', (it) => {
   it.effect('loads the engine catalog, then the kit catalog over it', () =>
@@ -72,6 +86,32 @@ layer(NodeFileSystem.layer)('loadLayoutCatalog', (it) => {
       const error = yield* Effect.flip(loadLayoutCatalog(undefined, { brand: lost }));
       expect(error.problems.length).toBeGreaterThan(0);
       expect(error.message).toContain('no-such-layout');
+    }),
+  );
+
+  it.effect('leaves out a replacement whose check throws, as a problem, and loads the rest', () =>
+    Effect.gen(function* () {
+      vi.mocked(kitCatalog.checkReplacement).mockImplementationOnce(throwingCheck);
+      const kit = yield* loadLayoutCatalog();
+      const exported = { ...kit.get('content')?.contract, replaces: true };
+      const file = '/x/decks/talk/layouts/content/contract.ts';
+      const ref = { file, displayPath: 'decks/talk/layouts/content/contract.ts' };
+      const merged = yield* mergeLayoutCatalog(undefined, {
+        local: [{ source: 'deck:talk', ref, exported }],
+      });
+      expect(merged.index.get('content')?.source).toBe('@deckster/kit');
+      expect(merged.clashes).toEqual([
+        {
+          code: 'layout-replace-breaks',
+          file,
+          layout: 'content',
+          message:
+            'The code layout "content" (decks/talk/layouts/content/contract.ts) replaces the ' +
+            'content layout of @deckster/kit, and checking it against that layout threw: schema ' +
+            'blew up',
+          fix: "Make the replacement's schema and `checks` report problems instead of throwing.",
+        },
+      ]);
     }),
   );
 

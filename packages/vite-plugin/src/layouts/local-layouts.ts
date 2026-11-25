@@ -84,6 +84,12 @@ const CLI_PACKAGE_FILE = path.join('packages', 'cli', 'package.json');
 const VersionedJson = Schema.fromJsonString(Schema.Struct({ version: Schema.String }));
 
 /**
+ * A `deckster` key in an object literal, quoted or not: how a deck config that cannot be read
+ * statically is still seen to declare a version range.
+ */
+const DECKSTER_KEY_PATTERN = /(?:^|[\s{,(])["']?deckster["']?\s*:/u;
+
+/**
  * A `brand.json`: the deckster versions the brand's code layouts are written for.
  */
 const BrandManifestJson = Schema.fromJsonString(
@@ -389,13 +395,16 @@ const discover = Effect.fn('discoverLayouts')(function* (
   const linked = entries
     .filter((entry) => entry.type === 'SymbolicLink' && isSafeName(entry.name))
     .map((entry) => linkedFolder(path.join(owner.layoutsDir, entry.name), entry.name, root));
+  const linkedShared = entries
+    .filter((entry) => entry.type === 'SymbolicLink' && entry.name === SHARED_LAYOUTS_DIR)
+    .map(() => linkedSharedFolder(path.join(owner.layoutsDir, SHARED_LAYOUTS_DIR), root));
   const shared = folders.includes(SHARED_LAYOUTS_DIR)
     ? yield* filesUnder(path.join(owner.layoutsDir, SHARED_LAYOUTS_DIR))
     : [];
   const read = yield* Effect.forEach(names, (name) => readLayoutFolder(owner, name, root));
   forgetRemovedContracts(owner.layoutsDir, read);
   const layouts = read.flatMap((folder) => (folder.layout === undefined ? [] : [folder.layout]));
-  const problems = [...linked, ...read.flatMap((folder) => folder.problems)];
+  const problems = [...linkedShared, ...linked, ...read.flatMap((folder) => folder.problems)];
   const files = [...shared, ...read.flatMap((folder) => folder.files)];
   if (names.length === 0) {
     return { layouts, files, problems, loadable: true };
@@ -500,6 +509,25 @@ function linkedFolder(file: string, name: string, root: string): LayoutProblem {
       `${displayPath(root, file)} is a symbolic link, and a code layout is read only from real ` +
       'folders and files.',
     fix: 'Copy the folder or file in place of the link.',
+  };
+}
+
+/**
+ * The problem for a symbolic link where `layouts/_shared/` belongs. It concerns every layout of the
+ * owner, so it names none; the import check refuses every helper under the link, so a contract that
+ * imports one fails with its own problem.
+ *
+ * @param file - The absolute path of the link.
+ * @param root - The absolute workspace root.
+ */
+function linkedSharedFolder(file: string, root: string): LayoutProblem {
+  return {
+    code: 'layout-folder-incomplete',
+    file,
+    message:
+      `${displayPath(root, file)} is a symbolic link, and contracts import helpers only from a ` +
+      'real folder.',
+    fix: 'Copy the folder in place of the link.',
   };
 }
 
@@ -715,26 +743,54 @@ const versionProblem = Effect.fn('layoutVersionProblem')(function* (
   }
 
   const at = { code: 'layout-version', file: owner.versionFile } as const;
-  if (declared.range === undefined && owner.kind === 'deck') {
-    return {
-      ...at,
-      message:
-        `The \`deckster\` range in ${shown} is not a string literal, so it cannot be read ` +
-        'without running the config, and the code layouts are not loaded.',
-      fix: `Write it as a plain string, as ${RANGE_RULE}.`,
-    };
+  switch (declared.kind) {
+    case 'not-literal':
+      return {
+        ...at,
+        message:
+          `The \`deckster\` range in ${shown} is not a string literal, so it cannot be read ` +
+          'without running the config, and the code layouts are not loaded.',
+        fix: `Write it as a plain string, as ${RANGE_RULE}.`,
+      };
+    case 'unreadable-config':
+      return {
+        ...at,
+        message:
+          `${shown} declares a \`deckster\` range that cannot be read without running the ` +
+          'config, so the code layouts are not loaded.',
+        fix:
+          'Pass `defineDeck` an object literal, or a top-level `const` holding one, with ' +
+          `\`deckster\` as a plain string, as ${RANGE_RULE}.`,
+      };
+    case 'unreadable-manifest':
+      return {
+        ...at,
+        message: `${shown} cannot be read as \`{ "deckster": "<range>" }\`.`,
+        fix:
+          `Write the deckster versions the layouts are for, as ${RANGE_RULE}, or remove the ` +
+          'file.',
+      };
+    case 'range':
+      return yield* rangeProblem(owner, shown, declared.range);
   }
+});
 
-  if (declared.range === undefined) {
-    return {
-      ...at,
-      message: `${shown} cannot be read as \`{ "deckster": "<range>" }\`.`,
-      fix: `Write the deckster versions the layouts are for, as ${RANGE_RULE}, or remove the file.`,
-    };
-  }
-
+/**
+ * The problem with a declared range this deckster is not in, or `undefined` when it is in it or
+ * this deckster's version cannot be read.
+ *
+ * @param owner - The brand or the deck.
+ * @param shown - The version file's display path.
+ * @param range - The declared range.
+ */
+const rangeProblem = Effect.fn('layoutRangeProblem')(function* (
+  owner: Owner,
+  shown: string,
+  range: string,
+): Effect.fn.Return<LayoutProblem | undefined, never, FileSystem.FileSystem> {
+  const at = { code: 'layout-version', file: owner.versionFile } as const;
   const installed = yield* installedVersion();
-  const matches = installed === undefined ? true : satisfiesRange(installed, declared.range);
+  const matches = installed === undefined ? true : satisfiesRange(installed, range);
   if (matches === true) {
     return undefined;
   }
@@ -742,7 +798,7 @@ const versionProblem = Effect.fn('layoutVersionProblem')(function* (
   if (matches === undefined) {
     return {
       ...at,
-      message: `The deckster range "${declared.range}" in ${shown} cannot be read.`,
+      message: `The deckster range "${range}" in ${shown} cannot be read.`,
       fix: `Write it as ${RANGE_RULE}.`,
     };
   }
@@ -750,7 +806,7 @@ const versionProblem = Effect.fn('layoutVersionProblem')(function* (
   return {
     ...at,
     message:
-      `The code layouts of ${owner.label} are written for deckster ${declared.range} ` +
+      `The code layouts of ${owner.label} are written for deckster ${range} ` +
       `(${shown}), and this is deckster ${installed}, so they are not loaded.`,
     fix:
       'Install a deckster version in that range, or check the layouts with this version ' +
@@ -759,16 +815,50 @@ const versionProblem = Effect.fn('layoutVersionProblem')(function* (
 });
 
 /**
- * The version range an owner declares: `undefined` when it declares none, and a range of
- * `undefined` when its `brand.json` cannot be read as one or its deck config's `deckster` is not a
- * string literal. A deck config is read without running it; when other parts of it are computed,
- * only its `deckster` property is read.
+ * What an owner's version file says about the deckster versions its code layouts are for.
+ */
+type DeclaredRange =
+  | {
+      /**
+       * A range, as written.
+       */
+      readonly kind: 'range';
+
+      /**
+       * The range.
+       */
+      readonly range: string;
+    }
+  | {
+      /**
+       * The deck config's `deckster` is there but is not a string literal.
+       */
+      readonly kind: 'not-literal';
+    }
+  | {
+      /**
+       * The deck config cannot be read without running it, and its text has a `deckster` key.
+       */
+      readonly kind: 'unreadable-config';
+    }
+  | {
+      /**
+       * The `brand.json` cannot be read as `{ "deckster"?: string }`.
+       */
+      readonly kind: 'unreadable-manifest';
+    };
+
+/**
+ * The version range an owner declares, or `undefined` when it declares none. A deck config is read
+ * without running it; when other parts of it are computed, only its `deckster` property is read,
+ * and when even that cannot be found, a `deckster` key anywhere in its text still counts as a
+ * declaration that cannot be read.
  *
  * @param owner - The brand or the deck.
  */
 const declaredRange = Effect.fn('declaredRange')(function* (
   owner: Owner,
-): Effect.fn.Return<{ range: string | undefined } | undefined, never, FileSystem.FileSystem> {
+): Effect.fn.Return<DeclaredRange | undefined, never, FileSystem.FileSystem> {
   const fs = yield* FileSystem.FileSystem;
   const text = yield* fs
     .readFileString(owner.versionFile)
@@ -780,28 +870,30 @@ const declaredRange = Effect.fn('declaredRange')(function* (
   if (owner.kind === 'brand') {
     const manifest = Schema.decodeUnknownOption(BrandManifestJson)(text);
     if (Option.isNone(manifest)) {
-      return { range: undefined };
+      return { kind: 'unreadable-manifest' };
     }
 
-    return manifest.value.deckster === undefined ? undefined : { range: manifest.value.deckster };
+    const range = manifest.value.deckster;
+    return range === undefined ? undefined : { kind: 'range', range };
   }
 
   const config = readStaticModule(text, DECK_CONFIG_CALLEE);
   if (config.ok) {
     const range: unknown = Predicate.isObject(config.value) ? config.value.deckster : undefined;
-    return typeof range === 'string' ? { range } : undefined;
+    return typeof range === 'string' ? { kind: 'range', range } : undefined;
   }
 
   // A config with a computed part (a slide list in a constant) can still declare a literal range.
   const declared = readDefaultCallProperty(text, DECK_CONFIG_CALLEE.name, 'deckster', 'ts');
   switch (declared.kind) {
     case 'string':
-      return { range: declared.value };
+      return { kind: 'range', range: declared.value };
     case 'other':
-      return { range: undefined };
+      return { kind: 'not-literal' };
     case 'absent':
-    case 'unreadable':
       return undefined;
+    case 'unreadable':
+      return DECKSTER_KEY_PATTERN.test(text) ? { kind: 'unreadable-config' } : undefined;
   }
 });
 

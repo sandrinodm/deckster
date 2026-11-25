@@ -62,7 +62,8 @@ export type DefaultCallProperty =
  * module. Comments and the rest of the module never count, and `satisfies`, `as` and parentheses
  * around the call or the object are looked through. A default export that names a top-level `const`
  * (`export const titleLayout = defineLayout({ ... }); export default titleLayout;`) is followed to
- * that declaration.
+ * that declaration, and so is a call whose argument names one (`const config = { ... }; export
+ * default defineDeck(config);`).
  *
  * @param text - The module source.
  * @param callee - The name the default export calls, such as `defineLayout`.
@@ -134,7 +135,11 @@ function defaultCallArgument(
 
   const name: unknown = Predicate.isObject(call.callee) ? call.callee.name : undefined;
   const args: unknown = call.arguments;
-  const argument = unwrap(Array.isArray(args) ? args[0] : undefined);
+  const written = unwrap(Array.isArray(args) ? args[0] : undefined);
+  const argument =
+    nodeType(written) === 'Identifier'
+      ? constValue(statements, Reflect.get(Object(written), 'name'))
+      : written;
   return name === callee && Predicate.isObject(argument) && argument.type === 'ObjectExpression'
     ? argument
     : undefined;

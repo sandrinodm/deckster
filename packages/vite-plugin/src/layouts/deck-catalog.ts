@@ -6,6 +6,7 @@ import path from 'node:path';
 import type { DeckLocation } from '#decks/deck-paths.ts';
 import type { DeckBuildError, Problem } from '#errors.ts';
 
+import { readSkippedCodeLayouts, skippedCodeLayoutProblem } from '#layouts/brand-source.ts';
 import {
   DEFAULT_LAYOUT_CATALOGS,
   mergeLayoutCatalog,
@@ -76,11 +77,13 @@ export type DeckCatalog = {
  * the same brand, or by a brand layout when the code layout is the deck's), and a replacement that
  * would break slides written for the kit layout it replaces. A replacement that joins is listed in
  * `local.replaced`, and its warnings and notes in `local.warnings`. A brand data layout whose
- * fallback is one of the brand's code layouts that is not in the catalog is left out too: with
- * `load` it gets a `layout-fallback-unavailable` problem that gives the code layout's reasons, and
- * with `skip` that problem is a warning in `local.warnings`; the rest of the catalog loads either
- * way. Slides on real decks are checked against a replacement by the build, and by
- * `checkReplacedSlides` for every deck of a brand.
+ * fallback is one of the brand's code layouts that is not in the catalog (one that did not load, or
+ * that `brand add` left out and is still not in the brand's folder, as its `.deckster-source.json`
+ * records) is left out too, even when a kit layout has that name: with `load` it gets a
+ * `layout-fallback-unavailable` problem that gives the code layout's reasons, and with `skip` that
+ * problem is a warning in `local.warnings`; the rest of the catalog loads either way. Slides on
+ * real decks are checked against a replacement by the build, and by `checkReplacedSlides` for every
+ * deck of a brand.
  *
  * @param options - The workspace, the brand, the deck and whether to load code.
  * @returns The catalog and the code layouts.
@@ -102,7 +105,11 @@ export const deckCatalog = Effect.fn('deckCatalog')(function* (
     brand: brand?.tokens,
     layoutsFile: brand?.layoutsFile,
     local: found.catalogs,
-    withheld: withheldBrandLayouts(found, brand?.location.dir),
+    // A skipped layout whose folder is back is read from the folder, with its own problems.
+    withheld: new Map([
+      ...(brand === undefined ? [] : yield* skippedBrandLayouts(found, brand)),
+      ...withheldBrandLayouts(found, brand?.location.dir),
+    ]),
   });
   const clashed = new Set(merged.clashes.map((problem) => problem.file));
   const isLoaded = options.code === 'load';
@@ -166,3 +173,32 @@ function withheldBrandLayouts(
     ]),
   );
 }
+
+/**
+ * The brand's code layouts `brand add` left out and that are still not in the brand's folder, by
+ * name, each with a `layout-code-skipped` problem that says so. A layout copied in since is read
+ * from its folder like any other, so it is not listed here.
+ *
+ * @param found - The code layouts found.
+ * @param brand - The loaded brand.
+ */
+const skippedBrandLayouts = Effect.fn('skippedBrandLayouts')(function* (
+  found: LocalLayouts,
+  brand: LoadedBrand,
+): Effect.fn.Return<ReadonlyMap<string, readonly Problem[]>, never, FileSystem.FileSystem> {
+  const skipped = yield* readSkippedCodeLayouts(brand.location.dir);
+  if (skipped === undefined) {
+    return new Map();
+  }
+
+  const layoutsDir = path.join(brand.location.dir, LAYOUTS_DIR);
+  const present = new Set(
+    found.layouts
+      .filter((layout) => path.dirname(path.dirname(layout.contractFile)) === layoutsDir)
+      .map((layout) => layout.name),
+  );
+  const missing = skipped.names.filter((name) => !present.has(name));
+  return new Map(
+    missing.map((name) => [name, [skippedCodeLayoutProblem(name, brand.location.name, skipped)]]),
+  );
+});

@@ -10,7 +10,7 @@ import type {
 import { deckCommand } from '@deckster/engine/command';
 import { SlideFrontmatter } from '@deckster/engine/frontmatter';
 import { BODY_SLOT } from '@deckster/engine/slots';
-import { Result, Schema, SchemaIssue } from 'effect';
+import { Cause, Exit, Option, Result, Schema, SchemaIssue } from 'effect';
 
 import { isRequiredField, ownField, ownSlot } from '#layouts/contract-lookup.ts';
 import { LIMIT_CASES } from '#layouts/limit-cases.ts';
@@ -438,19 +438,7 @@ function sampleFailures(
   const lead = `The original ${original.name} layout accepts ${SAMPLE_PLACEHOLDER}`;
   const decoded = decodeSlide(replacement, sample.frontmatter);
   if (Result.isFailure(decoded)) {
-    const { field, text } = decoded.failure;
-    return [
-      {
-        field,
-        reason: text,
-        problem: {
-          message: `${lead}${givenValue(sample, field)}, and the replacement rejects it: ${text}.`,
-          fix:
-            "Accept every value the original accepts for its fields: widen the replacement's " +
-            "schema to match the original's.",
-        },
-      },
-    ];
+    return [decodeFailure(lead, sample, decoded.failure)];
   }
 
   const ran = runChecks(replacement, decoded.success);
@@ -475,6 +463,46 @@ function sampleFailures(
       fix: "Loosen the replacement's `checks` so they pass every slide the original accepts.",
     },
   }));
+}
+
+/**
+ * The failure for a sample that does not decode as a slide of the replacement.
+ *
+ * @param lead - The start of the message, with {@link SAMPLE_PLACEHOLDER} where the samples go.
+ * @param sample - The sample.
+ * @param failure - Why it did not decode.
+ */
+function decodeFailure(
+  lead: string,
+  sample: SampleFrontmatter,
+  failure: SlideDecodeFailure,
+): SampleFailure {
+  switch (failure.kind) {
+    case 'threw':
+      return {
+        field: '',
+        reason: `schema threw: ${failure.reason}`,
+        problem: {
+          message: `${lead}, and the replacement's schema threw on it: ${failure.reason}.`,
+          fix:
+            "Make the replacement's schema reject a value it does not accept with a schema " +
+            'issue, not by throwing.',
+        },
+      };
+    case 'rejected':
+      return {
+        field: failure.field,
+        reason: failure.text,
+        problem: {
+          message:
+            `${lead}${givenValue(sample, failure.field)}, and the replacement rejects it: ` +
+            `${failure.text}.`,
+          fix:
+            "Accept every value the original accepts for its fields: widen the replacement's " +
+            "schema to match the original's.",
+        },
+      };
+  }
 }
 
 /**
@@ -832,33 +860,87 @@ function exampleFrontmatter(example: LayoutExample): Readonly<Record<string, unk
 }
 
 /**
+ * Why {@link decodeSlide} did not decode a slide.
+ */
+type SlideDecodeFailure =
+  | {
+      /**
+       * The schema rejected the frontmatter.
+       */
+      readonly kind: 'rejected';
+
+      /**
+       * The top-level field of the first issue; empty when it is about none.
+       */
+      readonly field: string;
+
+      /**
+       * The first issue, as `<path>: <message>`.
+       */
+      readonly text: string;
+    }
+  | {
+      /**
+       * The schema threw instead of reporting an issue, such as a transformation that throws.
+       */
+      readonly kind: 'threw';
+
+      /**
+       * The thrown error's message.
+       */
+      readonly reason: string;
+    };
+
+/**
  * Decodes frontmatter as a slide of a layout: the fields every slide has plus the layout's own,
- * rejecting fields the layout does not have, as the build does.
+ * rejecting fields the layout does not have, as the build does. A contract's schema is user code,
+ * so a schema that throws (a transformation that throws, say) is returned as a failure instead of
+ * failing the whole catalog.
  *
  * @param contract - The layout's contract.
  * @param frontmatter - The layout's fields.
- * @returns The decoded frontmatter, or the first problem: its top-level field and its text as
- *   `<path>: <message>`.
+ * @returns The decoded frontmatter, the first problem (its top-level field and its text as `<path>:
+ *   <message>`), or what the schema threw.
  */
 function decodeSlide(
   contract: AnyLayoutContract,
   frontmatter: Readonly<Record<string, unknown>>,
-): Result.Result<Record<string, unknown>, { field: string; text: string }> {
-  const schema: Schema.Decoder<Record<string, unknown>> = Schema.Struct({
-    ...SlideFrontmatter.fields,
-    ...contract.schema.fields,
-  }) as never;
-  const decoded = Schema.decodeUnknownResult(schema, { onExcessProperty: 'error' })({
-    ...frontmatter,
-    layout: contract.name,
-  });
-  if (Result.isSuccess(decoded)) {
-    return Result.succeed(decoded.success);
+): Result.Result<Record<string, unknown>, SlideDecodeFailure> {
+  let decoded: Exit.Exit<Record<string, unknown>, Schema.SchemaError>;
+  try {
+    const schema: Schema.Decoder<Record<string, unknown>> = Schema.Struct({
+      ...SlideFrontmatter.fields,
+      ...contract.schema.fields,
+    }) as never;
+    decoded = Schema.decodeUnknownExit(schema, { onExcessProperty: 'error' })({
+      ...frontmatter,
+      layout: contract.name,
+    });
+  } catch (error) {
+    return Result.fail(schemaThrew(error));
   }
 
-  const [first] = formatIssues(decoded.failure.issue).issues;
+  if (Exit.isSuccess(decoded)) {
+    return Result.succeed(decoded.value);
+  }
+
+  const failure = Cause.findErrorOption(decoded.cause);
+  if (Option.isNone(failure)) {
+    return Result.fail(schemaThrew(Cause.squash(decoded.cause)));
+  }
+
+  const [first] = formatIssues(failure.value.issue).issues;
   const path = first?.path?.map(String) ?? [];
   const message = first?.message ?? 'invalid';
   const text = path.length === 0 ? message : `${path.join('.')}: ${message}`;
-  return Result.fail({ field: path[0] ?? '', text });
+  return Result.fail({ kind: 'rejected', field: path[0] ?? '', text });
+}
+
+/**
+ * The failure for a schema that threw while decoding, or while it was built.
+ *
+ * @param error - What it threw.
+ */
+function schemaThrew(error: unknown): SlideDecodeFailure {
+  return { kind: 'threw', reason: error instanceof Error ? error.message : String(error) };
 }

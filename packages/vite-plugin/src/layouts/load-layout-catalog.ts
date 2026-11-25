@@ -3,7 +3,12 @@ import type { AnyLayoutContract } from '@deckster/engine/layout';
 
 import engineCatalog from '@deckster/engine/catalog';
 import { deckCommand } from '@deckster/engine/command';
-import { brandLayoutCatalog, checkBrandLayouts, checkReplacement } from '@deckster/kit/catalog';
+import {
+  brandLayoutCatalog,
+  checkBrandLayouts,
+  checkReplacement,
+  type ReplacementCheck,
+} from '@deckster/kit/catalog';
 import { Effect, Predicate } from 'effect';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -95,11 +100,12 @@ export type LayoutCatalogOptions = {
   local?: readonly LocalCatalog[] | undefined;
 
   /**
-   * The brand's code layouts that were found but are not in `local`, by name, each with the
-   * problems that kept it out (none when its code was not loaded on purpose). A data layout that
-   * falls back to one of them is left out and reported in `unavailable`, instead of failing the
-   * catalog as a fallback that is not a layout, and a deck code layout of that name is still a
-   * clash with the brand.
+   * The brand's code layouts that are not in `local`, by name, each with the problems that kept it
+   * out (none when its code was not loaded on purpose): ones found but not loaded, and ones `brand
+   * add` left out. A data layout that falls back to one of them is left out and reported in
+   * `unavailable`, instead of failing the catalog as a fallback that is not a layout or rendering
+   * as a kit layout of the same name, and a deck code layout of that name is still a clash with the
+   * brand.
    */
   withheld?: ReadonlyMap<string, readonly Problem[]> | undefined;
 };
@@ -430,7 +436,8 @@ type BrandDataJoin = {
  * @param layoutsFile - The absolute path of the brand's `layouts.ts`, when known.
  * @param base - The layouts a data layout may fall back to: the catalog modules' and the brand's
  *   code layouts.
- * @param withheld - The brand's code layouts that are not in `base`, with why.
+ * @param withheld - The brand's code layouts that are not in the catalog, with why. A data layout
+ *   on one of them is left out even when a kit layout has that name.
  * @returns The layouts that join, and the ones left out with their problems.
  * @throws DeckBuildError in the error channel, naming the brand's `layouts.ts`, for a layout that
  *   clashes with a base layout or does not fit its fallback.
@@ -447,13 +454,11 @@ const brandDataLayouts = Effect.fn('brandDataLayouts')(function* (
 
   const ref = brandLayoutsRef(brand, layoutsFile);
   const contracts = base.map((layout) => layout.contract);
-  const baseNames = new Set(contracts.map((contract) => contract.name));
   /**
-   * Whether a brand layout's fallback is a code layout that did not load and no base layout stands
-   * in for.
+   * Whether a brand layout's fallback is a code layout of the brand that did not load. A kit layout
+   * of that name never stands in for it: the data layout was written for the brand's replacement.
    */
-  const isWithheld = (fallback: string): boolean =>
-    withheld.has(fallback) && !baseNames.has(fallback);
+  const isWithheld = (fallback: string): boolean => withheld.has(fallback);
   const usable = brand.layouts.filter((layout) => !isWithheld(layout.fallback));
   const unavailable = brand.layouts
     .filter((layout) => isWithheld(layout.fallback))
@@ -542,7 +547,17 @@ function replacementOf(
   const lead =
     `The code layout "${name}" (${entry.ref.displayPath}) replaces the ${name} layout of ` +
     taken.source;
-  const check = checkReplacement(taken.contract, layout.contract);
+  const check = replacementCheck(taken, layout);
+  if (typeof check === 'string') {
+    const problem: LayoutProblem = {
+      ...at,
+      code: 'layout-replace-breaks',
+      message: `${lead}, and checking it against that layout threw: ${check}`,
+      fix: "Make the replacement's schema and `checks` report problems instead of throwing.",
+    };
+    return { joins: undefined, problems: [problem], warnings: [] };
+  }
+
   if (check.errors.length > 0) {
     const problems = check.errors.map((problem): LayoutProblem => ({
       ...at,
@@ -571,6 +586,22 @@ function replacementOf(
     })),
   ];
   return { joins: { ...layout, replaces: taken.source }, problems: [], warnings };
+}
+
+/**
+ * Runs `checkReplacement` on a replacement. The replacement's schema and `checks` are user code, so
+ * whatever the check throws is returned as its message instead of failing the whole catalog.
+ *
+ * @param taken - The catalog module's layout being replaced.
+ * @param layout - The code layout that replaces it.
+ * @returns The check, or the message of what it threw.
+ */
+function replacementCheck(taken: CatalogLayout, layout: CatalogLayout): ReplacementCheck | string {
+  try {
+    return checkReplacement(taken.contract, layout.contract);
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
+  }
 }
 
 /**

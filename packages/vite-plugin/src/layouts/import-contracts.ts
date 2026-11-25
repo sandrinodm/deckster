@@ -541,10 +541,22 @@ const importProblems = Effect.fn('importProblems')(function* (
    */
   const realOf = (file: string) => fs.realPath(file).pipe(Effect.orElseSucceed(() => file));
   const layoutDir = path.dirname(contractFile);
-  const allowedDirs = [
-    yield* realOf(layoutDir),
-    yield* realOf(path.join(path.dirname(layoutDir), SHARED_LAYOUTS_DIR)),
-  ];
+  const sharedDir = path.join(path.dirname(layoutDir), SHARED_LAYOUTS_DIR);
+  // Discovery and the agent turn guard go by paths as written, so a linked `_shared/` is reported
+  // by discovery and no import may go through it.
+  const isSharedLinked = yield* fs.lstat(sharedDir).pipe(
+    Effect.map((info) => info.type === 'SymbolicLink'),
+    Effect.orElseSucceed(() => false),
+  );
+  const allowed: AllowedImports = {
+    dirs: isSharedLinked
+      ? [yield* realOf(layoutDir)]
+      : [yield* realOf(layoutDir), yield* realOf(sharedDir)],
+    // Imports resolve from real paths, so the link is matched under the real `layouts/` folder.
+    linkedShared: isSharedLinked
+      ? path.join(yield* realOf(path.dirname(layoutDir)), SHARED_LAYOUTS_DIR)
+      : undefined,
+  };
   const realRoot = yield* realOf(root);
   const realContract = yield* realOf(contractFile);
   const problems: string[] = [];
@@ -562,7 +574,7 @@ const importProblems = Effect.fn('importProblems')(function* (
     const source = scanSource(file, text);
     problems.push(...source.problems.map((problem) => `${shown} ${problem}.`));
     for (const specifier of source.specifiers) {
-      const checked = yield* checkSpecifier(file, specifier, allowedDirs);
+      const checked = yield* checkSpecifier(file, specifier, allowed);
       if (checked.problem !== undefined) {
         problems.push(`${shown} ${checked.problem}.`);
       } else if (checked.follow !== undefined && !seen.has(checked.follow)) {
@@ -574,6 +586,23 @@ const importProblems = Effect.fn('importProblems')(function* (
 
   return { problems, checked: [...seen] };
 });
+
+/**
+ * Where a contract's relative imports may lead.
+ */
+type AllowedImports = {
+  /**
+   * The layout's folder and `layouts/_shared/`, with symlinks resolved; without `_shared/` when it
+   * is a symbolic link.
+   */
+  readonly dirs: readonly string[];
+
+  /**
+   * The absolute `layouts/_shared/` path under the real `layouts/` folder, when it is a symbolic
+   * link, so an import under it is refused with that reason.
+   */
+  readonly linkedShared: string | undefined;
+};
 
 /**
  * What the import check makes of one import: what is wrong with it, or the file to check next.
@@ -596,12 +625,12 @@ type CheckedSpecifier = {
  *
  * @param file - The absolute importing file, with symlinks resolved.
  * @param specifier - The specifier, or `undefined` for a dynamic import of no plain string.
- * @param allowedDirs - The layout's folder and `layouts/_shared/`, with symlinks resolved.
+ * @param allowed - Where the contract's relative imports may lead.
  */
 const checkSpecifier = Effect.fn('checkSpecifier')(function* (
   file: string,
   specifier: string | undefined,
-  allowedDirs: readonly string[],
+  allowed: AllowedImports,
 ): Effect.fn.Return<CheckedSpecifier, never, FileSystem.FileSystem> {
   if (specifier === undefined) {
     return { problem: 'has a dynamic import whose target is not one plain string' };
@@ -618,7 +647,7 @@ const checkSpecifier = Effect.fn('checkSpecifier')(function* (
   }
 
   const target = path.resolve(path.dirname(file), specifier);
-  const resolved = yield* resolveRelativeImport(target, allowedDirs);
+  const resolved = yield* resolveRelativeImport(target, allowed);
   return resolved.problem === undefined
     ? { follow: resolved.real }
     : { problem: `imports "${specifier}", which ${resolved.problem}` };
@@ -629,11 +658,11 @@ const checkSpecifier = Effect.fn('checkSpecifier')(function* (
  * end of a sentence, or the file a contract may import.
  *
  * @param target - The absolute path the import names.
- * @param allowedDirs - The layout's folder and `layouts/_shared/`, with symlinks resolved.
+ * @param allowed - Where the contract's relative imports may lead.
  */
 const resolveRelativeImport = Effect.fn('resolveRelativeImport')(function* (
   target: string,
-  allowedDirs: readonly string[],
+  allowed: AllowedImports,
 ): Effect.fn.Return<
   { problem: string } | { problem?: undefined; real: string },
   never,
@@ -643,13 +672,22 @@ const resolveRelativeImport = Effect.fn('resolveRelativeImport')(function* (
     return { problem: `is not a ${CONTRACT_EXTENSION} file` };
   }
 
+  const { linkedShared } = allowed;
+  if (linkedShared !== undefined && target.startsWith(`${linkedShared}${path.sep}`)) {
+    return {
+      problem:
+        `is under layouts/${SHARED_LAYOUTS_DIR}/, which is a symbolic link, and a contract ` +
+        'imports helpers only from a real folder',
+    };
+  }
+
   const fs = yield* FileSystem.FileSystem;
   const real = yield* fs.realPath(target).pipe(Effect.orElseSucceed(() => undefined));
   if (real === undefined) {
     return { problem: 'does not exist' };
   }
 
-  const isInside = allowedDirs.some((dir) => real.startsWith(`${dir}${path.sep}`));
+  const isInside = allowed.dirs.some((dir) => real.startsWith(`${dir}${path.sep}`));
   return isInside
     ? { real }
     : { problem: `is outside the layout's own folder and layouts/${SHARED_LAYOUTS_DIR}/` };

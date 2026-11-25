@@ -1,5 +1,11 @@
+import { BRANDS_DIR } from '@deckster/brand/node';
 import { Effect, FileSystem, Option, Schema } from 'effect';
 import path from 'node:path';
+
+import type { Problem } from '#errors.ts';
+import type { LayoutProblemCode } from '#layouts/layout-problem.ts';
+
+import { LAYOUTS_DIR } from '#layouts/local-layouts.ts';
 
 /**
  * The file `deckster brand add` writes into a brand folder: where the brand came from and which of
@@ -56,3 +62,31 @@ export const readSkippedCodeLayouts = Effect.fn('readSkippedCodeLayouts')(functi
     ? undefined
     : { source: decoded.value.source, names: decoded.value.codeLayoutsSkipped };
 });
+
+/**
+ * Why a brand's code layout that `brand add` left out cannot be used: the layout's name, then what
+ * to copy from where. The message starts with the layout's name in quotes, so a slide check can put
+ * its field in front of it.
+ *
+ * @param name - The layout `brand add` left out.
+ * @param brand - The brand's folder name.
+ * @param skipped - What `brand add` recorded for the brand.
+ * @returns The problem, with the code `layout-code-skipped`.
+ */
+export function skippedCodeLayoutProblem(
+  name: string,
+  brand: string,
+  skipped: SkippedCodeLayouts,
+): Problem {
+  const folder = `${BRANDS_DIR}/${brand}/${LAYOUTS_DIR}`;
+  return {
+    code: 'layout-code-skipped' satisfies LayoutProblemCode,
+    message:
+      `"${name}" is a code layout of the ${brand} brand that \`brand add\` left out, ` +
+      'because a fetched brand is added as data and its code is not copied.',
+    fix:
+      `Read the layout's code at ${skipped.source}, then copy its ${LAYOUTS_DIR}/${name}/ ` +
+      `folder (and what it imports from ${LAYOUTS_DIR}/_shared/) into ${folder}/. Or use a ` +
+      'layout the brand has here.',
+  };
+}

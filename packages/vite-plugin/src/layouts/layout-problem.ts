@@ -3,7 +3,8 @@ import type { Problem } from '#errors.ts';
 /**
  * What can be wrong with a brand's or a deck's code layouts:
  *
- * - `layout-folder-incomplete`: a `layouts/<name>/` folder without `contract.ts` or `layout.tsx`;
+ * - `layout-folder-incomplete`: a `layouts/<name>/` folder without `contract.ts` or `layout.tsx`, or
+ *   a symbolic link where a layout folder, one of its files or `layouts/_shared/` belongs;
  * - `layout-name-mismatch`: the folder name differs from the contract's or the component's name;
  * - `layout-name-clash`: the name is already a kit, engine or brand layout, and the contract does not
  *   say `replaces: true`;
@@ -50,16 +51,16 @@ export type LayoutProblem = Problem & {
 
   /**
    * The absolute path of the file at fault: the layout's `contract.ts` or `layout.tsx`, its folder
-   * when a file is missing, a symbolic link where one of those belongs, the `brand.json` or
-   * `deck.config.ts` that declares the version, or the brand's `layouts.ts` for a data layout
-   * (`layout-fallback-unavailable`).
+   * when a file is missing, a symbolic link where one of those or `layouts/_shared/` belongs, the
+   * `brand.json` or `deck.config.ts` that declares the version, or the brand's `layouts.ts` for a
+   * data layout (`layout-fallback-unavailable`).
    */
   readonly file: string;
 
   /**
    * The layout the problem belongs to, by folder name (a data layout's name in `layouts.ts` for
    * `layout-fallback-unavailable`). Left out for a problem with every code layout of a brand or
-   * deck, such as a version mismatch.
+   * deck, such as a version mismatch or a linked `layouts/_shared/`.
    */
   readonly layout?: string;
 

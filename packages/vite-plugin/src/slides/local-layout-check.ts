@@ -8,12 +8,12 @@ import { Effect, Predicate } from 'effect';
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import type { SkippedCodeLayouts } from '#layouts/brand-source.ts';
 import type { LayoutProblemCode } from '#layouts/layout-problem.ts';
 import type { LayoutCatalogIndex } from '#layouts/load-layout-catalog.ts';
 import type { BrandFallback } from '#slides/brand-layout-fallback.ts';
 
 import { unusableLayout, type DeckBuildError, type FileRef, type Problem } from '#errors.ts';
+import { skippedCodeLayoutProblem, type SkippedCodeLayouts } from '#layouts/brand-source.ts';
 import {
   COMPONENT_FILE,
   CONTRACT_FILE,
@@ -182,17 +182,8 @@ function ownerDirOf(layout: LocalLayout): string {
  * @param skipped - What `brand add` recorded.
  */
 function skippedProblem(name: string, brand: string, skipped: SkippedCodeLayouts): Problem {
-  const folder = `${BRANDS_DIR}/${brand}/${LAYOUTS_DIR}`;
-  return {
-    code: SKIPPED_CODE,
-    message:
-      `layout: "${name}" is a code layout of the ${brand} brand that \`brand add\` left out, ` +
-      'because a fetched brand is added as data and its code is not copied.',
-    fix:
-      `Read the layout's code at ${skipped.source}, then copy its ${LAYOUTS_DIR}/${name}/ ` +
-      `folder (and what it imports from ${LAYOUTS_DIR}/_shared/) into ${folder}/. Or use a ` +
-      'layout the brand has here.',
-  };
+  const problem = skippedCodeLayoutProblem(name, brand, skipped);
+  return { ...problem, message: `layout: ${problem.message}` };
 }
 
 /**

@@ -63,6 +63,33 @@ function layoutFiles(
   };
 }
 
+/**
+ * The brand with its one data layout, `fx-cover`, falling back to another layout, keeping only the
+ * regions bound to slots so any layout with a `body` slot fits.
+ *
+ * @param loaded - The brand.
+ * @param fallback - The layout `fx-cover` falls back to.
+ */
+function coverOn(loaded: LoadedBrand, fallback: string): LoadedBrand {
+  const [cover] = loaded.tokens.layouts;
+  const layout: BrandLayoutTokens = {
+    ...cover!,
+    fallback,
+    regions: cover!.regions.filter((region) => 'slot' in region.bind),
+  };
+  return { ...loaded, tokens: { ...loaded.tokens, layouts: [layout] } };
+}
+
+/**
+ * The `.deckster-source.json` `brand add` writes for a fetched brand whose code layouts it left
+ * out.
+ *
+ * @param names - The code layouts left out.
+ */
+function skippedSource(names: readonly string[]): string {
+  return JSON.stringify({ source: 'github:acme/brand', commit: null, codeLayoutsSkipped: names });
+}
+
 beforeEach(() => {
   resetCodeGate();
   resetContractRuns();
@@ -103,7 +130,7 @@ layer(NodeFileSystem.layer)('deckCatalog', (it) => {
     Effect.gen(function* () {
       const root = scratchRoot();
       writeFiles(root, {
-        ...layoutFiles('brands/fx-brand/layouts', 'title', 'Mine.'),
+        ...layoutFiles('brands/fx-brand/layouts', 'agenda', 'Mine.'),
         ...layoutFiles('brands/fx-brand/layouts', 'fx-cover', 'Mine.'),
         ...layoutFiles('brands/fx-brand/layouts', 'kpi-wall', 'The brand’s.'),
         ...layoutFiles('decks/talk/layouts', 'kpi-wall', 'The deck’s.'),
@@ -122,12 +149,12 @@ layer(NodeFileSystem.layer)('deckCatalog', (it) => {
           (problem) => `${problem.code} ${path.relative(root, problem.file)} ${problem.message}`,
         ),
       ).toEqual([
+        'layout-name-clash brands/fx-brand/layouts/agenda/contract.ts The code layout "agenda" ' +
+          '(brands/fx-brand/layouts/agenda/contract.ts) has the name of a layout from ' +
+          '@deckster/kit.',
         'layout-name-clash brands/fx-brand/layouts/fx-cover/contract.ts The fx-brand brand ' +
           'defines "fx-cover" twice: as a code layout ' +
           '(brands/fx-brand/layouts/fx-cover/contract.ts) and in brands/fx-brand/layouts.ts.',
-        'layout-name-clash brands/fx-brand/layouts/title/contract.ts The code layout "title" ' +
-          '(brands/fx-brand/layouts/title/contract.ts) has the name of a layout from ' +
-          '@deckster/kit.',
         'layout-name-clash decks/talk/layouts/fx-cover/contract.ts The deck layout "fx-cover" ' +
           "(decks/talk/layouts/fx-cover/contract.ts) has the name of a layout of the deck's " +
           'brand (brand:fx-brand).',
@@ -137,7 +164,7 @@ layer(NodeFileSystem.layer)('deckCatalog', (it) => {
         'layout-name-clash decks/talk/layouts/section/contract.ts The code layout "section" ' +
           '(decks/talk/layouts/section/contract.ts) has the name of a layout from @deckster/kit.',
       ]);
-      expect(index.get('title')?.source).toBe('@deckster/kit');
+      expect(index.get('agenda')?.source).toBe('@deckster/kit');
       expect(index.get('section')?.source).toBe('@deckster/kit');
       expect(index.get('fx-cover')?.source).toBe('brand:fx-brand');
       expect(index.get('kpi-wall')?.contract.description).toBe('The brand’s.');
@@ -253,7 +280,7 @@ layer(NodeFileSystem.layer)('deckCatalog with a replaced kit layout', (it) => {
     }),
   );
 
-  it.effect('leaves out a replacement that breaks slides of the kit layout, naming why', () =>
+  it.effect('leaves out a breaking replacement and the data layouts on it', () =>
     Effect.gen(function* () {
       const root = scratchRoot();
       writeFiles(root, {
@@ -269,7 +296,13 @@ layer(NodeFileSystem.layer)('deckCatalog with a replaced kit layout', (it) => {
       expect(local.replaced).toEqual([]);
       expect(local.catalogs).toEqual([]);
       expect(new Set(local.problems.map((problem) => problem.code))).toEqual(
-        new Set(['layout-replace-breaks']),
+        new Set(['layout-replace-breaks', 'layout-fallback-unavailable']),
+      );
+      // fx-cover falls back to `title`: it was written for the brand's title, not the kit's.
+      expect(index.has('fx-cover')).toBe(false);
+      expect(local.problems.at(-1)?.message).toContain(
+        'The data layout "fx-cover" (brands/fx-brand/layouts.ts) falls back to the brand\'s ' +
+          'code layout "title", which is not loaded: The code layout "title"',
       );
       expect(local.problems.map((problem) => problem.message)).toContain(
         'The code layout "title" (brands/fx-brand/layouts/title/contract.ts) replaces the title ' +
@@ -451,6 +484,125 @@ layer(NodeFileSystem.layer)('loadLayoutCatalog with code layouts', (it) => {
         'Invalid code layouts in decks/talk/layouts/title/contract.ts:',
       );
       expect(error.message).toContain('has the name of a layout from @deckster/kit.');
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+});
+
+layer(NodeFileSystem.layer)('deckCatalog with code layouts brand add left out', (it) => {
+  it.effect(
+    'leaves out a data layout on a skipped code layout, saying why, and loads the rest',
+    () =>
+      Effect.gen(function* () {
+        const root = scratchRoot();
+        writeFiles(root, {
+          'brands/fx-brand/.deckster-source.json': skippedSource(['kpi-wall']),
+          ...layoutFiles('decks/talk/layouts', 'funnel'),
+        });
+        const brand = coverOn(yield* scratchBrand(root), 'kpi-wall');
+        const deck = deckLocation(root, 'talk');
+        const { index, local } = yield* deckCatalog({ root, brand, deck, code: 'load' });
+        expect(index.has('fx-cover')).toBe(false);
+        expect(index.get('funnel')?.source).toBe('deck:talk');
+        expect(local.problems).toEqual([
+          {
+            code: 'layout-fallback-unavailable',
+            file: brand.layoutsFile,
+            layout: 'fx-cover',
+            message:
+              'The data layout "fx-cover" (brands/fx-brand/layouts.ts) falls back to the ' +
+              'brand\'s code layout "kpi-wall", which is not loaded: "kpi-wall" is a code ' +
+              'layout of the fx-brand brand that `brand add` left out, because a fetched brand ' +
+              'is added as data and its code is not copied.',
+            fix:
+              "Read the layout's code at github:acme/brand, then copy its layouts/kpi-wall/ " +
+              'folder (and what it imports from layouts/_shared/) into ' +
+              'brands/fx-brand/layouts/. Or use a layout the brand has here.',
+          },
+        ]);
+
+        const skipped = yield* deckCatalog({ root, brand, deck, code: 'skip' });
+        expect(skipped.index.has('fx-cover')).toBe(false);
+        expect(skipped.local.problems).toEqual([]);
+        expect(skipped.local.warnings.map((problem) => problem.message)).toEqual([
+          local.problems[0]?.message,
+        ]);
+        rmSync(root, { recursive: true, force: true });
+      }),
+  );
+
+  it.effect('keeps a deck code layout from taking the name of a skipped brand layout', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/fx-brand/.deckster-source.json': skippedSource(['kpi-wall']),
+        ...layoutFiles('decks/talk/layouts', 'kpi-wall'),
+      });
+      const { index, local } = yield* deckCatalog({
+        root,
+        brand: yield* scratchBrand(root),
+        deck: deckLocation(root, 'talk'),
+        code: 'load',
+      });
+      expect(index.has('kpi-wall')).toBe(false);
+      expect(local.problems.map((problem) => `${problem.code}:${problem.layout}`)).toEqual([
+        'layout-name-clash:kpi-wall',
+      ]);
+      expect(local.problems[0]?.message).toContain("has the name of a layout of the deck's brand");
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('uses a skipped code layout once its folder is copied into the brand', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/fx-brand/.deckster-source.json': skippedSource(['kpi-wall']),
+        ...layoutFiles('brands/fx-brand/layouts', 'kpi-wall'),
+      });
+      const brand = coverOn(yield* scratchBrand(root), 'kpi-wall');
+      const { index, local } = yield* deckCatalog({ root, brand, code: 'load' });
+      expect(local.problems).toEqual([]);
+      expect(index.get('fx-cover')?.fallback).toBe('kpi-wall');
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+});
+
+layer(NodeFileSystem.layer)('deckCatalog with a withheld brand replacement', (it) => {
+  it.effect(
+    'leaves out a data layout on a version-blocked replacement, not on the kit layout',
+    () =>
+      Effect.gen(function* () {
+        const root = scratchRoot();
+        writeFiles(root, {
+          'brands/fx-brand/brand.json': '{ "deckster": ">=99" }',
+          ...defaultReplacementFiles('brands/fx-brand/layouts'),
+        });
+        const brand = coverOn(yield* scratchBrand(root), 'default');
+        const { index, local } = yield* deckCatalog({ root, brand, code: 'load' });
+        expect(index.get('default')?.source).toBe('@deckster/kit');
+        expect(index.has('fx-cover')).toBe(false);
+        expect(local.problems.map((problem) => `${problem.code}:${problem.layout}`)).toEqual([
+          'layout-version:undefined',
+          'layout-fallback-unavailable:fx-cover',
+        ]);
+        expect(local.problems[1]?.message).toContain('are written for deckster >=99');
+        rmSync(root, { recursive: true, force: true });
+      }),
+  );
+
+  it.effect('warns about a data layout on a replacement whose code is skipped', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, defaultReplacementFiles('brands/fx-brand/layouts'));
+      const brand = coverOn(yield* scratchBrand(root), 'default');
+      const { index, local } = yield* deckCatalog({ root, brand, code: 'skip' });
+      expect(index.get('default')?.source).toBe('@deckster/kit');
+      expect(index.has('fx-cover')).toBe(false);
+      expect(local.warnings.map((problem) => `${problem.level} ${problem.code}`)).toEqual([
+        'warning layout-fallback-unavailable',
+      ]);
       rmSync(root, { recursive: true, force: true });
     }),
   );

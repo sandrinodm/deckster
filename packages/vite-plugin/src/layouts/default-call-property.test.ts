@@ -67,6 +67,25 @@ describe('readDefaultCallProperty', () => {
     });
   });
 
+  it('follows a call argument that names a top-level const to its object', () => {
+    const text = [
+      "const config = { title: 'Talk', slides: ['one'], deckster: '>=99' } satisfies object;",
+      '',
+      'export default defineDeck(config);',
+    ].join('\n');
+    expect(readDefaultCallProperty(text, 'defineDeck', 'deckster', 'ts')).toEqual({
+      kind: 'string',
+      value: '>=99',
+    });
+    expect(
+      readDefaultCallProperty(
+        'let config = {};\nexport default defineDeck(config);',
+        'defineDeck',
+        'x',
+      ),
+    ).toEqual({ kind: 'unreadable' });
+  });
+
   it('parses a .ts module as TypeScript, so angle-bracket casts are read', () => {
     const text = "export default defineDeck({ deckster: <string>'>=99' });";
     expect(readDefaultCallProperty(text, 'defineDeck', 'deckster', 'ts')).toEqual({
