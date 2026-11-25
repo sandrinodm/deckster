@@ -13,7 +13,7 @@ const nimbusConfig = defineNimbusConfig({
   site: "https://sandrinodm.github.io",
   title: "deckster",
   description:
-    "deckster: a code-first slide framework with typed brands, MDX slides and a deck CLI.",
+    "deckster: a code-first slide framework with typed brands, MDX slides and the deckster CLI.",
   locale: "en",
   github: "https://github.com/sandrinodm/deckster",
   // Pages live on the docs-site branch of the main repository. Nimbus

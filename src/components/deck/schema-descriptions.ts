@@ -6,7 +6,9 @@
  * packages/engine/src/contract/deck-config.ts for the deck config. Written at v0.3.0 (commit
  * 4e0b186); the diagram look and cards (`diagram.edges`, `groups`, `labels`, `kinds`, `cards` and
  * `color.surfaces.<name>.diagram.cards`), new in 0.4.0, from schema/diagram-schema.ts and
- * resolve/resolve-diagram.ts at commit 6c27269. Checked against the 0.5.0 release merge
+ * resolve/resolve-diagram.ts at commit 6c27269; the design controls new in 0.8.0 (`diagram.align`,
+ * `nodes`, `notes`, `edges.lineStyle`, `groups.lineStyle`, pixel strokes, and a card's
+ * `borderStyle`, `icon.border*` and `subtitle`) from the same files at v0.10.1. Checked against the 0.5.0 release merge
  * (commit 7dc64ea on main): the brand and deck-config
  * schemas and their defaults are otherwise unchanged (0.5.0 changes only the slide frontmatter,
  * which has no overlay).
@@ -100,6 +102,7 @@ const SURFACE_CARD: Record<string, string> = {
   "icon.fill": "The tile colour of a `solid` icon on this surface.",
   accent: "The card's accent stripe on this surface.",
   "accent.color": "The stripe's colour on this surface.",
+  "icon.border": "The icon tile's border colour on this surface. New in 0.8.0.",
 };
 
 /**
@@ -141,6 +144,19 @@ const CARD: Record<string, Entry> = {
   "title.weight": "A font weight from 1 to 1000.",
   "title.tracking": "Letter spacing in em.",
   "title.case": { text: "`upper` sets the title in capitals.", default: "none" },
+  borderStyle:
+    "`solid`, `dashed` or `dotted` node outline. Left out: the brand's `default` card's. New in 0.8.0.",
+  "icon.border": "The icon tile's border colour, written as `fill` is. New in 0.8.0.",
+  "icon.borderWidth":
+    "The icon tile's border width: a name from `shape.stroke` or canvas pixels; `0` removes the outline. New in 0.8.0.",
+  "icon.borderStyle": "`solid`, `dashed` or `dotted` icon tile border. New in 0.8.0.",
+  subtitle:
+    "How the node subtitle is set: a type step (`caption`, `label`, `small` or `body`) or an object. Its fields win over the brand's `default` card's, which win over `diagram.nodes.subtitle`; `null` skips the `default` card's and uses `diagram.nodes.subtitle`. New in 0.8.0.",
+  "subtitle.type": "The base type step: `caption`, `label`, `small` or `body`.",
+  "subtitle.family": "A family role: `display`, `body` or `mono`.",
+  "subtitle.weight": "A font weight from 1 to 1000.",
+  "subtitle.tracking": "Letter spacing in em.",
+  "subtitle.case": "`upper` sets the subtitle in capitals, `none` as written.",
 };
 
 /** DataPalettes (schema/color-schema.ts). */
@@ -404,11 +420,14 @@ const BRAND: Record<string, Entry> = {
     "Diagram colours, edges, groups, edge labels and cards. Left out, the colours are derived from each surface's roles and the rest uses the defaults below.",
   ...prefixed("diagram", DIAGRAM),
   "diagram.edges": "How edges are drawn.",
-  "diagram.edges.stroke": { text: "The line width, from `shape.stroke`.", default: "regular" },
+  "diagram.align": "Where a diagram sits in its region: `left`, `center` or `right`. A slide's `align` wins. Left out, each diagram keeps its usual layout. New in 0.8.0.",
+  "diagram.edges.stroke": { text: "The line width: a name from `shape.stroke`, or canvas pixels (new in 0.8.0).", default: "regular" },
+  "diagram.edges.lineStyle": "`solid`, `dashed` or `dotted` connectors. An edge's own `lineStyle` wins; dashed and async flow edges, reply and async messages and error edges still draw dashed. New in 0.8.0.",
   "diagram.edges.corners": { text: "`round` bends with the brand's `lg` radius; `sharp` bends square.", default: "round" },
   "diagram.edges.arrow": { text: "A filled `triangle`, an `open` chevron or a `dot`.", default: "triangle" },
   "diagram.groups": "How group outlines are drawn.",
-  "diagram.groups.stroke": { text: "The outline width, from `shape.stroke`, or `none` for no outline.", default: "hairline" },
+  "diagram.groups.stroke": { text: "The outline width: a name from `shape.stroke`, canvas pixels (new in 0.8.0), or `none` for no outline.", default: "hairline" },
+  "diagram.groups.lineStyle": "`solid`, `dashed` or `dotted` outlines; wins over `dashed`. New in 0.8.0.",
   "diagram.groups.dashed": { text: "Draws the outline dashed.", default: false },
   "diagram.groups.radius": { text: "The corner radius, from `shape.radius`, or `none`.", default: "lg" },
   "diagram.labels": "How edge labels are set.",
@@ -417,6 +436,21 @@ const BRAND: Record<string, Entry> = {
     text: "`caption` sets labels in the caption step; `label` in the brand's `label` step, with its family, case and tracking.",
     default: "caption",
   },
+  "diagram.nodes": "Default node size and subtitle type. New in 0.8.0.",
+  "diagram.nodes.width": { text: "The preferred node width in canvas pixels; `0` lets the layout size nodes. The layout can narrow a node to fit its region.", default: 0 },
+  "diagram.nodes.height": { text: "The minimum node height in canvas pixels; `0` lets the layout size nodes. A node grows to fit its text.", default: 0 },
+  "diagram.nodes.subtitle": "How node subtitles are set: a type step (`caption`, `label`, `small` or `body`) or an object with `type`, `family`, `weight`, `tracking` and `case`. Cards can override it.",
+  "diagram.nodes.subtitle.type": "The base type step: `caption`, `label`, `small` or `body`.",
+  "diagram.nodes.subtitle.family": "A family role: `display`, `body` or `mono`.",
+  "diagram.nodes.subtitle.weight": "A font weight from 1 to 1000.",
+  "diagram.nodes.subtitle.tracking": "Letter spacing in em.",
+  "diagram.nodes.subtitle.case": "`upper` sets subtitles in capitals, `none` as written.",
+  "diagram.notes": "How the detail text under a timeline milestone is set, as an object (not speaker notes). New in 0.8.0.",
+  "diagram.notes.type": "The base type step: `caption`, `label`, `small` or `body`.",
+  "diagram.notes.family": "A family role: `display`, `body` or `mono`.",
+  "diagram.notes.weight": "A font weight from 1 to 1000.",
+  "diagram.notes.tracking": "Letter spacing in em.",
+  "diagram.notes.case": "`upper` sets the detail in capitals, `none` as written.",
   "diagram.kinds":
     "The card a node kind uses when neither the node nor its diagram names one, such as `{ external: 'outline' }`. Keys are node kinds, not aliases (`database`, not `db`); values are cards the brand has.",
   "diagram.cards":
