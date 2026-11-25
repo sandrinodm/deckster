@@ -121,25 +121,54 @@ and never runs the brand's or the deck's code), it loads each contract with `imp
 checks that it is named like its folder and passes the build's contract checks.
 
 `importContracts` (`src/layouts/import-contracts.ts`) loads the default export of each
-`contract.ts` in three steps:
+`contract.ts` (and the CLI loads each `limits.ts` through it) in four steps:
 
 1. The agent-turn gate. A contract under a folder an agent turn holds is not read, checked or
    evaluated: the result is the value it had when this process last loaded it, or `held`. Nothing the
    turn writes runs before the turn is settled. A turn that begins while a contract is being
-   evaluated stops it: the load guard and the evaluator refuse every module of that contract that
-   would load or start running after that, and its value is dropped.
+   evaluated stops it: the check process is killed, the load guard and the evaluator refuse every
+   module of that contract that would load or start running in this process after that, and its
+   value is dropped.
 2. The static import check, on the source and before anything runs. A contract may import `effect`
    and its entry points, `@deckster/engine/layout`, `@deckster/engine/command`,
    `@deckster/kit/layout-fields` and `@deckster/brand`, and `.ts` files in its own folder or in
    `layouts/_shared/`. Relative imports are followed; `import type` and `export type` are not.
-3. The loader: one Vite environment for the batch, closed afterwards, so an edited contract or
-   helper is read afresh on the next call. Vite runs only the workspace's files; `effect` and
-   `@deckster/*` are imported by Node from this package, so a contract's schema is built with the
-   same `effect` as the caller's. The contracts are evaluated at the same time against one deadline
-   for the batch (`CONTRACT_TIMEOUT_MS`, 10 s); each one still running then fails with
-   `layout-load-failed`, and the environment is closed at once, refusing any module a hung contract
-   asks for when it wakes up. Code already running after an `await` inside a module cannot be
-   stopped, only kept from loading more.
+3. The check process (`src/layouts/contract-check.ts`, `contract-child.ts`). One Node process per
+   batch evaluates the contracts first, under Node's permission model: it may read only the
+   framework and its dependencies (`--allow-fs-read`), and may not write files, start processes or
+   workers, load addons, use WASI, the inspector or the network. It gets only `NODE_ENV`, `TZ` and
+   `SystemRoot` from the environment, and reads no workspace file: its module runner fetches every
+   module from this process's Vite environment, through the same load guard. A contract that
+   reaches for Node at all (`process.getBuiltinModule`, `process.binding`, `process.dlopen`, a
+   native `import()` built with `eval`, `fetch`, `process.exit`, `process.kill`, `process.send` and
+   the like) fails with `layout-load-failed` ("Loading it was refused"), even when it catches the
+   error. The process is killed outright (`SIGKILL`) when it is done, at the deadline and as soon
+   as an agent turn holds one of its contracts (the others are checked again in a new process).
+   Only what each contract came to crosses back: loaded, no default export, or an error message.
+   The process starts in about 0.2 s; its startup does not count against the deadline.
+4. The loader. The contracts that passed are evaluated again in this process, because callers need
+   their schemas as live Effect values: a schema's refinements, defaults and transformations are
+   functions, which cannot cross a process boundary. Both runs share one Vite environment, closed
+   afterwards, which reads each file once per batch, so this process runs the text the check
+   process ran, and an edited contract or helper is read afresh on the next call. Vite runs only
+   the workspace's files; `effect` and `@deckster/*` are imported by Node from this package, so a
+   contract's schema is built with the same `effect` as the caller's. Each run evaluates the
+   contracts at the same time against one deadline for the batch (`CONTRACT_TIMEOUT_MS`, 10 s);
+   each one still running then fails with `layout-load-failed`, and the others still load.
+
+The check process contains what a contract does while it is checked: a contract that hangs,
+spins or tries to write is stopped there and never runs in this process. Contracts of one batch
+share the check process, so one that never stops running makes the others of its batch time out
+with it. The second run is not contained. It has this process's rights, and code of it still
+running after an `await` when a turn begins or the deadline passes cannot be stopped, only kept from
+loading more modules. Since it only runs contracts that loaded cleanly in the check process, what
+gets through is a contract written to act differently there (one that tells the two processes
+apart, or schedules work for after its check), and the functions it carries (its `checks`, and its schema's refinements, defaults and transformations), which run in this process whenever a slide is validated. Treat a layout from elsewhere as code you run.
+
+Two more limits. In a repository checkout the framework folder the check process may read is the
+whole checkout; in an installed CLI it is the published framework and its dependencies. And the
+check process is killed when its server exits normally or disconnects, but a server killed with
+`SIGKILL` while a contract spins in it leaves that process running until it is killed by hand.
 
 None of these steps fails the call: `localLayouts` and `importContracts` return problems as values,
 so every other layout still lists and only the slides that name a layout with a problem fail, with
@@ -184,21 +213,21 @@ in the framework folder when installed, else `packages/cli/package.json`.
 Problems carry a `code` (`LayoutProblemCode`, `src/layouts/layout-problem.ts`), and `deckster lint`
 reports them under that id:
 
-| Code                          | Meaning                                                                                                                                                     |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `layout-folder-incomplete`    | A `layouts/<name>/` folder without `contract.ts` or `layout.tsx`, or a symbolic link where a layout folder, one of its files or `layouts/_shared/` belongs. |
-| `layout-name-mismatch`        | The folder name differs from the contract's or the component's name.                                                                                        |
-| `layout-name-clash`           | The name is already a kit, engine or brand layout, and the contract does not say `replaces: true`.                                                          |
-| `layout-replace-breaks`       | A replacement would break slides written for the replaced layout (a field, slot or title it drops or narrows).                                              |
-| `layout-replace-pptx`         | Warning: the replaced layout has a PowerPoint mapping and the replacement has none.                                                                         |
-| `layout-replace-budget`       | Note: a budget or title limit differs from the replaced layout's.                                                                                           |
-| `layout-contract-imports`     | `contract.ts` imports something a contract may not.                                                                                                         |
-| `layout-contract-invalid`     | The contract loaded but fails the build's contract checks, or says `replaces: true` on a name no kit or engine layout has.                                  |
-| `layout-load-failed`          | `contract.ts` is missing, threw while loading, has no default export or was still loading at the batch's deadline.                                          |
-| `layout-held`                 | An agent turn is in flight and the contract was never loaded before it, or the turn began while it was first loading.                                       |
-| `layout-version`              | The brand or deck asks for another deckster version.                                                                                                        |
-| `layout-code-skipped`         | A slide uses a code layout `brand add` left out, or one that only another brand has.                                                                        |
-| `layout-fallback-unavailable` | A data layout of the brand falls back to a brand code layout that did not load, so it is left out too (a warning with `code: 'skip'`).                      |
+| Code                          | Meaning                                                                                                                                                                                               |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `layout-folder-incomplete`    | A `layouts/<name>/` folder without `contract.ts` or `layout.tsx`, or a symbolic link where a layout folder, one of its files or `layouts/_shared/` belongs.                                           |
+| `layout-name-mismatch`        | The folder name differs from the contract's or the component's name.                                                                                                                                  |
+| `layout-name-clash`           | The name is already a kit, engine or brand layout, and the contract does not say `replaces: true`.                                                                                                    |
+| `layout-replace-breaks`       | A replacement would break slides written for the replaced layout (a field, slot or title it drops or narrows).                                                                                        |
+| `layout-replace-pptx`         | Warning: the replaced layout has a PowerPoint mapping and the replacement has none.                                                                                                                   |
+| `layout-replace-budget`       | Note: a budget or title limit differs from the replaced layout's.                                                                                                                                     |
+| `layout-contract-imports`     | `contract.ts` imports something a contract may not.                                                                                                                                                   |
+| `layout-contract-invalid`     | The contract loaded but fails the build's contract checks, or says `replaces: true` on a name no kit or engine layout has.                                                                            |
+| `layout-load-failed`          | `contract.ts` is missing, threw while loading, used something a contract may not (Node built-ins, files, processes, the network), has no default export or was still loading at the batch's deadline. |
+| `layout-held`                 | An agent turn is in flight and the contract was never loaded before it, or the turn began while it was first loading.                                                                                 |
+| `layout-version`              | The brand or deck asks for another deckster version.                                                                                                                                                  |
+| `layout-code-skipped`         | A slide uses a code layout `brand add` left out, or one that only another brand has.                                                                                                                  |
+| `layout-fallback-unavailable` | A data layout of the brand falls back to a brand code layout that did not load, so it is left out too (a warning with `code: 'skip'`).                                                                |
 
 The warning and the note are never in `problems`: they are in `local.warnings` and fail no slide.
 
@@ -267,7 +296,7 @@ Everything comes from the package root (`exports: { ".": "./src/index.ts" }`).
 | `loadLayoutCatalog`, `DEFAULT_LAYOUT_CATALOGS`, `CatalogLayout`, `LayoutCatalogIndex`, `LayoutCatalogOptions` | Load layout contracts; `LayoutCatalogOptions` has the brand, its `layouts.ts` and `local`, the code layouts to join. |
 | `deckCatalog`, `DeckCatalog`, `DeckCatalogOptions`                                                            | Every layout a deck or brand can use, with its code layouts, `code: 'load'` or `'skip'`.                             |
 | `localLayouts`, `LocalLayouts`, `LocalLayout`, `LocalCatalog`, `LocalLayoutsOptions`                          | Find a brand's and a deck's code layouts and load their contracts.                                                   |
-| `importContracts`, `ContractLoad`, `ContractProblem`, `ImportContractsOptions`                                | Load `contract.ts` files: import check, agent-turn gate, loader.                                                     |
+| `importContracts`, `ContractLoad`, `ContractProblem`, `ImportContractsOptions`                                | Load `contract.ts` files: agent-turn gate, import check, check process, loader.                                      |
 | `checkReplacedSlides`, `ReplacedSlidesOptions`                                                                | Check the slides of a brand's decks against the kit layouts a code layout replaces.                                  |
 | `readSkippedCodeLayouts`, `SkippedCodeLayouts`, `BRAND_SOURCE_FILE`                                           | The code layouts `brand add` left out of a brand, from `.deckster-source.json`.                                      |
 | `LayoutProblem`, `LayoutProblemCode`                                                                          | A code layout's problem, and its ids.                                                                                |
@@ -295,7 +324,9 @@ Everything comes from the package root (`exports: { ".": "./src/index.ts" }`).
 - A runtime plugin, catalog or extension added to the defaults must also be added to this
   package's `dependencies`, or it will not resolve.
 - A brand's or a deck's `contract.ts` is loaded through `importContracts` only, which applies the
-  agent-turn gate and the import check first, and never in a call made with `code: 'skip'`. The
+  agent-turn gate, the import check and the check process first, and never in a call made with
+  `code: 'skip'`. Never evaluate a contract in this process that has not passed the check process
+  in the same batch. The
   loader does not read or run a folder an agent turn holds, as `loadDeck` does not.
 
 ## Tests

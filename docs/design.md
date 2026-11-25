@@ -304,8 +304,10 @@ are for what regions cannot do.
   renamed so an edit cannot reach the kit's own layouts that still use them. A stylesheet shared
   with other kit layouts is copied into the layout's folder and scoped to it, and the classes only
   the kit's layouts use (the photo scrim) are renamed the same way. Classes kit components draw
-  keep their names, so the kit's `display-align.css` and `stat-cards.css` still reach an ejected
-  `title` or `stats` while another kit layout or chart loads them. The copy is a
+  keep their names; the kit's `display-align.css` and `stat-cards.css`, which style them, apply
+  only under a `data-kit-…` attribute the kit's layouts and charts set to opt in, and the copy
+  renames that attribute (`data-own-…` in a brand, `data-dck-…` in a deck), so the kit's rules
+  never reach an ejected layout and its copy styles it alone. The copy is a
   fork, and `.eject/` keeps what it started from, so `deckster layouts diff` can show what the kit
   changed since. It prints that and applies nothing: merging stays a decision.
 - **A range says which deckster the layouts were written for.** A brand's `brand.json` or a deck's
@@ -316,11 +318,21 @@ are for what regions cannot do.
   else's repository on your machine is a decision, not a side effect of fetching a brand.
 - **The agent cannot write layouts.** The agent's turn changes slides and assets only, and the
   contracts are held while a turn runs: read as they were, never evaluated mid-turn. A turn that
-  begins while a contract loads keeps it from loading more modules.
-- **A contract cannot hang the catalog.** The contracts of one load run together against one
-  deadline (10 seconds); one still running then fails alone, and the others load. The import check
-  and the deadline catch mistakes; a contract is still code that runs in Node, and code already
-  running after an `await` cannot be stopped.
+  begins while a contract loads kills its check process, or keeps one already past its check from
+  loading more modules.
+- **A contract cannot hang the catalog.** The contracts of one load run first in a separate process
+  under Node's permission model (reads of the framework only; no writes, processes, workers, addons
+  or network), killed at one deadline for all of them (10 seconds) or when an agent turn holds one.
+  A contract still running then fails, and the others load, unless it blocks the process outright,
+  which times out the others of its load with it. A contract that reaches for Node there fails even
+  when it catches the error.
+- **Schemas are live values, so the contract runs twice.** Effect schemas carry functions
+  (refinements, defaults, transformations), which no process boundary carries, and the build,
+  lint, export and the kit read them as values; a contract's `checks` is a function too. So a
+  contract that passed the check is evaluated again in the command's process, from the same text,
+  with its rights, and those functions run there whenever a slide is checked. Code of it still running
+  after an `await` there cannot be stopped. The check stops mistakes, hangs and naive misuse, not a
+  contract written to act differently once past it; a layout from elsewhere is still code you run.
 
 The one difference from data layouts is portability. A data layout names a kit fallback, so a deck
 rendered in another brand still builds. A code layout has no fallback: another brand that lacks it

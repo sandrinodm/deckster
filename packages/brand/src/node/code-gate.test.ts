@@ -4,6 +4,7 @@ import {
   gatedLoad,
   holdCode,
   isCodeHeld,
+  onCodeHeld,
   onCodeReleased,
   rememberLoaded,
   resetCodeGate,
@@ -147,5 +148,18 @@ describe('the code gate', () => {
     hold.release();
     hold.release();
     expect(released).toEqual([ROOT]);
+  });
+
+  it('tells listeners when a hold begins, with the hold already in force', () => {
+    const held: (readonly string[])[] = [];
+    const stop = onCodeHeld((roots) => {
+      expect(isCodeHeld(CONFIG)).toBe(true);
+      held.push(roots);
+    });
+    const hold = holdCode([ROOT]);
+    stop();
+    holdCode([ROOT]).release();
+    hold.release();
+    expect(held).toEqual([[ROOT]]);
   });
 });

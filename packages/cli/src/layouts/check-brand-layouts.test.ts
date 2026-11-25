@@ -39,7 +39,8 @@ describe('checkCatalogLayouts', () => {
           expect(skipped.local.catalogs).toEqual([]);
           expect(skipped.local.problems).toEqual([]);
           const loaded = yield* checkCatalogLayouts(root, brand, 'load');
-          expect(contractRan(MARKER)).toBe(true);
+          // It throws in the check process, so it never runs in this one.
+          expect(contractRan(MARKER)).toBe(false);
           expect(loaded.local.catalogs.map((entry) => entry.source)).toEqual([
             `brand-code:${CODE_BRAND}`,
           ]);
@@ -100,7 +101,8 @@ describe('checkCatalogLayouts', () => {
           fs.writeFileSync(path.join(brandDir, 'layouts.ts'), dataLayouts(['kpi-wall']));
           const brand = yield* loadBrand(root, CODE_BRAND);
           const loaded = yield* checkCatalogLayouts(root, brand, 'load');
-          expect(contractRan(MARKER)).toBe(true);
+          // It throws in the check process, so it never runs in this one.
+          expect(contractRan(MARKER)).toBe(false);
           expect(loaded.errors).toEqual([]);
           expect(loaded.warnings).toEqual([]);
           expect(loaded.local.problems.map((problem) => [problem.code, problem.layout])).toEqual([
@@ -123,7 +125,8 @@ describe('checkCatalogLayouts', () => {
           fs.writeFileSync(path.join(brandDir, 'layouts.ts'), dataLayouts(['kpi-wall', 'nowhere']));
           const brand = yield* loadBrand(root, CODE_BRAND);
           const loaded = yield* checkCatalogLayouts(root, brand, 'load');
-          expect(contractRan(MARKER)).toBe(true);
+          // It throws in the check process, so it never runs in this one.
+          expect(contractRan(MARKER)).toBe(false);
           expect(loaded.errors.map((problem) => problem.path)).toEqual(['layouts[1].fallback']);
           expect(loaded.local.problems.map((problem) => problem.code)).toContain(
             'layout-load-failed',

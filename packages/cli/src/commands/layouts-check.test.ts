@@ -130,7 +130,8 @@ describe('deckster layouts check', () => {
           fs.writeFileSync(path.join(layoutsDir, 'half', 'layout.tsx'), 'export default 1;\n');
 
           const { code, report } = yield* checkJson(root, ['--brand', CODE_BRAND]);
-          expect(contractRan(MARKER)).toBe(true);
+          // It throws in the check process, so it never runs in this one.
+          expect(contractRan(MARKER)).toBe(false);
           expect(code).toBe(1);
           expect(report).toMatchObject({ ok: false, brand: CODE_BRAND, deck: null, problems: [] });
           expect(report.dir).toBe(`brands/${CODE_BRAND}/layouts`);
@@ -191,7 +192,8 @@ describe('deckster layouts check', () => {
             deck: CODE_LAYOUTS_DECK,
             dir: `decks/${CODE_LAYOUTS_DECK}/layouts`,
           });
-          expect(contractRan(MARKER)).toBe(true);
+          // It throws in the check process, so it never runs in this one.
+          expect(contractRan(MARKER)).toBe(false);
 
           // A body budget far past what the region holds: the limit case overflows.
           const added = yield* runCaptured(

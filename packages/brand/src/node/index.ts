@@ -49,6 +49,7 @@ export {
   gatedLoad,
   holdCode,
   isCodeHeld,
+  onCodeHeld,
   onCodeReleased,
   rememberLoaded,
   resetCodeGate,

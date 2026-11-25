@@ -56,6 +56,11 @@ const STATE = {
   listeners: new Set<(root: string) => void>(),
 
   /**
+   * Called with the absolute folders of a hold that began.
+   */
+  heldListeners: new Set<(roots: readonly string[]) => void>(),
+
+  /**
    * The default export each file had when it was last loaded, by absolute path.
    */
   loaded: new Map<string, unknown>(),
@@ -124,6 +129,10 @@ function holdsOf(file: string): ActiveHold[] {
 export function holdCode(roots: readonly string[]): CodeHold {
   const hold: ActiveHold = { roots: roots.map((root) => path.resolve(root)), accepted: new Map() };
   STATE.holds.add(hold);
+  for (const listener of STATE.heldListeners) {
+    listener(hold.roots);
+  }
+
   let released = false;
   return {
     accept: (file, text) => {
@@ -167,6 +176,20 @@ export function onCodeReleased(listener: (root: string) => void): () => void {
   STATE.listeners.add(listener);
   return () => {
     STATE.listeners.delete(listener);
+  };
+}
+
+/**
+ * Listens for holds that begin, so a loader can stop code it is running under the held folders at
+ * once instead of when it next looks. The hold is in force when the listener is called.
+ *
+ * @param listener - Called with the absolute folders held.
+ * @returns Stops listening.
+ */
+export function onCodeHeld(listener: (roots: readonly string[]) => void): () => void {
+  STATE.heldListeners.add(listener);
+  return () => {
+    STATE.heldListeners.delete(listener);
   };
 }
 
@@ -228,5 +251,6 @@ export function forgetLoaded(file: string): void {
 export function resetCodeGate(): void {
   STATE.holds.clear();
   STATE.listeners.clear();
+  STATE.heldListeners.clear();
   STATE.loaded.clear();
 }

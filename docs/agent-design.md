@@ -261,10 +261,12 @@ follow-up turn, and only one.
   write there, which is what makes the gap between the two steps harmless.
 - **Claude's limits are rules.** See above. The comparison after the turn and the hold on loading
   code are there for this reason.
-- **A contract already running is not stopped.** A turn that begins while a code layout's contract
-  is loading keeps it from loading any more modules, and what it returns is dropped, but code of it
-  that is already running after an `await` runs on. The same holds for a contract still running at
-  the 10-second deadline all contracts of one load share.
+- **A contract past its check is not stopped.** Contracts are evaluated first in a separate process
+  under Node's permission model, which a turn that begins during that check kills outright, as the
+  10-second deadline does. A contract that passed is evaluated again in the server, because its
+  schema must be a live value there. A turn that begins during that second run keeps it from
+  loading any more modules, and what it returns is dropped, but code of it already running after an
+  `await` runs on with the server's rights. The same holds at that run's own 10-second deadline.
 - **Codex streams whole messages** in `exec` mode, and has no interactive approvals there.
 - **One turn at a time per deck.** A second host for the same deck refuses to start.
 - **A hand edit during a turn wins** for content files, and is put back for files that are not

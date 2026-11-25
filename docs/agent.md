@@ -133,8 +133,10 @@ is. The editor is the only writer of the deck:
    back any that changed. While a turn runs, and until that check is done, the dev server does not
    load the deck's config or brand again, nor the `contract.ts` or `limits.ts` of a code layout in
    the deck or the brand: each keeps the value it had before the turn, and one never loaded before
-   is `layout-held`. A turn that begins while a contract is loading stops it from loading more
-   modules; code of it already running after an `await` cannot be stopped. If the dev server or the CLI is killed during a turn,
+   is `layout-held`. A turn that begins while a contract is loading kills the process that checks
+   contracts (see `importContracts`), or, for a contract already past its check, stops it from
+   loading more modules; code of it already running after an `await` in the server cannot be
+   stopped. If the dev server or the CLI is killed during a turn,
    the next `deckster dev`, `present`, `build`, `lint`, `shot`, `export` or `brand check` first puts
    the deck back exactly as it was before the turn (the working copy is discarded, never synced).
    No stylesheet anywhere may load JavaScript through Tailwind (`@plugin`, `@config`): every

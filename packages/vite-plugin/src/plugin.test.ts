@@ -209,6 +209,9 @@ describe('a deck with code layouts, served', () => {
         server: { middlewareMode: true, hmr: false, ws: false },
       }),
     );
+    // The first slide transform compiles MDX and loads the kit for the first time, which can take
+    // seconds on a busy CI machine; the tests below then time the work they are about.
+    await transformSlide('plain');
   }, SERVER_TIMEOUT_MS);
 
   afterAll(async () => {
@@ -254,17 +257,21 @@ describe('a deck with code layouts, served', () => {
     expect(code).not.toContain('broken');
   });
 
-  it('fails only the slide on a broken layout, with the layout’s problem', async () => {
-    expect(await transformSlide('plain')).not.toContain('ERROR');
-    expect(await transformSlide('on-funnel')).toContain('"layout": "funnel"');
-    const broken = await transformSlide('on-broken');
-    expect(broken).toContain(
-      "ERROR The slide's layout cannot be used in decks/talk/slides/on-broken.mdx:",
-    );
-    expect(broken).toContain(
-      'layout: decks/talk/layouts/broken/contract.ts: Loading it failed: boom',
-    );
-  });
+  it(
+    'fails only the slide on a broken layout, with the layout’s problem',
+    async () => {
+      expect(await transformSlide('plain')).not.toContain('ERROR');
+      expect(await transformSlide('on-funnel')).toContain('"layout": "funnel"');
+      const broken = await transformSlide('on-broken');
+      expect(broken).toContain(
+        "ERROR The slide's layout cannot be used in decks/talk/slides/on-broken.mdx:",
+      );
+      expect(broken).toContain(
+        'layout: decks/talk/layouts/broken/contract.ts: Loading it failed: boom',
+      );
+    },
+    SERVER_TIMEOUT_MS,
+  );
 
   it('names the brand that has a code layout the deck’s brand lacks, without importing it', async () => {
     const other = await transformSlide('on-other');

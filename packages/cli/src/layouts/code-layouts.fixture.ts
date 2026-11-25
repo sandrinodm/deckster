@@ -41,8 +41,11 @@ export const codeLayoutsWorkspace = Effect.fn('codeLayoutsWorkspace')(
 /**
  * Writes a code layout folder whose `contract.ts` throws while it loads, and whose `layout.tsx` is
  * a valid component, so the only problem is the contract. Before it throws, the contract sets
- * `globalThis[marker]` to `true`, which tells a test whether it ran; contracts may import nothing
- * that writes files.
+ * `globalThis[marker]` to `true`, which tells a test whether it ran in the test's own process;
+ * contracts may import nothing that writes files. A contract is evaluated first in a separate check
+ * process, and one that throws there never runs in the test's process, so the marker stays unset
+ * even when the contract was loaded: the problem it reports (`the <name> contract does not load`)
+ * is what shows it ran.
  *
  * @param layoutsDir - The brand's or the deck's `layouts/` folder.
  * @param name - The layout name.

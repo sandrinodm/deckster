@@ -2,12 +2,15 @@ import { holdCode, resetCodeGate } from '@deckster/brand/node';
 import { NodeFileSystem } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
 import { Effect, Schema } from 'effect';
-import { rmSync, symlinkSync } from 'node:fs';
+import { fork } from 'node:child_process';
+import { existsSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'vite-plus/test';
 
 import { checkContract } from '#layouts/check-contract.ts';
+import { checkProcessArguments, watchCheckProcesses } from '#layouts/contract-check.ts';
 import {
+  CONTRACT_TIMEOUT_MS,
   evaluateContracts,
   importContracts,
   isContractPackage,
@@ -430,7 +433,8 @@ layer(NodeFileSystem.layer)('importContracts against ways around the import chec
         expect(problemOf(load)?.message).toContain('did not finish loading');
       }
 
-      expect(elapsed).toBeLessThan(timeoutMs * 2);
+      // Three hung contracts cost one deadline, not three; the check process's startup comes on top.
+      expect(elapsed).toBeLessThan(timeoutMs * hung.length);
       rmSync(root, { recursive: true, force: true });
     }),
   );
@@ -485,6 +489,242 @@ layer(NodeFileSystem.layer)('importContracts against ways around the import chec
       const after = process.env.NODE_ENV;
       process.env.NODE_ENV = before;
       expect(after).toBeUndefined();
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+});
+
+/**
+ * Whether a process is still running.
+ *
+ * @param pid - The process id.
+ */
+function isRunning(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Collects the ids of the check processes that start until the returned function is called.
+ */
+function collectCheckProcesses(): { readonly pids: number[]; readonly stop: () => void } {
+  const pids: number[] = [];
+  const stop = watchCheckProcesses((pid) => pids.push(pid));
+  return { pids, stop };
+}
+
+layer(NodeFileSystem.layer)('importContracts in the check process', (it) => {
+  it.effect(
+    'kills a contract that never stops running at the deadline, and never runs it here',
+    () =>
+      Effect.gen(function* () {
+        const root = scratchRoot();
+        writeFiles(root, {
+          'brands/acme/layouts/spins/contract.ts': contractSource('spins', {
+            imports: ['while (Date.now() > 0) {}'],
+          }),
+          'brands/acme/layouts/sleeps/contract.ts': contractSource('sleeps', {
+            imports: ['await new Promise((resolve) => setTimeout(resolve, 60_000));'],
+          }),
+        });
+        const checks = collectCheckProcesses();
+        const started = Date.now();
+        const loads = yield* importContracts(
+          [contractFile(root, 'spins'), contractFile(root, 'sleeps')],
+          { root, timeoutMs: 500 },
+        );
+        checks.stop();
+        expect(Date.now() - started).toBeLessThan(CONTRACT_TIMEOUT_MS);
+        expect(loads.map((load) => problemOf(load)?.message)).toEqual([
+          expect.stringContaining('did not finish loading within 500 ms'),
+          expect.stringContaining('did not finish loading within 500 ms'),
+        ]);
+        expect(checks.pids).toHaveLength(1);
+        expect(checks.pids.filter((pid) => isRunning(pid))).toEqual([]);
+        expect(contractRuns()).toBe(0);
+        rmSync(root, { recursive: true, force: true });
+      }),
+  );
+
+  it.effect('does not believe a contract that tells the server it loaded', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      const file = contractFile(root, 'forges');
+      writeFiles(root, {
+        // Says it loaded, through the internal the public `process.send` calls, then never ends:
+        // were the forged message believed, this process would run the loop and hang.
+        'brands/acme/layouts/forges/contract.ts': contractSource('forges', {
+          imports: [
+            `const forged = { type: 'loaded', file: ${JSON.stringify(file)} };`,
+            'try { process._send(forged, undefined, {}, () => {}); } catch {}',
+            'while (Date.now() > 0) {}',
+          ],
+        }),
+      });
+      const [load] = yield* importContracts([file], {
+        root,
+        timeoutMs: 500,
+      });
+      expect(problemOf(load)?.message).toContain('did not finish loading');
+      expect(contractRuns()).toBe(0);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('refuses a contract that reaches for Node, even when it catches the error', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      const written = path.join(root, 'written.txt');
+      /**
+       * A contract that runs a statement and swallows what it throws.
+       *
+       * @param name - The layout name.
+       * @param statement - The statement.
+       */
+      const swallowing = (name: string, statement: string) =>
+        contractSource(name, { imports: [`try { ${statement} } catch {}`] });
+      writeFiles(root, {
+        'brands/acme/layouts/writes/contract.ts': swallowing(
+          'writes',
+          `process.getBuiltinModule('node:fs').writeFileSync(${JSON.stringify(written)}, 'x');`,
+        ),
+        'brands/acme/layouts/spawns/contract.ts': swallowing(
+          'spawns',
+          "process.getBuiltinModule('node:child_process').execSync('true');",
+        ),
+        'brands/acme/layouts/imports/contract.ts': swallowing(
+          'imports',
+          "await eval('imp' + 'ort(\"node:fs\")');",
+        ),
+        'brands/acme/layouts/fetches/contract.ts': swallowing(
+          'fetches',
+          "await fetch('http://127.0.0.1:9');",
+        ),
+        'brands/acme/layouts/exits/contract.ts': swallowing('exits', 'process.exit(0);'),
+        // Imports every package a contract may import, as values.
+        'brands/acme/layouts/packages/contract.ts': contractSource('packages', {
+          imports: [
+            "import { contrastRatio } from '@deckster/brand';",
+            "import { deckCommand } from '@deckster/engine/command';",
+            "import { EyebrowField } from '@deckster/kit/layout-fields';",
+            "import * as Option from 'effect/Option';",
+            'export const USED = [contrastRatio, deckCommand, EyebrowField, Option.none()];',
+          ],
+        }),
+        'brands/acme/layouts/fine/contract.ts': contractSource('fine'),
+      });
+      const names = ['writes', 'spawns', 'imports', 'fetches', 'exits', 'packages', 'fine'];
+      const loads = yield* importContracts(
+        names.map((name) => contractFile(root, name)),
+        { root },
+      );
+      expect(loads.map((load) => problemOf(load)?.message ?? load.kind)).toEqual([
+        'Loading it was refused: It used `process.getBuiltinModule`, which a contract may not use.',
+        'Loading it was refused: It used `process.getBuiltinModule`, which a contract may not use.',
+        'Loading it was refused: It used `import("node:fs")`, which a contract may not use.',
+        'Loading it was refused: It used `fetch`, which a contract may not use.',
+        'Loading it was refused: It used `process.exit`, which a contract may not use.',
+        'loaded',
+        'loaded',
+      ]);
+      expect(existsSync(written)).toBe(false);
+      expect(contractRuns()).toBe(2);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+});
+
+describe('the check process', () => {
+  it('starts the check process without the right to write, spawn, use workers or the network', async () => {
+    const root = realpathSync(scratchRoot());
+    const probe = path.join(root, 'probe.mjs');
+    const written = path.join(root, 'written.txt');
+    writeFiles(root, {
+      'probe.mjs': [
+        'const attempts = {',
+        `  write: () => process.getBuiltinModule('node:fs').writeFileSync(${JSON.stringify(written)}, 'x'),`,
+        "  spawn: () => process.getBuiltinModule('node:child_process').execSync('true'),",
+        "  worker: () => new (process.getBuiltinModule('node:worker_threads').Worker)('', { eval: true }),",
+        '  net: () =>',
+        '    new Promise((resolve, reject) => {',
+        "      const socket = process.getBuiltinModule('node:net').connect(9, '127.0.0.1');",
+        "      socket.once('connect', resolve).once('error', reject);",
+        '    }),',
+        "  read: () => process.getBuiltinModule('node:fs').readFileSync('/etc/hosts'),",
+        '};',
+        'const codes = {};',
+        'for (const [name, attempt] of Object.entries(attempts)) {',
+        '  try { await attempt(); codes[name] = "allowed"; } catch (error) { codes[name] = error.code; }',
+        '}',
+        'process.send(codes);',
+        '',
+      ].join('\n'),
+    });
+    const codes = await new Promise((resolve, reject) => {
+      const child = fork(probe, [], {
+        execArgv: [...checkProcessArguments(), `--allow-fs-read=${probe}`],
+        env: {},
+        stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+      });
+      child.once('message', resolve);
+      child.once('error', reject);
+      child.once('exit', (code) => {
+        reject(new Error(`The probe ended with ${String(code)}.`));
+      });
+    });
+    const denied = 'ERR_ACCESS_DENIED';
+    expect(codes).toEqual({
+      write: denied,
+      spawn: denied,
+      worker: denied,
+      net: denied,
+      read: denied,
+    });
+    expect(existsSync(written)).toBe(false);
+    rmSync(root, { recursive: true, force: true });
+  });
+});
+
+layer(NodeFileSystem.layer)('importContracts in the check process during an agent turn', (it) => {
+  it.effect('kills the check process when a turn holds a contract, and loads the others', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/acme/layouts/spins/contract.ts': contractSource('spins', {
+          imports: ['while (Date.now() > 0) {}'],
+        }),
+        // Still waiting when the other contract starts spinning, so it is checked again.
+        'decks/talk/layouts/fine/contract.ts': contractSource('fine', {
+          imports: ['await new Promise((resolve) => setTimeout(resolve, 200));'],
+        }),
+      });
+      const files = [
+        contractFile(root, 'spins'),
+        path.join(root, 'decks', 'talk', 'layouts', 'fine', 'contract.ts'),
+      ];
+      const checks = collectCheckProcesses();
+      const started = Date.now();
+      const pending = Effect.runPromise(
+        importContracts(files, { root }).pipe(Effect.provide(NodeFileSystem.layer)),
+      );
+      while (checks.pids.length === 0) {
+        yield* sleep(5);
+      }
+
+      yield* sleep(400);
+      const hold = holdCode([path.join(root, 'brands', 'acme')]);
+      const loads = yield* Effect.promise(() => pending);
+      checks.stop();
+      expect(Date.now() - started).toBeLessThan(CONTRACT_TIMEOUT_MS);
+      expect(loads.map((load) => load.kind)).toEqual(['held', 'loaded']);
+      expect(checks.pids).toHaveLength(2);
+      expect(checks.pids.filter((pid) => isRunning(pid))).toEqual([]);
+      expect(contractRuns()).toBe(1);
+      hold.release();
       rmSync(root, { recursive: true, force: true });
     }),
   );

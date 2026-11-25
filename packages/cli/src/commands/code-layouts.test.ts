@@ -132,7 +132,8 @@ describe('code layouts in the CLI', () => {
             CODE_LAYOUTS_DECK,
             '--json',
           ]);
-          expect(contractRan(MARKER)).toBe(true);
+          // It throws in the check process, so it never runs in this one.
+          expect(contractRan(MARKER)).toBe(false);
           expect(catalog.warnings).toEqual([
             expect.stringMatching(/^The code layout "bad" is left out \(layout-load-failed\): /u),
           ]);
@@ -196,7 +197,8 @@ describe('code layouts in the CLI', () => {
 
           writeThrowingLayout(path.join(root, 'brands', CODE_BRAND, 'layouts'), 'bad', MARKER);
           const text = yield* runCaptured(['brand', 'check', CODE_BRAND], { root });
-          expect(contractRan(MARKER)).toBe(true);
+          // It throws in the check process, so it never runs in this one.
+          expect(contractRan(MARKER)).toBe(false);
           expect(text.code).toBe(1);
           expect(text.output).toContain(`brands/${CODE_BRAND}/layouts/bad/contract.ts\n  error`);
           expect(text.output).toContain('layout-load-failed: ');
