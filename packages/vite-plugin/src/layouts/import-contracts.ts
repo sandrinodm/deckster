@@ -16,7 +16,13 @@ import {
   resolveConfig,
   type Plugin,
 } from 'vite';
-import { ESModulesEvaluator } from 'vite/module-runner';
+import {
+  ESModulesEvaluator,
+  ssrDynamicImportKey,
+  ssrImportKey,
+  type EvaluatedModuleNode,
+  type ModuleRunnerContext,
+} from 'vite/module-runner';
 
 import type { Problem } from '#errors.ts';
 import type { LayoutProblemCode } from '#layouts/layout-problem.ts';
@@ -82,8 +88,10 @@ const IMPORT_META_GLOB_PATTERN = /^\s*(?:\?\.\s*)?(?:\.\s*glob\b|\[\s*['"`]glob[
 const VITE_RUNNER_NAME_PATTERN = /\b__vite_ssr_\w*/g;
 
 /**
- * How long one contract, with the files it imports, may take to evaluate, in milliseconds. A
- * top-level await that never settles fails that contract instead of the whole catalog.
+ * How long one batch of contracts, with the files they import, may take to evaluate, in
+ * milliseconds. The contracts run at the same time against this one deadline, so a top-level await
+ * that never settles fails that contract instead of the whole catalog, and several of them cost
+ * this once, not once each.
  */
 export const CONTRACT_TIMEOUT_MS = 10_000;
 
@@ -113,7 +121,7 @@ const QUERY_SUFFIX_PATTERN = /\?.*$/;
 const VIRTUAL_ID_PREFIX = '\0';
 
 /**
- * What {@link withTimeout} gives when the time ran out.
+ * What a batch's deadline gives when the time ran out.
  */
 const TIMED_OUT: unique symbol = Symbol('timed out');
 
@@ -235,8 +243,8 @@ export type ImportContractsOptions = {
   readonly root: string;
 
   /**
-   * How long one contract may take to evaluate, in milliseconds; {@link CONTRACT_TIMEOUT_MS} when
-   * left out.
+   * How long the batch may take to evaluate, in milliseconds; {@link CONTRACT_TIMEOUT_MS} when left
+   * out.
    */
   readonly timeoutMs?: number;
 };
@@ -246,15 +254,17 @@ export type ImportContractsOptions = {
  */
 export type EvaluateContractsOptions = {
   /**
-   * The absolute files, with symlinks resolved, that the environment may run: the contracts and the
-   * files the import check followed. Any other file Vite is asked to load fails the contract that
-   * asked for it. Every file may run when left out.
+   * The absolute files, with symlinks resolved, that the environment may run (the contracts and the
+   * files the import check followed), each with the contract paths, as given, that import it. Any
+   * other file Vite is asked to load fails the contract that asked for it, and a file stops running
+   * once an agent turn holds one of its contracts. Every file may run when left out, until a turn
+   * holds any contract of the batch.
    */
-  readonly allowed?: ReadonlySet<string>;
+  readonly allowed?: ReadonlyMap<string, readonly string[]>;
 
   /**
-   * How long one contract may take to evaluate, in milliseconds; {@link CONTRACT_TIMEOUT_MS} when
-   * left out.
+   * How long the batch may take to evaluate, in milliseconds; {@link CONTRACT_TIMEOUT_MS} when left
+   * out.
    */
   readonly timeoutMs?: number;
 };
@@ -280,7 +290,9 @@ export type ContractEvaluation = {
  *
  * 1. The turn gate. A file under a folder an agent turn holds is not read, checked or evaluated: the
  *    answer is the value it had when this process last evaluated it, or `held`. Nothing the turn
- *    writes, to the contract or to a file it imports, runs before the turn is settled.
+ *    writes, to the contract or to a file it imports, runs before the turn is settled. A turn that
+ *    begins while a contract is being evaluated stops it there: no module of that contract is
+ *    loaded or starts running afterwards, and its value is dropped.
  * 2. The import check, on the source, before anything runs. It follows relative imports (from where a
  *    symlink points) and rejects any that is not a `.ts` file, has a query or a hash, or leaves the
  *    layout's folder and `layouts/_shared/`, and any package other than `effect`,
@@ -290,10 +302,15 @@ export type ContractEvaluation = {
  * 3. The loader: one Vite environment for the batch, closed afterwards, so an edited contract or
  *    helper is read afresh on the next call. Vite runs only the workspace files the check followed,
  *    and no Node built-in; `effect` and `@deckster/*` are imported by Node from this package, so a
- *    contract's schema is built with the same `effect` as the caller's. A contract that does not
- *    finish within the timeout fails, and the others still load.
+ *    contract's schema is built with the same `effect` as the caller's. The contracts are evaluated
+ *    at the same time against one deadline for the batch; a contract that has not finished by then
+ *    fails, and the others still load. The environment is closed at once, and no module starts
+ *    running in it afterwards, so a hung contract that wakes up later cannot load anything or
+ *    change the outcome.
  *
- * The check guards against mistakes; it is not a sandbox, since a contract runs in Node.
+ * The check guards against mistakes; it is not a sandbox, since a contract runs in Node. Code that
+ * was already running when a turn began or the deadline passed, after an `await` inside a module,
+ * cannot be stopped; it can no longer load any module.
  *
  * It never fails: each file's outcome is a value.
  *
@@ -312,9 +329,17 @@ export const importContracts = Effect.fn('importContracts')(function* (
     return checked.filter((entry) => entry.kind !== 'ready');
   }
 
-  const allowed = new Set(
-    checked.flatMap((entry) => (entry.kind === 'ready' ? [entry.file, ...entry.checked] : [])),
-  );
+  const allowed = new Map<string, string[]>();
+  for (const entry of checked) {
+    if (entry.kind !== 'ready') {
+      continue;
+    }
+
+    for (const real of [entry.file, ...entry.checked]) {
+      allowed.set(real, [...(allowed.get(real) ?? []), entry.file]);
+    }
+  }
+
   const evaluation = yield* Effect.promise(() =>
     evaluateContracts(ready, options.root, {
       allowed,
@@ -328,13 +353,14 @@ export const importContracts = Effect.fn('importContracts')(function* (
 });
 
 /**
- * Evaluates contract files in one Vite environment and closes it. A file an agent turn holds, now
- * or by the time its evaluation ends, is answered from the gate and not remembered. This is the
- * loader of {@link importContracts} without the import check; call that instead.
+ * Evaluates contract files at the same time in one Vite environment, against one deadline, and
+ * closes it. A file an agent turn holds, now or by the time its evaluation ends, is answered from
+ * the gate and not remembered. This is the loader of {@link importContracts} without the import
+ * check; call that instead.
  *
  * @param files - Absolute `contract.ts` paths.
  * @param root - The absolute workspace root.
- * @param options - The files the environment may run, and how long each contract may take.
+ * @param options - The files the environment may run, and how long the batch may take.
  * @returns Each file's outcome, and the files Vite ran.
  */
 export async function evaluateContracts(
@@ -779,10 +805,134 @@ function importedSpecifiers(
 }
 
 /**
+ * Decides, for one batch, whether a module may still load or run in its environment.
+ */
+type BatchGate = {
+  /**
+   * Why a module may not load or run now, or `undefined` when it may: the batch is over (its
+   * deadline passed or its outcomes are in), or an agent turn holds a contract that imports it.
+   *
+   * @param file - The module's absolute file, with symlinks resolved, or `undefined` for one that
+   *   names no file.
+   */
+  readonly refusal: (file: string | undefined) => string | undefined;
+
+  /**
+   * Ends the batch: nothing loads or runs in its environment from now on.
+   */
+  readonly close: () => void;
+};
+
+/**
+ * The gate of one batch. Holds match paths as written and Vite's ids are resolved through symlinks,
+ * so a module is matched to its contracts through `allowed`; without it, a hold on any contract of
+ * the batch stops every module.
+ *
+ * @param files - The batch's `contract.ts` paths, as given.
+ * @param allowed - The files that may run, with the contracts that import each.
+ */
+function batchGate(
+  files: readonly string[],
+  allowed: ReadonlyMap<string, readonly string[]> | undefined,
+): BatchGate {
+  const owners = new Map(
+    [...(allowed ?? new Map<string, readonly string[]>())].map(([file, contracts]) => [
+      normalizePath(file),
+      contracts,
+    ]),
+  );
+  let closed = false;
+  return {
+    refusal: (file) => {
+      if (closed) {
+        return 'the load of its contracts is over';
+      }
+
+      const contracts =
+        allowed === undefined || file === undefined
+          ? files
+          : (owners.get(normalizePath(file)) ?? []);
+      const held =
+        (file !== undefined && isCodeHeld(file)) ||
+        contracts.some((contract) => isCodeHeld(contract));
+      return held ? 'an agent turn holds the contract that imports it' : undefined;
+    },
+    close: () => {
+      closed = true;
+    },
+  };
+}
+
+/**
+ * Throws when the gate refuses a module.
+ *
+ * @param gate - The batch's gate.
+ * @param file - The module's absolute file, or `undefined`.
+ */
+function assertMayRun(gate: BatchGate, file: string | undefined): void {
+  const reason = gate.refusal(file);
+  if (reason !== undefined) {
+    throw new Error(`${file ?? 'A module'} may not run: ${reason}.`);
+  }
+}
+
+/**
  * Hands the packages in {@link NODE_LOADED_PACKAGES} to Node, resolved from this package: the
- * workspace links in the repository, the CLI's loader hooks when installed.
+ * workspace links in the repository, the CLI's loader hooks when installed. A workspace module runs
+ * only while the batch's gate lets it, checked before it starts and after each of its imports, so a
+ * module whose imports were still loading when a turn began never runs its body.
  */
 class PackageEvaluator extends ESModulesEvaluator {
+  /**
+   * The batch's gate.
+   */
+  readonly #gate: BatchGate;
+
+  /**
+   * Builds the evaluator of one batch.
+   *
+   * @param gate - The batch's gate.
+   */
+  constructor(gate: BatchGate) {
+    super();
+    this.#gate = gate;
+  }
+
+  /**
+   * Runs a module Vite transformed, unless the gate refuses it.
+   *
+   * @param context - What the transformed code is called with.
+   * @param code - The transformed code.
+   * @param module - The module; the runner always passes it.
+   */
+  override runInlinedModule(
+    context: ModuleRunnerContext,
+    code: string,
+    module?: Readonly<EvaluatedModuleNode>,
+  ): Promise<void> {
+    const file = module?.file ?? undefined;
+    assertMayRun(this.#gate, file);
+    const gate = this.#gate;
+    const imported = context[ssrImportKey];
+    const dynamic = context[ssrDynamicImportKey];
+    return super.runInlinedModule(
+      {
+        ...context,
+        [ssrImportKey]: async (...args: Parameters<typeof imported>) => {
+          const value = await imported(...args);
+          assertMayRun(gate, file);
+          return value;
+        },
+        [ssrDynamicImportKey]: async (...args: Parameters<typeof dynamic>) => {
+          const value = await dynamic(...args);
+          assertMayRun(gate, file);
+          return value;
+        },
+      },
+      code,
+    );
+  }
+
   /**
    * Imports a module Vite did not transform.
    *
@@ -812,19 +962,28 @@ function isNodeBuiltin(specifier: string): boolean {
 
 /**
  * A Vite plugin that refuses to load any file outside `allowed`, so a file only a transform or the
- * runner's own import function names (not the import check) never runs.
+ * runner's own import function names (not the import check) never runs, and any file the batch's
+ * gate refuses: once a turn holds a contract or the batch is over.
  *
- * @param allowed - The absolute files that may run, with symlinks resolved.
+ * @param allowed - The absolute files that may run, with symlinks resolved; every file when left
+ *   out.
+ * @param gate - The batch's gate.
  */
-function loadGuard(allowed: ReadonlySet<string>): Plugin {
+function loadGuard(allowed: ReadonlySet<string> | undefined, gate: BatchGate): Plugin {
   // Vite's ids use forward slashes on every platform.
-  const files = new Set([...allowed].map((file) => normalizePath(file)));
+  const files =
+    allowed === undefined ? undefined : new Set([...allowed].map((file) => normalizePath(file)));
   return {
     name: 'deckster:contract-load-guard',
     enforce: 'pre',
     load(id) {
       const file = id.replace(QUERY_SUFFIX_PATTERN, '');
-      if (file.startsWith(VIRTUAL_ID_PREFIX) || files.has(normalizePath(file))) {
+      if (file.startsWith(VIRTUAL_ID_PREFIX)) {
+        return null;
+      }
+
+      assertMayRun(gate, file);
+      if (files === undefined || files.has(normalizePath(file))) {
         return null;
       }
 
@@ -834,22 +993,25 @@ function loadGuard(allowed: ReadonlySet<string>): Plugin {
 }
 
 /**
- * Builds the environment, evaluates each file in it and closes it.
+ * Builds the environment, evaluates the files in it at the same time against one deadline and
+ * closes it. The gate closes before the environment does, at the deadline at the latest.
  *
  * @param files - Absolute `contract.ts` paths.
  * @param root - The absolute workspace root.
- * @param options - The files that may run, and how long each contract may take.
+ * @param options - The files that may run, and how long the batch may take.
  */
 async function runInEnvironment(
   files: readonly string[],
   root: string,
   options: EvaluateContractsOptions,
 ): Promise<ContractEvaluation> {
+  const gate = batchGate(files, options.allowed);
+  const allowed = options.allowed === undefined ? undefined : new Set(options.allowed.keys());
   const config = await resolveConfig(
     {
       root,
       configFile: false,
-      plugins: options.allowed === undefined ? [] : [loadGuard(options.allowed)],
+      plugins: [loadGuard(allowed, gate)],
       envDir: false,
       cacheDir: CACHE_DIR,
       logLevel: 'silent',
@@ -869,41 +1031,55 @@ async function runInEnvironment(
     'serve',
   );
   const environment = createRunnableDevEnvironment(ENVIRONMENT_NAME, config, {
-    runnerOptions: { hmr: false, evaluator: new PackageEvaluator() },
+    runnerOptions: { hmr: false, evaluator: new PackageEvaluator(gate) },
     hot: false,
   });
   await environment.init();
+  const timeoutMs = options.timeoutMs ?? CONTRACT_TIMEOUT_MS;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<typeof TIMED_OUT>((resolve) => {
+    timer = setTimeout(() => {
+      gate.close();
+      resolve(TIMED_OUT);
+    }, timeoutMs);
+    timer.unref();
+  });
   try {
-    const loads: ContractLoad[] = [];
-    for (const file of files) {
-      /**
-       * Imports a module in the environment.
-       */
-      const run = (id: string) => environment.runner.import(id);
-      loads.push(await evaluateContract(file, run, options.timeoutMs ?? CONTRACT_TIMEOUT_MS));
-    }
-
+    /**
+     * Imports a module in the environment.
+     *
+     * @param id - The module.
+     */
+    const run = (id: string) => environment.runner.import(id);
+    const loads = await Promise.all(
+      files.map((file) => evaluateContract(file, run, deadline, timeoutMs)),
+    );
     // A module handed to Node carries `externalize` in what Vite fetched for it.
     const inlined = [...environment.runner.evaluatedModules.urlToIdModuleMap.values()]
       .filter((module) => module.meta !== undefined && !('externalize' in module.meta))
       .map((module) => module.file);
     return { loads, inlined };
   } finally {
+    clearTimeout(timer);
+    gate.close();
     await environment.close();
   }
 }
 
 /**
  * Evaluates one contract file, unless an agent turn holds it. A turn that begins while the file
- * runs may have changed it under the import, so its value is dropped then too.
+ * runs may have changed it, or a file it imports, under the import, so its value is dropped then
+ * too, as is an error the gate threw because of that turn.
  *
  * @param file - The absolute `contract.ts` path.
  * @param run - Imports a module in the environment.
- * @param timeoutMs - How long the import may take, in milliseconds.
+ * @param deadline - Settles with {@link TIMED_OUT} when the batch's time is up.
+ * @param timeoutMs - The time the batch has, in milliseconds, for the message.
  */
 async function evaluateContract(
   file: string,
   run: (id: string) => Promise<unknown>,
+  deadline: Promise<typeof TIMED_OUT>,
   timeoutMs: number,
 ): Promise<ContractLoad> {
   if (isCodeHeld(file)) {
@@ -911,13 +1087,13 @@ async function evaluateContract(
   }
 
   try {
-    const module = await withTimeout(run(file), timeoutMs);
-    if (module === TIMED_OUT) {
-      return failed(file, timedOut(timeoutMs));
-    }
-
+    const module = await Promise.race([run(file), deadline]);
     if (isCodeHeld(file)) {
       return heldLoad(file);
+    }
+
+    if (module === TIMED_OUT) {
+      return failed(file, timedOut(timeoutMs));
     }
 
     const exported = Predicate.isObject(module) ? Reflect.get(module, 'default') : undefined;
@@ -932,30 +1108,7 @@ async function evaluateContract(
     rememberLoaded(file, exported);
     return { file, kind: 'loaded', exported };
   } catch (error) {
-    return failed(file, loadFailure(error));
-  }
-}
-
-/**
- * Waits for a promise for at most a while.
- *
- * @param promise - What to wait for.
- * @param timeoutMs - How long, in milliseconds.
- * @returns What the promise gave, or {@link TIMED_OUT} when it took longer.
- */
-async function withTimeout<A>(
-  promise: Promise<A>,
-  timeoutMs: number,
-): Promise<A | typeof TIMED_OUT> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const deadline = new Promise<typeof TIMED_OUT>((resolve) => {
-    timer = setTimeout(() => resolve(TIMED_OUT), timeoutMs);
-    timer.unref();
-  });
-  try {
-    return await Promise.race([promise, deadline]);
-  } finally {
-    clearTimeout(timer);
+    return isCodeHeld(file) ? heldLoad(file) : failed(file, loadFailure(error));
   }
 }
 
@@ -968,8 +1121,8 @@ function timedOut(timeoutMs: number): ContractProblem {
   return {
     code: 'layout-load-failed',
     message:
-      `It did not finish loading within ${timeoutMs} ms: a top-level await in it or in a file ` +
-      'it imports never settles.',
+      `It did not finish loading within ${timeoutMs} ms, the time all contracts have together: ` +
+      'a top-level await in it or in a file it imports never settles.',
     fix:
       'Do not wait at the top level of a contract or its helpers for something that may never ' +
       'happen.',

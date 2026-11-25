@@ -125,7 +125,9 @@ checks that it is named like its folder and passes the build's contract checks.
 
 1. The agent-turn gate. A contract under a folder an agent turn holds is not read, checked or
    evaluated: the result is the value it had when this process last loaded it, or `held`. Nothing the
-   turn writes runs before the turn is settled.
+   turn writes runs before the turn is settled. A turn that begins while a contract is being
+   evaluated stops it: the load guard and the evaluator refuse every module of that contract that
+   would load or start running after that, and its value is dropped.
 2. The static import check, on the source and before anything runs. A contract may import `effect`
    and its entry points, `@deckster/engine/layout`, `@deckster/engine/command`,
    `@deckster/kit/layout-fields` and `@deckster/brand`, and `.ts` files in its own folder or in
@@ -133,7 +135,11 @@ checks that it is named like its folder and passes the build's contract checks.
 3. The loader: one Vite environment for the batch, closed afterwards, so an edited contract or
    helper is read afresh on the next call. Vite runs only the workspace's files; `effect` and
    `@deckster/*` are imported by Node from this package, so a contract's schema is built with the
-   same `effect` as the caller's.
+   same `effect` as the caller's. The contracts are evaluated at the same time against one deadline
+   for the batch (`CONTRACT_TIMEOUT_MS`, 10 s); each one still running then fails with
+   `layout-load-failed`, and the environment is closed at once, refusing any module a hung contract
+   asks for when it wakes up. Code already running after an `await` inside a module cannot be
+   stopped, only kept from loading more.
 
 None of these steps fails the call: `localLayouts` and `importContracts` return problems as values,
 so every other layout still lists and only the slides that name a layout with a problem fail, with

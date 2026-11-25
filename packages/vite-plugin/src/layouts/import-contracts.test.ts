@@ -70,6 +70,29 @@ function problemOf(load: ContractLoad | undefined): { code: string; message: str
   return load?.kind === 'failed' ? load.problem : undefined;
 }
 
+/**
+ * Waits a while.
+ *
+ * @param ms - How long, in milliseconds.
+ */
+function sleep(ms: number): Effect.Effect<void> {
+  return Effect.promise(() => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+}
+
+/**
+ * Waits until a global is set, for at most ten seconds.
+ *
+ * @param key - The global's name.
+ */
+function waitForGlobal(key: string): Effect.Effect<void> {
+  return Effect.gen(function* () {
+    const deadline = Date.now() + 10_000;
+    while (Reflect.get(globalThis, key) === undefined && Date.now() < deadline) {
+      yield* sleep(5);
+    }
+  });
+}
+
 beforeEach(() => {
   resetCodeGate();
   resetContractRuns();
@@ -377,6 +400,68 @@ layer(NodeFileSystem.layer)('importContracts against ways around the import chec
     }),
   );
 
+  it.effect('gives the whole batch one deadline, so hung contracts do not add up', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      const hung = ['one', 'two', 'three'];
+      writeFiles(root, {
+        ...Object.fromEntries(
+          hung.map((name) => [
+            `brands/acme/layouts/${name}/contract.ts`,
+            contractSource(name, { imports: ['await new Promise(() => {});'] }),
+          ]),
+        ),
+        'brands/acme/layouts/fine/contract.ts': contractSource('fine'),
+      });
+      const timeoutMs = 600;
+      const started = Date.now();
+      const loads = yield* importContracts(
+        [...hung, 'fine'].map((name) => contractFile(root, name)),
+        { root, timeoutMs },
+      );
+      const elapsed = Date.now() - started;
+      expect(loads.map((load) => problemOf(load)?.code ?? load.kind)).toEqual([
+        'layout-load-failed',
+        'layout-load-failed',
+        'layout-load-failed',
+        'loaded',
+      ]);
+      for (const load of loads.slice(0, hung.length)) {
+        expect(problemOf(load)?.message).toContain('did not finish loading');
+      }
+
+      expect(elapsed).toBeLessThan(timeoutMs * 2);
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
+  it.effect('lets a timed-out contract that wakes up later load nothing and change nothing', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/acme/layouts/late/late.ts': "Reflect.set(globalThis, 'decksterLateRan', true);\n",
+        'brands/acme/layouts/late/contract.ts': contractSource('late', {
+          imports: [
+            'await new Promise((resolve) => setTimeout(resolve, 400));',
+            "await import('./late.ts');",
+          ],
+        }),
+      });
+      const files = [contractFile(root, 'late')];
+      const [load] = yield* importContracts(files, { root, timeoutMs: 150 });
+      expect(problemOf(load)?.message).toContain('did not finish loading');
+      yield* sleep(700);
+      expect(Reflect.get(globalThis, 'decksterLateRan')).toBeUndefined();
+      expect(contractRuns()).toBe(0);
+      const hold = holdCode([path.join(root, 'brands', 'acme')]);
+      expect((yield* importContracts(files, { root })).map((entry) => entry.kind)).toEqual([
+        'held',
+      ]);
+      hold.release();
+      rmSync(root, { recursive: true, force: true });
+    }),
+  );
+
   it.effect('leaves NODE_ENV as it found it when loads overlap', () =>
     Effect.gen(function* () {
       const root = scratchRoot();
@@ -549,5 +634,48 @@ layer(NodeFileSystem.layer)('importContracts during an agent turn', (it) => {
         again.release();
         rmSync(root, { recursive: true, force: true });
       }),
+  );
+
+  it.effect('stops a contract whose evaluation was under way when the turn began', () =>
+    Effect.gen(function* () {
+      const root = scratchRoot();
+      writeFiles(root, {
+        'brands/acme/layouts/one/slow.ts':
+          "Reflect.set(globalThis, 'decksterSlowStarted', true);\n" +
+          'await new Promise((resolve) => setTimeout(resolve, 300));\n',
+        'brands/acme/layouts/_shared/helper.ts': helperSource('Before.'),
+        'brands/acme/layouts/one/contract.ts': contractSource('one', {
+          imports: ["import './slow.ts';", "import { DESCRIPTION } from '../_shared/helper.ts';"],
+          descriptionExpression: 'DESCRIPTION',
+        }),
+      });
+      const files = [contractFile(root, 'one')];
+      const [before] = yield* importContracts(files, { root });
+      expect(descriptionOf(before)).toBe('Before.');
+      expect(contractRuns()).toBe(1);
+
+      Reflect.deleteProperty(globalThis, 'decksterSlowStarted');
+      const pending = Effect.runPromise(
+        importContracts(files, { root }).pipe(Effect.provide(NodeFileSystem.layer)),
+      );
+      yield* waitForGlobal('decksterSlowStarted');
+      const hold = holdCode([path.join(root, 'brands', 'acme')]);
+      writeFiles(root, {
+        'brands/acme/layouts/_shared/helper.ts':
+          "Reflect.set(globalThis, 'decksterHelperRan', true);\n" + helperSource('Changed.'),
+      });
+      const [during] = yield* Effect.promise(() => pending);
+      expect(descriptionOf(during)).toBe('Before.');
+      expect(Reflect.get(globalThis, 'decksterHelperRan')).toBeUndefined();
+      expect(contractRuns()).toBe(1);
+
+      hold.release();
+      const [after] = yield* importContracts(files, { root });
+      expect(descriptionOf(after)).toBe('Changed.');
+      expect(contractRuns()).toBe(2);
+      Reflect.deleteProperty(globalThis, 'decksterHelperRan');
+      Reflect.deleteProperty(globalThis, 'decksterSlowStarted');
+      rmSync(root, { recursive: true, force: true });
+    }),
   );
 });
