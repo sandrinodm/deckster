@@ -1,0 +1,113 @@
+---
+title: "Replace a kit layout"
+description: "Copy a kit layout into a brand or a deck with deckster layouts eject, change it, and see what the kit changed since."
+sidebar:
+  order: 10
+---
+
+A code layout can take the name of a kit layout such as `title` or `content`, so every deck on a brand, or one deck, gets your version of it. This page shows how to start from a copy of the kit's layout with `deckster layouts eject`, what the copy must keep accepting, and how `deckster layouts diff` shows what the kit changed after you ejected.
+
+<Aside type="note" title="Not in v0.10.1">
+Replacing a kit layout, `deckster layouts eject` and `deckster layouts diff` are on the `main` branch and ship in the next release.
+</Aside>
+
+## Names and precedence
+
+Layouts join the catalog in this order: the engine's, the kit's, the brand's code layouts, the brand's data layouts, then the deck's code layouts. A name is taken once. The only way to take a name that is already there is a code layout whose contract says `replaces: true`, and only for a kit or engine layout.
+
+| Case | Result |
+| --- | --- |
+| A new name | Added to the catalog. |
+| A code layout with a kit or engine name | `layout-name-clash`, unless the contract says `replaces: true`. |
+| `replaces: true` on a name no kit or engine layout has | `layout-contract-invalid`: it replaces nothing. Remove it. |
+| A brand code layout and a brand data layout with one name | `layout-name-clash`: one brand, one meaning. |
+| A deck code layout with a brand layout's name | `layout-name-clash`, with or without `replaces: true`. Rename it. |
+| A data layout in `layouts.ts` with a kit layout's name | An error from `deckster brand check`: a data layout never replaces a kit layout. |
+| Two decks with the same layout name | Fine: decks never see each other's layouts. |
+
+The clash message says how to fix it:
+
+```console
+$ deckster layouts check content --brand acme
+brands/acme/layouts/ (rendered in the acme brand)
+  content: fails, 1 problem (not rendered)
+    error   layout-name-clash (brands/acme/layouts/content/contract.ts): The code layout "content" (brands/acme/layouts/content/contract.ts) has the name of a layout from @deckster/kit.
+            Fix: Rename the layout's folder and the `name` in its contract and component, or, to replace the @deckster/kit layout, write `replaces: true` in its contract.
+The brand acme: 0 of 1 layout pass (1 error, 0 warnings).
+```
+
+A replacement keeps the kit layout's place in the catalog. `deckster layouts --json` lists it where the kit's was, with `source` set to `brand-code:<brand>` or `deck:<deck>` and `"replaces": "@deckster/kit"`. With `--summary`, it is grouped with the brand's or the deck's layouts and carries a line `replaces the kit's title`.
+
+## Eject a kit layout
+
+Write the replacement from a copy rather than from nothing, so it is compatible from the first minute. These steps eject `title` into the `acme` brand of a workspace called `talks`.
+
+<Steps>
+
+1. Eject the layout. `--deck launch-review` writes into the deck instead, and several names can follow `eject`:
+
+   ```console
+   $ deckster layouts eject title --brand acme
+   brands/acme/layouts/title/layout.tsx
+   brands/acme/layouts/title/contract.ts
+   brands/acme/layouts/title/layout.css
+   brands/acme/layouts/title/display-align.css
+   brands/acme/layouts/title/image-scrim.css
+   brands/acme/layouts/title/limits.ts
+   Next: slides on these layouts now render from the copies. Change layout.tsx, layout.css and contract.ts, then run `deckster layouts check --brand acme`. Each copy keeps the kit layout's name and says `replaces: true`, so it must keep accepting what the kit layout's slides use. `deckster layouts diff title --brand acme` shows what the kit changed since.
+   ```
+
+   The copy renders the same as the kit layout until you change it. It keeps the layout's name, because the CSS, the PowerPoint selectors and the display rules are keyed on it. The kit's component and stylesheet for that name are no longer loaded for the brand or deck.
+
+2. Change `layout.tsx`, `layout.css` and `contract.ts`. Keep `replaces: true` in the contract.
+
+3. Check it. `deckster layouts` now marks the layout as a replacement:
+
+   ```console
+   $ deckster layouts launch-review --summary
+   Layouts from the acme brand (prefer these):
+   title     surface gradient  title <= 36
+             The cover of a deck: the deck title set large on the bottom line, a one-line subtitle, and who is presenting and when.
+             replaces the kit's title
+             slots: body text 14 words; <Media> image
+   ...
+   ```
+
+</Steps>
+
+### What the folder holds
+
+- `layout.tsx`, `contract.ts`, `layout.css` and `limits.ts`, which carries the kit's limit cases for the layout as literals. A kit layout with no stylesheet of its own, such as `demo`, gets an empty `layout.css` that `layout.tsx` imports.
+- Imports of kit parts point at the public entry points: `@deckster/kit/layout-parts`, `@deckster/kit/layout-fields`, `@deckster/kit` and `@deckster/kit/diagrams`.
+- A helper with no public home, such as `Portrait` or `MonoMark`, is copied once into `layouts/_shared/` and imported by every ejected layout that needs it. The classes of a copied helper's stylesheet are renamed from `kit-...` to `own-...` in a brand and `dck-...` in a deck, so your copy and the kit's helper never style each other.
+- A stylesheet the layout shares with other kit layouts (`display-align.css`, `image-scrim.css`, `stat-cards.css`) is copied into the layout's folder with every rule scoped to the layout. A rule you delete from your copy of one of those shows only once the kit's own copy is no longer loaded, which it still is while another kit layout or chart uses it.
+- `.eject/`, with every file as written, the helpers under `.eject/_shared/` and `eject.json`, which records the CLI version and a hash of each file. Leave it as it is: `diff` reads it. Layout discovery and `deckster brand add` skip dot folders, so it never travels by accident.
+
+`deckster layouts eject --all --brand <brand>` ejects every kit layout the brand has no folder for, 64 of them in this release, and leaves the rest out without failing: with `--json`, `skipped` lists the ones whose folder exists and `skippedForDecks`, as `[{ name, deck }]`, the ones a deck of the brand has a layout folder of. The copy is yours from then on, and kit fixes reach it only through `layout-parts` and `layout-fields`.
+
+Eject refuses, and writes nothing, for a name that is not a kit layout (it names the closest one), a layout whose folder already exists, a brand outside the workspace, `--all` with `--deck`, a deck layout that its brand already replaces, a brand layout whose name one of the brand's decks already has a layout folder of (when you name the layouts: `--all` skips those), a path to write that runs through a symbolic link, and a helper in `layouts/_shared/` that differs from the one it would write because you edited it. `--keep-shared` keeps your helper and uses it as it is. A name given twice is ejected once, and a run that fails part way removes what it wrote.
+
+## What a replacement must keep
+
+A replacement must keep every deck that used the original compiling and fitting, so the build, `deckster brand check` and `deckster layouts check` compare its contract with the original's:
+
+1. Every field the original requires exists and is required, and every field it accepts is accepted. No field the original leaves optional, or does not have, becomes required. New optional fields are fine.
+2. Every slot the original has exists, every required slot stays required and its `accepts` is a superset. No optional or new slot becomes required.
+3. The original's `example` and limit cases decode against the new schema and pass its `checks()`. A schema that throws while decoding, or a `checks()` that throws or returns something other than a list of problems, fails this too.
+4. Every slide in the workspace's decks on the brand, or in the deck for a deck layout, that uses the layout decodes against the new schema.
+5. The title is required exactly when the original requires it.
+6. A budget, variant budget or title limit that differs, in either direction, is allowed and listed as a `layout-replace-budget` note. A kit layout's PowerPoint mapping that the replacement lacks is a `layout-replace-pptx` warning: exported decks lose the placeholders.
+
+Failing the first three or the fifth is a `layout-replace-breaks` error, naming the original's value and the fix, and the replacement is left out: the kit's layout stays in the catalog and every slide on it fails with the same reasons. Failing the fourth is the same error on the replacement's `contract.ts` in `deckster brand check` and `deckster layouts check`, naming the slide. The replacement stays in the catalog, and the build and `deckster lint` fail that slide with the ordinary `schema` error. The warning and the notes fail nothing.
+
+A later kit release that adds a layout with the name of one of yours is a clash: rename yours, or add `replaces: true` if yours should win.
+
+## See what the kit changed
+
+`deckster layouts diff title --brand acme` ejects the current kit layout in memory with the same transform, compares the result with `.eject/` and prints a unified diff on standard output, one patch per file that changed, helpers in `_shared/` included. The `-` lines are what you ejected and the `+` lines are the kit now. Your own edits play no part and nothing is applied: carry over the changes you want by hand.
+
+```sh
+deckster layouts diff title --brand acme > kit-title.patch
+```
+
+When nothing changed it prints `The kit's title is the same as when it was ejected (deckster <ejected version>; this is <installed version>).` The explanations go to standard error, so the patch can be piped: how many files changed, a warning when the kit's layout no longer ejects cleanly, and a warning when a file in `.eject/` was edited after the eject. The exit code is 0, or 1 with `--fail-on-change` when the kit changed the layout, so a CI job can flag it after an upgrade. A layout with no `.eject/eject.json`, or a symbolic link on the way to `.eject/`, fails with exit 1. With `--json` each file has a `status` of `unchanged`, `changed`, `added` or `removed`. The flags and the JSON shapes are under [`deckster layouts`](/reference/cli/#code-layout-subcommands).

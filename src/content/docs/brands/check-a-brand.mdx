@@ -90,6 +90,8 @@ The checks run in stages. A stage that finds a problem reports all of its proble
 5. **Files.** The `name` matches the folder, font packages are installed in the workspace, and font, logo and background files exist in the brand folder.
 6. **Layouts.** New in 0.6.0. When the brand has a `layouts.ts`, the check prints its path under `brand.ts` and checks every layout in it: its name, its fallback, the slots and fields it binds, its boxes and the names it uses. Each problem has its path in the file, such as `layouts[3].regions[2].bind`. [Brand layouts](/brands/brand-layouts/#check-it) lists the errors.
 
+7. **Code layouts.** Not in 0.10.1. When the brand has `layouts/<name>/` folders with a `contract.ts` and `layout.tsx`, the check runs each contract and reports each problem as `error <problem id>: <message>` with a `Fix:` line under the layout's file. [Check a code layout](/brands/code-layout-checks/) lists the ids; `deckster layouts check` also renders the layouts.
+
 [Palettes, surfaces and typography](/brands/palettes-surfaces-and-typography/) explains the roles and surfaces these checks measure.
 
 ## Layout checks during installation

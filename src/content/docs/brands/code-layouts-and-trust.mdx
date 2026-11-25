@@ -1,0 +1,47 @@
+---
+title: "Code layouts and trust"
+description: "Why deckster brand add never copies code, what an agent turn may not change, and how to bring in a code layout you have read."
+sidebar:
+  order: 12
+---
+
+A code layout is code that runs on your machine: its contract runs in Node and its component runs in your browser. This page draws the line deckster keeps around it: `deckster brand add` never copies code, an agent turn cannot write or load a layout, and a layout reaches your workspace only when you copy it there.
+
+<Aside type="note" title="Not in v0.10.1">
+Code layouts are on the `main` branch and ship in the next release. In 0.10.1 `deckster brand add` already copies data only, and a `layouts/<name>/` folder of a fetched brand is left out like any other code.
+</Aside>
+
+## Fetched brands carry data, not code
+
+`deckster brand add` copies `brand.ts`, `layouts.ts`, images, fonts and documents, and runs none of it. Code layouts, meaning `layouts/<name>/` folders with a `contract.ts` or `layout.tsx`, and every other code file are left out and listed under `Left out:`. A layout's whole folder is left out, so its README and images are listed as `code layout` too, and a half-copied layout never reaches the brand. [Add a brand from another repository](/brands/use-a-brand/#add-a-brand-from-another-repository) covers the rest of what it copies.
+
+The command always writes `brands/<name>/.deckster-source.json` with three keys: `source`, where the brand came from, without credentials; `commit`, the commit it fetched, or `null` when unknown; and `codeLayoutsSkipped`, the sorted names of the code layouts it left out, such as `["kpi-wall"]`. Adding the brand again replaces the file, and a `.deckster-source.json` inside the fetched brand is ignored. With `--json` the same names are under `codeLayoutsSkipped`, and `written` lists the file.
+
+A data layout in `layouts.ts` that falls back to a skipped code layout is added with a warning, because its bindings cannot be checked until the folder is copied.
+
+A slide that uses a skipped layout fails with `layout-code-skipped`. The message names the layout, says that `deckster brand add` left it out and gives the source to read.
+
+## Bring one in yourself
+
+1. Read the code in the brand's own repository. It runs on your machine, in Node and in the browser, with your files and your login.
+2. Copy its `layouts/<name>/` folder, and what it imports from `layouts/_shared/`, into `brands/<name>/layouts/`.
+3. Run [`deckster layouts check --brand <name>`](/brands/code-layout-checks/).
+
+A brand shared inside a team's own repository never goes through `deckster brand add`: its folder is already yours.
+
+## Agent turns cannot write or load layouts
+
+The chat agent in `deckster dev --agent` may change only a deck's slide files and its `assets/` and `public/` content. Layouts, contracts, brands and stylesheets are off limits, like every other code file the dev server runs. It can read the code layouts through its `catalog` tool and use them in slides. See [how a turn runs](/ai-agents/how-a-turn-runs/).
+
+While a turn runs, the code layouts of the deck and of its brand are held:
+
+- A `contract.ts` or `limits.ts` there is not read or evaluated again until the turn is over, so an agent cannot change what the build runs by editing one.
+- The agent sees the last version loaded before the turn.
+- A contract that was never loaded before the turn starts fails with `layout-held`.
+- A turn that begins while a contract is loading stops it from loading any more modules. Code of it that is already running after an `await` cannot be stopped.
+
+Write layouts in your editor, or with a coding agent that works in your workspace, outside the chat panel. [Skills](/ai-agents/skills/) covers the agents that do.
+
+## What each import check guards
+
+The build reads a contract and the relative files it imports as text before it runs anything, and rejects an import outside the [allowed list](/brands/code-layouts/#what-each-file-may-import). The check keeps a contract to the framework's entry points and the layout's own folder. It is a gate on imports, not a sandbox: a contract is code that runs in Node with your permissions, so treat a layout from elsewhere as you would any script. A layout you copied in is code like a slide or a mini app, and the [security page](/project/security/) says how to treat those. The line deckster draws is who may put code in the folder, not what that code may do once it is there.
