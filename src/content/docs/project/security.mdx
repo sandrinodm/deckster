@@ -47,7 +47,7 @@ A program running as you on the same machine can still open the deck page and ge
 
 `--agent claude` or `--agent codex` runs your own agent CLI with your login, one process per prompt. It may change only the deck's content (slide files in `slides/`, media and data in `assets/` and `public/`), in a working copy; the deck's config, brand, stylesheets and helper modules are put back if a turn changes them, and a check runs after every turn. Slides are code that runs in your browser with the dev session, so review what a turn changed as you would a collaborator's commit. Web access is off unless you pass `--agent-web`. The full trust model, and the limits it accepts, are on [how a turn runs](/ai-agents/how-a-turn-runs/).
 
-Not in 0.10.1: the next release adds [code layouts](/brands/code-layouts/), code that runs in Node and in your browser. `deckster brand add` never copies a fetched brand's code layouts, and an agent turn cannot write or load one. See [code layouts and trust](/brands/code-layouts-and-trust/).
+Since 0.11.0 a brand or deck can bring [code layouts](/brands/code-layouts/), code that runs in Node and in your browser. `deckster brand add` never copies a fetched brand's code layouts, and an agent turn cannot write or load one. See [code layouts and trust](/brands/code-layouts-and-trust/).
 
 ## Other guards
 

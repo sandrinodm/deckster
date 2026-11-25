@@ -17,7 +17,7 @@ There are three ways to work with an agent, and they combine:
 
 ## The two skills
 
-- **`create-presentation`** plans a storyline and an outline with one claim per slide. The agent uses `deckster layouts <deck> --summary` to pick a layout for each slide's job, including brand layouts where they fit. The next release adds a reference for writing a [code layout](/brands/code-layouts/) when no layout fits. It then writes the slides and notes and checks the rendered result with `deckster lint` and `deckster shot`. [Choose a layout](/reference/layouts/#choose-a-layout)
+- **`create-presentation`** plans a storyline and an outline with one claim per slide. The agent uses `deckster layouts <deck> --summary` to pick a layout for each slide's job, including brand layouts where they fit. Since 0.11.0 it has a reference for writing a [code layout](/brands/code-layouts/) when no layout fits. It then writes the slides and notes and checks the rendered result with `deckster lint` and `deckster shot`. [Choose a layout](/reference/layouts/#choose-a-layout)
 - **`brand-import`** turns a PowerPoint template, PDF, Google Slides link, website, guidelines or screenshots into a draft `brands/<name>/brand.ts`. When a template supplies slide layouts, the agent maps the placeholders to slots and fields, chooses kit fallbacks, and compares the rendered layouts with the source. [Import a brand](/brands/import-a-brand/) · [Brand layouts from a template](/brands/brand-layouts/#from-a-template)
 
 ```console

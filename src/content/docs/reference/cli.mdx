@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Use this page to look up the exact arguments and flags of a `deckster` command. Each section shows the command's summary, its usage lines and, folded, the full `deckster <command> --help` as `@deckster/cli` 0.10.1 prints it. `deckster --help` lists the commands in the same order:
+Use this page to look up the exact arguments and flags of a `deckster` command. Each section shows the command's summary, its usage lines and, folded, the full `deckster <command> --help` as `@deckster/cli` 0.11.0 prints it. `deckster --help` lists the commands in the same order:
 
 ```console
 $ deckster --help
@@ -141,8 +141,8 @@ Every layout in full: its page under [layouts](/reference/layouts/).
 
 ### Code layout subcommands
 
-<Aside type="note" title="Not in v0.10.1">
-The four subcommands below are on the `main` branch and ship in the next release. The `--help` above is what 0.10.1 prints and does not list them. The guides start at [code layouts](/brands/code-layouts/).
+<Aside type="note" title="New in v0.11.0">
+The four subcommands below shipped in 0.11.0. The guides start at [code layouts](/brands/code-layouts/).
 </Aside>
 
 The words `new`, `check`, `eject` and `diff` after `deckster layouts` start a subcommand, so a deck with one of those names is listed with `DECK=<name> deckster layouts`. All of them take `--json`. Exactly one of `--brand` and `--deck` is required, and the brand must be a folder of the workspace, not the built-in `default`.

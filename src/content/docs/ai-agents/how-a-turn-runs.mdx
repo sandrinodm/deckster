@@ -24,7 +24,7 @@ Only the deck's content:
 - the slide list, only through the `new_slide`, `reorder_slides` and `remove_slide` deck tools;
 - review comments, only through the `comments` tool.
 
-Not `deck.config.ts` itself, stylesheets, `.ts` helper modules, the brand or anything outside the deck: the config, the brand and helpers are code the dev server runs, and a stylesheet can make the build load JavaScript. The same holds for [code layouts](/brands/code-layouts/), which the next release adds: a turn cannot write a layout, and while it runs the contracts are held, so a contract is not evaluated again until the turn ends and one never loaded before the turn fails with `layout-held`. The agent can still read the layouts through its `catalog` tool and use them in slides. [Code layouts and trust](/brands/code-layouts-and-trust/)
+Not `deck.config.ts` itself, stylesheets, `.ts` helper modules, the brand or anything outside the deck: the config, the brand and helpers are code the dev server runs, and a stylesheet can make the build load JavaScript. The same holds for [code layouts](/brands/code-layouts/) (new in 0.11.0): a turn cannot write a layout, and while it runs the contracts are held, so a contract is not evaluated again until the turn ends and one never loaded before the turn fails with `layout-held`. The agent can still read the layouts through its `catalog` tool and use them in slides. [Code layouts and trust](/brands/code-layouts-and-trust/)
 
 ## How that is enforced
 
