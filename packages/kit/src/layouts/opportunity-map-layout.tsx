@@ -4,7 +4,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { opportunityMapLayoutContract } from '#layouts/opportunity-map-layout.contract.ts';
 
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import { smartPunctuation } from '#layout-parts.ts';
 import {
   PatternImage,
   patternPosition,

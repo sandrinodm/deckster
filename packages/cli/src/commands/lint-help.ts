@@ -29,6 +29,9 @@ Checks a deck and exits non-zero when it finds errors.
 
 Rules (the minimum text size is ${MIN_TYPE_SIZE_PX}px on the 1920x1080 canvas, from @deckster/brand):
   schema              Deck config, brand, frontmatter and MDX problems from the build pipeline.
+  layout-*            A slide on a code layout that cannot be used, under the layout problem's own
+                      id: layout-held, layout-version, layout-name-clash, layout-contract-invalid,
+                      layout-load-failed, layout-replace-breaks, layout-code-skipped and the like.
 ${RULE_LIST}
 
 Mark decoration with aria-hidden="true" or data-decorative: the overflow and text rules skip it.

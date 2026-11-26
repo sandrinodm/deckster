@@ -39,7 +39,10 @@ Which slides go into an export is the CLI's choice, not this package's: it leave
 PPTX, one slide at a time, then once for the deck:
 
 1. `collectScene` (`src/scene/collect-scene.ts`) runs inside the page through `page.evaluate`. It
-   records text as the browser laid it out (lines and runs with their fonts), painted boxes,
+   takes the slide's layout name from the `data-deck-layout` the engine stamps on the slide's
+   section, so the layout contract's PPTX mapping is found whatever markup a layout draws (a code
+   layout included); the first `[data-layout]` inside the slide is the fallback for a page the
+   engine's slide frame did not render, and `default` the last. It records text as the browser laid it out (lines and runs with their fonts), painted boxes,
    gradients, shadows, pictures with crops, inline SVG, tables, media posters, links, the
    `data-chart-spec` and `data-diagram-description` JSON the kit writes, and the hints that force a
    picture.

@@ -22,6 +22,7 @@ let base: string;
 let deck: FeedbackDeck;
 let scope: Scope.Closeable;
 const added: string[] = [];
+let changes = 0;
 
 beforeAll(async () => {
   scope = await Effect.runPromise(Scope.make());
@@ -34,6 +35,9 @@ beforeAll(async () => {
     author: async () => 'Server author',
     run: (effect) => Effect.runPromise(effect.pipe(Effect.provide(NodeFileSystem.layer))),
     onAdded: (_, comment) => added.push(comment.id),
+    onChanged: () => {
+      changes += 1;
+    },
     stepCount: async (slideIndex) => (slideIndex === 0 ? 1 : undefined),
   });
   server = createServer((request, response) => {
@@ -69,6 +73,21 @@ describe('the feedback endpoint', () => {
       id: comment.id,
       location: 'decks/test/slides/intro.mdx:5:1',
     });
+  });
+
+  it('reports each request that changed the feedback files, and none that did not', async () => {
+    const before = changes;
+    const { comment } = (await (
+      await post({ action: 'add', comment: newComment({ text: 'Changes' }) })
+    ).json()) as { comment: { id: string } };
+    expect(changes).toBe(before + 1);
+    await post({ action: 'resolve', id: comment.id, note: 'Done' });
+    expect(changes).toBe(before + 2);
+    await post({ action: 'resolve', id: comment.id, note: 'Again' });
+    expect(changes).toBe(before + 2);
+    await fetch(base);
+    await post({ action: 'delete', id: comment.id });
+    expect(changes).toBe(before + 3);
   });
 
   it('resolves, reopens and deletes by id', async () => {

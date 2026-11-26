@@ -11,7 +11,7 @@ import {
   REVEAL_HINT,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The most callouts a screen takes; more points on one picture is a tour, which is several slides.

@@ -97,8 +97,15 @@ function formatAdded(added: AddedBrand): string {
     lines.push(`Left out: ${leftOut.map((file) => `${file.path} (${file.reason})`).join(', ')}.`);
   }
 
+  if (added.codeLayoutsSkipped.length > 0) {
+    lines.push(
+      `Code layouts left out: ${added.codeLayoutsSkipped.join(', ')}. Slides that use them will ` +
+        "fail until the layout folders are copied from the brand's own repository.",
+    );
+  }
+
   if (added.written.length > 0) {
-    lines.push(`Wrote ${added.written.join(' and ')} for this workspace.`);
+    lines.push(`Wrote ${added.written.join(', ')} for this workspace.`);
   }
 
   for (const warning of added.warnings) {

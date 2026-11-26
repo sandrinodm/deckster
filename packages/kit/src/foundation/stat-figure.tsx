@@ -6,6 +6,7 @@ import { smartPunctuation } from '#foundation/smart-punctuation.ts';
 import { deltaDirection, deltaText, deltaTone, splitStat } from '#layouts/stat-value.ts';
 import { CountingNumber } from '#motion/counting-number.tsx';
 import { useCountUp } from '#motion/use-count-up.ts';
+import '#foundation/stat-figure.css';
 
 /**
  * What a stat's delta needs: the text, and the tone and trend the slide may set.

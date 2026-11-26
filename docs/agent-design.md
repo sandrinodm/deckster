@@ -153,7 +153,7 @@ A turn may create, change or delete only the deck's content: slide files (`.mdx`
 themselves. There is one scope and no flag to widen it.
 
 Everything else is code that Node runs or that decides what Node runs: the deck config, the brand,
-helper modules, and stylesheets. A stylesheet counts because Tailwind can load JavaScript from one
+code layouts (`layouts/<name>/` in the deck or the brand), helper modules, and stylesheets. A stylesheet counts because Tailwind can load JavaScript from one
 (`@plugin`, `@config`), also through an `@import` that Vite never sees. Slides are compiled for the
 browser and never run in Node.
 
@@ -180,8 +180,9 @@ So the framework adds its own layers, the same for both providers:
    deck and of its brand. After the turn it compares them by content and puts back any that
    changed. This is the layer that covers Claude's rules failing.
 4. **Code is not loaded during a turn.** From before the provider starts until that comparison is
-   done, the dev server never imports the deck's config or brand. A change cannot run before it is
-   put back.
+   done, the dev server never imports the deck's config or brand, nor the `contract.ts` or
+   `limits.ts` of a code layout in either: each keeps the value it had before the turn, and one
+   never loaded is `layout-held`. A change cannot run before it is put back.
 5. **Tailwind loads no JavaScript.** `globalThis.__tw_load` is a read-only function that throws,
    installed before any command runs.
 6. **Nothing is loaded from `.deck/`.** The dev server does not serve it, does not watch it and
@@ -260,6 +261,14 @@ follow-up turn, and only one.
   write there, which is what makes the gap between the two steps harmless.
 - **Claude's limits are rules.** See above. The comparison after the turn and the hold on loading
   code are there for this reason.
+- **Layout contracts are trusted local code.** The deck or brand author writes them. Agents cannot
+  write layout files during a turn, and `deckster brand add` never copies code layouts. A separate
+  Node process stops hangs and endless loops at the deadline and catches accidental file writes,
+  network access, child process creation, environment mutation, and imports outside the contract
+  allowlist. The check provides no sandbox protection. The server evaluates each passing contract
+  again with full rights, so code that behaves differently there can use those rights. A turn
+  that starts during the check kills the checker. During server evaluation, it blocks further
+  imports and drops the contract's value. Already running code can continue.
 - **Codex streams whole messages** in `exec` mode, and has no interactive approvals there.
 - **One turn at a time per deck.** A second host for the same deck refuses to start.
 - **A hand edit during a turn wins** for content files, and is put back for files that are not

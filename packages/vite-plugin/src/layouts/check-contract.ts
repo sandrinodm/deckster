@@ -14,7 +14,7 @@ import { Effect, Predicate, Result, Schema } from 'effect';
 
 import type { Problem } from '#errors.ts';
 
-import { decodeFields } from '#validation/decode-fields.ts';
+import { decodeFields, describeValue } from '#validation/decode-fields.ts';
 
 /**
  * Component names MDX slides use without importing them, which a slot tag must not shadow.
@@ -40,6 +40,13 @@ const BASE_FIELDS = new Set(Object.keys(SlideFrontmatter.fields));
  * The brackets that mark a list in a limit's path, such as the `[]` of `stats[].label`.
  */
 const LIST_BRACKETS_PATTERN = /\[\]$/u;
+
+/**
+ * The shape of a variant, for the message about one that does not have it.
+ */
+const VARIANT_SHAPE =
+  'an object with `when: { fields?, counts?, filled? }`, a `budget` of slot limits and, ' +
+  'optionally, `fields` limits';
 
 /**
  * The schema a slide that names this layout is decoded with: the fields every slide has plus the
@@ -73,8 +80,8 @@ export function slideHintsFor(contract: AnyLayoutContract): Readonly<Record<stri
  * Everything wrong with a layout contract, each with its fix: a name that is not kebab-case, a
  * missing description, a default surface that is not a surface name, schema fields that redefine a
  * field every slide has, slot names that are not camelCase or shadow a built-in component, slots
- * without a description or with unknown content kinds, budgets for slots the layout lacks, and an
- * example whose frontmatter does not decode.
+ * without a description or with unknown content kinds, budgets for slots the layout lacks, a
+ * `replaces` other than `true`, and an example whose frontmatter does not decode.
  *
  * @param value - The contract as the catalog module exports it.
  * @param generated - Whether the contract is generated from a brand layout. Its example can have an
@@ -94,6 +101,11 @@ export function checkContract(value: unknown, generated = false): Problem[] {
   }
 
   const where = `Layout "${value.name}"`;
+  const malformed = memberShapeProblems(value, where);
+  if (malformed.length > 0) {
+    return malformed;
+  }
+
   return [
     ...nameProblems(value, where),
     ...surfaceProblems(value, where),
@@ -105,6 +117,7 @@ export function checkContract(value: unknown, generated = false): Problem[] {
     ...variantProblems(value, where),
     ...titleProblems(value, where),
     ...checksProblems(value, where),
+    ...replacesProblems(value, where),
     ...exampleProblems(value, where, generated),
   ];
 }
@@ -125,6 +138,114 @@ function isContractShape(value: unknown): value is AnyLayoutContract {
     Predicate.isObject(value.budget) &&
     Predicate.isObject(value.example)
   );
+}
+
+/**
+ * Problems with the shape of the contract's optional members and nested objects, which the type of
+ * a code layout's contract promises but nothing checks once Vite strips the types: hints, budget
+ * entries, variants (each with a `when` object and a `budget` object), the title, the PowerPoint
+ * mapping and the example's frontmatter. The detailed checks read those members, so they run only
+ * when this finds nothing.
+ *
+ * @param contract - A value with the required fields of a contract.
+ * @param where - The layout, for messages.
+ */
+function memberShapeProblems(contract: AnyLayoutContract, where: string): Problem[] {
+  const members: Record<string, unknown> = { ...contract };
+  const problems = [
+    ...optionalObjectProblems(members, ['hints', 'title', 'pptx'], where),
+    ...Object.entries(contract.budget).flatMap(([slot, budget]) =>
+      budget === undefined || Predicate.isObject(budget)
+        ? []
+        : [malformedMember(`the "${slot}" budget`, 'an object of limits', where)],
+    ),
+    ...variantShapeProblems(members.variants, where),
+  ];
+  if (!Predicate.isObject(contract.example.frontmatter)) {
+    problems.push(malformedMember('the example frontmatter', 'an object of fields', where));
+  }
+
+  return problems;
+}
+
+/**
+ * Problems with members that must be objects when they are given.
+ *
+ * @param members - The contract's members.
+ * @param names - The members to check.
+ * @param where - The layout, for messages.
+ */
+function optionalObjectProblems(
+  members: Readonly<Record<string, unknown>>,
+  names: readonly string[],
+  where: string,
+): Problem[] {
+  return names
+    .filter((name) => members[name] !== undefined && !Predicate.isObject(members[name]))
+    .map((name) => malformedMember(`\`${name}\``, 'an object', where));
+}
+
+/**
+ * Problems with the shape of `variants`: a value that is not a list, or entries that are not
+ * objects with a `when` object (whose `fields` and `counts` are objects and `filled` a list), a
+ * `budget` object and, when given, a `fields` object of objects.
+ *
+ * @param variants - The contract's `variants`.
+ * @param where - The layout, for messages.
+ */
+function variantShapeProblems(variants: unknown, where: string): Problem[] {
+  if (variants === undefined) {
+    return [];
+  }
+
+  if (!Array.isArray(variants)) {
+    return [malformedMember('`variants`', 'a list of variants', where)];
+  }
+
+  return variants.flatMap((variant: unknown, index): Problem[] => {
+    const label = `variant #${index + 1}`;
+    if (!Predicate.isObject(variant)) {
+      return [malformedMember(label, 'an object', where)];
+    }
+
+    const { when, budget, fields } = variant;
+    if (!Predicate.isObject(when)) {
+      return [malformedMember(`${label}'s \`when\``, 'an object of conditions', where)];
+    }
+
+    const isWellFormed =
+      isOptionalObject(when.fields) &&
+      isOptionalObject(when.counts) &&
+      (when.filled === undefined || Array.isArray(when.filled)) &&
+      Predicate.isObject(budget) &&
+      Object.values(budget).every(isOptionalObject) &&
+      isOptionalObject(fields) &&
+      Object.values(fields ?? {}).every((limit) => Predicate.isObject(limit));
+    return isWellFormed ? [] : [malformedMember(label, VARIANT_SHAPE, where)];
+  });
+}
+
+/**
+ * Whether a value is left out or an object.
+ *
+ * @param value - Any value.
+ */
+function isOptionalObject(value: unknown): value is Readonly<Record<string, unknown>> | undefined {
+  return value === undefined || Predicate.isObject(value);
+}
+
+/**
+ * The problem for a contract member that does not have the shape the build reads.
+ *
+ * @param member - The member, as the message names it.
+ * @param expected - What it must be.
+ * @param where - The layout, for messages.
+ */
+function malformedMember(member: string, expected: string, where: string): Problem {
+  return {
+    message: `${where}: ${member} is not ${expected}.`,
+    fix: 'Write the contract with `defineLayoutContract`, whose types show the shape of each member.',
+  };
 }
 
 /**
@@ -280,8 +401,10 @@ function limitProblems(
     }));
   // Prose wraps at the brand's type size, so a line budget on it would pass in one brand and fail
   // in another; only lines that never wrap (code) are budgeted in lines.
-  const accepts =
-    (Object.hasOwn(contract.slots, slot) ? contract.slots[slot]?.accepts : undefined) ?? [];
+  const declared: unknown = Object.hasOwn(contract.slots, slot)
+    ? contract.slots[slot]?.accepts
+    : undefined;
+  const accepts: readonly unknown[] = Array.isArray(declared) ? declared : [];
   const wraps = budget?.maxLines !== undefined && !accepts.includes('code');
   return wraps
     ? [
@@ -431,15 +554,68 @@ function exampleProblems(
       });
     }
   } else if (contract.checks !== undefined) {
-    for (const problem of contract.checks(decoded.success)) {
-      problems.push({
-        message: `${where}: example frontmatter: ${problem.path}: ${problem.message}`,
-        fix: problem.fix,
-      });
-    }
+    problems.push(...exampleChecksProblems(contract, decoded.success, where));
   }
 
   return problems;
+}
+
+/**
+ * The problems the contract's own `checks` finds in its example. `checks` is the layout author's
+ * code, so a throw or a result that is not a list is reported as a problem with the contract
+ * instead of escaping.
+ *
+ * @param contract - The contract, whose `checks` is a function.
+ * @param frontmatter - The example's decoded frontmatter.
+ * @param where - The layout, for messages.
+ */
+function exampleChecksProblems(
+  contract: AnyLayoutContract,
+  frontmatter: unknown,
+  where: string,
+): Problem[] {
+  const ran = runChecks(contract, frontmatter);
+  if (!ran.ok) {
+    return [
+      {
+        message: `${where}: \`checks\` failed on the example frontmatter: ${ran.reason}`,
+        fix:
+          '`checks` runs on every slide on the layout: return problems for what it rejects, ' +
+          'and never throw (a field that is optional may be missing).',
+      },
+    ];
+  }
+
+  return ran.problems.map((problem: unknown) => {
+    const { path, message, fix } = Predicate.isObject(problem) ? problem : {};
+    return {
+      message: `${where}: example frontmatter: ${String(path)}: ${String(message)}`,
+      fix: typeof fix === 'string' ? fix : '',
+    };
+  });
+}
+
+/**
+ * Runs a contract's `checks` on a frontmatter, catching a throw.
+ *
+ * @param contract - The contract, whose `checks` is a function.
+ * @param frontmatter - The decoded frontmatter.
+ */
+function runChecks(
+  contract: AnyLayoutContract,
+  frontmatter: unknown,
+): { ok: true; problems: readonly unknown[] } | { ok: false; reason: string } {
+  try {
+    const result: unknown = Reflect.apply(contract.checks ?? (() => []), contract, [frontmatter]);
+    return Array.isArray(result)
+      ? { ok: true, problems: result }
+      : { ok: false, reason: `it returned ${describeValue(result)}, not a list of problems.` };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: `it threw: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
 }
 
 /**
@@ -458,6 +634,26 @@ function checksProblems(contract: AnyLayoutContract, where: string): Problem[] {
           fix:
             'Write `checks(frontmatter) { return [] }` returning `{ path, message, fix }` ' +
             'problems.',
+        },
+      ];
+}
+
+/**
+ * Problems with the layout's `replaces` flag: a value other than `true`.
+ *
+ * @param contract - The contract.
+ * @param where - The layout, for messages.
+ */
+function replacesProblems(contract: AnyLayoutContract, where: string): Problem[] {
+  const replaces: unknown = Reflect.get(contract, 'replaces');
+  return replaces === undefined || replaces === true
+    ? []
+    : [
+        {
+          message: `${where}: \`replaces\` is ${describeValue(replaces)}, not \`true\`.`,
+          fix:
+            'Write `replaces: true` to replace the kit layout of the same name, or leave ' +
+            '`replaces` out.',
         },
       ];
 }

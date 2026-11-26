@@ -20,11 +20,24 @@ const TSX_EXTENSION = '.tsx';
  *   read.
  */
 export function readSlideLayout(file: string, text: string): string | undefined {
-  const ref = { file, displayPath: file };
-  const data =
-    path.extname(file) === TSX_EXTENSION ? tsxFrontmatter(text, ref) : mdxData(text, ref);
+  const data = readSlideFrontmatter(file, text);
   const layout = Predicate.isObject(data) ? data.layout : undefined;
   return typeof layout === 'string' ? layout : undefined;
+}
+
+/**
+ * The frontmatter of a slide as written, read with the build's own parsers: the YAML block of an
+ * MDX slide, the `export const frontmatter` literal of a TSX slide. Nothing is validated and the
+ * slide is not compiled.
+ *
+ * @param file - The slide's path, whose extension says MDX or TSX (`.tsx`, else MDX).
+ * @param text - The slide's source.
+ * @returns The parsed fields (`{}` for an MDX slide without frontmatter), or `undefined` when they
+ *   cannot be read.
+ */
+export function readSlideFrontmatter(file: string, text: string): unknown {
+  const ref = { file, displayPath: file };
+  return path.extname(file) === TSX_EXTENSION ? tsxFrontmatter(text, ref) : mdxData(text, ref);
 }
 
 /**

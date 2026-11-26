@@ -3,13 +3,16 @@ import { useRef, type CSSProperties, type ReactNode } from 'react';
 
 import type { AskFund, AskMilestone, askLayoutContract } from '#layouts/ask-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { useFitGroupWidth } from '#foundation/fit-text.ts';
-import { Frame, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { StatValue } from '#foundation/stat-figure.tsx';
-import { useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  Frame,
+  SlideHeader,
+  smartPunctuation,
+  StatValue,
+  Step,
+  useEnter,
+  useFitGroupWidth,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/ask-layout.css';
 
 /**
@@ -83,6 +86,7 @@ function AskLayout({ frontmatter, slots }: LayoutProps<typeof askLayoutContract>
     JSON.stringify([milestones, funds]),
     {
       overflow: true,
+      restartOnFontLoad: true,
     },
   );
   const size = PLAN_LEVELS[level] ?? { text: 'small', context: 'small' };
@@ -242,6 +246,7 @@ function Funds({ funds }: FundsProps): ReactNode {
   const list = useRef<HTMLUListElement>(null);
   const { level } = useFitLevel(list, list, FUNDS_LEVELS.length, JSON.stringify(funds), {
     overflow: true,
+    restartOnFontLoad: true,
   });
   const placement = FUNDS_LEVELS[level] ?? 'equal';
   // Equal columns are as narrow as a fifth of the plan, so their labels take the caption size.

@@ -8,7 +8,9 @@ import { deckBrandName } from '#brand/deck-brand-name.ts';
 import { loadDeckBrand } from '#brand/load-deck-brand.ts';
 import { displayPath } from '#decks/deck-paths.ts';
 import { type LoadedDeck, type LoadedSlide } from '#decks/load-deck.ts';
-import { DEFAULT_LAYOUT_CATALOGS, loadLayoutCatalog } from '#layouts/load-layout-catalog.ts';
+import { readSkippedCodeLayouts } from '#layouts/brand-source.ts';
+import { deckCatalog } from '#layouts/deck-catalog.ts';
+import { DEFAULT_LAYOUT_CATALOGS } from '#layouts/load-layout-catalog.ts';
 import { slideBrandOf } from '#slides/check-surface.ts';
 import {
   DEFAULT_MDX_EXTENSIONS,
@@ -42,12 +44,13 @@ export type SlideMetaOptions = {
 };
 
 /**
- * Prepares what the build compiles a deck's slides with (the default layout catalogs, the deck's
- * brand and its MDX extensions) and returns a reader that gives each slide the `slideMeta` `deck
- * build` writes: the validated frontmatter with defaults applied (its `layout` is the one the slide
- * renders with), the title (the frontmatter title, else the first heading outside `<Notes>` after
- * the MDX extensions ran, typographic quotes included, else the slide id), the notes and the filled
- * slots. It runs the build's own slide checks, so a slide the build would refuse fails here too.
+ * Prepares what the build compiles a deck's slides with (the default layout catalogs, the code
+ * layouts of the deck and its brand, the deck's brand and its MDX extensions) and returns a reader
+ * that gives each slide the `slideMeta` `deck build` writes: the validated frontmatter with
+ * defaults applied (its `layout` is the one the slide renders with), the title (the frontmatter
+ * title, else the first heading outside `<Notes>` after the MDX extensions ran, typographic quotes
+ * included, else the slide id), the notes and the filled slots. It runs the build's own slide
+ * checks, so a slide the build would refuse fails here too.
  *
  * @param workspaceRoot - The absolute workspace root.
  * @param deck - The loaded deck.
@@ -63,10 +66,18 @@ export const slideMetaReader = Effect.fn('slideMetaReader')(function* (
 ): Effect.fn.Return<SlideMetaReader, DeckBuildError, FileSystem.FileSystem> {
   const loaded = yield* loadDeckBrand(workspaceRoot, deckBrandName(deck.config, options.brand));
   const { tokens } = loaded;
-  const layouts = yield* loadLayoutCatalog(options.layoutCatalogs ?? DEFAULT_LAYOUT_CATALOGS, {
-    brand: tokens,
-    layoutsFile: loaded.layoutsFile,
+  const catalog = yield* deckCatalog({
+    root: workspaceRoot,
+    brand: loaded,
+    deck: deck.location,
+    code: 'load',
+    specifiers: options.layoutCatalogs ?? DEFAULT_LAYOUT_CATALOGS,
   });
+  const layouts = catalog.index;
+  const local = {
+    found: catalog.local,
+    skipped: yield* readSkippedCodeLayouts(loaded.location.dir),
+  };
   const context = mdxContextOf(workspaceRoot, deck.location.dir, tokens);
   const mdx = yield* loadMdxExtensions(DEFAULT_MDX_EXTENSIONS, context);
   const brand = slideBrandOf(tokens);
@@ -81,6 +92,7 @@ export const slideMetaReader = Effect.fn('slideMetaReader')(function* (
       layouts,
       brand,
       fallback,
+      local,
       mdx,
     });
 });

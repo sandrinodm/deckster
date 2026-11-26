@@ -1,15 +1,21 @@
 import { defineLayout, type LayoutProps } from '@deckster/engine';
 import { useId, useRef, type CSSProperties, type ReactNode } from 'react';
 
-import type { FitRung } from '#foundation/fit-text.ts';
 import type { personaLayoutContract } from '#layouts/persona-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
 import { Portrait } from '#foundation/portrait.tsx';
 import { stripQuoteMarks } from '#foundation/quote-marks.ts';
-import { FittedText, Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { useEnter } from '#motion/enter.ts';
+import {
+  FittedText,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  useEnter,
+  useFitLevel,
+  type FitRung,
+} from '#layout-parts.ts';
 import '#layouts/persona-layout.css';
 
 /**

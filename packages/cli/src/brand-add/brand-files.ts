@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import type { FetchedFile } from '#brand-add/fetch-brand.ts';
 
+import { codeLayoutNames } from '#brand-add/deckster-source.ts';
 import { cliError, type CliError } from '#cli-error.ts';
 
 /**
@@ -79,7 +80,13 @@ const PACKAGE_FILE_NAMES = new Set([
 /**
  * Why a file of the fetched brand is not copied.
  */
-export type SkipReason = 'symlink' | 'package file' | 'code' | 'not a brand file' | 'hidden';
+export type SkipReason =
+  | 'symlink'
+  | 'package file'
+  | 'code'
+  | 'code layout'
+  | 'not a brand file'
+  | 'hidden';
 
 /**
  * A file of the fetched brand that is not copied, and why.
@@ -95,6 +102,11 @@ export type SkippedFile = {
    */
   reason: SkipReason;
 };
+
+/**
+ * The folder of a brand that holds its layouts, data and code.
+ */
+const LAYOUTS_FOLDER = 'layouts';
 
 /**
  * Which files of a fetched brand are copied.
@@ -115,7 +127,9 @@ export type BrandFilePlan = {
  * Picks the files of a fetched brand to copy: `brand.ts` and `layouts.ts` (which the loader reads
  * as data), images, fonts, documents and licences. Symbolic links, hidden files, package files, any
  * other code and any other file type are left out, so a brand brings only data and assets into the
- * workspace.
+ * workspace. Everything inside the folder of a code layout (`layouts/<name>/` with a `contract.ts`
+ * or `layout.tsx`) is left out with its code, as `code layout`: a folder with only its README and
+ * images is an incomplete layout that `brand check` rejects.
  *
  * @param files - The files git lists under the brand folder.
  * @param source - The source as written, for messages.
@@ -138,16 +152,36 @@ export const planBrandFiles = Effect.fn('planBrandFiles')(function* (
     }
   }
 
-  if (!copy.some((file) => file.path === BRAND_FILE)) {
+  const layoutFolders = new Set(codeLayoutNames(skipped));
+  const kept = copy.filter((file) => {
+    if (!isInsideCodeLayout(file.path, layoutFolders)) {
+      return true;
+    }
+
+    skipped.push({ path: file.path, reason: 'code layout' });
+    return false;
+  });
+  if (!kept.some((file) => file.path === BRAND_FILE)) {
     return yield* cliError(
       `${source} has no ${BRAND_FILE}, so it is not a brand folder.\n` +
         `Point at the folder that holds ${BRAND_FILE}, such as gh:owner/repo/brands/<name>.`,
     );
   }
 
-  yield* checkLimits(copy, source);
-  return { copy: copy.map((file) => file.path), skipped };
+  yield* checkLimits(kept, source);
+  return { copy: kept.map((file) => file.path), skipped };
 });
+
+/**
+ * Whether a file lies inside the folder of one of the code layouts.
+ *
+ * @param file - The path inside the brand folder.
+ * @param layouts - The names of the code layouts found in the brand.
+ */
+function isInsideCodeLayout(file: string, layouts: ReadonlySet<string>): boolean {
+  const [folder, name, ...rest] = file.split('/');
+  return folder === LAYOUTS_FOLDER && name !== undefined && rest.length > 0 && layouts.has(name);
+}
 
 /**
  * Why a file is not copied, or `undefined` when it is.

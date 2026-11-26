@@ -1,7 +1,16 @@
+import { NodeServices } from '@effect/platform-node';
 import { expect, layer } from '@effect/vitest';
-import { Effect } from 'effect';
+import { Effect, Layer } from 'effect';
 import { strFromU8, unzipSync } from 'fflate';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { PDFDict, PDFDocument, PDFName } from 'pdf-lib';
@@ -9,10 +18,13 @@ import { describe, it } from 'vite-plus/test';
 
 import type { ExportOptions } from '#export/export-options.ts';
 
+import { fakeDeckLayer, pageSlide, type FakeDeck } from '#browser/fake-deck.fixture.ts';
 import { cliLayer } from '#cli.ts';
 import { defaultExportOptions } from '#export/export-options.ts';
 import { reportedWarnings, runExport } from '#export/run-export.ts';
 import { DEMO_WORKSPACE, FIXTURE_WORKSPACE } from '#lint/lint.fixtures.ts';
+import { scratchWorkspace } from '#lint/scratch-workspace.fixture.ts';
+import { collectedPage } from '#lint/snapshot.fixture.ts';
 import { Workspace } from '#workspace.ts';
 
 /**
@@ -334,6 +346,113 @@ layer(cliLayer(Workspace.at(DEMO_WORKSPACE)))('deckster export on the diagrams-d
         expect(wholeDiagrams).toEqual([]);
       }),
     EXPORT_TIMEOUT_MS,
+  );
+});
+
+/**
+ * A two-slide fake deck whose second slide shows a render error.
+ */
+const BROKEN_DECK: FakeDeck = {
+  /**
+   * The title slide renders and the steps slide shows an error.
+   */
+  slides: [
+    { page: pageSlide(0, 'title'), steps: [collectedPage()] },
+    {
+      page: pageSlide(1, 'steps'),
+      steps: [collectedPage({ renderError: { file: 'slides/steps.mdx', message: 'boom\nstack' } })],
+    },
+  ],
+};
+
+layer(Layer.mergeAll(fakeDeckLayer(BROKEN_DECK), NodeServices.layer, Workspace.layer))(
+  'deckster export --png with a slide that renders an error',
+  (it) => {
+    it.effect('fails naming the slide, for the whole deck and for chosen slides', () =>
+      Effect.gen(function* () {
+        const whole = yield* Effect.flip(
+          runExport(options('hello', { formats: new Set(['png']) })),
+        );
+        expect(whole.message).toContain('slide 2 "steps": boom');
+        expect(whole.message).not.toContain('slide 1');
+        const chosen = yield* Effect.flip(
+          runExport(options('hello', { formats: new Set(['png']), slides: '2' })),
+        );
+        expect(chosen.message).toContain('slide 2 "steps": boom');
+      }),
+    );
+
+    it.effect('leaves no new PNG behind and keeps the files that were there', () =>
+      Effect.gen(function* () {
+        const root = mkdtempSync(path.join(os.tmpdir(), 'deck-export-failed-'));
+        try {
+          const fullOut = path.join(root, 'full');
+          const partialOut = path.join(root, 'partial');
+          const pngDir = path.join(fullOut, 'png');
+          mkdirSync(pngDir, { recursive: true });
+          const earlier = path.join(pngDir, '01-title.png');
+          writeFileSync(earlier, 'earlier run');
+          const pngOptions = {
+            ...defaultExportOptions('hello'),
+            formats: new Set(['png'] as const),
+          };
+          const screenshots = fakeDeckLayer({ ...BROKEN_DECK, screenshotRoot: root });
+          yield* Effect.flip(runExport({ ...pngOptions, out: fullOut })).pipe(
+            Effect.provide(screenshots),
+          );
+          expect(readdirSync(pngDir)).toEqual(['01-title.png']);
+          expect(readFileSync(earlier, 'utf8')).toBe('earlier run');
+          expect(readdirSync(fullOut)).toEqual(['png']);
+          yield* Effect.flip(runExport({ ...pngOptions, out: partialOut, slides: '1-2' })).pipe(
+            Effect.provide(screenshots),
+          );
+          expect(existsSync(path.join(partialOut, 'png'))).toBe(false);
+          expect(readdirSync(partialOut)).toEqual([]);
+        } finally {
+          rmSync(root, { recursive: true, force: true });
+        }
+      }),
+    );
+  },
+);
+
+layer(NodeServices.layer)('deckster export --png with selected slides', (it) => {
+  it.effect('exports both positions in a range when a slide ID is numeric', () =>
+    Effect.gen(function* () {
+      const root = scratchWorkspace('deck-export-numeric-');
+      try {
+        const deck = path.join(root, 'decks', 'numeric');
+        const slides = path.join(deck, 'slides');
+        mkdirSync(slides, { recursive: true });
+        writeFileSync(
+          path.join(deck, 'deck.config.ts'),
+          "export default { title: 'Numeric IDs', slides: ['title', '1'] };\n",
+        );
+        writeFileSync(path.join(slides, 'title.mdx'), '# Title\n');
+        writeFileSync(path.join(slides, '1.mdx'), '# Numeric ID\n');
+        const fake = fakeDeckLayer({
+          slides: [
+            { page: pageSlide(0, 'title'), steps: [collectedPage()] },
+            { page: pageSlide(1, '1', { hidden: true }), steps: [collectedPage()] },
+          ],
+          screenshotRoot: root,
+        });
+        const out = path.join(root, 'export');
+        const result = yield* runExport({
+          ...defaultExportOptions('numeric'),
+          formats: new Set(['png']),
+          out,
+          slides: '1-2',
+        }).pipe(Effect.provide(Layer.mergeAll(fake, Workspace.at(root))));
+        expect(result.png?.map(({ slide, number, hidden }) => [slide, number, hidden])).toEqual([
+          ['title', 1, false],
+          ['1', 2, true],
+        ]);
+        expect(readdirSync(path.join(out, 'png')).toSorted()).toEqual(['01-title.png', '02-1.png']);
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    }),
   );
 });
 

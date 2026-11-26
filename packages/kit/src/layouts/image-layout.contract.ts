@@ -10,7 +10,7 @@ import {
   FocalField,
   TREATMENT_HINT,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * Where the title and text sit over the photo: along the bottom, in the left or right third, or

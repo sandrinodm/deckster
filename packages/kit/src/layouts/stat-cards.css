@@ -1,0 +1,39 @@
+/*
+ * A stat as a card: a rule on top, then the figure, its label and its delta, as the stats layout
+ * and the stat-row chart draw them. A layout or chart opts in by setting `data-kit-stat-cards` on
+ * the element that holds its cards, not by its name or its classes, which other kit components
+ * render too; so a layout ejected from the kit, which renames the attribute, is styled by its own
+ * copy of these rules alone. The `:where()` adds no specificity. The stats layout sets how many
+ * columns a card spans (`--kit-stat-span`) in `stats-layout.css`; the figure and the delta are
+ * drawn by `foundation/stat-figure.css`.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  :where([data-kit-stat-cards]) .kit-stat {
+    grid-column: span var(--kit-stat-span);
+    grid-row: span 3;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: subgrid;
+    min-width: 0;
+    padding-top: var(--brand-space-md);
+    border-top: var(--brand-stroke-regular) solid var(--brand-color-muted);
+  }
+
+  :where([data-kit-stat-cards]) .kit-stat[data-highlight='true'] {
+    border-top: var(--brand-stroke-bold) solid var(--brand-color-accent);
+  }
+
+  :where([data-kit-stat-cards]) .kit-stat[data-highlight='true'] .kit-stat-value {
+    color: var(--brand-color-accent);
+  }
+
+  :where([data-kit-stat-cards]) .kit-stat-label {
+    min-height: 2lh;
+    margin-top: var(--brand-space-sm);
+    max-width: 18em;
+    color: var(--brand-color-fg);
+    text-wrap: balance;
+  }
+}

@@ -24,11 +24,6 @@ const BROKEN_HELLO = fakeDeckLayer({
 });
 
 /**
- * A scratch output folder for fake screenshots, outside the workspace.
- */
-const SCRATCH_SHOTS = path.join(os.tmpdir(), 'deck-cli-test-shots');
-
-/**
  * The JSON a command printed.
  */
 function parseOutput(output: string): unknown {
@@ -101,41 +96,60 @@ describe('runCli', () => {
 
   it.effect('makes deckster shot exit with 1 and flag a slide that threw', () =>
     Effect.gen(function* () {
-      const plain = yield* runCaptured(['shot', 'hello', '--out', SCRATCH_SHOTS], {
-        deck: BROKEN_HELLO,
-      });
-      expect(plain.code).toBe(1);
-      expect(plain.errors).toContain('slide 2 "steps" shows an error: boom');
-      const json = yield* runCaptured(['shot', 'hello', '--json', '--out', SCRATCH_SHOTS], {
-        deck: BROKEN_HELLO,
-      });
-      expect(json.code).toBe(1);
-      expect(parseOutput(json.output)).toMatchObject({
-        ok: false,
-        brand: 'default',
-        files: [
-          { slide: 'title', error: null },
-          { slide: 'steps', error: 'boom' },
-        ],
-      });
+      const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'deck-cli-test-shots-'));
+      try {
+        const plain = yield* runCaptured(['shot', 'hello', '--out', outDir], {
+          deck: BROKEN_HELLO,
+        });
+        expect(plain.code).toBe(1);
+        expect(plain.errors).toContain('slide 2 "steps" shows an error: boom');
+        const json = yield* runCaptured(['shot', 'hello', '--json', '--out', outDir], {
+          deck: BROKEN_HELLO,
+        });
+        expect(json.code).toBe(1);
+        expect(parseOutput(json.output)).toMatchObject({
+          ok: false,
+          brand: 'default',
+          files: [
+            { slide: 'title', error: null },
+            { slide: 'steps', error: 'boom' },
+          ],
+        });
+        expect(fs.readdirSync(outDir)).toEqual([]);
+      } finally {
+        fs.rmSync(outDir, { recursive: true, force: true });
+      }
     }),
   );
 
   it.effect('writes shots in another brand to a folder of their own', () =>
     Effect.gen(function* () {
-      const { output } = yield* runCaptured(
-        ['shot', 'hello', 'title', '--brand', 'nocturne', '--json'],
-        {
-          deck: fakeDeckLayer({
-            slides: [{ page: pageSlide(0, 'title'), steps: [collectedPage()] }],
-          }),
-        },
-      );
-      expect(parseOutput(output)).toMatchObject({
-        ok: true,
-        brand: 'nocturne',
-        outDir: expect.stringMatching(/\.deck\/shots\/hello@nocturne$/),
-      });
+      const root = scratchWorkspace('deck-cli-brand-shot-');
+      try {
+        const deck = path.join(root, 'decks', 'hello');
+        const slides = path.join(deck, 'slides');
+        fs.mkdirSync(slides, { recursive: true });
+        fs.writeFileSync(
+          path.join(deck, 'deck.config.ts'),
+          "export default { title: 'Hello', slides: ['title'] };\n",
+        );
+        fs.writeFileSync(path.join(slides, 'title.mdx'), '# Hello\n');
+        const outDir = path.join(root, '.deck', 'shots', 'hello@nocturne');
+        const { output } = yield* runCaptured(
+          ['shot', 'hello', 'title', '--brand', 'nocturne', '--json'],
+          {
+            root,
+            deck: fakeDeckLayer({
+              slides: [{ page: pageSlide(0, 'title'), steps: [collectedPage()] }],
+              screenshotRoot: root,
+            }),
+          },
+        );
+        expect(parseOutput(output)).toMatchObject({ ok: true, brand: 'nocturne', outDir });
+        expect(fs.readdirSync(outDir)).toEqual(['01-title.png']);
+      } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+      }
     }),
   );
 

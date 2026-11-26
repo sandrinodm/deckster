@@ -1,13 +1,7 @@
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Effect, Schema } from 'effect';
 
-import {
-  CHROME_HINT,
-  chromeField,
-  EYEBROW_HINT,
-  EyebrowField,
-  textField,
-} from '#layouts/layout-fields.ts';
+import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField, textField } from '#layout-fields.ts';
 
 /**
  * The longest term, in characters, set in the display style above its definition.

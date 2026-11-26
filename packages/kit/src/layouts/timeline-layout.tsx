@@ -5,9 +5,7 @@ import type { timelineLayoutContract } from '#layouts/timeline-layout.contract.t
 
 import { Milestone } from '#diagrams/form-parts.tsx';
 import { Timeline } from '#diagrams/lazy-diagrams.tsx';
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { useEnter } from '#motion/enter.ts';
+import { Footnote, Frame, Region, SlideHeader, useEnter, useFitLevel } from '#layout-parts.ts';
 import '#layouts/timeline-layout.css';
 
 /**

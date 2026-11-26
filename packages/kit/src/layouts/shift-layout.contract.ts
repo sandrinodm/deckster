@@ -9,7 +9,7 @@ import {
   EyebrowField,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The longest state label, in characters: `Today`, `With the plan`, `2025`.

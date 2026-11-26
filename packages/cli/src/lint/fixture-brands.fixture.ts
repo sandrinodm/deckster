@@ -304,7 +304,8 @@ export const fixtureBrandTokens = Effect.fn('fixtureBrandTokens')(function* (bra
  * The brands the scratch workspaces get, by folder name: `weak-accent`; `wide-sans`, the third
  * brand the budget stress test calibrates against; `hidden-logo`, which has a logo file and hides
  * it (`chrome.logo.show: false`), as a brand import does with a placeholder; `no-logo`, which has
- * no logo variant at all; and `layered`, whose surfaces paint background layers.
+ * no logo variant at all; `layered`, whose surfaces paint background layers; and `code-brand`,
+ * which has a code layout, `kpi-wall`, in `fixtures/brand-files/code-brand/layouts/`.
  */
 export const FIXTURE_BRANDS: Readonly<Record<string, object>> = {
   'weak-accent': WEAK_ACCENT,
@@ -323,6 +324,7 @@ export const FIXTURE_BRANDS: Readonly<Record<string, object>> = {
     chrome: { ...WEAK_ACCENT.chrome, logo: { show: false } },
   },
   layered: LAYERED,
+  'code-brand': { ...WEAK_ACCENT, name: 'code-brand', label: 'Code brand' },
 };
 
 /**
@@ -330,6 +332,7 @@ export const FIXTURE_BRANDS: Readonly<Record<string, object>> = {
  */
 const FIXTURE_BRAND_FILES: Readonly<Record<string, string>> = {
   layered: path.join(FIXTURE_WORKSPACE, 'brand-files', 'layered'),
+  'code-brand': path.join(FIXTURE_WORKSPACE, 'brand-files', 'code-brand'),
 };
 
 /**

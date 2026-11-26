@@ -14,6 +14,7 @@ import {
   BRAND_FILE,
   BRANDS_DIR,
   brandLocation,
+  DECKSTER_SOURCE_FILE,
   loadBrand,
   readStaticModule,
   type BrandLocation,
@@ -28,6 +29,7 @@ import path from 'node:path';
 import type { BrandSource } from '#brand-add/brand-source.ts';
 
 import { planBrandFiles, type SkippedFile } from '#brand-add/brand-files.ts';
+import { codeLayoutNames, writeDecksterSource } from '#brand-add/deckster-source.ts';
 import { fetchBrand, type FetchedBrand, type GitProtocol } from '#brand-add/fetch-brand.ts';
 import {
   catalogPackages,
@@ -40,6 +42,7 @@ import { cliError, fileSystemError, type CliError, type FileSystemError } from '
 import {
   brandProblemWithFile,
   checkCatalogLayouts,
+  layoutProblemWithFile,
   layoutsDisplayPath,
   type BrandFileProblem,
 } from '#layouts/check-brand-layouts.ts';
@@ -141,7 +144,8 @@ export type AddedBrand = {
   files: readonly string[];
 
   /**
-   * The files written for this workspace, such as `package.json`.
+   * The files written for this workspace, such as `package.json`, and always the brand's
+   * `.deckster-source.json`.
    */
   written: readonly string[];
 
@@ -149,6 +153,13 @@ export type AddedBrand = {
    * The source's files that were left out, and why.
    */
   skipped: readonly SkippedFile[];
+
+  /**
+   * The names of the source's code layouts that were left out, sorted. Slides that use one fail
+   * until its folder is copied from the brand's own repository. Also recorded in the brand's
+   * `.deckster-source.json`.
+   */
+  codeLayoutsSkipped: readonly string[];
 
   /**
    * The Fontsource packages the brand uses.
@@ -185,7 +196,8 @@ type ReadBrand = {
  * Fetches a brand folder from a git repository and adds it to the workspace as `brands/<name>`,
  * named by the brand's own `name`. `brand.ts` is read as data and never run, and the brand is
  * validated in a staging folder before it is installed; only its data, images, fonts and documents
- * are copied (see `planBrandFiles`). SVG artwork is sanitized before it is written. In the
+ * are copied (see `planBrandFiles`). SVG artwork is sanitized before it is written, and a
+ * `.deckster-source.json` records the source, the commit and the code layouts left out. In the
  * repository checkout the brand also gets a `package.json` and `tsconfig.json`. Fontsource packages
  * are not installed; the result names the command that installs them.
  *
@@ -227,6 +239,7 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
   const checkout = yield* makeFolder(path.join(temporary, 'checkout'));
   const fetched = yield* fetchBrand(source, checkout, request.protocols);
   const plan = yield* planBrandFiles(fetched.files, source.display);
+  const codeLayoutsSkipped = codeLayoutNames(plan.skipped);
   const brand = yield* readBrand(fetched);
   const remoteFonts = yield* remoteFontPackages(
     fontsourcePackages(brand.tokens),
@@ -250,12 +263,18 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
       Effect.gen(function* () {
         const location = brandLocation(stageRoot, brand.name);
         const assetWarnings = yield* copyFiles(fetched.dir, location, plan.copy);
-        const written =
+        yield* writeDecksterSource(location.dir, {
+          source: source.display,
+          commit: fetched.commit,
+          codeLayoutsSkipped,
+        });
+        const packageFiles =
           dependencies === undefined
             ? []
             : yield* writePackageFiles(location.dir, brand.name, dependencies);
+        const written = [...packageFiles, DECKSTER_SOURCE_FILE];
         const staged = yield* loadBrand(stageRoot, brand.name, { read: 'data', fontPackages });
-        const brandWarnings = yield* checkStagedLayouts(staged);
+        const brandWarnings = yield* checkStagedLayouts(stageRoot, staged);
         return {
           written,
           warnings: [...assetWarnings, ...brandWarnings],
@@ -274,6 +293,7 @@ const addBrandScoped = Effect.fn('addBrandScoped')(function* (
     files: plan.copy,
     written: prepared.written,
     skipped: plan.skipped,
+    codeLayoutsSkipped,
     fonts,
     warnings: prepared.warnings,
     next: nextSteps(brand.name, fonts, dependencies),
@@ -320,16 +340,19 @@ const readBrand = Effect.fn('readBrand')(function* (
 
 /**
  * Checks the staged brand against the deck catalog and attaches the source file to each warning.
+ * The brand's code is never run: its code layouts are found, not loaded.
  *
+ * @param stageRoot - The staging workspace.
  * @param brand - The staged brand, with its files checked and layouts resolved from data.
  * @throws BrandError in the error channel when its layouts do not fit the catalog.
  */
 const checkStagedLayouts = Effect.fn('checkStagedLayouts')(function* (
+  stageRoot: string,
   brand: LoadedBrand,
-): Effect.fn.Return<BrandFileProblem[], BrandError | DeckBuildError> {
+): Effect.fn.Return<BrandFileProblem[], BrandError | DeckBuildError, FileSystem.FileSystem> {
   const file = brand.location.displayPath;
   const layoutsFile = layoutsDisplayPath(file);
-  const check = yield* checkCatalogLayouts(brand.tokens.layouts);
+  const check = yield* checkCatalogLayouts(stageRoot, brand, 'skip');
   if (check.errors.length > 0) {
     return yield* brandError({
       summary: 'Invalid brand layouts',
@@ -339,9 +362,12 @@ const checkStagedLayouts = Effect.fn('checkStagedLayouts')(function* (
     });
   }
 
-  return [...brand.warnings, ...check.warnings].map((warning) =>
-    brandProblemWithFile(warning, { file, layoutsFile }),
-  );
+  return [
+    ...[...brand.warnings, ...check.warnings].map((warning) =>
+      brandProblemWithFile(warning, { file, layoutsFile }),
+    ),
+    ...check.local.problems.map((problem) => layoutProblemWithFile(brand, problem)),
+  ];
 });
 
 /**

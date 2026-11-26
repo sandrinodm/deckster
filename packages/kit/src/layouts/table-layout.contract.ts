@@ -2,7 +2,7 @@ import { deckCommand } from '@deckster/engine/command';
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Effect, Schema } from 'effect';
 
-import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField } from '#layouts/layout-fields.ts';
+import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField } from '#layout-fields.ts';
 
 /**
  * The longest table title, in characters: two lines at the smallest fit step.

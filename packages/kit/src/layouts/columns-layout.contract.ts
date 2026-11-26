@@ -9,7 +9,7 @@ import {
   EyebrowField,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest columns a board shows: two lanes, such as now and next.

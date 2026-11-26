@@ -6,9 +6,7 @@ import type {
   ServiceBlueprintStage,
 } from '#layouts/service-blueprint-layout.contract.ts';
 
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { Step } from '#motion/step.tsx';
+import { Footnote, Frame, Region, SlideHeader, smartPunctuation, Step } from '#layout-parts.ts';
 import '#layouts/service-blueprint-layout.css';
 
 /**

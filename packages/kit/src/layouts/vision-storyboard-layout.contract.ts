@@ -1,7 +1,7 @@
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
-import { textField } from '#layouts/layout-fields.ts';
+import { textField } from '#layout-fields.ts';
 import {
   PATTERN_ALT_MAX_CHARS,
   PatternImage,

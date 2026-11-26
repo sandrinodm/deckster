@@ -8,7 +8,7 @@ import {
   EYEBROW_HINT,
   EyebrowField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 import { QUIZ_LETTERS, QUIZ_TILE_MAX_CHARS } from '#layouts/quiz-values.ts';
 
 export { QUIZ_LETTERS, QUIZ_TILE_MAX_CHARS } from '#layouts/quiz-values.ts';

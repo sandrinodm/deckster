@@ -1,0 +1,880 @@
+/**
+ * The changes `deckster layouts eject` makes to a kit stylesheet it copies, all on the text:
+ * renaming the classes a copied helper or a shared stylesheet owns and the `data-kit-…` attributes
+ * a shared stylesheet is opted into with, and scoping a stylesheet a layout shares with other kit
+ * layouts to the ejected layout.
+ */
+
+/**
+ * The start of every class of the kit.
+ */
+const KIT_CLASS_PREFIX = 'kit-';
+
+/**
+ * Who a copy of the kit's helpers is ejected into: a brand's `layouts/_shared/` or a deck's.
+ */
+export type ClassOwner = 'brand' | 'deck';
+
+/**
+ * The start a copied helper's classes, and the classes a copied shared stylesheet owns, get instead
+ * of `kit-`, by who owns the copy, so the kit's own copy of the stylesheet, which stays loaded for
+ * the kit layouts that still use it, does not style the copy, and an edit to the copy does not
+ * reach those layouts. A brand's copy and a deck's copy get different starts because a deck's
+ * slides load both: a deck that ejects the same helper as its brand must not restyle the brand's
+ * layouts. Both are as long as `kit-` on purpose: a rename then moves no line break, so the copied
+ * files stay formatted. Neither starts like the engine's `deck-…` classes.
+ */
+export const OWN_CLASS_PREFIX: Readonly<Record<ClassOwner, string>> = {
+  /**
+   * The start of a class in a brand's copy.
+   */
+  brand: 'own-',
+
+  /**
+   * The start of a class in a deck's copy.
+   */
+  deck: 'dck-',
+};
+
+/**
+ * Matches a kit class name wherever it is written as a whole word: not part of a longer name, a
+ * custom property (`--kit-…`) or an id built from one.
+ */
+const KIT_CLASS_TOKEN = /(?<![\w-])kit-[a-z0-9]+(?:-[a-z0-9]+)*(?![\w-])/gu;
+
+/**
+ * Matches a kit class in a selector, capturing the name.
+ */
+const CLASS_SELECTOR = /\.(kit-[a-z0-9]+(?:-[a-z0-9]+)*)(?![\w\\\P{ASCII}-])/gu;
+
+/**
+ * The start of every attribute a shared kit stylesheet is opted into with, such as
+ * `data-kit-display-align`.
+ */
+const KIT_ATTRIBUTE_PREFIX = 'data-kit-';
+
+/**
+ * Matches a kit opt-in attribute wherever it is written as a whole word: `[data-kit-stat-cards]` in
+ * a selector, `'data-kit-stat-cards': ''` in a component.
+ */
+const KIT_ATTRIBUTE_TOKEN = /(?<![\w-])data-kit-[a-z0-9]+(?:-[a-z0-9]+)*(?![\w-])/gu;
+
+/**
+ * Matches a kit opt-in attribute in a selector, capturing the name.
+ */
+const ATTRIBUTE_SELECTOR = /\[\s*(data-kit-[a-z0-9]+(?:-[a-z0-9]+)*)(?=\s*(?:[~|^$*]?=|\]))/gu;
+
+/**
+ * A kit class matched at the scanner's current position.
+ */
+const CLASS_AT_POSITION = new RegExp(CLASS_SELECTOR.source, 'uy');
+
+/**
+ * A kit attribute matched at the scanner's current position.
+ */
+const ATTRIBUTE_AT_POSITION = new RegExp(ATTRIBUTE_SELECTOR.source, 'uy');
+
+/**
+ * A functional pseudo-class or pseudo-element at the scanner's current position.
+ */
+const SELECTOR_FUNCTION = /:{1,2}([a-z-]+)\(/iuy;
+
+/**
+ * Functions whose argument is a positive selector list. Negation does not constrain ownership.
+ */
+const POSITIVE_SELECTOR_FUNCTIONS = new Set([
+  'is',
+  'where',
+  'has',
+  'host',
+  'host-context',
+  'slotted',
+]);
+
+/**
+ * The An+B modifier before an `of` selector list in `:nth-child` or `:nth-last-child`.
+ */
+const NTH_WITH_SELECTORS = /^\s*(?:even|odd|[+-]?\d*n(?:\s*[+-]\s*\d+)?|[+-]?\d+)\s+of\s+/iu;
+
+/**
+ * Matches a CSS comment.
+ */
+const CSS_COMMENT = /\/\*[\s\S]*?\*\//gu;
+
+/**
+ * Matches the frame class in a selector, as a whole class.
+ */
+const FRAME_CLASS = /\.kit-frame(?![\w-])/u;
+
+/**
+ * Matches every `[data-layout='…']` attribute selector, capturing the layout name.
+ */
+const LAYOUT_ATTRIBUTE = /\[data-layout=(['"])([^'"]+)\1\]/gu;
+
+/**
+ * Matches the start of a `:not()` pseudo-class, right after its opening parenthesis.
+ */
+const NOT_OPEN = /:not\(/gu;
+
+/**
+ * Matches a selector that starts at the document's root, which no rule under a frame can match.
+ */
+const ROOT_SELECTOR = /^(?::root|html)(?![\w-])/u;
+
+/**
+ * The at-rules whose blocks hold style rules, which are scoped in turn.
+ */
+const GROUPING_AT_RULES: ReadonlySet<string> = new Set([
+  '@layer',
+  '@media',
+  '@supports',
+  '@container',
+]);
+
+/**
+ * The at-rules whose blocks hold no style rules to scope, which are copied as they are.
+ */
+const VERBATIM_AT_RULES: ReadonlySet<string> = new Set([
+  '@keyframes',
+  '@font-face',
+  '@property',
+  '@counter-style',
+  '@page',
+  '@font-palette-values',
+  '@font-feature-values',
+]);
+
+/**
+ * The widest line the formatter allows.
+ */
+const MAX_LINE_CHARS = 100;
+
+/**
+ * One step of indentation.
+ */
+const INDENT = '  ';
+
+/**
+ * The combinators that stay in front of the compound selector they lead to.
+ */
+const COMBINATORS: ReadonlySet<string> = new Set(['>', '+', '~']);
+
+/**
+ * The text that follows a rule's selector list on its last line.
+ */
+const RULE_OPEN = ' {';
+
+/**
+ * Matches the indent at the end of the text before a rule.
+ */
+const TRAILING_INDENT = /[ \t]*$/u;
+
+/**
+ * Matches a run of white space.
+ */
+const WHITE_SPACE_RUN = /\s+/gu;
+
+/**
+ * Matches one white-space character.
+ */
+const WHITE_SPACE = /\s/u;
+
+/**
+ * Matches the white space after an opening parenthesis.
+ */
+const SPACE_AFTER_PAREN = /\(\s+/gu;
+
+/**
+ * Matches the white space before a closing parenthesis.
+ */
+const SPACE_BEFORE_PAREN = /\s+\)/gu;
+
+/**
+ * Matches the name of an at-rule at the start of its prelude.
+ */
+const AT_RULE_NAME = /^@[a-z-]+/u;
+
+/**
+ * Matches three or more line breaks in a row, with any spaces between them.
+ */
+const EXTRA_BLANK_LINES = /\n(?:[ \t]*\n){2,}/gu;
+
+/**
+ * Matches an opening brace followed by a blank line.
+ */
+const BLANK_AFTER_BRACE = /\{\n(?:[ \t]*\n)+/gu;
+
+/**
+ * Matches a blank line before a closing brace.
+ */
+const BLANK_BEFORE_BRACE = /\n(?:[ \t]*\n)+([ \t]*\})/gu;
+
+/**
+ * One piece of a stylesheet block: a rule, an at-rule or a declaration, with the white space and
+ * comments in front of it.
+ */
+type CssItem = {
+  /**
+   * The white space and comments before the item.
+   */
+  readonly leading: string;
+
+  /**
+   * Everything before the block's `{`, or the whole declaration with its `;`.
+   */
+  readonly prelude: string;
+
+  /**
+   * The text between the item's braces, or nothing for a declaration.
+   */
+  readonly body: string | undefined;
+};
+
+/**
+ * A stylesheet scoped to one layout.
+ */
+export type ScopedStylesheet = {
+  /**
+   * The scoped stylesheet's text.
+   */
+  readonly css: string;
+
+  /**
+   * The rules the scoping could not keep to the layout, such as a `:root` rule or an `@scope`
+   * block; empty when every rule is scoped.
+   */
+  readonly problems: readonly string[];
+};
+
+/**
+ * Every kit class name in a text, as whole words: `kit-mark` in `className="kit-mark"` and
+ * `.kit-mark`, but not in `kit-mark-mono` or `--kit-mark-aspect`.
+ *
+ * @param text - Source text of any kind.
+ * @returns The distinct names, in the order first found.
+ */
+export function kitClassTokens(text: string): string[] {
+  return [...new Set(text.match(KIT_CLASS_TOKEN))];
+}
+
+/**
+ * The kit classes a stylesheet's rules select, comments left out.
+ *
+ * @param css - The stylesheet's text.
+ * @returns The distinct class names, without the dot, in the order first found.
+ */
+export function selectorClasses(css: string): string[] {
+  const code = css.replace(CSS_COMMENT, '');
+  return [...new Set([...code.matchAll(CLASS_SELECTOR)].map((match) => match[1] ?? ''))];
+}
+
+/**
+ * The kit opt-in attributes (`data-kit-…`) a stylesheet's rules select, comments left out.
+ *
+ * @param css - The stylesheet's text, or one selector.
+ * @returns The distinct attribute names, in the order first found.
+ */
+export function selectorAttributes(css: string): string[] {
+  const code = css.replace(CSS_COMMENT, '');
+  return [...new Set([...code.matchAll(ATTRIBUTE_SELECTOR)].map((match) => match[1] ?? ''))];
+}
+
+/**
+ * The name a kit opt-in attribute gets in a copy: `data-kit-stat-cards` becomes
+ * `data-own-stat-cards` in a brand's copy and `data-dck-stat-cards` in a deck's, as long as the
+ * kit's name, so a rename moves no line break.
+ *
+ * @param name - A `data-kit-…` attribute name.
+ * @param owner - Who owns the copy.
+ */
+export function ownAttributeName(name: string, owner: ClassOwner): string {
+  return `data-${OWN_CLASS_PREFIX[owner]}${name.slice(KIT_ATTRIBUTE_PREFIX.length)}`;
+}
+
+/**
+ * Renames kit opt-in attributes wherever they are written as whole words, in a stylesheet or a
+ * component. The kit's copy of a shared stylesheet keys its rules on the kit's name, so markup that
+ * carries the owner's name instead is styled by the owner's copy alone.
+ *
+ * @param text - The source text.
+ * @param attributes - The `data-kit-…` names to rename.
+ * @param owner - Who owns the copy.
+ * @returns The text with each of them given the owner's prefix.
+ */
+export function renameAttributes(
+  text: string,
+  attributes: ReadonlySet<string>,
+  owner: ClassOwner,
+): string {
+  if (attributes.size === 0) {
+    return text;
+  }
+
+  return text.replace(KIT_ATTRIBUTE_TOKEN, (token) =>
+    attributes.has(token) ? ownAttributeName(token, owner) : token,
+  );
+}
+
+/**
+ * The selectors of a stylesheet's rules that can match without a positive reference to a given
+ * class or attribute, including rules inside grouping at-rules. Each alternative in a selector list
+ * must require an owned name for the kit's rule to stay off the renamed markup.
+ *
+ * @param css - The stylesheet's text.
+ * @param classes - The kit classes the copy renames.
+ * @param attributes - The `data-kit-…` attributes the copy renames.
+ * @returns Each such selector on one line, in the order found.
+ */
+export function unownedSelectors(
+  css: string,
+  classes: ReadonlySet<string>,
+  attributes: ReadonlySet<string>,
+): string[] {
+  const found: string[] = [];
+  collectUnowned(css, classes, attributes, found);
+  return found;
+}
+
+/**
+ * Adds selectors of one block's rules that can match without an owned class or attribute.
+ */
+function collectUnowned(
+  content: string,
+  classes: ReadonlySet<string>,
+  attributes: ReadonlySet<string>,
+  found: string[],
+): void {
+  for (const item of splitItems(content).items) {
+    if (item.body === undefined) {
+      continue;
+    }
+
+    const atRule = AT_RULE_NAME.exec(item.prelude)?.[0];
+    if (atRule !== undefined) {
+      if (GROUPING_AT_RULES.has(atRule)) {
+        collectUnowned(item.body, classes, attributes, found);
+      }
+
+      continue;
+    }
+
+    for (const part of splitTopLevel(item.prelude, ',')) {
+      const selector = part.replace(CSS_COMMENT, '').trim();
+      if (!requiresOwnedSelector(selector, classes, attributes)) {
+        found.push(selector.replace(WHITE_SPACE_RUN, ' '));
+      }
+    }
+  }
+}
+
+/**
+ * Tests one selector branch. A required token or a function with every alternative owned is enough,
+ * since the other parts of the branch must match alongside it.
+ */
+function requiresOwnedSelector(
+  selector: string,
+  classes: ReadonlySet<string>,
+  attributes: ReadonlySet<string>,
+): boolean {
+  let position = 0;
+  while (position < selector.length) {
+    const next = skipQuoted(selector, position);
+    if (next !== position) {
+      position = next;
+      continue;
+    }
+
+    const char = selector[position];
+    if (char === '[') {
+      ATTRIBUTE_AT_POSITION.lastIndex = position;
+      const name = ATTRIBUTE_AT_POSITION.exec(selector)?.[1];
+      if (name !== undefined && attributes.has(name)) {
+        return true;
+      }
+
+      position = matchingCloser(selector, position, '[', ']') + 1;
+      continue;
+    }
+
+    if (char === '.') {
+      CLASS_AT_POSITION.lastIndex = position;
+      const name = CLASS_AT_POSITION.exec(selector)?.[1];
+      if (name !== undefined && classes.has(name)) {
+        return true;
+      }
+    }
+
+    if (char === ':') {
+      SELECTOR_FUNCTION.lastIndex = position;
+      const name = SELECTOR_FUNCTION.exec(selector)?.[1]?.toLowerCase();
+      if (name !== undefined) {
+        const open = SELECTOR_FUNCTION.lastIndex - 1;
+        const close = matchingCloser(selector, open, '(', ')');
+        const args = selectorArguments(name, selector.slice(open + 1, close));
+        if (
+          args !== undefined &&
+          splitTopLevel(args, ',').every((branch) =>
+            requiresOwnedSelector(branch, classes, attributes),
+          )
+        ) {
+          return true;
+        }
+
+        position = close + 1;
+        continue;
+      }
+    }
+
+    position = char === '(' ? matchingCloser(selector, position, '(', ')') + 1 : position + 1;
+  }
+
+  return false;
+}
+
+/**
+ * Returns the positive selector list of a function when it has one.
+ */
+function selectorArguments(name: string, args: string): string | undefined {
+  if (POSITIVE_SELECTOR_FUNCTIONS.has(name)) {
+    return args;
+  }
+
+  if (name === 'nth-child' || name === 'nth-last-child') {
+    const prefix = NTH_WITH_SELECTORS.exec(args)?.[0];
+    return prefix === undefined ? undefined : args.slice(prefix.length);
+  }
+
+  return undefined;
+}
+
+/**
+ * The name a copied helper's class gets: `kit-portrait` becomes `own-portrait` in a brand's copy
+ * and `dck-portrait` in a deck's.
+ *
+ * @param name - A kit class name.
+ * @param owner - Who owns the copy.
+ */
+export function ownClassName(name: string, owner: ClassOwner): string {
+  return `${OWN_CLASS_PREFIX[owner]}${name.slice(KIT_CLASS_PREFIX.length)}`;
+}
+
+/**
+ * Renames kit classes wherever they are written as whole words, in a stylesheet, a component or a
+ * contract: selectors, `className` strings, PowerPoint selectors and comments alike.
+ *
+ * @param text - The source text.
+ * @param classes - The kit class names to rename.
+ * @param owner - Who owns the copy, which picks the new prefix (see {@link OWN_CLASS_PREFIX}).
+ * @returns The text with each of them given the owner's prefix.
+ */
+export function renameClasses(
+  text: string,
+  classes: ReadonlySet<string>,
+  owner: ClassOwner,
+): string {
+  if (classes.size === 0) {
+    return text;
+  }
+
+  return text.replace(KIT_CLASS_TOKEN, (token) =>
+    classes.has(token) ? ownClassName(token, owner) : token,
+  );
+}
+
+/**
+ * Scopes a stylesheet to one layout, without changing which rule wins inside that layout: a
+ * selector that names the frame gets `:where([data-layout='<name>'])` on it, any other selector is
+ * put under `:where(.kit-frame[data-layout='<name>'])`, and `:where` adds no specificity. A
+ * selector keyed only on this layout is left alone; one keyed only on other layouts can never match
+ * here and is removed, and a rule left with no selector is removed with the comment above it. A
+ * selector keyed on this layout and others is kept, with `:where([data-layout='<name>'])` added to
+ * the compound selector that names the first of them. Rules inside `@layer`, `@media`, `@supports`
+ * and `@container` are scoped too; `@keyframes`, `@font-face` and the other at-rules without style
+ * rules, and rules nested in a rule, are copied as they are. A selector that starts at `:root` or
+ * `html`, and an at-rule such as `@scope` that may hold style rules eject cannot scope, are copied
+ * as they are and reported as problems.
+ *
+ * @param css - The stylesheet's text.
+ * @param layout - The layout to scope it to.
+ * @returns The scoped stylesheet and what it could not scope.
+ */
+export function scopeStylesheet(css: string, layout: string): ScopedStylesheet {
+  const problems: string[] = [];
+  const scoped = scopeBlock(css, layout, problems)
+    .replace(EXTRA_BLANK_LINES, '\n\n')
+    .replace(BLANK_AFTER_BRACE, '{\n')
+    .replace(BLANK_BEFORE_BRACE, '\n$1');
+  return { css: scoped, problems: [...new Set(problems)] };
+}
+
+/**
+ * Scopes the rules of one block's content, or of the whole stylesheet.
+ */
+function scopeBlock(content: string, layout: string, problems: string[]): string {
+  const { items, trailing } = splitItems(content);
+  const kept = items
+    .map((item) => scopeItem(item, layout, problems))
+    .filter((text) => text !== undefined);
+  return `${kept.join('')}${trailing}`;
+}
+
+/**
+ * Scopes one item, or drops it by returning nothing.
+ */
+function scopeItem(item: CssItem, layout: string, problems: string[]): string | undefined {
+  if (item.body === undefined) {
+    return `${item.leading}${item.prelude}`;
+  }
+
+  const atRule = AT_RULE_NAME.exec(item.prelude)?.[0];
+  if (atRule !== undefined) {
+    return `${item.leading}${item.prelude}{${scopeAtRuleBody(atRule, item.body, layout, problems)}}`;
+  }
+
+  const indent = TRAILING_INDENT.exec(item.leading)?.[0] ?? '';
+  const prelude = scopeSelectors(item.prelude, layout, indent, problems);
+  return prelude === undefined ? undefined : `${item.leading}${prelude}{${item.body}}`;
+}
+
+/**
+ * The body of an at-rule: scoped for a grouping rule, as it is otherwise, with a problem for an
+ * at-rule that may hold style rules eject does not scope.
+ */
+function scopeAtRuleBody(atRule: string, body: string, layout: string, problems: string[]): string {
+  if (GROUPING_AT_RULES.has(atRule)) {
+    return scopeBlock(body, layout, problems);
+  }
+
+  if (!VERBATIM_AT_RULES.has(atRule)) {
+    problems.push(
+      `Its ${atRule} block is copied unscoped, so its rules may style other layouts than ${layout}.`,
+    );
+  }
+
+  return body;
+}
+
+/**
+ * Scopes each selector of a rule's selector list, one selector per line at the rule's indent.
+ *
+ * @returns The new list with the space before the `{`, or nothing when no selector is left.
+ */
+function scopeSelectors(
+  prelude: string,
+  layout: string,
+  indent: string,
+  problems: string[],
+): string | undefined {
+  const selectors = splitTopLevel(prelude.trimEnd(), ',')
+    .map((selector) => scopeSelector(selector.trim(), layout, problems))
+    .filter((selector) => selector !== undefined)
+    .map((selector) => wrapSelector(selector, indent));
+  if (selectors.length === 0) {
+    return undefined;
+  }
+
+  return `${selectors.join(`,\n${indent}`)} `;
+}
+
+/**
+ * Scopes one selector, or returns nothing for one that is keyed only on other layouts.
+ */
+function scopeSelector(selector: string, layout: string, problems: string[]): string | undefined {
+  if (ROOT_SELECTOR.test(selector)) {
+    problems.push(
+      `The selector ${selector} starts at the document's root, so it is copied unscoped and may ` +
+        `style other layouts than ${layout}.`,
+    );
+    return selector;
+  }
+
+  if (layoutAttributeInNot(selector)) {
+    problems.push(
+      `The selector ${selector} names a data-layout inside :not(), which eject does not scope, so ` +
+        `it is copied as it is and may style other layouts than ${layout}.`,
+    );
+    return selector;
+  }
+
+  const keyed = new Set([...selector.matchAll(LAYOUT_ATTRIBUTE)].map((match) => match[2]));
+  if (keyed.size > 0) {
+    return scopeKeyedSelector(selector, keyed, layout);
+  }
+
+  if (FRAME_CLASS.test(selector)) {
+    return selector.replace(FRAME_CLASS, (frame) => `${frame}:where([data-layout='${layout}'])`);
+  }
+
+  return `:where(.kit-frame[data-layout='${layout}']) ${selector}`;
+}
+
+/**
+ * Tells whether a selector has a `[data-layout=…]` attribute inside a `:not(…)`, however deep. The
+ * attribute there excludes layouts instead of naming them, which the keyed scoping would read the
+ * wrong way round.
+ */
+function layoutAttributeInNot(selector: string): boolean {
+  return [...selector.matchAll(NOT_OPEN)].some((match) => {
+    const start = match.index + match[0].length;
+    let depth = 1;
+    let position = start;
+    while (position < selector.length && depth > 0) {
+      const next = skipQuoted(selector, position);
+      if (next !== position) {
+        position = next;
+        continue;
+      }
+
+      const char = selector[position];
+      if (char === '(') {
+        depth += 1;
+      } else if (char === ')') {
+        depth -= 1;
+      }
+
+      position += 1;
+    }
+
+    return [...selector.slice(start, position).matchAll(LAYOUT_ATTRIBUTE)].length > 0;
+  });
+}
+
+/**
+ * Scopes a selector that names one or more layouts: kept as it is when it names only this one,
+ * dropped when it does not name it, and narrowed to it when it names others too.
+ */
+function scopeKeyedSelector(
+  selector: string,
+  keyed: ReadonlySet<string | undefined>,
+  layout: string,
+): string | undefined {
+  if (!keyed.has(layout)) {
+    return undefined;
+  }
+
+  if (keyed.size === 1) {
+    return selector;
+  }
+
+  const compounds = splitTopLevel(selector.replace(WHITE_SPACE_RUN, ' '), ' ');
+  const at = compounds.findIndex((compound) => compound.match(LAYOUT_ATTRIBUTE) !== null);
+  return compounds
+    .map((compound, index) =>
+      index === at ? `${compound}:where([data-layout='${layout}'])` : compound,
+    )
+    .join(' ');
+}
+
+/**
+ * Lays a selector out as the formatter does: on one line when it fits, otherwise with each further
+ * compound selector on a line of its own, one step in, and the arguments of a pseudo-class that is
+ * still too wide one per line.
+ */
+function wrapSelector(selector: string, indent: string): string {
+  const flat = selector
+    .replace(WHITE_SPACE_RUN, ' ')
+    .replace(SPACE_AFTER_PAREN, '(')
+    .replace(SPACE_BEFORE_PAREN, ')');
+  if (indent.length + flat.length + RULE_OPEN.length <= MAX_LINE_CHARS) {
+    return flat;
+  }
+
+  const compounds: string[] = [];
+  let lead = '';
+  for (const token of splitTopLevel(flat, ' ')) {
+    if (COMBINATORS.has(token)) {
+      lead = `${token} `;
+    } else {
+      compounds.push(`${lead}${token}`);
+      lead = '';
+    }
+  }
+
+  const inner = `${indent}${INDENT}`;
+  return compounds
+    .map((compound, index) => {
+      const lineIndent = index === 0 ? indent : inner;
+      const after = index === compounds.length - 1 ? RULE_OPEN.length : 0;
+      const fits = lineIndent.length + compound.length + after <= MAX_LINE_CHARS;
+      return fits ? compound : wrapArguments(compound, lineIndent);
+    })
+    .join(`\n${inner}`);
+}
+
+/**
+ * Puts the arguments of a compound selector's first pseudo-class one per line, one step in from the
+ * line's indent; a compound without arguments is returned as it is.
+ */
+function wrapArguments(compound: string, indent: string): string {
+  const open = compound.indexOf('(');
+  const close = compound.lastIndexOf(')');
+  if (open === -1 || close < open) {
+    return compound;
+  }
+
+  const inner = `${indent}${INDENT}`;
+  const parts = splitTopLevel(compound.slice(open + 1, close), ',').map((part) => part.trim());
+  return [
+    compound.slice(0, open + 1),
+    parts.map((part) => `${inner}${part}`).join(',\n'),
+    `${indent}${compound.slice(close)}`,
+  ].join('\n');
+}
+
+/**
+ * Splits a block's content into its items, with what follows the last one.
+ */
+function splitItems(content: string): { items: CssItem[]; trailing: string } {
+  const items: CssItem[] = [];
+  let position = 0;
+  for (;;) {
+    const start = skipBlank(content, position);
+    const stop = findStop(content, start);
+    if (stop === undefined) {
+      return { items, trailing: content.slice(position) };
+    }
+
+    const leading = content.slice(position, start);
+    if (content[stop] === ';') {
+      items.push({ leading, prelude: content.slice(start, stop + 1), body: undefined });
+      position = stop + 1;
+      continue;
+    }
+
+    const close = matchingCloser(content, stop, '{', '}');
+    items.push({
+      leading,
+      prelude: content.slice(start, stop),
+      body: content.slice(stop + 1, close),
+    });
+    position = close + 1;
+  }
+}
+
+/**
+ * The position after the white space and comments that start at a position.
+ */
+function skipBlank(text: string, from: number): number {
+  let position = from;
+  for (;;) {
+    if (text.startsWith('/*', position)) {
+      position = endOfComment(text, position);
+    } else if (WHITE_SPACE.test(text[position] ?? '')) {
+      position += 1;
+    } else {
+      return position;
+    }
+  }
+}
+
+/**
+ * The position of the `{` or `;` that ends the prelude starting at a position, or nothing when the
+ * text ends first.
+ */
+function findStop(text: string, from: number): number | undefined {
+  let position = from;
+  while (position < text.length) {
+    const next = skipQuoted(text, position);
+    if (next !== position) {
+      position = next;
+    } else if (text[position] === '{' || text[position] === ';') {
+      return position;
+    } else {
+      position += 1;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * The position of the delimiter that closes the group at `open`, or the end of the text.
+ */
+function matchingCloser(text: string, open: number, opener: string, closer: string): number {
+  let depth = 0;
+  let position = open;
+  while (position < text.length) {
+    const next = skipQuoted(text, position);
+    if (next !== position) {
+      position = next;
+      continue;
+    }
+
+    if (text[position] === opener) {
+      depth += 1;
+    } else if (text[position] === closer) {
+      depth -= 1;
+      if (depth === 0) {
+        return position;
+      }
+    }
+
+    position += 1;
+  }
+
+  return text.length;
+}
+
+/**
+ * The position after a comment, string or escape that starts here, or the position itself.
+ */
+function skipQuoted(text: string, position: number): number {
+  if (text.startsWith('/*', position)) {
+    return endOfComment(text, position);
+  }
+
+  if (text[position] === '\\') {
+    return position + 2;
+  }
+
+  const quote = text[position];
+  if (quote !== '"' && quote !== "'") {
+    return position;
+  }
+
+  let end = position + 1;
+  while (end < text.length && text[end] !== quote) {
+    end += text[end] === '\\' ? 2 : 1;
+  }
+
+  return end + 1;
+}
+
+/**
+ * The position after the comment that starts at a position.
+ */
+function endOfComment(text: string, position: number): number {
+  const end = text.indexOf('*/', position + 2);
+  return end === -1 ? text.length : end + 2;
+}
+
+/**
+ * Splits a text at a separator that is not inside brackets, a string or a comment.
+ */
+function splitTopLevel(text: string, separator: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  let position = 0;
+  while (position < text.length) {
+    const next = skipQuoted(text, position);
+    if (next !== position) {
+      position = next;
+      continue;
+    }
+
+    const char = text[position];
+    if (char === '(' || char === '[') {
+      depth += 1;
+    } else if (char === ')' || char === ']') {
+      depth -= 1;
+    } else if (char === separator && depth === 0) {
+      parts.push(text.slice(start, position));
+      start = position + 1;
+    }
+
+    position += 1;
+  }
+
+  return [...parts, text.slice(start)];
+}

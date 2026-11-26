@@ -1,15 +1,16 @@
 import { defineLayoutContract, type FieldProblem } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
-import { AlignField, alignHint } from '#layouts/display-fields.ts';
 import {
+  AlignField,
+  alignHint,
   CHROME_HINT,
   chromeField,
   EYEBROW_HINT,
   EyebrowField,
   TREATMENT_HINT,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The longest section number, in characters: `02`, `IV` or `Q3`.

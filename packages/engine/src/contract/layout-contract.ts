@@ -430,6 +430,16 @@ export type LayoutContract<
    * layout.
    */
   readonly pptx?: PptxMapping;
+
+  /**
+   * Set on a brand's or a deck's code layout that takes the name of a kit or engine layout on
+   * purpose, to replace it: slides that name the layout get this one, in the kit layout's place in
+   * `deckster layouts`, and the kit's component and stylesheet for it are not loaded. The build
+   * checks that every slide written for the original still works (its fields, slots, title and
+   * example). Without it, a code layout named like a kit layout is an error, and with it on a name
+   * that no kit or engine layout has, too. Kit and catalog layouts leave it out.
+   */
+  readonly replaces?: true;
 };
 
 /**

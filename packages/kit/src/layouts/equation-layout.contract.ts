@@ -11,7 +11,7 @@ import {
   EyebrowField,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest terms an equation joins: two figures and an operator between them.

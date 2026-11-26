@@ -1,0 +1,120 @@
+// @deckster/kit/layout-parts
+function BrandLogo(props: BrandLogoProps): ReactNode
+function enterProps(order: number, isStatic: boolean): EnterProps
+type EnterProps = {
+  'data-kit-enter'?: number;
+};
+function Eyebrow(props: EyebrowProps): ReactNode
+type FitRung = {
+  step?: FitTypeStep;
+  scale: number;
+  maxLines: number;
+};
+function FittedText(props: FittedTextProps): ReactNode
+function Footnote(props: FootnoteProps): ReactNode
+function Frame(props: FrameProps): ReactNode
+function frontmatterAsset(source: string | undefined, slideFile?: string): string | undefined
+function frontmatterIcon(name: string | undefined, brandSet: string): IconComponent | undefined
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
+const MAX_ENTER_ORDER = 6;
+function Region(props: RegionProps): ReactNode
+function SlideHeader(props: SlideHeaderProps): ReactNode
+function smartPunctuation(text: string, before = ''): string
+function StatDelta(props: StatDeltaProps): ReactNode
+function StatValue(props: StatValueProps): ReactNode
+function Step(props: KitStepProps): ReactNode
+const TableLayoutContext = createContext<TableLayoutSettings | undefined>(undefined);
+type TableLayoutSettings = {
+  readonly highlight:
+    | { readonly row?: string | number; readonly column?: string | number }
+    | undefined;
+  readonly emphasis: string;
+  readonly alignNumbers: boolean;
+};
+function TreatedMedia(props: TreatedMediaProps): ReactNode
+function useEnter(order: number): EnterProps
+function useFitGroupWidth(ref: RefObject<HTMLElement | null>, selector: string): void
+function useFitLevel(region: RefObject<HTMLElement | null>, content: RefObject<HTMLElement | null>, levels: number, key: string, options: FitLevelOptions = {}): FitLevel
+function useRenderOnFontLoad(): number
+function useStillMotion(): boolean
+
+// types the signatures above name
+foundation/brand-logo.tsx type BrandLogoProps = {
+  scale?: number;
+  onDark?: boolean;
+};
+foundation/fit-level.ts type FitLevel = {
+  level: number;
+  overflows: boolean;
+};
+foundation/fit-level.ts type FitLevelOptions = {
+  fill?: (level: number) => number;
+  overflow?: boolean;
+  height?: (content: HTMLElement) => number;
+  restartOnFontLoad?: boolean;
+};
+foundation/fit-text.ts type FitTypeStep = 'display' | 'headline' | 'title' | 'quote';
+foundation/media-treatment.tsx type TreatedMediaProps = {
+  className: string;
+  treatment?: string;
+  rounded?: boolean;
+  fit?: 'cover' | 'contain';
+  children?: ReactNode;
+};
+foundation/slide-parts.tsx type EyebrowProps = {
+  text: string | undefined;
+  reserve?: boolean;
+};
+foundation/slide-parts.tsx type FittedTextProps = {
+  as: 'h1' | 'h2' | 'p' | 'blockquote' | 'div';
+  id?: string | undefined;
+  className: string;
+  maxLines?: number;
+  ladder?: readonly FitRung[];
+  boundary?: string;
+  children?: ReactNode;
+};
+foundation/slide-parts.tsx type FootnoteProps = {
+  children?: ReactNode;
+};
+foundation/slide-parts.tsx type FrameProps = {
+  layout: string;
+  className?: string;
+  variant?: Readonly<Record<`data-${string}`, string | undefined>>;
+  bleed?: ReactNode;
+  backdrop?: boolean;
+  layers?: readonly BackgroundLayerTokens[] | undefined;
+  children?: ReactNode;
+};
+foundation/slide-parts.tsx type RegionProps = {
+  className?: string;
+  place?: 'top' | 'optical';
+  ref?: Ref<HTMLDivElement>;
+  children?: ReactNode;
+};
+foundation/slide-parts.tsx type SlideHeaderProps = {
+  eyebrow: string | undefined;
+  title: string | undefined;
+  titleId?: string;
+  maxLines?: number;
+};
+foundation/stat-figure.tsx type StatDeltaEntry = {
+  delta?: string | undefined;
+  tone?: DeltaTone | undefined;
+  trend?: DeltaDirection | undefined;
+};
+foundation/stat-figure.tsx type StatDeltaProps = {
+  stat: StatDeltaEntry;
+};
+foundation/stat-figure.tsx type StatValueProps = {
+  value: string | number;
+  className?: string;
+  countUp?: boolean;
+};
+layouts/stat-value.ts type DeltaDirection = 'up' | 'down' | 'flat';
+layouts/stat-value.ts type DeltaTone = 'positive' | 'negative' | 'neutral';
+motion/step-effects.ts type StepEffect = (typeof STEP_EFFECTS)[number];
+motion/step.tsx type KitStepProps = StepProps & {
+  effect?: StepEffect;
+  focus?: boolean;
+};

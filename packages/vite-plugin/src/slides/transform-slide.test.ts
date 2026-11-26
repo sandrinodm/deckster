@@ -452,3 +452,48 @@ describe('readSlideMeta', () => {
     expect(meta.frontmatter.layout).toBe('default');
   });
 });
+
+describe("a broken code layout of the deck's own brand", () => {
+  const broken = {
+    code: 'layout-load-failed',
+    file: '/workspace/brands/acme/layouts/fx-hero/contract.ts',
+    layout: 'fx-hero',
+    message: 'brands/acme/layouts/fx-hero/contract.ts: Loading it failed: boom',
+    fix: 'Fix the contract.',
+  } as const;
+
+  const onBrokenLayout = async (extension: 'mdx' | 'tsx', code: string): Promise<SlideSource> => {
+    const layouts = await Effect.runPromise(loadLayoutCatalog(DEFAULT_LAYOUT_CATALOGS));
+    return {
+      ...slide('hero', extension, code),
+      layouts,
+      fallback: { workspaceRoot: FIXTURE_WORKSPACE, brand: 'acme' },
+      local: {
+        found: {
+          layouts: [],
+          catalogs: [],
+          replaced: [],
+          files: [],
+          problems: [broken],
+          warnings: [],
+        },
+      },
+    };
+  };
+
+  it("fails an MDX slide with its problem before another brand's data layout swaps it", async () => {
+    const source = await onBrokenLayout('mdx', '---\nlayout: fx-hero\ntitle: Hi\n---\n');
+    await expect(Effect.runPromise(transformMdxSlide(source, false))).rejects.toThrow(
+      'layout: brands/acme/layouts/fx-hero/contract.ts: Loading it failed: boom',
+    );
+  });
+
+  it("fails a TSX slide with its problem before another brand's data layout swaps it", async () => {
+    const code =
+      "export const frontmatter = { layout: 'fx-hero', title: 'Hi' };\nexport default () => null;";
+    const source = await onBrokenLayout('tsx', code);
+    await expect(Effect.runPromise(transformTsxSlide(source))).rejects.toThrow(
+      'Loading it failed: boom',
+    );
+  });
+});

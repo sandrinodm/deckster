@@ -1,7 +1,7 @@
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Effect, Schema } from 'effect';
 
-import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField } from '#layouts/layout-fields.ts';
+import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField } from '#layout-fields.ts';
 
 /**
  * How wide a content slide's body runs: an eight-column reading measure, or all twelve columns for

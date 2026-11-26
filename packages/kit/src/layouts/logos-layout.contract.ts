@@ -4,13 +4,13 @@ import { Effect, Schema } from 'effect';
 import {
   CHROME_HINT,
   chromeField,
+  CONTEXT_MAX_WORDS,
   EYEBROW_HINT,
   EyebrowField,
   textField,
   TREATMENT_HINT,
   TreatmentField,
-  CONTEXT_MAX_WORDS,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest logos a logo wall shows.

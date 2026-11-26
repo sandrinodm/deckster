@@ -1,12 +1,18 @@
 import { loadBrand, type LoadedBrand } from '@deckster/brand/node';
 import {
+  deckCatalog,
   loadLayoutCatalog,
   type DeckBuildError,
+  type DeckCatalog,
+  type DeckLocation,
   type LayoutCatalogIndex,
+  type LayoutProblem,
+  type LocalLayouts,
 } from '@deckster/vite-plugin';
 import { Effect, type FileSystem } from 'effect';
 
 import { firstLine } from '#cli-error.ts';
+import { displayFile } from '#lint/deck-problems.ts';
 
 /**
  * Matches the full stop that ends a sentence.
@@ -19,11 +25,47 @@ const TRAILING_PERIOD_PATTERN = /\.$/;
 const LIST_MARKER_PATTERN = /^(?:[-*•]|\d+\.)\s+/;
 
 /**
- * The layout catalog of a deck's brand, and what went wrong with the brand's own layouts.
+ * The code layouts of a catalog that left out its brand: none were looked for.
+ */
+const NO_LOCAL_LAYOUTS: LocalLayouts = {
+  /**
+   * No layout folders were read.
+   */
+  layouts: [],
+
+  /**
+   * No contracts were loaded.
+   */
+  catalogs: [],
+
+  /**
+   * No kit layout is replaced.
+   */
+  replaced: [],
+
+  /**
+   * No files were found.
+   */
+  files: [],
+
+  /**
+   * The brand's problem is the warning instead.
+   */
+  problems: [],
+
+  /**
+   * Nothing was checked, so nothing to warn about.
+   */
+  warnings: [],
+};
+
+/**
+ * The layout catalog of a deck's brand and the deck, and what went wrong with their own layouts.
  */
 export type BrandCatalog = {
   /**
-   * Every layout the deck can use; without the brand's own when the brand did not load.
+   * Every layout the deck can use; without the brand's and the deck's own when the brand did not
+   * load, and without a code layout that has a problem.
    */
   catalog: LayoutCatalogIndex;
 
@@ -33,24 +75,34 @@ export type BrandCatalog = {
   brand: LoadedBrand | undefined;
 
   /**
-   * The sentence that says why the brand's layouts are left out, or `undefined` when they are in.
+   * The code layouts of the brand and the deck; none when the brand did not load.
    */
-  warning: string | undefined;
+  local: LocalLayouts;
+
+  /**
+   * One sentence per problem that leaves layouts out: the brand's, or one code layout's. Empty when
+   * every layout is in.
+   */
+  warnings: readonly string[];
 };
 
 /**
- * Loads the engine and kit layouts plus the layouts of one brand. A brand that does not load, or
- * whose layouts do not fit their fallbacks, does not stop the command: the catalog then has only
- * the engine and kit layouts and a warning says why, so slides can still be listed and added.
+ * Loads the engine and kit layouts, the layouts of one brand (data and code) and, given a deck, the
+ * deck's code layouts, running their contracts. A brand that does not load, or whose data layouts
+ * do not fit their fallbacks, does not stop the command: the catalog then has only the engine and
+ * kit layouts and a warning says why. A code layout with a problem is left out on its own, with a
+ * warning. So slides can still be listed and added.
  *
  * @param workspaceRoot - The workspace.
  * @param brandName - The brand folder name.
- * @returns The catalog, the brand when it loaded and a warning when its layouts are left out.
+ * @param deck - The deck whose code layouts join the catalog; leave it out for the brand alone.
+ * @returns The catalog, the brand when it loaded, the code layouts and the warnings.
  * @throws DeckBuildError in the error channel when the engine or kit catalog does not load.
  */
 export const loadBrandCatalog = Effect.fn('loadBrandCatalog')(function* (
   workspaceRoot: string,
   brandName: string,
+  deck?: DeckLocation,
 ): Effect.fn.Return<BrandCatalog, DeckBuildError, FileSystem.FileSystem> {
   const loaded = yield* loadBrand(workspaceRoot, brandName).pipe(
     Effect.map((brand): { brand: LoadedBrand } | { problem: string } => ({ brand })),
@@ -61,19 +113,51 @@ export const loadBrandCatalog = Effect.fn('loadBrandCatalog')(function* (
   }
 
   const { brand } = loaded;
-  const catalog = yield* loadLayoutCatalog(undefined, {
-    brand: brand.tokens,
-    layoutsFile: brand.layoutsFile,
-  }).pipe(
-    Effect.map((index): LayoutCatalogIndex | string => index),
+  const found = yield* deckCatalog({ root: workspaceRoot, brand, deck, code: 'load' }).pipe(
+    Effect.map((catalog): DeckCatalog | string => catalog),
     Effect.catchTag('DeckBuildError', (error) => Effect.succeed(error.message)),
   );
-  if (typeof catalog === 'string') {
-    return yield* withoutBrand(brandName, catalog);
+  if (typeof found === 'string') {
+    return yield* withoutBrand(brandName, found);
   }
 
-  return { catalog, brand, warning: undefined };
+  return {
+    catalog: found.index,
+    brand,
+    local: found.local,
+    warnings: found.local.problems.map((problem) => layoutProblemWarning(workspaceRoot, problem)),
+  };
 });
+
+/**
+ * The warning for a layout left out of the catalog, a code layout or a data layout whose fallback
+ * is not loaded: the file, what is wrong and the fix.
+ *
+ * @param workspaceRoot - The workspace, which file names are relative to.
+ * @param problem - The layout's problem; its file is named unless the message names it.
+ */
+export function layoutProblemWarning(workspaceRoot: string, problem: LayoutProblem): string {
+  const subject = problemSubject(problem);
+  const message = firstLine(problem.message).replace(TRAILING_PERIOD_PATTERN, '');
+  const file = displayFile(workspaceRoot, problem.file);
+  const where = message.includes(file) ? '' : ` in ${file}`;
+  return `${subject} left out (${problem.code}${where}): ${message}. Fix: ${problem.fix}`;
+}
+
+/**
+ * Who the warning is about: every code layout, one code layout or, for a fallback that is not
+ * loaded, a data layout of the brand.
+ *
+ * @param problem - The layout's problem.
+ */
+function problemSubject(problem: LayoutProblem): string {
+  if (problem.layout === undefined) {
+    return 'Code layouts are';
+  }
+
+  const kind = problem.code === 'layout-fallback-unavailable' ? 'data' : 'code';
+  return `The ${kind} layout "${problem.layout}" is`;
+}
 
 /**
  * The catalog without the brand's layouts, with the warning that names the problem.
@@ -88,9 +172,11 @@ const withoutBrand = Effect.fn('withoutBrand')(function* (
   return {
     catalog: yield* loadLayoutCatalog(),
     brand: undefined,
-    warning:
+    local: NO_LOCAL_LAYOUTS,
+    warnings: [
       `The brand "${brandName}" has a problem, so its own layouts are left out: ` +
-      `${problemSummary(problem).replace(TRAILING_PERIOD_PATTERN, '')}. Run \`deckster brand check ${brandName}\` for the details.`,
+        `${problemSummary(problem).replace(TRAILING_PERIOD_PATTERN, '')}. Run \`deckster brand check ${brandName}\` for the details.`,
+    ],
   };
 });
 

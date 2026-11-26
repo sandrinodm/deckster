@@ -4,13 +4,19 @@ import { useRef, type ReactNode } from 'react';
 
 import type { quizLayoutContract } from '#layouts/quiz-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
 import { KitMark } from '#foundation/marks.tsx';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import { QUIZ_LETTERS, QUIZ_TILE_MAX_CHARS } from '#layouts/quiz-values.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
 import '#layouts/quiz-layout.css';
 
 /**

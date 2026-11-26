@@ -4,14 +4,14 @@ import { Schema } from 'effect';
 import {
   CHROME_HINT,
   chromeField,
+  CONTEXT_MAX_WORDS,
   EYEBROW_HINT,
   EyebrowField,
   IconNameField,
   REVEAL_HINT,
   RevealField,
   textField,
-  CONTEXT_MAX_WORDS,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest cards a cards slide shows.

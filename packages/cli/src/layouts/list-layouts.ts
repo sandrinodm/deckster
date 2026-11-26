@@ -59,6 +59,16 @@ const PLAIN_YAML_PATTERN = /^[\w ./-]+$/;
 export const BRAND_SOURCE_PREFIX = 'brand:';
 
 /**
+ * The source of the kit's layouts, as `replaces` names it.
+ */
+const KIT_SOURCE = '@deckster/kit';
+
+/**
+ * The source of the engine's built-in layout, as `replaces` names it.
+ */
+const ENGINE_SOURCE = '@deckster/engine';
+
+/**
  * A JSON Schema object, as `deckster layouts --json` prints it.
  */
 type JsonSchema = Readonly<Record<string, unknown>>;
@@ -125,10 +135,19 @@ export type LayoutInfo = {
   name: string;
 
   /**
-   * The package that supplies the layout, such as `@deckster/kit`, or `brand:<name>` for a layout
-   * the deck's brand brings in its `layouts.ts`.
+   * Where the layout comes from: the package that supplies it, such as `@deckster/kit`;
+   * `brand:<name>` for a data layout the deck's brand brings in its `layouts.ts`;
+   * `brand-code:<name>` for a code layout in the brand's `layouts/<layout>/` folder; or
+   * `deck:<name>` for a code layout in the deck's own `layouts/<layout>/` folder.
    */
   source: string;
+
+  /**
+   * The source of the layout this one replaces, such as `@deckster/kit`, for a code layout whose
+   * contract says `replaces: true`; left out for every other layout. The replacement takes the
+   * replaced layout's place in the list.
+   */
+  replaces?: string;
 
   /**
    * For a brand layout, the kit layout a slide on it falls back to when the deck moves to a brand
@@ -241,9 +260,34 @@ export type LayoutCatalogInfo = {
 };
 
 /**
- * Lists the layouts a deck can use with their full contracts: the engine's built-in layout plus
- * every layout in the layout catalogs, loaded in Node without starting a server. A later catalog's
- * layout replaces an earlier one of the same name, as it does at build and run time.
+ * Says in plain words that a layout replaces another one: `replaces the kit's title`. Nothing for a
+ * layout that replaces none.
+ *
+ * @param layout - The layout's name and, when set, the source of the layout it replaces.
+ * @returns The sentence, or `undefined` when the layout replaces none.
+ */
+export function describeReplacement(layout: {
+  name: string;
+  replaces?: string | undefined;
+}): string | undefined {
+  switch (layout.replaces) {
+    case undefined:
+      return undefined;
+    case KIT_SOURCE:
+      return `replaces the kit's ${layout.name}`;
+    case ENGINE_SOURCE:
+      return `replaces the engine's ${layout.name}`;
+    default:
+      return `replaces ${layout.name} from ${layout.replaces}`;
+  }
+}
+
+/**
+ * Lists the layouts a deck can use with their full contracts: the engine's built-in layout, every
+ * layout in the layout catalogs, the brand's data and code layouts and the deck's code layouts,
+ * loaded in Node without starting a server. A later catalog's layout replaces an earlier one of the
+ * same name, as it does at build and run time; a code layout with a problem is left out with a
+ * warning.
  *
  * @param workspaceRoot - The workspace that contains the deck.
  * @param deckId - The deck folder name.
@@ -259,14 +303,12 @@ export const listLayouts = Effect.fn('listLayouts')(function* (
   brandOverride?: string,
 ): Effect.fn.Return<LayoutCatalogInfo, DeckBuildError, FileSystem.FileSystem> {
   const deck = yield* loadDeck(workspaceRoot, yield* findDeck(workspaceRoot, deckId));
-  const { catalog, brand, warning } = yield* loadBrandCatalog(
+  const { catalog, brand, warnings } = yield* loadBrandCatalog(
     workspaceRoot,
     deckBrandName(deck.config, brandOverride),
+    deck.location,
   );
-  return {
-    ...describeCatalog(catalog, brand?.tokens),
-    warnings: warning === undefined ? [] : [warning],
-  };
+  return { ...describeCatalog(catalog, brand?.tokens), warnings: [...warnings] };
 });
 
 /**
@@ -297,7 +339,7 @@ export function describeCatalog(
  * @param brandLayout - The brand's spec of the layout, when the layout comes from the brand.
  */
 function describeLayout(
-  { contract, source }: CatalogLayout,
+  { contract, source, replaces }: CatalogLayout,
   brandLayout: BrandTokens['layouts'][number] | undefined,
 ): LayoutInfo {
   const frontmatter = { layout: contract.name, ...contract.example.frontmatter };
@@ -305,6 +347,7 @@ function describeLayout(
   return {
     name: contract.name,
     source,
+    ...(replaces === undefined ? {} : { replaces }),
     fallback: source.startsWith(BRAND_SOURCE_PREFIX) ? (brandLayout?.fallback ?? null) : null,
     label: source.startsWith(BRAND_SOURCE_PREFIX) ? (brandLayout?.label ?? null) : null,
     description: contract.description,

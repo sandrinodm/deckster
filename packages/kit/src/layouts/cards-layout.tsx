@@ -4,12 +4,18 @@ import { useRef, type ReactNode } from 'react';
 
 import type { cardsLayoutContract } from '#layouts/cards-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { frontmatterIcon } from '#foundation/frontmatter-assets.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  frontmatterIcon,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/cards-layout.css';
 
 /**

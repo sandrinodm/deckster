@@ -15,11 +15,20 @@ import { CANVAS_SIZE } from '#workspace.ts';
 const OPEN_PAGE_ACTION = 'open a page';
 
 /**
+ * The Chromium switches every deck page runs with. `--disable-lcd-text` sets text in grayscale
+ * antialiasing, as Chromium on macOS always does: on Linux it otherwise uses subpixel (LCD)
+ * antialiasing, whose colour fringe reaches a pixel past a glyph's ink bounds, and a repaint when a
+ * web font replaces its fallback face covers only those bounds. A screenshot then depends on
+ * whether the slide was ever painted in the fallback face, which is a race with the font load.
+ */
+const CHROMIUM_ARGS = ['--disable-lcd-text'];
+
+/**
  * Launches headless Chromium, with the install command when it is missing.
  */
 export function launchBrowser(): Effect.Effect<Browser, CliError> {
   return Effect.tryPromise({
-    try: () => chromium.launch(),
+    try: () => chromium.launch({ args: CHROMIUM_ARGS }),
     catch: (error) => {
       const detail = firstLine(error instanceof Error ? error.message : String(error));
       return cliError(

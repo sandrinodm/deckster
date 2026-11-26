@@ -26,13 +26,24 @@ from a git repository.
                            recoloring the surface writes, with nodeFill (the fill is that
                            surface's diagram node color). Colors are hex, sizes canvas px.
                            It also prints the number and names of the brand's own layouts
-                           (brands/<name>/layouts.ts). With --json, layouts has each
-                           layout with its defaults filled in.
+                           (brands/<name>/layouts.ts) and of its code layouts
+                           (brands/<name>/layouts/<layout>/), each one that replaces a kit layout
+                           marked, as "title (replaces the kit's title)". With --json, layouts
+                           has each layout with its defaults filled in.
   deckster brand check <name>  Loads and validates brands/<name> and prints every error and warning
                            with its field and fix. This includes its layouts: each must name a
-                           kit or engine layout as its fallback, bind only slots and fields that
+                           kit, engine or code layout as its fallback, bind only slots and fields that
                            layout has, bind every one it requires, and not clash with a kit
-                           layout's name. Exits with 1 when it has errors.
+                           layout's name. It also loads its code layouts' contracts and reports
+                           each problem (a missing file, a name that differs from the folder, a
+                           contract that throws or is invalid, a name already taken) as an error
+                           under the layout's file, with the problem id. A code layout that
+                           replaces a kit layout (replaces: true) is also checked against the
+                           slides of every deck on the brand that use that layout; a slide that
+                           no longer fits is an error. A replacement without the kit layout's
+                           PowerPoint mapping is a warning, and a budget or title limit that
+                           differs from the kit layout's is a note. Exits with 1 when it has
+                           errors.
   deckster brand add <source>  Copies a brand folder from a git repository into brands/<name>, named
                            by the brand's \`name\`. <source> is gh:owner/repo/<folder>#<ref>
                            (over https), a GitHub link (https://github.com/owner/repo/tree/<ref>/
@@ -42,7 +53,13 @@ from a git repository.
                            and url.<base>.insteadOf rules apply. brand.ts and layouts.ts are read
                            as data and never run; the brand is checked before anything is
                            written, and only brand.ts, layouts.ts, images, fonts and documents
-                           are copied (no other code, symlinks or package files). Fonts are not
+                           are copied (no other code, symlinks or package files). A code layout
+                           (a folder layouts/<name>/ with a contract.ts or layout.tsx) is left out
+                           whole, its README and images too; a data layout in layouts.ts that falls
+                           back to one is added with a warning, and slides that use a code layout
+                           fail until its folder is copied from the brand's own repository. It
+                           writes brands/<name>/.deckster-source.json with the source, the commit
+                           and the names of the code layouts left out. Fonts are not
                            installed: it prints the commands to run next (pnpm install in this
                            repository, or npm install for missing fonts), then deckster brand check,
                            which checks what needs the fonts. Each git step that uses the
@@ -50,8 +67,14 @@ from a git repository.
 
 Options:
   --json        For check: { brand, file, ok, errors, warnings }, each problem { path, message,
-                fix }. For add: { ok, brand, dir, source, commit, replaced, files, written,
-                skipped: [{ path, reason }], fonts: [{ name, version, installed }], warnings,
-                next }. A failure prints { ok: false, error: { type, message } }.
+                fix, file }, and a code layout's also { code, layout } (its problem id, such as
+                layout-load-failed, and the layout's folder name). The warnings of a code layout
+                also have level: "warning" (layout-replace-pptx) or "note" (layout-replace-budget).
+                For add: { ok, brand, dir, source, commit, replaced, files, written,
+                skipped: [{ path, reason }], codeLayoutsSkipped, fonts: [{ name, version,
+                installed }], warnings, next }. written lists .deckster-source.json and, in the
+                repository checkout, package.json and tsconfig.json. codeLayoutsSkipped is the
+                sorted names of the code layouts left out. A failure prints
+                { ok: false, error: { type, message } }.
   --force       For add: replace a brand of the same name the workspace already has.
   -h, --help    Show this help.`;

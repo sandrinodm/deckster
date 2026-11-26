@@ -4,15 +4,22 @@ import { useRef, type CSSProperties, type ReactNode } from 'react';
 
 import type { BentoTile, bentoLayoutContract } from '#layouts/bento-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { frontmatterIcon, type IconComponent } from '#foundation/frontmatter-assets.ts';
 import { FrontmatterPicture } from '#foundation/frontmatter-picture.tsx';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { StatValue } from '#foundation/stat-figure.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  frontmatterIcon,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  StatValue,
+  Step,
+  useEnter,
+  useFitLevel,
+  type IconComponent,
+} from '#layout-parts.ts';
 import { tileKind } from '#layouts/bento-layout.contract.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
 import '#layouts/bento-layout.css';
 
 /**
@@ -65,6 +72,7 @@ function BentoLayout({ frontmatter, slots }: LayoutProps<typeof bentoLayoutContr
   const levels = tiles.length <= BODY_TEXT_MOST_TILES ? BENTO_LEVELS : BENTO_LEVELS.slice(1);
   const { level } = useFitLevel(region, grid, levels.length, JSON.stringify(tiles), {
     overflow: true,
+    restartOnFontLoad: true,
   });
   const size = levels[level] ?? { text: 'small', compact: true };
   const { brand } = useBrand();

@@ -4,7 +4,12 @@ import { NodeFileSystem } from '@effect/platform-node';
 import { describe, expect, it, layer } from '@effect/vitest';
 import { Effect } from 'effect';
 
-import { describeCatalog, exampleMdx, listLayouts } from '#layouts/list-layouts.ts';
+import {
+  describeCatalog,
+  describeReplacement,
+  exampleMdx,
+  listLayouts,
+} from '#layouts/list-layouts.ts';
 
 layer(NodeFileSystem.layer)('listLayouts', (it) => {
   it.effect('prints the full contract of every layout the hello deck can use', () =>
@@ -89,12 +94,52 @@ layer(NodeFileSystem.layer)('listLayouts', (it) => {
     }),
   );
 
+  it.effect('adds replaces to a code layout that replaces another and to no other layout', () =>
+    Effect.gen(function* () {
+      const base = (yield* loadLayoutCatalog()).get('default');
+      if (base === undefined) {
+        return expect.fail('The catalog has no default layout.');
+      }
+
+      const catalog = new Map([
+        ['default', base],
+        [
+          'title',
+          {
+            contract: { ...base.contract, name: 'title' },
+            source: 'brand-code:acme',
+            replaces: '@deckster/kit',
+          },
+        ],
+      ]);
+      const { layouts } = describeCatalog(catalog);
+      expect(layouts.map((layout) => layout.replaces)).toEqual([undefined, '@deckster/kit']);
+      expect(Object.keys(layouts[0] ?? {})).not.toContain('replaces');
+      expect(JSON.parse(JSON.stringify(layouts[1]))).toMatchObject({ replaces: '@deckster/kit' });
+    }),
+  );
+
   it.effect('names the deck that does not exist', () =>
     Effect.gen(function* () {
       const error = yield* Effect.flip(listLayouts(FRAMEWORK_ROOT, 'nope'));
       expect(error.message).toContain('There is no decks/nope/deck.config.ts.');
     }),
   );
+});
+
+describe('describeReplacement', () => {
+  it('says what a layout replaces in plain words, and nothing for a layout that replaces none', () => {
+    expect(describeReplacement({ name: 'title', replaces: '@deckster/kit' })).toBe(
+      "replaces the kit's title",
+    );
+    expect(describeReplacement({ name: 'default', replaces: '@deckster/engine' })).toBe(
+      "replaces the engine's default",
+    );
+    expect(describeReplacement({ name: 'title', replaces: '@acme/layouts' })).toBe(
+      'replaces title from @acme/layouts',
+    );
+    expect(describeReplacement({ name: 'title' })).toBeUndefined();
+  });
 });
 
 describe('exampleMdx', () => {

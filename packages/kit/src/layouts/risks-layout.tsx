@@ -8,13 +8,19 @@ import type {
   risksLayoutContract,
 } from '#layouts/risks-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
 import { MEASURE_TOLERANCE_PX } from '#foundation/layout-geometry.ts';
 import { KitMark, KitMeter } from '#foundation/marks.tsx';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/risks-layout.css';
 
 /**

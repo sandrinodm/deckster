@@ -121,7 +121,7 @@ layer(NodeFileSystem.layer)('loadDeck', (it) => {
         [
           'DeckBuildError: Invalid deck config in decks/demo/deck.config.ts:',
           '  - "theme" is not a deck config field.',
-          '    Fix: Remove it. Known fields: title, slides, brand, mouseNavigation, duration.',
+          '    Fix: Remove it. Known fields: title, slides, brand, mouseNavigation, duration, deckster.',
           '  - title: Expected a value with a length of at least 1, got "".',
           '    Fix: Give the deck a title, for example `title: "Q4 launch"`.',
           '  - slides[0]: Expected a slide id in kebab-case, such as "request-flow", ' +

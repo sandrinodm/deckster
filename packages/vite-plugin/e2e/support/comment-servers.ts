@@ -1,7 +1,8 @@
+import type { Dirent } from 'node:fs';
 import type { PreviewServer, ViteDevServer } from 'vite-plus';
 
 import { afterAll, beforeAll } from 'e2e';
-import { rm, rmdir } from 'node:fs/promises';
+import { readdir, rm, rmdir } from 'node:fs/promises';
 import path from 'node:path';
 import { build, createServer, mergeConfig, preview } from 'vite-plus';
 
@@ -45,33 +46,69 @@ export const COMMENT_URLS = {
 } as const;
 
 /**
- * Removes the comments the suite leaves in a deck.
- *
- * @param deckDir - The deck folder.
+ * Clears the disposable comment fixture before and after the suite.
  */
-export async function removeFeedback(deckDir: string): Promise<void> {
-  await rm(path.join(deckDir, '.feedback'), { recursive: true, force: true });
+async function clearFixtureFeedback(): Promise<void> {
+  await rm(path.join(COMMENTS_DECK_DIR, '.feedback'), { recursive: true, force: true });
 }
 
 /**
- * Removes a deck's `.feedback` folder if the suite emptied it, leaving any comments a person left.
- *
- * @param deckDir - The deck folder.
+ * Lists the entries before or after the tests. A missing directory has no snapshot.
  */
-export async function removeEmptyFeedback(deckDir: string): Promise<void> {
-  await rmdir(path.join(deckDir, '.feedback')).catch(() => undefined);
+async function feedbackEntries(dir: string): Promise<Dirent[] | undefined> {
+  try {
+    return await readdir(dir, { recursive: true, withFileTypes: true });
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      return undefined;
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Removes files absent at setup, then prunes empty directories the suite created.
+ */
+async function removeNewFeedback(dir: string, before: Dirent[] | undefined): Promise<void> {
+  const after = await feedbackEntries(dir);
+  if (after === undefined) {
+    return;
+  }
+
+  const existing = new Set(before?.map((entry) => path.join(entry.parentPath, entry.name)));
+  const folders = before === undefined ? [dir] : [];
+  for (const entry of after) {
+    const file = path.join(entry.parentPath, entry.name);
+    if (existing.has(file)) {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      folders.push(file);
+    } else {
+      await rm(file, { force: true });
+    }
+  }
+
+  for (const folder of folders.sort((a, b) => b.length - a.length)) {
+    await rmdir(folder).catch(() => undefined);
+  }
 }
 
 /**
  * Serves what the comment suite needs before its first test and closes it after its last: the
  * comment fixture deck from a dev server and as a production build, and the hello deck from a dev
- * server. The fixture deck starts and ends without comments; in the hello deck the suite deletes
- * the comments it adds and never touches others.
+ * server. The fixture deck starts and ends without comments. Teardown prunes only new feedback
+ * files from the hello deck.
  */
 export function useCommentServers(): void {
   const servers: (ViteDevServer | PreviewServer)[] = [];
+  const helloFeedback = path.join(HELLO_DECK_DIR, '.feedback');
+  let snapshot: { entries: Dirent[] | undefined } | undefined;
   beforeAll(async () => {
-    await removeFeedback(COMMENTS_DECK_DIR);
+    await clearFixtureFeedback();
+    snapshot = { entries: await feedbackEntries(helloFeedback) };
     const config = fixtureConfig('comments');
     const dev = await createServer(
       mergeConfig(config, { server: { port: 5361, strictPort: true } }),
@@ -89,7 +126,9 @@ export function useCommentServers(): void {
   });
   afterAll(async () => {
     await Promise.all(servers.splice(0).map((server) => server.close()));
-    await removeFeedback(COMMENTS_DECK_DIR);
-    await removeEmptyFeedback(HELLO_DECK_DIR);
+    await clearFixtureFeedback();
+    if (snapshot !== undefined) {
+      await removeNewFeedback(helloFeedback, snapshot.entries);
+    }
   });
 }

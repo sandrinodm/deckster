@@ -2,7 +2,8 @@
  * The stats layout. The row stands on the stats line: the bottom line less a reserved two-line
  * footnote, so it sits at the same height on every stats slide of a brand. Each stat spans three
  * shared rows (figure, label, delta) through a subgrid, so labels of different lengths never push
- * the deltas out of line.
+ * the deltas out of line. The stats themselves are drawn by `stat-cards.css`, which the stat-row
+ * chart shares and the row opts into with `data-kit-stat-cards`.
  */
 @layer theme, base, components, utilities;
 
@@ -27,9 +28,12 @@
     --kit-stat-span: 3;
   }
 
+  /*
+   * No colour of its own: the context is prose and takes the prose colour. A `color` here used to
+   * lose to `.kit-prose` by stylesheet order, so setting one would depend on that order.
+   */
   .kit-stats-context {
     max-width: calc(8 * var(--kit-column) + 7 * var(--kit-gutter));
-    color: var(--brand-color-muted);
   }
 
   /*
@@ -55,87 +59,8 @@
     margin-top: 0;
   }
 
-  .kit-stat {
-    grid-column: span var(--kit-stat-span);
-    grid-row: span 3;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: subgrid;
-    min-width: 0;
-    padding-top: var(--brand-space-md);
-    border-top: var(--brand-stroke-regular) solid var(--brand-color-muted);
-  }
-
-  .kit-stat[data-highlight='true'] {
-    border-top: var(--brand-stroke-bold) solid var(--brand-color-accent);
-  }
-
   /* A row of four sets its figures smaller, so each keeps to its quarter. */
   .kit-frame[data-layout='stats'][data-count='4'] .kit-stat-value {
     --kit-scale: 0.86;
-  }
-
-  .kit-stat-value {
-    display: block;
-    align-self: end;
-    width: 100%;
-    overflow: visible;
-    white-space: nowrap;
-    color: var(--brand-color-heading);
-    padding-bottom: 0.06em;
-  }
-
-  .kit-stat[data-highlight='true'] .kit-stat-value {
-    color: var(--brand-color-accent);
-  }
-
-  .kit-stat-unit {
-    font-size: 0.5em;
-    letter-spacing: 0;
-    vertical-align: 0.06em;
-  }
-
-  .kit-stat-unit[data-side='before'] {
-    margin-inline-end: 0.08em;
-  }
-
-  .kit-stat-unit[data-side='after'] {
-    margin-inline-start: 0.06em;
-  }
-
-  .kit-stat-unit[data-side='after'][data-spaced='true'] {
-    margin-inline-start: 0.24em;
-  }
-
-  .kit-stat-label {
-    min-height: 2lh;
-    margin-top: var(--brand-space-sm);
-    max-width: 18em;
-    color: var(--brand-color-fg);
-    text-wrap: balance;
-  }
-
-  .kit-stat-delta {
-    display: flex;
-    align-items: center;
-    gap: 0.4em;
-    min-height: 1lh;
-    margin-top: var(--brand-space-xs);
-    color: var(--brand-color-muted);
-    white-space: nowrap;
-  }
-
-  .kit-stat-delta[data-tone='positive'] {
-    color: var(--brand-color-positive-text);
-  }
-
-  .kit-stat-delta[data-tone='negative'] {
-    color: var(--brand-color-negative-text);
-  }
-
-  .kit-stat-arrow {
-    flex: none;
-    width: 0.62em;
-    height: 0.62em;
   }
 }

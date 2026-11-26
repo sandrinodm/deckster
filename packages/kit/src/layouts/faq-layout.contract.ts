@@ -10,7 +10,7 @@ import {
   REVEAL_HINT,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest question-and-answer pairs on a FAQ slide.

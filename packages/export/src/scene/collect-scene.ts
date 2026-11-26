@@ -41,7 +41,13 @@ export function collectScene(options: CollectOptions): CollectedScene {
     height: canvasElement?.offsetHeight ?? 0,
   };
   const surface = slide?.getAttribute('data-surface') ?? 'default';
-  const layout = slide?.querySelector('[data-layout]')?.getAttribute('data-layout') ?? 'default';
+  // The engine stamps the slide with the layout its frontmatter names, whatever markup the layout
+  // draws. The first `[data-layout]` is the fallback for a page that was not rendered by the
+  // engine's slide frame, such as the captured HTML in tests.
+  const layout =
+    slide?.getAttribute('data-deck-layout') ??
+    slide?.querySelector('[data-layout]')?.getAttribute('data-layout') ??
+    'default';
   const nodes: CollectedNode[] = [];
   const links: SceneLink[] = [];
   const warnings: string[] = [];

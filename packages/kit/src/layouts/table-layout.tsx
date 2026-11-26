@@ -5,10 +5,16 @@ import { useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
 
 import type { tableLayoutContract } from '#layouts/table-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { TableLayoutContext, type TableLayoutSettings } from '#foundation/table-context.ts';
-import { useEnter } from '#motion/enter.ts';
+import {
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  TableLayoutContext,
+  useEnter,
+  useFitLevel,
+  type TableLayoutSettings,
+} from '#layout-parts.ts';
 import '#layouts/table-layout.css';
 
 /**
@@ -74,7 +80,7 @@ function TableLayout({ frontmatter, slots }: LayoutProps<typeof tableLayoutContr
     content,
     sizes.length,
     JSON.stringify(frontmatter),
-    { fill: (at) => (grows && at === 0 ? SPARSE_FILL : 1) },
+    { fill: (at) => (grows && at === 0 ? SPARSE_FILL : 1), restartOnFontLoad: true },
   );
   const size = sizes[level] ?? { step: tableStep, fit: 1 };
   const settings: TableLayoutSettings = useMemo(

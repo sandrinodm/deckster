@@ -6,9 +6,8 @@ import { useRef } from 'react';
 import type { contentLayoutContract } from '#layouts/content-layout.contract.ts';
 
 import { useDensity, type TextStep } from '#foundation/density.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
+import { Footnote, Frame, Region, SlideHeader, useEnter } from '#layout-parts.ts';
 import { LAYOUT_LIMITS } from '#layouts/layout-limits.ts';
-import { useEnter } from '#motion/enter.ts';
 import '#layouts/content-layout.css';
 
 /**

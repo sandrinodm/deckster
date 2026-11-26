@@ -12,11 +12,19 @@ import {
   SLIDES_DIR,
   type DeckBuildError,
   type LayoutCatalogIndex,
+  type LayoutProblem,
 } from '@deckster/vite-plugin';
 import { Console, Effect, FileSystem, Result } from 'effect';
 import path from 'node:path';
 
-import { cliError, fileSystemError, type CliError, type FileSystemError } from '#cli-error.ts';
+import {
+  cliError,
+  fileSystemError,
+  firstLine,
+  type CliError,
+  type FileSystemError,
+} from '#cli-error.ts';
+import { exampleFrontmatter } from '#layouts/example-frontmatter.ts';
 import { exampleMdx } from '#layouts/list-layouts.ts';
 import { loadBrandCatalog } from '#layouts/load-brand-catalog.ts';
 import { assertKebabName } from '#scaffold/names.ts';
@@ -76,11 +84,12 @@ export const addSlide = Effect.fn('addSlide')(function* (
   // the layout asked for is one that the brand's layouts might have supplied.
   const loaded = yield* Effect.result(loadDeck(options.workspaceRoot, deck));
   const config = Result.isSuccess(loaded) ? loaded.success.config : {};
-  const { catalog, warning } = yield* loadBrandCatalog(
+  const { catalog, local, warnings } = yield* loadBrandCatalog(
     options.workspaceRoot,
     deckBrandName(config, options.brand),
+    deck,
   );
-  if (warning !== undefined) {
+  for (const warning of warnings) {
     yield* Console.error(`warning: ${warning}`);
   }
 
@@ -89,7 +98,7 @@ export const addSlide = Effect.fn('addSlide')(function* (
     return yield* loaded.failure;
   }
 
-  const contract = yield* chooseLayout(catalog, wanted, deck.id);
+  const contract = yield* chooseLayout(catalog, wanted, deck.id, local.problems);
   const slideFile = path.join(deck.slidesDir, `${id}.mdx`);
   const taken = yield* existingSlideFiles(deck.slidesDir, id);
   const [existing] = taken;
@@ -102,11 +111,7 @@ export const addSlide = Effect.fn('addSlide')(function* (
   yield* assertSlidePath(options.workspaceRoot, deck.id, slideFile).pipe(
     Effect.mapError((error) => cliError(error.message)),
   );
-  const frontmatter = {
-    layout: contract.name,
-    ...contract.example.frontmatter,
-    title: slideTitle(id),
-  };
+  const frontmatter = { ...exampleFrontmatter(contract), title: slideTitle(id) };
   const fs = yield* FileSystem.FileSystem;
   // Created exclusively, so nothing already at the path (a file, a link) is ever written through.
   // During an agent turn the guard records it and puts it in the turn's working copy.
@@ -173,20 +178,34 @@ const existingSlideFiles = Effect.fn('existingSlideFiles')(function* (
  * @param catalog - The layout catalog.
  * @param name - The layout name.
  * @param deck - The deck folder name, for the fix.
- * @throws CliError in the error channel, listing the layouts, when the catalog has no such layout.
+ * @param problems - The problems of the brand's and the deck's code layouts, which are left out of
+ *   the catalog.
+ * @throws CliError in the error channel when a code layout of that name has a problem (even when
+ *   the catalog has a kit layout of that name), or when the catalog has no such layout: the list of
+ *   layouts.
  */
 const chooseLayout = Effect.fn('chooseLayout')(function* (
   catalog: LayoutCatalogIndex,
   name: string,
   deck: string,
+  problems: readonly LayoutProblem[],
 ): Effect.fn.Return<AnyLayoutContract, CliError> {
-  const layout = catalog.get(name);
-  if (layout === undefined) {
+  // A code layout with a problem is not used even when the catalog still has a layout of that name
+  // (a broken replacement leaves the kit layout in), as the build treats a slide that names it.
+  const problem = problems.find((entry) => entry.layout === name);
+  if (problem !== undefined) {
     return yield* cliError(
-      `There is no layout "${name}". Layouts: ${[...catalog.keys()].join(', ')}.\n` +
-        `Run \`${deckCommand()} layouts ${deck}\` to see what each one is for.`,
+      `The layout "${name}" cannot be used: ${firstLine(problem.message)}\n${problem.fix}`,
     );
   }
 
-  return layout.contract;
+  const layout = catalog.get(name);
+  if (layout !== undefined) {
+    return layout.contract;
+  }
+
+  return yield* cliError(
+    `There is no layout "${name}". Layouts: ${[...catalog.keys()].join(', ')}.\n` +
+      `Run \`${deckCommand()} layouts ${deck}\` to see what each one is for.`,
+  );
 });

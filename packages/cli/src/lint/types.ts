@@ -34,7 +34,9 @@ export const LintFinding = Schema.Struct({
   step: Schema.NullOr(Schema.Number),
 
   /**
-   * The id of the rule that found it; `schema` for build pipeline and brand problems.
+   * The id of the rule that found it; `schema` for build pipeline problems, `brand` for brand
+   * problems, and a code layout problem's own id (such as `layout-held`) for the problems of a
+   * layout a slide uses.
    */
   rule: Schema.String,
 
@@ -417,6 +419,12 @@ export type RenderErrorSnapshot = {
    * What the slide threw.
    */
   message: string;
+
+  /**
+   * The layout whose code failed to load or render, when the engine drew its `layout-load-failed`
+   * problem in place of the slide; left out for any other error.
+   */
+  failedLayout?: string;
 };
 
 /**

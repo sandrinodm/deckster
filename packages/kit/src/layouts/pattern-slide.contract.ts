@@ -7,7 +7,7 @@ import {
   FocalField,
   RevealField,
   textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * Common frontmatter for visual patterns with an eyebrow and optional staged reading.

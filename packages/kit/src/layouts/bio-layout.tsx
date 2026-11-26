@@ -6,9 +6,7 @@ import type { bioLayoutContract } from '#layouts/bio-layout.contract.ts';
 
 import { ContactList } from '#foundation/contact-list.tsx';
 import { Portrait } from '#foundation/portrait.tsx';
-import { Eyebrow, FittedText, Frame } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { useEnter } from '#motion/enter.ts';
+import { Eyebrow, FittedText, Frame, smartPunctuation, useEnter } from '#layout-parts.ts';
 import '#layouts/bio-layout.css';
 
 /**

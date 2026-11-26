@@ -8,12 +8,17 @@ import {
   type ReactNode,
 } from 'react';
 
-import type { FitRung } from '#foundation/fit-text.ts';
 import type { statementLayoutContract } from '#layouts/statement-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Eyebrow, FittedText, Frame, Region } from '#foundation/slide-parts.tsx';
-import { useEnter } from '#motion/enter.ts';
+import {
+  Eyebrow,
+  FittedText,
+  Frame,
+  Region,
+  useEnter,
+  useFitLevel,
+  type FitRung,
+} from '#layout-parts.ts';
 import '#layouts/display-align.css';
 import '#layouts/statement-layout.css';
 
@@ -113,6 +118,7 @@ function SetStatement({
       layout="statement"
       variant={{
         'data-quote': String(isQuote),
+        'data-kit-display-align': '',
         'data-align': frontmatter.align,
         'data-emphasis': frontmatter.emphasis,
       }}>
@@ -202,6 +208,7 @@ function GiantStatement({
       variant={{
         'data-size': 'giant',
         'data-quote': 'false',
+        'data-kit-display-align': '',
         'data-align': align,
         'data-emphasis': emphasis,
       }}>

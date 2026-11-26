@@ -3,17 +3,24 @@ import { useRef, type ReactNode } from 'react';
 
 import type { exerciseLayoutContract } from '#layouts/exercise-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { useFitGroupWidth } from '#foundation/fit-text.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { StatValue } from '#foundation/stat-figure.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  MAX_ENTER_ORDER,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  StatValue,
+  useEnter,
+  useFitGroupWidth,
+  useFitLevel,
+} from '#layout-parts.ts';
 import {
   EXERCISE_GROUPS_LABEL,
   EXERCISE_OUTPUT_LABEL,
   EXERCISE_TIME_LABEL,
 } from '#layouts/exercise-layout.contract.ts';
-import { enterProps, MAX_ENTER_ORDER, useEnter } from '#motion/enter.ts';
 import '#layouts/exercise-layout.css';
 
 /**

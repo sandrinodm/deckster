@@ -4,9 +4,8 @@ import { useStatic, useStepAt } from '@deckster/engine';
 
 import type { PatternImageData } from '#layouts/pattern-slide.contract.ts';
 
-import { frontmatterAsset } from '#foundation/frontmatter-assets.ts';
 import { useSlideFile } from '#foundation/slide-file.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
+import { Footnote, Frame, frontmatterAsset, Region, SlideHeader } from '#layout-parts.ts';
 import '#layouts/pattern-slide.css';
 
 /**

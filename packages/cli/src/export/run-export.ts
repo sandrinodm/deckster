@@ -9,7 +9,7 @@ import {
   type DryRunReport,
   type PptxResult,
 } from '@deckster/export';
-import { findDeck, loadLayoutCatalog } from '@deckster/vite-plugin';
+import { deckCatalog, findDeck } from '@deckster/vite-plugin';
 import * as NodeServices from '@effect/platform-node/NodeServices';
 import { Effect } from 'effect';
 import path from 'node:path';
@@ -29,10 +29,12 @@ import {
   type CliError,
   type SlideNotReadyError,
 } from '#cli-error.ts';
+import { assertShotsRender, assertSlidesRender } from '#export/check-slides-render.ts';
 import { writeFontFiles } from '#export/export-fonts.ts';
 import { exportPdf } from '#export/export-pdf.ts';
 import { capturePptx, playwrightPage, writePptx, type PptxCapture } from '#export/export-pptx.ts';
 import { exportTargets, hiddenLeftOut, selectSlides } from '#export/export-targets.ts';
+import { stageShots } from '#export/stage-shots.ts';
 import { verifyExport } from '#export/verify-export.ts';
 import { takeShots, type ShotError, type ShotFile } from '#shot/take-shots.ts';
 import { Workspace } from '#workspace.ts';
@@ -192,14 +194,17 @@ const exportFromPage = Effect.fn('exportFromPage')(function* (
     options.steps,
     options.includeHidden,
   );
+  yield* assertSlidesRender(options.deck, opened.page, targets);
   const hiddenSkipped = hiddenLeftOut(opened.page.slides, options.slides, options.includeHidden);
   const base = path.join(outDir, `${options.deck}${options.steps ? '-steps' : ''}`);
   const pdfFile = fileFor(options, 'pdf', base);
   const wantsPdf = options.formats.has('pdf') && !options.dryRun;
   const wantsPptx = options.formats.has('pptx') || options.dryRun || options.verify;
-  const catalog = yield* loadLayoutCatalog(undefined, {
-    brand: opened.brand.tokens,
-    layoutsFile: opened.brand.layoutsFile,
+  const { index: catalog } = yield* deckCatalog({
+    root: opened.place.workspaceRoot,
+    brand: opened.brand,
+    deck: opened.deck.location,
+    code: 'load',
   });
   const contracts = [...catalog.values()].map((layout) => layout.contract);
   // The PPTX is measured before the PDF is printed, which sets the slides in the static font
@@ -374,10 +379,13 @@ const useSystemFonts = Effect.fn('useSystemFonts')(function* (opened: OpenedDeck
 
 /**
  * Writes PNGs with `deckster shot`: every slide that is not hidden (all with `--include-hidden`),
- * or each selected one.
+ * or each selected one. Fails the way a PDF or PPTX export does when a slide shows an error or the
+ * page threw while the deck loaded. The PNGs are taken into a staging folder and published only
+ * when every slide rendered. A publish failure rolls back the changes to the earlier PNGs.
  *
  * @param options - What to export.
  * @param outDir - The PNG folder.
+ * @throws CliError in the error channel when any slide renders an error; nothing is written then.
  */
 const exportPng = Effect.fn('exportPng')(function* (
   options: ExportOptions,
@@ -387,39 +395,41 @@ const exportPng = Effect.fn('exportPng')(function* (
   ShotError,
   Workspace | FileSystem.FileSystem | DeckServer | DeckBrowser | Scope.Scope
 > {
-  if (options.slides === undefined) {
-    const result = yield* takeShots({
-      deck: options.deck,
-      slide: undefined,
-      brand: options.brand,
-      steps: options.steps,
-      outDir,
-      scale: options.scale,
-      skipHidden: !options.includeHidden,
-    });
-    return { files: result.files, hiddenLeftOut: result.hiddenSkipped };
-  }
-
-  const files: ShotFile[] = [];
-  const all = yield* Effect.scoped(
-    Effect.gen(function* () {
-      const opened = yield* openDeck({ deck: options.deck, brand: options.brand, scale: 1 });
-      return yield* selectSlides(opened.page.slides, options.slides, options.includeHidden);
-    }),
+  return yield* stageShots(outDir, options.slides === undefined, (staging) =>
+    shootPng(options, staging),
   );
-  for (const slide of all) {
-    const result = yield* takeShots({
-      deck: options.deck,
-      slide: slide.id,
-      brand: options.brand,
-      steps: options.steps,
-      outDir,
-      scale: options.scale,
-    });
-    files.push(...result.files);
-  }
+});
 
-  return { files, hiddenLeftOut: 0 };
+/**
+ * Takes the PNGs into a folder and checks that every slide rendered.
+ *
+ * @param options - What to export.
+ * @param outDir - The folder to write to.
+ * @throws CliError in the error channel when any slide renders an error.
+ */
+const shootPng = Effect.fn('shootPng')(function* (
+  options: ExportOptions,
+  outDir: string,
+): Effect.fn.Return<
+  { files: ShotFile[]; hiddenLeftOut: number },
+  ShotError,
+  Workspace | FileSystem.FileSystem | DeckServer | DeckBrowser | Scope.Scope
+> {
+  const selection = options.slides;
+  const result = yield* takeShots({
+    deck: options.deck,
+    slide: undefined,
+    brand: options.brand,
+    steps: options.steps,
+    outDir,
+    scale: options.scale,
+    skipHidden: !options.includeHidden,
+    ...(selection === undefined
+      ? {}
+      : { select: (slides) => selectSlides(slides, selection, options.includeHidden) }),
+  });
+  yield* assertShotsRender(options.deck, [result]);
+  return { files: result.files, hiddenLeftOut: result.hiddenSkipped };
 });
 
 /**

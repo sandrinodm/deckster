@@ -1,8 +1,12 @@
-import type { Plugin, Rollup, ViteDevServer } from 'vite';
+import type { Plugin, Rollup, UserConfig, ViteDevServer } from 'vite';
 
-import { onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
+import { BRANDS_DIR, onCodeHeld, onCodeReleased, type LoadedBrand } from '@deckster/brand/node';
 import { devSessionOf, issueDevSession } from '@deckster/comments/dev-session';
+import kitCatalog from '@deckster/kit/catalog';
+import { Effect } from 'effect';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { normalizePath } from 'vite';
 
 import type { MdxWarning } from '#slides/compile-mdx.ts';
 
@@ -18,6 +22,7 @@ import {
   VIRTUAL_BRAND_CSS_ID,
   VIRTUAL_BRAND_ID,
 } from '#brand/brand-modules.ts';
+import { deckBrandName } from '#brand/deck-brand-name.ts';
 import { DECKS_DIR, displayPath, SLIDES_DIR, type DeckLocation } from '#decks/deck-paths.ts';
 import { findDeck } from '#decks/discover-decks.ts';
 import { loadDeck, type LoadedDeck } from '#decks/load-deck.ts';
@@ -25,11 +30,17 @@ import { REORDER_ENDPOINT, reorderMiddleware } from '#decks/reorder-middleware.t
 import { trackSlideFileChanges } from '#decks/slide-file-changes.ts';
 import { unresolvedRuntimePlugin } from '#errors.ts';
 import { trackHeldLoads, type HeldLoads } from '#held-loads.ts';
+import { readSkippedCodeLayouts, type SkippedCodeLayouts } from '#layouts/brand-source.ts';
+import { deckCatalog, type DeckCatalog } from '#layouts/deck-catalog.ts';
+import { DEFAULT_LAYOUT_CATALOGS, type LayoutCatalogIndex } from '#layouts/load-layout-catalog.ts';
 import {
-  DEFAULT_LAYOUT_CATALOGS,
-  loadLayoutCatalog,
-  type LayoutCatalogIndex,
-} from '#layouts/load-layout-catalog.ts';
+  COMPONENT_FILE,
+  LAYOUTS_DIR,
+  type LocalLayout,
+  type LocalLayouts,
+} from '#layouts/local-layouts.ts';
+import { usedLayoutNames } from '#layouts/used-layouts.ts';
+import { watchDeckLayouts } from '#layouts/watch-layouts.ts';
 import { OPEN_IN_EDITOR_ENDPOINT, refuseOpenInEditor } from '#open-in-editor-guard.ts';
 import { makeRunEffect } from '#run-effect.ts';
 import { slideBrandOf } from '#slides/check-surface.ts';
@@ -45,10 +56,17 @@ import {
 } from '#slides/transform-slide.ts';
 import {
   deckModuleCode,
+  isVirtualPlugin,
+  kitRuntimeModuleCode,
+  localLayoutsModuleCode,
   pluginsModuleCode,
   RESOLVED_DECK_ID,
+  RESOLVED_KIT_RUNTIME_ID,
+  RESOLVED_LOCAL_LAYOUTS_ID,
   RESOLVED_PLUGINS_ID,
   VIRTUAL_DECK_ID,
+  VIRTUAL_KIT_RUNTIME_ID,
+  VIRTUAL_LOCAL_LAYOUTS_ID,
   VIRTUAL_PLUGINS_ID,
 } from '#virtual-modules.ts';
 
@@ -61,6 +79,13 @@ export const DEFAULT_RUNTIME_PLUGINS: readonly string[] = [
   '@deckster/kit/runtime',
   '@deckster/presenter/runtime',
 ];
+
+/**
+ * The kit's runtime plugin. The deck plugin loads `virtual:deck/kit-runtime` in its place, which
+ * leaves out the kit layouts a code layout replaces, and registers the code layouts right after it,
+ * before the presenter's and the dev-only plugins, which define none.
+ */
+const KIT_RUNTIME_PLUGIN = '@deckster/kit/runtime';
 
 /**
  * Runtime plugins only the dev server loads, after the others: the comment overlay, which needs the
@@ -118,6 +143,16 @@ type SlideFileSource = {
  * The `<title>` element of the engine's `index.html`, replaced by the deck's title.
  */
 const TITLE_PATTERN = /<title>[\s\S]*?<\/title>/;
+
+/**
+ * The layouts a deck can use and what its slides are checked against besides them.
+ */
+type DeckLayouts = DeckCatalog & {
+  /**
+   * The code layouts `brand add` left out of the deck's brand, when it recorded any.
+   */
+  skipped: SkippedCodeLayouts | undefined;
+};
 
 /**
  * The parts of Vite's plugin context the load hooks use.
@@ -212,8 +247,11 @@ export function deckPlugin(
   let serving = false;
   let location: Promise<DeckLocation> | undefined;
   let loadedDeck: Promise<LoadedDeck> | undefined;
-  let catalog: { brand: LoadedBrand; index: Promise<LayoutCatalogIndex> } | undefined;
+  let catalog: { brand: LoadedBrand; layouts: Promise<DeckLayouts> } | undefined;
+  // The `layout.tsx` files of the code layouts the last settled catalog left unregistered.
+  let unregisteredComponents: ReadonlySet<string> = new Set();
   const deckLoads = trackHeldLoads();
+  const contractLoads = trackHeldLoads();
 
   /**
    * Finds the deck once and remembers the result, so every hook sees the same location.
@@ -253,30 +291,64 @@ export function deckPlugin(
   });
 
   /**
-   * Loads the layout catalogs and the active brand's layouts. They are reused until the brand is
-   * read again (a switch, or an edit to its files, including `layouts.ts`), and loaded afresh then;
-   * a failed load is retried on the next call.
+   * Loads the layout catalogs, the active brand's layouts and the code layouts of the brand and the
+   * deck. They are reused until the brand is read again (a switch, or an edit to its files,
+   * including `layouts.ts` and its contracts) or the deck's `layouts/` change, and loaded afresh
+   * then; a failed load is retried on the next call. Holds on the `layouts/` folders are noted
+   * throughout each load. Even a hold that ends before the load finishes invalidates the catalog.
    */
-  const layoutCatalog = async (): Promise<LayoutCatalogIndex> => {
-    const loaded = await brand.load();
+  const deckLayouts = async (): Promise<DeckLayouts> => {
+    // Both are awaited before the cache is checked, so the check and the new entry happen without
+    // a yield in between and requests that arrive together share one load.
+    const [loaded, deck] = await Promise.all([brand.load(), findActiveDeck()]);
     if (catalog?.brand !== loaded) {
-      const index = run(
-        loadLayoutCatalog(options.layoutCatalogs ?? DEFAULT_LAYOUT_CATALOGS, {
-          brand: loaded.tokens,
-          layoutsFile: loaded.layoutsFile,
-        }),
-      );
-      const entry = { brand: loaded, index };
-      catalog = entry;
-      index.catch(() => {
-        if (catalog === entry) {
-          catalog = undefined;
-        }
+      const layoutDirs = [
+        path.join(deck.dir, LAYOUTS_DIR),
+        path.join(loaded.location.dir, LAYOUTS_DIR),
+      ];
+      const stopListening = onCodeHeld((roots) => {
+        const heldWithinLayouts = roots.filter((root) =>
+          layoutDirs.some((dir) => root.startsWith(`${dir}${path.sep}`)),
+        );
+        contractLoads.note([...layoutDirs, ...heldWithinLayouts]);
       });
+      contractLoads.note(layoutDirs);
+      const layouts = run(
+        Effect.gen(function* () {
+          const found = yield* deckCatalog({
+            root: workspaceRoot,
+            brand: loaded,
+            deck,
+            code: 'load',
+            specifiers: options.layoutCatalogs ?? DEFAULT_LAYOUT_CATALOGS,
+          });
+          const skipped = yield* readSkippedCodeLayouts(loaded.location.dir);
+          return { ...found, skipped };
+        }),
+      ).finally(stopListening);
+      const entry = { brand: loaded, layouts };
+      catalog = entry;
+      layouts.then(
+        (settled) => {
+          if (catalog === entry) {
+            unregisteredComponents = unregisteredComponentsOf(settled.local);
+          }
+        },
+        () => {
+          if (catalog === entry) {
+            catalog = undefined;
+          }
+        },
+      );
     }
 
-    return catalog.index;
+    return catalog.layouts;
   };
+
+  /**
+   * Every layout the deck can use.
+   */
+  const layoutCatalog = async (): Promise<LayoutCatalogIndex> => (await deckLayouts()).index;
 
   /**
    * The resolved id of `virtual:deck/brand.css`, a path in the deck's folder.
@@ -286,8 +358,10 @@ export function deckPlugin(
   /**
    * The runtime plugins of this server or build: the dev plugins only while serving.
    */
-  const runtimePlugins = (): readonly string[] =>
-    serving ? [...basePlugins, ...devPlugins] : basePlugins;
+  const runtimePlugins = (): readonly string[] => {
+    const base = withLocalLayouts(basePlugins);
+    return serving ? [...base, ...devPlugins] : base;
+  };
 
   const warnings = new Map<string, MdxWarning[]>();
 
@@ -295,6 +369,17 @@ export function deckPlugin(
     name: 'deck',
     enforce: 'pre',
     api: { activeDeck, slideWarnings: (file) => warnings.get(file) ?? [] },
+
+    async config(_, { command }): Promise<UserConfig | undefined> {
+      if (command !== 'serve') {
+        return undefined;
+      }
+
+      // The dependency scan does not follow virtual modules, so it would miss what the code
+      // layouts import, and a dependency found late reloads the page.
+      const entries = await layoutScanEntries(workspaceRoot, activeDeck, options.brand);
+      return { optimizeDeps: { entries } };
+    },
 
     configResolved(config) {
       development = !config.isProduction;
@@ -305,6 +390,18 @@ export function deckPlugin(
       await activeDeck();
       await layoutCatalog();
       await brand.load();
+    },
+
+    watchChange() {
+      // The dev server has its own watchers, which keep component edits on the hot path. A build in
+      // watch mode has only this hook: any change may touch the deck, the brand or a contract.
+      if (serving) {
+        return;
+      }
+
+      loadedDeck = undefined;
+      brand.reset();
+      catalog = undefined;
     },
 
     async resolveId(id) {
@@ -320,6 +417,14 @@ export function deckPlugin(
         return brandCssId();
       }
 
+      if (id === VIRTUAL_LOCAL_LAYOUTS_ID) {
+        return RESOLVED_LOCAL_LAYOUTS_ID;
+      }
+
+      if (id === VIRTUAL_KIT_RUNTIME_ID) {
+        return RESOLVED_KIT_RUNTIME_ID;
+      }
+
       return id === VIRTUAL_PLUGINS_ID ? RESOLVED_PLUGINS_ID : undefined;
     },
 
@@ -330,9 +435,24 @@ export function deckPlugin(
       }
 
       if (id === RESOLVED_BRAND_ID || id === (await brandCssId())) {
-        const pluginFiles = await resolveRuntimePlugins(this, workspaceRoot, runtimePlugins());
+        const resolved = await resolveRuntimePlugins(this, workspaceRoot, runtimePlugins());
+        const pluginFiles = await withKitRuntimeFile(this, workspaceRoot, resolved);
         const deck = await findActiveDeck();
         return brandModuleSource(this, { id, brand: await brand.load(), deck, pluginFiles });
+      }
+
+      if (id === RESOLVED_LOCAL_LAYOUTS_ID) {
+        const layouts = await deckLayouts();
+        // A build registers only what the slides use, so an unused layout that does not compile
+        // cannot fail it; the dev server registers all, for slides added while it runs.
+        const used = serving
+          ? undefined
+          : await usedLayoutNames((await activeDeck()).slides, layouts.index);
+        return localLayoutsModule(this, workspaceRoot, { local: layouts.local, used });
+      }
+
+      if (id === RESOLVED_KIT_RUNTIME_ID) {
+        return kitRuntimeModule(this, workspaceRoot, (await deckLayouts()).local.replaced);
       }
 
       return id === RESOLVED_PLUGINS_ID
@@ -379,11 +499,17 @@ export function deckPlugin(
         this.addWatchFile(layoutsFile);
       }
 
+      const layouts = await deckLayouts();
+      for (const layoutFile of layouts.local.files) {
+        this.addWatchFile(layoutFile);
+      }
+
       const slide = {
         ...file,
         mdx,
         onWarning,
-        layouts: await layoutCatalog(),
+        layouts: layouts.index,
+        local: { found: layouts.local, skipped: layouts.skipped },
         brand: slideBrandOf(tokens),
         fallback: { workspaceRoot, brand: tokens.name },
       };
@@ -411,7 +537,21 @@ export function deckPlugin(
           guard: (request) => session.refusal(request),
         }),
       );
-      watchBrand(server, { workspaceRoot, deck, brand });
+      /**
+       * Whether a file is the component of a code layout the catalog left unregistered.
+       *
+       * @param file - An absolute path the watcher reported.
+       */
+      const isUnregistered = (file: string) => unregisteredComponents.has(file);
+      watchBrand(server, { workspaceRoot, deck, brand, isUnregistered });
+      watchDeckLayouts(server, {
+        deck,
+        heldLoads: contractLoads,
+        isUnregistered,
+        onChange: () => {
+          catalog = undefined;
+        },
+      });
     },
 
     async transformIndexHtml(html) {
@@ -438,6 +578,153 @@ function deckModule(context: LoadContext, deck: LoadedDeck, brand: string): stri
 }
 
 /**
+ * The runtime plugins as the deck loads them: the kit's runtime swapped for
+ * `virtual:deck/kit-runtime`, which leaves out the kit layouts a code layout replaces, and the code
+ * layouts' plugin right after it, or last when the kit's runtime is not among the plugins.
+ *
+ * @param plugins - The runtime plugin specifiers, in load order.
+ */
+export function withLocalLayouts(plugins: readonly string[]): string[] {
+  const swapped = plugins.map((specifier) =>
+    specifier === KIT_RUNTIME_PLUGIN ? VIRTUAL_KIT_RUNTIME_ID : specifier,
+  );
+  const kit = swapped.indexOf(VIRTUAL_KIT_RUNTIME_ID);
+  const at = kit === -1 ? swapped.length : kit + 1;
+  return [...swapped.slice(0, at), VIRTUAL_LOCAL_LAYOUTS_ID, ...swapped.slice(at)];
+}
+
+/**
+ * The `layout.tsx` files of the deck's and its brand's code layouts, as globs for the dependency
+ * scan. Nothing when the deck or its config cannot be read; the build reports that itself.
+ *
+ * @param workspaceRoot - The absolute workspace root.
+ * @param activeDeck - Loads the deck.
+ * @param override - A brand that replaces the deck config's.
+ */
+async function layoutScanEntries(
+  workspaceRoot: string,
+  activeDeck: () => Promise<LoadedDeck>,
+  override: string | undefined,
+): Promise<string[]> {
+  try {
+    const deck = await activeDeck();
+    const brandDir = path.join(workspaceRoot, BRANDS_DIR, deckBrandName(deck.config, override));
+    return [deck.location.dir, brandDir].map((dir) =>
+      normalizePath(path.join(dir, LAYOUTS_DIR, '*', COMPONENT_FILE)),
+    );
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Generates `virtual:deck/local-layouts` from the code layouts whose contracts are in the catalog,
+ * watching their files and reporting every problem with the others. A layout with a problem is not
+ * registered: the build already fails the slides that name it.
+ *
+ * @param context - The plugin context.
+ * @param workspaceRoot - The absolute workspace root, for the paths in warnings.
+ * @param input - The code layouts found, and the layout names the slides use (every layout is
+ *   registered when `undefined`).
+ */
+function localLayoutsModule(
+  context: LoadContext,
+  workspaceRoot: string,
+  input: { local: LocalLayouts; used: ReadonlySet<string> | undefined },
+): string {
+  const { local, used } = input;
+  for (const file of local.files) {
+    context.addWatchFile(file);
+  }
+
+  for (const problem of [...local.problems, ...local.warnings]) {
+    context.warn(`${displayPath(workspaceRoot, problem.file)}: ${problem.message} ${problem.fix}`);
+  }
+
+  const registered = registeredLayouts(local);
+  return localLayoutsModuleCode(
+    used === undefined ? registered : registered.filter((layout) => used.has(layout.name)),
+  );
+}
+
+/**
+ * The code layouts the generated plugin registers: those whose contracts are in the catalog.
+ *
+ * @param local - The code layouts found.
+ */
+function registeredLayouts(local: LocalLayouts): LocalLayout[] {
+  const loaded = new Set(local.catalogs.map((entry) => entry.ref.file));
+  return local.layouts.filter((layout) => loaded.has(layout.contractFile));
+}
+
+/**
+ * The `layout.tsx` files of the code layouts that are not registered. A component edit there is no
+ * hot update (nothing imports it), and may fix what kept it out, such as the name it registers.
+ *
+ * @param local - The code layouts found.
+ */
+function unregisteredComponentsOf(local: LocalLayouts): ReadonlySet<string> {
+  const registered = new Set(registeredLayouts(local));
+  return new Set(
+    local.layouts.filter((layout) => !registered.has(layout)).map((layout) => layout.componentFile),
+  );
+}
+
+/**
+ * Generates `virtual:deck/kit-runtime`: the kit's runtime plugin without the replaced kit layouts.
+ * The kit's folder is the one `@deckster/kit/runtime` resolves to, so the generated module imports
+ * the same files the static runtime does.
+ *
+ * @param context - The plugin context, to resolve the kit.
+ * @param workspaceRoot - The absolute workspace root, for the error.
+ * @param replaced - The kit layout names a code layout replaces.
+ * @throws DeckBuildError when the kit's runtime does not resolve.
+ */
+async function kitRuntimeModule(
+  context: LoadContext,
+  workspaceRoot: string,
+  replaced: readonly string[],
+): Promise<string> {
+  const runtime = await resolveKitRuntime(context, workspaceRoot);
+  const names = kitCatalog.layouts.map((contract) => contract.name);
+  return kitRuntimeModuleCode(path.dirname(runtime), names, replaced);
+}
+
+/**
+ * The runtime plugin files with `virtual:deck/kit-runtime` as the kit's runtime file, for the brand
+ * stylesheet's Tailwind sources: the generated module imports the kit's `src/` files, so the kit's
+ * classes must still be scanned there.
+ *
+ * @param context - The plugin context, to resolve the kit.
+ * @param workspaceRoot - The absolute workspace root, for the error.
+ * @param files - The resolved runtime plugin ids, virtual ones as written.
+ */
+async function withKitRuntimeFile(
+  context: LoadContext,
+  workspaceRoot: string,
+  files: readonly string[],
+): Promise<string[]> {
+  if (!files.includes(VIRTUAL_KIT_RUNTIME_ID)) {
+    return [...files];
+  }
+
+  const runtime = await resolveKitRuntime(context, workspaceRoot);
+  return files.map((file) => (file === VIRTUAL_KIT_RUNTIME_ID ? runtime : file));
+}
+
+/**
+ * The resolved file of the kit's static runtime, `@deckster/kit/runtime`, from this package.
+ *
+ * @param context - The plugin context, to resolve the specifier.
+ * @param workspaceRoot - The absolute workspace root, for the error.
+ * @throws DeckBuildError when it does not resolve.
+ */
+async function resolveKitRuntime(context: LoadContext, workspaceRoot: string): Promise<string> {
+  const [file] = await resolveRuntimePlugins(context, workspaceRoot, [KIT_RUNTIME_PLUGIN]);
+  return file ?? KIT_RUNTIME_PLUGIN;
+}
+
+/**
  * Generates `virtual:deck/plugins` from the runtime plugins, resolved from this package.
  *
  * @param context - The plugin context, to resolve the specifiers.
@@ -453,7 +740,9 @@ async function loadPluginsModule(
 }
 
 /**
- * The resolved module ids of the runtime plugins, in load order.
+ * The resolved module ids of the runtime plugins, in load order. The deck plugin's own virtual
+ * modules stay as written: `resolve` skips the plugin that calls it, and an import of the resolved
+ * `\0` id would not load in a build.
  *
  * @param context - The plugin context, to resolve the specifiers.
  * @param workspaceRoot - The absolute workspace root, for the error.
@@ -467,6 +756,10 @@ async function resolveRuntimePlugins(
 ): Promise<string[]> {
   return Promise.all(
     runtimePlugins.map(async (specifier) => {
+      if (isVirtualPlugin(specifier)) {
+        return specifier;
+      }
+
       const resolved = await context.resolve(specifier, PLUGIN_IMPORTER);
       if (resolved === null) {
         throw runtimePluginNotFound(workspaceRoot, specifier);

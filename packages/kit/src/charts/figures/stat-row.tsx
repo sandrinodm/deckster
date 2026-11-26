@@ -26,7 +26,7 @@ import { smartPunctuation } from '#foundation/smart-punctuation.ts';
 import { StatDelta, StatValue } from '#foundation/stat-figure.tsx';
 import { deltaTone } from '#layouts/stat-value.ts';
 import '#charts/figures/figures.css';
-import '#layouts/stats-layout.css';
+import '#layouts/stat-cards.css';
 
 /**
  * The most stats a row holds, from the chart limits `deckster charts --json` prints; more belong in
@@ -232,7 +232,9 @@ function drawStatRow(props: StatRowProps, input: DrawInput): ChartDrawing {
   const { theme } = input;
   const stats = props.stats.map((stat) => resolveStat(stat, props, theme));
   const plot = (
-    <FitGroup className="kit-stat-row" variant={{ 'data-count': stats.length }}>
+    <FitGroup
+      className="kit-stat-row"
+      variant={{ 'data-count': stats.length, 'data-kit-stat-cards': '' }}>
       {stats.map((stat, index) => (
         <div key={index} className="kit-stat" data-highlight={stat.highlight}>
           <StatValue value={stat.text} />

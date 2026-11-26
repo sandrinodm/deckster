@@ -17,6 +17,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./runtime": "./src/runtime.ts",
+    "./plugin": "./src/kit-plugin.ts",
     "./catalog": "./src/catalog.ts",
     "./diagram-catalog": "./src/diagrams/diagram-catalog.ts",
     "./diagrams": "./src/diagrams.ts",
@@ -27,6 +28,9 @@
     "./component-catalog": "./src/components/component-catalog.ts",
     "./place": "./src/place/index.ts",
     "./place-resolve": "./src/place/resolve-place.ts",
+    "./layout-parts": "./src/layout-parts.ts",
+    "./layout-fields": "./src/layout-fields.ts",
+    "./eject-closure": "./src/layouts/eject-closure.ts",
     "./limit-cases": "./src/layouts/limit-cases.ts",
     "./icon-sets": "./src/icons/icon-sets.ts",
     "./mdx": "./src/mdx.ts",

@@ -3,14 +3,21 @@ import { useRef, type CSSProperties, type ReactNode } from 'react';
 
 import type { VoiceEntry, voicesLayoutContract } from '#layouts/voices-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
 import { MEASURE_TOLERANCE_PX } from '#foundation/layout-geometry.ts';
 import { Portrait } from '#foundation/portrait.tsx';
 import { stripQuoteMarks } from '#foundation/quote-marks.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps, useEnter, type EnterProps } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useEnter,
+  useFitLevel,
+  type EnterProps,
+} from '#layout-parts.ts';
 import '#layouts/voices-layout.css';
 
 /**

@@ -37,7 +37,9 @@ export type LayoutProps<Contract extends AnyLayoutContract = AnyLayoutContract> 
   /**
    * The slide's content sorted into the layout's slots. Each filled slot is wrapped in a `<span
    * class="deck-slot" data-slot="<name>">` with `display: contents`, which does not affect layout
-   * and lets `deckster lint` measure the slot.
+   * and lets `deckster lint` measure the slot. Each component element in the content is guarded on
+   * its own, so what it throws is the slide's error wherever the layout renders it; it keeps its
+   * props, children and key, but its `type` is the engine's stand-in.
    */
   slots: LayoutSlots<Contract>;
 };

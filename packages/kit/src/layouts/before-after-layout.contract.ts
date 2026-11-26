@@ -11,10 +11,10 @@ import {
   FocalField,
   REVEAL_HINT,
   RevealField,
+  textField,
   TREATMENT_HINT,
   TreatmentField,
-  textField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The longest label over either picture, in characters, kept to one line.

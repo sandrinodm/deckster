@@ -16,7 +16,8 @@ const DESCRIPTION = 'A slide threw while rendering, or the page threw an uncaugh
 
 /**
  * A slide that threw: the engine shows the error in place of its content (marked with
- * `data-slide-error`), or the page threw an uncaught error while the slide was on screen.
+ * `data-slide-error`), or the page threw an uncaught error while the slide was on screen. A code
+ * layout that failed is `layout-load-failed`'s, not this rule's.
  */
 export const renderErrorRule: SlideRule = {
   /**
@@ -48,7 +49,7 @@ export const renderErrorRule: SlideRule = {
    * Reports the slide's error and every uncaught page error at this step.
    */
   check: ({ snapshot, slide }) => [
-    ...(snapshot.renderError === null
+    ...(snapshot.renderError === null || snapshot.renderError.failedLayout !== undefined
       ? []
       : [
           {

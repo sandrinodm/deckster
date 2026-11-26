@@ -1,6 +1,11 @@
+import { BRAND_CODE_SOURCE_PREFIX, DECK_SOURCE_PREFIX } from '@deckster/vite-plugin';
 import { Predicate } from 'effect';
 
-import { BRAND_SOURCE_PREFIX, type LayoutInfo } from '#layouts/list-layouts.ts';
+import {
+  BRAND_SOURCE_PREFIX,
+  describeReplacement,
+  type LayoutInfo,
+} from '#layouts/list-layouts.ts';
 
 /**
  * The first complete sentence, including its terminal punctuation.
@@ -73,9 +78,16 @@ export type LayoutSummary = {
   name: string;
 
   /**
-   * The package that supplies the layout, or `brand:<name>` for the deck's brand.
+   * Where the layout comes from, as `deckster layouts` prints it: a package, `brand:<name>`,
+   * `brand-code:<name>` or `deck:<name>`.
    */
   source: string;
+
+  /**
+   * The source of the layout this one replaces, such as `@deckster/kit`; left out when it replaces
+   * none.
+   */
+  replaces?: string;
 
   /**
    * For a brand layout, the kit layout it falls back to; `null` otherwise.
@@ -161,6 +173,7 @@ export function summarizeLayout(layout: LayoutInfo): LayoutSummary {
   return {
     name: layout.name,
     source: layout.source,
+    ...(layout.replaces === undefined ? {} : { replaces: layout.replaces }),
     fallback: layout.fallback,
     description: firstSentence(layout.description),
     surface: layout.surface,
@@ -194,37 +207,67 @@ function summarizeSlot(
 }
 
 /**
- * Puts the brand's layouts before the rest, each group keeping its order.
+ * Puts the deck's own layouts first, then the brand's (data and code), then the rest, each group
+ * keeping its order.
  *
  * @param summaries - The layouts in catalog order.
  */
-export function brandFirst<T extends { source: string }>(summaries: readonly T[]): T[] {
-  const brand = summaries.filter((summary) => summary.source.startsWith(BRAND_SOURCE_PREFIX));
-  return [...brand, ...summaries.filter((summary) => !brand.includes(summary))];
+export function ownLayoutsFirst<T extends { source: string }>(summaries: readonly T[]): T[] {
+  const deck = summaries.filter((summary) => summary.source.startsWith(DECK_SOURCE_PREFIX));
+  const brand = summaries.filter((summary) => isBrandSource(summary.source));
+  const own = [...deck, ...brand];
+  return [...own, ...summaries.filter((summary) => !own.includes(summary))];
 }
 
 /**
- * The plain listing of the summaries. A brand's layouts come first under a heading that names the
- * brand, then the other layouts under their own heading; with no brand layouts there are no
- * headings.
+ * The plain listing of the summaries. The deck's own layouts come first under a heading that names
+ * the deck, then the brand's under a heading that names the brand, then the other layouts under
+ * their own heading; with neither deck nor brand layouts there are no headings.
  *
  * @param summaries - The layouts to print.
  */
 export function formatSummaries(summaries: readonly LayoutSummary[]): string {
-  const ordered = brandFirst(summaries);
-  const brandLayouts = ordered.filter((summary) => summary.source.startsWith(BRAND_SOURCE_PREFIX));
-  const [first] = brandLayouts;
-  if (first === undefined) {
+  const deck = summaries.filter((summary) => summary.source.startsWith(DECK_SOURCE_PREFIX));
+  const brand = summaries.filter((summary) => isBrandSource(summary.source));
+  if (deck.length === 0 && brand.length === 0) {
     return formatGroup(summaries);
   }
 
-  const others = ordered.slice(brandLayouts.length);
-  const brandName = first.source.slice(BRAND_SOURCE_PREFIX.length);
+  const others = summaries.filter((summary) => !deck.includes(summary) && !brand.includes(summary));
   return [
-    `Layouts from the ${brandName} brand (prefer these):`,
-    formatGroup(brandLayouts),
-    ...(others.length === 0 ? [] : ['', 'Other layouts:', formatGroup(others)]),
-  ].join('\n');
+    ...ownGroup(deck, 'deck'),
+    ...ownGroup(brand, 'brand'),
+    ...(others.length === 0 ? [] : ['Other layouts:', formatGroup(others), '']),
+  ]
+    .join('\n')
+    .trimEnd();
+}
+
+/**
+ * The lines of one group of the deck's or the brand's own layouts: a heading that names the deck or
+ * the brand, the listing and a blank line; nothing for an empty group.
+ *
+ * @param summaries - The group's layouts, all from one deck or one brand.
+ * @param owner - Whether they are the deck's or the brand's.
+ */
+function ownGroup(summaries: readonly LayoutSummary[], owner: 'deck' | 'brand'): string[] {
+  const [first] = summaries;
+  if (first === undefined) {
+    return [];
+  }
+
+  const name = first.source.slice(first.source.indexOf(':') + 1);
+  return [`Layouts from the ${name} ${owner} (prefer these):`, formatGroup(summaries), ''];
+}
+
+/**
+ * Whether a layout's source is the deck's brand: a data layout (`brand:<name>`) or a code layout
+ * (`brand-code:<name>`).
+ *
+ * @param source - The layout's source.
+ */
+function isBrandSource(source: string): boolean {
+  return source.startsWith(BRAND_SOURCE_PREFIX) || source.startsWith(BRAND_CODE_SOURCE_PREFIX);
 }
 
 /**
@@ -249,6 +292,7 @@ function formatGroup(summaries: readonly LayoutSummary[]): string {
       return [
         `${summary.name.padEnd(width)}  ${facts.join('  ')}`,
         `${' '.repeat(width)}  ${summary.description}`,
+        ...replacementLines(summary, width),
         ...(summary.fallback === null
           ? []
           : [`${' '.repeat(width)}  falls back to: ${summary.fallback}`]),
@@ -256,6 +300,18 @@ function formatGroup(summaries: readonly LayoutSummary[]): string {
       ].join('\n');
     })
     .join('\n');
+}
+
+/**
+ * The line that says a layout replaces another one, indented under its name; none for a layout that
+ * replaces nothing.
+ *
+ * @param summary - The layout.
+ * @param width - The width of the name column.
+ */
+function replacementLines(summary: LayoutSummary, width: number): string[] {
+  const note = describeReplacement(summary);
+  return note === undefined ? [] : [`${' '.repeat(width)}  ${note}`];
 }
 
 /**

@@ -1,7 +1,9 @@
 import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it } from '@effect/vitest';
 import { Effect, FileSystem } from 'effect';
+import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { isShipped, stageFramework } from '#release/stage-framework.ts';
 
@@ -34,6 +36,50 @@ describe('isShipped', () => {
     expect(isShipped('a/b.tsx')).toBe(true);
     expect(isShipped('styles/tokens.css')).toBe(true);
     expect(isShipped('main/preload.cjs')).toBe(true);
+  });
+});
+
+/**
+ * The package's `src/`, which `#` imports name.
+ */
+const SRC_DIR = fileURLToPath(new URL('..', import.meta.url));
+
+/**
+ * A static or dynamic import of a `#` module, capturing its path under `src/`.
+ */
+const HASH_IMPORT_PATTERN = /(?:from|import\()\s*'#([^']+)'/gu;
+
+/**
+ * Every module under `src/` a module imports through `#` specifiers, followed transitively.
+ *
+ * @param entries - Paths under `src/`, such as `commands/layouts-check-run.ts`.
+ */
+function hashImportClosure(entries: readonly string[]): string[] {
+  const seen = new Set(entries);
+  const queue = [...entries];
+  for (const file of queue) {
+    const text = fs.readFileSync(path.join(SRC_DIR, file), 'utf8');
+    for (const match of text.matchAll(HASH_IMPORT_PATTERN)) {
+      const target = match[1] ?? '';
+      if (!seen.has(target)) {
+        seen.add(target);
+        queue.push(target);
+      }
+    }
+  }
+
+  return [...seen].toSorted();
+}
+
+describe('the modules deckster layouts new and check run', () => {
+  it('all ship, so an installed CLI has the limit-case deck and the checks', () => {
+    const closure = hashImportClosure([
+      'commands/layouts-run.ts',
+      'commands/layouts-new-run.ts',
+      'commands/layouts-check-run.ts',
+    ]);
+    expect(closure).toContain('layouts/limit-deck.ts');
+    expect(closure.filter((file) => !isShipped(file))).toEqual([]);
   });
 });
 

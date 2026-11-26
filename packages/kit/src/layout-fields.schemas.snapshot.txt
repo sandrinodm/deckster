@@ -1,0 +1,10 @@
+AlignField: {"dialect":"draft-2020-12","schema":{"type":"string","enum":["left","center"]},"definitions":{}}
+chromeField: {"dialect":"draft-2020-12","schema":{"type":"boolean"},"definitions":{}}
+ContactItem: {"dialect":"draft-2020-12","schema":{"type":"object","properties":{"label":{"type":"string","minLength":1,"maxLength":16},"text":{"type":"string","minLength":1,"maxLength":40},"href":{"type":"string","minLength":1}},"required":["label","text"],"additionalProperties":true},"definitions":{}}
+DataField: {"dialect":"draft-2020-12","schema":{"type":"object","additionalProperties":{"type":"array","items":{"type":"object","additionalProperties":{"anyOf":[{"type":"string"},{"type":"number"},{"type":"string","enum":["Infinity","-Infinity","NaN"]},{"type":"boolean"},{"type":"null"}]}}}},"definitions":{}}
+EyebrowField: {"dialect":"draft-2020-12","schema":{"type":"string","minLength":1,"maxLength":40},"definitions":{}}
+FocalField: {"dialect":"draft-2020-12","schema":{"type":"string","minLength":1,"pattern":"^(?:(?:left|center|right|top|bottom|\\d{1,3}%)(?:\\s+|$)){1,2}$"},"definitions":{}}
+IconNameField: {"dialect":"draft-2020-12","schema":{"type":"string","minLength":1,"pattern":"^(?:[a-z0-9-]+:)?[a-z0-9-]+$"},"definitions":{}}
+RevealField: {"dialect":"draft-2020-12","schema":{"type":"boolean"},"definitions":{}}
+textField: {"dialect":"draft-2020-12","schema":{"type":"string","minLength":1,"maxLength":10},"definitions":{}}
+TreatmentField: {"dialect":"draft-2020-12","schema":{"type":"string","minLength":1,"pattern":"^[a-z][a-z0-9-]*$"},"definitions":{}}

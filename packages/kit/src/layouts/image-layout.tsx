@@ -4,10 +4,9 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { imageLayoutContract } from '#layouts/image-layout.contract.ts';
 
-import { TreatedMedia } from '#foundation/media-treatment.tsx';
-import { Eyebrow, FittedText, Frame } from '#foundation/slide-parts.tsx';
-import { treatmentProps } from '#layouts/layout-fields.ts';
-import { useEnter } from '#motion/enter.ts';
+import { treatmentProps } from '#layout-fields.ts';
+import { Eyebrow, FittedText, Frame, TreatedMedia, useEnter } from '#layout-parts.ts';
+import '#layouts/image-scrim.css';
 import '#layouts/image-layout.css';
 
 /**

@@ -11,7 +11,7 @@ import {
   textField,
   TREATMENT_HINT,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The longest persona name, in characters, in the portrait's three-column measure.

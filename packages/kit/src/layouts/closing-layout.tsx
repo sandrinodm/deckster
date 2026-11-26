@@ -4,12 +4,10 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { closingLayoutContract } from '#layouts/closing-layout.contract.ts';
 
-import { BrandLogo } from '#foundation/brand-logo.tsx';
 import { ContactList } from '#foundation/contact-list.tsx';
-import { Eyebrow, FittedText, Frame } from '#foundation/slide-parts.tsx';
+import { BrandLogo, Eyebrow, FittedText, Frame, useEnter } from '#layout-parts.ts';
 import { displayUrl } from '#links/link-target.ts';
 import { QR } from '#links/qr.tsx';
-import { useEnter } from '#motion/enter.ts';
 import '#layouts/closing-layout.css';
 
 /**

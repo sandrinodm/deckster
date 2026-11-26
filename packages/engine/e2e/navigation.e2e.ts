@@ -222,3 +222,11 @@ describe('canvas', () => {
     expect(letterboxed?.y).toBeCloseTo((1000 - 562.5) / 2, 0);
   });
 });
+
+describe('layout stamp', () => {
+  test('marks the slide on screen with the layout its frontmatter names', async (fixtures) => {
+    const { browser } = fixtures;
+    await openDeck(fixtures, '/');
+    await expect(activeSlide(browser)).toHaveAttribute('data-deck-layout', 'default');
+  });
+});

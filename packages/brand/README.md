@@ -178,6 +178,10 @@ Art is made of ordinary background layers (`image`, `placed`, `pattern` and `gra
 `color.surfaces.<name>.background`), with its files in the brand folder: fieldnote keeps its six
 drawings in `brands/fieldnote/layouts/`. `loadBrand` checks the art files as it does a surface's.
 
+A brand can also ship layouts as code, in a folder per layout inside the same `layouts/` folder
+(`layouts/<name>/contract.ts` and `layout.tsx`). `loadBrand` does not read them; `@deckster/vite-plugin`
+loads them (see its README), and files at the top of `layouts/` stay a data layout's art.
+
 ### Checks
 
 `resolveBrand` decodes and checks `layouts.ts` after `brand.ts`, and `deckster brand check` reports
@@ -204,7 +208,7 @@ slide's layout for the fallback when the deck's brand lacks it (see
 | Import                    | What it holds                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@deckster/brand`         | `defineBrand`, the `Brand` schema, `resolveBrand`, `compileBrand`, `fontFaceCss`, `brandVariables` and `cssVar`, contrast and data-palette thresholds, `ROLE_NAMES`, `REQUIRED_SURFACES`, `TYPE_STEPS`, `MIN_TYPE_SIZE_PX`, `isSafeName`, `BrandError` and `describeProblem`, `defineBrandLayouts`, the `BrandLayoutSpec` schema and `layoutLayers`, and the token types. Safe in the browser. |
-| `@deckster/brand/node`    | `loadBrand` and `listBrands` (Effect, `FileSystem`), `findLayoutInBrands`, `brandTokensJson`, `fileExists`, and the agent's content policy, turn guard and code gate (see below).                                                                                                                                                                                                              |
+| `@deckster/brand/node`    | `loadBrand` and `listBrands` (Effect, `FileSystem`), `findLayoutInBrands`, `brandTokensJson`, `fileExists`, `DECKSTER_SOURCE_FILE` and the `DecksterSource` schema of the `.deckster-source.json` that `deckster brand add` writes (`source`, `commit`, `codeLayoutsSkipped`), and the agent's content policy, turn guard and code gate (see below).                                           |
 | `@deckster/brand/runtime` | The brand's runtime plugin (default export), `useBrand()` and `getBrand(surface)`. It imports `virtual:deck/brand` and `virtual:deck/brand.css`, so it runs only inside a deck served by `@deckster/vite-plugin`.                                                                                                                                                                              |
 
 The Vite plugin loads the deck's brand like this
@@ -251,7 +255,8 @@ removed, so an off-brand value does not exist as a class.
 - `brand.ts` is imported fresh when it changes on disk; files it imports are not.
 - `@deckster/brand/node` also holds the agent's content policy (`CONTENT_FOLDERS`), the turn guard and
   the code gate. They live here because `loadBrand` must finish a turn a crash left unfinished
-  before it imports a brand, and must not import one while an agent turn runs. See
+  before it imports a brand, and must not import one while an agent turn runs. `@deckster/vite-plugin`
+  asks the same gate before it loads a code layout's `contract.ts` or `limits.ts`. See
   [docs/agent.md](../../docs/agent.md) before changing them.
 
 ## Tests

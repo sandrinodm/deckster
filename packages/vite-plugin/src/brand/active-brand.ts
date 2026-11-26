@@ -14,6 +14,9 @@ import { deckBrandName } from '#brand/deck-brand-name.ts';
 import { loadDeckBrand } from '#brand/load-deck-brand.ts';
 import { loadDeck } from '#decks/load-deck.ts';
 import { trackHeldLoads } from '#held-loads.ts';
+import { LAYOUTS_DIR } from '#layouts/local-layouts.ts';
+import { isHotLayoutEdit } from '#layouts/watch-layouts.ts';
+import { isVirtualPlugin } from '#virtual-modules.ts';
 
 /**
  * The brand a deck renders with, loaded once and reloaded after edits.
@@ -124,8 +127,8 @@ type BrandModuleContext = Pick<Rollup.PluginContext, 'addWatchFile' | 'warn'>;
 
 /**
  * Loads `virtual:deck/brand` (when `id` is its resolved id) or else `virtual:deck/brand.css`. The
- * stylesheet makes Tailwind scan the deck, the brand and the folders of the runtime plugins (the
- * kit's layouts).
+ * stylesheet makes Tailwind scan the deck, the brand (and with them their code layouts) and the
+ * folders of the runtime plugins (the kit's layouts).
  *
  * @param context - The plugin context, to watch the brand file and report its warnings.
  * @param input - Which module, the brand, the deck and the runtime plugin files.
@@ -153,7 +156,10 @@ export function brandModuleSource(
     return brandModuleCode(brand);
   }
 
-  const pluginDirs = pluginFiles.map((file) => path.dirname(file));
+  // A virtual plugin has no folder; the code layouts it registers are in the deck and the brand.
+  const pluginDirs = pluginFiles
+    .filter((file) => !isVirtualPlugin(file))
+    .map((file) => path.dirname(file));
   const sources = [...new Set([deck.dir, brand.location.dir, ...pluginDirs])];
   return brandCssCode(brand, sources);
 }
@@ -162,14 +168,21 @@ export function brandModuleSource(
  * Reloads the page with the brand read afresh whenever a file of the active brand changes, or the
  * deck config changes (it may name another brand), and when an agent turn's hold ends after the
  * brand was loaded during it. Every module is invalidated, because slides are validated against the
- * brand's surfaces.
+ * brand's surfaces and its layouts' contracts. An edit to a component or stylesheet inside the
+ * brand's `layouts/<name>/` reloads nothing here: Vite's hot update applies it.
  *
  * @param server - The dev server.
- * @param input - The workspace, the deck and its brand.
+ * @param input - The workspace, the deck, its brand, and which components belong to code layouts
+ *   that are not registered (an edit to one reloads, since it may fix the name it registers).
  */
 export function watchBrand(
   server: ViteDevServer,
-  input: { workspaceRoot: string; deck: DeckLocation; brand: ActiveBrand },
+  input: {
+    workspaceRoot: string;
+    deck: DeckLocation;
+    brand: ActiveBrand;
+    isUnregistered: (file: string) => boolean;
+  },
 ): void {
   const brandsDir = path.join(input.workspaceRoot, BRANDS_DIR);
   server.watcher.add(brandsDir);
@@ -184,7 +197,12 @@ export function watchBrand(
   };
   server.watcher.on('all', (event, file) => {
     const isConfigChange = file === input.deck.configFile;
-    const isActive = isActiveBrandFile(brandsDir, file, input.brand.name());
+    const name = input.brand.name();
+    // An edit to a code layout's component or stylesheet is Vite's to apply, without a reload.
+    const layoutsDir = name === undefined ? undefined : path.join(brandsDir, name, LAYOUTS_DIR);
+    const isHotEdit =
+      layoutsDir !== undefined && isHotLayoutEdit(layoutsDir, event, file, input.isUnregistered);
+    const isActive = !isHotEdit && isActiveBrandFile(brandsDir, file, name);
     if (isConfigChange || isActive || affectsFallbacks(brandsDir, event, file)) {
       reload();
     }

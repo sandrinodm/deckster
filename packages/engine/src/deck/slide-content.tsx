@@ -6,7 +6,6 @@ import {
   isValidElement,
   useContext,
   useMemo,
-  type ComponentType,
   type ReactNode,
 } from 'react';
 
@@ -15,8 +14,10 @@ import type { LayoutDefinition, LayoutSlots } from '#layouts/layout.ts';
 
 import { BODY_SLOT, PLACED_SLOT, SLOT_ELEMENT, SLOTS_ELEMENT, slotTag } from '#contract/slots.ts';
 import { useDeckRuntime } from '#deck/deck-runtime.ts';
+import { isComponent } from '#deck/is-component.ts';
 import { PlacedLayerHost } from '#deck/placed-layer.tsx';
 import { SlideProblem } from '#deck/slide-problem.tsx';
+import { guardSlotContent, SlotGuard } from '#deck/slot-guard.tsx';
 import { Notes } from '#notes/notes.tsx';
 
 /**
@@ -253,8 +254,8 @@ function tsxSlots(entry: SlideEntry, body: ReactNode): LayoutSlots {
 }
 
 /**
- * Wraps each filled slot in `<span class="deck-slot" data-slot="<name>">`, which has `display:
- * contents`, so `deckster lint` can find and measure it.
+ * Guards the slide's slot content before handing it to the layout. The {@link SlotGuard} wrapper
+ * draws a measurable `display: contents` span and can also hold children supplied by the layout.
  *
  * @param slots - The filled slots.
  */
@@ -262,26 +263,10 @@ function wrapSlots(slots: LayoutSlots): LayoutSlots {
   const wrapped: Record<string, ReactNode> = {};
   for (const [name, content] of Object.entries(slots)) {
     if (content !== undefined) {
-      wrapped[name] = (
-        <span className="deck-slot" data-slot={name}>
-          {content}
-        </span>
-      );
+      const guarded = guardSlotContent(content);
+      wrapped[name] = <SlotGuard data-slot={name}>{guarded}</SlotGuard>;
     }
   }
 
   return wrapped;
-}
-
-/**
- * Whether a module export can be rendered as a component: a function, or an object React wraps
- * components in (`memo`, `forwardRef`, `lazy`).
- *
- * @param value - The export.
- */
-function isComponent(value: unknown): value is ComponentType {
-  return (
-    typeof value === 'function' ||
-    (typeof value === 'object' && value !== null && '$$typeof' in value)
-  );
 }

@@ -1,0 +1,12 @@
+/*
+ * The body in the first eight of the twelve columns, the reading measure of the kit's text
+ * layouts. Every rule is keyed on the layout, so it styles no other slide.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .kit-frame[data-layout='sample-layout'] .layout-body {
+    grid-column: 1 / span 8;
+    min-width: 0;
+  }
+}

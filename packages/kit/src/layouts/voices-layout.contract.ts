@@ -14,7 +14,7 @@ import {
   textField,
   TREATMENT_HINT,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest testimonials: one speaker belongs in quote.

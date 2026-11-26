@@ -220,3 +220,24 @@ export function currentProblems(
     },
   ];
 }
+
+/**
+ * One value of a data row in frontmatter: text, a number, a flag or nothing.
+ */
+const DataCell = Schema.Union([Schema.String, Schema.Number, Schema.Boolean, Schema.Null]);
+
+/**
+ * Named datasets a chart slide carries in its frontmatter, each a list of rows that a chart on the
+ * slide names with `data="name"`.
+ */
+export const DataField = Schema.optionalKey(
+  Schema.Record(Schema.String, Schema.Array(Schema.Record(Schema.String, DataCell))),
+);
+
+/**
+ * How to fill the `data:` field.
+ */
+export const DATA_HINT =
+  'List datasets by name, each a list of rows, and name one from a chart with ' +
+  '`data="name"`: `data: { regions: [{ region: EMEA, revenue: 4.2 }] }`. Inline rows ' +
+  '(data={[...]}) and imported JSON or CSV files work too.';

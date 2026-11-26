@@ -1,8 +1,14 @@
 import { defineLayoutContract } from '@deckster/engine/layout';
 import { Schema } from 'effect';
 
-import { AlignField, alignHint } from '#layouts/display-fields.ts';
-import { CHROME_HINT, chromeField, EYEBROW_HINT, EyebrowField } from '#layouts/layout-fields.ts';
+import {
+  AlignField,
+  alignHint,
+  CHROME_HINT,
+  chromeField,
+  EYEBROW_HINT,
+  EyebrowField,
+} from '#layout-fields.ts';
 
 /**
  * How a statement marks the words the author emphasises (`*front door*` or `**front door**`):

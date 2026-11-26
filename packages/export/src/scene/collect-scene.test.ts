@@ -383,3 +383,65 @@ describe('collectScene placed elements in Chromium', () => {
     expect(preserved).toEqual({ shapes: 3, texts: 1, placed: 5, ids: 0 });
   });
 });
+
+/**
+ * A minimal slide in the deck's DOM shape, with the given attributes on its section and inner
+ * markup.
+ *
+ * @param sectionAttributes - Extra attributes on the active section.
+ * @param inner - The slide's markup.
+ */
+function layoutHtml(sectionAttributes: string, inner: string): string {
+  return `<!doctype html><html><head><style>
+  body { margin: 0; font-family: Arial, sans-serif; }
+  .deck-canvas { position: relative; width: 1920px; height: 1080px; }
+  section { position: absolute; inset: 0; }
+</style></head><body><div class="deck-canvas"><section data-slide-active="true" data-surface="default" ${sectionAttributes}>${inner}</section></div></body></html>`;
+}
+
+describe('collectScene layout name in Chromium', () => {
+  let browser: Browser;
+  let page: Page;
+
+  beforeAll(async () => {
+    browser = await chromium.launch();
+    page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+  }, BROWSER_TIMEOUT_MS);
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  /**
+   * The layout the scene of a slide reports.
+   *
+   * @param html - The slide page.
+   */
+  async function layoutOf(html: string): Promise<string> {
+    await page.setContent(html);
+    const scene = await page.evaluate(collectScene, { placeholderSelectors: [] });
+    return scene.layout;
+  }
+
+  it('reads the layout the engine stamped on the slide, whatever markup the layout draws', async () => {
+    const html = layoutHtml('data-deck-layout="kpi-wall"', '<div class="wall"><p>Hi</p></div>');
+    expect(await layoutOf(html)).toBe('kpi-wall');
+  });
+
+  it('prefers the stamp over a data-layout in the markup, including a nested one', async () => {
+    const inner = '<div data-layout="split"><div data-layout="content"><p>Hi</p></div></div>';
+    expect(await layoutOf(layoutHtml('data-deck-layout="kpi-wall"', inner))).toBe('kpi-wall');
+  });
+
+  it('keeps the stamped name when the layout has no contract-named markup, not default', async () => {
+    expect(await layoutOf(layoutHtml('data-deck-layout="typo-layout"', '<p>Hi</p>'))).toBe(
+      'typo-layout',
+    );
+  });
+
+  it('falls back to the first data-layout, then default, for a page without the stamp', async () => {
+    const inner = '<div data-layout="content"><p>Hi</p></div>';
+    expect(await layoutOf(layoutHtml('', inner))).toBe('content');
+    expect(await layoutOf(layoutHtml('', '<p>Hi</p>'))).toBe('default');
+  });
+});

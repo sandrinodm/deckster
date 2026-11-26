@@ -8,14 +8,14 @@ import {
   chromeField,
   EYEBROW_HINT,
   EyebrowField,
-  IconNameField,
   FOCAL_HINT,
   FocalField,
+  IconNameField,
   REVEAL_HINT,
   RevealField,
   textField,
   TreatmentField,
-} from '#layouts/layout-fields.ts';
+} from '#layout-fields.ts';
 
 /**
  * The fewest tiles a bento slide shows: the lead and two beside it.

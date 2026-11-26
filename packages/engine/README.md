@@ -58,23 +58,45 @@ dependencies are React, React DOM and `effect` (for `Schema` in the contracts).
 - Plugins (`definePlugin`) add layouts, MDX components, chrome, stage wrappers, overlays and key and
   click handlers. Later plugins override earlier ones on a name clash. The engine itself ships only
   an unstyled `default` layout; `@deckster/kit` replaces it.
+- `lazyLayout(name, load)` registers a layout whose component loads the first time a slide uses it.
+  `@deckster/vite-plugin` uses it for the code layouts in a deck or brand folder (`layouts/<name>/`),
+  with `load` a dynamic `import()` of the `layout.tsx`, whose default export must be a `defineLayout`
+  result with the same name. `ready()` waits for the load. A layout whose file fails to import,
+  exports something else or throws while rendering replaces only the slides that use it with the
+  problem panel ("Layout `kpi-wall` failed to load: ..."); the other slides keep working. A layout's
+  `bleed` names no edges until it has loaded, and what reads it through `useLayouts()` renders again
+  when the load finishes. A new `virtual:deck/plugins` module, such as an edited layout file, is
+  picked up in place by hot reload.
+- Every slide's `<section>` carries `data-deck-layout`, the layout name from its frontmatter (the
+  default layout's name for a slide that names none). Export reads the layout from it, so it does not
+  depend on the markup a layout draws. The failure panel above is `[data-slide-error]` with
+  `data-deck-problem="layout-load-failed"` and `data-deck-problem-layout="<name>"`, which tools can
+  tell from an ordinary render error.
+- A filled slot is wrapped in `<span class="deck-slot" data-slot="<name>">` (`display: contents`).
+  Layouts receive a wrapper element with `data-slot` and `children` props. Use
+  `cloneElement(slot, {}, children)` to keep the measurable span around rebuilt content. Error
+  boundaries travel with the slide's original content wherever the layout renders it. A component
+  the layout adds inside the cloned slot reports its own failure as a layout problem. Guarded
+  components keep their props, children and keys and render through an engine stand-in type. HTML
+  elements and fragments keep their types, and their children are guarded through arrays and
+  iterables. The engine leaves a component's own children intact for the component to render.
 - `start-errors.ts` shows a panel naming the file when the page breaks before the deck mounts, for
   example a slide that imports a name its module does not export.
 
 ## Exports
 
-| Import                         | What it holds                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@deckster/engine`             | `Deck`, `SlideView`, `Canvas`, `Step`, `useStep`, `useStepAt`, `Notes`, `useDeck`, `useSlide`, `useReadyHold`, `useStatic`, `defineLayout`, `definePlugin`, `useLayouts`, `isInteractiveTarget`, `MORPH_ATTRIBUTE`, the shown-slide helpers (`hiddenSlides`, `shownSlideIndexes`, `neighbourShownSlide`, `shownPageNumber`, `areShownNeighbours`), and the manifest and contract types |
-| `@deckster/engine/config`      | `defineDeck` and the `DeckConfig` schema for `deck.config.ts`                                                                                                                                                                                                                                                                                                                          |
-| `@deckster/engine/frontmatter` | The `SlideFrontmatter` schema every slide accepts (`layout`, `title`, `surface`, `background`, `budget`, `transition`, `hidden`), its fix hints and `TRANSITION_KINDS`, the list `@deckster/brand` also validates against                                                                                                                                                              |
-| `@deckster/engine/layout`      | `defineLayoutContract`, `defineLayoutCatalog`, and the budget and variant helpers (`slideBudget`, `matchingVariants`, `slideFieldLimits`) the build and `deckster lint` use                                                                                                                                                                                                            |
-| `@deckster/engine/catalog`     | The engine's own layout catalog (the `default` contract), loaded before any plugin's                                                                                                                                                                                                                                                                                                   |
-| `@deckster/engine/manifest`    | `DeckManifest`, `SlideEntry`, `SlideMeta`: the shape of `virtual:deck`                                                                                                                                                                                                                                                                                                                 |
-| `@deckster/engine/slots`       | `BODY_SLOT`, `slotTag` and the element names the slot compiler writes                                                                                                                                                                                                                                                                                                                  |
-| `@deckster/engine/names`       | `KebabName` and `KEBAB_CASE_PATTERN` for slide, layout and brand names                                                                                                                                                                                                                                                                                                                 |
-| `@deckster/engine/mdx`         | `defineMdxExtension` and its types, for build-time remark and rehype plugins                                                                                                                                                                                                                                                                                                           |
-| `@deckster/engine/app`         | The page entry (`main.tsx`); `@deckster/vite-plugin` serves its folder's `index.html`                                                                                                                                                                                                                                                                                                  |
+| Import                         | What it holds                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@deckster/engine`             | `Deck`, `SlideView`, `Canvas`, `Step`, `useStep`, `useStepAt`, `Notes`, `useDeck`, `useSlide`, `useReadyHold`, `useStatic`, `defineLayout`, `lazyLayout`, `definePlugin`, `useLayouts`, `isInteractiveTarget`, `MORPH_ATTRIBUTE`, the shown-slide helpers (`hiddenSlides`, `shownSlideIndexes`, `neighbourShownSlide`, `shownPageNumber`, `areShownNeighbours`), and the manifest and contract types |
+| `@deckster/engine/config`      | `defineDeck` and the `DeckConfig` schema for `deck.config.ts`                                                                                                                                                                                                                                                                                                                                        |
+| `@deckster/engine/frontmatter` | The `SlideFrontmatter` schema every slide accepts (`layout`, `title`, `surface`, `background`, `budget`, `transition`, `hidden`), its fix hints and `TRANSITION_KINDS`, the list `@deckster/brand` also validates against                                                                                                                                                                            |
+| `@deckster/engine/layout`      | `defineLayoutContract`, `defineLayoutCatalog`, and the budget and variant helpers (`slideBudget`, `matchingVariants`, `slideFieldLimits`) the build and `deckster lint` use                                                                                                                                                                                                                          |
+| `@deckster/engine/catalog`     | The engine's own layout catalog (the `default` contract), loaded before any plugin's                                                                                                                                                                                                                                                                                                                 |
+| `@deckster/engine/manifest`    | `DeckManifest`, `SlideEntry`, `SlideMeta`: the shape of `virtual:deck`                                                                                                                                                                                                                                                                                                                               |
+| `@deckster/engine/slots`       | `BODY_SLOT`, `slotTag` and the element names the slot compiler writes                                                                                                                                                                                                                                                                                                                                |
+| `@deckster/engine/names`       | `KebabName` and `KEBAB_CASE_PATTERN` for slide, layout and brand names                                                                                                                                                                                                                                                                                                                               |
+| `@deckster/engine/mdx`         | `defineMdxExtension` and its types, for build-time remark and rehype plugins                                                                                                                                                                                                                                                                                                                         |
+| `@deckster/engine/app`         | The page entry (`main.tsx`); `@deckster/vite-plugin` serves its folder's `index.html`                                                                                                                                                                                                                                                                                                                |
 
 Every subpath except the root and `app` is safe to load in Node: no JSX and no runtime React, so
 `@deckster/vite-plugin` and the CLI import them while building and linting.
@@ -180,6 +202,12 @@ export const columnsLayout = defineLayout<typeof columnsContract>({
 });
 ```
 
+A brand or a deck can ship layouts as code instead, in `layouts/<name>/contract.ts` and
+`layout.tsx`; `@deckster/vite-plugin` loads them (see its README), and the contract may set
+`replaces: true` to take the place of a kit or engine layout of the same name. A deck config may
+also set `deckster`, the range of deckster versions the deck's own code layouts were written for,
+such as `>=0.10 <0.12`; the build refuses to load them on another version.
+
 The contract goes in a catalog (`defineLayoutCatalog`, listed in `layoutCatalogs` of
 `@deckster/vite-plugin`) and the component in a runtime plugin (`definePlugin({ name, layouts })`,
 listed in `runtimePlugins`). A slide that names a layout with no contract fails to build. The kit's
@@ -205,7 +233,7 @@ the API always moves from where the deck really is.
 ## Rules for changing the engine
 
 - `window.__deck`, the virtual modules, the deck config and frontmatter schemas and the layout
-  contract shape are public surface. The CLI, export, presenter and comments packages read them.
+  contract shape (including `replaces`) are public surface. The CLI, export, presenter and comments packages read them.
   Changing one is a feature, not a refactor.
 - Keep the contract files (`src/contract/`, `*.contract.ts`, `src/layouts/catalog.ts`) Node-safe:
   no JSX, no React, no CSS imports. A layout component imports its contract only as a type, so the

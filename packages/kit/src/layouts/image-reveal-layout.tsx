@@ -3,12 +3,16 @@ import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'rea
 
 import type { imageRevealLayoutContract } from '#layouts/image-reveal-layout.contract.ts';
 
-import { TreatedMedia } from '#foundation/media-treatment.tsx';
-import { Eyebrow, FittedText, Frame } from '#foundation/slide-parts.tsx';
-import { treatmentProps } from '#layouts/layout-fields.ts';
+import { treatmentProps } from '#layout-fields.ts';
+import {
+  Eyebrow,
+  FittedText,
+  Frame,
+  TreatedMedia,
+  useEnter,
+  useStillMotion,
+} from '#layout-parts.ts';
 import { cssDurationMs } from '#motion/css-duration.ts';
-import { useEnter } from '#motion/enter.ts';
-import { useStillMotion } from '#motion/still-motion.ts';
 import '#layouts/display-align.css';
 import '#layouts/image-reveal-layout.css';
 
@@ -295,6 +299,7 @@ function ImageRevealLayout({
       variant={{
         'data-revealed': String(revealed),
         'data-dock': dock,
+        'data-kit-display-align': '',
         'data-align': align,
         'data-fit': fit,
         'data-motion': still ? 'off' : 'on',

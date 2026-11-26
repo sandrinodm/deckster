@@ -13,6 +13,13 @@ export const Problem = Schema.Struct({
    * What to change to fix it, as a sentence.
    */
   fix: Schema.String,
+
+  /**
+   * The id of the problem, set when it has one of its own: a code layout's problem carries its
+   * `LayoutProblemCode`, such as `layout-held`, and `deckster lint` reports it under that rule id
+   * instead of `schema`. Left out for every other problem.
+   */
+  code: Schema.optionalKey(Schema.String),
 });
 
 /**
@@ -166,6 +173,22 @@ export function invalidLayoutCatalog(ref: FileRef, problems: readonly Problem[])
  */
 export function invalidBrandLayouts(ref: FileRef, problems: readonly Problem[]): DeckBuildError {
   return deckBuildError({ ...ref, summary: 'Invalid brand layouts', problems });
+}
+
+/**
+ * Code layouts handed to a layout catalog whose names are taken: by a kit or engine layout, by a
+ * layout of the brand, or by a brand layout when the code layout is a deck's.
+ */
+export function invalidCodeLayouts(ref: FileRef, problems: readonly Problem[]): DeckBuildError {
+  return deckBuildError({ ...ref, summary: 'Invalid code layouts', problems });
+}
+
+/**
+ * A slide on a code layout that has a problem of its own: its folder is incomplete, its contract
+ * did not load or is invalid, its name is taken, or the brand was added without it.
+ */
+export function unusableLayout(ref: FileRef, problems: readonly Problem[]): DeckBuildError {
+  return deckBuildError({ ...ref, summary: "The slide's layout cannot be used", problems });
 }
 
 /**

@@ -17,14 +17,19 @@ import type {
 } from '#layouts/screen-layout.contract.ts';
 
 import { AppChrome } from '#apps/app-chrome.tsx';
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { frontmatterAsset } from '#foundation/frontmatter-assets.ts';
 import { MEASURE_TOLERANCE_PX } from '#foundation/layout-geometry.ts';
 import { useSlideFile } from '#foundation/slide-file.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
-import { enterProps } from '#motion/enter.ts';
-import { Step } from '#motion/step.tsx';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  frontmatterAsset,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  Step,
+  useFitLevel,
+} from '#layout-parts.ts';
 import '#layouts/screen-layout.css';
 
 /**
@@ -121,7 +126,7 @@ function ScreenLayout({ frontmatter, slots }: LayoutProps<typeof screenLayoutCon
     asideContent,
     ASIDE_LEVELS.length,
     JSON.stringify([frame, callouts, span]),
-    { overflow: true },
+    { overflow: true, restartOnFontLoad: true },
   );
   const textType = `kit-type-${ASIDE_LEVELS[level] ?? 'small'}`;
   const style: ScreenStyle = { '--kit-screen-ratio': ratio ?? FALLBACK_RATIO[frame] };

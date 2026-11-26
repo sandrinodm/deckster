@@ -4,8 +4,7 @@ import { defineLayout, type LayoutProps } from '@deckster/engine';
 
 import type { defaultLayoutContract } from '#layouts/default-layout.contract.ts';
 
-import { Frame } from '#foundation/slide-parts.tsx';
-import { useEnter } from '#motion/enter.ts';
+import { Frame, useEnter } from '#layout-parts.ts';
 import '#layouts/default-layout.css';
 
 /**

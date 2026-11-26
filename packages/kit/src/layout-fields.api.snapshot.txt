@@ -1,0 +1,25 @@
+// @deckster/kit/layout-fields
+const AlignField = Schema.Literals(DISPLAY_ALIGNS).pipe(
+function alignHint(what: string): string
+const CHROME_HINT = <text>
+function chromeField(shown: boolean): Schema.withDecodingDefaultKey<Schema.Boolean>
+type ContactEntry = typeof ContactItem.Type;
+const ContactItem = Schema.Struct({
+function contactsHint(most: number): string
+const CONTEXT_MAX_WORDS = 14;
+function currentProblems(frontmatter: { readonly current?: number | undefined }, list: readonly unknown[], what: string): FieldProblem[]
+const DATA_HINT = <text>
+const DataField = Schema.optionalKey(
+const EYEBROW_HINT = <text>
+const EyebrowField = Schema.optionalKey(
+const FOCAL_HINT = <text>
+const FocalField = Schema.optionalKey(
+const IconNameField = Schema.NonEmptyString.check(
+const REVEAL_HINT = <text>
+const RevealField = Schema.Boolean.pipe(
+function textField(maxChars: number, what: string): Schema.NonEmptyString
+const TREATMENT_HINT = <text>
+const TreatmentField = Schema.optionalKey(
+function treatmentProps(treatment: string | undefined): { treatment?: string }
+
+// types the signatures above name

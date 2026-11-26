@@ -143,6 +143,13 @@ export type FeedbackMiddlewareOptions = {
   onAdded: (deck: FeedbackDeck, comment: Comment) => void;
 
   /**
+   * Called after a request changed the feedback files, so the dev server can tell the overlay
+   * without waiting for its file watcher, which can miss the first write into a new `.feedback`
+   * folder.
+   */
+  onChanged?: () => void;
+
+  /**
    * The step count of a slide by its index, to refuse a comment on a step the slide does not have;
    * `undefined` when it cannot be known, which skips the check.
    */
@@ -209,6 +216,10 @@ export function feedbackMiddleware(options: FeedbackMiddlewareOptions): Connect.
 
     void answer(response, async () => {
       const outcome = await applyRequest(options, await readJson(request, response));
+      if (outcome.changed) {
+        options.onChanged?.();
+      }
+
       reply(response, HTTP_OK, { comment: outcome.comment ?? null, changed: outcome.changed });
     });
   };

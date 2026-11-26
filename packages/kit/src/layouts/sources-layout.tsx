@@ -3,12 +3,18 @@ import { useRef, type CSSProperties, type ReactNode } from 'react';
 
 import type { SourceEntry, sourcesLayoutContract } from '#layouts/sources-layout.contract.ts';
 
-import { useFitLevel } from '#foundation/fit-level.ts';
-import { Footnote, Frame, Region, SlideHeader } from '#foundation/slide-parts.tsx';
-import { smartPunctuation } from '#foundation/smart-punctuation.ts';
+import {
+  enterProps,
+  Footnote,
+  Frame,
+  Region,
+  SlideHeader,
+  smartPunctuation,
+  useEnter,
+  useFitLevel,
+} from '#layout-parts.ts';
 import { shortAddress } from '#layouts/sources-address.ts';
 import { linkAttributes } from '#links/link-target.ts';
-import { enterProps, useEnter } from '#motion/enter.ts';
 import '#layouts/sources-layout.css';
 
 /**
