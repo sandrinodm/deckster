@@ -132,6 +132,7 @@ export function commentsVitePlugin(options: CommentsPluginOptions): Plugin {
           },
           run: (effect) => activeRuntime().runPromise(effect),
           onAdded: (current, comment) => takeScreenshot(server, activeRuntime(), current, comment),
+          onChanged: () => server.ws.send({ type: 'custom', event: COMMENTS_CHANGED_EVENT }),
           stepCount: async (slideIndex) => (await stepCounts())?.[slideIndex],
           guard: (request) => devSessionOf(server).refusal(request),
         }),

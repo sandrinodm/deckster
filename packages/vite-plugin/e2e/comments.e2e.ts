@@ -364,7 +364,22 @@ describe('comments', () => {
     );
     expect(stdout).toContain(`Resolved ${added}`);
 
-    await openDeck(fixtures, `${COMMENT_URLS.hello}#/3/0`);
+    // A real reload: opening the same URL again only changes the hash, which keeps the page. The
+    // marker is a property of the old page, so it is gone once the new one runs.
+    await fixtures.problems.navigate(async () => {
+      await browser.evaluate(() => {
+        Reflect.set(window, 'e2eBeforeReload', true);
+        location.reload();
+        return null;
+      });
+    });
+    await expect
+      .poll(() =>
+        browser.evaluate(
+          () => !Reflect.has(window, 'e2eBeforeReload') && window.__deck !== undefined,
+        ),
+      )
+      .toBe(true);
     await browser.keyboard.press('c');
     await browser.locator('.dc-toolbar button[aria-pressed]').click();
     await browser.locator('.dc-segmented button:nth-child(2)').click();
