@@ -1,0 +1,114 @@
+---
+title: "Check a code layout"
+description: "Run deckster layouts check, read the problem ids, set a version range and hand a code layout over."
+sidebar:
+  order: 11
+---
+
+A code layout is checked three ways: `deckster layouts check` renders it, `deckster brand check` and the build report what is wrong with it, and `deckster lint` fails each slide that uses a layout that could not load. This page shows what each reports, the problem ids and their fixes, the version range a brand or deck can set, and a list to run before you hand a layout over.
+
+<Aside type="note" title="New in v0.11.0">
+Code layouts and these checks shipped in 0.11.0. See [code layouts](/brands/code-layouts/).
+</Aside>
+
+## Run the check
+
+`deckster layouts check [<name>]` takes `--brand <brand>` or `--deck <deck>`, exactly one of them. It checks the code layouts of that brand or deck, or only the one named:
+
+1. The contract checks: both files exist, both name the layout, the imports are allowed, the contract loads and is valid, and the name is free. The contracts of one load share a deadline of 10 seconds: a contract still loading then fails with `layout-load-failed`, and the others still load.
+2. For a layout that replaces a kit layout, the [compatibility check](/brands/replace-a-kit-layout/#what-a-replacement-must-keep), including the slides of the workspace's decks that use it.
+3. `limits.ts`, when there is one, is loaded and must be a list of limit cases.
+4. Every layout with no error is rendered through the lint server in a temporary workspace that is removed afterwards. Nothing is written to yours. It renders the contract's `example` and each limit case, with the title and eyebrow at their longest and every slot at its budget, in the deck's brand or, for a brand's layouts, in that brand.
+
+It reports the slide lint rules (overflow, budgets, contrast, off-brand values, slot content) under the layout and case. It skips the rules about a deck as a talk (`layout-repetition`, `few-builds`, `time-budget`, `open-comments`, `missing-notes`, `brand-layout-fallback`) and `info` findings.
+
+```console
+$ deckster layouts check --brand acme
+brands/acme/layouts/ (rendered in the acme brand)
+  kpi-wall: ok (example, three-columns, two-columns)
+  title: ok (example, type, photo, photo-full, centred)
+The brand acme: 2 of 2 layouts pass (0 errors, 0 warnings).
+```
+
+A layout with an error before rendering is not rendered, and its line says so. This layout's contract names it `kpi-wall-two` while its folder is `kpi-wall`:
+
+```console
+$ deckster layouts check kpi-wall --brand acme
+brands/acme/layouts/ (rendered in the acme brand)
+  kpi-wall: fails, 1 problem (not rendered)
+    error   layout-name-mismatch (brands/acme/layouts/kpi-wall/contract.ts): The contract in brands/acme/layouts/kpi-wall/contract.ts is named "kpi-wall-two", but its folder is "kpi-wall".
+            Fix: Give both one name: set `name: 'kpi-wall'` in the contract and in layout.tsx, or rename the folder.
+The brand acme: 0 of 1 layout pass (1 error, 0 warnings).
+```
+
+The exit code is 0 when no layout has an error, so warnings and notes do not fail it, and 1 when one does or the command fails, for example with an unknown brand, deck or layout. Rendering is the slow part, so name the layout while you iterate. With `--json` the output is `{ ok, brand, deck, dir, layouts, problems }`; see the [CLI reference](/reference/cli/#code-layout-subcommands).
+
+## Problems
+
+Problems are values, so a broken layout is left out and every other layout still works. Each message names the file and ends with a fix. Only errors fail anything.
+
+| Problem | Level | When |
+| --- | --- | --- |
+| `layout-folder-incomplete` | error | A `layouts/<name>/` folder lacks `contract.ts` or `layout.tsx`, or a symbolic link stands where a layout folder, one of its files or `layouts/_shared/` belongs. |
+| `layout-name-mismatch` | error | The folder name and `name` in the contract or in `layout.tsx` differ. |
+| `layout-name-clash` | error | The name is a kit, engine or brand layout and the contract has no `replaces: true`, or a deck layout takes a brand layout's name. |
+| `layout-contract-imports` | error | `contract.ts` or `limits.ts` imports something a contract may not. |
+| `layout-contract-invalid` | error | The contract loads but fails the build's checks: a name that is not kebab-case, no description, a slot without a description or with an unknown content kind, a budget for a slot it lacks, an example that fails its own schema, or `replaces: true` on a name nothing has. |
+| `layout-load-failed` | error | `contract.ts` throws, has no default export or is still loading when the 10-second deadline shared by all the contracts of one load passes, or `layout.tsx` throws on import or render, on the slides that use it. Content a layout takes out of `slots.body` and renders outside its `span.deck-slot` wrapper is not guarded, so what it throws is reported against the layout. |
+| `layout-held` | error | An agent turn holds the brand or deck and the contract was never loaded before it, or the turn began while the contract was first loading. See [code layouts and trust](/brands/code-layouts-and-trust/). |
+| `layout-version` | error | The declared `deckster` range does not include the installed version, or cannot be read. |
+| `layout-code-skipped` | error | A slide uses a code layout `deckster brand add` left out, or one only another brand has. |
+| `layout-fallback-unavailable` | error | A data layout in `layouts.ts` falls back to a brand code layout that did not load. |
+| `layout-replace-breaks` | error | A replacement fails the [compatibility check](/brands/replace-a-kit-layout/#what-a-replacement-must-keep). |
+| `layout-replace-pptx` | warning | A replacement lacks the replaced layout's PowerPoint mapping. |
+| `layout-replace-budget` | note | A replacement's budget or title limit differs from the replaced layout's. |
+| `layout-limits-invalid` | error | `limits.ts` is not a list of limit cases, names a case `example` or has frontmatter a slide cannot hold. Found by `layouts check` only. |
+| `layout-not-rendered` | error | `layouts check` could not render the layout's slides because the generated deck did not build, and nothing else fails the layout. |
+| `layout-render-failed` | error | `layouts check` could not render the layout's slides because the browser, the server or the page failed or timed out, often on a busy machine. Run it again, naming the layout. |
+
+Where they show:
+
+- **`deckster layouts`** prints one warning per problem that leaves a layout out, on standard error and in `warnings` with `--json`: `The code layout "<name>" is left out (<problem id> in <file>): <message> Fix: <fix>`. A problem with all of a brand's or deck's layouts, such as `layout-version`, reads `Code layouts are left out (<id>): ...`. `deckster new slide --layout <name>` then fails with that problem instead of "There is no layout".
+- **`deckster brand check <name>`** reports a brand's code layout problems as `error <problem id>: <message>` with a `Fix:` line under the layout's file, and exits 1. Warnings and notes print as `warning` and `note` lines. With `--json`, each entry has `code` (the problem id), `layout`, `file`, `message` and `fix`, and a warning or note has `level`. `deckster brand <name>` prints a `Code layouts:` line next to `Layouts:`.
+- **`deckster lint` and the build** fail each slide that uses an unusable layout with the problem's own id as the rule, such as `layout-version` or `layout-code-skipped`, as an error at the slide. That replaces `schema` for these slides, with one exception: a slide that does not fit a replacement that stayed in the catalog is a `schema` error. A `layout.tsx` that throws is reported as `layout-load-failed` in place of `render-error`. See [lint rules](/reference/lint-rules/#code-layout-problems).
+
+- **`deckster shot` and `deckster export`** fail on a slide that shows an error in place of its content, such as a layout that fails to load or throws, and name it. Export checks every slide before it writes the PDF or the PowerPoint file, and writes PNGs only when every slide rendered, so a broken layout is never exported as an error panel.
+
+There are no new slide lint rules for code layouts: budgets, slot checks, overflow and fit rules all work from the contract and the rendered slide.
+
+## The version range
+
+A brand or a deck with code layouts can say which deckster versions they were written for. A brand writes it in `brands/<name>/brand.json` and a deck in `deck.config.ts`:
+
+```json
+{ "deckster": ">=0.10 <0.12" }
+```
+
+```ts
+import { defineDeck } from '@deckster/engine/config';
+
+export default defineDeck({
+  title: 'Launch review',
+  brand: 'acme',
+  deckster: '>=0.10 <0.12',
+  slides: ['title'],
+});
+```
+
+These ranges are examples. The deck's `deckster` value must be a string literal, because the range is read without running the config. Write the range that holds the versions you tested on, and make sure it includes the installed one (`deckster --version`). A range is comparators joined by spaces, all of which must hold. A comparator is `>=`, `>`, `<=`, `<` or `=` (the default) and a version of one to three numbers. A version with fewer than three numbers stands for every version that starts with it: `<0.11` ends before 0.11.0, `<=0.10` includes every 0.10.x, and `0.10` means any 0.10.x. A prerelease suffix on the installed version is ignored. Carets, tildes, hyphen ranges and `||` are not read, and a range that cannot be read is a `layout-version` problem as well.
+
+When the installed deckster is outside the range, none of that brand's or deck's code layouts load and nothing of them is imported. Each slide that uses one fails with `layout-version`, `deckster layouts` warns once and `deckster brand check` reports an error. The deck's own layouts still load when only the brand's range fails, and the other way round. Leave the range out while you write the layouts and set it once they are tested.
+
+## While you edit in `deckster dev`
+
+- An edit to `layout.tsx`, a `.tsx` helper or a `.css` file inside a layout folder, or in `_shared/`, is applied by Vite's hot update, with no page reload.
+- Anything else under `layouts/`, such as a `contract.ts`, a `.ts` helper, `limits.ts` or a file or folder added or removed, and a change to `brand.json` or `deck.config.ts`, loads the contracts again and reloads the page, because every slide is validated against the contracts.
+- A broken `layout.tsx` fails only the slides that use it, with a message that starts `Layout <name> failed to load`.
+
+## Before you hand it over
+
+1. `deckster layouts check --brand <brand>`, or `--deck <deck>`, passes and `deckster brand check <brand>` has no error.
+2. `deckster layouts <deck> --summary` lists the layout where you expect it, with the budgets you meant, and prints no warning.
+3. Every slide that uses it lints clean, in each brand the deck must support. A code layout of a brand exists only in that brand: the same deck in another brand fails on those slides, where a data layout would fall back to its kit layout. Use a kit layout for slides that must travel between brands.
+4. You have opened the screenshots of the example and of a slide at the budget's limits (`deckster shot`).
+5. `deckster export <deck> --pptx --dry-run` shows the title and body as native text, and the layout appears in its list.

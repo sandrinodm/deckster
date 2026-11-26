@@ -1,0 +1,296 @@
+---
+title: "Code layouts"
+description: "Write a slide layout as React code, in a brand or in one deck, and use it from slides."
+sidebar:
+  order: 9
+---
+
+A code layout is a slide layout written as code: a `contract.ts` that says what a slide may contain and a `layout.tsx` that draws it. It lives in a brand, so every deck on the brand gets it, or in one deck. This page shows where the files go, writes a small layout from start to finish and lists what the files may import and what the rendered slide must keep so that lint, export and comments keep working.
+
+<Aside type="note" title="New in v0.11.0">
+Code layouts shipped in 0.11.0. Earlier versions ignore a `layouts/<name>/` folder, and a slide that names one fails with `layout: There is no "kpi-wall" layout.`
+</Aside>
+
+## Kit, data or code
+
+Reach for a code layout last. A code layout is checked, linted, exported and commented on like a kit layout, but it is code you maintain.
+
+| The slide needs | Use |
+| --- | --- |
+| Content that fits a kit layout, in the brand's type and grid | A [kit layout](/reference/layouts/). It adapts to every brand and steps its type down to fit. |
+| A template's own slides: fixed regions and art at set places | A [data layout](/brands/brand-layouts/) in `brands/<name>/layouts.ts`. |
+| A structure no kit layout has, or a kit layout that must work differently for your brand | A code layout in the brand, or in the deck for a one-off. |
+
+A brand's code layout is for something every deck on the brand should get. A deck's code layout travels with the deck. Slides that a data layout's regions can hold stay on the data layout: code is for what regions cannot do.
+
+## Where the files go
+
+<FileTree>
+- talks/
+  - brands/
+    - acme/
+      - brand.ts
+      - brand.json
+      - layouts.ts
+      - layouts/
+        - title-photo.svg
+        - kpi-wall/
+          - contract.ts
+          - layout.tsx
+          - layout.css
+          - limits.ts
+        - _shared/
+  - decks/
+    - launch-review/
+      - layouts/
+        - funnel/
+          - contract.ts
+          - layout.tsx
+</FileTree>
+
+- **One folder per layout.** The folder name is the layout name, and it must equal `name` in the contract and in `defineLayout`. It is kebab-case and at most 64 characters.
+- **Fixed file names.** `contract.ts` and `layout.tsx` are required, so nothing is registered anywhere. `layout.css` and `limits.ts` are optional. A folder without both required files is a `layout-folder-incomplete` problem.
+- **Helpers** are `.ts`, `.tsx` or `.css` files in the layout's folder or in `layouts/_shared/`, which is never a layout. Other folders under `layouts/` are layouts, except those whose name starts with a dot. Files at the top of `layouts/`, such as the art of a data layout, are ignored.
+- **`brand.json`** is optional and holds a [version range](/brands/code-layout-checks/#the-version-range). A deck sets the same range as `deckster` in `deck.config.ts`.
+
+## Write one
+
+These steps write a `kpi-wall` layout for the `acme` brand in a workspace called `talks`: a title over a wall of up to six figures.
+
+<Steps>
+
+1. Start from a layout that already passes. `deckster layouts new` writes the four files into the brand, or into a deck with `--deck launch-review`:
+
+   ```console
+   $ deckster layouts new kpi-wall --brand acme
+   brands/acme/layouts/kpi-wall/contract.ts
+   brands/acme/layouts/kpi-wall/layout.tsx
+   brands/acme/layouts/kpi-wall/layout.css
+   brands/acme/layouts/kpi-wall/limits.ts
+   Next: put `layout: kpi-wall` in a slide's frontmatter (`deckster new slide <deck> <id> --layout kpi-wall` writes one from the example). Shape layout.tsx, layout.css and contract.ts, add a case to limits.ts for each variant, then run `deckster layouts check kpi-wall --brand acme`.
+   ```
+
+   The brand must be a folder of the workspace, not the built-in `default`. The name must be kebab-case, free in that folder, and not the name of a kit, engine or data layout; to take a kit layout's name on purpose, see [replace a kit layout](/brands/replace-a-kit-layout/).
+
+2. Write the contract in `contract.ts`. It runs in Node, so it holds no JSX. It names the fields a slide may set, the slots it fills, how much fits, an example slide and how the slide maps to PowerPoint:
+
+   ```ts
+   import { defineLayoutContract } from '@deckster/engine/layout';
+   import { EYEBROW_HINT, EyebrowField } from '@deckster/kit/layout-fields';
+   import { Schema } from 'effect';
+
+   /**
+    * The longest title, in characters, that fits the header on two lines.
+    */
+   const KPI_WALL_TITLE_MAX_CHARS = 70;
+
+   /**
+    * The `kpi-wall` layout: a title over a wall of three to six figures.
+    */
+   export default defineLayoutContract({
+     name: 'kpi-wall',
+     description:
+       'A title that states the point over a wall of up to six figures, one bullet each, such as ' +
+       '"42% faster". Use it when the evidence is a handful of numbers with no trend to draw.',
+     schema: Schema.Struct({
+       eyebrow: EyebrowField,
+       columns: Schema.optionalKey(Schema.Literals([2, 3])),
+     }),
+     hints: {
+       eyebrow: EYEBROW_HINT,
+       columns: 'Write `columns: 2` for four figures or fewer; leave it out for three columns.',
+     },
+     title: { required: true, maxChars: KPI_WALL_TITLE_MAX_CHARS },
+     slots: {
+       body: {
+         description: 'The figures, one bullet each: the number first, then what it measures.',
+         required: true,
+         accepts: ['bullets'],
+       },
+       footnote: {
+         description: 'The source and the period, in a sentence.',
+         accepts: ['text'],
+       },
+     },
+     budget: {
+       body: { maxBullets: 6, maxWords: 36 },
+       footnote: { maxWords: 24 },
+     },
+     pptx: {
+       type: 'content',
+       placeholders: [
+         { kind: 'title', from: { selector: '.kit-title' } },
+         { kind: 'body', from: { slot: 'body' } },
+       ],
+     },
+     example: {
+       frontmatter: { title: 'Checkout is faster and more reliable', eyebrow: 'Q3 results' },
+       body: [
+         '- 42% faster median checkout',
+         '- 3 regions live',
+         '- 99.95% uptime',
+         '',
+         '<Footnote>Source: status page, July to September.</Footnote>',
+         '',
+       ].join('\n'),
+     },
+   });
+   ```
+
+   `title.maxChars` is the longest title the header takes without overflowing. `deckster layouts` prints the `description`, so write it for the person or agent who must choose between layouts.
+
+3. Draw it in `layout.tsx`. It runs in the browser and imports the contract only as a type, so the browser never loads the schema:
+
+   ```tsx
+   import type { ReactNode } from 'react';
+
+   import { defineLayout, type LayoutProps } from '@deckster/engine';
+   import { Footnote, Frame, Region, SlideHeader, useEnter } from '@deckster/kit/layout-parts';
+
+   import type contract from './contract.ts';
+
+   import './layout.css';
+
+   /**
+    * The `kpi-wall` layout: the shared header, then the figures as tiles in a grid and a footnote.
+    */
+   function KpiWall({ frontmatter, slots }: LayoutProps<typeof contract>): ReactNode {
+     const wallEnter = useEnter(1);
+     return (
+       <Frame layout="kpi-wall" variant={{ 'data-columns': String(frontmatter.columns ?? 3) }}>
+         <SlideHeader eyebrow={frontmatter.eyebrow} title={frontmatter.title} />
+         <Region place="optical">
+           <div className="kpi-wall-tiles" {...wallEnter}>
+             {slots.body}
+           </div>
+         </Region>
+         <Footnote>{slots.footnote}</Footnote>
+       </Frame>
+     );
+   }
+
+   export default defineLayout<typeof contract>({ name: 'kpi-wall', component: KpiWall });
+   ```
+
+   `slots.body` is a React node the engine already wrapped in `span.deck-slot[data-slot="body"]`. Place it and style the elements inside it; do not rebuild it.
+
+4. Style it in `layout.css`. Start with the `@layer` line and put the rules in `@layer components`, as the kit's stylesheets do, so the brand's utilities can still override them. Use the brand's CSS variables and never raw colours, fonts or pixel sizes:
+
+   ```css
+   @layer theme, base, components, utilities;
+
+   @layer components {
+     .kit-frame[data-layout='kpi-wall'] .kpi-wall-tiles ul {
+       display: grid;
+       grid-template-columns: repeat(var(--kpi-wall-columns, 3), 1fr);
+       gap: var(--brand-space-md);
+       margin: 0;
+       padding: 0;
+       list-style: none;
+     }
+
+     .kit-frame[data-layout='kpi-wall'][data-columns='2'] {
+       --kpi-wall-columns: 2;
+     }
+
+     .kit-frame[data-layout='kpi-wall'] .kpi-wall-tiles li {
+       padding: var(--brand-space-md) 0 0;
+       border-top: var(--brand-stroke-bold) solid var(--brand-color-accent);
+       color: var(--brand-color-heading);
+     }
+   }
+   ```
+
+5. List the slides at the edge of the contract in `limits.ts`. `deckster layouts check` renders each case besides the example. This layout takes bullets only, so each case brings its own body in `bodyMdx`; the generated paragraph would fail the slot check:
+
+   ```ts
+   import type { LimitCase } from '@deckster/kit/limit-cases';
+
+   /**
+    * Six figures of six words each, the most the body budget allows.
+    */
+   const SIX_FIGURES = [
+     '- 42% faster median checkout time',
+     '- 3 regions live since June',
+     '- 99.95% uptime over the quarter',
+     '- 18% fewer abandoned carts',
+     '- 4.8 average rating in stores',
+     '- 12 minutes to roll back',
+   ].join('\n');
+
+   export default [
+     { name: 'three-columns', frontmatter: {}, filled: ['footnote'], bodyMdx: SIX_FIGURES },
+     { name: 'two-columns', frontmatter: { columns: 2 }, filled: ['footnote'], bodyMdx: SIX_FIGURES },
+   ] satisfies readonly LimitCase[];
+   ```
+
+6. Run the check and use the layout. `deckster layouts <deck> --summary` lists it under the brand's heading, and `deckster new slide` writes the contract's example as a slide:
+
+   ```console
+   $ deckster layouts check kpi-wall --brand acme
+   brands/acme/layouts/ (rendered in the acme brand)
+     kpi-wall: ok (example, three-columns, two-columns)
+   The brand acme: 1 of 1 layout pass (0 errors, 0 warnings).
+   $ deckster layouts launch-review --summary
+   Layouts from the acme brand (prefer these):
+   kpi-wall  surface default  title <= 70
+             A title that states the point over a wall of up to six figures, one bullet each, such as "42% faster".
+             slots: body* bullets 36 words 6 bullets; <Footnote> text 24 words
+
+   Other layouts:
+   ...
+   $ deckster new slide launch-review numbers --layout kpi-wall
+   decks/launch-review/slides/numbers.mdx
+   decks/launch-review/deck.config.ts
+   ```
+
+   The deck's `brand` must be `acme`: a code layout of a brand exists only in that brand. [Check a code layout](/brands/code-layout-checks/) covers the rest of the command and what a failure looks like.
+
+</Steps>
+
+Run `deckster types` once in the workspace so an editor resolves the `@deckster/*` imports.
+
+## What each file may import
+
+**`contract.ts` and `limits.ts` run in Node**, in the build, `deckster layouts`, lint and export. The build reads each file and the relative files it imports before running anything, and rejects an import that is not one of these:
+
+- `effect` and its entry points, such as `effect/Schema`;
+- `@deckster/engine/layout` and `@deckster/engine/command`;
+- `@deckster/kit/layout-fields`;
+- `@deckster/brand`, for types and data helpers;
+- relative `.ts` files inside the layout's own folder or `layouts/_shared/`. A `.tsx`, a `.css`, an image or a path that leaves those two folders is rejected.
+
+`import type` is erased and not followed, so `limits.ts` imports `LimitCase` from `@deckster/kit/limit-cases` as a type. A value import of it is rejected, as is an `import()` whose target is not one plain string. The problem is `layout-contract-imports`, it names the file and the import, and the layout is left out.
+
+**`layout.tsx` and what it imports run in the browser** through Vite. They may import `@deckster/engine`, `@deckster/kit` (`Image`, `Icon`, `Code`, `Step` and the other components), `@deckster/kit/layout-parts`, `@deckster/kit/diagrams`, `@deckster/brand/runtime`, `react`, `react-dom` and `effect`, their own `.ts`, `.tsx` and `.css` files, and the contract as a type.
+
+A workspace has no `node_modules` of its own, so there is nothing to install: `@deckster/*` resolves from the CLI. Do not import another layout's files, and do not copy a kit file to edit it. Both break when the kit changes. To start from a kit layout, [eject it](/brands/replace-a-kit-layout/).
+
+## Keep the DOM the tools read
+
+Lint, export and comments read the rendered slide. A layout that follows these rules gets all of them; one that does not gets wrong lint results or a wrong PowerPoint, mostly without an error.
+
+- **Name.** The engine stamps `data-deck-layout="<name>"` on every slide, and export picks the PowerPoint mapping from it. Still set `data-layout="<name>"` on the layout's root as the hook for CSS: `<Frame layout="<name>">` does it.
+- **Slots stay whole.** The engine wraps each filled slot in `span.deck-slot[data-slot]`, and lint classifies a slot's blocks by that wrapper's direct children. Render `slots.body` as it is: do not map over its children, wrap each in your own element or split it. Style it from outside with CSS.
+- **Steps** are `.deck-step[data-step][data-step-state]`, which the kit's `Step` renders. Use `Step` and `useEnter(order)` from `@deckster/kit/layout-parts` to reveal things by step.
+- **Readiness.** A layout that measures its content after fonts or data load must hold the slide until it settles with `useReadyHold(pending)` from `@deckster/engine`. Without it `deckster shot`, lint and export capture a slide that has not settled. `FittedText` does this for you.
+- **Kit classes.** Lint and export recognise stats, charts, diagrams, code, video and apps by the classes the kit components draw. Render slot content with those components. A layout that draws its own stat or code markup is misjudged by the `slot-content` rule and by export.
+- **Frame and title.** `Frame` carries `.kit-frame`, which the kit's type and table styles hang on. `SlideHeader` renders the title with `.kit-title`, which the PowerPoint mapping points at.
+
+## What to build from
+
+`@deckster/kit/layout-parts` is the layout author's toolbox: `Frame` and `Region`, `Eyebrow`, `SlideHeader` and `Footnote`, `FittedText` and the fit hooks, `TreatedMedia` and `BrandLogo`, `StatValue` and `StatDelta`, `Step`, `useEnter` and `enterProps`. `@deckster/kit/layout-fields` is plain Node, so a contract may import it: `EyebrowField`, `chromeField`, `TreatmentField`, `IconNameField`, `FocalField`, `AlignField` and the hints that go with them. Both are public and held by a test: adding a name is a minor change, removing or renaming one is a breaking change. Everything else in the kit is private.
+
+A layout built on these parts changes when the kit changes `Frame` or `FittedText`, within that promise. To have nothing move under you, write plain React and CSS instead. Every tool still works as long as the rules above hold, but the layout then brings its own type, spacing and fitting, and loses the kit's table and type styling unless it keeps `.kit-frame`.
+
+## Budgets, limit cases and PowerPoint
+
+- **Budgets** count words, bullets and lines of code, so they hold in every brand. Lint's `content-budget` checks them on the rendered slide. State a budget the layout fits in the brands you use.
+- **Limit cases** in `limits.ts` are slides at the edge of the contract. A case has a kebab-case `name`, unique in the file and never `example`, the `frontmatter` at its limits, `filled`, the named slots to fill besides `body`, and optionally `body: false` and `bodyMdx`. `deckster layouts check` adds the longest title and eyebrow and fills the body to its budget, as a paragraph and, when the body takes bullets, as a list. A body that takes no text needs `bodyMdx`. Without `limits.ts` only the `example` is checked.
+- **PowerPoint.** `pptx.type` is the PowerPoint layout kind: `title`, `section`, `content`, `two-content`, `title-only` or `blank`. Each placeholder takes `from: { slot }`, `from: { selector }` or `from: { field }`. Text no placeholder covers still exports as native text boxes, and a layout with no mapping exports that way entirely. Check the result with `deckster export <deck> --pptx --dry-run`; see [PowerPoint](/export-and-publish/powerpoint/).
+
+## Next
+
+- [Replace a kit layout](/brands/replace-a-kit-layout/) with `deckster layouts eject`.
+- [Check a code layout](/brands/code-layout-checks/): the checks, the problem ids and the version range.
+- [Code layouts and trust](/brands/code-layouts-and-trust/): what `deckster brand add` leaves out and what an agent turn may not touch.

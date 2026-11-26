@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Use this page to look up the exact arguments and flags of a `deckster` command. Each section shows the command's summary, its usage lines and, folded, the full `deckster <command> --help` as `@deckster/cli` 0.10.1 prints it. `deckster --help` lists the commands in the same order:
+Use this page to look up the exact arguments and flags of a `deckster` command. Each section shows the command's summary, its usage lines and, folded, the full `deckster <command> --help` as `@deckster/cli` 0.11.0 prints it. `deckster --help` lists the commands in the same order:
 
 ```console
 $ deckster --help
@@ -138,6 +138,29 @@ Guide: [lint](/review/lint/). Every rule: [lint rules](/reference/lint-rules/).
 <CliCommand name="layouts" />
 
 Every layout in full: its page under [layouts](/reference/layouts/).
+
+### Code layout subcommands
+
+<Aside type="note" title="New in v0.11.0">
+The four subcommands below shipped in 0.11.0. The guides start at [code layouts](/brands/code-layouts/).
+</Aside>
+
+The words `new`, `check`, `eject` and `diff` after `deckster layouts` start a subcommand, so a deck with one of those names is listed with `DECK=<name> deckster layouts`. All of them take `--json`. Exactly one of `--brand` and `--deck` is required, and the brand must be a folder of the workspace, not the built-in `default`.
+
+```sh
+deckster layouts new <name> (--brand <brand> | --deck <deck>)
+deckster layouts check [<name>] (--brand <brand> | --deck <deck>)
+deckster layouts eject <name...> (--brand <brand> | --deck <deck>) [--keep-shared]
+deckster layouts eject --all --brand <brand> [--keep-shared]
+deckster layouts diff <name> (--brand <brand> | --deck <deck>) [--fail-on-change]
+```
+
+- **`new`** writes `layouts/<name>/` in the brand or the deck with four files that pass `layouts check`, `brand check`, `lint` and the build as written: `contract.ts` with one `body` slot, a required title, an eyebrow, an example and a PowerPoint mapping; `layout.tsx`; `layout.css`; and `limits.ts` with one case, `full-body`. It prints the files and a `Next:` line. With `--json` it prints `{ ok, layout, brand, deck, dir, files, next }`. It refuses, and writes nothing, for a name that is not kebab-case (at most 64 characters), a folder that exists, a kit or engine layout, a data layout of the brand, for a deck a code layout of the deck's brand and a path that runs through a symbolic link.
+- **`check`** checks the contracts, imports and replacements of the brand's or deck's code layouts, or of the one named, then renders each layout without an error and lints the result. It exits 0 when no layout has an error and 1 when one does or the command fails. With `--json` it prints `{ ok, brand, deck, dir, layouts: [{ name, dir, cases, ok, problems }], problems }`; each problem is `{ severity, code, file, message, fix, case?, slide?, step?, selector? }`, and the top-level `problems` belong to no one layout, such as `layout-version`. [Check a code layout](/brands/code-layout-checks/)
+- **`eject`** copies kit layouts into the brand or deck as code layouts that replace them, with `--all` for every kit layout the brand has no folder for. It prints the files, the helpers it reused or kept and a `Next:` line. With `--json` it prints `{ ok, brand, deck, layouts: [{ name, dir, files }], shared: { written, reused, kept }, skipped, skippedForDecks, warnings, next }`. [Replace a kit layout](/brands/replace-a-kit-layout/)
+- **`diff`** prints a unified diff of what the kit changed in an ejected layout since you ejected it, on standard output. It exits 0, or 1 with `--fail-on-change` when the kit changed the layout or it no longer ejects cleanly, and 1 for a layout with no `.eject/eject.json`. With `--json` it prints `{ ok, brand, deck, layout, dir, ejectedWith, current, changed, files: [{ path, status, diff }], problems, provenanceEdited }`.
+
+In the same release `deckster layouts` and `deckster brand` also report code layouts: a layout's `source` is `brand-code:<brand>` or `deck:<deck>`, a replacement carries `replaces`, and `deckster brand <name>` prints a `Code layouts:` line.
 
 ## deckster icons
 

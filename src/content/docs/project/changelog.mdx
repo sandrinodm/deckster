@@ -1,9 +1,29 @@
 ---
 title: "Changelog"
-description: "Deckster v0.10.1, v0.10.0, v0.9.0, v0.8.0 and v0.7.0 changes, with guides and links to the code."
+description: "Deckster v0.11.0, v0.10.1, v0.10.0, v0.9.0, v0.8.0 and v0.7.0 changes, with guides and links to the code."
 sidebar:
   order: 6
 ---
+
+## v0.11.0
+
+[Release notes](https://github.com/sandrinodm/deckster/releases/tag/v0.11.0).
+
+### Code layouts
+
+A brand or a deck can bring layouts written as React code, for a structure the kit's layouts and a brand's data layouts cannot hold. Each sits in `layouts/<name>/` with a `contract.ts`, which declares the layout's frontmatter, slots, budgets, optional checks and PowerPoint mapping, and a `layout.tsx`, which draws it. Slides name a code layout like any other, `deckster layouts` lists it with the kit's, and `deckster lint`, the build and PowerPoint export work from its contract. A problem with a layout fails the slides that use it with the problem's own id, such as `layout-contract-invalid` or `layout-name-mismatch`. [Code layouts](/brands/code-layouts/) · [Check a code layout](/brands/code-layout-checks/) · [PR #45](https://github.com/sandrinodm/deckster/pull/45)
+
+### Replace a kit layout, eject and diff
+
+A code layout with `replaces: true` takes the place of the kit layout of the same name, and slides keep their frontmatter as long as the replacement accepts it (`layout-replace-breaks` says when it does not). `deckster layouts eject <layout>` copies a kit layout into your brand or deck as a code layout to start from, and `deckster layouts diff` shows how your copy has moved from the kit's. [Replace a kit layout](/brands/replace-a-kit-layout/) · [PR #45](https://github.com/sandrinodm/deckster/pull/45)
+
+### `deckster layouts new` and `deckster layouts check`
+
+`deckster layouts new` writes a contract and component to start from. `deckster layouts check` loads each code layout, renders it at its budget limits in Chromium and reports each problem with a fix. [CLI reference](/reference/cli/#deckster-layouts) · [PR #45](https://github.com/sandrinodm/deckster/pull/45)
+
+### Code layouts and trust
+
+A code layout is code that runs on your machine. `deckster brand add` never copies a fetched brand's code layouts and lists the ones it left out in `.deckster-source.json`. An agent turn cannot write a layout file, and contracts are held while a turn runs. Before a contract runs in the build, deckster checks its imports and runs it first in a separate Node process with a deadline, which catches hangs and accidental file, network, process or environment use early; neither check is a sandbox. [Code layouts and trust](/brands/code-layouts-and-trust/) · [PR #45](https://github.com/sandrinodm/deckster/pull/45)
 
 ## v0.10.1
 

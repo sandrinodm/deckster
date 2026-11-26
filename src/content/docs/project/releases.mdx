@@ -9,14 +9,14 @@ Use this page to see which version of deckster these docs describe, upgrade to t
 
 ## The version these pages describe
 
-These pages describe **@deckster/cli 0.10.1**. Check the version installed in your workspace with this command.
+These pages describe **@deckster/cli 0.11.0**. Check the version installed in your workspace with this command.
 
 ```console
 $ deckster --version
-0.10.1
+0.11.0
 ```
 
-The guides mark new features with the version that introduced them. See the [changelog](/project/changelog/) for placed elements, the `image-reveal` layout and the `deckster present` port change.
+The guides mark new features with the version that introduced them. See the [changelog](/project/changelog/) for code layouts and the `deckster layouts` subcommands.
 
 ## Published versions
 
@@ -24,7 +24,7 @@ The guides mark new features with the version that introduced them. See the [cha
 npm view @deckster/cli versions
 ```
 
-The npm `latest` tag points at 0.10.1. Run `npm view @deckster/cli dist-tags.latest` to check it. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
+The npm `latest` tag points at 0.11.0. Run `npm view @deckster/cli dist-tags.latest` to check it. `0.0.0-stage` is not a release. There is a `v0.2.0` tag and GitHub release but no 0.2.0 on npm.
 
 ## Upgrade
 
@@ -47,6 +47,8 @@ Mapped 71 @deckster/* entry points. The paths name this install: run `deckster t
 For a first install, see [quickstart](/get-started/quickstart/).
 
 ## What changed
+
+[0.11.0](https://github.com/sandrinodm/deckster/releases/tag/v0.11.0) adds [code layouts](/brands/code-layouts/): a brand or a deck can bring layouts written as React code, a `contract.ts` that declares the frontmatter, slots and budgets and a `layout.tsx` that draws them, and a code layout can [replace a kit layout](/brands/replace-a-kit-layout/) of the same name. `deckster layouts new`, `check`, `eject` and `diff` scaffold, check, copy and compare them. `deckster brand add` never copies code, and an agent turn cannot write or load a layout; see [code layouts and trust](/brands/code-layouts-and-trust/). The [changelog](/project/changelog/#v0110) links each change to its guide.
 
 [0.10.1](https://github.com/sandrinodm/deckster/releases/tag/v0.10.1) stops `canvas-overflow` from reporting the shapes of an inline SVG that its `<svg>` crops, so the `image-reveal` starter slide lints clean. See the [changelog](/project/changelog/#v0101).
 

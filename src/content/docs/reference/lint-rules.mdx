@@ -118,3 +118,7 @@ The compiler that turns slide files into the deck reports a few more problems, e
 | `terminal-tone` | warning | A `<Cmd>` or `<Out>` tone the terminal does not have. |
 | `treatment-unknown` | warning | An image treatment the brand does not have, so the picture is drawn as it is. |
 | `build-warning` | warning | Any other compiler warning that names no rule. |
+
+## Code layout problems
+
+Since 0.11.0, when a slide uses a [code layout](/brands/code-layouts/) that could not be used, `deckster lint` and the build fail the slide with the problem's own id as the rule, in place of `schema`: `layout-load-failed`, `layout-contract-invalid`, `layout-contract-imports`, `layout-name-mismatch`, `layout-name-clash`, `layout-folder-incomplete`, `layout-held`, `layout-version`, `layout-replace-breaks` and `layout-code-skipped`. A slide that does not fit a replacement that stayed in the catalog is still a `schema` error, and a `layout.tsx` that throws is `layout-load-failed` in place of `render-error`. Every id, with its fix, is in the [problems table](/brands/code-layout-checks/#problems). The slide rules themselves are unchanged for code layouts: budgets, slot checks, overflow and fit rules work from the layout's contract and the rendered slide.
